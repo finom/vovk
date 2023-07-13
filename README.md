@@ -113,6 +113,7 @@ export default function authGuard<T>() {
 }
 
 ```
+```ts
 
 // ...
 @get()
