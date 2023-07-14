@@ -1,4 +1,4 @@
-# nextjs-alternative-router (WIP)
+# nextjs-alternative-router
 
 > Alternative syntax for route.ts that combine multiple endpoints with TypeScript decorators. Inspired by NestJS controller syntax.
 
