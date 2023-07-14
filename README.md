@@ -80,6 +80,7 @@ static helloWorld = () => {
 The library also provides `HttpException` (as well as helpful enum `HttpStatus`) that you can throw at your route handler and the library will make the route return proper error and status.
 
 ```ts
+import { HttpException, HttpStatus } from 'nextjs-alternative-router';
 // ...
 @get()
 static helloWorld = () => {
