@@ -1,6 +1,10 @@
-# nextjs-api-router (WIP)
+# nextjs-alternative-router (WIP)
 
 > Alternative syntax for route.ts that combine multiple endpoints with TypeScript decorators. Inspired by NestJS controller syntax.
+
+```sh
+npm i nextjs-alternative-router
+```
 
 **Warning**
 
@@ -41,11 +45,10 @@ With this library you need only 2 files:
 
 ## API
 
-The library provides a function called `createRouter` that returns an object that contains NextJS route functions (`GET`, `POST`, `PUT`, `DELETE`) and decorators (`get`, `post`, `put`, `del`). The route handlers are going to be defined as a class with static methods (static method decorators are more flexible because they have access to the "target").
+The library provides a function called `createRouter` that returns an object that contains NextJS route functions (`GET`, `POST`, `PUT`, `DELETE`) and decorators (`get`, `post`, `put`, `del`). The route handlers are going to be defined as a class with static methods (dev note: static method decorators are more flexible because they have access to the decorator's target).
 
 ```ts
-// 
-import { createRouter } from 'TODO';
+import { createRouter } from 'nextjs-alternative-router';
 
 const { get, post, GET, POST } = createRouter();
 
