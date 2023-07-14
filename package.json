@@ -1,0 +1,44 @@
+{
+  "name": "nextjs-alternative-router",
+  "version": "0.0.0",
+  "description": "Alternative syntax for route.ts that combine multiple endpoints with TypeScript decorators. Inspired by NestJS controller syntax.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run lint-pure && tsc --noemit",
+    "build": "tsc",
+    "lint-pure": "eslint . --ext .ts,.tsx",
+    "lint": "npm run lint-pure -- --fix",
+    "patch": "npm t && npm version patch && npm run build && npm publish && git push && git push --tags",
+    "minor": "npm t && npm version minor && npm run build && npm publish && git push && git push --tags",
+    "BREAKING-major": "npm t && npm version major && npm run build && npm publish && git push && git push --tags"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 120
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finom/nextjs-alternative-router.git"
+  },
+  "keywords": [
+    "nextjs",
+    "router"
+  ],
+  "author": "Andrii Gubanov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/finom/nextjs-alternative-router/issues"
+  },
+  "homepage": "https://github.com/finom/nextjs-alternative-router#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "next": "^13.4.10",
+    "typescript": "^5.1.6"
+  }
+}
