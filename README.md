@@ -42,6 +42,8 @@ export default class UserRouter {
 }
 ```
 
+Install: `npm i next-wednesday` or `yarn add next-wednesday`.
+
 ## Features
 
 - Decorator syntax.
