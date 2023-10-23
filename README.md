@@ -83,27 +83,27 @@ export async function POST() {
 Let's imagine that your app requires to build the following endpoints:
 
 ```
-GET /users - get all users
-POST /users - create user
-GET /users/me - get current user
-PUT /users/me - update current user (password, etc)
-GET /users/[id] - get specified user by ID
-PUT /users/[id] - update a specified user (let's say, name only) 
-GET /teams - get all teams
-GET /teams/[id] - get a specific team
-POST /teams/[id]/assign-user - some specialised endpoint that assigns a user to a specific team (whatever that means)
+GET /user - get all users
+POST /user - create user
+GET /user/me - get current user
+PUT /user/me - update current user (password, etc)
+GET /user/[id] - get specified user by ID
+PUT /user/[id] - update a specified user (let's say, name only) 
+GET /team - get all teams
+GET /team/[id] - get a specific team
+POST /team/[id]/assign-user - some specialised endpoint that assigns a user to a specific team (whatever that means)
 ```
 
 With the built-in NextJS 13+ features your API folder structure is going to look the following:
 
 ```
-/api/users/
+/api/user/
   /route.ts
   /me/
     /route.ts
   /[id]/
     /route.ts
-/api/teams/
+/api/team/
   /route.ts
   /[id]/
     /route.ts
@@ -112,17 +112,17 @@ With the built-in NextJS 13+ features your API folder structure is going to look
 
 ```
 
-You need to be a psychopath to keep this file structure (especially if you have complex API), or you have to apply some creativity to reduce number of files and simplify the structure:
+It's hard to manage this file structure (especially if you have complex API), and you may want to apply some creativity to reduce number of files and simplify the structure:
 
-- Move all features from /users folder (`/me` and `/[id]`) to `/users/route.ts` and use query parameter instead: `/users`, `/users/?who=me`, `/users/?who=[id]`
-- Do the same trick with teams: `/teams`, `/teams?id=[id]`, `/teams?id=[id]&action=assign-user`
+- Move all features from /users folder (`/me` and `/[id]`) to `/user/route.ts` and use query parameter instead: `/user`, `/user/?who=me`, `/user/?who=[id]`
+- Do the same trick with the teams: `/team`, `/team?id=[id]`, `/team?id=[id]&action=assign-user`
 
 The file structure now looks like the following:
 
 ```
-/api/users/
+/api/user/
   /route.ts
-/api/teams/
+/api/team/
   /route.ts
 ```
 
@@ -152,21 +152,20 @@ NextJS includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-appli
 ```
 /api/[[...]]/route.ts
 /routers
-  /UsersRouter.ts
-  /TeamsRouter.ts
+  /UserRouter.ts
+  /TeamRouter.ts
 ```
 
-First, `/routers` is a folder that contains our dynamic router files. The name of the folder nor files don't matter.
+First, `/routers` is a folder that contains our dynamic router files. The name of the folder nor files don't matter so you can name it `/controllers` for example.
 
 Create your routers:
-
 
 ```ts
 // /routers/UsersRouter.ts
 import { get, post, put, prefix } from 'thelibrary';
 
-@prefix('/users')
-export default class UsersRouter {
+@prefix('/user')
+export default class UserRouter {
   @get()
   static getAll() {
     return someORM.getAllUsers();
@@ -198,11 +197,11 @@ export default class UsersRouter {
 ```
 
 ```ts
-// /routers/UsersRouter.ts
+// /routers/UserRouter.ts
 import { get, post, prefix } from 'thelibrary';
 
-@prefix('/teams')
-export default class TeamsRouter {
+@prefix('/team')
+export default class TeamRouter {
   @get('/')
   static getAll() {
      return someORM.getAllTeams();
@@ -226,8 +225,8 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`). The s
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
 import { RouteHandlers } from 'thelibrary';
-import '../routers/UsersRouter';
-import '../routers/TeamsRouter';
+import '../routers/UserRouter';
+import '../routers/TeamRouter';
 
 export const { GET, POST, PUT } = RouteHandlers;
 ```
@@ -341,7 +340,7 @@ And finally use the decorator as we did above:
 
 ```ts
 // ...
-export default class UsersRouter {
+export default class UserRouter {
   // ...
   @get('/me')
   @authGuard()
@@ -359,8 +358,8 @@ Optionally, you can improve your router code by splitting it into Service and Co
 
 
 ```ts
-// /routers/users/UsersService.ts
-export default class UsersService {
+// /routers/users/UserService.ts
+export default class UserService {
   static findAllUsers() {
     return prisma.user.findMany();
   }
@@ -372,17 +371,17 @@ Then inject the service as another static property to the router (the controller
 
 ```ts
 // /routers/users/UsersRouter.ts
-import UsersService from './UsersService';
+import UserService from './UserService';
 
 // ...
-@prefix('/users')
+@prefix('/user')
 export default class UsersRouter {
-  static usersService = UsersService;
+  static userService = UserService;
 
   @get('/')
   @authGuard()
   static getAllUsers() {
-    return this.usersService.findAllUsers();
+    return this.userService.findAllUsers();
   }
 }
 
@@ -393,7 +392,7 @@ Then initialise the router as before:
 ```ts
 // /api/[[...]]/route.ts
 import { RouteHandlers } from 'thelibrary';
-import '../routers/users/UsersRouter';
+import '../routers/user/UserRouter';
 
 export const { GET } = RouteHandlers;
 ```
@@ -402,15 +401,15 @@ Potential file structure with users, posts and comments may look like that:
 
 ```
 /routers/
-  /users/
-    /UsersService.ts
-    /UsersRouter.ts
-  /posts/
-    /PostsService.ts
-    /PostsRouter.ts
-  /comments/
-    /CommentsService.ts
-    /CommentsRouter.ts
+  /user/
+    /UserService.ts
+    /UserRouter.ts
+  /post/
+    /PostService.ts
+    /PostRouter.ts
+  /comment/
+    /CommentService.ts
+    /CommentRouter.ts
 ```
 
 
@@ -488,30 +487,30 @@ import {
 
 ### `createRouter`, global decorators and handlers
 
-The function `createRouter` initialises route handlers for one particular app segment. Using it directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/users` route handlers by using the library but keep `/comments` and `/posts` as is. 
+The function `createRouter` initialises route handlers for one particular app segment and creates isolated router. Using the function directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/user` route handlers by using the library but keep `/comment` and `/post` as is. 
 
 
 ```
-/api/posts/
+/api/post/
   /route.ts
   /[id]/
     /route.ts
-/api/comments/
+/api/comment/
   /route.ts
   /[id]/
     /route.ts
-/api/users/[[...]]/
+/api/user/[[...]]/
   /route.ts
 ```
 
-At this example only the `users` dynamic route is going to use the library. With `createRouter` you can define local variables that are going to be used for one particular path. At this case the router class is going to be extended by `RouteHandlers` class.
+At this example only the `user` dynamic route is going to use the library. With `createRouter` you can define local variables that are going to be used for one particular path. At this case the router class is going to be extended by `RouteHandlers` class.
 
 ```ts
 import { createRouter } from 'thelibrary';
 
 const { get, post, RouteHandlers } = createRouter();
 
-class UsersRoute extends RouteHandlers {
+class UserRoute extends RouteHandlers {
   @get()
   static getAll() {
     // ...
@@ -523,10 +522,10 @@ class UsersRoute extends RouteHandlers {
   }
 }
 
-export const { GET, POST } = UsersRoute;
+export const { GET, POST } = UserRoute;
 ```
 
-The full example of `createRouter` call:
+There is what `createRouter` returns:
 
 ```ts
 const {  
