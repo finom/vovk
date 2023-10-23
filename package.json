@@ -8,6 +8,7 @@
     "build": "tsc",
     "lint-pure": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-pure -- --fix",
+    "toc": "npx markdown-toc README.md -i",
     "patch": "npm t && npm version patch && npm run build && npm publish && git push && git push --tags",
     "minor": "npm t && npm version minor && npm run build && npm publish && git push && git push --tags",
     "BREAKING-major": "npm t && npm version major && npm run build && npm publish && git push && git push --tags"
