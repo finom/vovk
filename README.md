@@ -21,7 +21,7 @@
 
 # WIP
 
-The library allows to define wildcarded API route handlers for NextJS 13+ App router.
+The library allows to define API route handlers for NextJS 13+ App router in alternative way.
 
 ```ts
 // /routers/UsersRouter.ts
@@ -43,8 +43,9 @@ export default class UsersRouter {
 
 ### Features
 
+- Decorator syntax.
+- Custom decorators are supported.
 - Nice error handling - no need to use `try..catch` and `NextResponse` to return an error to the client.
-- Custom decorators that allow you to extend route features in a nice and laconic way.
 - Service-Controller pattern is supported.
 - Partial refactoring is possible (if you want to quickly try the library or update only particular endpoints).
 
@@ -55,13 +56,13 @@ export default class UsersRouter {
 NextJS 13+ with App Router is a great ready-to go framework that saves a lot of time and effort setting up and maintaining a React project. With NextJS:
 
 - You don't need to manually set up Webpack, Babel, ESLint, TypeScript
-- Hot module reload is enabled by default and doesn't work in your environment
-- Server-side rendering is also enabled by default
+- Hot module reload is enabled by default ans always works, so you don't need to find out why it stopped working after a dependency update
+- Server-side rendering is enabled by default
 - Routing and file structure is well-documented, so you don't need to design it by your own
-- It doesn't require you to "eject" build scripts and configs if you want to modify 
-- It's a widely known and well-used framework, no need to spend time arguing with other team members about the choice
+- It doesn't require you to "eject" scripts and configs if you want to modify them
+- It's a widely known and well-used framework, no need to spend time thinking of a choice
 
-As result both lont-errm and short-term development is cheaper, faster and more effecient.
+As result both lont-term and short-term the development is cheaper, faster and more effecient.
 
 ### Why NextJS sucks?
 
@@ -83,7 +84,7 @@ Let's imagine that your app requires to build the following endpoints:
 
 ```
 GET /users - get all users
-POST /users - create users
+POST /users - create user
 GET /users/me - get current user
 PUT /users/me - update current user (password, etc)
 GET /users/[id] - get specified user by ID
@@ -125,7 +126,7 @@ The file structure now looks like the following:
   /route.ts
 ```
 
-It looks better but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
+It looks better (even though it still looks wrong) but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
 
 ### Previous solution: Monorepo and NestJS
 
@@ -136,13 +137,13 @@ Last few years I solved the problem above by combining NextJS and NestJS framewo
   - Two repos are harder to synchromise (if deployed back-end code and front-end code compatible to each other at this moment of time?).
 - Both applications require to be run on their own port and we need to deploy them to 2 different servers.
 
-Wouldn't it be nice if we could:
+It would be nice if we could:
 
-- Make the project development cheaper;
 - Use a single NodeJS project run in 1 port;
 - Keep the project in one simple repository;
 - Use single deployment server;
-- Apply NestJS-like syntax to define routes?
+- Apply NestJS-like syntax to define routes;
+- Make the project development cheaper.
 
 ### New solution: The library
 
@@ -233,7 +234,7 @@ export const { GET, POST, PUT } = RouteHandlers;
 
 That's it. There are facts that you may notice:
 
-- As you may notice the syntax is very similar to [NestJS](https://nestjs.com/). But I don't have a goal to make another NestJS since it's over-engeneered in my opinion.
+- The syntax is very similar to [NestJS](https://nestjs.com/). But I don't have a goal to make another NestJS since it's over-engeneered in my opinion.
 - The methods modified by the decorators defined as `static` methods and the classes are never instantiated.
 - The returned values don't have to be instantiated from `NextResponse`, but they can if needed.
 
@@ -243,7 +244,7 @@ Also it's worthy to mention that `@prefix` decorator is just syntax sugar and yo
 
 You can extend features of the router by definiing a custom decorator that can:
 
-- Run additional checks, for example to check if user is authorised
+- Run additional checks, for example to check if user is authorised.
 - Add more properties to the `req` object.
 
 There is typical code from a random project:
@@ -268,21 +269,26 @@ export default class MyRouter {
 }
 ```
 
-To implement that you should use standard syntax to create ECMAScript decorators. In other words the library approaches decorator creation without using any built-in helpers to do that. There is the example code that defines `authGuard` decorator.
+To implement that you should use standard syntax to create ECMAScript decorators. In other words the library approaches decorator creation without using any custom helpers to do that. 
 
-First, if you want to extend `req` object you can define your custom interface that extends `NextRequest`.
+There is the example code that defines `authGuard` decorator that does two things:
+
+- Checks if user authorised and returns Unauthorised status.
+- Adds `currentUser` to the request object.
+
+To extend `req` object you can define your custom interface that extends `NextRequest`.
 
 ```ts
+// types.ts
 import { type NextRequest } from 'next/server'
 import { type User } from '@prisma/client';
 
-// types.ts
 export default interface GuardedRequest extends NextRequest {
   currentUser: User;
 }
 ```
 
-Define the `authGuard` decorator itself.
+Then define the `authGuard` decorator itself.
 
 ```ts
 // authGuard.ts
@@ -315,7 +321,9 @@ Implement `checkAuth` by your own based on the auth environment you use.
 import { GuardedRequest } from './types';
 
 export default function checkAuth(req: GuardedRequest) {
-  // ... define userId and isAuthorised ...
+  // ... define userId and isAuthorised
+  // parse access token for example
+
   if(!isAuthorised) {
     return false;
   }
@@ -329,7 +337,7 @@ export default function checkAuth(req: GuardedRequest) {
 ```
 
 
-And finally use the decorator as shown above:
+And finally use the decorator as we did above:
 
 ```ts
 // ...
@@ -347,7 +355,7 @@ export default class UsersRouter {
 
 #### Service-Controller pattern
 
-Optionally, you can improve your router code by splitting it into Service and Controller. Service is where you make database requests. Controller is where we use the decorators, check permissions and incoming for validity. To achieve that simply create another class with static methods:
+Optionally, you can improve your router code by splitting it into Service and Controller. Service is a place is where you make database requests. Controller is where we use the decorators, check permissions and incoming data for validity and call methods of the service. To achieve that simply create another class with static methods:
 
 
 ```ts
@@ -385,9 +393,24 @@ Then initialise the router as before:
 ```ts
 // /api/[[...]]/route.ts
 import { RouteHandlers } from 'thelibrary';
-import '../routers/UsersRouter';
+import '../routers/users/UsersRouter';
 
 export const { GET } = RouteHandlers;
+```
+
+Potential file structure with users, posts and comments may look like that:
+
+```
+/routers/
+  /users/
+    /UsersService.ts
+    /UsersRouter.ts
+  /posts/
+    /PostsService.ts
+    /PostsRouter.ts
+  /comments/
+    /CommentsService.ts
+    /CommentsRouter.ts
 ```
 
 
@@ -410,13 +433,12 @@ You can throw errors directly from the router method. The library catches thrown
 
 ```ts
 // some client-side code
-import { RouterErrorResponse } from 'thelibrary';
+import { type RouterErrorResponse } from 'thelibrary';
 
 const dataOrError: MyData | RouterErrorResponse = await (await fetch()).json();
 ```
 
-To throw an error you can use `HttpException` class together with `HttpStatus` enum. You can also throw the errors from the service.
-
+To throw an error you can use `HttpException` class together with `HttpStatus` enum. You can also throw the errors from the service methods.
 
 ```ts
 import { HttpException, HttpStatus } from 'thelibrary'
@@ -432,7 +454,7 @@ static getSomething() {
 // ...
 ```
 
-Regular errors (thrown by your code or by something else) are considered as 500 errors and handled correspondingly.
+Regular exceptions are considered as 500 errors and handled similarly.
 
 ```ts
 // ...
@@ -451,7 +473,7 @@ static getSomething() {
 
 ```ts
 import { 
-  // main
+  // main API
   type RouterErrorResponse, 
   HttpException, 
   HttpStatus, 
@@ -466,7 +488,7 @@ import {
 
 ### `createRouter`, global decorators and handlers
 
-The function `createRouter` initialises route handlers for one particular app segment. Using it directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/users` route handlers by using the library. 
+The function `createRouter` initialises route handlers for one particular app segment. Using it directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/users` route handlers by using the library but keep `/comments` and `/posts` as is. 
 
 
 ```
@@ -482,7 +504,7 @@ The function `createRouter` initialises route handlers for one particular app se
   /route.ts
 ```
 
-At this example you keep your `posts` and `comments` untouched but `users` router is going to use the library. You can define local variables that are going to be used for one particular path. The router class is going to be extended by `RouteHandlers` class.
+At this example only the `users` dynamic route is going to use the library. With `createRouter` you can define local variables that are going to be used for one particular path. At this case the router class is going to be extended by `RouteHandlers` class.
 
 ```ts
 import { createRouter } from 'thelibrary';
@@ -524,9 +546,8 @@ export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = RouteHandlers;
 
 As you may already guess, some of the the variables imported from the library are created by `createRouter` to keep the code cleaner for the "global" router.
 
-
 ```ts
-// these vars are initialised within the library with createRouter
+// these vars are initialised within the library by createRouter
 import {
   get, post, put, patch, del, head, options, 
   prefix, 
