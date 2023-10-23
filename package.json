@@ -1,6 +1,6 @@
 {
   "name": "next-wednesday",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Alternative syntax for route.ts that combine multiple endpoints with TypeScript decorators. Inspired by NestJS controller syntax.",
   "main": "index.js",
   "scripts": {
