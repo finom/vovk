@@ -1,5 +1,32 @@
 # WIP
 
+The library allows to define wildcarded API route handlers for NextJS 13+ App router.
+
+```ts
+// /routers/UsersRouter.ts
+import { get, post, prefix } from 'thelibrary';
+
+@prefix('/users')
+export default class UsersRouter {
+  @get()
+  static getAll() {
+    return someORM.getAllUsers();
+  }
+
+  @post(`/:id`)
+  static async getOneUser(req: NextRequest, { id }: { id: string }) {
+    return someORM.getUserById(id);
+  }
+}
+```
+
+### Features
+
+- Nice error handling - no need to use `try..catch` and `NextResponse` to return an error to the client.
+- Custom decorators that allow you to extend route features in a nice and laconic way.
+- Service-Controller pattern is supported.
+- Partial refactoring is possible (if you want to quickly try the library or update only particular endpoints).
+
 ## Overview
 
 ### Why NextJS is great?
