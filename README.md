@@ -113,9 +113,15 @@ Last few years I solved the problem above by combining NextJS and NestJS framewo
 - Should it be a monorepo or 2 different repositories? 
   - Monorepo is harder to manage and deploy
   - Two repos are harder to synchromise (if deployed back-end code and front-end code compatible to each other at this moment of time?).
-- Both applications require to be run on their own port and we need to teploy them to 2 different servers.
+- Both applications require to be run on their own port and we need to deploy them to 2 different servers.
 
-Wouldn't it be nice if we could use a single NodeJS project run in 1 port, one-level repository, a single deployment server, and NestJS-like syntax to define routes?
+Wouldn't it be nice if we could:
+
+- Make the project development cheaper;
+- Use a single NodeJS project run in 1 port;
+- Create one-level repository;
+- Use single deployment server;
+- NestJS-like syntax to define routes?
 
 ### New solution: The library
 
