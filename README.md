@@ -1,4 +1,4 @@
-# 🐸 next-wednesday
+# next-wednesday 🐸 
 
 <p align="center">
 <img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
@@ -6,20 +6,19 @@
 
 <!-- toc -->
 
-- [🐸 next-wednesday](#-next-wednesday)
-  - [Features](#features)
-  - [Overview](#overview)
-    - [Why NextJS is great?](#why-nextjs-is-great)
-    - [Why NextJS sucks?](#why-nextjs-sucks)
-    - [Previous solution: Monorepo and NestJS](#previous-solution-monorepo-and-nestjs)
-    - [New solution: Next Wednesday](#new-solution-next-wednesday)
-      - [Custom decorators](#custom-decorators)
-      - [Service-Controller pattern](#service-controller-pattern)
-      - [Return type](#return-type)
-      - [Error handling](#error-handling)
-  - [API](#api)
-    - [`createRouter`, global decorators and handlers](#createrouter-global-decorators-and-handlers)
-    - [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
+- [Features](#features)
+- [Overview](#overview)
+  * [Why NextJS is great?](#why-nextjs-is-great)
+  * [Why NextJS sucks?](#why-nextjs-sucks)
+  * [Previous solution: Monorepo and NestJS](#previous-solution-monorepo-and-nestjs)
+  * [New solution: Next Wednesday](#new-solution-next-wednesday)
+    + [Custom decorators](#custom-decorators)
+    + [Service-Controller pattern](#service-controller-pattern)
+    + [Return type](#return-type)
+    + [Error handling](#error-handling)
+- [API](#api)
+  * [`createRouter`, global decorators and handlers](#createrouter-global-decorators-and-handlers)
+  * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
 
 <!-- tocstop -->
 
