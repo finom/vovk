@@ -1,18 +1,18 @@
+# 🐸 next-wednesday
+
 <p align="center">
 <img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
-
 </p>
-
 
 <!-- toc -->
 
-- [WIP](#wip)
-    - [Features](#features)
+- [🐸 next-wednesday](#-next-wednesday)
+  - [Features](#features)
   - [Overview](#overview)
     - [Why NextJS is great?](#why-nextjs-is-great)
     - [Why NextJS sucks?](#why-nextjs-sucks)
     - [Previous solution: Monorepo and NestJS](#previous-solution-monorepo-and-nestjs)
-    - [New solution: The library](#new-solution-the-library)
+    - [New solution: Next Wednesday](#new-solution-next-wednesday)
       - [Custom decorators](#custom-decorators)
       - [Service-Controller pattern](#service-controller-pattern)
       - [Return type](#return-type)
@@ -23,16 +23,14 @@
 
 <!-- tocstop -->
 
-# WIP
-
 The library allows to define API route handlers for NextJS 13+ App router in alternative way.
 
 ```ts
-// /routers/UsersRouter.ts
-import { get, post, prefix } from 'thelibrary';
+// /routers/UserRouter.ts
+import { get, post, prefix } from 'next-wednesday';
 
-@prefix('/users')
-export default class UsersRouter {
+@prefix('/user')
+export default class UserRouter {
   @get()
   static getAll() {
     return someORM.getAllUsers();
@@ -45,7 +43,7 @@ export default class UsersRouter {
 }
 ```
 
-### Features
+## Features
 
 - Decorator syntax.
 - Custom decorators are supported.
@@ -149,7 +147,7 @@ It would be nice if we could:
 - Apply NestJS-like syntax to define routes;
 - Make the project development cheaper.
 
-### New solution: The library
+### New solution: Next Wednesday
 
 NextJS includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to imepement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
 
@@ -165,8 +163,8 @@ First, `/routers` is a folder that contains our dynamic router files. The name o
 Create your routers:
 
 ```ts
-// /routers/UsersRouter.ts
-import { get, post, put, prefix } from 'thelibrary';
+// /routers/UserRouter.ts
+import { get, post, put, prefix } from 'next-wednesday';
 
 @prefix('/user')
 export default class UserRouter {
@@ -202,7 +200,7 @@ export default class UserRouter {
 
 ```ts
 // /routers/UserRouter.ts
-import { get, post, prefix } from 'thelibrary';
+import { get, post, prefix } from 'next-wednesday';
 
 @prefix('/team')
 export default class TeamRouter {
@@ -228,7 +226,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`). The s
 
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
-import { RouteHandlers } from 'thelibrary';
+import { RouteHandlers } from 'next-wednesday';
 import '../routers/UserRouter';
 import '../routers/TeamRouter';
 
@@ -374,12 +372,12 @@ export default class UserService {
 Then inject the service as another static property to the router (the controller)
 
 ```ts
-// /routers/users/UsersRouter.ts
+// /routers/users/UserRouter.ts
 import UserService from './UserService';
 
 // ...
 @prefix('/user')
-export default class UsersRouter {
+export default class UserRouter {
   static userService = UserService;
 
   @get('/')
@@ -395,7 +393,7 @@ Then initialise the router as before:
 
 ```ts
 // /api/[[...]]/route.ts
-import { RouteHandlers } from 'thelibrary';
+import { RouteHandlers } from 'next-wednesday';
 import '../routers/user/UserRouter';
 
 export const { GET } = RouteHandlers;
@@ -436,7 +434,7 @@ You can throw errors directly from the router method. The library catches thrown
 
 ```ts
 // some client-side code
-import { type RouterErrorResponse } from 'thelibrary';
+import { type RouterErrorResponse } from 'next-wednesday';
 
 const dataOrError: MyData | RouterErrorResponse = await (await fetch()).json();
 ```
@@ -444,7 +442,7 @@ const dataOrError: MyData | RouterErrorResponse = await (await fetch()).json();
 To throw an error you can use `HttpException` class together with `HttpStatus` enum. You can also throw the errors from the service methods.
 
 ```ts
-import { HttpException, HttpStatus } from 'thelibrary'
+import { HttpException, HttpStatus } from 'next-wednesday'
 
 // ...
 @get()
@@ -486,7 +484,7 @@ import {
   get, post, put, patch, del, head, options, 
   prefix, 
   RouteHandlers,
-} from 'thelibrary';
+} from 'next-wednesday';
 ```
 
 ### `createRouter`, global decorators and handlers
@@ -510,7 +508,7 @@ The function `createRouter` initialises route handlers for one particular app se
 At this example only the `user` dynamic route is going to use the library. With `createRouter` you can define local variables that are going to be used for one particular path. At this case the router class is going to be extended by `RouteHandlers` class.
 
 ```ts
-import { createRouter } from 'thelibrary';
+import { createRouter } from 'next-wednesday';
 
 const { get, post, RouteHandlers } = createRouter();
 
@@ -555,7 +553,7 @@ import {
   get, post, put, patch, del, head, options, 
   prefix, 
   RouteHandlers,
-} from 'thelibrary';
+} from 'next-wednesday';
 ```
 
 
