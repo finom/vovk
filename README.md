@@ -1,6 +1,27 @@
+
+
 # WIP
 
-The library allows to define wildcarded API route handlers for NextJS 13+ App router.
+
+
+<!-- TOC -->
+
+- [WIP](#wip)
+        - [<a name='Features'></a>Featuress](#a-namefeaturesafeaturess)
+    - [<a name='Overview'></a>Overvieww](#a-nameoverviewaovervieww)
+        - [<a name='WhyNextJSisgreat'></a>Why NextJS is great??](#a-namewhynextjsisgreatawhy-nextjs-is-great)
+        - [<a name='WhyNextJSsucks'></a>Why NextJS sucks??](#a-namewhynextjssucksawhy-nextjs-sucks)
+        - [<a name='Previoussolution:MonorepoandNestJS'></a>Previous solution: Monorepo and NestJSS](#a-nameprevioussolutionmonorepoandnestjsaprevious-solution-monorepo-and-nestjss)
+        - [<a name='Newsolution:Thelibrary'></a>New solution: The libraryy](#a-namenewsolutionthelibraryanew-solution-the-libraryy)
+            - [<a name='Customdecorators'></a>Custom decoratorss](#a-namecustomdecoratorsacustom-decoratorss)
+            - [<a name='Service-Controllerpattern'></a>Service-Controller patternn](#a-nameservice-controllerpatternaservice-controller-patternn)
+            - [<a name='Returntype'></a>Return typee](#a-namereturntypeareturn-typee)
+            - [<a name='Errorhandling'></a>Error handlingg](#a-nameerrorhandlingaerror-handlingg)
+    - [<a name='API'></a>APII](#a-nameapiaapii)
+        - [<a name='createRouterglobaldecoratorsandhandlers'></a>createRouter, global decorators and handlerss](#a-namecreaterouterglobaldecoratorsandhandlersacreaterouter-global-decorators-and-handlerss)
+        - [<a name='HttpExceptionandHttpStatus'></a>HttpException and HttpStatus](#a-namehttpexceptionandhttpstatusahttpexception-and-httpstatus)
+
+<!-- /TOC -->The library allows to define wildcarded API route handlers for NextJS 13+ App router.
 
 ```ts
 // /routers/UsersRouter.ts
@@ -20,16 +41,16 @@ export default class UsersRouter {
 }
 ```
 
-### Features
+### <a name='Features'></a>Featuress
 
 - Nice error handling - no need to use `try..catch` and `NextResponse` to return an error to the client.
 - Custom decorators that allow you to extend route features in a nice and laconic way.
 - Service-Controller pattern is supported.
 - Partial refactoring is possible (if you want to quickly try the library or update only particular endpoints).
 
-## Overview
+## <a name='Overview'></a>Overvieww
 
-### Why NextJS is great?
+### <a name='WhyNextJSisgreat'></a>Why NextJS is great??
 
 NextJS 13+ with App Router is a great ready-to go framework that saves a lot of time and effort setting up and maintaining a React project. With NextJS:
 
@@ -42,7 +63,7 @@ NextJS 13+ with App Router is a great ready-to go framework that saves a lot of 
 
 As result both lont-errm and short-term development is cheaper, faster and more effecient.
 
-### Why NextJS sucks?
+### <a name='WhyNextJSsucks'></a>Why NextJS sucks??
 
 The pros mentioned above mostly about front-end part (code used by `page.tsx`, `layout.tsx`, `template.tsx` etc), but the API route handlers provide very specific and very limited way to define API routes. Per every endpoint you're going to create a separate file called `route.ts` that exports route handlers that implement an HTTP method corresponding to their name:
 
@@ -106,7 +127,7 @@ The file structure now looks like the following:
 
 It looks good but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
 
-### Previous solution: Monorepo and NestJS
+### <a name='Previoussolution:MonorepoandNestJS'></a>Previous solution: Monorepo and NestJSS
 
 Last few years I solved the problem above by combining NextJS and NestJS framework in one project. NextJS was used as a front-end framework and NestJS was used as back-end framework. Unfortunately this solution requires to spend resources on additional code management:
 
@@ -119,11 +140,11 @@ Wouldn't it be nice if we could:
 
 - Make the project development cheaper;
 - Use a single NodeJS project run in 1 port;
-- Create one-level repository;
+- Keep the project in one simple repository;
 - Use single deployment server;
-- NestJS-like syntax to define routes?
+- Apply NestJS-like syntax to define routes?
 
-### New solution: The library
+### <a name='Newsolution:Thelibrary'></a>New solution: The libraryy
 
 NextJS includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to imepement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
 
@@ -218,7 +239,7 @@ That's it. There are facts that you may notice:
 
 Also it's worthy to mention that `@prefix` decorator is just syntax sugar and you're not required to use it.
 
-#### Custom decorators
+#### <a name='Customdecorators'></a>Custom decoratorss
 
 You can extend features of the router by definiing a custom decorator that can:
 
@@ -321,7 +342,7 @@ export default class UsersRouter {
 }
 ```
 
-#### Service-Controller pattern
+#### <a name='Service-Controllerpattern'></a>Service-Controller patternn
 
 Optionally, you can improve your router code by splitting it into Service and Controller. Service is where you make database requests. Controller is where we use the decorators, check permissions and incoming for validity. To achieve that simply create another class with static methods:
 
@@ -366,7 +387,7 @@ export const { GET } = RouteHandlers;
 ```
 
 
-#### Return type
+#### <a name='Returntype'></a>Return typee
 
 Router method can return an instance of `NextResponse` (as well as native `Response`) as well as custom data. Custom data is serialised to JSON and returns with status 200.
 
@@ -379,7 +400,7 @@ static getSomething() {
 ```
 
 
-#### Error handling
+#### <a name='Errorhandling'></a>Error handlingg
 
 You can throw errors directly from the router method. The library catches thrown exception and returns an object of type `RouterErrorResponse`.
 
@@ -422,7 +443,7 @@ static getSomething() {
 ```
 
 
-## API
+## <a name='API'></a>APII
 
 ```ts
 import { 
@@ -439,7 +460,7 @@ import {
 } from 'thelibrary';
 ```
 
-### `createRouter`, global decorators and handlers
+### <a name='createRouterglobaldecoratorsandhandlers'></a>`createRouter`, global decorators and handlerss
 
 The function `createRouter` initialises route handlers for one particular app segment. Using it directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/users` route handlers by using the library. 
 
@@ -502,7 +523,7 @@ import {
 ```
 
 
-### `HttpException` and `HttpStatus`
+### <a name='HttpExceptionandHttpStatus'></a>`HttpException` and `HttpStatus``
 
 `HttpException` accepts 2 arguments. The first one is an HTTP code that can be retrieved from `HttpStatus`, the other one is error text.
 
