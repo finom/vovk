@@ -3,19 +3,19 @@
 <!-- toc -->
 
 - [WIP](#wip)
-    + [Features](#features)
-  * [Overview](#overview)
-    + [Why NextJS is great?](#why-nextjs-is-great)
-    + [Why NextJS sucks?](#why-nextjs-sucks)
-    + [Previous solution: Monorepo and NestJS](#previous-solution-monorepo-and-nestjs)
-    + [New solution: The library](#new-solution-the-library)
+    - [Features](#features)
+  - [Overview](#overview)
+    - [Why NextJS is great?](#why-nextjs-is-great)
+    - [Why NextJS sucks?](#why-nextjs-sucks)
+    - [Previous solution: Monorepo and NestJS](#previous-solution-monorepo-and-nestjs)
+    - [New solution: The library](#new-solution-the-library)
       - [Custom decorators](#custom-decorators)
       - [Service-Controller pattern](#service-controller-pattern)
       - [Return type](#return-type)
       - [Error handling](#error-handling)
-  * [API](#api)
-    + [`createRouter`, global decorators and handlers](#createrouter-global-decorators-and-handlers)
-    + [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
+  - [API](#api)
+    - [`createRouter`, global decorators and handlers](#createrouter-global-decorators-and-handlers)
+    - [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
 
 <!-- tocstop -->
 
@@ -111,7 +111,7 @@ With the built-in NextJS 13+ features your API folder structure is going to look
 
 ```
 
-You need to be a psychopath to keep this file structure, or you have to apply some creativity to reduce number of files and simplify the structure:
+You need to be a psychopath to keep this file structure (especially if you have complex API), or you have to apply some creativity to reduce number of files and simplify the structure:
 
 - Move all features from /users folder (`/me` and `/[id]`) to `/users/route.ts` and use query parameter instead: `/users`, `/users/?who=me`, `/users/?who=[id]`
 - Do the same trick with teams: `/teams`, `/teams?id=[id]`, `/teams?id=[id]&action=assign-user`
@@ -125,7 +125,7 @@ The file structure now looks like the following:
   /route.ts
 ```
 
-It looks good but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
+It looks better but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
 
 ### Previous solution: Monorepo and NestJS
 
@@ -270,6 +270,8 @@ export default class MyRouter {
 
 To implement that you should use standard syntax to create ECMAScript decorators. In other words the library approaches decorator creation without using any built-in helpers to do that. There is the example code that defines `authGuard` decorator.
 
+First, if you want to extend `req` object you can define your custom interface that extends `NextRequest`.
+
 ```ts
 import { type NextRequest } from 'next/server'
 import { type User } from '@prisma/client';
@@ -280,6 +282,7 @@ export default interface GuardedRequest extends NextRequest {
 }
 ```
 
+Define the `authGuard` decorator itself.
 
 ```ts
 // authGuard.ts
@@ -305,19 +308,19 @@ export default function authGuard<T>() {
 }
 ```
 
+Implement `checkAuth` by your own based on the auth environment you use.
 
 ```ts
 // checkAuth.ts
 import { GuardedRequest } from './types';
 
 export default function checkAuth(req: GuardedRequest) {
-  const { authorised, userId } = doSomething();
-  // ...
-  if(!authorised) {
+  // ... define userId and isAuthorised ...
+  if(!isAuthorised) {
     return false;
   }
 
-  const currentUser = await prisma.findUnique({ where: { id: userId } });
+  const currentUser = await prisma.user.findUnique({ where: { id: userId } });
 
   req.currentUser = currentUser;
 
@@ -357,11 +360,12 @@ export default class UsersService {
 
 ```
 
-Then inject the service as another static property to the router (controller)
+Then inject the service as another static property to the router (the controller)
 
 ```ts
 // /routers/users/UsersRouter.ts
 import UsersService from './UsersService';
+
 // ...
 @prefix('/users')
 export default class UsersRouter {
@@ -474,7 +478,7 @@ The function `createRouter` initialises route handlers for one particular app se
   /route.ts
   /[id]/
     /route.ts
-/api/users/[[...]]
+/api/users/[[...]]/
   /route.ts
 ```
 
@@ -510,7 +514,15 @@ const {
 } = createRouter();
 ```
 
-As you may already guess, some of the the global variables imported from the library are created by `createRouter` to keep the code cleaner.
+(notice that DELETE method decorator is shortned to `@del`).
+
+`RouteHandlers` includes all route handlers for all supported HTTP methods.
+
+```ts
+export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = RouteHandlers;
+```
+
+As you may already guess, some of the the variables imported from the library are created by `createRouter` to keep the code cleaner for the "global" router.
 
 
 ```ts
