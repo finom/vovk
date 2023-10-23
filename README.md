@@ -136,7 +136,7 @@ It looks better (even though it still looks wrong) but the code inside these fil
 Last few years I solved the problem above by combining NextJS and NestJS framework in one project. NextJS was used as a front-end framework and NestJS was used as back-end framework. Unfortunately this solution requires to spend resources on additional code management:
 
 - Should it be a monorepo or 2 different repositories? 
-  - Monorepo is harder to manage and deploy
+  - Monorepo is harder to manage and deploy.
   - Two repos are harder to synchromise (if deployed back-end code and front-end code compatible to each other at this moment of time?).
 - Both applications require to be run on their own port and we need to deploy them to 2 different servers.
 
