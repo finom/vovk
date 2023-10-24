@@ -6,30 +6,31 @@
 
 <!-- toc -->
 
-- [Features](#features)
-- [Overview](#overview)
-  * [Why NextJS is great?](#why-nextjs-is-great)
-  * [Why NextJS sucks?](#why-nextjs-sucks)
-  * [Previous solution: Monorepo and NestJS](#previous-solution-monorepo-and-nestjs)
-  * [New solution: Next Wednesday](#new-solution-next-wednesday)
-    + [Custom decorators](#custom-decorators)
-    + [Service-Controller pattern](#service-controller-pattern)
-    + [Return type](#return-type)
-    + [Error handling](#error-handling)
-- [API](#api)
-  * [`createRouter`, global decorators and handlers](#createrouter-global-decorators-and-handlers)
-  * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
+- [next-wednesday 🐸](#next-wednesday-)
+  - [Features](#features)
+  - [Overview](#overview)
+    - [Why NextJS is great?](#why-nextjs-is-great)
+    - [Why NextJS sucks?](#why-nextjs-sucks)
+    - [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
+    - [The new solution: Next Wednesday 🐸](#the-new-solution-next-wednesday-)
+      - [Custom decorators](#custom-decorators)
+      - [Service-Controller pattern](#service-controller-pattern)
+      - [Return type](#return-type)
+      - [Error handling](#error-handling)
+  - [API](#api)
+    - [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
+    - [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
 
 <!-- tocstop -->
 
 The library allows to define API route handlers for NextJS 13+ App router in alternative way.
 
 ```ts
-// /routers/UserRouter.ts
+// /controllers/UserController.ts
 import { get, post, prefix } from 'next-wednesday';
 
 @prefix('/user')
-export default class UserRouter {
+export default class UserController {
   @get()
   static getAll() {
     return someORM.getAllUsers();
@@ -56,7 +57,7 @@ Install: `npm i next-wednesday` or `yarn add next-wednesday`.
 
 ### Why NextJS is great?
 
-NextJS 13+ with App Router is a great ready-to go framework that saves a lot of time and effort setting up and maintaining a React project. With NextJS:
+NextJS 13+ with App Controller is a great ready-to go framework that saves a lot of time and effort setting up and maintaining a React project. With NextJS:
 
 - You don't need to manually set up Webpack, Babel, ESLint, TypeScript
 - Hot module reload is enabled by default ans always works, so you don't need to find out why it stopped working after a dependency update
@@ -131,9 +132,9 @@ The file structure now looks like the following:
 
 It looks better (even though it still looks wrong) but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
 
-### Previous solution: Monorepo and NestJS
+### A potential solution: Monorepo with NextJS + NestJS
 
-Last few years I solved the problem above by combining NextJS and NestJS framework in one project. NextJS was used as a front-end framework and NestJS was used as back-end framework. Unfortunately this solution requires to spend resources on additional code management:
+Last few years I solved the problem above by combining NextJS and NestJS framework in one project. NextJS was used as a front-end framework and NestJS was used as back-end framework. Unfortunately this solution requires to spend resources on additional code and deployment management:
 
 - Should it be a monorepo or 2 different repositories? 
   - Monorepo is harder to manage and deploy.
@@ -148,27 +149,27 @@ It would be nice if we could:
 - Apply NestJS-like syntax to define routes;
 - Make the project development cheaper.
 
-### New solution: Next Wednesday
+### The new solution: Next Wednesday 🐸
 
 NextJS includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to imepement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
 
 ```
 /api/[[...]]/route.ts
-/routers
-  /UserRouter.ts
-  /TeamRouter.ts
+/controllers
+  /UserController.ts
+  /TeamController.ts
 ```
 
-First, `/routers` is a folder that contains our dynamic router files. The name of the folder nor files don't matter so you can name it `/controllers` for example.
+First, `/controllers` is a folder that contains our dynamic controller files. The name of the folder nor files don't matter so you can name it `/routers` for example.
 
-Create your routers:
+Create your controllers:
 
 ```ts
-// /routers/UserRouter.ts
+// /controllers/UserController.ts
 import { get, post, put, prefix } from 'next-wednesday';
 
 @prefix('/user')
-export default class UserRouter {
+export default class UserController {
   @get()
   static getAll() {
     return someORM.getAllUsers();
@@ -200,14 +201,14 @@ export default class UserRouter {
 ```
 
 ```ts
-// /routers/UserRouter.ts
+// /controllers/UserController.ts
 import { get, post, prefix } from 'next-wednesday';
 
 @prefix('/team')
-export default class TeamRouter {
+export default class TeamController {
   @get('/')
   static getAll() {
-     return someORM.getAllTeams();
+    return someORM.getAllTeams();
   }
 
   @get('/:id')
@@ -228,8 +229,8 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`). The s
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
 import { RouteHandlers } from 'next-wednesday';
-import '../routers/UserRouter';
-import '../routers/TeamRouter';
+import '../controllers/UserController';
+import '../controllers/TeamController';
 
 export const { GET, POST, PUT } = RouteHandlers;
 ```
@@ -244,7 +245,7 @@ Also it's worthy to mention that `@prefix` decorator is just syntax sugar and yo
 
 #### Custom decorators
 
-You can extend features of the router by definiing a custom decorator that can:
+You can extend features of the controller by definiing a custom decorator that can:
 
 - Run additional checks, for example to check if user is authorised.
 - Add more properties to the `req` object.
@@ -253,7 +254,7 @@ There is typical code from a random project:
 
 ```ts
 // ...
-export default class MyRouter {
+export default class MyController {
   // ...
 
   @post()
@@ -304,7 +305,7 @@ export default function authGuard<T>() {
 
     if (typeof originalMethod === 'function') {
       // @ts-expect-error
-      target[propertyKey] = async function (req: GuardedRequest, context?: any) {
+      target[propertyKey] = async function (req: GuardedRequest, context?: unknown) {
         if (!(await checkAuth(req))) {
           return new NextResponse('Unauthorised', { status: 401 });
         }
@@ -343,7 +344,7 @@ And finally use the decorator as we did above:
 
 ```ts
 // ...
-export default class UserRouter {
+export default class UserController {
   // ...
   @get('/me')
   @authGuard()
@@ -357,11 +358,11 @@ export default class UserRouter {
 
 #### Service-Controller pattern
 
-Optionally, you can improve your router code by splitting it into Service and Controller. Service is a place is where you make database requests. Controller is where we use the decorators, check permissions and incoming data for validity and call methods of the service. To achieve that simply create another class with static methods:
+Optionally, you can improve your controller code by splitting it into service and controller. Service is a place is where you make database requests. Controller is where we use the decorators, check permissions and incoming data for validity and call methods of the service. To achieve that simply create another class with static methods:
 
 
 ```ts
-// /routers/users/UserService.ts
+// /controllers/users/UserService.ts
 export default class UserService {
   static findAllUsers() {
     return prisma.user.findMany();
@@ -370,15 +371,15 @@ export default class UserService {
 
 ```
 
-Then inject the service as another static property to the router (the controller)
+Then inject the service as another static property to the controller
 
 ```ts
-// /routers/users/UserRouter.ts
+// /controllers/users/UserController.ts
 import UserService from './UserService';
 
 // ...
 @prefix('/user')
-export default class UserRouter {
+export default class UserController {
   static userService = UserService;
 
   @get('/')
@@ -390,12 +391,12 @@ export default class UserRouter {
 
 ```
 
-Then initialise the router as before:
+Then initialise the controller as before:
 
 ```ts
 // /api/[[...]]/route.ts
 import { RouteHandlers } from 'next-wednesday';
-import '../routers/user/UserRouter';
+import '../controllers/user/UserController';
 
 export const { GET } = RouteHandlers;
 ```
@@ -403,22 +404,22 @@ export const { GET } = RouteHandlers;
 Potential file structure with users, posts and comments may look like that:
 
 ```
-/routers/
+/controllers/
   /user/
     /UserService.ts
-    /UserRouter.ts
+    /UserController.ts
   /post/
     /PostService.ts
-    /PostRouter.ts
+    /PostController.ts
   /comment/
     /CommentService.ts
-    /CommentRouter.ts
+    /CommentController.ts
 ```
 
 
 #### Return type
 
-Router method can return an instance of `NextResponse` (as well as native `Response`) as well as custom data. Custom data is serialised to JSON and returns with status 200.
+Controller method can return an instance of `NextResponse` (as well as native `Response`) as well as custom data. Custom data is serialised to JSON and returns with status 200.
 
 ```ts
 @get()
@@ -431,13 +432,13 @@ static getSomething() {
 
 #### Error handling
 
-You can throw errors directly from the router method. The library catches thrown exception and returns an object of type `RouterErrorResponse`.
+You can throw errors directly from the controller method. The library catches thrown exception and returns an object of type `ErrorResponseBody`.
 
 ```ts
 // some client-side code
-import { type RouterErrorResponse } from 'next-wednesday';
+import { type ErrorResponseBody } from 'next-wednesday';
 
-const dataOrError: MyData | RouterErrorResponse = await (await fetch()).json();
+const dataOrError: MyData | ErrorResponseBody = await (await fetch()).json();
 ```
 
 To throw an error you can use `HttpException` class together with `HttpStatus` enum. You can also throw the errors from the service methods.
@@ -476,21 +477,21 @@ static getSomething() {
 ```ts
 import { 
   // main API
-  type RouterErrorResponse, 
+  type ErrorResponseBody, 
   HttpException, 
   HttpStatus, 
-  createRouter,
+  createController,
 
-  // global router members created with createRouter
+  // global controller members created with createController
   get, post, put, patch, del, head, options, 
   prefix, 
   RouteHandlers,
 } from 'next-wednesday';
 ```
 
-### `createRouter`, global decorators and handlers
+### `createController`, global decorators and handlers
 
-The function `createRouter` initialises route handlers for one particular app segment and creates isolated router. Using the function directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/user` route handlers by using the library but keep `/comment` and `/post` as is. 
+The function `createController` initialises route handlers for one particular app segment and creates isolated controller. Using the function directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/user` route handlers by using the library but keep `/comment` and `/post` as is. 
 
 
 ```
@@ -506,12 +507,12 @@ The function `createRouter` initialises route handlers for one particular app se
   /route.ts
 ```
 
-At this example only the `user` dynamic route is going to use the library. With `createRouter` you can define local variables that are going to be used for one particular path. At this case the router class is going to be extended by `RouteHandlers` class.
+At this example only the `user` dynamic route is going to use the library. With `createController` you can define local variables that are going to be used for one particular path. At this case the controller class is going to be extended by `RouteHandlers` class.
 
 ```ts
-import { createRouter } from 'next-wednesday';
+import { createController } from 'next-wednesday';
 
-const { get, post, RouteHandlers } = createRouter();
+const { get, post, RouteHandlers } = createController();
 
 class UserRoute extends RouteHandlers {
   @get()
@@ -528,14 +529,14 @@ class UserRoute extends RouteHandlers {
 export const { GET, POST } = UserRoute;
 ```
 
-There is what `createRouter` returns:
+There is what `createController` returns:
 
 ```ts
 const {  
   get, post, put, patch, del, head, options, // HTTP methods
   prefix, 
   RouteHandlers, 
-} = createRouter();
+} = createController();
 ```
 
 (notice that DELETE method decorator is shortned to `@del`).
@@ -546,10 +547,10 @@ const {
 export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = RouteHandlers;
 ```
 
-As you may already guess, some of the the variables imported from the library are created by `createRouter` to keep the code cleaner for the "global" router.
+As you may already guess, some of the the variables imported from the library are created by `createController` to keep the code cleaner for the "global" controller.
 
 ```ts
-// these vars are initialised within the library by createRouter
+// these vars are initialised within the library by createController
 import {
   get, post, put, patch, del, head, options, 
   prefix, 
