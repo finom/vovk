@@ -12,27 +12,25 @@
 </p>
 
 <p align="center">
-A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ Route Handlers from decorated classes.
+<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ Route Handlers from decorated classes.</strong>
 </p>
-
 
 <!-- toc -->
 
-- [next-wednesday 🐸](#next-wednesday-)
-  - [Quick start](#quick-start)
-  - [Features](#features)
-  - [Overview](#overview)
-    - [Why NextJS is great?](#why-nextjs-is-great)
-    - [Why NextJS API routes suck?](#why-nextjs-api-routes-suck)
-    - [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
-    - [The new solution: Next Wednesday 🐸](#the-new-solution-next-wednesday-)
-      - [Custom decorators](#custom-decorators)
-      - [Service-Controller pattern](#service-controller-pattern)
-      - [Return type](#return-type)
-      - [Error handling](#error-handling)
-  - [API](#api)
-    - [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
-    - [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
+- [Quick start](#quick-start)
+- [Features](#features)
+- [Overview](#overview)
+  * [Why NextJS is great?](#why-nextjs-is-great)
+  * [Why NextJS API routes suck?](#why-nextjs-api-routes-suck)
+  * [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
+  * [The new solution: Next Wednesday 🐸](#the-new-solution-next-wednesday-%F0%9F%90%B8)
+    + [Custom decorators](#custom-decorators)
+    + [Service-Controller pattern](#service-controller-pattern)
+    + [Return type](#return-type)
+    + [Error handling](#error-handling)
+- [API](#api)
+  * [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
+  * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
 
 <!-- tocstop -->
 
