@@ -95,7 +95,7 @@ fetch(`/api/users/${id}`, { method: 'POST' });
 
 ### Why NextJS is great?
 
-NextJS 13+ with App Controller is a great ready-to go framework that saves a lot of time and effort setting up and maintaining a React project. With NextJS:
+NextJS 13+ with App Router is a great ready-to go framework that saves a lot of time and effort setting up and maintaining a React project. With NextJS:
 
 - You don't need to manually set up Webpack, Babel, ESLint, TypeScript
 - Hot module reload is enabled by default ans always works, so you don't need to find out why it stopped working after a dependency update
