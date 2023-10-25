@@ -60,9 +60,7 @@ import { RouteHandlers } from 'next-wednesday';
 import './controllers/UserController';
 
 export const { GET, POST } = RouteHandlers;
-
 ```
-
 
 ## Features
 
@@ -71,7 +69,7 @@ export const { GET, POST } = RouteHandlers;
 - Return data directly from the method (`Response` or `NextResponse` usage isn't required)
 - Nice error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
-- Partial refactoring is possible (if you want to quickly try the library or update only particular endpoints).
+- Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
 
 ## Overview
 
