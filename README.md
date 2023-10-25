@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ App Route Handlers from decorated classes. Think of it as of a nano-sised NestJS within NextJS environment</strong>
+<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ App Route Handlers from decorated classes. Think of it as of a nano-sized NestJS within NextJS environment</strong>
 </p>
 
 <!-- toc -->
@@ -44,7 +44,7 @@
 
 - Beautiful decorators syntax (all HTTP methods are available).
 - Custom decorators for random needs are supported.
-- Return data directly from the method (`Response` or `NextResponse` usage isn't required).
+- Return data directly from the handler (`Response` or `NextResponse` usage isn't required).
 - Nice error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
 - Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
