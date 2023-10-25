@@ -2,7 +2,7 @@
   "name": "next-wednesday",
   "version": "0.0.2",
   "description": "Alternative syntax for route.ts that combine multiple endpoints with TypeScript decorators. Inspired by NestJS controller syntax.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "npm run lint-pure && tsc --noemit && npm run unit",
     "unit": "PORT=3210 concurrently --kill-others \"npm run test:unit\" \"npm run serve:unit\"",
@@ -51,5 +51,8 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "next": ">=13.0.0"
   }
 }

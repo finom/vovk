@@ -1,29 +1,30 @@
 # next-wednesday 🐸 
 
+[![npm version](https://badge.fury.io/js/next-wednesday.svg)](https://badge.fury.io/js/next-wednesday) [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/) [![Build status](https://github.com/finom/next-wednesday/actions/workflows/main.yml/badge.svg)](https://github.com/finom/next-wednesday/actions)
+
 <p align="center">
 <img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
 </p>
 
+> A tiny [zero-dependency](https://bundlephobia.com/package/next-wednesday) library that builds NextJS 13+ Route Handlers from decorated classes.
+
 <!-- toc -->
 
-- [next-wednesday 🐸](#next-wednesday-)
-  - [Features](#features)
-  - [Overview](#overview)
-    - [Why NextJS is great?](#why-nextjs-is-great)
-    - [Why NextJS sucks?](#why-nextjs-sucks)
-    - [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
-    - [The new solution: Next Wednesday 🐸](#the-new-solution-next-wednesday-)
-      - [Custom decorators](#custom-decorators)
-      - [Service-Controller pattern](#service-controller-pattern)
-      - [Return type](#return-type)
-      - [Error handling](#error-handling)
-  - [API](#api)
-    - [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
-    - [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
+- [Features](#features)
+- [Overview](#overview)
+  * [Why NextJS is great?](#why-nextjs-is-great)
+  * [Why NextJS sucks?](#why-nextjs-sucks)
+  * [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
+  * [The new solution: Next Wednesday 🐸](#the-new-solution-next-wednesday-%F0%9F%90%B8)
+    + [Custom decorators](#custom-decorators)
+    + [Service-Controller pattern](#service-controller-pattern)
+    + [Return type](#return-type)
+    + [Error handling](#error-handling)
+- [API](#api)
+  * [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
+  * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
 
 <!-- tocstop -->
-
-The library allows to define API route handlers for NextJS 13+ App router in alternative way.
 
 ```ts
 // /controllers/UserController.ts
