@@ -305,7 +305,7 @@ export default class MyController {
 }
 ```
 
-To implement that you should use standard syntax to create ECMAScript decorators. In other words the library approaches decorator creation without using any custom helpers to do that. 
+To implement that you should use standard syntax to create ECMAScript decorators. In other words the library approaches decorator creation without using any built-in helpers to do that. 
 
 ##### `authGuard` example
 
