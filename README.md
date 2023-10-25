@@ -332,7 +332,7 @@ Then define the `authGuard` decorator itself.
 // authGuard.ts
 import { NextResponse } from 'next/server';
 import checkAuth from './checkAuth';
-import { GuardedRequest } from './types';
+import { type GuardedRequest } from './types';
 
 export default function authGuard<T>() {
   return function (target: T, propertyKey: keyof T) {
@@ -356,7 +356,7 @@ Implement `checkAuth` by your own based on the auth environment you use.
 
 ```ts
 // checkAuth.ts
-import { GuardedRequest } from './types';
+import { type GuardedRequest } from './types';
 
 export default function checkAuth(req: GuardedRequest) {
   // ... define userId and isAuthorised
