@@ -280,8 +280,9 @@ Also it's worthy to mention that `@prefix` decorator is just syntax sugar and yo
 
 You can extend features of the controller by definiing a custom decorator that can:
 
-- Run additional checks, for example to check if user is authorised.
-- Add more properties to the `req` object.
+- Run additional request validation, for example to check if user is authorised.
+- Catch specific errors.
+- Add more properties to the `req` object: current user, parsed and modified request body, etc.
 
 There is typical code from a random project:
 
@@ -393,6 +394,8 @@ export default class UserController {
 
 ##### `handleZodErrors` example
 
+You can catch any error in your custom decorator and provide relevant response to the client. At this exmple we're checking if `ZodError` is thown. 
+
 ```ts
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
@@ -423,7 +426,6 @@ export default function handleZodErrors<T>() {
 ```
 
 If `MyModel.parse` is errored by throwing `ZodError` the decorator is going to catch it and return corresponding response.
-
 
 ```ts
 // ...
