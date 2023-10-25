@@ -38,14 +38,14 @@ Create the first controller:
 // /controllers/UserController.ts
 import { get, post, prefix } from 'next-wednesday';
 
-@prefix('/user')
+@prefix('users')
 export default class UserController {
   @get()
   static getAll() {
     return { hello: 'world' };
   }
 
-  @post(`/:id`)
+  @post("/:id")
   static async getOneUser(req: NextRequest, { id }: { id: string }) {
     return { hello: 'world', id };
   }
