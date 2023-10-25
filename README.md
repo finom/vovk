@@ -17,8 +17,8 @@
 
 <!-- toc -->
 
-- [Quick start](#quick-start)
 - [Features](#features)
+- [Quick start](#quick-start)
 - [Overview](#overview)
   * [Why NextJS is great?](#why-nextjs-is-great)
   * [Why NextJS API routes suck?](#why-nextjs-api-routes-suck)
@@ -35,6 +35,15 @@
   * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
 
 <!-- tocstop -->
+
+## Features
+
+- Beautiful decorators syntax (all HTTP methods are available).
+- Custom decorators for random needs are supported.
+- Return data directly from the method (`Response` or `NextResponse` usage isn't required).
+- Nice error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
+- Service-Controller pattern is supported.
+- Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
 
 ## Quick start
 
@@ -77,15 +86,6 @@ After that you can load the data using any fetching library.
 fetch('/api/users');
 fetch(`/api/users/${id}`, { method: 'POST' });
 ```
-
-## Features
-
-- Beautiful decorators syntax (all HTTP methods are available).
-- Custom decorators for random needs are supported.
-- Return data directly from the method (`Response` or `NextResponse` usage isn't required).
-- Nice error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
-- Service-Controller pattern is supported.
-- Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
 
 ## Overview
 
