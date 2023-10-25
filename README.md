@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ Route Handlers from decorated classes.</strong>
+<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ App Route Handlers from decorated classes.</strong>
 </p>
 
 <!-- toc -->
