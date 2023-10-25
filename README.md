@@ -170,7 +170,7 @@ The file structure now looks like the following:
 
 It looks better (even though it still looks wrong) but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
 
-### A potential solution: Monorepo with NextJS + NestJS
+### A potential solution: NextJS for front-end and NestJS for back-end
 
 Last few years I solved the problem above by combining NextJS and NestJS framework in one project. NextJS was used as a front-end framework and NestJS was used as back-end framework. Unfortunately this solution requires to spend resources on additional code and deployment management:
 
@@ -185,7 +185,7 @@ It would be nice if we could:
 - Keep the project in one simple repository;
 - Use single deployment server;
 - Apply NestJS-like syntax to define routes;
-- Make the project development cheaper.
+- Make the project development and infrastructure cheaper.
 
 ### The new solution: Next Wednesday
 
@@ -206,30 +206,30 @@ Create your controllers:
 // /controllers/UserController.ts
 import { get, post, put, prefix } from 'next-wednesday';
 
-@prefix('/user')
+@prefix('users')
 export default class UserController {
   @get()
   static getAll() {
     return someORM.getAllUsers();
   }
 
-  @get('/me')
+  @get('me')
   static getMe() {
     // ...
   }
 
-  @put('/me')
+  @put('me')
   static async updateMe(req: NextRequest) {
     const body = await req.json() as { fiestName: string; lastName: string; };
     // ...
   }
 
-  @get(`/:id`)
+  @get(':id')
   static async getOneUser(req: NextRequest, { id }: { id: string }) {
     return someORM.getUserById(id);
   }
 
-  @put('/:id')
+  @put(':id')
   static async updateOneUser(req: NextRequest, { id }: { id: string }) {
     const body = await req.json() as { fiestName: string; lastName: string; };
 
@@ -242,19 +242,19 @@ export default class UserController {
 // /controllers/UserController.ts
 import { get, post, prefix } from 'next-wednesday';
 
-@prefix('/team')
+@prefix('users')
 export default class TeamController {
-  @get('/')
+  @get()
   static getAll() {
-    return someORM.getAllTeams();
+    return someORM.getAllUsers();
   }
 
-  @get('/:id')
+  @get(':id')
   static getOneTeam(req: NextRequest, { id }: { id: string }) {
     // ...
   }
 
-  @post('/:id/assign-user') 
+  @post(':id/assign-user') 
   static assignUser() {
     // ...
   }
@@ -339,18 +339,17 @@ import checkAuth from './checkAuth';
 import { type GuardedRequest } from './types';
 
 export default function authGuard<T>() {
-  return function (target: T, propertyKey: keyof T) {
+  return function decorator(target: T, propertyKey: keyof T) {
     const originalMethod = target[propertyKey];
 
     if (typeof originalMethod === 'function') {
-      // @ts-expect-error
       target[propertyKey] = async function (req: GuardedRequest, context?: unknown) {
         if (!(await checkAuth(req))) {
-          return new NextResponse('Unauthorised', { status: 401 });
+          return new NextResponse(req.error, { status: 401 });
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return originalMethod.call(target, req, context);
-      };
+
+        return originalMethod.call(target, req, context) as unknown;
+      } as T[keyof T];
     }
   };
 }
@@ -385,7 +384,7 @@ And finally use the decorator as we did above:
 // ...
 export default class UserController {
   // ...
-  @get('/me')
+  @get('me')
   @authGuard()
   static async getMe(req: GuardedRequest) {
     return req.currentUser;
@@ -465,11 +464,11 @@ Then inject the service as another static property to the controller
 import UserService from './UserService';
 
 // ...
-@prefix('/user')
+@prefix('users')
 export default class UserController {
   static userService = UserService;
 
-  @get('/')
+  @get()
   @authGuard()
   static getAllUsers() {
     return this.userService.findAllUsers();
