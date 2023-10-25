@@ -63,13 +63,13 @@ import { get, post, prefix } from 'next-wednesday';
 @prefix('users')
 export default class UserController {
   @get()
-  static getAll() {
+  static getAllUsers() {
     return { hello: 'world' };
   }
 
   @post("/:id")
-  static async getOneUser(req: NextRequest, { id }: { id: string }) {
-    return { hello: 'world', id };
+  static getOneUser(req: NextRequest, { id }: { id: string }) {
+    return { id, hello: 'world' };
   }
 }
 ```
