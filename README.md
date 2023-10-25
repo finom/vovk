@@ -4,7 +4,7 @@
 
 <p align="center">
 <img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
-
+<br />
 <img src="https://badge.fury.io/js/next-wednesday.svg" alt="npm version" /> 
 <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
 <img src="https://github.com/finom/next-wednesday/actions/workflows/main.yml/badge.svg" alt="Build status" />
