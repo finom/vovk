@@ -11,7 +11,9 @@ A tiny [zero-dependency](https://bundlephobia.com/package/next-wednesday) librar
 
 </p>
 
-<p align="center">A tiny [zero-dependency](https://bundlephobia.com/package/next-wednesday) library that builds NextJS 13+ Route Handlers from decorated classes.</p>
+<p align="center">
+A tiny [zero-dependency](https://bundlephobia.com/package/next-wednesday) library that builds NextJS 13+ Route Handlers from decorated classes.
+</p>
 
 
 <!-- toc -->
