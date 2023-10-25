@@ -26,7 +26,7 @@
 - [Overview](#overview)
   * [Why NextJS is great?](#why-nextjs-is-great)
   * [Why NextJS API routes suck?](#why-nextjs-api-routes-suck)
-  * [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
+  * [A potential solution: NextJS for front-end and NestJS for back-end](#a-potential-solution-nextjs-for-front-end-and-nestjs-for-back-end)
   * [The new solution: Next Wednesday](#the-new-solution-next-wednesday)
     + [Custom decorators](#custom-decorators)
       - [`authGuard` example](#authguard-example)
