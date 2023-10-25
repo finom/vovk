@@ -443,11 +443,10 @@ export default class UserController {
 
 #### Service-Controller pattern
 
-Optionally, you can improve your controller code by splitting it into service and controller. Service is a place is where you make database requests. Controller is where we use the decorators, check permissions and incoming data for validity and call methods of the service. To achieve that simply create another class with static methods:
-
+Optionally, you can improve your controller code by splitting it into service and controller. Service is a place is where you make database requests and perform other data manipulation actions. Controller is where we use the decorators, check permissions and incoming data for validity and call methods of the service. To achieve that create another simple class (without no parent or decorators) with static methods:
 
 ```ts
-// /controllers/users/UserService.ts
+// /controllers/user/UserService.ts
 export default class UserService {
   static findAllUsers() {
     return prisma.user.findMany();
@@ -459,7 +458,7 @@ export default class UserService {
 Then inject the service as another static property to the controller
 
 ```ts
-// /controllers/users/UserController.ts
+// /controllers/user/UserController.ts
 import UserService from './UserService';
 
 // ...
