@@ -564,7 +564,7 @@ const {
 export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = RouteHandlers;
 ```
 
-As you may already guess, some of the the variables imported from the library are created by `createController` to keep the code cleaner for the "global" controller.
+As you may already guess, some of the the variables imported from the library are created by `createController` to keep the code cleaner for the "global" controller instance.
 
 ```ts
 // these vars are initialised within the library by createController
