@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "npm run lint-pure && tsc --noemit && npm run unit",
-    "unit": "PORT=3210 concurrently --kill-others \"npm run test:unit\" \"npm run serve:unit\"",
+    "unit": "PORT=3210 concurrently \"npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
     "serve:unit": "npm --prefix test run dev",
