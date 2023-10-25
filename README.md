@@ -25,6 +25,8 @@
   * [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
   * [The new solution: Next Wednesday](#the-new-solution-next-wednesday)
     + [Custom decorators](#custom-decorators)
+      - [`authGuard` example](#authguard-example)
+      - [`handleZodErrors` example](#handlezoderrors-example)
     + [Service-Controller pattern](#service-controller-pattern)
     + [Return type](#return-type)
     + [Error handling](#error-handling)
@@ -268,7 +270,7 @@ export const { GET, POST, PUT } = RouteHandlers;
 
 That's it. There are facts that you may notice:
 
-- The syntax is very similar to [NestJS](https://nestjs.com/). But I don't have a goal to make another NestJS since it's over-engeneered in my opinion.
+- The syntax is very similar to [NestJS](https://nestjs.com/) (but I don't have a goal to make another NestJS though).
 - The methods modified by the decorators defined as `static` methods and the classes are never instantiated.
 - The returned values don't have to be instantiated from `NextResponse`, but they can if needed.
 
@@ -304,6 +306,8 @@ export default class MyController {
 ```
 
 To implement that you should use standard syntax to create ECMAScript decorators. In other words the library approaches decorator creation without using any custom helpers to do that. 
+
+##### `authGuard` example
 
 There is the example code that defines `authGuard` decorator that does two things:
 
@@ -381,6 +385,54 @@ export default class UserController {
   @authGuard()
   static async getMe(req: GuardedRequest) {
     return req.currentUser;
+  }
+
+  // ...
+}
+```
+
+##### `handleZodErrors` example
+
+```ts
+import { NextResponse } from 'next/server';
+import { ZodError } from 'zod';
+import { HttpException, HttpStatus } from 'next-wednesday';
+
+export default function handleZodErrors<T>() {
+  return function (target: T, propertyKey: keyof T) {
+    const originalMethod = target[propertyKey];
+    if (typeof originalMethod === 'function') {
+      target[propertyKey] = async function (req: unknown, context?: unknown) {
+        try {
+          const result: unknown = await originalMethod.call(target, req, context);
+          return new NextResponse(JSON.stringify(result), { status: HttpStatus.OK });
+        } catch (e) {
+          if (e instanceof ZodError) {
+            throw new HttpException(
+              HttpStatus.BAD_REQUEST,
+              e.errors?.map((error) => `${error.code}: ${error.message}`).join('; ') ?? 'Validation error'
+            );
+          }
+
+          throw e;
+        }
+      } as T[keyof T];
+    }
+  };
+}
+```
+
+If `MyModel.parse` is errored by throwing `ZodError` the decorator is going to catch it and return corresponding response.
+
+
+```ts
+// ...
+export default class UserController {
+  // ...
+  @post()
+  @handleZodErrors()
+  static async create(req: NextRequest) {
+    const data = MyModel.parse(await req.json());
   }
 
   // ...
