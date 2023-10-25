@@ -10,6 +10,7 @@
 
 <!-- toc -->
 
+- [Quick start](#quick-start)
 - [Features](#features)
 - [Overview](#overview)
   * [Why NextJS is great?](#why-nextjs-is-great)
@@ -26,6 +27,13 @@
 
 <!-- tocstop -->
 
+## Quick start
+
+
+Install: `npm i next-wednesday` or `yarn add next-wednesday`.
+
+Create the first controller:
+
 ```ts
 // /controllers/UserController.ts
 import { get, post, prefix } from 'next-wednesday';
@@ -34,23 +42,34 @@ import { get, post, prefix } from 'next-wednesday';
 export default class UserController {
   @get()
   static getAll() {
-    return someORM.getAllUsers();
+    return { hello: 'world' };
   }
 
   @post(`/:id`)
   static async getOneUser(req: NextRequest, { id }: { id: string }) {
-    return someORM.getUserById(id);
+    return { hello: 'world', id };
   }
 }
 ```
 
-Install: `npm i next-wednesday` or `yarn add next-wednesday`.
+Finally, create the catch-all route with an optional slug (`[[...slug]]`). The slug is never used so you may want to keep it empty (`[[...]]`).
+
+```ts
+// /api/[[...]]/route.ts
+import { RouteHandlers } from 'next-wednesday';
+import './controllers/UserController';
+
+export const { GET, POST } = RouteHandlers;
+
+```
+
 
 ## Features
 
-- Decorator syntax.
-- Custom decorators are supported.
-- Nice error handling - no need to use `try..catch` and `NextResponse` to return an error to the client.
+- Beautiful decorators syntax.
+- Custom decorators for random needs are supported.
+- Return data directly from the method (`Response` or `NextResponse` usage isn't required)
+- Nice error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
 - Partial refactoring is possible (if you want to quickly try the library or update only particular endpoints).
 
@@ -224,8 +243,7 @@ export default class TeamController {
 }
 ```
 
-Finally, create the catch-all route with an optional slug (`[[...slug]]`). The slug is never used so you may want to keep it empty (`[[...]]`).
-
+Finally, create the catch-all route.
 
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
