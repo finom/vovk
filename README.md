@@ -1,7 +1,6 @@
 # next-wednesday 🐸 
 
 
-
 <p align="center">
 <img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
 <br />
@@ -11,12 +10,13 @@
 <a href="https://www.typescriptlang.org/">
 <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
 </a>
+<a href="https://github.com/finom/next-wednesday/actions/workflows/main.yml">
 <img src="https://github.com/finom/next-wednesday/actions/workflows/main.yml/badge.svg" alt="Build status" />
-
+</a>
 </p>
 
 <p align="center">
-<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ App Route Handlers from decorated classes. Think of it as of a nano-sized NestJS within NextJS environment</strong>
+<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ App Route Handlers from decorated classes. Think of it as of a nano-sized NestJS inside NextJS environment</strong>
 </p>
 
 <!-- toc -->
@@ -300,8 +300,7 @@ export default class MyController {
   @permissionGuard(Permission.CREATE)
   @handleZodErrors()
   static async create(req: GuardedRequest) {
-    // MyModel is a zod object
-    const body = MyModel.parse(await req.json());
+    const body = ZodModel.parse(await req.json());
 
     return this.myService.create(body);
   }
@@ -429,7 +428,7 @@ export default function handleZodErrors<T>() {
 }
 ```
 
-If `MyModel.parse` is errored by throwing `ZodError` the decorator is going to catch it and return corresponding response.
+If `ZodModel.parse` is errored by throwing `ZodError` the decorator is going to catch it and return corresponding response.
 
 ```ts
 // ...
@@ -438,7 +437,7 @@ export default class UserController {
   @post()
   @handleZodErrors()
   static async create(req: NextRequest) {
-    const data = MyModel.parse(await req.json());
+    const data = ZodModel.parse(await req.json());
   }
 
   // ...
@@ -507,7 +506,7 @@ Potential file structure with users, posts and comments may look like that:
 
 #### Return type
 
-Controller method can return an instance of `NextResponse` (as well as native `Response`) as well as custom data. Custom data is serialised to JSON and returns with status 200.
+Controller method can return an instance of `NextResponse` (or `Response`) as well as custom data. Custom data is serialised to JSON and returned with status 200.
 
 ```ts
 @get()
