@@ -67,7 +67,7 @@ export default class UserController {
     return { hello: 'world' };
   }
 
-  @post("/:id")
+  @post(':id')
   static getOneUser(req: NextRequest, { id }: { id: string }) {
     return { id, hello: 'world' };
   }
