@@ -7,12 +7,12 @@
 
 A tiny [zero-dependency](https://bundlephobia.com/package/next-wednesday) library that builds NextJS 13+ Route Handlers from decorated classes.
 
-[![npm version](https://badge.fury.io/js/next-wednesday.svg)](https://badge.fury.io/js/next-wednesday) [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/) [![Build status](https://github.com/finom/next-wednesday/actions/workflows/main.yml/badge.svg)](https://github.com/finom/next-wednesday/actions)
+<img src="https://badge.fury.io/js/next-wednesday.svg" alt="npm version" /> <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> <img src="https://github.com/finom/next-wednesday/actions/workflows/main.yml/badge.svg" alt="Build status" />
 
 </p>
 
 <p align="center">
-A tiny [zero-dependency](https://bundlephobia.com/package/next-wednesday) library that builds NextJS 13+ Route Handlers from decorated classes.
+A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ Route Handlers from decorated classes.
 </p>
 
 
