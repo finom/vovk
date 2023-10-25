@@ -23,7 +23,7 @@
   * [Why NextJS is great?](#why-nextjs-is-great)
   * [Why NextJS API routes suck?](#why-nextjs-api-routes-suck)
   * [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
-  * [The new solution: Next Wednesday 🐸](#the-new-solution-next-wednesday-%F0%9F%90%B8)
+  * [The new solution: Next Wednesday](#the-new-solution-next-wednesday)
     + [Custom decorators](#custom-decorators)
     + [Service-Controller pattern](#service-controller-pattern)
     + [Return type](#return-type)
@@ -181,7 +181,7 @@ It would be nice if we could:
 - Apply NestJS-like syntax to define routes;
 - Make the project development cheaper.
 
-### The new solution: Next Wednesday 🐸
+### The new solution: Next Wednesday
 
 NextJS includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to imepement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
 
