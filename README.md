@@ -51,7 +51,6 @@
 
 ## Quick start
 
-
 Install: `npm i next-wednesday` or `yarn add next-wednesday`.
 
 Create the first controller:
