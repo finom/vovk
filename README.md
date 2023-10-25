@@ -1,29 +1,35 @@
 # next-wednesday 🐸 
 
-[![npm version](https://badge.fury.io/js/next-wednesday.svg)](https://badge.fury.io/js/next-wednesday) [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/) [![Build status](https://github.com/finom/next-wednesday/actions/workflows/main.yml/badge.svg)](https://github.com/finom/next-wednesday/actions)
+
 
 <p align="center">
 <img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
+
+A tiny [zero-dependency](https://bundlephobia.com/package/next-wednesday) library that builds NextJS 13+ Route Handlers from decorated classes.
+
+[![npm version](https://badge.fury.io/js/next-wednesday.svg)](https://badge.fury.io/js/next-wednesday) [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/) [![Build status](https://github.com/finom/next-wednesday/actions/workflows/main.yml/badge.svg)](https://github.com/finom/next-wednesday/actions)
+
 </p>
 
-> A tiny [zero-dependency](https://bundlephobia.com/package/next-wednesday) library that builds NextJS 13+ Route Handlers from decorated classes.
+
 
 <!-- toc -->
 
-- [Quick start](#quick-start)
-- [Features](#features)
-- [Overview](#overview)
-  * [Why NextJS is great?](#why-nextjs-is-great)
-  * [Why NextJS sucks?](#why-nextjs-sucks)
-  * [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
-  * [The new solution: Next Wednesday 🐸](#the-new-solution-next-wednesday-%F0%9F%90%B8)
-    + [Custom decorators](#custom-decorators)
-    + [Service-Controller pattern](#service-controller-pattern)
-    + [Return type](#return-type)
-    + [Error handling](#error-handling)
-- [API](#api)
-  * [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
-  * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
+- [next-wednesday 🐸](#next-wednesday-)
+  - [Quick start](#quick-start)
+  - [Features](#features)
+  - [Overview](#overview)
+    - [Why NextJS is great?](#why-nextjs-is-great)
+    - [Why NextJS API routes suck?](#why-nextjs-api-routes-suck)
+    - [A potential solution: Monorepo with NextJS + NestJS](#a-potential-solution-monorepo-with-nextjs--nestjs)
+    - [The new solution: Next Wednesday 🐸](#the-new-solution-next-wednesday-)
+      - [Custom decorators](#custom-decorators)
+      - [Service-Controller pattern](#service-controller-pattern)
+      - [Return type](#return-type)
+      - [Error handling](#error-handling)
+  - [API](#api)
+    - [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
+    - [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
 
 <!-- tocstop -->
 
@@ -35,7 +41,7 @@ Install: `npm i next-wednesday` or `yarn add next-wednesday`.
 Create the first controller:
 
 ```ts
-// /controllers/UserController.ts
+// /src/controllers/UserController.ts
 import { get, post, prefix } from 'next-wednesday';
 
 @prefix('users')
@@ -55,18 +61,25 @@ export default class UserController {
 Finally, create the catch-all route with an optional slug (`[[...slug]]`). The slug is never used so you may want to keep it empty (`[[...]]`).
 
 ```ts
-// /api/[[...]]/route.ts
+// /src/app/api/[[...]]/route.ts
 import { RouteHandlers } from 'next-wednesday';
 import './controllers/UserController';
 
 export const { GET, POST } = RouteHandlers;
 ```
 
+After that you can load the data using any fetching library.
+
+```ts
+fetch('/api/users');
+fetch(`/api/users/${id}`, { method: 'POST' });
+```
+
 ## Features
 
-- Beautiful decorators syntax.
+- Beautiful decorators syntax (all HTTP methods are available).
 - Custom decorators for random needs are supported.
-- Return data directly from the method (`Response` or `NextResponse` usage isn't required)
+- Return data directly from the method (`Response` or `NextResponse` usage isn't required).
 - Nice error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
 - Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
@@ -86,9 +99,9 @@ NextJS 13+ with App Controller is a great ready-to go framework that saves a lot
 
 As result both lont-term and short-term the development is cheaper, faster and more effecient.
 
-### Why NextJS sucks?
+### Why NextJS API routes suck?
 
-The pros mentioned above mostly about front-end part (code used by `page.tsx`, `layout.tsx`, `template.tsx` etc), but the API route handlers provide very specific and very limited way to define API routes. Per every endpoint you're going to create a separate file called `route.ts` that exports route handlers that implement an HTTP method corresponding to their name:
+The pros mentioned above are about front-end part (code used by `page.tsx`, `layout.tsx`, `template.tsx` etc), but the API route handlers provide very specific and very limited way to define API routes. Per every endpoint you're going to create a separate file called `route.ts` that exports route handlers that implement an HTTP method corresponding to their name:
 
 ```ts
 export async function GET() {
