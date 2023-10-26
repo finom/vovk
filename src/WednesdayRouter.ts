@@ -13,7 +13,7 @@ const itIsErrorMyDudes = ({ status, message, isError }: ErrorResponseBody) => {
   );
 };
 
-export default class CombinedRoute {
+export default class WednesdayRouter {
   _routes: Record<HttpMethod, Map<{ name?: string; _prefix?: string }, Record<string, RouteHandler>>> = {
     GET: new Map(),
     POST: new Map(),

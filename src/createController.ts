@@ -1,4 +1,4 @@
-import CombinedRoute from './CombinedRoute';
+import WednesdayRouter from './WednesdayRouter';
 import { HttpMethod, KnownDude, RouteHandler } from './types';
 
 function trimPath(path: string) {
@@ -8,7 +8,7 @@ function trimPath(path: string) {
 }
 
 export default function createController() {
-  const r = new CombinedRoute();
+  const r = new WednesdayRouter();
 
   const getDecorator =
     (httpMethod: HttpMethod) =>
