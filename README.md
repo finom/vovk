@@ -1,6 +1,6 @@
 # next-wednesday 🐸 
 
-[4 minutes of reading]
+
 
 
 <p align="center">
@@ -19,6 +19,8 @@
 
 <p align="center">
 <strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds Next.js 13+ App Route Handlers from decorated classes. Think of it as of a nano-sized NestJS inside Next.js environment</strong>
+<br />
+<em>4 minutes of reading</em>
 </p>
 
 <!-- toc -->
