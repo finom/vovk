@@ -1,5 +1,7 @@
 # next-wednesday 🐸 
 
+[4 minutes of reading]
+
 
 <p align="center">
 <img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
