@@ -597,7 +597,7 @@ The function `createController` initialises route handlers for one particular ap
   /route.ts
 ```
 
-At this example only the `user` dynamic route is going to use the library. With `createController` you can define local variables that are going to be used for one particular path. At this case the controller class is going to be extended by `RouteHandlers` class.
+At this example only the `user` dynamic route is going to use the library. With `createController` you can define local variables that are going to be used for one particular path. At this case the controller class is going to be extended by `RouteHandlers` class (to avoid "var is declared but its value is never read" error).
 
 ```ts
 import { createController } from 'next-wednesday';

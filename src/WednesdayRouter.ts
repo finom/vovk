@@ -70,17 +70,19 @@ export default class WednesdayRouter {
       }
 
       const path = params[Object.keys(params)[0]];
-      const methodKeys = Object.keys(methods);
+      const allMethodKeys = Object.keys(methods);
 
-      const methodKey =
-        methodKeys
-          // First, try to match literal routes exactly.
-          .find((p) => {
-            if (p.includes(':')) return false; // Skip parameterized paths
-            return p === path.join('/');
-          }) ||
-        // If no exact literal match is found, attempt to match routes segment by segment.
-        methodKeys.find((p) => {
+      let methodKeys: string[] = [];
+
+      methodKeys = allMethodKeys
+        // First, try to match literal routes exactly.
+        .filter((p) => {
+          if (p.includes(':')) return false; // Skip parameterized paths
+          return p === path.join('/');
+        });
+
+      if (!methodKeys.length) {
+        methodKeys = allMethodKeys.filter((p) => {
           const routeSegments = p.split('/');
           if (routeSegments.length !== path.length) return false;
 
@@ -89,8 +91,14 @@ export default class WednesdayRouter {
             const pathSegment = path[i];
 
             if (routeSegment.startsWith(':')) {
+              const parameter = routeSegment.slice(1);
+
+              if (parameter in itIsWednesdayParams) {
+                throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${parameter}"`);
+              }
+
               // If it's a parameterized segment, capture the parameter value.
-              itIsWednesdayParams[routeSegment.slice(1)] = pathSegment;
+              itIsWednesdayParams[parameter] = pathSegment;
             } else if (routeSegment !== pathSegment) {
               // If it's a literal segment and it does not match the corresponding path segment, return false.
               return false;
@@ -98,6 +106,13 @@ export default class WednesdayRouter {
           }
           return true;
         });
+      }
+
+      if (methodKeys.length > 1) {
+        throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Conflicting routes found: ${methodKeys.join(', ')}`);
+      }
+
+      const [methodKey] = methodKeys;
 
       if (methodKey) {
         return methods[methodKey];

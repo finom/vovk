@@ -9,18 +9,3 @@ describe('Built-in router', () => {
     expect(response.body).toStrictEqual({ hello: 'world' });
   });
 });
-
-/**
- * + Global router
- * + Isolated router
- * + Normal route (check if broken)
- * + Path variations
- * + Multiple parameters
- * Conflicting parameters
- * Conflicting routes
- * + Body
- * + Query
- * + Simple decorator (add an extra property to req)
- * + All decorators
- * Route doesn't exist or method isn't supported
- */
