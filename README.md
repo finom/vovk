@@ -17,8 +17,8 @@
 </a>
 </p>
 
-<p align="center" width="500">
-<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds Next.js 13+ App Route Handlers from decorated classes. Think of it as of a nano-sized NestJS inside Next.js environment.</strong>
+<p align="center">
+<strong>A compact, <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that constructs Next.js 13+ App Route Handlers from decorated classes, serving as a "nano-sized NestJS" within the Next.js environment.</strong>
 <br />
 <em>4 minutes of reading</em>
 </p>
