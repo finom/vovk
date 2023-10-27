@@ -35,6 +35,7 @@
     + [Service-Controller pattern](#service-controller-pattern)
     + [Return type](#return-type)
     + [Error handling](#error-handling)
+  * [Alternative libraries](#alternative-libraries)
 - [API](#api)
   * [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
   * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
@@ -562,6 +563,11 @@ static getSomething() {
 // ...
 ```
 
+### Alternative libraries
+
+- [next-api-decorators](https://github.com/instantcommerce/next-api-decorators) - Decorators to create typed Next.js API routes, with easy request validation and transformation.
+
+Feel free to add your library to this list!
 
 ## API
 
