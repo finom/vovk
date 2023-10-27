@@ -2,7 +2,7 @@
 
 
 <p align="center">
-<img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
+<img src="https://github.com/finom/Next.js-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
 <br />
 <a href="https://www.npmjs.com/package/next-wednesday">
 <img src="https://badge.fury.io/js/next-wednesday.svg" alt="npm version" /> 
@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds NextJS 13+ App Route Handlers from decorated classes. Think of it as of a nano-sized NestJS inside NextJS environment</strong>
+<strong>A tiny <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that builds Next.js 13+ App Route Handlers from decorated classes. Think of it as of a nano-sized NestJS inside Next.js environment</strong>
 </p>
 
 <!-- toc -->
@@ -24,9 +24,9 @@
 - [Features](#features)
 - [Quick start](#quick-start)
 - [Overview](#overview)
-  * [Why NextJS is great?](#why-nextjs-is-great)
-  * [Why NextJS API routes suck?](#why-nextjs-api-routes-suck)
-  * [A potential solution: NextJS for front-end and NestJS for back-end](#a-potential-solution-nextjs-for-front-end-and-nestjs-for-back-end)
+  * [Why Next.js is great?](#why-nextjs-is-great)
+  * [Why Next.js API routes suck?](#why-nextjs-api-routes-suck)
+  * [A Potential Solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
   * [The new solution: Next Wednesday](#the-new-solution-next-wednesday)
     + [Custom decorators](#custom-decorators)
       - [`authGuard` example](#authguard-example)
@@ -42,10 +42,10 @@
 
 ## Features
 
-- Beautiful decorators syntax (all HTTP methods are available).
-- Custom decorators for random needs are supported.
-- Return data directly from the handler (`Response` or `NextResponse` usage isn't required).
-- Nice error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
+- Elegant decorators syntax (all HTTP methods are available).
+- Custom decorators for varied needs are supported.
+- Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
+- Beautiful error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
 - Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
 
@@ -59,15 +59,15 @@ Create the first controller:
 // /src/controllers/UserController.ts
 import { get, post, prefix } from 'next-wednesday';
 
-@prefix('users')
+@prefix('users') 
 export default class UserController {
-  @get()
+  @get() // Handles GET requests to '/users'
   static getAllUsers() {
     return { hello: 'world' };
   }
 
-  @post('hello/:id/world')
-  static getHelloWorld(req: NextRequest, { id }: { id: string }) {
+  @post('hello/:id/world') // Handles POST requests to '/users/hello/:id/world'
+  static postHelloWorld(req: NextRequest, { id }: { id: string }) {
     const q = req.nextUrl.searchParams.get('q');
     const body = await req.json();
     return { id, q, body };
@@ -80,7 +80,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`). The s
 ```ts
 // /src/app/api/[[...]]/route.ts
 import { RouteHandlers } from 'next-wednesday';
-import './controllers/UserController';
+import './controllers/UserController'; // Imported for side effects to register the controller routes
 
 export const { GET, POST } = RouteHandlers;
 ```
@@ -97,20 +97,20 @@ fetch(`/api/users/hello/${id}/world?q=aaaah`, {
 
 ## Overview
 
-### Why NextJS is great?
+### Why Next.js is great?
 
-NextJS 13+ with App Router is a great ready-to go framework that saves a lot of time and effort setting up and maintaining a React project. With NextJS:
+Next.js 13+ with App Router is a great ready-to-go framework that saves a lot of time and effort setting up and maintaining a React project. With Next.js:
 
-- You don't need to manually set up Webpack, Babel, ESLint, TypeScript
-- Hot module reload is enabled by default ans always works, so you don't need to find out why it stopped working after a dependency update
-- Server-side rendering is enabled by default
-- Routing and file structure is well-documented, so you don't need to design it by your own
-- It doesn't require you to "eject" scripts and configs if you want to modify them
-- It's a widely known and well-used framework, no need to spend time thinking of a choice
+- You don't need to manually set up Webpack, Babel, ESLint, TypeScript.
+- Hot module reload is enabled by default and always works, so you don't need to find out why it stopped working after a dependency update.
+- Server-side rendering is enabled by default.
+- Routing and file structure are well-documented, eliminating the need for custom design.
+- It doesn't require you to "eject" scripts and configs if you want to modify them.
+- It's a widely known and well-used framework, no need to spend time thinking of a choice.
 
-As result both lont-term and short-term the development is cheaper, faster and more effecient.
+As result both long-term and short-term the development is cheaper, faster and more efficient.
 
-### Why NextJS API routes suck?
+### Why Next.js API routes suck?
 
 The pros mentioned above are about front-end part (code used by `page.tsx`, `layout.tsx`, `template.tsx` etc), but the API route handlers provide very specific and very limited way to define API routes. Per every endpoint you're going to create a separate file called `route.ts` that exports route handlers that implement an HTTP method corresponding to their name:
 
@@ -140,7 +140,7 @@ GET /team/[id] - get a specific team
 POST /team/[id]/assign-user - some specialised endpoint that assigns a user to a specific team (whatever that means)
 ```
 
-With the built-in NextJS 13+ features your API folder structure is going to look the following:
+With the built-in Next.js 13+ features your API folder structure is going to look the following:
 
 ```
 /api/user/
@@ -174,13 +174,13 @@ The file structure now looks like the following:
 
 It looks better (even though it still looks wrong) but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
 
-### A potential solution: NextJS for front-end and NestJS for back-end
+### A Potential Solution: Pairing Next.js with NestJS
 
-Last few years I solved the problem above by combining NextJS and NestJS framework in one project. NextJS was used as a front-end framework and NestJS was used as back-end framework. Unfortunately this solution requires to spend resources on additional code and deployment management:
+Last few years I solved the problem above by combining Next.js and NestJS framework in one project. Next.js was used as a front-end framework and NestJS was used as back-end framework. Unfortunately this solution requires to spend resources on additional code and deployment management:
 
 - Should it be a monorepo or 2 different repositories? 
   - Monorepo is harder to manage and deploy.
-  - Two repos are harder to synchromise (if deployed back-end code and front-end code compatible to each other at this moment of time?).
+  - Two repos are harder to synchronize (if deployed back-end code and front-end code compatible to each other at this moment of time?).
 - Both applications require to be run on their own port and we need to deploy them to 2 different servers.
 
 It would be nice if we could:
@@ -193,7 +193,7 @@ It would be nice if we could:
 
 ### The new solution: Next Wednesday
 
-NextJS includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to imepement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
+Next.js includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to implement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
 
 ```
 /api/[[...]]/route.ts
@@ -202,7 +202,7 @@ NextJS includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-appli
   /TeamController.ts
 ```
 
-First, `/controllers` is a folder that contains our dynamic controller files. The name of the folder nor files don't matter so you can name it `/routers` for example.
+First, `/controllers` is a folder that contains our dynamic controller files. The names of the folder and files don't matter so you can name it `/routers` for example.
 
 Create your controllers:
 
@@ -224,7 +224,7 @@ export default class UserController {
 
   @put('me')
   static async updateMe(req: NextRequest) {
-    const body = await req.json() as { fiestName: string; lastName: string; };
+    const body = await req.json() as { firstName: string; lastName: string; };
     // ...
   }
 
@@ -235,7 +235,7 @@ export default class UserController {
 
   @put(':id')
   static async updateOneUser(req: NextRequest, { id }: { id: string }) {
-    const body = await req.json() as { fiestName: string; lastName: string; };
+    const body = await req.json() as { firstName: string; lastName: string; };
 
     return someORM.updateUserById(id, body);
   }
@@ -243,14 +243,14 @@ export default class UserController {
 ```
 
 ```ts
-// /controllers/UserController.ts
+// /controllers/TeamController.ts
 import { get, post, prefix } from 'next-wednesday';
 
-@prefix('users')
+@prefix('teams')
 export default class TeamController {
   @get()
   static getAll() {
-    return someORM.getAllUsers();
+    return someORM.getAllTeams();
   }
 
   @get(':id')
@@ -280,13 +280,13 @@ That's it. There are facts that you may notice:
 
 - The syntax is very similar to [NestJS](https://nestjs.com/) (but I don't have a goal to make another NestJS though).
 - The methods modified by the decorators defined as `static` methods and the classes are never instantiated.
-- The returned values don't have to be instantiated from `NextResponse`, but they can if needed.
+- The returned values don't have to be instances of `NextResponse` or `Response`, but they can be if needed.
 
 Also it's worthy to mention that `@prefix` decorator is just syntax sugar and you're not required to use it.
 
 #### Custom decorators
 
-You can extend features of the controller by definiing a custom decorator that can:
+You can extend features of the controller by defining a [custom decorator](https://www.typescriptlang.org/docs/handbook/decorators.html) that can:
 
 - Run additional request validation, for example to check if user is authorised.
 - Catch specific errors.
@@ -319,7 +319,7 @@ To implement that you should use standard syntax to create ECMAScript decorators
 
 There is the example code that defines `authGuard` decorator that does two things:
 
-- Checks if user authorised and returns Unauthorised status.
+- Checks if a user is authorised and returns an Unauthorised status if not.
 - Adds `currentUser` to the request object.
 
 To extend `req` object you can define your custom interface that extends `NextRequest`.
@@ -400,7 +400,7 @@ export default class UserController {
 
 ##### `handleZodErrors` example
 
-You can catch any error in your custom decorator and provide relevant response to the client. At this exmple we're checking if `ZodError` is thown. 
+You can catch any error in your custom decorator and provide relevant response to the client. At this exmple we're checking if `ZodError` is thrown. 
 
 ```ts
 import { NextResponse } from 'next/server';
@@ -431,7 +431,7 @@ export default function handleZodErrors<T>() {
 }
 ```
 
-If `ZodModel.parse` is errored by throwing `ZodError` the decorator is going to catch it and return corresponding response.
+If `ZodModel.parse` encounters an error and throws a `ZodError` the decorator is going to catch it and return corresponding response.
 
 ```ts
 // ...
@@ -449,7 +449,7 @@ export default class UserController {
 
 #### Service-Controller pattern
 
-Optionally, you can improve your controller code by splitting it into service and controller. Service is a place is where you make database requests and perform other data manipulation actions. Controller is where we use the decorators, check permissions and incoming data for validity and call methods of the service. To achieve that create another simple class (without no parent or decorators) with static methods:
+Optionally, you can improve your controller code by splitting it into service and controller. Service is a place where you make database requests and perform other data manipulation actions. Controller is where we use the decorators, check permissions, and validate incoming data, then call methods of the service. To achieve that, create another simple class (without no parent or decorators) with static methods:
 
 ```ts
 // /controllers/user/UserService.ts
@@ -547,7 +547,7 @@ static getSomething() {
 // ...
 ```
 
-Regular exceptions are considered as 500 errors and handled similarly.
+All other exceptions are considered as 500 errors and handled similarly.
 
 ```ts
 // ...
@@ -585,19 +585,19 @@ The function `createController` initialises route handlers for one particular ap
 
 
 ```
-/api/post/
+/api/posts/
   /route.ts
   /[id]/
     /route.ts
-/api/comment/
+/api/comments/
   /route.ts
   /[id]/
     /route.ts
-/api/user/[[...]]/
+/api/users/[[...]]/
   /route.ts
 ```
 
-At this example only the `user` dynamic route is going to use the library. With `createController` you can define local variables that are going to be used for one particular path. At this case the controller class is going to be extended by `RouteHandlers` class (to avoid "var is declared but its value is never read" error).
+In this example, only the `users` dynamic route will utilize the library. With `createController` you can define local variables that are going to be used for one particular path. At this case the controller class is going to be extended by `RouteHandlers` class (to avoid "var is declared but its value is never read" error).
 
 ```ts
 import { createController } from 'next-wednesday';
@@ -619,7 +619,7 @@ class UserRoute extends RouteHandlers {
 export const { GET, POST } = UserRoute;
 ```
 
-There is what `createController` returns:
+This is what `createController` returns:
 
 ```ts
 const {  
@@ -651,10 +651,14 @@ import {
 
 ### `HttpException` and `HttpStatus`
 
+
 `HttpException` accepts 2 arguments. The first one is an HTTP code that can be retrieved from `HttpStatus`, the other one is error text.
 
 ```ts
-throw new HttpException(HttpStatus.BAD_REQUEST, 'Something is wrong');
+import { HttpException, HttpStatus } from 'next-wednesday';
+
+// ...
+throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
 ```
 
 Enjoy!
