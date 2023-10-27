@@ -81,7 +81,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`). The s
 ```ts
 // /src/app/api/[[...]]/route.ts
 import { RouteHandlers } from 'next-wednesday';
-import './controllers/UserController'; // Imported for side effects to register the controller routes
+import '../../../controllers/UserController'; // Imported for side effects to register the controller routes
 
 export const { GET, POST } = RouteHandlers;
 ```
