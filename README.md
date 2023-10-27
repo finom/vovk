@@ -44,12 +44,15 @@
 
 ## Features
 
-- Elegant decorators syntax (all HTTP methods are available).
+Next Wednesday offers a range of features to streamline your Next.js routing experience:
+
+- Elegant decorator syntax (all HTTP methods are available).
 - Custom decorators for varied needs are supported.
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
 - Beautiful error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
 - Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
+- Retains built-in Next.js features; use plain `req: NextRequest` to access body, query, headers, etc.
 
 ## Quick start
 
