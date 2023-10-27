@@ -66,9 +66,11 @@ export default class UserController {
     return { hello: 'world' };
   }
 
-  @post(':id')
-  static getOneUser(req: NextRequest, { id }: { id: string }) {
-    return { id, hello: 'world' };
+  @post('hello/:id/world')
+  static getHelloWorld(req: NextRequest, { id }: { id: string }) {
+    const q = req.nextUrl.searchParams.get('q');
+    const body = await req.json();
+    return { id, q, body };
   }
 }
 ```
@@ -87,7 +89,10 @@ After that you can load the data using any fetching library.
 
 ```ts
 fetch('/api/users');
-fetch(`/api/users/${id}`, { method: 'POST' });
+fetch(`/api/users/hello/${id}/world?q=aaaah`, {
+  method: 'POST', 
+  body: JSON.stringify({ hello: 'world' }),
+});
 ```
 
 ## Overview
@@ -344,7 +349,7 @@ export default function authGuard<T>() {
     if (typeof originalMethod === 'function') {
       target[propertyKey] = async function (req: GuardedRequest, context?: unknown) {
         if (!(await checkAuth(req))) {
-          return new NextResponse(req.error, { status: 401 });
+          return new NextResponse('Unauthorised', { status: 401 });
         }
 
         return originalMethod.call(target, req, context) as unknown;
@@ -403,7 +408,7 @@ import { ZodError } from 'zod';
 import { HttpException, HttpStatus } from 'next-wednesday';
 
 export default function handleZodErrors<T>() {
-  return function (target: T, propertyKey: keyof T) {
+  return function decorator(target: T, propertyKey: keyof T) {
     const originalMethod = target[propertyKey];
     if (typeof originalMethod === 'function') {
       target[propertyKey] = async function (req: unknown, context?: unknown) {

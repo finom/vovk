@@ -7,7 +7,7 @@ const noop = (...args: unknown[]) => args;
 
 for (const p of prefixes) {
   @prefix(p)
-  class Trim {
+  class TrimController {
     @get()
     static noPath(req: NextRequest) {
       return { reqUrl: req.url };
@@ -34,5 +34,5 @@ for (const p of prefixes) {
     }
   }
 
-  noop(Trim); // disables "X is declared but never used"
+  noop(TrimController); // disables "X is declared but never used"
 }

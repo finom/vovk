@@ -1,10 +1,6 @@
 import { it, expect, describe } from '@jest/globals';
-import supertest from 'supertest';
-import { endpoints, prefixes } from './trimControllers';
-
-const apiUrl = `http://localhost:${process.env.PORT}/api`;
-
-const request = supertest(apiUrl);
+import { endpoints, prefixes } from './TrimControllers';
+import { apiUrl, request } from '../../lib';
 
 function trimPath(path: string) {
   let clean = path.startsWith('/') ? path.slice(1) : path;

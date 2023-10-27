@@ -1,11 +1,11 @@
 import WednesdayRouter from './WednesdayRouter';
 import { HttpMethod, KnownDude, RouteHandler } from './types';
 
-function trimPath(path: string) {
+const trimPath = (path: string) => {
   let clean = path.startsWith('/') ? path.slice(1) : path;
   clean = clean.endsWith('/') ? clean.slice(0, -1) : clean;
   return clean;
-}
+};
 
 export default function createController() {
   const r = new WednesdayRouter();
