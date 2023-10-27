@@ -63,7 +63,7 @@ import { get, post, prefix } from 'next-wednesday';
 @prefix('users') 
 export default class UserController {
   @get() // Handles GET requests to '/api/users'
-  static getAllUsers() {
+  static getHelloWorld() {
     return { hello: 'world' };
   }
 
