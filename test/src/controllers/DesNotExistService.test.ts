@@ -1,4 +1,4 @@
-import { request } from '../../lib';
+import { request } from '../lib';
 import { it, expect, describe } from '@jest/globals';
 
 describe('Route does not exist', () => {

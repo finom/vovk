@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prefix, get } from '../../../../src';
+import { prefix, get } from '../../../src';
 
 type EnhancedNextRequest = NextRequest & { helloCustomProperty: string };
 

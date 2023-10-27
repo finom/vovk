@@ -1,4 +1,4 @@
-import { prefix, get } from '../../../../src';
+import { prefix, get } from '../../../src';
 
 @prefix('post-does-not-exist')
 export default class DesNotExistService {

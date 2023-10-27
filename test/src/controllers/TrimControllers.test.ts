@@ -1,6 +1,6 @@
 import { it, expect, describe } from '@jest/globals';
 import { endpoints, prefixes } from './TrimControllers';
-import { apiUrl, request } from '../../lib';
+import { apiUrl, request } from '../lib';
 
 function trimPath(path: string) {
   let clean = path.startsWith('/') ? path.slice(1) : path;
