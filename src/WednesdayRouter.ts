@@ -3,12 +3,12 @@ import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody } from './
 import HttpException from './HttpException';
 
 const itIsErrorMyDudes = ({ status, message, isError }: ErrorResponseBody) => {
-  return new NextResponse(
-    JSON.stringify({
+  return NextResponse.json(
+    {
       status,
       message,
       isError,
-    }),
+    },
     { status }
   );
 };
