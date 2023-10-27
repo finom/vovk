@@ -61,12 +61,12 @@ import { get, post, prefix } from 'next-wednesday';
 
 @prefix('users') 
 export default class UserController {
-  @get() // Handles GET requests to '/users'
+  @get() // Handles GET requests to '/api/users'
   static getAllUsers() {
     return { hello: 'world' };
   }
 
-  @post('hello/:id/world') // Handles POST requests to '/users/hello/:id/world'
+  @post('hello/:id/world') // Handles POST requests to '/api/users/hello/:id/world'
   static postHelloWorld(req: NextRequest, { id }: { id: string }) {
     const q = req.nextUrl.searchParams.get('q');
     const body = await req.json();
