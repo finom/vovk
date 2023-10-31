@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody } from './types';
 import HttpException from './HttpException';
 
-const itIsErrorMyDudes = ({ status, message, isError }: ErrorResponseBody) => {
+const itIsErrorMyDudes = ({ statusCode, message, isError }: ErrorResponseBody) => {
   return NextResponse.json(
     {
-      status,
+      statusCode,
       message,
       isError,
     },
-    { status }
+    { status: statusCode }
   );
 };
 
-export default class WednesdayRouter {
+export default class SuperController {
   _routes: Record<HttpMethod, Map<{ name?: string; _prefix?: string }, Record<string, RouteHandler>>> = {
     GET: new Map(),
     POST: new Map(),
@@ -124,7 +124,7 @@ export default class WednesdayRouter {
     const method = getMethod();
 
     if (!method) {
-      return itIsErrorMyDudes({ status: HttpStatus.NOT_FOUND, message: 'Route is not found', isError: true });
+      return itIsErrorMyDudes({ statusCode: HttpStatus.NOT_FOUND, message: 'Route is not found', isError: true });
     }
 
     try {
@@ -137,9 +137,9 @@ export default class WednesdayRouter {
       return NextResponse.json(result ?? null);
     } catch (e) {
       const err = e as HttpException;
-      const status = err.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
+      const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
 
-      return itIsErrorMyDudes({ status, message: err.message, isError: true });
+      return itIsErrorMyDudes({ statusCode, message: err.message, isError: true });
     }
   };
 }

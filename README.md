@@ -537,6 +537,16 @@ import { type ErrorResponseBody } from 'next-wednesday';
 const dataOrError: MyData | ErrorResponseBody = await (await fetch()).json();
 ```
 
+The shape of this type is the following:
+
+```ts
+interface ErrorResponseBody {
+  statusCode: HttpStatus;
+  message: string;
+  isError: true;
+}
+```
+
 To throw an error you can use `HttpException` class together with `HttpStatus` enum. You can also throw the errors from the service methods.
 
 ```ts

@@ -1,13 +1,13 @@
 import { HttpStatus } from './types';
 
 export default class HttpException extends Error {
-  status: HttpStatus;
+  statusCode: HttpStatus;
 
   message: string;
 
-  constructor(status: HttpStatus, message: string) {
+  constructor(statusCode: HttpStatus, message: string) {
     super(message);
-    this.status = status;
+    this.statusCode = statusCode;
     this.message = message;
 
     throw this;

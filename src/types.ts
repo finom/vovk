@@ -13,9 +13,9 @@ export enum HttpMethod {
 }
 
 export interface ErrorResponseBody {
-  status: HttpStatus;
+  statusCode: HttpStatus;
   message: string;
-  isError?: boolean;
+  isError: true;
 }
 
 export type RouteHandler = (

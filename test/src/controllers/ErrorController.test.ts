@@ -7,7 +7,11 @@ describe('Errors', () => {
     const response = await request.get(`/error/simple`);
 
     expect(response.status).toBe(500);
-    expect(response.body).toStrictEqual({ message: 'ERROR1', status: 500, isError: true } satisfies ErrorResponseBody);
+    expect(response.body).toStrictEqual({
+      message: 'ERROR1',
+      statusCode: 500,
+      isError: true,
+    } satisfies ErrorResponseBody);
   });
 
   it('Handle code errors', async () => {
@@ -16,7 +20,7 @@ describe('Errors', () => {
     expect(response.status).toBe(500);
     expect(response.body).toStrictEqual({
       message: '{}.someMethod is not a function',
-      status: 500,
+      statusCode: 500,
       isError: true,
     } satisfies ErrorResponseBody);
   });
@@ -25,6 +29,10 @@ describe('Errors', () => {
     const response = await request.get(`/error/http-exception`);
 
     expect(response.status).toBe(418);
-    expect(response.body).toStrictEqual({ message: 'ERROR3', status: 418, isError: true } satisfies ErrorResponseBody);
+    expect(response.body).toStrictEqual({
+      message: 'ERROR3',
+      statusCode: 418,
+      isError: true,
+    } satisfies ErrorResponseBody);
   });
 });

@@ -1,4 +1,4 @@
-import WednesdayRouter from './WednesdayRouter';
+import SuperController from './SuperController';
 import { HttpMethod, KnownDude, RouteHandler } from './types';
 
 const trimPath = (path: string) => {
@@ -8,7 +8,7 @@ const trimPath = (path: string) => {
 };
 
 export default function createController() {
-  const r = new WednesdayRouter();
+  const r = new SuperController();
 
   const getDecorator =
     (httpMethod: HttpMethod) =>
