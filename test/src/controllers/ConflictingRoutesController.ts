@@ -1,7 +1,7 @@
 import { prefix, get } from '../../../src';
 
 @prefix('conflicting-routes')
-export default class ConflictingRoutesService {
+export default class ConflictingRoutesController {
   @get('hello/:foo')
   static foo() {
     return {};

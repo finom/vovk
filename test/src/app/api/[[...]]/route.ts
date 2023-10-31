@@ -2,10 +2,11 @@ import { RouteHandlers } from '../../../../../src';
 import '../../../controllers/TrimControllers';
 import '../../../controllers/InputController';
 import '../../../controllers/CustomDecoratorController';
-import '../../../controllers/AllDecoratorsService';
-import '../../../controllers/DuplicatedParameterService';
-import '../../../controllers/ConflictingRoutesService';
-import '../../../controllers/DesNotExistService';
+import '../../../controllers/AllDecoratorsController';
+import '../../../controllers/DuplicatedParameterController';
+import '../../../controllers/ConflictingRoutesController';
+import '../../../controllers/DesNotExistController';
 import '../../../controllers/ErrorController';
+import '../../../controllers/NextResponseController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = RouteHandlers;

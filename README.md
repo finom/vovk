@@ -85,7 +85,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`). The s
 ```ts
 // /src/app/api/[[...]]/route.ts
 import { RouteHandlers } from 'next-wednesday';
-import '../../../controllers/UserController'; // Imported for side effects to register the controller routes
+import '../../../controllers/UserController';
 
 export const { GET, POST } = RouteHandlers;
 ```
@@ -286,6 +286,7 @@ That's it. There are facts that you may notice:
 - The syntax is very similar to [NestJS](https://nestjs.com/) (but I don't have a goal to make another NestJS though).
 - The methods modified by the decorators defined as `static` methods and the classes are never instantiated.
 - The returned values don't have to be instances of `NextResponse` or `Response`, but they can be if needed.
+- Classes are imported for side effects to register global controller routes (see `createController` docs below).
 
 Also it's worthy to mention that `@prefix` decorator is just syntax sugar and you're not required to use it.
 
@@ -591,7 +592,7 @@ import {
 
 ### `createController`, global decorators and handlers
 
-The function `createController` initialises route handlers for one particular app segment and creates isolated controller. Using the function directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/user` route handlers by using the library but keep `/comment` and `/post` as is. 
+The function `createController` initialises route handlers for one particular app segment and creates isolated controller. Using the function directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/users` route handlers by using the library but keep `/comments` and `/posts` as is. 
 
 
 ```

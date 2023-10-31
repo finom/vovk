@@ -1,7 +1,7 @@
 import { prefix, get, post, put, del, patch, head, options } from '../../../src';
 
 @prefix('all-decorators')
-export default class AllDecoratorsService {
+export default class AllDecoratorsController {
   @get()
   static get() {
     return {};

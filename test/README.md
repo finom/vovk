@@ -17,3 +17,6 @@ Cases covered by the unit tests:
 - Query (`?foo=bar`)
 - HTTP body
 - Route doesn't exist or method isn't supported
+- If `NextResponse` was returned
+- If `Response` was returned
+
