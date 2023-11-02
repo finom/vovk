@@ -409,7 +409,6 @@ export default class UserController {
 You can catch any error in your custom decorator and provide relevant response to the client. At this exmple we're checking if `ZodError` is thrown. 
 
 ```ts
-import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import { HttpException, HttpStatus } from 'next-wednesday';
 
@@ -417,10 +416,9 @@ export default function handleZodErrors<T>() {
   return function decorator(target: T, propertyKey: keyof T) {
     const originalMethod = target[propertyKey];
     if (typeof originalMethod === 'function') {
-      target[propertyKey] = async function (req: unknown, context?: unknown) {
+      target[propertyKey] = function (req: unknown, context?: unknown) {
         try {
-          const result: unknown = await originalMethod.call(target, req, context);
-          return new NextResponse(JSON.stringify(result), { status: HttpStatus.OK });
+          return originalMethod.call(target, req, context) as unknown;
         } catch (e) {
           if (e instanceof ZodError) {
             throw new HttpException(
