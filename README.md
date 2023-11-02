@@ -344,18 +344,18 @@ Then define the `authGuard` decorator itself.
 
 ```ts
 // authGuard.ts
-import { NextResponse } from 'next/server';
+import { HttpException, HttpStatus } from 'next-wednesday';
+import { NextRequest } from 'next/server';
 import checkAuth from './checkAuth';
-import { type GuardedRequest } from './types';
 
 export default function authGuard<T>() {
   return function decorator(target: T, propertyKey: keyof T) {
     const originalMethod = target[propertyKey];
 
     if (typeof originalMethod === 'function') {
-      target[propertyKey] = async function (req: GuardedRequest, context?: unknown) {
+      target[propertyKey] = async function (req: NextRequest, context?: unknown) {
         if (!(await checkAuth(req))) {
-          return new NextResponse('Unauthorised', { status: 401 });
+          return new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
         }
 
         return originalMethod.call(target, req, context) as unknown;
