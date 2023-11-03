@@ -655,7 +655,7 @@ throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
 
 ### `createDecorator`
 
-createDecorator is a higher-order function that produces a decorator factory (a function that returns a decorator). It accepts a middleware function with the following parameters:
+`createDecorator` is a higher-order function that produces a decorator factory (a function that returns a decorator). It accepts a middleware function with the following parameters:
 
 
 - `request`, which extends `NextRequest`.
