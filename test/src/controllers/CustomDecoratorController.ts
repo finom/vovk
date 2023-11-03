@@ -34,7 +34,7 @@ export default class CustomDecoratorController {
   }
 
   @get('nice')
-  @niceCustomDecorator('hello')
+  @niceCustomDecorator('hello2')
   static nice(req: EnhancedNextRequest) {
     return { niceDecorator: req.niceDecorator };
   }

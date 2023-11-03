@@ -15,6 +15,6 @@ describe('Custom decorator', () => {
 
     expect(response.status).toBe(200);
 
-    expect(response.body).toStrictEqual({ niceDecorator: 'hello' });
+    expect(response.body).toStrictEqual({ niceDecorator: 'hello2' });
   });
 });
