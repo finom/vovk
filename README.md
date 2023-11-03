@@ -672,8 +672,9 @@ import { createDecorator, get } from 'next-wednesday';
 const myDecorator = createDecorator((req, next, a: string, b: number) => {
   console.log(a, b); // Outputs: "foo", 1
 
-  if(isSomething) {
-    return NextResponse.json({ hello: 'world' });
+  if(isSomething) { 
+    // override route method behavior and return { hello: 'world' } from the endpoint
+    return { hello: 'world' };
   }
 
   return next();
