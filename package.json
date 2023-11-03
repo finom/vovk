@@ -1,6 +1,6 @@
 {
   "name": "next-wednesday",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A compact, zero-dependency library that constructs Next.js 13+ App Route Handlers from decorated classes",
   "main": "dist/index.js",
   "scripts": {
