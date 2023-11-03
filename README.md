@@ -354,7 +354,7 @@ const authGuard = createDecorator(async (req: GuardedRequest, next) => {
   // parse access token for example
 
   if (!isAuthorised) {
-    throw new HttpException(HttpStatus.UNAUTHORIZED,  'Unauthorized');
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
   }
 
   const currentUser = await prisma.user.findUnique({ where: { id: userId } });
