@@ -663,10 +663,16 @@ throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
 - Additional arguments are passed through to the decorator factory.
 
 ```ts
+import { NextResponse } from 'next';
 import { createDecorator, get } from 'next-wednesday';
 
 const myDecorator = createDecorator((req, next, a: string, b: number) => {
   console.log(a, b); // Outputs: "foo", 1
+
+  if(isSomething) {
+    return NextResponse.json({ hello: 'world' });
+  }
+
   return next();
 });
 
