@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { AnyDude } from './types';
 
 export default function createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
-  handler: (req: REQUEST, next: () => Promise<void>, ...args: ARGS) => void | Promise<void>
+  handler: (req: REQUEST, next: () => Promise<unknown>, ...args: ARGS) => void | Promise<void>
 ) {
   return function decoratorCreator(...args: ARGS) {
     return function decorator(target: AnyDude, propertyKey: string) {
@@ -11,13 +11,7 @@ export default function createDecorator<ARGS extends unknown[], REQUEST = NextRe
       if (typeof originalMethod === 'function') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         target[propertyKey] = function method(req: REQUEST, context?: unknown) {
-          return handler(
-            req,
-            async () => {
-              await originalMethod.call(target, req, context);
-            },
-            ...args
-          );
+          return handler(req, async () => (await originalMethod.call(target, req, context)) as unknown, ...args);
         };
       } else {
         throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
