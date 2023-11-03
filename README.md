@@ -27,7 +27,7 @@
 - [Overview](#overview)
   * [Why Next.js is great?](#why-nextjs-is-great)
   * [Why Next.js API routes suck?](#why-nextjs-api-routes-suck)
-  * [A Potential Solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
+  * [A potential solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
   * [The new solution: Next Wednesday](#the-new-solution-next-wednesday)
     + [Custom decorators](#custom-decorators)
       - [`authGuard` example](#authguard-example)
@@ -39,6 +39,7 @@
 - [API](#api)
   * [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
   * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
+  * [`createDecorator`](#createdecorator)
 
 <!-- tocstop -->
 
@@ -179,7 +180,7 @@ The file structure now looks like the following:
 
 It looks better (even though it still looks wrong) but the code inside these files make you write too many `if` conditions and will definitely make your code less readable. To make this documentation shorter, let me rely on your imagination.
 
-### A Potential Solution: Pairing Next.js with NestJS
+### A potential solution: Pairing Next.js with NestJS
 
 Last few years I solved the problem above by combining Next.js and NestJS framework in one project. Next.js was used as a front-end framework and NestJS was used as back-end framework. Unfortunately this solution requires to spend resources on additional code and deployment management:
 
