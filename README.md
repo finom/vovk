@@ -363,6 +363,8 @@ const authGuard = createDecorator(async (req: GuardedRequest, next) => {
 
   return next();
 });
+
+export default authGuard;
 ```
 
 And finally use the decorator as we did above:
