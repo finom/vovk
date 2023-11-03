@@ -389,7 +389,7 @@ You can catch any error in your custom decorator and provide relevant response t
 import { ZodError } from 'zod';
 import { HttpException, HttpStatus, createDecorator } from 'next-wednesday';
 
-const handleZodErrors = createDecorator(async (req: unknown, next) => {
+const handleZodErrors = createDecorator(async (req, next) => {
   try {
     return await next();
   } catch (e) {
