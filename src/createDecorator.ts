@@ -19,14 +19,3 @@ export default function createDecorator<ARGS extends unknown[], REQUEST = NextRe
     };
   };
 }
-
-/* 
-const xx = createDecorator((req, next, x: string, y: number) => next());
-
-class S {
-    @xx('xxx', 'xxx')
-    static s = () => {
-        console.log('s');
-    }
-}
-*/
