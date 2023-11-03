@@ -319,7 +319,7 @@ export default class MyController {
 }
 ```
 
-To implement that you should use standard syntax to create ECMAScript decorators. In other words the library approaches decorator creation without using any built-in helpers to do that. 
+To create a decorator you can use `createDecorator`.
 
 ##### `authGuard` example
 
@@ -344,49 +344,24 @@ Then define the `authGuard` decorator itself.
 
 ```ts
 // authGuard.ts
-import { HttpException, HttpStatus } from 'next-wednesday';
+import { HttpException, HttpStatus, createDecorator } from 'next-wednesday';
 import { NextRequest } from 'next/server';
 import checkAuth from './checkAuth';
 
-export default function authGuard<T>() {
-  return function decorator(target: T, propertyKey: keyof T) {
-    const originalMethod = target[propertyKey];
-
-    if (typeof originalMethod === 'function') {
-      target[propertyKey] = async function (req: NextRequest, context?: unknown) {
-        if (!(await checkAuth(req))) {
-          return new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
-        }
-
-        return originalMethod.call(target, req, context) as unknown;
-      } as T[keyof T];
-    }
-  };
-}
-```
-
-Implement `checkAuth` by your own based on the auth environment you use.
-
-```ts
-// checkAuth.ts
-import { type GuardedRequest } from './types';
-
-export default function checkAuth(req: GuardedRequest) {
+const authGuard = createDecorator(async (req: GuardedRequest, next) => {
   // ... define userId and isAuthorised
   // parse access token for example
 
-  if(!isAuthorised) {
-    return false;
+  if (!isAuthorised) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED,  'Unauthorized');
   }
 
   const currentUser = await prisma.user.findUnique({ where: { id: userId } });
 
-  req.currentUser = currentUser;
 
-  return true;
-}
+  return next();
+});
 ```
-
 
 And finally use the decorator as we did above:
 
@@ -410,29 +385,24 @@ You can catch any error in your custom decorator and provide relevant response t
 
 ```ts
 import { ZodError } from 'zod';
-import { HttpException, HttpStatus } from 'next-wednesday';
+import { HttpException, HttpStatus, createDecorator } from 'next-wednesday';
 
-export default function handleZodErrors<T>() {
-  return function decorator(target: T, propertyKey: keyof T) {
-    const originalMethod = target[propertyKey];
-    if (typeof originalMethod === 'function') {
-      target[propertyKey] = function (req: unknown, context?: unknown) {
-        try {
-          return originalMethod.call(target, req, context) as unknown;
-        } catch (e) {
-          if (e instanceof ZodError) {
-            throw new HttpException(
-              HttpStatus.BAD_REQUEST,
-              e.errors?.map((error) => `${error.code}: ${error.message}`).join('; ') ?? 'Validation error'
-            );
-          }
-
-          throw e;
-        }
-      } as T[keyof T];
+const handleZodErrors = createDecorator(async (req: unknown, next) => {
+  try {
+    return await next();
+  } catch (e) {
+    if (e instanceof ZodError) {
+      throw new HttpException(
+        HttpStatus.BAD_REQUEST,
+        e.errors?.map((error) => `${error.code}: ${error.message}`).join('; ') ?? 'Validation error'
+      );
     }
-  };
-}
+
+    throw e;
+  }
+});
+
+export default handleZodErrors;
 ```
 
 If `ZodModel.parse` encounters an error and throws a `ZodError` the decorator is going to catch it and return corresponding response.
@@ -590,6 +560,7 @@ import {
   HttpException, 
   HttpStatus, 
   createController,
+  createDecorator,
 
   // global controller members created with createController
   get, post, put, patch, del, head, options, 
@@ -678,6 +649,32 @@ import { HttpException, HttpStatus } from 'next-wednesday';
 
 // ...
 throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
+```
+
+### `createDecorator`
+
+createDecorator is a higher-order function that produces a decorator factory (a function that returns a decorator). It accepts a middleware function with the following parameters:
+
+
+- `request`, which extends `NextRequest`.
+- `next`, a function that should be invoked and its result returned to call subsequent decorators or the route handler.
+- Additional arguments are passed through to the decorator factory.
+
+```ts
+import { createDecorator, get } from 'next-wednesday';
+
+const myDecorator = createDecorator((req, next, a: string, b: number) => {
+  console.log(a, b); // Outputs: "foo", 1
+  return next();
+});
+
+class MyController {
+  @get()
+  @myDecorator('foo', 1) // Passes 'foo' as 'a', and 1 as 'b'
+  static get() {
+    return {};
+  }
+}
 ```
 
 Enjoy!
