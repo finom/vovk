@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { AnyDude } from './types';
 
 export default function createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
-  handler: (req: REQUEST, next: () => void, ...args: ARGS) => void
+  handler: (req: REQUEST, next: () => void, ...args: ARGS) => void | Promise<void>
 ) {
   return function decoratorCreator(...args: ARGS) {
     return function decorator(target: AnyDude, propertyKey: string) {
