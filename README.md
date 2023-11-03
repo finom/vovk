@@ -357,6 +357,7 @@ const authGuard = createDecorator(async (req: GuardedRequest, next) => {
     throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
   }
 
+  // let's imagine you use Prisma and you want to find a user by userId
   const currentUser = await prisma.user.findUnique({ where: { id: userId } });
 
   req.currentUser = currentUser;
