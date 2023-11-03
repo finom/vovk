@@ -9,6 +9,7 @@ Cases covered by the unit tests:
 - Normal NextJS route (check if its not broken)
 - All decorators
 - Custom decorator
+- Custom decorator created with `createDecorator`
 - Errors
 - Path variations (`/foo`, `foo/`, `/foo/`, `foo`)
 - Multiple parameters (`/:foo/:bar`)
