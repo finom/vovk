@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export type KnownDude = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type AnyDude = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export enum HttpMethod {
   GET = 'GET',

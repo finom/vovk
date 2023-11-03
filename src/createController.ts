@@ -1,5 +1,5 @@
 import SuperController from './SuperController';
-import { HttpMethod, KnownDude, RouteHandler } from './types';
+import { HttpMethod, AnyDude, RouteHandler } from './types';
 
 const trimPath = (path: string) => {
   let clean = path.startsWith('/') ? path.slice(1) : path;
@@ -14,7 +14,7 @@ export default function createController() {
     (httpMethod: HttpMethod) =>
     (givenPath = '') => {
       const path = trimPath(givenPath);
-      return (target: KnownDude, _propertyKey: string) => {
+      return (target: AnyDude, _propertyKey: string) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(target) ?? {};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -28,7 +28,7 @@ export default function createController() {
   const prefix = (givenPath = '') => {
     const path = trimPath(givenPath);
 
-    return (target: KnownDude) => {
+    return (target: AnyDude) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       target._prefix = path;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
