@@ -359,6 +359,7 @@ const authGuard = createDecorator(async (req: GuardedRequest, next) => {
 
   const currentUser = await prisma.user.findUnique({ where: { id: userId } });
 
+  req.currentUser = currentUser;
 
   return next();
 });
