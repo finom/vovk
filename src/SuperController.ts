@@ -139,9 +139,9 @@ export default class SuperController {
       }
     } catch (e) {
       const err = e as HttpException;
-      const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
 
       if (err.message !== 'NEXT_REDIRECT') {
+        const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
         return itIsErrorMyDudes({ statusCode, message: err.message, isError: true });
       }
 

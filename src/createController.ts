@@ -14,14 +14,14 @@ export default function createController() {
     (httpMethod: HttpMethod) =>
     (givenPath = '') => {
       const path = trimPath(givenPath);
-      return (target: AnyDude, _propertyKey: string) => {
+      return (target: AnyDude, propertyKey: string) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(target) ?? {};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         r._routes[httpMethod].set(target, methods);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        methods[path] = target[_propertyKey] as RouteHandler;
+        methods[path] = target[propertyKey] as RouteHandler;
       };
     };
 
