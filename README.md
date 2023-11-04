@@ -53,7 +53,7 @@ Next Wednesday offers a range of features to streamline your Next.js routing exp
 - Beautiful error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
 - Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
-- Retains built-in Next.js features; use plain `req: NextRequest` to access body, query, headers, etc.
+- Retains built-in Next.js features; use plain `req: NextRequest` to access body, query, etc; use `next/navigation` for redirects and `next/headers` to handle headers.
 
 ## Quick start
 
