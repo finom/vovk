@@ -1,0 +1,13 @@
+import { headers } from 'next/headers';
+import { get, prefix } from '../../../src';
+
+@prefix('headers')
+export default class HeadersController {
+  @get()
+  static get() {
+    const headersList = headers();
+    const hello = headersList.get('x-hello-header');
+
+    return { hello };
+  }
+}

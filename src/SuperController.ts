@@ -134,12 +134,18 @@ export default class SuperController {
         return result;
       }
 
-      return NextResponse.json(result ?? null);
+      if (typeof result !== 'undefined') {
+        return NextResponse.json(result);
+      }
     } catch (e) {
       const err = e as HttpException;
       const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
 
-      return itIsErrorMyDudes({ statusCode, message: err.message, isError: true });
+      if (err.message !== 'NEXT_REDIRECT') {
+        return itIsErrorMyDudes({ statusCode, message: err.message, isError: true });
+      }
+
+      throw e; // if NEXT_REDIRECT rethrow it
     }
   };
 }

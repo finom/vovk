@@ -8,5 +8,7 @@ import '../../../controllers/ConflictingRoutesController';
 import '../../../controllers/DesNotExistController';
 import '../../../controllers/ErrorController';
 import '../../../controllers/NextResponseController';
+import '../../../controllers/HeadersController';
+import '../../../controllers/RedirectController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = RouteHandlers;

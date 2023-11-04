@@ -20,4 +20,6 @@ Cases covered by the unit tests:
 - Route doesn't exist or method isn't supported
 - If `NextResponse` was returned
 - If `Response` was returned
+- Get header with `next/headers`
+- Redirect with `next/navigation`
 
