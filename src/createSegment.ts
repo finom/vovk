@@ -50,7 +50,6 @@ export default function createSegment() {
   // eslint-disable-next-line @typescript-eslint/ban-types
   const activateControllers = (...controllers: Function[]) => {
     for (const controller of controllers) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (controller as unknown as { _activated: true })._activated = true;
     }
 
