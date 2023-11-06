@@ -47,10 +47,11 @@
 
 Next Wednesday offers a range of features to streamline your Next.js routing experience:
 
+- Build a clear and beautiful structure for your REST API code.
 - Elegant decorator syntax (all HTTP methods are available).
 - Custom decorators for varied needs are supported.
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
-- Beautiful error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
+- Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
 - Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createSegment` docs below).
 - Retains built-in Next.js features; use plain `req: NextRequest` to access body, query, etc; use `next/navigation` for redirects and `next/headers` to handle headers.
@@ -187,7 +188,7 @@ Last few years I solved the problem above by combining Next.js and NestJS framew
 - Should it be a monorepo or 2 different repositories? 
   - Monorepo is harder to manage and deploy.
   - Two repos are harder to synchronize (if deployed back-end code and front-end code compatible to each other at this moment of time?).
-- Both applications require to be run on their own port and we need to deploy them to 2 different servers.
+- Both applications require to be run on their own port and we need to deploy them to 2 different servers. Multiply that by the numbers of environments (the most common are: dev, staging, prod) and you'll need to handle too many servers.
 
 It would be nice if we could:
 
@@ -282,12 +283,7 @@ import TeamController from '../controllers/TeamController';
 export const { GET, POST, PUT } = activateControllers(UserController, TeamController);
 ```
 
-That's it. There are facts that you may notice:
-
-- The syntax is very similar to [NestJS](https://nestjs.com/) (but I don't have a goal to make another NestJS though).
-- The methods modified by the decorators defined as `static` methods and the classes are never instantiated.
-- The returned values don't have to be instances of `NextResponse` or `Response`, but they can be if needed.
-- Classes are imported for side effects to register global controller routes (see `createSegment` docs below).
+That's it. Please, notice that the methods modified by the decorators defined as `static` methods and the classes are never instantiated.
 
 Also it's worthy to mention that `@prefix` decorator is just syntax sugar and you're not required to use it.
 
@@ -437,7 +433,6 @@ export default class UserService {
     return prisma.user.findMany();
   }
 }
-
 ```
 
 Then inject the service as another static property to the controller
@@ -457,7 +452,6 @@ export default class UserController {
     return this.userService.findAllUsers();
   }
 }
-
 ```
 
 Then initialise the controller as before:
