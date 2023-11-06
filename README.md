@@ -37,7 +37,7 @@
     + [Error handling](#error-handling)
   * [Alternative libraries](#alternative-libraries)
 - [API](#api)
-  * [`createController`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
+  * [`createSegment`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
   * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
   * [`createDecorator`](#createdecorator)
 
@@ -52,7 +52,7 @@ Next Wednesday offers a range of features to streamline your Next.js routing exp
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
 - Beautiful error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
-- Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createController` docs below).
+- Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createSegment` docs below).
 - Retains built-in Next.js features; use plain `req: NextRequest` to access body, query, etc; use `next/navigation` for redirects and `next/headers` to handle headers.
 
 ## Quick start
@@ -81,14 +81,14 @@ export default class UserController {
 }
 ```
 
-Finally, create the catch-all route with an optional slug (`[[...slug]]`). The slug is never used so you may want to keep it empty (`[[...]]`).
+Finally, create the catch-all route with an optional slug (`[[...slug]]`) and call `activateControllers` with all your controllers. The slug is never used so you may want to keep it empty (`[[...]]`).
 
 ```ts
 // /src/app/api/[[...]]/route.ts
-import { RouteHandlers } from 'next-wednesday';
-import '../../../controllers/UserController';
+import { activateControllers } from 'next-wednesday';
+import UserController from '../../../controllers/UserController';
 
-export const { GET, POST } = RouteHandlers;
+export const { GET, POST } = activateControllers(UserController);
 ```
 
 After that you can load the data using any fetching library.
@@ -275,11 +275,11 @@ Finally, create the catch-all route.
 
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
-import { RouteHandlers } from 'next-wednesday';
-import '../controllers/UserController';
-import '../controllers/TeamController';
+import { activateControllers } from 'next-wednesday';
+import UserController from '../controllers/UserController';
+import TeamController from '../controllers/TeamController';
 
-export const { GET, POST, PUT } = RouteHandlers;
+export const { GET, POST, PUT } = activateControllers(UserController, TeamController);
 ```
 
 That's it. There are facts that you may notice:
@@ -287,7 +287,7 @@ That's it. There are facts that you may notice:
 - The syntax is very similar to [NestJS](https://nestjs.com/) (but I don't have a goal to make another NestJS though).
 - The methods modified by the decorators defined as `static` methods and the classes are never instantiated.
 - The returned values don't have to be instances of `NextResponse` or `Response`, but they can be if needed.
-- Classes are imported for side effects to register global controller routes (see `createController` docs below).
+- Classes are imported for side effects to register global controller routes (see `createSegment` docs below).
 
 Also it's worthy to mention that `@prefix` decorator is just syntax sugar and you're not required to use it.
 
@@ -464,10 +464,10 @@ Then initialise the controller as before:
 
 ```ts
 // /api/[[...]]/route.ts
-import { RouteHandlers } from 'next-wednesday';
-import '../controllers/user/UserController';
+import { activateControllers } from 'next-wednesday';
+import UserController from '../controllers/user/UserController';
 
-export const { GET } = RouteHandlers;
+export const { GET } = activateControllers(UserController);
 ```
 
 Potential file structure with users, posts and comments may look like that:
@@ -564,19 +564,19 @@ import {
   type ErrorResponseBody, 
   HttpException, 
   HttpStatus, 
-  createController,
+  createSegment,
   createDecorator,
 
-  // global controller members created with createController
+  // global controller members created with createSegment
   get, post, put, patch, del, head, options, 
   prefix, 
-  RouteHandlers,
+  activateControllers,
 } from 'next-wednesday';
 ```
 
-### `createController`, global decorators and handlers
+### `createSegment`, global decorators and handlers
 
-The function `createController` initialises route handlers for one particular app segment and creates isolated controller. Using the function directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/users` route handlers by using the library but keep `/comments` and `/posts` as is. 
+The function `createSegment` initialises route handlers for one particular router segment. Using the function directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/users` route handlers by using the library but keep `/comments` and `/posts` as is. 
 
 
 ```
@@ -592,14 +592,14 @@ The function `createController` initialises route handlers for one particular ap
   /route.ts
 ```
 
-In this example, only the `users` dynamic route will utilize the library. With `createController` you can define local variables that are going to be used for one particular path. At this case the controller class is going to be extended by `RouteHandlers` class (to avoid "var is declared but its value is never read" error).
+In this example, only the `users` dynamic route will utilize the library. With `createSegment` you can define local variables that are going to be used for one particular segment.
 
 ```ts
-import { createController } from 'next-wednesday';
+import { createSegment } from 'next-wednesday';
 
-const { get, post, RouteHandlers } = createController();
+const { get, post, activateControllers } = createSegment();
 
-class UserRoute extends RouteHandlers {
+class UserController {
   @get()
   static getAll() {
     // ...
@@ -611,35 +611,42 @@ class UserRoute extends RouteHandlers {
   }
 }
 
-export const { GET, POST } = UserRoute;
+class PostController {
+  @get()
+  static getAll() {
+    // ...
+  }
+}
+
+export const { GET, POST } = activateControllers(UserController, PostController);
 ```
 
-This is what `createController` returns:
+This is what `createSegment` returns:
 
 ```ts
 const {  
   get, post, put, patch, del, head, options, // HTTP methods
   prefix, 
-  RouteHandlers, 
-} = createController();
+  activateControllers, 
+} = createSegment();
 ```
 
 (notice that DELETE method decorator is shortned to `@del`).
 
-`RouteHandlers` includes all route handlers for all supported HTTP methods.
+`activateControllers` returns all route handlers for all supported HTTP methods.
 
 ```ts
-export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = RouteHandlers;
+export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = activateControllers(/* ... */);
 ```
 
-As you may already guess, some of the the variables imported from the library are created by `createController` to keep the code cleaner for the "global" controller instance.
+As you may already guess, some of the the variables imported from the library are created by `createSegment` to keep the code cleaner for the "global" segment instance.
 
 ```ts
-// these vars are initialised within the library by createController
+// these vars are initialised within the library by createSegment
 import {
   get, post, put, patch, del, head, options, 
   prefix, 
-  RouteHandlers,
+  activateControllers,
 } from 'next-wednesday';
 ```
 
