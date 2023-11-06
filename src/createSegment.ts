@@ -8,7 +8,7 @@ const trimPath = (path: string) => {
 };
 
 const isClass = (func: unknown) => {
-  return typeof func === 'function' && /^class\s/.test(func.toString());
+  return typeof func === 'function' && /class/.test(func.toString());
 };
 
 export default function createSegment() {
