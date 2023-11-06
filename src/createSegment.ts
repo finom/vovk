@@ -1,4 +1,4 @@
-import SuperController from './SuperController';
+import Segment from './Segment';
 import { HttpMethod, AnyDude, RouteHandler } from './types';
 
 const trimPath = (path: string) => {
@@ -7,14 +7,23 @@ const trimPath = (path: string) => {
   return clean;
 };
 
-export default function createController() {
-  const r = new SuperController();
+const isClass = (func: unknown) => {
+  return typeof func === 'function' && /^class\s/.test(func.toString());
+};
+
+export default function createSegment() {
+  const r = new Segment();
 
   const getDecorator =
     (httpMethod: HttpMethod) =>
     (givenPath = '') => {
       const path = trimPath(givenPath);
       return (target: AnyDude, propertyKey: string) => {
+        if (!isClass(target)) {
+          throw new Error(
+            `Decorator must be used on a static class method. Check the controller method called "${propertyKey}".`
+          );
+        }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(target) ?? {};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -52,6 +61,16 @@ export default function createController() {
     static OPTIONS = r.OPTIONS;
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const activateControllers = (...controllers: Function[]) => {
+    for (const controller of controllers) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (controller as unknown as { _activated: true })._activated = true;
+    }
+
+    return RouteHandlers;
+  };
+
   return {
     get: getDecorator(HttpMethod.GET),
     post: getDecorator(HttpMethod.POST),
@@ -61,6 +80,6 @@ export default function createController() {
     head: getDecorator(HttpMethod.HEAD),
     options: getDecorator(HttpMethod.OPTIONS),
     prefix,
-    RouteHandlers,
+    activateControllers,
   };
 }

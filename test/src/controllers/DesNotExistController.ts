@@ -1,7 +1,7 @@
 import { prefix, get } from '../../../src';
 
 @prefix('post-does-not-exist')
-export default class DesNotExistService {
+export default class DesNotExistController {
   @get('hello')
   static hello() {
     return {};

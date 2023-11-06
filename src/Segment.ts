@@ -13,8 +13,11 @@ const itIsErrorMyDudes = ({ statusCode, message, isError }: ErrorResponseBody) =
   );
 };
 
-export default class SuperController {
-  _routes: Record<HttpMethod, Map<{ name?: string; _prefix?: string }, Record<string, RouteHandler>>> = {
+export default class Segment {
+  _routes: Record<
+    HttpMethod,
+    Map<{ name?: string; _prefix?: string; _activated?: true }, Record<string, RouteHandler>>
+  > = {
     GET: new Map(),
     POST: new Map(),
     PUT: new Map(),
@@ -54,6 +57,13 @@ export default class SuperController {
       [...classes.entries()]
         .map(([cls, classMethods]) => {
           const prefix = cls._prefix ?? '';
+
+          if (!cls._activated) {
+            throw new HttpException(
+              HttpStatus.INTERNAL_SERVER_ERROR,
+              `Controller "${cls.name}" found but not activated`
+            );
+          }
 
           return Object.entries(classMethods).map(([path, method]) => {
             const fullPath = [prefix, path].filter(Boolean).join('/');

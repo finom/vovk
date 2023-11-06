@@ -1,12 +1,12 @@
-import { createController } from '../../../../../../src';
+import { createSegment } from '../../../../../../src';
 
-const { get, RouteHandlers } = createController();
+const { get, activateControllers } = createSegment();
 
-class IsolatedController extends RouteHandlers {
+class IsolatedController {
   @get()
-  get() {
+  static get() {
     return { isolated: true };
   }
 }
 
-export const { GET } = IsolatedController;
+export const { GET } = activateControllers(IsolatedController);

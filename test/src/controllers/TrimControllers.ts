@@ -3,7 +3,9 @@ import { prefix, get } from '../../../src';
 
 export const prefixes = ['trim-prefix-1', '/trim-prefix-2', 'trim-prefix-3/', '/trim-prefix-4/'];
 export const endpoints = ['trim-endpoint-1', '/trim-endpoint-2', 'trim-endpoint-3/', '/trim-endpoint-4/'];
-const noop = (...args: unknown[]) => args;
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+const controllers: Function[] = [];
 
 for (const p of prefixes) {
   @prefix(p)
@@ -34,5 +36,7 @@ for (const p of prefixes) {
     }
   }
 
-  noop(TrimController); // disables "X is declared but never used"
+  controllers.push(TrimController);
 }
+
+export default controllers;
