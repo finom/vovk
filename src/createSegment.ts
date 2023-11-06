@@ -47,22 +47,6 @@ export default function createSegment() {
     };
   };
 
-  class RouteHandlers {
-    static GET = r.GET;
-
-    static POST = r.POST;
-
-    static PUT = r.PUT;
-
-    static PATCH = r.PATCH;
-
-    static DELETE = r.DELETE;
-
-    static HEAD = r.HEAD;
-
-    static OPTIONS = r.OPTIONS;
-  }
-
   // eslint-disable-next-line @typescript-eslint/ban-types
   const activateControllers = (...controllers: Function[]) => {
     for (const controller of controllers) {
@@ -70,7 +54,15 @@ export default function createSegment() {
       (controller as unknown as { _activated: true })._activated = true;
     }
 
-    return RouteHandlers;
+    return {
+      GET: r.GET,
+      POST: r.POST,
+      PUT: r.PUT,
+      PATCH: r.PATCH,
+      DELETE: r.DELETE,
+      HEAD: r.HEAD,
+      OPTIONS: r.OPTIONS,
+    };
   };
 
   return {
