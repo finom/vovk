@@ -105,7 +105,7 @@ fetch(`/api/users/hello/${id}/world?q=aaaah`, {
 
 ## Overview
 
-### Why Next.js is great?
+### Why Next.js is a good choice?
 
 Next.js 13+ with App Router is a great ready-to-go framework that saves a lot of time and effort setting up and maintaining a React project. With Next.js:
 
@@ -118,9 +118,9 @@ Next.js 13+ with App Router is a great ready-to-go framework that saves a lot of
 
 As result both long-term and short-term the development is cheaper, faster and more efficient.
 
-### Why Next.js API routes suck?
+### Limitations of Next.js API Routes
 
-The pros mentioned above are about front-end part (code used by `page.tsx`, `layout.tsx`, `template.tsx` etc), but the API route handlers provide very specific and very limited way to define API routes. Per every endpoint you're going to create a separate file called `route.ts` that exports route handlers that implement an HTTP method corresponding to their name:
+The pros mentioned above are about front-end part (routes created with `page.tsx`), but the API route handlers provide very specific and very limited way to define API routes. Per every endpoint you're going to create a separate file called `route.ts` that exports route handlers that implement an HTTP method corresponding to their name:
 
 ```ts
 export async function GET() {
