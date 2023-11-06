@@ -9,7 +9,7 @@
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
     "serve:unit": "npm --prefix test run dev",
-    "build": "rm -r dist && tsc",
+    "build": "rm -r dist && npm run toc && tsc",
     "lint-pure": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-pure -- --fix",
     "toc": "npx markdown-toc README.md -i",
