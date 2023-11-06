@@ -284,7 +284,7 @@ import TeamController from '../controllers/TeamController';
 export const { GET, POST, PUT } = activateControllers(UserController, TeamController);
 ```
 
-That's it. Please, notice that the methods modified by the decorators defined as `static` methods and the classes are never instantiated.
+That's it. Notice that the methods modified by the decorators defined as `static` methods and the classes are never instantiated.
 
 Also it's worthy to mention that `@prefix` decorator is just syntax sugar and you're not required to use it.
 
