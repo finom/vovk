@@ -545,12 +545,6 @@ static getSomething() {
 // ...
 ```
 
-### Alternative libraries
-
-- [next-api-decorators](https://github.com/instantcommerce/next-api-decorators) - Decorators to create typed Next.js API routes, with easy request validation and transformation.
-
-Feel free to add your library to this list!
-
 ## API
 
 ```ts
@@ -661,7 +655,6 @@ throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
 - Additional arguments are passed through to the decorator factory.
 
 ```ts
-import { NextResponse } from 'next';
 import { createDecorator, get } from 'next-wednesday';
 
 const myDecorator = createDecorator((req, next, a: string, b: number) => {
@@ -679,7 +672,7 @@ class MyController {
   @get()
   @myDecorator('foo', 1) // Passes 'foo' as 'a', and 1 as 'b'
   static get() {
-    return {};
+    // ...
   }
 }
 ```
