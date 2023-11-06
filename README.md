@@ -37,7 +37,7 @@
     + [Error handling](#error-handling)
   * [Alternative libraries](#alternative-libraries)
 - [API](#api)
-  * [`createSegment`, global decorators and handlers](#createcontroller-global-decorators-and-handlers)
+  * [`createSegment`, global decorators and handlers](#createsegment-global-decorators-and-handlers)
   * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
   * [`createDecorator`](#createdecorator)
 
