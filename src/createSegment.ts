@@ -20,8 +20,10 @@ export default function createSegment() {
       const path = trimPath(givenPath);
       return (target: AnyDude, propertyKey: string) => {
         if (!isClass(target)) {
+          let decoratorName = httpMethod.toLowerCase();
+          if (decoratorName === 'delete') decoratorName = 'del';
           throw new Error(
-            `Decorator must be used on a static class method. Check the controller method called "${propertyKey}".`
+            `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}.`
           );
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
