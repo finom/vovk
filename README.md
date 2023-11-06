@@ -47,7 +47,7 @@
 
 Next Wednesday offers a range of features to streamline your Next.js routing experience:
 
-- Build a clear and beautiful structure for your REST API code.
+- Build a clear and beautiful structure for your REST API code with Next.js App Router.
 - Elegant decorator syntax (all HTTP methods are available).
 - Custom decorators for varied needs are supported.
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
@@ -55,6 +55,7 @@ Next Wednesday offers a range of features to streamline your Next.js routing exp
 - Service-Controller pattern is supported.
 - Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createSegment` docs below).
 - Retains built-in Next.js features; use plain `req: NextRequest` to access body, query, etc; use `next/navigation` for redirects and `next/headers` to handle headers.
+- No tricks! Next Wednesday doesn't monkeypatch Next.js or use hidden featues of it, the library does nothing more than creation of [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers).
 
 ## Quick start
 
@@ -630,7 +631,7 @@ const {
 `activateControllers` returns all route handlers for all supported HTTP methods.
 
 ```ts
-export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = activateControllers(/* ... */);
+export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = activateControllers(...controllers);
 ```
 
 As you may already guess, some of the the variables imported from the library are created by `createSegment` to keep the code cleaner for the "global" segment instance.
