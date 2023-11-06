@@ -606,14 +606,7 @@ class UserController {
   }
 }
 
-class PostController {
-  @get()
-  static getAll() {
-    // ...
-  }
-}
-
-export const { GET, POST } = activateControllers(UserController, PostController);
+export const { GET, POST } = activateControllers(UserController);
 ```
 
 This is what `createSegment` returns:
