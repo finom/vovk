@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody } from './types';
 import HttpException from './HttpException';
 
-const itIsErrorMyDudes = ({ statusCode, message, isError }: ErrorResponseBody) => {
+const itIsErrorMyDudes = async ({ statusCode, message, isError }: ErrorResponseBody) => {
+  const { NextResponse } = await import('next/server');
   return NextResponse.json(
     {
       statusCode,
@@ -138,6 +139,8 @@ export default class Segment {
     }
 
     try {
+      const { NextResponse } = await import('next/server');
+
       const result = await method.call(this, req, itIsWednesdayParams);
 
       if (result instanceof NextResponse || result instanceof Response) {

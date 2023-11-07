@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { AnyDude } from './types';
 
 export default function createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
