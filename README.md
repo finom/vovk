@@ -35,7 +35,6 @@
     + [Service-Controller pattern](#service-controller-pattern)
     + [Return type](#return-type)
     + [Error handling](#error-handling)
-  * [Alternative libraries](#alternative-libraries)
 - [API](#api)
   * [`createSegment`, global decorators and handlers](#createsegment-global-decorators-and-handlers)
   * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)

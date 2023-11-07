@@ -2,16 +2,21 @@ import type { NextRequest } from 'next/server';
 import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody } from './types';
 import HttpException from './HttpException';
 
-const itIsErrorMyDudes = async ({ statusCode, message, isError }: ErrorResponseBody) => {
-  const { NextResponse } = await import('next/server');
-  return NextResponse.json(
-    {
-      statusCode,
-      message,
-      isError,
+const respond = (status: HttpStatus, body: unknown) => {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
     },
-    { status: statusCode }
-  );
+  });
+};
+
+const itIsErrorMyDudes = ({ statusCode, message, isError }: ErrorResponseBody) => {
+  return respond(statusCode, {
+    statusCode,
+    message,
+    isError,
+  });
 };
 
 export default class Segment {
@@ -139,16 +144,14 @@ export default class Segment {
     }
 
     try {
-      const { NextResponse } = await import('next/server');
-
       const result = await method.call(this, req, itIsWednesdayParams);
 
-      if (result instanceof NextResponse || result instanceof Response) {
+      if (result instanceof Response) {
         return result;
       }
 
       if (typeof result !== 'undefined') {
-        return NextResponse.json(result);
+        return respond(200, result);
       }
     } catch (e) {
       const err = e as HttpException;
