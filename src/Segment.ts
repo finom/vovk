@@ -46,12 +46,12 @@ export default class Segment {
     });
   };
 
-  #respondWithError = ({ statusCode, message }: Omit<ErrorResponseBody, 'isError'>) => {
+  #respondWithError = (statusCode: HttpStatus, message: string) => {
     return this.#respond(statusCode, {
       statusCode,
       message,
       isError: true,
-    });
+    } satisfies ErrorResponseBody);
   };
 
   #callMethod = async (httpMethod: HttpMethod, req: NextRequest, params: Record<string, string[]>) => {
@@ -140,7 +140,7 @@ export default class Segment {
     const method = getMethod();
 
     if (!method) {
-      return this.#respondWithError({ statusCode: HttpStatus.NOT_FOUND, message: 'Route is not found' });
+      return this.#respondWithError(HttpStatus.NOT_FOUND, 'Route is not found');
     }
 
     try {
@@ -158,7 +158,7 @@ export default class Segment {
 
       if (err.message !== 'NEXT_REDIRECT') {
         const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
-        return this.#respondWithError({ statusCode, message: err.message });
+        return this.#respondWithError(statusCode, err.message);
       }
 
       throw e; // if NEXT_REDIRECT rethrow it
