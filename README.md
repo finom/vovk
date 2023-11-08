@@ -17,7 +17,7 @@
 <p align="center">
 <strong>A compact, <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that constructs Next.js 13+ App Route Handlers from decorated classes, serving as a "nano-sized NestJS" within the Next.js environment.</strong>
 <br />
-<em>4 minutes of reading</em>
+<em>6 minutes of reading to master it</em>
 </p>
 
 <!-- toc -->
@@ -53,8 +53,15 @@ Next Wednesday offers a range of features to streamline your Next.js routing exp
 - Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
 - Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createSegment` docs below).
-- Retains built-in Next.js features; use plain `req: NextRequest` to access body, query, etc; use `next/navigation` for redirects and `next/headers` to handle headers.
-- No tricks! Next Wednesday doesn't monkeypatch Next.js or use hidden featues of it, the library does nothing more than creation of [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers).
+
+The principles of the project:
+
+- Use built-in Next.js features for your custom needs so you don't need to learn another framework:
+  - Use plain `req: NextRequest` to access body, query, etc.
+  - Use `next/navigation` for redirects and `next/headers` to handle headers.
+- As pure as possible:
+  - Next Wednesday doesn't monkeypatch Next.js or use hidden featues of it, the library does nothing more than creation of [Route Handler](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) variables (`GET`, `POST`, `PUT` etc).
+  - The only side-effect feature used is `Request` class instance and no other project is imported for the library implementation, including Next.js itself (but types).
 
 ## Quick start
 
@@ -316,7 +323,7 @@ export default class MyController {
 }
 ```
 
-To create a decorator you can use `createDecorator`.
+To create a decorator you can use `createDecorator`. All further examples are going to use Prisma ORM but you can use any ORM you like. 
 
 ##### `authGuard` example
 
@@ -479,10 +486,84 @@ Potential file structure with users, posts and comments may look like that:
     /CommentController.ts
 ```
 
+Services can use other services:
+
+```ts
+// /controllers/user/UserService.ts
+import PostService from '../post/PostService';
+
+export default class UserService {
+  static postService = PostService;
+
+  static doSomething() {
+    this.postService.doSomething();
+  }
+}
+```
+
+In case service A is dependent on service B, and service B is dependent on service A you can turn the other service property into a getter:
+
+
+```ts
+// /controllers/user/UserService.ts
+import PostService from '../post/PostService';
+
+export default class UserService {
+  static get postService() { return PostService; };
+
+  static doSomething1() {
+    this.postService.doSomething2();
+  }
+}
+```
+
+
+```ts
+// /controllers/user/PostService.ts
+import UserService from '../post/UserService';
+
+export default class PostService {
+  static get userService() { return UserService; };
+
+  static doSomething2() {
+    this.userService.doSomething1();
+  }
+}
+```
+
+Or you can avoid setting up service as a property at all:
+
+```ts
+// /controllers/user/UserController.ts
+import UserService from './UserService';
+
+// ...
+@prefix('users')
+export default class UserController {
+  @get()
+  @authGuard()
+  static getAllUsers() {
+    return UserService.findAllUsers();
+  }
+}
+```
+
+```ts
+// /controllers/user/UserService.ts
+import PostService from '../post/PostService';
+
+export default class UserService {
+  static doSomething1() {
+    PostService.doSomething2();
+  }
+}
+```
+
+But it is still recommended to declare services as class properties to keep the classes self-documented in terms of which services were used.
 
 #### Return type
 
-Controller method can return an instance of `NextResponse` (or `Response`) as well as custom data. Custom data is serialised to JSON and returned with status 200.
+In short, controller method can return an instance of `NextResponse` (or `Response`) as well as custom data. Custom data is serialised to JSON and returned with status 200.
 
 ```ts
 @get()
@@ -492,6 +573,67 @@ static getSomething() {
 }
 ```
 
+The return type signature may look like `Response | undefined | unknown`. 
+
+- If `Response` instance (that also extends `NextResponse`) or `undefined` is returned, pass it to the route handler as is.
+- If anything else is returned, we asume the value to be an object that needs to be serialised into JSON and sent to the client.
+
+Check this example:
+
+```ts
+import { redirect } from 'next/navigation'
+
+class ExampleService {
+  @get('a')
+  static getA() {
+    return NextResponse.json({ hello: 'world' }, { status: 200 });
+  }
+
+  @get('b')
+  static getB() {
+    return new Response(JSON.stringify({ hello: 'world' }), {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
+  @get('c')
+  static getC() {
+    redirect('/foo');
+    // return nothing (undefined)
+  }
+
+  @get('d')
+  static getD() {
+    return null;
+  }
+
+  @get('e')
+    static getE() {
+      return { hello: 'world' };
+    }
+  }
+```
+
+The routes A, B, C return result as is because they return either `Request` or `undefined`, and routes D and E serialise the returned custom data (at this case it's `null` and a custom object) and send it to the client automatically.
+
+```ts
+// A, B, C
+export default function GET() {
+  // ...
+  return result;
+}
+```
+
+```ts
+// D, E
+export default function GET() {
+  // ...
+  return NextResponse.json(result);
+}
+```
 
 #### Error handling
 
