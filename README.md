@@ -548,7 +548,7 @@ export default class UserService {
 }
 ```
 
-But it is still recommended to declare services as class properties to keep the classes self-documented in terms of which services were used.
+But it is still recommended to declare services as class properties to keep the classes self-documented.
 
 #### Return type
 
