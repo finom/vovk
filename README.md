@@ -702,7 +702,7 @@ import {
 } from 'next-wednesday';
 ```
 
-### `createSegment`, global decorators and handlers
+### `createSegment` function, global decorators and handlers
 
 The function `createSegment` initialises route handlers for one particular router segment. Using the function directly allows you to isolate some particular route path from other route handlers and provides a chance to refactor your code partially. Let's say you want to override only `/users` route handlers by using the library but keep `/comments` and `/posts` as is. 
 
@@ -772,7 +772,7 @@ import {
 ```
 
 
-### `HttpException` and `HttpStatus`
+### `HttpException` class and `HttpStatus` enum
 
 
 `HttpException` accepts 2 arguments. The first one is an HTTP code that can be retrieved from `HttpStatus`, the other one is error text.
@@ -784,7 +784,17 @@ import { HttpException, HttpStatus } from 'next-wednesday';
 throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
 ```
 
-### `createDecorator`
+### `HttpMethod` enum
+
+`HttpMethod` enum has no specific purpose. It is used internally and I thought it might be useful to export it. You can use it with your fetching library for example:
+
+```ts
+fetch('...', {
+  method: HttpMethod.POST,
+})
+```
+
+### `createDecorator` function
 
 `createDecorator` is a higher-order function that produces a decorator factory (a function that returns a decorator). It accepts a middleware function with the following parameters:
 
