@@ -72,9 +72,7 @@ export default function createSegment() {
 
   activateControllers._allControllers = [] as TargetController[];
 
-  activateControllers._getControllerByStaticMethod = (method: (...args: unknown[]) => unknown) => {
-    console.log('activateControllers._allControllers', activateControllers._allControllers.length);
-
+  activateControllers._getControllerByStaticMethod = (method: (...args: AnyDude[]) => AnyDude) => {
     return activateControllers._allControllers.find((controller) => {
       const metadata = controller._metadata ?? {};
       for (const methodName of Object.keys(metadata)) {
