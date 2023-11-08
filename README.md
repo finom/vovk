@@ -22,8 +22,8 @@
 
 <!-- toc -->
 
-- [Features](#features)
 - [Quick start](#quick-start)
+- [Features](#features)
 - [Overview](#overview)
   * [Why Next.js is a good choice?](#why-nextjs-is-a-good-choice)
   * [Limitations of Next.js API Routes](#limitations-of-nextjs-api-routes)
