@@ -1,17 +1,17 @@
 {
-  "name": "next-wednesday",
-  "version": "1.1.2",
+  "name": "next-epoch",
+  "version": "0.0.0",
   "description": "A compact, zero-dependency library that constructs Next.js 13+ App Route Handlers from decorated classes",
   "main": "dist/index.js",
   "scripts": {
-    "test": "npm run lint-pure && tsc --noemit && npm run unit",
+    "test": "npm run lint-nofix && tsc --noemit && npm run unit",
     "unit": "PORT=3210 concurrently \"npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
     "serve:unit": "npm --prefix test run dev",
     "build": "rm -r dist && npm run toc && tsc",
-    "lint-pure": "eslint . --ext .ts,.tsx",
-    "lint": "npm run lint-pure -- --fix",
+    "lint-nofix": "eslint . --ext .ts,.tsx",
+    "lint": "npm run lint-nofix -- --fix",
     "toc": "npx markdown-toc README.md -i",
     "patch": "npm t && npm version patch && npm run build && npm publish && git push && git push --tags",
     "minor": "npm t && npm version minor && npm run build && npm publish && git push && git push --tags",
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/finom/next-wednesday.git"
+    "url": "git+https://github.com/finom/next-epoch.git"
   },
   "keywords": [
     "nextjs",
@@ -38,9 +38,9 @@
   "author": "Andrii Gubanov",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/finom/next-wednesday/issues"
+    "url": "https://github.com/finom/next-epoch/issues"
   },
-  "homepage": "https://github.com/finom/next-wednesday#readme",
+  "homepage": "https://github.com/finom/next-epoch#readme",
   "devDependencies": {
     "@types/jest": "^29.5.6",
     "@types/supertest": "^2.0.15",

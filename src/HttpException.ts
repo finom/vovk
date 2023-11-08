@@ -1,4 +1,4 @@
-import { HttpStatus } from './types';
+import type { HttpStatus } from './types';
 
 export default class HttpException extends Error {
   statusCode: HttpStatus;

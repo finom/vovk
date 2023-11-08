@@ -1,21 +1,21 @@
-# next-wednesday 🐸 
+# next-epoch
 
 <p align="center">
 <img src="https://github.com/finom/nextjs-alternative-router/assets/1082083/6e1bd491-4d8f-4144-b57f-cefb20cd01e1" width="500"  />
 <br />
-<a href="https://www.npmjs.com/package/next-wednesday">
-<img src="https://badge.fury.io/js/next-wednesday.svg" alt="npm version" /> 
+<a href="https://www.npmjs.com/package/next-epoch">
+<img src="https://badge.fury.io/js/next-epoch.svg" alt="npm version" /> 
 </a>
 <a href="https://www.typescriptlang.org/">
 <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
 </a>
-<a href="https://github.com/finom/next-wednesday/actions/workflows/main.yml">
-<img src="https://github.com/finom/next-wednesday/actions/workflows/main.yml/badge.svg" alt="Build status" />
+<a href="https://github.com/finom/next-epoch/actions/workflows/main.yml">
+<img src="https://github.com/finom/next-epoch/actions/workflows/main.yml/badge.svg" alt="Build status" />
 </a>
 </p>
 
 <p align="center">
-<strong>A compact, <a href="https://bundlephobia.com/package/next-wednesday">zero-dependency</a> library that constructs Next.js 13+ App Route Handlers from decorated classes, serving as a "nano-sized NestJS" within the Next.js environment.</strong>
+<strong>A compact, <a href="https://bundlephobia.com/package/next-epoch">zero-dependency</a> library that constructs Next.js 13+ App Route Handlers from decorated classes, serving as a "nano-sized NestJS" within the Next.js environment.</strong>
 <br />
 <em>6 minutes of reading to master it</em>
 </p>
@@ -28,7 +28,7 @@
   * [Why Next.js is a good choice?](#why-nextjs-is-a-good-choice)
   * [Limitations of Next.js API Routes](#limitations-of-nextjs-api-routes)
   * [A potential solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
-  * [The new solution: Next Wednesday](#the-new-solution-next-wednesday)
+  * [The new solution: next-epoch](#the-new-solution-next-epoch)
     + [Custom decorators](#custom-decorators)
       - [`authGuard` example](#authguard-example)
       - [`handleZodErrors` example](#handlezoderrors-example)
@@ -45,7 +45,7 @@
 
 ## Features
 
-Next Wednesday offers a range of features to streamline your Next.js routing experience:
+**next-epoch** offers a range of features to streamline your Next.js routing experience:
 
 - Build a clear and beautiful structure for your REST API code with Next.js App Router.
 - Elegant decorator syntax (all HTTP methods are available).
@@ -61,18 +61,18 @@ The principles of the project:
   - Use plain `req: NextRequest` to access body, query, etc.
   - Use `next/navigation` for redirects and `next/headers` to handle headers.
 - As pure as possible:
-  - Next Wednesday doesn't monkeypatch Next.js or use hidden featues of it, the library does nothing more than creation of [Route Handler](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) variables (`GET`, `POST`, `PUT` etc).
+  - **next-epoch** doesn't monkeypatch Next.js or use hidden featues of it, the library does nothing more than creation of [Route Handler](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) variables (`GET`, `POST`, `PUT` etc).
   - The only side-effect feature used is `Request` class instance and no other project is imported for the library implementation, including Next.js itself (but types).
 
 ## Quick start
 
-Install: `npm i next-wednesday` or `yarn add next-wednesday`.
+Install: `npm i next-epoch` or `yarn add next-epoch`.
 
 Create the first controller:
 
 ```ts
 // /src/controllers/UserController.ts
-import { get, post, prefix } from 'next-wednesday';
+import { get, post, prefix } from 'next-epoch';
 
 @prefix('users') 
 export default class UserController {
@@ -94,7 +94,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`) and ca
 
 ```ts
 // /src/app/api/[[...]]/route.ts
-import { activateControllers } from 'next-wednesday';
+import { activateControllers } from 'next-epoch';
 import UserController from '../../../controllers/UserController';
 
 export const { GET, POST } = activateControllers(UserController);
@@ -206,7 +206,7 @@ It would be nice if we could:
 - Apply NestJS-like syntax to define routes;
 - Make the project development and infrastructure cheaper.
 
-### The new solution: Next Wednesday
+### The new solution: next-epoch
 
 Next.js includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to implement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
 
@@ -223,7 +223,7 @@ Create your controllers:
 
 ```ts
 // /controllers/UserController.ts
-import { get, post, put, prefix } from 'next-wednesday';
+import { get, post, put, prefix } from 'next-epoch';
 
 @prefix('users')
 export default class UserController {
@@ -259,7 +259,7 @@ export default class UserController {
 
 ```ts
 // /controllers/TeamController.ts
-import { get, post, prefix } from 'next-wednesday';
+import { get, post, prefix } from 'next-epoch';
 
 @prefix('teams')
 export default class TeamController {
@@ -284,7 +284,7 @@ Finally, create the catch-all route.
 
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
-import { activateControllers } from 'next-wednesday';
+import { activateControllers } from 'next-epoch';
 import UserController from '../controllers/UserController';
 import TeamController from '../controllers/TeamController';
 
@@ -349,7 +349,7 @@ Then define the `authGuard` decorator itself.
 
 ```ts
 // authGuard.ts
-import { HttpException, HttpStatus, createDecorator } from 'next-wednesday';
+import { HttpException, HttpStatus, createDecorator } from 'next-epoch';
 import { NextRequest } from 'next/server';
 import checkAuth from './checkAuth';
 
@@ -394,7 +394,7 @@ You can catch any error in your custom decorator and provide relevant response t
 
 ```ts
 import { ZodError } from 'zod';
-import { HttpException, HttpStatus, createDecorator } from 'next-wednesday';
+import { HttpException, HttpStatus, createDecorator } from 'next-epoch';
 
 const handleZodErrors = createDecorator(async (req, next) => {
   try {
@@ -466,7 +466,7 @@ Then initialise the controller as before:
 
 ```ts
 // /api/[[...]]/route.ts
-import { activateControllers } from 'next-wednesday';
+import { activateControllers } from 'next-epoch';
 import UserController from '../controllers/user/UserController';
 
 export const { GET } = activateControllers(UserController);
@@ -640,7 +640,7 @@ You can throw errors directly from the controller method. The library catches th
 
 ```ts
 // some client-side code
-import { type ErrorResponseBody } from 'next-wednesday';
+import { type ErrorResponseBody } from 'next-epoch';
 
 const dataOrError: MyData | ErrorResponseBody = await (await fetch()).json();
 ```
@@ -658,7 +658,7 @@ interface ErrorResponseBody {
 To throw an error you can use `HttpException` class together with `HttpStatus` enum. You can also throw the errors from the service methods.
 
 ```ts
-import { HttpException, HttpStatus } from 'next-wednesday'
+import { HttpException, HttpStatus } from 'next-epoch'
 
 // ...
 @get()
@@ -700,7 +700,7 @@ import {
   get, post, put, patch, del, head, options, 
   prefix, 
   activateControllers,
-} from 'next-wednesday';
+} from 'next-epoch';
 ```
 
 ### `createSegment` function, global decorators and handlers
@@ -724,7 +724,7 @@ The function `createSegment` initialises route handlers for one particular route
 In this example, only the `users` dynamic route will utilize the library. With `createSegment` you can define local variables that are going to be used for one particular segment.
 
 ```ts
-import { createSegment } from 'next-wednesday';
+import { createSegment } from 'next-epoch';
 
 const { get, post, activateControllers } = createSegment();
 
@@ -769,7 +769,7 @@ import {
   get, post, put, patch, del, head, options, 
   prefix, 
   activateControllers,
-} from 'next-wednesday';
+} from 'next-epoch';
 ```
 
 
@@ -779,7 +779,7 @@ import {
 `HttpException` accepts 2 arguments. The first one is an HTTP code that can be retrieved from `HttpStatus`, the other one is error text.
 
 ```ts
-import { HttpException, HttpStatus } from 'next-wednesday';
+import { HttpException, HttpStatus } from 'next-epoch';
 
 // ...
 throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
@@ -805,7 +805,7 @@ fetch('...', {
 - Additional arguments are passed through to the decorator factory.
 
 ```ts
-import { createDecorator, get } from 'next-wednesday';
+import { createDecorator, get } from 'next-epoch';
 
 const myDecorator = createDecorator((req, next, a: string, b: number) => {
   console.log(a, b); // Outputs: "foo", 1

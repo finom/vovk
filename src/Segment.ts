@@ -2,23 +2,6 @@ import type { NextRequest } from 'next/server';
 import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody } from './types';
 import HttpException from './HttpException';
 
-const respond = (status: HttpStatus, body: unknown) => {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-};
-
-const itIsErrorMyDudes = ({ statusCode, message, isError }: ErrorResponseBody) => {
-  return respond(statusCode, {
-    statusCode,
-    message,
-    isError,
-  });
-};
-
 export default class Segment {
   _routes: Record<
     HttpMethod,
@@ -54,9 +37,26 @@ export default class Segment {
   OPTIONS = (req: NextRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.OPTIONS, req, data.params);
 
+  #respond = (status: HttpStatus, body: unknown) => {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
+  #respondWithError = ({ statusCode, message }: Omit<ErrorResponseBody, 'isError'>) => {
+    return this.#respond(statusCode, {
+      statusCode,
+      message,
+      isError: true,
+    });
+  };
+
   #callMethod = async (httpMethod: HttpMethod, req: NextRequest, params: Record<string, string[]>) => {
     const classes = this._routes[httpMethod];
-    const itIsWednesdayParams: Record<string, string> = {};
+    const methodParams: Record<string, string> = {};
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const methods: Record<string, RouteHandler> = Object.fromEntries(
@@ -109,12 +109,12 @@ export default class Segment {
             if (routeSegment.startsWith(':')) {
               const parameter = routeSegment.slice(1);
 
-              if (parameter in itIsWednesdayParams) {
+              if (parameter in methodParams) {
                 throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${parameter}"`);
               }
 
               // If it's a parameterized segment, capture the parameter value.
-              itIsWednesdayParams[parameter] = pathSegment;
+              methodParams[parameter] = pathSegment;
             } else if (routeSegment !== pathSegment) {
               // If it's a literal segment and it does not match the corresponding path segment, return false.
               return false;
@@ -140,25 +140,25 @@ export default class Segment {
     const method = getMethod();
 
     if (!method) {
-      return itIsErrorMyDudes({ statusCode: HttpStatus.NOT_FOUND, message: 'Route is not found', isError: true });
+      return this.#respondWithError({ statusCode: HttpStatus.NOT_FOUND, message: 'Route is not found' });
     }
 
     try {
-      const result = await method.call(this, req, itIsWednesdayParams);
+      const result = await method.call(this, req, methodParams);
 
       if (result instanceof Response) {
         return result;
       }
 
       if (typeof result !== 'undefined') {
-        return respond(200, result);
+        return this.#respond(200, result);
       }
     } catch (e) {
       const err = e as HttpException;
 
       if (err.message !== 'NEXT_REDIRECT') {
         const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
-        return itIsErrorMyDudes({ statusCode, message: err.message, isError: true });
+        return this.#respondWithError({ statusCode, message: err.message });
       }
 
       throw e; // if NEXT_REDIRECT rethrow it

@@ -1,11 +1,11 @@
 import type { NextRequest } from 'next/server';
-import { AnyDude } from './types';
+import type { KnownAny } from './types';
 
 export default function createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
   handler: (req: REQUEST, next: () => Promise<unknown>, ...args: ARGS) => unknown
 ) {
   return function decoratorCreator(...args: ARGS) {
-    return function decorator(target: AnyDude, propertyKey: string) {
+    return function decorator(target: KnownAny, propertyKey: string) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const originalMethod: unknown = target[propertyKey];
       if (typeof originalMethod === 'function') {

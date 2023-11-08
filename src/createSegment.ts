@@ -1,5 +1,5 @@
 import Segment from './Segment';
-import { HttpMethod, AnyDude, RouteHandler, TargetController } from './types';
+import { HttpMethod, KnownAny, RouteHandler, TargetController } from './types';
 
 const trimPath = (path: string) => {
   let clean = path.startsWith('/') ? path.slice(1) : path;
@@ -18,7 +18,7 @@ export default function createSegment() {
     (httpMethod: HttpMethod) =>
     (givenPath = '') => {
       const path = trimPath(givenPath);
-      return (givenTarget: AnyDude, propertyKey: string) => {
+      return (givenTarget: KnownAny, propertyKey: string) => {
         const target = givenTarget as TargetController;
         if (!isClass(target)) {
           let decoratorName = httpMethod.toLowerCase();
@@ -36,15 +36,13 @@ export default function createSegment() {
         metadata[propertyKey] = { path, httpMethod };
 
         methods[path] = target[propertyKey] as RouteHandler;
-
-        methods[path]._self = target;
       };
     };
 
   const prefix = (givenPath = '') => {
     const path = trimPath(givenPath);
 
-    return (givenTarget: AnyDude) => {
+    return (givenTarget: KnownAny) => {
       const target = givenTarget as TargetController;
       target._prefix = path;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -72,7 +70,7 @@ export default function createSegment() {
 
   activateControllers._allControllers = [] as TargetController[];
 
-  activateControllers._getControllerByStaticMethod = (method: (...args: AnyDude[]) => AnyDude) => {
+  activateControllers._getControllerByStaticMethod = (method: (...args: KnownAny[]) => KnownAny) => {
     return activateControllers._allControllers.find((controller) => {
       const metadata = controller._metadata ?? {};
       for (const methodName of Object.keys(metadata)) {

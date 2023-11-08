@@ -1,6 +1,6 @@
-import type { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export type AnyDude = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type ErrorResponseBody = {
   statusCode: HttpStatus;
@@ -17,12 +17,7 @@ export type TargetController = Function & {
   [key: string]: unknown;
 };
 
-export type RouteHandler = ((
-  req: NextRequest,
-  itIsWednesdayParams: Record<string, string>
-) => NextResponse | Response | Promise<NextResponse | Response>) & {
-  _self: TargetController;
-};
+export type RouteHandler = (req: NextRequest, params: Record<string, string>) => Response | Promise<Response>;
 
 export enum HttpMethod {
   GET = 'GET',
