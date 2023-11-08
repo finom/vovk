@@ -36,9 +36,10 @@
     + [Return type](#return-type)
     + [Error handling](#error-handling)
 - [API](#api)
-  * [`createSegment`, global decorators and handlers](#createsegment-global-decorators-and-handlers)
-  * [`HttpException` and `HttpStatus`](#httpexception-and-httpstatus)
-  * [`createDecorator`](#createdecorator)
+  * [`createSegment` function, global decorators and handlers](#createsegment-function-global-decorators-and-handlers)
+  * [`HttpException` class and `HttpStatus` enum](#httpexception-class-and-httpstatus-enum)
+  * [`HttpMethod` enum](#httpmethod-enum)
+  * [`createDecorator` function](#createdecorator-function)
 
 <!-- tocstop -->
 
