@@ -83,7 +83,7 @@ After that you can load the data using any fetching library.
 
 ```ts
 fetch('/api/users');
-fetch(`/api/users/hello/${id}/world?q=aaaah`, {
+fetch(`/api/users/hello/${id}/world?q=foo`, {
   method: 'POST', 
   body: JSON.stringify({ hello: 'world' }),
 });
