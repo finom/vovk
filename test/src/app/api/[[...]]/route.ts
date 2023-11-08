@@ -10,6 +10,7 @@ import ErrorController from '../../../controllers/ErrorController';
 import NextResponseController from '../../../controllers/NextResponseController';
 import HeadersController from '../../../controllers/HeadersController';
 import RedirectController from '../../../controllers/RedirectController';
+import MiscController from '../../../controllers/MiscController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers(
   ...trimControllers,
@@ -22,5 +23,6 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
   ErrorController,
   NextResponseController,
   HeadersController,
-  RedirectController
+  RedirectController,
+  MiscController
 );

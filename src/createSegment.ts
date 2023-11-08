@@ -56,6 +56,7 @@ export default function createSegment() {
   const activateControllers = (...controllers: Function[]) => {
     for (const controller of controllers as TargetController[]) {
       controller._activated = true;
+      activateControllers._allControllers.push(controller);
     }
 
     return {
@@ -67,6 +68,22 @@ export default function createSegment() {
       HEAD: r.HEAD,
       OPTIONS: r.OPTIONS,
     };
+  };
+
+  activateControllers._allControllers = [] as TargetController[];
+
+  activateControllers._getControllerByStaticMethod = (method: (...args: unknown[]) => unknown) => {
+    console.log('activateControllers._allControllers', activateControllers._allControllers.length);
+
+    return activateControllers._allControllers.find((controller) => {
+      const metadata = controller._metadata ?? {};
+      for (const methodName of Object.keys(metadata)) {
+        const staticMethod = controller[methodName];
+        if (typeof staticMethod === 'function' && staticMethod === method) {
+          return true;
+        }
+      }
+    });
   };
 
   return {
