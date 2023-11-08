@@ -36,6 +36,8 @@ export default function createSegment() {
         metadata[propertyKey] = { path, httpMethod };
 
         methods[path] = target[propertyKey] as RouteHandler;
+
+        methods[path]._self = target;
       };
     };
 

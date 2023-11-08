@@ -17,10 +17,12 @@ export type TargetController = Function & {
   [key: string]: unknown;
 };
 
-export type RouteHandler = (
+export type RouteHandler = ((
   req: NextRequest,
   itIsWednesdayParams: Record<string, string>
-) => NextResponse | Response | Promise<NextResponse | Response>;
+) => NextResponse | Response | Promise<NextResponse | Response>) & {
+  _self: TargetController;
+};
 
 export enum HttpMethod {
   GET = 'GET',
