@@ -43,27 +43,6 @@
 
 <!-- tocstop -->
 
-## Features
-
-**next-epoch** offers a range of features to streamline your Next.js routing experience:
-
-- Build a clear and beautiful structure for your REST API code with Next.js App Router.
-- Elegant decorator syntax (all HTTP methods are available).
-- Custom decorators for varied needs are supported.
-- Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
-- Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
-- Service-Controller pattern is supported.
-- Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createSegment` docs below).
-
-The principles of the project:
-
-- Use built-in Next.js features for your custom needs so you don't need to learn another framework:
-  - Use plain `req: NextRequest` to access body, query, etc.
-  - Use `next/navigation` for redirects and `next/headers` to handle headers.
-- As pure as possible:
-  - **next-epoch** doesn't monkeypatch Next.js or use hidden featues of it, the library does nothing more than creation of [Route Handler](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) variables (`GET`, `POST`, `PUT` etc).
-  - The only side-effect feature used is `Request` class instance and no other project is imported for the library implementation, including Next.js itself (but types).
-
 ## Quick start
 
 Install: `npm i next-epoch` or `yarn add next-epoch`.
@@ -109,6 +88,27 @@ fetch(`/api/users/hello/${id}/world?q=aaaah`, {
   body: JSON.stringify({ hello: 'world' }),
 });
 ```
+
+## Features
+
+**next-epoch** offers a range of features to streamline your Next.js routing experience:
+
+- Build a clear and beautiful structure for your REST API code with Next.js App Router.
+- Elegant decorator syntax (all HTTP methods are available).
+- Custom decorators for varied needs are supported.
+- Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
+- Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
+- Service-Controller pattern is supported.
+- Partial refactoring is possible if you want to quickly try the library or update only particular endpoints with an isolated controller (see `createSegment` docs below).
+
+The principles of the project:
+
+- Use built-in Next.js features for your custom needs so you don't need to learn another framework:
+  - Use plain `req: NextRequest` to access body, query, etc.
+  - Use `next/navigation` for redirects and `next/headers` to handle headers.
+- As pure as possible:
+  - **next-epoch** doesn't monkeypatch Next.js or use hidden featues of it, the library does nothing more than creation of [Route Handler](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) variables (`GET`, `POST`, `PUT` etc).
+  - The only side-effect feature used is `Request` class instance and no other project is imported for the library implementation, including Next.js itself (but types).
 
 ## Overview
 
