@@ -93,8 +93,7 @@ fetch(`/api/users/hello/${id}/world?q=aaaah`, {
 
 **next-epoch** offers a range of features to streamline your Next.js routing experience:
 
-- Elegant decorator syntax (all HTTP methods are available).
-- Custom decorators for varied needs are supported.
+- Elegant decorator syntax (all HTTP methods are available). Custom decorators for varied needs are supported.
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
 - Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
