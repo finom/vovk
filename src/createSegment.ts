@@ -1,5 +1,5 @@
 import Segment from './Segment';
-import { HttpMethod, AnyDude, RouteHandler } from './types';
+import { HttpMethod, AnyDude, RouteHandler, TargetController } from './types';
 
 const trimPath = (path: string) => {
   let clean = path.startsWith('/') ? path.slice(1) : path;
@@ -18,7 +18,8 @@ export default function createSegment() {
     (httpMethod: HttpMethod) =>
     (givenPath = '') => {
       const path = trimPath(givenPath);
-      return (target: AnyDude, propertyKey: string) => {
+      return (givenTarget: AnyDude, propertyKey: string) => {
+        const target = givenTarget as TargetController;
         if (!isClass(target)) {
           let decoratorName = httpMethod.toLowerCase();
           if (decoratorName === 'delete') decoratorName = 'del';
@@ -26,12 +27,14 @@ export default function createSegment() {
             `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}.`
           );
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(target) ?? {};
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         r._routes[httpMethod].set(target, methods);
+        const metadata = target._metadata ?? {};
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        target._metadata = metadata;
+
+        metadata[propertyKey] = { path, httpMethod };
+
         methods[path] = target[propertyKey] as RouteHandler;
       };
     };
@@ -39,18 +42,18 @@ export default function createSegment() {
   const prefix = (givenPath = '') => {
     const path = trimPath(givenPath);
 
-    return (target: AnyDude) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return (givenTarget: AnyDude) => {
+      const target = givenTarget as TargetController;
       target._prefix = path;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return target;
+      return givenTarget;
     };
   };
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   const activateControllers = (...controllers: Function[]) => {
-    for (const controller of controllers) {
-      (controller as unknown as { _activated: true })._activated = true;
+    for (const controller of controllers as TargetController[]) {
+      controller._activated = true;
     }
 
     return {

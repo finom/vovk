@@ -3,37 +3,37 @@ import { prefix, get, post, put, del, patch, head, options } from '../../../src'
 @prefix('all-decorators')
 export default class AllDecoratorsController {
   @get()
-  static get() {
+  static getMethod() {
     return {};
   }
 
   @post()
-  static post() {
+  static postMethod() {
     return {};
   }
 
   @put()
-  static put() {
+  static putMethod() {
     return {};
   }
 
   @del()
-  static del() {
+  static delMethod() {
     return {};
   }
 
   @patch()
-  static patch() {
+  static patchMethod() {
     return {};
   }
 
   @head()
-  static head() {
+  static headMethod() {
     return {};
   }
 
   @options()
-  static options() {
+  static optionsMethod() {
     return {};
   }
 }

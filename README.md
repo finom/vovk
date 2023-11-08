@@ -578,7 +578,7 @@ The return type signature may look like `Response | undefined | unknown`.
 - If `Response` instance (that also extends `NextResponse`) or `undefined` is returned, pass it to the route handler as is.
 - If anything else is returned, we asume the value to be an object that needs to be serialised into JSON and sent to the client.
 
-Check this example:
+Take a look at this example:
 
 ```ts
 import { redirect } from 'next/navigation'
@@ -592,7 +592,7 @@ class ExampleService {
   @get('b')
   static getB() {
     return new Response(JSON.stringify({ hello: 'world' }), {
-      status,
+      status: 200,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -611,26 +611,24 @@ class ExampleService {
   }
 
   @get('e')
-    static getE() {
-      return { hello: 'world' };
-    }
+  static getE() {
+    return { hello: 'world' };
   }
-```
-
-The routes A, B, C return result as is because they return either `Request` or `undefined`, and routes D and E serialise the returned custom data (at this case it's `null` and a custom object) and send it to the client automatically.
-
-```ts
-// A, B, C
-export default function GET() {
-  // ...
-  return result;
 }
 ```
 
+The routes A, B, C respond with result as is because they return either `Response` or `undefined`, and routes D and E serialise the returned custom data (at this case it's `null` and a custom object) and send it to the client automatically. The following snippet of code will probably make it clearer:
+
 ```ts
-// D, E
 export default function GET() {
   // ...
+
+  // A, B, C
+  if(typeof result === 'undefined' || result instanceof Response) {
+    return result;
+  }
+
+  // D, E
   return NextResponse.json(result);
 }
 ```

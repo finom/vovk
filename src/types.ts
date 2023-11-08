@@ -2,6 +2,26 @@ import type { NextRequest, NextResponse } from 'next/server';
 
 export type AnyDude = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+export type ErrorResponseBody = {
+  statusCode: HttpStatus;
+  message: string;
+  isError: true;
+};
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type TargetController = Function & {
+  _prefix?: string;
+  _activated?: true;
+  _metadata?: Record<string, { path: string; httpMethod: HttpMethod }>;
+  name: string;
+  [key: string]: unknown;
+};
+
+export type RouteHandler = (
+  req: NextRequest,
+  itIsWednesdayParams: Record<string, string>
+) => NextResponse | Response | Promise<NextResponse | Response>;
+
 export enum HttpMethod {
   GET = 'GET',
   POST = 'POST',
@@ -11,17 +31,6 @@ export enum HttpMethod {
   HEAD = 'HEAD',
   OPTIONS = 'OPTIONS',
 }
-
-export interface ErrorResponseBody {
-  statusCode: HttpStatus;
-  message: string;
-  isError: true;
-}
-
-export type RouteHandler = (
-  req: NextRequest,
-  itIsWednesdayParams: Record<string, string>
-) => NextResponse | Response | Promise<NextResponse | Response>;
 
 export enum HttpStatus {
   CONTINUE = 100,
