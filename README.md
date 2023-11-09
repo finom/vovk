@@ -45,7 +45,7 @@
 
 ## Features
 
-**next-epoch** offers a range of features to streamline your Next.js routing experience:
+**next-epoch** offers a range of features to streamline your Next.js [App Router](https://nextjs.org/docs/app) experience:
 
 - Elegant decorator syntax (all HTTP methods are available). Custom decorators for varied needs are supported.
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
