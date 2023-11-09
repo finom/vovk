@@ -22,8 +22,8 @@
 
 <!-- toc -->
 
-- [Quick start](#quick-start)
 - [Features](#features)
+- [Quick start](#quick-start)
 - [Overview](#overview)
   * [Why Next.js is a good choice?](#why-nextjs-is-a-good-choice)
   * [Limitations of Next.js API Routes](#limitations-of-nextjs-api-routes)
@@ -42,6 +42,15 @@
   * [`createDecorator` function](#createdecorator-function)
 
 <!-- tocstop -->
+
+## Features
+
+**next-epoch** offers a range of features to streamline your Next.js routing experience:
+
+- Elegant decorator syntax (all HTTP methods are available). Custom decorators for varied needs are supported.
+- Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
+- Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
+- Service-Controller pattern is supported.
 
 ## Quick start
 
@@ -88,15 +97,6 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
   body: JSON.stringify({ hello: 'world' }),
 });
 ```
-
-## Features
-
-**next-epoch** offers a range of features to streamline your Next.js routing experience:
-
-- Elegant decorator syntax (all HTTP methods are available). Custom decorators for varied needs are supported.
-- Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
-- Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
-- Service-Controller pattern is supported.
 
 ## Overview
 
@@ -552,7 +552,7 @@ But it is still recommended to declare services as class properties to keep the 
 
 #### Return type
 
-In short, controller method can return an instance of `NextResponse` (or `Response`) as well as custom data. Custom data is serialised to JSON and returned with status 200.
+Controller method can return an instance of `Response`, `undefined` or custom data. Custom data is serialised to JSON and returned with status 200.
 
 ```ts
 @get()
@@ -562,15 +562,13 @@ static getSomething() {
 }
 ```
 
-The return type signature may look like `Response | undefined | unknown`. 
-
-- If `Response` instance (that also extends `NextResponse`) or `undefined` is returned, pass it to the route handler as is.
-- If anything else is returned, we asume the value to be an object that needs to be serialised into JSON and sent to the client.
+- If `Response` instance (that also extends `NextResponse`) or `undefined` is returned, passes it to the route handler as is.
+- If something else is returned, the library asumes that the value is an variable that needs to be serialised into JSON and sent to the client.
 
 Take a look at this example:
 
 ```ts
-import { redirect } from 'next/navigation'
+import { redirect } from 'next/navigation';
 
 class ExampleService {
   @get('a')
@@ -630,13 +628,13 @@ You can throw errors directly from the controller method. The library catches th
 // some client-side code
 import { type ErrorResponseBody } from 'next-epoch';
 
-const dataOrError: MyData | ErrorResponseBody = await (await fetch()).json();
+const dataOrError: MyData | ErrorResponseBody = await (await fetch('...')).json();
 ```
 
 The shape of this type is the following:
 
 ```ts
-interface ErrorResponseBody {
+type ErrorResponseBody = {
   statusCode: HttpStatus;
   message: string;
   isError: true;
