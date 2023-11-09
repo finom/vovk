@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-<strong>REST API library for Next.js App Router</strong>
+<strong>Next.js REST API library for scalable full-stack applications</strong>
 <br />
 <em>6 minutes of reading</em>
 </p>
@@ -301,6 +301,7 @@ export default class MyController {
   @post()
   @authGuard()
   @permissionGuard(Permission.CREATE)
+  @log(Action.CREATE, { model: 'MyModel' })
   @handleZodErrors()
   static async create(req: GuardedRequest) {
     const body = ZodModel.parse(await req.json());
