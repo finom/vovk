@@ -157,7 +157,11 @@ export default class Segment {
       }
     } catch (e) {
       const err = e as HttpException;
-      controller._onError?.(err);
+      try {
+        controller._onError?.(err);
+      } catch (onErrorError) {
+        console.error(onErrorError);
+      }
 
       if (err.message !== 'NEXT_REDIRECT') {
         const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
