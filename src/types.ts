@@ -13,6 +13,7 @@ export type TargetController = Function & {
   _prefix?: string;
   _activated?: true;
   _metadata?: Record<string, { path: string; httpMethod: HttpMethod }>;
+  _onError?: (err: Error) => void;
   name: string;
   [key: string]: unknown;
 };

@@ -50,11 +50,17 @@ export default function createSegment() {
     };
   };
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  const activateControllers = (...controllers: Function[]) => {
+  const activateControllers = ({
+    controllers,
+    onError,
+  }: {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    controllers: Function[];
+    onError?: (err: Error) => void;
+  }) => {
     for (const controller of controllers as TargetController[]) {
       controller._activated = true;
-      activateControllers._allControllers.push(controller);
+      controller._onError = onError;
     }
 
     return {
@@ -66,20 +72,6 @@ export default function createSegment() {
       HEAD: r.HEAD,
       OPTIONS: r.OPTIONS,
     };
-  };
-
-  activateControllers._allControllers = [] as TargetController[];
-
-  activateControllers._getControllerByStaticMethod = (method: (...args: KnownAny[]) => KnownAny) => {
-    return activateControllers._allControllers.find((controller) => {
-      const metadata = controller._metadata ?? {};
-      for (const methodName of Object.keys(metadata)) {
-        const staticMethod = controller[methodName];
-        if (typeof staticMethod === 'function' && staticMethod === method) {
-          return true;
-        }
-      }
-    });
   };
 
   return {

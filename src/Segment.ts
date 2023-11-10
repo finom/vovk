@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody } from './types';
+import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody, TargetController } from './types';
 import HttpException from './HttpException';
 
 export default class Segment {
@@ -55,38 +55,38 @@ export default class Segment {
   };
 
   #callMethod = async (httpMethod: HttpMethod, req: NextRequest, params: Record<string, string[]>) => {
-    const classes = this._routes[httpMethod];
+    const controllers = this._routes[httpMethod];
     const methodParams: Record<string, string> = {};
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const methods: Record<string, RouteHandler> = Object.fromEntries(
-      [...classes.entries()]
-        .map(([cls, classMethods]) => {
-          const prefix = cls._prefix ?? '';
+    const handlers: Record<string, { staticMethod: RouteHandler; controller: TargetController }> = Object.fromEntries(
+      [...controllers.entries()]
+        .map(([controller, staticMethods]) => {
+          const prefix = controller._prefix ?? '';
 
-          if (!cls._activated) {
+          if (!controller._activated) {
             throw new HttpException(
               HttpStatus.INTERNAL_SERVER_ERROR,
-              `Controller "${cls.name}" found but not activated`
+              `Controller "${controller.name}" found but not activated`
             );
           }
 
-          return Object.entries(classMethods).map(([path, method]) => {
+          return Object.entries(staticMethods).map(([path, staticMethod]) => {
             const fullPath = [prefix, path].filter(Boolean).join('/');
 
-            return [fullPath, method];
+            return [fullPath, { staticMethod, controller }];
           });
         })
         .flat()
     );
 
-    const getMethod = () => {
+    const getHandler = () => {
       if (Object.keys(params).length === 0) {
-        return methods[''];
+        return handlers[''];
       }
 
       const path = params[Object.keys(params)[0]];
-      const allMethodKeys = Object.keys(methods);
+      const allMethodKeys = Object.keys(handlers);
 
       let methodKeys: string[] = [];
 
@@ -131,20 +131,22 @@ export default class Segment {
       const [methodKey] = methodKeys;
 
       if (methodKey) {
-        return methods[methodKey];
+        return handlers[methodKey];
       }
 
       return null;
     };
 
-    const method = getMethod();
+    const handler = getHandler();
 
-    if (!method) {
+    if (!handler) {
       return this.#respondWithError(HttpStatus.NOT_FOUND, 'Route is not found');
     }
 
+    const { staticMethod, controller } = handler;
+
     try {
-      const result = await method.call(this, req, methodParams);
+      const result = await staticMethod.call(this, req, methodParams);
 
       if (result instanceof Response) {
         return result;
@@ -155,6 +157,7 @@ export default class Segment {
       }
     } catch (e) {
       const err = e as HttpException;
+      controller._onError?.(err);
 
       if (err.message !== 'NEXT_REDIRECT') {
         const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;

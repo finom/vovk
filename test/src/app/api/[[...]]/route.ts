@@ -12,17 +12,22 @@ import HeadersController from '../../../controllers/HeadersController';
 import RedirectController from '../../../controllers/RedirectController';
 import MiscController from '../../../controllers/MiscController';
 
-export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers(
-  ...trimControllers,
-  InputController,
-  CustomDecoratorController,
-  AllDecoratorsController,
-  DuplicatedParameterController,
-  ConflictingRoutesController,
-  DesNotExistController,
-  ErrorController,
-  NextResponseController,
-  HeadersController,
-  RedirectController,
-  MiscController
-);
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers({
+  controllers: [
+    ...trimControllers,
+    InputController,
+    CustomDecoratorController,
+    AllDecoratorsController,
+    DuplicatedParameterController,
+    ConflictingRoutesController,
+    DesNotExistController,
+    ErrorController,
+    NextResponseController,
+    HeadersController,
+    RedirectController,
+    MiscController,
+  ],
+  onError: (err) => {
+    console.log('onError', err);
+  },
+});

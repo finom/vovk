@@ -1,5 +1,20 @@
 # next-epoch
 
+<!-- 
+Next-Forge: Conveying creation and crafting in the realm of API development.
+Next-Multiverse
+Next-Timeline
+Next-Vertex: Indicating the highest point of achievement in API management.
+Next-Wave
+Next-Utopia
+Isonext
+Next-Life
+Next-Candy
+Next-Smoothie !!!
+Next-Gem
+Next-Treat
+-->
+
 <p align="center">
 <img width="439" alt="image" src="https://github.com/finom/next-wednesday/assets/1082083/852b3987-f604-4e6a-bdc6-29bea0ea8399">
  <br />
@@ -85,7 +100,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`) and ca
 import { activateControllers } from 'next-epoch';
 import UserController from '../../../controllers/UserController';
 
-export const { GET, POST } = activateControllers(UserController);
+export const { GET, POST } = activateControllers({ controllers: [UserController] });
 ```
 
 After that you can load the data using any fetching library.
@@ -276,7 +291,7 @@ import { activateControllers } from 'next-epoch';
 import UserController from '../controllers/UserController';
 import TeamController from '../controllers/TeamController';
 
-export const { GET, POST, PUT } = activateControllers(UserController, TeamController);
+export const { GET, POST, PUT } = activateControllers({ controllers: [UserController, TeamController] });
 ```
 
 That's it. Notice that the methods modified by the decorators defined as `static` methods and the classes are never instantiated.
@@ -441,7 +456,7 @@ import UserService from './UserService';
 // ...
 @prefix('users')
 export default class UserController {
-  static userService = UserService;
+  private static userService = UserService;
 
   @get()
   @authGuard()
@@ -458,7 +473,7 @@ Then initialise the controller as before:
 import { activateControllers } from 'next-epoch';
 import UserController from '../controllers/user/UserController';
 
-export const { GET } = activateControllers(UserController);
+export const { GET } = activateControllers({ controllers: [UserController] });
 ```
 
 Potential file structure with users, posts and comments may look like that:
@@ -483,7 +498,7 @@ Services can use other services:
 import PostService from '../post/PostService';
 
 export default class UserService {
-  static postService = PostService;
+  private static postService = PostService;
 
   static doSomething() {
     this.postService.doSomething();
@@ -499,7 +514,7 @@ In case service A is dependent on service B, and service B is dependent on servi
 import PostService from '../post/PostService';
 
 export default class UserService {
-  static get postService() { return PostService; };
+  private static get postService() { return PostService; };
 
   static doSomething1() {
     this.postService.doSomething2();
@@ -513,7 +528,7 @@ export default class UserService {
 import UserService from '../post/UserService';
 
 export default class PostService {
-  static get userService() { return UserService; };
+  private static get userService() { return UserService; };
 
   static doSomething2() {
     this.userService.doSomething1();
@@ -727,7 +742,7 @@ class UserController {
   }
 }
 
-export const { GET, POST } = activateControllers(UserController);
+export const { GET, POST } = activateControllers({ controllers: [UserController] });
 ```
 
 This is what `createSegment` returns:
@@ -742,10 +757,15 @@ const {
 
 (notice that DELETE method decorator is shortned to `@del`).
 
-`activateControllers` returns all route handlers for all supported HTTP methods.
+`activateControllers` returns all route handlers for all supported HTTP methods and also accepts `onError` handler that allows to listen to all errors for logging. It is important to remember that it is also called on [NEXT_REDIRECT](https://nextjs.org/docs/app/api-reference/functions/redirect). 
 
 ```ts
-export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = activateControllers(...controllers);
+export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = activateControllers({ 
+  controllers,
+  onError(error) {
+    console.log(error);
+  }
+});
 ```
 
 As you may already guess, some of the the variables imported from the library are created by `createSegment` to keep the code cleaner for the "global" segment instance.

@@ -1,4 +1,4 @@
-import { prefix, get, post, put, del, patch, head, options } from '../../../src';
+import { prefix, get, post } from '../../../src';
 
 @prefix('misc')
 export default class MiscController {
@@ -9,31 +9,6 @@ export default class MiscController {
 
   @post()
   static postMethod() {
-    return {};
-  }
-
-  @put()
-  static putMethod() {
-    return {};
-  }
-
-  @del()
-  static delMethod() {
-    return {};
-  }
-
-  @patch()
-  static patchMethod() {
-    return {};
-  }
-
-  @head()
-  static headMethod() {
-    return {};
-  }
-
-  @options()
-  static optionsMethod() {
     return {};
   }
 }
