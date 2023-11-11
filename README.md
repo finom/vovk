@@ -1,6 +1,5 @@
 <p align="center">
-<img width="500" alt="next-smoothie" src="https://github.com/finom/next-smoothie/assets/1082083/488872dc-19e1-4c4f-88ef-82791fc5cc91">
- <br>
+<img width="400" alt="next-smoothie" src="https://github.com/finom/next-smoothie/assets/1082083/72a568bc-130e-429b-a221-ad95d45608d5"> <br>
 <img width="600" alt="next-smoothie" src="https://github.com/finom/next-smoothie/assets/1082083/66cdf657-5d72-499d-8564-2b2cb641f4d2">
 </p>
 
