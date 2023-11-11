@@ -9,4 +9,4 @@ class IsolatedController {
   }
 }
 
-export const { GET } = activateControllers({ controllers: [IsolatedController] });
+export const { GET } = activateControllers([IsolatedController]);

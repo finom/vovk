@@ -50,17 +50,16 @@ export default function createSegment() {
     };
   };
 
-  const activateControllers = ({
-    controllers,
-    onError,
-  }: {
+  const activateControllers = (
     // eslint-disable-next-line @typescript-eslint/ban-types
-    controllers: Function[];
-    onError?: (err: Error) => void;
-  }) => {
+    controllers: Function[],
+    options?: {
+      onError?: (err: Error) => void;
+    }
+  ) => {
     for (const controller of controllers as TargetController[]) {
       controller._activated = true;
-      controller._onError = onError;
+      controller._onError = options?.onError;
     }
 
     return {

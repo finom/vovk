@@ -12,8 +12,8 @@ import HeadersController from '../../../controllers/HeadersController';
 import RedirectController from '../../../controllers/RedirectController';
 import MiscController from '../../../controllers/MiscController';
 
-export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers({
-  controllers: [
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers(
+  [
     ...trimControllers,
     InputController,
     CustomDecoratorController,
@@ -27,7 +27,9 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
     RedirectController,
     MiscController,
   ],
-  onError: (err) => {
-    console.log('onError', err);
-  },
-});
+  {
+    onError: (err) => {
+      console.log('onError', err);
+    },
+  }
+);
