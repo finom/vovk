@@ -4,4 +4,5 @@ test
 jest.config.js
 tsconfig.tsbuildinfo
 .github
+.assets
 tsconfig.eslint.json
