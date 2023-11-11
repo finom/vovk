@@ -12,48 +12,6 @@
 <em>6 minutes of reading</em>
 </p>
 
-<!-- toc -->
-
-- [Features](#features)
-- [Quick start](#quick-start)
-- [Overview](#overview)
-  * [Why Next.js is a good choice?](#why-nextjs-is-a-good-choice)
-  * [Limitations of Next.js API Routes](#limitations-of-nextjs-api-routes)
-  * [A potential solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
-  * [The new solution: next-smoothie](#the-new-solution-next-smoothie)
-    + [Custom decorators](#custom-decorators)
-      - [`authGuard` example](#authguard-example)
-      - [`handleZodErrors` example](#handlezoderrors-example)
-    + [Service-Controller pattern](#service-controller-pattern)
-    + [Return type](#return-type)
-    + [Error handling](#error-handling)
-- [API](#api)
-  * [`createSegment` function, global decorators and handlers](#createsegment-function-global-decorators-and-handlers)
-  * [`HttpException` class and `HttpStatus` enum](#httpexception-class-and-httpstatus-enum)
-  * [`HttpMethod` enum](#httpmethod-enum)
-  * [`createDecorator` function](#createdecorator-function)
-
-<!-- tocstop -->
-
-<a href="https://www.npmjs.com/package/next-smoothie">
-<img src="https://badge.fury.io/js/next-smoothie.svg" alt="npm version" /> 
-</a>
-<a href="https://www.typescriptlang.org/">
-<img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
-</a>
-<a href="https://github.com/finom/next-smoothie/actions/workflows/main.yml">
-<img src="https://github.com/finom/next-smoothie/actions/workflows/main.yml/badge.svg" alt="Build status" />
-</a>
-
-## Features
-
-**next-smoothie** offers a range of features to streamline your Next.js [App Router](https://nextjs.org/docs/app) experience:
-
-- Elegant decorator syntax (all HTTP methods are available). Custom decorators for varied needs are supported.
-- Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
-- Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
-- Service-Controller pattern is supported.
-
 ## Quick start
 
 Install: `npm i next-smoothie` or `yarn add next-smoothie`.
@@ -99,6 +57,55 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
   body: JSON.stringify({ hello: 'world' }),
 });
 ```
+
+<a href="https://www.npmjs.com/package/next-smoothie">
+<img src="https://badge.fury.io/js/next-smoothie.svg" alt="npm version" /> 
+</a>
+<a href="https://www.typescriptlang.org/">
+<img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
+</a>
+<a href="https://github.com/finom/next-smoothie/actions/workflows/main.yml">
+<img src="https://github.com/finom/next-smoothie/actions/workflows/main.yml/badge.svg" alt="Build status" />
+</a>
+
+
+## Table of contents 
+
+<!-- toc -->
+
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Overview](#overview)
+  * [Why Next.js is a good choice?](#why-nextjs-is-a-good-choice)
+  * [Limitations of Next.js API Routes](#limitations-of-nextjs-api-routes)
+  * [A potential solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
+  * [The new solution: next-smoothie](#the-new-solution-next-smoothie)
+    + [Custom decorators](#custom-decorators)
+      - [`authGuard` example](#authguard-example)
+      - [`handleZodErrors` example](#handlezoderrors-example)
+    + [Service-Controller pattern](#service-controller-pattern)
+    + [Return type](#return-type)
+    + [Error handling](#error-handling)
+- [API](#api)
+  * [`createSegment` function, global decorators and handlers](#createsegment-function-global-decorators-and-handlers)
+  * [`HttpException` class and `HttpStatus` enum](#httpexception-class-and-httpstatus-enum)
+  * [`HttpMethod` enum](#httpmethod-enum)
+  * [`createDecorator` function](#createdecorator-function)
+
+<!-- tocstop -->
+
+
+
+## Features
+
+**next-smoothie** offers a range of features to streamline your Next.js [App Router](https://nextjs.org/docs/app) experience:
+
+- Elegant decorator syntax (all HTTP methods are available). Custom decorators for varied needs are supported.
+- Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
+- Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
+- Service-Controller pattern is supported.
+
+
 
 ## Overview
 
