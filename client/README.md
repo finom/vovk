@@ -3,9 +3,9 @@
 <img width="400" alt="next-smoothie" src="../.assets/smoothy.png"> <br>
  <br>
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../.assets/text-smoothie-client-white.png">
-  <source media="(prefers-color-scheme: light)" srcset="../.assets/text-smoothie-client-dark.png">
-  <img alt="next-smoothie" src="../.assets/text-smoothie-client-dark.png">
+  <source width="800" media="(prefers-color-scheme: dark)" srcset="../.assets/text-smoothie-client-white.png">
+  <source width="800" media="(prefers-color-scheme: light)" srcset="../.assets/text-smoothie-client-dark.png">
+  <img width="800" alt="next-smoothie" src="../.assets/text-smoothie-client-dark.png">
 </picture>
 </p>
 
