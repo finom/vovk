@@ -1,18 +1,10 @@
-# next-smoothie
 
 <p align="center">
-<img width="439" alt="image" src="https://github.com/finom/next-smoothie/assets/1082083/488872dc-19e1-4c4f-88ef-82791fc5cc91">
- <br />
-<a href="https://www.npmjs.com/package/next-smoothie">
-<img src="https://badge.fury.io/js/next-smoothie.svg" alt="npm version" /> 
-</a>
-<a href="https://www.typescriptlang.org/">
-<img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
-</a>
-<a href="https://github.com/finom/next-smoothie/actions/workflows/main.yml">
-<img src="https://github.com/finom/next-smoothie/actions/workflows/main.yml/badge.svg" alt="Build status" />
-</a>
+<img width="500" alt="next-smoothie" src="https://github.com/finom/next-smoothie/assets/1082083/488872dc-19e1-4c4f-88ef-82791fc5cc91">
+ <br>
+<img width="600" alt="next-smoothie" src="https://github.com/finom/next-smoothie/assets/1082083/66cdf657-5d72-499d-8564-2b2cb641f4d2">
 </p>
+
 
 <p align="center">
 <strong>Next.js REST API library for scalable full-stack applications</strong>
@@ -42,6 +34,16 @@
   * [`createDecorator` function](#createdecorator-function)
 
 <!-- tocstop -->
+
+<a href="https://www.npmjs.com/package/next-smoothie">
+<img src="https://badge.fury.io/js/next-smoothie.svg" alt="npm version" /> 
+</a>
+<a href="https://www.typescriptlang.org/">
+<img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
+</a>
+<a href="https://github.com/finom/next-smoothie/actions/workflows/main.yml">
+<img src="https://github.com/finom/next-smoothie/actions/workflows/main.yml/badge.svg" alt="Build status" />
+</a>
 
 ## Features
 
