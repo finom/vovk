@@ -1,4 +1,3 @@
-
 <p align="center">
 <img width="500" alt="next-smoothie" src="https://github.com/finom/next-smoothie/assets/1082083/488872dc-19e1-4c4f-88ef-82791fc5cc91">
  <br>
@@ -45,7 +44,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`) and ca
 import { activateControllers } from 'next-smoothie';
 import UserController from '../../../controllers/UserController';
 
-export const { GET, POST } = activateControllers({ controllers: [UserController] });
+export const { GET, POST } = activateControllers([UserController]);
 ```
 
 After that you can load the data using any fetching library.
@@ -69,12 +68,11 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
 </a>
 
 
-## Table of contents 
+## Table of contents
 
 <!-- toc -->
 
 - [Features](#features)
-- [Quick start](#quick-start)
 - [Overview](#overview)
   * [Why Next.js is a good choice?](#why-nextjs-is-a-good-choice)
   * [Limitations of Next.js API Routes](#limitations-of-nextjs-api-routes)
@@ -93,8 +91,6 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
   * [`createDecorator` function](#createdecorator-function)
 
 <!-- tocstop -->
-
-
 
 ## Features
 
@@ -285,7 +281,7 @@ import { activateControllers } from 'next-smoothie';
 import UserController from '../controllers/UserController';
 import TeamController from '../controllers/TeamController';
 
-export const { GET, POST, PUT } = activateControllers({ controllers: [UserController, TeamController] });
+export const { GET, POST, PUT } = activateControllers([UserController, TeamController]);
 ```
 
 That's it. Notice that the methods modified by the decorators defined as `static` methods and the classes are never instantiated.
@@ -467,7 +463,7 @@ Then initialise the controller as before:
 import { activateControllers } from 'next-smoothie';
 import UserController from '../controllers/user/UserController';
 
-export const { GET } = activateControllers({ controllers: [UserController] });
+export const { GET } = activateControllers([UserController]);
 ```
 
 Potential file structure with users, posts and comments may look like that:
@@ -736,7 +732,7 @@ class UserController {
   }
 }
 
-export const { GET, POST } = activateControllers({ controllers: [UserController] });
+export const { GET, POST } = activateControllers([UserController]);
 ```
 
 This is what `createSegment` returns:
@@ -751,11 +747,10 @@ const {
 
 (notice that DELETE method decorator is shortned to `@del`).
 
-`activateControllers` returns all route handlers for all supported HTTP methods and also accepts `onError` handler that allows to listen to all errors for logging. It is important to remember that it is also called on [NEXT_REDIRECT](https://nextjs.org/docs/app/api-reference/functions/redirect). 
+`activateControllers` returns all route handlers for all supported HTTP methods and also accepts options with `onError` handler that allows to listen to all errors for logging. It is important to remember that it is also called on [NEXT_REDIRECT](https://nextjs.org/docs/app/api-reference/functions/redirect). 
 
 ```ts
-export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = activateControllers({ 
-  controllers,
+export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = activateControllers(controllers, { 
   onError(error) {
     console.log(error);
   }
