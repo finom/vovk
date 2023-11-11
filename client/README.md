@@ -1,8 +1,12 @@
 
 <p align="center">
-<img width="400" alt="next-smoothie" src="https://github.com/finom/next-smoothie/assets/1082083/72a568bc-130e-429b-a221-ad95d45608d5">
+<img width="400" alt="next-smoothie" src="../.assets/smoothy.png"> <br>
  <br>
-<img width="600" alt="image" src="https://github.com/finom/next-smoothie/assets/1082083/9f9f05f5-db0d-44e2-a305-4d9c387d5eb4">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../.assets/text-smoothie-client-white.png">
+  <source media="(prefers-color-scheme: light)" srcset="../.assets/text-smoothie-client-dark.png">
+  <img alt="next-smoothie" src="../.assets/text-smoothie-client-dark.png">
+</picture>
 </p>
 
 
