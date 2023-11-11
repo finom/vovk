@@ -1,7 +1,7 @@
 # next-smoothie
 
 <p align="center">
-<img width="439" alt="image" src="https://github.com/finom/next-wednesday/assets/1082083/852b3987-f604-4e6a-bdc6-29bea0ea8399">
+<img width="439" alt="image" src="https://github.com/finom/next-smoothie/assets/1082083/488872dc-19e1-4c4f-88ef-82791fc5cc91">
  <br />
 <a href="https://www.npmjs.com/package/next-smoothie">
 <img src="https://badge.fury.io/js/next-smoothie.svg" alt="npm version" /> 
