@@ -1,31 +1,16 @@
-# next-epoch
-
-<!-- 
-Next-Forge: Conveying creation and crafting in the realm of API development.
-Next-Multiverse
-Next-Timeline
-Next-Vertex: Indicating the highest point of achievement in API management.
-Next-Wave
-Next-Utopia
-Isonext
-Next-Life
-Next-Candy
-Next-Smoothie !!!
-Next-Gem
-Next-Treat
--->
+# next-smoothie
 
 <p align="center">
 <img width="439" alt="image" src="https://github.com/finom/next-wednesday/assets/1082083/852b3987-f604-4e6a-bdc6-29bea0ea8399">
  <br />
-<a href="https://www.npmjs.com/package/next-epoch">
-<img src="https://badge.fury.io/js/next-epoch.svg" alt="npm version" /> 
+<a href="https://www.npmjs.com/package/next-smoothie">
+<img src="https://badge.fury.io/js/next-smoothie.svg" alt="npm version" /> 
 </a>
 <a href="https://www.typescriptlang.org/">
 <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
 </a>
-<a href="https://github.com/finom/next-epoch/actions/workflows/main.yml">
-<img src="https://github.com/finom/next-epoch/actions/workflows/main.yml/badge.svg" alt="Build status" />
+<a href="https://github.com/finom/next-smoothie/actions/workflows/main.yml">
+<img src="https://github.com/finom/next-smoothie/actions/workflows/main.yml/badge.svg" alt="Build status" />
 </a>
 </p>
 
@@ -43,7 +28,7 @@ Next-Treat
   * [Why Next.js is a good choice?](#why-nextjs-is-a-good-choice)
   * [Limitations of Next.js API Routes](#limitations-of-nextjs-api-routes)
   * [A potential solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
-  * [The new solution: next-epoch](#the-new-solution-next-epoch)
+  * [The new solution: next-smoothie](#the-new-solution-next-smoothie)
     + [Custom decorators](#custom-decorators)
       - [`authGuard` example](#authguard-example)
       - [`handleZodErrors` example](#handlezoderrors-example)
@@ -60,7 +45,7 @@ Next-Treat
 
 ## Features
 
-**next-epoch** offers a range of features to streamline your Next.js [App Router](https://nextjs.org/docs/app) experience:
+**next-smoothie** offers a range of features to streamline your Next.js [App Router](https://nextjs.org/docs/app) experience:
 
 - Elegant decorator syntax (all HTTP methods are available). Custom decorators for varied needs are supported.
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
@@ -69,13 +54,13 @@ Next-Treat
 
 ## Quick start
 
-Install: `npm i next-epoch` or `yarn add next-epoch`.
+Install: `npm i next-smoothie` or `yarn add next-smoothie`.
 
 Create the first controller:
 
 ```ts
 // /src/controllers/UserController.ts
-import { get, post, prefix } from 'next-epoch';
+import { get, post, prefix } from 'next-smoothie';
 
 @prefix('users') 
 export default class UserController {
@@ -97,7 +82,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`) and ca
 
 ```ts
 // /src/app/api/[[...]]/route.ts
-import { activateControllers } from 'next-epoch';
+import { activateControllers } from 'next-smoothie';
 import UserController from '../../../controllers/UserController';
 
 export const { GET, POST } = activateControllers({ controllers: [UserController] });
@@ -209,7 +194,7 @@ It would be nice if we could:
 - Apply NestJS-like syntax to define routes;
 - Make the project development and infrastructure cheaper.
 
-### The new solution: next-epoch
+### The new solution: next-smoothie
 
 Next.js includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to implement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
 
@@ -226,7 +211,7 @@ Create your controllers:
 
 ```ts
 // /controllers/UserController.ts
-import { get, post, put, prefix } from 'next-epoch';
+import { get, post, put, prefix } from 'next-smoothie';
 
 @prefix('users')
 export default class UserController {
@@ -262,7 +247,7 @@ export default class UserController {
 
 ```ts
 // /controllers/TeamController.ts
-import { get, post, prefix } from 'next-epoch';
+import { get, post, prefix } from 'next-smoothie';
 
 @prefix('teams')
 export default class TeamController {
@@ -287,7 +272,7 @@ Finally, create the catch-all route.
 
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
-import { activateControllers } from 'next-epoch';
+import { activateControllers } from 'next-smoothie';
 import UserController from '../controllers/UserController';
 import TeamController from '../controllers/TeamController';
 
@@ -353,7 +338,7 @@ Then define the `authGuard` decorator itself.
 
 ```ts
 // authGuard.ts
-import { HttpException, HttpStatus, createDecorator } from 'next-epoch';
+import { HttpException, HttpStatus, createDecorator } from 'next-smoothie';
 import { NextRequest } from 'next/server';
 import checkAuth from './checkAuth';
 
@@ -398,7 +383,7 @@ You can catch any error in your custom decorator and provide relevant response t
 
 ```ts
 import { ZodError } from 'zod';
-import { HttpException, HttpStatus, createDecorator } from 'next-epoch';
+import { HttpException, HttpStatus, createDecorator } from 'next-smoothie';
 
 const handleZodErrors = createDecorator(async (req, next) => {
   try {
@@ -470,7 +455,7 @@ Then initialise the controller as before:
 
 ```ts
 // /api/[[...]]/route.ts
-import { activateControllers } from 'next-epoch';
+import { activateControllers } from 'next-smoothie';
 import UserController from '../controllers/user/UserController';
 
 export const { GET } = activateControllers({ controllers: [UserController] });
@@ -642,7 +627,7 @@ You can throw errors directly from the controller method. The library catches th
 
 ```ts
 // some client-side code
-import { type ErrorResponseBody } from 'next-epoch';
+import { type ErrorResponseBody } from 'next-smoothie';
 
 const dataOrError: MyData | ErrorResponseBody = await (await fetch('...')).json();
 ```
@@ -660,7 +645,7 @@ type ErrorResponseBody = {
 To throw an error you can use `HttpException` class together with `HttpStatus` enum. You can also throw the errors from the service methods.
 
 ```ts
-import { HttpException, HttpStatus } from 'next-epoch'
+import { HttpException, HttpStatus } from 'next-smoothie'
 
 // ...
 @get()
@@ -702,7 +687,7 @@ import {
   get, post, put, patch, del, head, options, 
   prefix, 
   activateControllers,
-} from 'next-epoch';
+} from 'next-smoothie';
 ```
 
 ### `createSegment` function, global decorators and handlers
@@ -726,7 +711,7 @@ The function `createSegment` initialises route handlers for one particular route
 In this example, only the `users` dynamic route will utilize the library. With `createSegment` you can define local variables that are going to be used for one particular segment.
 
 ```ts
-import { createSegment } from 'next-epoch';
+import { createSegment } from 'next-smoothie';
 
 const { get, post, activateControllers } = createSegment();
 
@@ -776,7 +761,7 @@ import {
   get, post, put, patch, del, head, options, 
   prefix, 
   activateControllers,
-} from 'next-epoch';
+} from 'next-smoothie';
 ```
 
 
@@ -786,7 +771,7 @@ import {
 `HttpException` accepts 2 arguments. The first one is an HTTP code that can be retrieved from `HttpStatus`, the other one is error text.
 
 ```ts
-import { HttpException, HttpStatus } from 'next-epoch';
+import { HttpException, HttpStatus } from 'next-smoothie';
 
 // ...
 throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
@@ -812,7 +797,7 @@ fetch('...', {
 - Additional arguments are passed through to the decorator factory.
 
 ```ts
-import { createDecorator, get } from 'next-epoch';
+import { createDecorator, get } from 'next-smoothie';
 
 const myDecorator = createDecorator((req, next, a: string, b: number) => {
   console.log(a, b); // Outputs: "foo", 1
