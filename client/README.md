@@ -1,4 +1,3 @@
-# WIP - coming soon
 
 <p align="center">
 <img width="500" alt="next-smoothie" src="https://github.com/finom/next-smoothie/assets/1082083/488872dc-19e1-4c4f-88ef-82791fc5cc91">
