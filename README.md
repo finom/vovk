@@ -2,9 +2,9 @@
 <img width="400" alt="next-smoothie" src="./.assets/smoothy.png"> <br>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./.assets/text-smoothie-white.png">
-  <source media="(prefers-color-scheme: light)" srcset="./.assets/text-smoothie-dark.png">
-  <img alt="next-smoothie" src="./.assets/text-smoothie-dark.png">
+  <source width="600" media="(prefers-color-scheme: dark)" srcset="./.assets/text-smoothie-white.png">
+  <source width="600" media="(prefers-color-scheme: light)" srcset="./.assets/text-smoothie-dark.png">
+  <img width="600" alt="next-smoothie" src="./.assets/text-smoothie-dark.png">
 </picture>
 
 </p>
