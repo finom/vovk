@@ -323,7 +323,7 @@ export default class MyController {
 }
 ```
 
-To create a decorator you can use `createDecorator`. All further examples are going to use Prisma ORM but you can use any ORM you like. 
+To create a decorator you can use `createDecorator` described at the API section. All further examples are going to use Prisma ORM but you can use any ORM you like. 
 
 ##### `authGuard` example
 
