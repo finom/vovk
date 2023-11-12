@@ -1,11 +1,11 @@
 
 <p align="center">
-<img width="400" alt="next-smoothie" src="../.assets/smoothy.png"> <br>
+<img width="250" alt="next-smoothie" src="../.assets/smoothy.png"> <br>
  <br>
 <picture>
-  <source width="800" media="(prefers-color-scheme: dark)" srcset="../.assets/text-smoothie-client-white.png">
-  <source width="800" media="(prefers-color-scheme: light)" srcset="../.assets/text-smoothie-client-dark.png">
-  <img width="800" alt="next-smoothie" src="../.assets/text-smoothie-client-dark.png">
+  <source width="600" media="(prefers-color-scheme: dark)" srcset="../.assets/text-smoothie-client-white.png">
+  <source width="600" media="(prefers-color-scheme: light)" srcset="../.assets/text-smoothie-client-dark.png">
+  <img width="600" alt="next-smoothie" src="../.assets/text-smoothie-client-dark.png">
 </picture>
 </p>
 
@@ -13,7 +13,6 @@
 <p align="center">
 <strong>WIP. Coming soon.</strong>
 <br />
-<em>6 minutes of reading</em>
 </p>
 
 <!--
