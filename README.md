@@ -323,111 +323,9 @@ export default class MyController {
 }
 ```
 
-To create a decorator you can use `createDecorator` described at the API section. All further examples are going to use Prisma ORM but you can use any ORM you like. 
+To create a decorator you can use `createDecorator` that's described at the API section with a few examples.
 
-##### `authGuard` example
-
-There is the example code that defines `authGuard` decorator that does two things:
-
-- Checks if a user is authorised and returns an Unauthorised status if not.
-- Adds `currentUser` to the request object.
-
-To extend `req` object you can define your custom interface that extends `NextRequest`.
-
-```ts
-// types.ts
-import { type NextRequest } from 'next/server'
-import { type User } from '@prisma/client';
-
-export default interface GuardedRequest extends NextRequest {
-  currentUser: User;
-}
-```
-
-Then define the `authGuard` decorator itself.
-
-```ts
-// authGuard.ts
-import { HttpException, HttpStatus, createDecorator } from 'next-smoothie';
-import { NextRequest } from 'next/server';
-import checkAuth from './checkAuth';
-
-const authGuard = createDecorator(async (req: GuardedRequest, next) => {
-  // ... define userId and isAuthorised
-  // parse access token for example
-
-  if (!isAuthorised) {
-    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
-  }
-
-  // let's imagine you use Prisma and you want to find a user by userId
-  const currentUser = await prisma.user.findUnique({ where: { id: userId } });
-
-  req.currentUser = currentUser;
-
-  return next();
-});
-
-export default authGuard;
-```
-
-And finally use the decorator as we did above:
-
-```ts
-// ...
-export default class UserController {
-  // ...
-  @get('me')
-  @authGuard()
-  static async getMe(req: GuardedRequest) {
-    return req.currentUser;
-  }
-
-  // ...
-}
-```
-
-##### `handleZodErrors` example
-
-You can catch any error in your custom decorator and provide relevant response to the client. At this exmple we're checking if `ZodError` is thrown. 
-
-```ts
-import { ZodError } from 'zod';
-import { HttpException, HttpStatus, createDecorator } from 'next-smoothie';
-
-const handleZodErrors = createDecorator(async (req, next) => {
-  try {
-    return await next();
-  } catch (e) {
-    if (e instanceof ZodError) {
-      throw new HttpException(
-        HttpStatus.BAD_REQUEST,
-        e.errors?.map((error) => `${error.code}: ${error.message}`).join('; ') ?? 'Validation error'
-      );
-    }
-
-    throw e;
-  }
-});
-
-export default handleZodErrors;
-```
-
-If `ZodModel.parse` encounters an error and throws a `ZodError` the decorator is going to catch it and return corresponding response.
-
-```ts
-// ...
-export default class UserController {
-  // ...
-  @post()
-  @handleZodErrors()
-  static async create(req: NextRequest) {
-    const data = ZodModel.parse(await req.json());
-  }
-
-  // ...
-}
-```
+All further examples are going to use Prisma ORM but you can use any ORM you like. 
 
 #### Service-Controller pattern
 
@@ -825,6 +723,110 @@ class MyController {
   static get() {
     // ...
   }
+}
+```
+
+#### `authGuard` example
+
+There is the example code that defines `authGuard` decorator that does two things:
+
+- Checks if a user is authorised and returns an Unauthorised status if not.
+- Adds `currentUser` to the request object.
+
+To extend `req` object you can define your custom interface that extends `NextRequest`.
+
+```ts
+// types.ts
+import { type NextRequest } from 'next/server'
+import { type User } from '@prisma/client';
+
+export default interface GuardedRequest extends NextRequest {
+  currentUser: User;
+}
+```
+
+Then define the `authGuard` decorator itself.
+
+```ts
+// authGuard.ts
+import { HttpException, HttpStatus, createDecorator } from 'next-smoothie';
+import { NextRequest } from 'next/server';
+import checkAuth from './checkAuth';
+
+const authGuard = createDecorator(async (req: GuardedRequest, next) => {
+  // ... define userId and isAuthorised
+  // parse access token for example
+
+  if (!isAuthorised) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
+  }
+
+  // let's imagine you use Prisma and you want to find a user by userId
+  const currentUser = await prisma.user.findUnique({ where: { id: userId } });
+
+  req.currentUser = currentUser;
+
+  return next();
+});
+
+export default authGuard;
+```
+
+And finally use the decorator as we did above:
+
+```ts
+// ...
+export default class UserController {
+  // ...
+  @get('me')
+  @authGuard()
+  static async getMe(req: GuardedRequest) {
+    return req.currentUser;
+  }
+
+  // ...
+}
+```
+
+#### `handleZodErrors` example
+
+You can catch any error in your custom decorator and provide relevant response to the client. At this exmple we're checking if `ZodError` is thrown. 
+
+```ts
+import { ZodError } from 'zod';
+import { HttpException, HttpStatus, createDecorator } from 'next-smoothie';
+
+const handleZodErrors = createDecorator(async (req, next) => {
+  try {
+    return await next();
+  } catch (e) {
+    if (e instanceof ZodError) {
+      throw new HttpException(
+        HttpStatus.BAD_REQUEST,
+        e.errors?.map((error) => `${error.code}: ${error.message}`).join('; ') ?? 'Validation error'
+      );
+    }
+
+    throw e;
+  }
+});
+
+export default handleZodErrors;
+```
+
+If `ZodModel.parse` encounters an error and throws a `ZodError` the decorator is going to catch it and return corresponding response.
+
+```ts
+// ...
+export default class UserController {
+  // ...
+  @post()
+  @handleZodErrors()
+  static async create(req: NextRequest) {
+    const data = ZodModel.parse(await req.json());
+  }
+
+  // ...
 }
 ```
 

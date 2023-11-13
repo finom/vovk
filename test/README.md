@@ -7,7 +7,8 @@ Cases covered by the unit tests:
 - Global router
 - Isolated router
 - Normal NextJS route (check if its not broken)
-- All decorators
+- All HTTP decorators
+- Auto HTTP decorators
 - Custom decorator
 - Custom decorator created with `createDecorator`
 - Errors

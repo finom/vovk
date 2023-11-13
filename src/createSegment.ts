@@ -14,30 +14,68 @@ const isClass = (func: unknown) => {
 export default function createSegment() {
   const r = new Segment();
 
-  const getDecorator =
-    (httpMethod: HttpMethod) =>
-    (givenPath = '') => {
-      const path = trimPath(givenPath);
-      return (givenTarget: KnownAny, propertyKey: string) => {
-        const target = givenTarget as TargetController;
-        if (!isClass(target)) {
-          let decoratorName = httpMethod.toLowerCase();
-          if (decoratorName === 'delete') decoratorName = 'del';
-          throw new Error(
-            `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}.`
-          );
-        }
-        const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(target) ?? {};
-        r._routes[httpMethod].set(target, methods);
-        const metadata = target._metadata ?? {};
+  const getDecoratorCreator = (httpMethod: HttpMethod) => {
+    const assignMetadata = (target: TargetController, propertyKey: string, path: string) => {
+      if (!isClass(target)) {
+        let decoratorName = httpMethod.toLowerCase();
+        if (decoratorName === 'delete') decoratorName = 'del';
+        throw new Error(
+          `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}.`
+        );
+      }
+      const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(target) ?? {};
+      r._routes[httpMethod].set(target, methods);
+      const metadata = target._metadata ?? {};
 
-        target._metadata = metadata;
+      target._metadata = metadata;
 
-        metadata[propertyKey] = { path, httpMethod };
+      metadata[propertyKey] = { path, httpMethod };
 
-        methods[path] = target[propertyKey] as RouteHandler;
-      };
+      methods[path] = target[propertyKey] as RouteHandler;
     };
+
+    function decoratorCreator(givenPath = '') {
+      const path = trimPath(givenPath);
+
+      function decorator(givenTarget: KnownAny, propertyKey: string) {
+        const target = givenTarget as TargetController;
+        assignMetadata(target, propertyKey, path);
+      }
+
+      return decorator;
+    }
+
+    const toKebabCase = (str: string) => {
+      return (
+        str
+          // Insert a hyphen before each uppercase letter, then convert to lowercase
+          .replace(/([A-Z])/g, '-$1')
+          .toLowerCase()
+          // Remove any leading hyphen if the original string started with an uppercase letter
+          .replace(/^-/, '')
+      );
+    };
+
+    const auto = () => {
+      function decorator(givenTarget: KnownAny, propertyKey: string) {
+        const target = givenTarget as TargetController;
+        const controllerName = target.name;
+
+        assignMetadata(target, propertyKey, `${toKebabCase(controllerName)}/${toKebabCase(propertyKey)}`);
+      }
+
+      return decorator;
+    };
+
+    const enhancedDecoratorCreator = decoratorCreator as {
+      (...args: Parameters<typeof decoratorCreator>): ReturnType<typeof decoratorCreator>;
+      auto: typeof auto;
+    };
+
+    enhancedDecoratorCreator.auto = auto;
+
+    return enhancedDecoratorCreator;
+  };
 
   const prefix = (givenPath = '') => {
     const path = trimPath(givenPath);
@@ -74,13 +112,13 @@ export default function createSegment() {
   };
 
   return {
-    get: getDecorator(HttpMethod.GET),
-    post: getDecorator(HttpMethod.POST),
-    put: getDecorator(HttpMethod.PUT),
-    patch: getDecorator(HttpMethod.PATCH),
-    del: getDecorator(HttpMethod.DELETE),
-    head: getDecorator(HttpMethod.HEAD),
-    options: getDecorator(HttpMethod.OPTIONS),
+    get: getDecoratorCreator(HttpMethod.GET),
+    post: getDecoratorCreator(HttpMethod.POST),
+    put: getDecoratorCreator(HttpMethod.PUT),
+    patch: getDecoratorCreator(HttpMethod.PATCH),
+    del: getDecoratorCreator(HttpMethod.DELETE),
+    head: getDecoratorCreator(HttpMethod.HEAD),
+    options: getDecoratorCreator(HttpMethod.OPTIONS),
     prefix,
     activateControllers,
   };

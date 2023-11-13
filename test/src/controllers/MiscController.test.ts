@@ -1,9 +1,39 @@
 import { it, expect, describe } from '@jest/globals';
 import MiscController from './MiscController';
 import { TargetController } from '../../../src/types';
+import { NextRequest } from 'next/server';
+import { createDecorator, get } from '../../../src';
 
 describe('Hidden features', () => {
   it(`Metadata`, () => {
     expect((MiscController as unknown as TargetController)._metadata).toHaveProperty(`getMethod`);
+  });
+
+  it('Method preserves name and controller properties', () => {
+    type EnhancedNextRequest = NextRequest & {
+      foo?: string;
+      bar?: string;
+    };
+
+    const customDecorator1 = createDecorator((req: EnhancedNextRequest, next, hello: string) => {
+      req.foo = hello;
+      return next();
+    });
+
+    const customDecorator2 = createDecorator((req: EnhancedNextRequest, next, hello: string) => {
+      req.bar = hello;
+      return next();
+    });
+
+    class MyController {
+      @get()
+      @customDecorator1('foo')
+      @customDecorator2('bar')
+      static myMethod() {
+        return {};
+      }
+    }
+
+    expect(MyController.myMethod.name).toBe('myMethod');
   });
 });

@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import type { KnownAny } from './types';
+import type { KnownAny, TargetController } from './types';
 
 export default function createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
   handler: (req: REQUEST, next: () => Promise<unknown>, ...args: ARGS) => unknown
@@ -9,10 +9,15 @@ export default function createDecorator<ARGS extends unknown[], REQUEST = NextRe
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const originalMethod: unknown = target[propertyKey];
       if (typeof originalMethod === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        target[propertyKey] = function method(req: REQUEST, context?: unknown) {
-          return handler(req, async () => (await originalMethod.call(target, req, context)) as unknown, ...args);
+        const method = function method(req: REQUEST, params?: unknown) {
+          return handler(req, async () => (await originalMethod.call(target, req, params)) as unknown, ...args);
         };
+
+        method._name = (originalMethod as { _name?: string })._name ?? originalMethod.name;
+        method._controller = target as TargetController;
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        target[propertyKey] = method;
       } else {
         throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
       }

@@ -11,6 +11,7 @@ import NextResponseController from '../../../controllers/NextResponseController'
 import HeadersController from '../../../controllers/HeadersController';
 import RedirectController from '../../../controllers/RedirectController';
 import MiscController from '../../../controllers/MiscController';
+import AutoDecoratorsController from '../../../controllers/AutoDecoratorsController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers(
   [
@@ -26,6 +27,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
     HeadersController,
     RedirectController,
     MiscController,
+    AutoDecoratorsController,
   ],
   {
     onError: (err) => {
