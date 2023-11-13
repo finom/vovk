@@ -84,8 +84,6 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
   * [A potential solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
   * [The new solution: next-smoothie](#the-new-solution-next-smoothie)
     + [Custom decorators](#custom-decorators)
-      - [`authGuard` example](#authguard-example)
-      - [`handleZodErrors` example](#handlezoderrors-example)
     + [Service-Controller pattern](#service-controller-pattern)
     + [Return type](#return-type)
     + [Error handling](#error-handling)
@@ -94,6 +92,8 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
   * [`HttpException` class and `HttpStatus` enum](#httpexception-class-and-httpstatus-enum)
   * [`HttpMethod` enum](#httpmethod-enum)
   * [`createDecorator` function](#createdecorator-function)
+    + [`authGuard` example](#authguard-example)
+    + [`handleZodErrors` example](#handlezoderrors-example)
 
 <!-- tocstop -->
 

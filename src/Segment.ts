@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody, TargetController } from './types';
+import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody, SmoothieController } from './types';
 import HttpException from './HttpException';
 
 export default class Segment {
@@ -59,7 +59,7 @@ export default class Segment {
     const methodParams: Record<string, string> = {};
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const handlers: Record<string, { staticMethod: RouteHandler; controller: TargetController }> = Object.fromEntries(
+    const handlers: Record<string, { staticMethod: RouteHandler; controller: SmoothieController }> = Object.fromEntries(
       [...controllers.entries()]
         .map(([controller, staticMethods]) => {
           const prefix = controller._prefix ?? '';

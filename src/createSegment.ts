@@ -1,21 +1,14 @@
 import Segment from './Segment';
-import { HttpMethod, KnownAny, RouteHandler, TargetController } from './types';
+import { HttpMethod, KnownAny, RouteHandler, SmoothieController } from './types';
 
-const trimPath = (path: string) => {
-  let clean = path.startsWith('/') ? path.slice(1) : path;
-  clean = clean.endsWith('/') ? clean.slice(0, -1) : clean;
-  return clean;
-};
-
-const isClass = (func: unknown) => {
-  return typeof func === 'function' && /class/.test(func.toString());
-};
+const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
+const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
 export default function createSegment() {
   const r = new Segment();
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {
-    const assignMetadata = (target: TargetController, propertyKey: string, path: string) => {
+    const assignMetadata = (target: SmoothieController, propertyKey: string, path: string) => {
       if (!isClass(target)) {
         let decoratorName = httpMethod.toLowerCase();
         if (decoratorName === 'delete') decoratorName = 'del';
@@ -31,6 +24,8 @@ export default function createSegment() {
 
       metadata[propertyKey] = { path, httpMethod };
 
+      (target[propertyKey] as { _controller: SmoothieController })._controller = target;
+
       methods[path] = target[propertyKey] as RouteHandler;
     };
 
@@ -38,7 +33,7 @@ export default function createSegment() {
       const path = trimPath(givenPath);
 
       function decorator(givenTarget: KnownAny, propertyKey: string) {
-        const target = givenTarget as TargetController;
+        const target = givenTarget as SmoothieController;
         assignMetadata(target, propertyKey, path);
       }
 
@@ -58,7 +53,7 @@ export default function createSegment() {
 
     const auto = () => {
       function decorator(givenTarget: KnownAny, propertyKey: string) {
-        const target = givenTarget as TargetController;
+        const target = givenTarget as SmoothieController;
         const controllerName = target.name;
 
         assignMetadata(target, propertyKey, `${toKebabCase(controllerName)}/${toKebabCase(propertyKey)}`);
@@ -81,7 +76,7 @@ export default function createSegment() {
     const path = trimPath(givenPath);
 
     return (givenTarget: KnownAny) => {
-      const target = givenTarget as TargetController;
+      const target = givenTarget as SmoothieController;
       target._prefix = path;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return givenTarget;
@@ -95,7 +90,7 @@ export default function createSegment() {
       onError?: (err: Error) => void;
     }
   ) => {
-    for (const controller of controllers as TargetController[]) {
+    for (const controller of controllers as SmoothieController[]) {
       controller._activated = true;
       controller._onError = options?.onError;
     }

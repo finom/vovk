@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import type { KnownAny, TargetController } from './types';
+import type { KnownAny, SmoothieController } from './types';
 
 export default function createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
   handler: (req: REQUEST, next: () => Promise<unknown>, ...args: ARGS) => unknown
@@ -14,7 +14,7 @@ export default function createDecorator<ARGS extends unknown[], REQUEST = NextRe
         };
 
         method._name = (originalMethod as { _name?: string })._name ?? originalMethod.name;
-        method._controller = target as TargetController;
+        method._controller = target as SmoothieController;
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         target[propertyKey] = method;

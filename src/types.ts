@@ -9,7 +9,7 @@ export type ErrorResponseBody = {
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type TargetController = Function & {
+export type SmoothieController = Function & {
   _prefix?: string;
   _activated?: true;
   _metadata?: Record<string, { path: string; httpMethod: HttpMethod }>;
