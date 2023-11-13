@@ -1,12 +1,12 @@
 import { it, expect, describe } from '@jest/globals';
 import MiscController from './MiscController';
-import { TargetController } from '../../../src/types';
+import { SmoothieController } from '../../../src/types';
 import { NextRequest } from 'next/server';
 import { createDecorator, get } from '../../../src';
 
 describe('Hidden features', () => {
   it(`Metadata`, () => {
-    expect((MiscController as unknown as TargetController)._metadata).toHaveProperty(`getMethod`);
+    expect((MiscController as unknown as SmoothieController)._metadata).toHaveProperty(`getMethod`);
   });
 
   it('Method preserves name and controller properties', () => {
