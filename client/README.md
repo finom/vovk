@@ -28,3 +28,7 @@
 
 ### Self-implemented API
 
+1. Define controller
+2. Define route + save file snippet
+3. Run the server to trigger metadata file creation
+4. Initialise and use the client

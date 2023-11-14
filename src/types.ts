@@ -15,6 +15,7 @@ export type SmoothieController = Function & {
   _metadata?: Record<string, { path: string; httpMethod: HttpMethod }>;
   _onError?: (err: Error) => void;
   name: string;
+  controllerName: string;
   [key: string]: unknown;
 };
 

@@ -35,5 +35,6 @@ describe('Hidden features', () => {
     }
 
     expect(MyController.myMethod.name).toBe('myMethod');
+    expect((MyController.myMethod as unknown as { _controller: MyController })._controller).toBe(MyController);
   });
 });

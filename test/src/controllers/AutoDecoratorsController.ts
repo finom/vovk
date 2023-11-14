@@ -2,6 +2,8 @@ import { prefix, get, post, put, del, patch, head, options } from '../../../src'
 
 @prefix('auto-decorators')
 export default class AutoDecoratorsController {
+  static controllerName = 'AutoDecoratorsController';
+
   @get.auto()
   static getMethod() {
     return {};

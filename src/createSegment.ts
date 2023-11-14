@@ -8,25 +8,32 @@ export default function createSegment() {
   const r = new Segment();
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {
-    const assignMetadata = (target: SmoothieController, propertyKey: string, path: string) => {
-      if (!isClass(target)) {
+    const assignMetadata = (controller: SmoothieController, propertyKey: string, path: string, isAuto?: boolean) => {
+      if (!isClass(controller)) {
         let decoratorName = httpMethod.toLowerCase();
         if (decoratorName === 'delete') decoratorName = 'del';
         throw new Error(
           `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}.`
         );
       }
-      const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(target) ?? {};
-      r._routes[httpMethod].set(target, methods);
-      const metadata = target._metadata ?? {};
 
-      target._metadata = metadata;
+      if (isAuto && !controller.controllerName) {
+        throw new Error(
+          `Controller must have a static property "controllerName" when auto() decorators are used. Check the controller named "${controller.name}".`
+        );
+      }
+
+      const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(controller) ?? {};
+      r._routes[httpMethod].set(controller, methods);
+      const metadata = controller._metadata ?? {};
+
+      controller._metadata = metadata;
 
       metadata[propertyKey] = { path, httpMethod };
 
-      (target[propertyKey] as { _controller: SmoothieController })._controller = target;
+      (controller[propertyKey] as { _controller: SmoothieController })._controller = controller;
 
-      methods[path] = target[propertyKey] as RouteHandler;
+      methods[path] = controller[propertyKey] as RouteHandler;
     };
 
     function decoratorCreator(givenPath = '') {
@@ -56,7 +63,7 @@ export default function createSegment() {
         const target = givenTarget as SmoothieController;
         const controllerName = target.name;
 
-        assignMetadata(target, propertyKey, `${toKebabCase(controllerName)}/${toKebabCase(propertyKey)}`);
+        assignMetadata(target, propertyKey, `${toKebabCase(controllerName)}/${toKebabCase(propertyKey)}`, true);
       }
 
       return decorator;
@@ -93,6 +100,14 @@ export default function createSegment() {
     for (const controller of controllers as SmoothieController[]) {
       controller._activated = true;
       controller._onError = options?.onError;
+
+      if (process.env.NODE_ENV === 'development') {
+        if (controller.controllerName && controller.controllerName !== controller.name) {
+          throw new Error(
+            `Controller "${controller.name}" has a static property "controllerName" that does not match the controller name.`
+          );
+        }
+      }
     }
 
     return {

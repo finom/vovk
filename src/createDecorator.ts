@@ -16,6 +16,9 @@ export default function createDecorator<ARGS extends unknown[], REQUEST = NextRe
         method._name = (originalMethod as { _name?: string })._name ?? originalMethod.name;
         method._controller = target as SmoothieController;
 
+        // TODO define internal method type
+        (originalMethod as unknown as { _controller: SmoothieController })._controller = target as SmoothieController;
+
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         target[propertyKey] = method;
       } else {
