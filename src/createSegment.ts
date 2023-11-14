@@ -61,7 +61,7 @@ export default function createSegment() {
     const auto = () => {
       function decorator(givenTarget: KnownAny, propertyKey: string) {
         const target = givenTarget as SmoothieController;
-        const controllerName = target.name;
+        const controllerName = target.controllerName;
 
         assignMetadata(target, propertyKey, `${toKebabCase(controllerName)}/${toKebabCase(propertyKey)}`, true);
       }
