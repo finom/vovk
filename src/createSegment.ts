@@ -9,6 +9,11 @@ export default function createSegment() {
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {
     const assignMetadata = (controller: SmoothieController, propertyKey: string, path: string) => {
+      if (typeof window !== 'undefined') {
+        throw new Error(
+          'Decorators are intended for server-side use only. You have probably imported a controller on the client-side.'
+        );
+      }
       if (!isClass(controller)) {
         let decoratorName = httpMethod.toLowerCase();
         if (decoratorName === 'delete') decoratorName = 'del';
