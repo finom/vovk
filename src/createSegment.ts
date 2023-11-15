@@ -8,18 +8,12 @@ export default function createSegment() {
   const r = new Segment();
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {
-    const assignMetadata = (controller: SmoothieController, propertyKey: string, path: string, isAuto?: boolean) => {
+    const assignMetadata = (controller: SmoothieController, propertyKey: string, path: string) => {
       if (!isClass(controller)) {
         let decoratorName = httpMethod.toLowerCase();
         if (decoratorName === 'delete') decoratorName = 'del';
         throw new Error(
           `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}.`
-        );
-      }
-
-      if (isAuto && !controller.controllerName) {
-        throw new Error(
-          `Controller must have a static property "controllerName" when auto() decorators are used. Check the controller named "${controller.name}".`
         );
       }
 
@@ -63,7 +57,15 @@ export default function createSegment() {
         const target = givenTarget as SmoothieController;
         const controllerName = target.controllerName;
 
-        assignMetadata(target, propertyKey, `${toKebabCase(controllerName)}/${toKebabCase(propertyKey)}`, true);
+        if (!controllerName) {
+          throw new Error(
+            `Controller must have a static property "controllerName" when auto() decorators are used. Check the controller named "${
+              target.name ?? 'unknown'
+            }".`
+          );
+        }
+
+        assignMetadata(target, propertyKey, `${toKebabCase(controllerName)}/${toKebabCase(propertyKey)}`);
       }
 
       return decorator;

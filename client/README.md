@@ -32,3 +32,9 @@
 2. Define route + save file snippet
 3. Run the server to trigger metadata file creation
 4. Initialise and use the client
+
+### Roadmap
+
+- Alternate shape of API handers by providing 3rd argument called `transformer` to get handlers of custom shape. For example `deleteUser(id, 'Successfully deleted the user')`.
+- Improve metadata generation by using AST and extracting re-usable decorators for isomorphic data validation. In other words allow to validate data before it's sent to back-end using validation definition on the controller level.
+- Figure out how to protect code from importing back-end modules to front-end. Potential solution is to check if `window` global variable is an object.
