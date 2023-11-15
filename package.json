@@ -1,6 +1,6 @@
 {
   "name": "next-smoothie",
-  "version": "0.1.3-beta.4",
+  "version": "0.1.3-beta.5",
   "description": "A compact, zero-dependency library that constructs Next.js 13+ App Route Handlers from decorated classes",
   "main": "dist/index.js",
   "scripts": {
