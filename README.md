@@ -16,7 +16,9 @@
 
 ## Quick start
 
-Install: `npm i next-smoothie` or `yarn add next-smoothie`.
+Set up a regular Next.js project with App routerusing [CLI and this instruction](https://nextjs.org/docs/getting-started/installation).
+
+Install the library: `npm i next-smoothie` or `yarn add next-smoothie`.
 
 Create the first controller:
 
