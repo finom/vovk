@@ -1,6 +1,6 @@
-import type { HttpStatus } from './types';
+import type { _HttpStatus as HttpStatus } from './types';
 
-export default class HttpException extends Error {
+export class _HttpException extends Error {
   statusCode: HttpStatus;
 
   message: string;

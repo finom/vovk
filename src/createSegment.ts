@@ -1,10 +1,15 @@
-import Segment from './Segment';
-import { HttpMethod, KnownAny, RouteHandler, SmoothieController } from './types';
+import { _Segment as Segment } from './Segment';
+import {
+  _HttpMethod as HttpMethod,
+  _KnownAny as KnownAny,
+  _RouteHandler as RouteHandler,
+  _SmoothieController as SmoothieController,
+} from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
-export default function createSegment() {
+export function _createSegment() {
   const r = new Segment();
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {

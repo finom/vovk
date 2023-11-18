@@ -1,27 +1,26 @@
 import type { NextRequest } from 'next/server';
 
-export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type ErrorResponseBody = {
-  statusCode: HttpStatus;
+export type _ErrorResponseBody = {
+  statusCode: _HttpStatus;
   message: string;
   isError: true;
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type SmoothieController = Function & {
+export type _SmoothieController = Function & {
   _prefix?: string;
   _activated?: true;
-  _metadata?: Record<string, { path: string; httpMethod: HttpMethod }>;
+  _metadata?: Record<string, { path: string; httpMethod: _HttpMethod }>;
   _onError?: (err: Error) => void;
-  name: string;
-  controllerName: string;
+  controllerName?: string;
   [key: string]: unknown;
 };
 
-export type RouteHandler = (req: NextRequest, params: Record<string, string>) => Response | Promise<Response>;
+export type _RouteHandler = (req: NextRequest, params: Record<string, string>) => Response | Promise<Response>;
 
-export enum HttpMethod {
+export enum _HttpMethod {
   GET = 'GET',
   POST = 'POST',
   PUT = 'PUT',
@@ -31,7 +30,7 @@ export enum HttpMethod {
   OPTIONS = 'OPTIONS',
 }
 
-export enum HttpStatus {
+export enum _HttpStatus {
   CONTINUE = 100,
   SWITCHING_PROTOCOLS = 101,
   PROCESSING = 102,

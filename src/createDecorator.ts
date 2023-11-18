@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
-import type { KnownAny, SmoothieController } from './types';
+import type { _KnownAny as KnownAny, _SmoothieController as SmoothieController } from './types';
 
-export default function createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
+export function _createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
   handler: (req: REQUEST, next: () => Promise<unknown>, ...args: ARGS) => unknown
 ) {
   return function decoratorCreator(...args: ARGS) {

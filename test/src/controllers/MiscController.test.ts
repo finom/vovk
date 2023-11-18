@@ -1,6 +1,6 @@
 import { it, expect, describe } from '@jest/globals';
 import MiscController from './MiscController';
-import { SmoothieController } from '../../../src/types';
+import type { _SmoothieController as SmoothieController } from '../../../src/types';
 import { NextRequest } from 'next/server';
 import { createDecorator, get } from '../../../src';
 

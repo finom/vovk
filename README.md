@@ -1,19 +1,17 @@
 <p align="center">
-<img width="250" alt="next-smoothie" src="./.assets/smoothy.png"> <br>
-
-<picture>
-  <source width="500" media="(prefers-color-scheme: dark)" srcset="./.assets/text-smoothie-white.png">
-  <source width="500" media="(prefers-color-scheme: light)" srcset="./.assets/text-smoothie-dark.png">
-  <img width="500" alt="next-smoothie" src="./.assets/text-smoothie-dark.png">
-</picture>
-
+  <img width="250" alt="next-smoothie" src="./.assets/smoothy.png"> <br>
+  <picture>
+    <source width="500" media="(prefers-color-scheme: dark)" srcset="./.assets/text-smoothie-white.png">
+    <source width="500" media="(prefers-color-scheme: light)" srcset="./.assets/text-smoothie-dark.png">
+    <img width="500" alt="next-smoothie" src="./.assets/text-smoothie-dark.png">
+  </picture>
 </p>
 
 
 <p align="center">
-<strong>Next.js REST API library for scalable full-stack applications</strong>
-<br />
-<em>6 minutes of reading</em>
+  <strong>The missing decorator-based API router for Next.js 13+</strong>
+  <br />
+  <em>6 minutes of reading</em>
 </p>
 
 ## Quick start
@@ -25,6 +23,7 @@ Create the first controller:
 ```ts
 // /src/controllers/UserController.ts
 import { get, post, prefix } from 'next-smoothie';
+import type { NextRequest } from 'next/server';
 
 @prefix('users') 
 export default class UserController {
@@ -105,8 +104,7 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
 - Pleasant error handling (no need to use `try..catch` and `NextResponse` to return an error to the client).
 - Service-Controller pattern is supported.
-
-
+- The library does not interfere with built-in Next.js features including extending of request object.
 
 ## Overview
 

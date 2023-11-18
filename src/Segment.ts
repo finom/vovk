@@ -1,8 +1,14 @@
 import type { NextRequest } from 'next/server';
-import { HttpMethod, HttpStatus, RouteHandler, type ErrorResponseBody, SmoothieController } from './types';
-import HttpException from './HttpException';
+import {
+  _HttpMethod as HttpMethod,
+  _HttpStatus as HttpStatus,
+  type _RouteHandler as RouteHandler,
+  type _ErrorResponseBody as ErrorResponseBody,
+  type _SmoothieController as SmoothieController,
+} from './types';
+import { _HttpException as HttpException } from './HttpException';
 
-export default class Segment {
+export class _Segment {
   _routes: Record<
     HttpMethod,
     Map<{ name?: string; _prefix?: string; _activated?: true }, Record<string, RouteHandler>>
