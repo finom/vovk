@@ -471,7 +471,7 @@ static getSomething() {
 }
 ```
 
-- If `Response` instance (that also extends `NextResponse`) is returned, passes it to the route handler as is.
+- If `Response` instance (that also extends `NextResponse`) or `undefined` is returned, passes it to the route handler as is.
 - If something else is returned, the library asumes that the value is an variable that needs to be serialised into JSON and sent to the client.
 
 Take a look at this example:
@@ -507,18 +507,20 @@ class ExampleService {
 }
 ```
 
-The routes A and B respond with result as is because they return `Response`, and routes C and D serialise the returned custom data (`undefined` is serialised to `null`) and send it to the client automatically. The following snippet of code will probably make it clearer:
+- The routes A and B respond with result as is because they both return an instance of `Response`.
+- Route C returns `undefined` as is and causes an error.
+- Route D serialises the returned custom data and sends it to the client. The following snippet of code will probably make it clearer:
 
 ```ts
 export default function GET() {
   // ...
 
-  // A, B,
-  if(result instanceof Response) {
+  // A, B, C
+  if(result instanceof Response || typeof result === 'undefined') {
     return result;
   }
 
-  // c, D
+  // D
   return NextResponse.json(result);
 }
 ```
