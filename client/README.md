@@ -24,7 +24,7 @@
 </picture>
 
 -->
-
+<!--
 
 ### Self-implemented API
 
@@ -40,3 +40,4 @@
 - Basic example
 - Third-party API + NPM example
 - React-native example 
+-->

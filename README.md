@@ -459,7 +459,7 @@ But it is still recommended to declare services as class properties to keep the 
 
 #### Return type
 
-Controller method can return an instance of `Response`, `undefined` or custom data. Custom data is serialised to JSON and returned with status 200.
+Controller method can return an instance of `Response` or custom data. Custom data is serialised to JSON and returned with status 200.
 
 ```ts
 @get()
@@ -469,7 +469,7 @@ static getSomething() {
 }
 ```
 
-- If `Response` instance (that also extends `NextResponse`) or `undefined` is returned, passes it to the route handler as is.
+- If `Response` instance (that also extends `NextResponse`) is returned, passes it to the route handler as is.
 - If something else is returned, the library asumes that the value is an variable that needs to be serialised into JSON and sent to the client.
 
 Take a look at this example:
@@ -495,34 +495,28 @@ class ExampleService {
 
   @get('c')
   static getC() {
-    redirect('/foo');
     // return nothing (undefined)
   }
 
   @get('d')
   static getD() {
-    return null;
-  }
-
-  @get('e')
-  static getE() {
     return { hello: 'world' };
   }
 }
 ```
 
-The routes A, B, C respond with result as is because they return either `Response` or `undefined`, and routes D and E serialise the returned custom data (at this case it's `null` and a custom object) and send it to the client automatically. The following snippet of code will probably make it clearer:
+The routes A and B respond with result as is because they return `Response`, and routes C and D serialise the returned custom data (`undefined` is serialised to `null`) and send it to the client automatically. The following snippet of code will probably make it clearer:
 
 ```ts
 export default function GET() {
   // ...
 
-  // A, B, C
-  if(typeof result === 'undefined' || result instanceof Response) {
+  // A, B,
+  if(result instanceof Response) {
     return result;
   }
 
-  // D, E
+  // c, D
   return NextResponse.json(result);
 }
 ```
