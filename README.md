@@ -508,7 +508,7 @@ class ExampleService {
 ```
 
 - The routes A and B respond with result as is because they both return an instance of `Response`.
-- Route C returns `undefined` as is and causes an error.
+- Route C returns `undefined` as is and causes an error "No response is returned from route handler".
 - Route D serialises the returned custom data and sends it to the client. The following snippet of code will probably make it clearer:
 
 ```ts

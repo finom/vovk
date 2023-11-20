@@ -8,15 +8,25 @@ export type _ErrorResponseBody = {
   isError: true;
 };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type _SmoothieController = Function & {
+export type _HandlerMetadata = {
+  path: string;
+  httpMethod: _HttpMethod;
+  clientValidators?: { query?: _KnownAny; body?: _KnownAny };
+};
+
+export type _SmoothieControllerInternal = {
   _prefix?: string;
   _activated?: true;
-  _metadata?: Record<string, { path: string; httpMethod: _HttpMethod }>;
+  _handlers?: Record<string, _HandlerMetadata>;
   _onError?: (err: Error) => void;
   controllerName?: string;
-  [key: string]: unknown;
 };
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type _SmoothieController = Function &
+  _SmoothieControllerInternal & {
+    [key: string]: unknown;
+  };
 
 export type _RouteHandler = (req: NextRequest, params: Record<string, string>) => Response | Promise<Response>;
 

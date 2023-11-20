@@ -1,12 +1,12 @@
 import { it, expect, describe } from '@jest/globals';
 import MiscController from './MiscController';
-import type { _SmoothieController as SmoothieController } from '../../../src/types';
+import { type _SmoothieController as SmoothieController } from '../../../src/types';
 import { NextRequest } from 'next/server';
 import { createDecorator, get } from '../../../src';
 
 describe('Hidden features', () => {
   it(`Metadata`, () => {
-    expect((MiscController as unknown as SmoothieController)._metadata).toHaveProperty(`getMethod`);
+    expect((MiscController as unknown as SmoothieController)._handlers).toHaveProperty(`getMethod`);
   });
 
   it('Method preserves name and controller properties', () => {
@@ -36,5 +36,38 @@ describe('Hidden features', () => {
 
     expect(MyController.myMethod.name).toBe('myMethod');
     expect((MyController.myMethod as unknown as { _controller: MyController })._controller).toBe(MyController);
+    // expect((MyController.myMethod as unknown as { _name: string })._name).toBe('myMethod');
+  });
+
+  it('Controller has all the hidden properties', () => {
+    const validationDecorator = createDecorator(
+      (_req: NextRequest, next) => next(),
+      (helloBody: 'helloBody', helloQuery: 'helloQuery') => {
+        return {
+          clientValidators: {
+            body: { iAmABodyValidator: helloBody },
+            query: { iAmAQueryValidator: helloQuery },
+          },
+        };
+      }
+    );
+
+    class MyController {
+      @get()
+      @validationDecorator('helloBody', 'helloQuery')
+      static myMethod() {
+        return {};
+      }
+    }
+
+    expect((MyController as unknown as SmoothieController)._handlers).toHaveProperty('myMethod');
+
+    expect((MyController as unknown as SmoothieController)._handlers?.myMethod.clientValidators?.body).toEqual({
+      iAmABodyValidator: 'helloBody',
+    });
+
+    expect((MyController as unknown as SmoothieController)._handlers?.myMethod.clientValidators?.query).toEqual({
+      iAmAQueryValidator: 'helloQuery',
+    });
   });
 });

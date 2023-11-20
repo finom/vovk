@@ -29,11 +29,11 @@ export function _createSegment() {
 
       const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(controller) ?? {};
       r._routes[httpMethod].set(controller, methods);
-      const metadata = controller._metadata ?? {};
+      const handlers = controller._handlers ?? {};
 
-      controller._metadata = metadata;
+      controller._handlers = handlers;
 
-      metadata[propertyKey] = { path, httpMethod };
+      handlers[propertyKey] = { ...handlers[propertyKey], path, httpMethod };
 
       (controller[propertyKey] as { _controller: SmoothieController })._controller = controller;
 
