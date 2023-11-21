@@ -1,6 +1,6 @@
 {
     "extends": "./tsconfig.json",
     "exclude": ["node_modules", "dist", "client"],
-    "include": ["src/**/*", "client-lib/**/*", "test/**/*"]
+    "include": ["src/**/*", "client-lib/**/*", "test/**/*", "post-publish-test/**/*"]
   }
   

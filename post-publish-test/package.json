@@ -1,0 +1,9 @@
+{
+  "name": "next-smoothie",
+  "dependencies": {
+    "next-smoothie": "*"
+  },
+  "devDependencies": {
+    "expect.js": "^0.3.1"
+  }
+}

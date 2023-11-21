@@ -8,6 +8,7 @@
     "unit": "PORT=3210 concurrently \"npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
+    "postpublish": "node post-publish-test/post-publish.js",
     "serve:unit": "npm --prefix test run dev",
     "build": "rm -rf dist client-lib/dist client && npm run toc && tsc && tsc --project client-lib/tsconfig.json && cp -R client-lib/dist/client-lib/src client",
     "lint-nofix": "eslint . --ext .ts,.tsx",
@@ -19,7 +20,8 @@
     "beta": "npm t && npm version prerelease --preid=beta && npm run build && npm publish --tag beta && git push && git push --tags",
     "beta-patch": "npm t && npm version prepatch --preid=beta && npm run build && npm publish --tag beta && git push && git push --tags",
     "beta-minor": "npm t && npm version preminor --preid=beta && npm run build && npm publish --tag beta && git push && git push --tags",
-    "BREAKING-beta-major": "npm t && npm version premajor --preid=beta && npm run build && npm publish --tag beta && git push && git push --tags"
+    "BREAKING-beta-major": "npm t && npm version premajor --preid=beta && npm run build && npm publish --tag beta && git push && git push --tags",
+    "postinstall": "patch-package"
   },
   "prettier": {
     "trailingComma": "es5",
