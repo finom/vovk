@@ -4,6 +4,7 @@
     "next-smoothie": "*"
   },
   "devDependencies": {
-    "expect.js": "^0.3.1"
+    "expect.js": "*",
+    "patch-package": "*"
   }
 }
