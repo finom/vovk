@@ -16,5 +16,5 @@
     "declaration": true
   },
   "exclude": ["node_modules", "dist", "client"],
-  "include": ["src/**/*", "client-lib/**/*"],
+  "include": ["src/**/*"],
 }
