@@ -1,5 +1,9 @@
 import type { NextRequest } from 'next/server';
-import { _KnownAny as KnownAny, _SmoothieController as SmoothieController, _HttpMethod as HttpMethod } from '../types';
+import {
+  _KnownAny as KnownAny,
+  _SmoothieController as SmoothieController,
+  _HttpMethod as HttpMethod,
+} from '../../src/types';
 
 export interface _SmoothieRequest<BODY = undefined, QUERY extends Record<string, string | null> | undefined = undefined>
   extends Omit<NextRequest, 'json' | 'nextUrl'> {

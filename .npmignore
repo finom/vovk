@@ -1,5 +1,6 @@
 src
 test
+_client
 .eslintrc.js
 jest.config.js
 tsconfig.tsbuildinfo

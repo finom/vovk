@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { _SmoothieController as SmoothieController, _KnownAny as KnownAny } from '../types';
+import { _SmoothieController as SmoothieController, _KnownAny as KnownAny } from '../../src/types';
 import {
   _ControllerStaticMethod as ControllerStaticMethod,
   _SmoothieParams as SmoothieParams,
