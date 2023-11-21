@@ -1,21 +1,5 @@
 {
-    "compilerOptions": {
-      "target": "ES2022",
-      "lib": ["dom", "dom.iterable", "esnext"],
-      "allowJs": true,
-      "skipLibCheck": true,
-      "strict": true,
-      "esModuleInterop": true,
-      "experimentalDecorators": true,
-      "module": "commonjs",
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "jsx": "preserve",
-      "incremental": true,
-      "outDir": "dist",
-      "declaration": true
-    },
-    "exclude": ["node_modules", "dist"],
-    "include": ["src/**/*", "test/**/*"]
+    "extends": "./tsconfig.json",
+    "include": ["src/**/*", "client/src/**/*", "test/**/*"]
   }
   
