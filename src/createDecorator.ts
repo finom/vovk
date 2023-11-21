@@ -12,12 +12,15 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
   initHandler?: (
     this: SmoothieController,
     ...args: ARGS
-  ) => {
-    clientValidators?: {
-      body?: KnownAny;
-      query?: KnownAny;
-    };
-  }
+  ) =>
+    | {
+        clientValidators?: {
+          body?: KnownAny;
+          query?: KnownAny;
+        };
+      }
+    | null
+    | undefined
 ) {
   return function decoratorCreator(...args: ARGS) {
     return function decorator(target: KnownAny, propertyKey: string) {
