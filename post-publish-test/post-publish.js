@@ -1,7 +1,7 @@
 /* eslint-disable */
 const { execSync } = require('child_process');
 
-execSync('rm -rf node_modules && npm i --legacy-peer-deps --no-package-lock', { cwd: __dirname });
+execSync('rm -rf node_modules && npm i --legacy-peer-deps --no-package-lock --ignore-scripts', { cwd: __dirname });
 // remove root dependencies to avoid usage of them
 execSync('rm -rf ../node_modules', { cwd: __dirname });
 
