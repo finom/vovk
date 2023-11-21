@@ -41,8 +41,8 @@ export type _SmoothieParams<
 export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_SmoothieBody<T> extends undefined | void
   ? { body?: undefined }
   : _SmoothieBody<T> extends null
-  ? { body?: null }
-  : { body: _SmoothieBody<T> }) &
+    ? { body?: null }
+    : { body: _SmoothieBody<T> }) &
   (_SmoothieQuery<T> extends undefined | void ? { query?: undefined } : { query: _SmoothieQuery<T> }) &
   (_SmoothieParams<T> extends undefined | void ? { params?: undefined } : { params: _SmoothieParams<T> });
 
@@ -52,8 +52,8 @@ type ClientMethod<T extends (...args: KnownAny[]) => KnownAny, OPTS extends Reco
   options: _StaticMethodInput<T> & OPTS extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? void
     : Parameters<T>[0] extends void
-    ? void
-    : _StaticMethodInput<T> & OPTS
+      ? void
+      : _StaticMethodInput<T> & OPTS
 ) => R extends object ? Promise<R> : ToPromise<ReturnType<T>>;
 
 export type _SmoothieClient<T, OPTS extends Record<string, KnownAny>> = {
