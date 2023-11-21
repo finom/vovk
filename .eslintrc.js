@@ -15,7 +15,7 @@ module.exports = {
   rules: {
     'no-unused-vars': 0, // we use typescript
   },
-  ignorePatterns: ["dist/"],
+  ignorePatterns: ["dist/", "client/"],
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',

@@ -29,7 +29,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
 };
 
-export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = {}>(
+export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
   givenController: {
     controllerName: string;
     _prefix?: string;
