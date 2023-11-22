@@ -8,7 +8,7 @@
     "unit": "PORT=3210 concurrently \"npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
-    "postpublish": "node post-publish-test/post-publish.js",
+    "postpublish": "node ../post-publish-test/post-publish.js",
     "serve:unit": "npm --prefix test run dev",
     "build": "rm -rf dist && npm run toc && tsc && cp package.json dist && cp README.md dist && cp package-lock.json dist",
     "lint-nofix": "eslint . --ext .ts,.tsx",
