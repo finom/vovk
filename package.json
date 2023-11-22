@@ -2,7 +2,7 @@
   "name": "next-smoothie",
   "version": "0.1.8-beta.1",
   "description": "A compact, zero-dependency library that constructs Next.js 13+ App Route Handlers from decorated classes",
-  "main": "dist/index.js",
+  "main": "/index.js",
   "scripts": {
     "test": "npm run lint-nofix && tsc --noemit && npm run unit",
     "unit": "PORT=3210 concurrently \"npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
@@ -10,7 +10,7 @@
     "test:unit:watch": "jest --watch",
     "postpublish": "node post-publish-test/post-publish.js",
     "serve:unit": "npm --prefix test run dev",
-    "build": "rm -rf dist && npm run toc && tsc && cp package.json dist && cp README.md dist",
+    "build": "rm -rf dist && npm run toc && tsc && cp package.json dist && cp README.md dist && cp package-lock.json dist",
     "lint-nofix": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-nofix -- --fix",
     "toc": "npx markdown-toc README.md -i && npx markdown-toc client/README.md -i",
