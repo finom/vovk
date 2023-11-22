@@ -1,12 +1,27 @@
 import { _createSegment as createSegment } from './createSegment';
 import {
   type _ErrorResponseBody as ErrorResponseBody,
+  type _SmoothieRequest as SmoothieRequest,
+  type _SmoothieBody as SmoothieBody,
+  type _SmoothieQuery as SmoothieQuery,
+  type _SmoothieParams as SmoothieParams,
   _HttpStatus as HttpStatus,
   _HttpMethod as HttpMethod,
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
 
-export { type ErrorResponseBody, HttpException, HttpStatus, HttpMethod, createSegment, createDecorator };
+export {
+  type ErrorResponseBody,
+  type SmoothieRequest,
+  type SmoothieBody,
+  type SmoothieQuery,
+  type SmoothieParams,
+  HttpException,
+  HttpStatus,
+  HttpMethod,
+  createSegment,
+  createDecorator,
+};
 
 export const { get, post, put, patch, del, head, options, prefix, activateControllers } = createSegment();
