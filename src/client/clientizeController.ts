@@ -1,12 +1,14 @@
-import { _SmoothieController as SmoothieController, _KnownAny as KnownAny } from '../../src/types';
+import { _SmoothieController as SmoothieController, _KnownAny as KnownAny } from '../types';
 import {
-  _ControllerStaticMethod as ControllerStaticMethod,
-  _SmoothieParams as SmoothieParams,
-  _SmoothieQuery as SmoothieQuery,
   _SmoothieClientHandler as SmoothieClientHandler,
   _SmoothieClientOptions as SmoothieClientOptions,
   _SmoothieClient as SmoothieClient,
 } from './types';
+import {
+  _ControllerStaticMethod as ControllerStaticMethod,
+  _SmoothieParams as SmoothieParams,
+  _SmoothieQuery as SmoothieQuery,
+} from '../types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 

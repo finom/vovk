@@ -30,6 +30,39 @@ export type _SmoothieController = Function &
 
 export type _RouteHandler = (req: NextRequest, params: Record<string, string>) => Response | Promise<Response>;
 
+export interface _SmoothieRequest<BODY = undefined, QUERY extends Record<string, string | null> | undefined = undefined>
+  extends Omit<NextRequest, 'json' | 'nextUrl'> {
+  json: () => Promise<BODY>;
+  nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
+    searchParams: Omit<NextRequest['nextUrl']['searchParams'], 'get'> & {
+      get: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY];
+      readonly __queryType: QUERY;
+    };
+  };
+}
+
+export type _ControllerStaticMethod<REQ extends _SmoothieRequest = _SmoothieRequest<_KnownAny, _KnownAny>> = ((
+  req: REQ,
+  params?: { [key: string]: string }
+) => unknown) & {
+  _controller?: _SmoothieController;
+};
+
+export type _SmoothieBody<
+  T extends _ControllerStaticMethod<REQ>,
+  REQ extends _SmoothieRequest = Parameters<T>[0],
+> = Awaited<ReturnType<Parameters<T>[0]['json']>>;
+
+export type _SmoothieQuery<
+  T extends _ControllerStaticMethod<REQ>,
+  REQ extends _SmoothieRequest = Parameters<T>[0],
+> = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'];
+
+export type _SmoothieParams<
+  T extends _ControllerStaticMethod<REQ>,
+  REQ extends _SmoothieRequest = Parameters<T>[0],
+> = Parameters<T>[1];
+
 export enum _HttpMethod {
   GET = 'GET',
   POST = 'POST',

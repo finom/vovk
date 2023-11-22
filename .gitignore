@@ -1,5 +1,4 @@
 node_modules
 dist
-client
 *.tsbuildinfo
 .DS_Store

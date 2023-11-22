@@ -1,42 +1,11 @@
-import type { NextRequest } from 'next/server';
 import {
   _KnownAny as KnownAny,
-  _SmoothieController as SmoothieController,
   _HttpMethod as HttpMethod,
-} from '../../src/types';
-
-export interface _SmoothieRequest<BODY = undefined, QUERY extends Record<string, string | null> | undefined = undefined>
-  extends Omit<NextRequest, 'json' | 'nextUrl'> {
-  json: () => Promise<BODY>;
-  nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
-    searchParams: Omit<NextRequest['nextUrl']['searchParams'], 'get'> & {
-      get: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY];
-      readonly __queryType: QUERY;
-    };
-  };
-}
-
-export type _ControllerStaticMethod<REQ extends _SmoothieRequest = _SmoothieRequest<KnownAny, KnownAny>> = ((
-  req: REQ,
-  params?: { [key: string]: string }
-) => unknown) & {
-  _controller?: SmoothieController;
-};
-
-export type _SmoothieBody<
-  T extends _ControllerStaticMethod<REQ>,
-  REQ extends _SmoothieRequest = Parameters<T>[0],
-> = Awaited<ReturnType<Parameters<T>[0]['json']>>;
-
-export type _SmoothieQuery<
-  T extends _ControllerStaticMethod<REQ>,
-  REQ extends _SmoothieRequest = Parameters<T>[0],
-> = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'];
-
-export type _SmoothieParams<
-  T extends _ControllerStaticMethod<REQ>,
-  REQ extends _SmoothieRequest = Parameters<T>[0],
-> = Parameters<T>[1];
+  _ControllerStaticMethod,
+  _SmoothieBody,
+  _SmoothieQuery,
+  _SmoothieParams,
+} from '../types';
 
 export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_SmoothieBody<T> extends undefined | void
   ? { body?: undefined }
