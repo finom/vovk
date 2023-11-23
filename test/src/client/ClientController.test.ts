@@ -1,7 +1,7 @@
 import metadata from '../controllers-metadata.json';
 import type ClientController from './ClientController';
 import { clientizeController, defaultFetcher, type DefaultFetcherOptions } from '../../../src/client';
-import { ErrorResponseBody, SmoothieBody, SmoothieParams, SmoothieQuery } from '../../../src';
+import { ErrorResponseBody, SmoothieBody, SmoothieParams, SmoothieQuery, SmoothieReturnType } from '../../../src';
 import { it, expect, describe } from '@jest/globals';
 import { validateEqualityOnClient } from './validateEquality';
 
@@ -81,9 +81,11 @@ describe('Client', () => {
     // @ts-expect-error Expect error
     null as unknown as SmoothieBody<ClientControllerType['postWithParams']> satisfies { hello: 'baz' };
 
-    expect(
-      result satisfies { params: { hello: 'world' }; body: { isBody: true }; query: { query: 'queryValue' } }
-    ).toEqual({ params: { hello: 'world' }, body: { isBody: true }, query: { query: 'queryValue' } });
+    expect(result satisfies SmoothieReturnType<ClientControllerType['postWithParams']>).toEqual({
+      params: { hello: 'world' },
+      body: { isBody: true },
+      query: { query: 'queryValue' },
+    });
   });
 
   it('Should handle basic client validation', async () => {
