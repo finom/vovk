@@ -1,9 +1,12 @@
-import type { NextRequest } from 'next/server';
-import type { _KnownAny as KnownAny, _SmoothieController as SmoothieController } from './types';
+import type {
+  _KnownAny as KnownAny,
+  _SmoothieController as SmoothieController,
+  _SmoothieRequest as SmoothieRequest,
+} from './types';
 
 type Next = () => Promise<unknown>;
 
-export function _createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
+export function _createDecorator<ARGS extends unknown[], REQUEST = SmoothieRequest<unknown>>(
   handler: (this: SmoothieController, req: REQUEST, next: Next, ...args: ARGS) => unknown,
   initHandler?: (
     this: SmoothieController,
