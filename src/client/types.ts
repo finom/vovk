@@ -43,7 +43,7 @@ export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Recor
   } & OPTS
 ) => KnownAny;
 
-export type _SmoothieClientOptions<OPTS> = {
+export type _SmoothieClientOptions<OPTS = undefined> = {
   disableClientValidation?: boolean;
   validateOnClient?: (
     input: { body?: unknown; query?: unknown },

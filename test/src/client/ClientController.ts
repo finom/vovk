@@ -12,7 +12,7 @@ export default class ClientController {
     }
 
     @get('with-params/:hello')
-    static getWithParams(_req: SmoothieRequest<never>, { hello }: { hello: 'world' }) {
+    static getWithParams(_req: SmoothieRequest<undefined>, { hello }: { hello: 'world' }) {
         return { hello };
     }
 

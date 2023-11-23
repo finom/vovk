@@ -36,9 +36,13 @@ describe('Client', () => {
         type Params = SmoothieParams<ClientControllerType['getWithParams']>;
 
         (null as unknown as SmoothieParams<ClientControllerType['getWithParams']>) satisfies Params;
-        (null as unknown as SmoothieBody<ClientControllerType['getWithParams']>) satisfies { sss: 'sss' };
-        const b = null as SmoothieBody<ClientControllerType['getWithParams']>;
-        console.log(b);
+        // @ts-expect-error
+        (null as unknown as SmoothieBody<ClientControllerType['getWithParams']>) satisfies { hello: 'world' };
+        (null as unknown as SmoothieBody<ClientControllerType['getWithParams']>) satisfies undefined;
+
+        // @ts-expect-error
+        (null as unknown as SmoothieQuery<ClientControllerType['getWithParams']>) satisfies { hello: 'world' };
+        (null as unknown as SmoothieQuery<ClientControllerType['getWithParams']>) satisfies undefined;
 
         expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
     });

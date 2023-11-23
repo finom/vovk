@@ -25,12 +25,9 @@ export const _defaultFetcher: SmoothieClientFetcher<_DefaultFetcherOptions> = as
 
     const init: RequestInit = {
         method: httpMethod,
+        body: body ? JSON.stringify(body) : undefined,
         ...options
     };
-
-    if(body) {
-        init.body = JSON.stringify(body);
-    }
 
     const response = await fetch(endpoint, init);
 

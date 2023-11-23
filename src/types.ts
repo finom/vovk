@@ -67,22 +67,19 @@ export type _SmoothieBody<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
-  BODY extends Awaited<ReturnType<Parameters<T>[0]['json']>> = Awaited<ReturnType<Parameters<T>[0]['json']>>,
-> = BODY extends undefined ? never : BODY;
+> = Awaited<ReturnType<Parameters<T>[0]['json']>>;
 
 export type _SmoothieQuery<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
-  QUERY = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'],
-> = QUERY extends undefined ? never : QUERY;
+> = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'];
 
 export type _SmoothieParams<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
-  RESULT = Parameters<T>[1],
-> = RESULT extends undefined ? never : RESULT;
+> = Parameters<T>[1];
 
 export enum _HttpMethod {
   GET = 'GET',
