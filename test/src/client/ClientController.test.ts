@@ -61,8 +61,7 @@ describe('Client', () => {
         type Params = SmoothieParams<ClientControllerType['postWithParams']>;
         const paramsSatisfies = result.params satisfies Params;
 
-        const satisfies = result satisfies { params: { hello: 'world' }, body: { isBody: true }, query:{query:  'queryValue'} };
-        expect(satisfies).toEqual({ hello: 'world' });
+        expect(result satisfies { params: { hello: 'world' }, body: { isBody: true }, query:{query:  'queryValue'} }).toEqual({ params: { hello: 'world' }, body: { isBody: true }, query:{query:  'queryValue'} });
     });
 
     
