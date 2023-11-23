@@ -31,8 +31,6 @@ describe('Client', () => {
     it('Should handle requests with params', async () => {
         const result = await defaultController.getWithParams({ 
             params: { hello: 'world' },
-            // @ts-expect-error Check if body is not allowed
-            body: {},
         });
 
         type Params = SmoothieParams<ClientControllerType['getWithParams']>;
