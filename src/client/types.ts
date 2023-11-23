@@ -21,7 +21,7 @@ type ClientMethod<T extends (...args: KnownAny[]) => KnownAny, OPTS extends Reco
   options: _StaticMethodInput<T> & OPTS extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? void
     : Parameters<T>[0] extends void
-      ? (_StaticMethodInput<T>['params'] extends {} ? { params: _StaticMethodInput<T>['params'] } : void ) | OPTS
+      ? (_StaticMethodInput<T>['params'] extends object ? { params: _StaticMethodInput<T>['params'] } : void) | OPTS
       : _StaticMethodInput<T> & OPTS
 ) => R extends object ? Promise<R> : ToPromise<ReturnType<T>>;
 

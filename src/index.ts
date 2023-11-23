@@ -5,6 +5,7 @@ import {
   type _SmoothieBody as SmoothieBody,
   type _SmoothieQuery as SmoothieQuery,
   type _SmoothieParams as SmoothieParams,
+  type _SmoothieReturnType as SmoothieReturnType,
   _HttpStatus as HttpStatus,
   _HttpMethod as HttpMethod,
 } from './types';
@@ -17,6 +18,7 @@ export {
   type SmoothieBody,
   type SmoothieQuery,
   type SmoothieParams,
+  type SmoothieReturnType,
   HttpException,
   HttpStatus,
   HttpMethod,

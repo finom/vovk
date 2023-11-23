@@ -1,4 +1,8 @@
-import { _SmoothieController as SmoothieController, _KnownAny as KnownAny,  _SmoothieControllerMetadata as SmoothieControllerMetadata, _SmoothieControllerMetadata, _SmoothieControllerMetadataJson as SmoothieControllerMetadataJson } from '../types';
+import {
+  _KnownAny as KnownAny,
+  _SmoothieControllerMetadata as SmoothieControllerMetadata,
+  _SmoothieControllerMetadataJson as SmoothieControllerMetadataJson,
+} from '../types';
 import {
   _SmoothieClientFetcher as SmoothieClientFetcher,
   _SmoothieClientOptions as SmoothieClientOptions,
@@ -17,7 +21,6 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   params?: SmoothieParams<T>,
   query?: SmoothieQuery<T>
 ) => {
-  console.log('endpoint', endpoint)
   let result = endpoint;
   for (const [key, value] of Object.entries(params ?? {})) {
     result = result.replace(`:${key}`, value as string);
@@ -26,7 +29,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   const searchParams = new URLSearchParams();
   let hasQuery = false;
   for (const [key, value] of Object.entries(query ?? {})) {
-    searchParams.set(key, value as string);
+    searchParams.set(key, value);
     hasQuery = true;
   }
 

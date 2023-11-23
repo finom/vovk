@@ -14,6 +14,18 @@
       "postWithParams": {
         "path": "with-params/:hello",
         "httpMethod": "POST"
+      },
+      "postWithEqualityValidation": {
+        "clientValidators": {
+          "body": {
+            "hello": "body"
+          },
+          "query": {
+            "hey": "query"
+          }
+        },
+        "path": "client-controller/post-with-equality-validation",
+        "httpMethod": "POST"
       }
     }
   }

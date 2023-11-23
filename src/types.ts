@@ -81,6 +81,8 @@ export type _SmoothieParams<
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[1];
 
+export type _SmoothieReturnType<T extends _ControllerStaticMethod> = Awaited<ReturnType<T>>;
+
 export enum _HttpMethod {
   GET = 'GET',
   POST = 'POST',

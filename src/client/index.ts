@@ -3,9 +3,9 @@ import type {
   _SmoothieClientFetcher as SmoothieClientFetcher,
   _SmoothieClientOptions as SmoothieClientOptions,
 } from './types';
-import { 
+import {
   type _DefaultFetcherOptions as DefaultFetcherOptions,
-  _defaultFetcher as defaultFetcher 
+  _defaultFetcher as defaultFetcher,
 } from './defaultFetcher';
 
 export { clientizeController, defaultFetcher };
