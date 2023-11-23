@@ -1,0 +1,20 @@
+{
+  "ClientController": {
+    "controllerName": "ClientController",
+    "_prefix": "client",
+    "_handlers": {
+      "getHelloWorld": {
+        "path": "client-controller/get-hello-world",
+        "httpMethod": "GET"
+      },
+      "getWithParams": {
+        "path": "with-params/:hello",
+        "httpMethod": "GET"
+      },
+      "postWithParams": {
+        "path": "with-params/:hello",
+        "httpMethod": "POST"
+      }
+    }
+  }
+}

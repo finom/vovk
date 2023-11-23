@@ -14,12 +14,27 @@ export type _HandlerMetadata = {
   clientValidators?: { query?: _KnownAny; body?: _KnownAny };
 };
 
-export type _SmoothieControllerInternal = {
+export type _SmoothieControllerMetadata = {
+  controllerName: string;
   _prefix?: string;
+  _handlers: Record<string, _HandlerMetadata>;
+};
+
+export type _HandlerMetadataJson = {
+  path: string;
+  httpMethod: string;
+  clientValidators?: { query?: _KnownAny; body?: _KnownAny };
+};
+
+export type _SmoothieControllerMetadataJson = {
+  controllerName: string;
+  _prefix?: string;
+  _handlers: Record<string, _HandlerMetadataJson>;
+};
+
+export type _SmoothieControllerInternal = _SmoothieControllerMetadata & {
   _activated?: true;
-  _handlers?: Record<string, _HandlerMetadata>;
   _onError?: (err: Error) => void;
-  controllerName?: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -30,7 +45,7 @@ export type _SmoothieController = Function &
 
 export type _RouteHandler = (req: NextRequest, params: Record<string, string>) => Response | Promise<Response>;
 
-export interface _SmoothieRequest<BODY = undefined, QUERY extends Record<string, string | null> | undefined = undefined>
+export interface _SmoothieRequest<BODY = undefined, QUERY extends Record<string, string> | undefined = undefined>
   extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<BODY>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
@@ -41,27 +56,33 @@ export interface _SmoothieRequest<BODY = undefined, QUERY extends Record<string,
   };
 }
 
-export type _ControllerStaticMethod<REQ extends _SmoothieRequest = _SmoothieRequest<_KnownAny, _KnownAny>> = ((
-  req: REQ,
-  params?: { [key: string]: string }
-) => unknown) & {
+export type _ControllerStaticMethod<
+  REQ extends _SmoothieRequest<undefined, _KnownAny> = _SmoothieRequest<undefined, Record<string, string>>,
+  PARAMS extends { [key: string]: string } = _KnownAny,
+> = ((req: REQ, params: PARAMS) => unknown) & {
   _controller?: _SmoothieController;
 };
 
 export type _SmoothieBody<
-  T extends _ControllerStaticMethod<REQ>,
-  REQ extends _SmoothieRequest = Parameters<T>[0],
-> = Awaited<ReturnType<Parameters<T>[0]['json']>>;
+  T extends _ControllerStaticMethod<REQ, PARAMS>,
+  REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
+  PARAMS extends { [key: string]: string } = _KnownAny,
+  BODY extends Awaited<ReturnType<Parameters<T>[0]['json']>> = Awaited<ReturnType<Parameters<T>[0]['json']>>,
+> = BODY extends undefined ? never : BODY;
 
 export type _SmoothieQuery<
-  T extends _ControllerStaticMethod<REQ>,
-  REQ extends _SmoothieRequest = Parameters<T>[0],
-> = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'];
+  T extends _ControllerStaticMethod<REQ, PARAMS>,
+  REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
+  PARAMS extends { [key: string]: string } = _KnownAny,
+  QUERY = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'],
+> = QUERY extends undefined ? never : QUERY;
 
 export type _SmoothieParams<
-  T extends _ControllerStaticMethod<REQ>,
-  REQ extends _SmoothieRequest = Parameters<T>[0],
-> = Parameters<T>[1];
+  T extends _ControllerStaticMethod<REQ, PARAMS>,
+  REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
+  PARAMS extends { [key: string]: string } = _KnownAny,
+  RESULT = Parameters<T>[1],
+> = RESULT extends undefined ? never : RESULT;
 
 export enum _HttpMethod {
   GET = 'GET',
@@ -74,6 +95,7 @@ export enum _HttpMethod {
 }
 
 export enum _HttpStatus {
+  NULL = 0,
   CONTINUE = 100,
   SWITCHING_PROTOCOLS = 101,
   PROCESSING = 102,

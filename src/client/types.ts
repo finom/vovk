@@ -21,7 +21,7 @@ type ClientMethod<T extends (...args: KnownAny[]) => KnownAny, OPTS extends Reco
   options: _StaticMethodInput<T> & OPTS extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? void
     : Parameters<T>[0] extends void
-      ? void
+      ? (_StaticMethodInput<T>['params'] extends {} ? { params: _StaticMethodInput<T>['params'] } : void ) | OPTS
       : _StaticMethodInput<T> & OPTS
 ) => R extends object ? Promise<R> : ToPromise<ReturnType<T>>;
 
@@ -29,7 +29,7 @@ export type _SmoothieClient<T, OPTS extends Record<string, KnownAny>> = {
   [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> : never;
 };
 
-export type _SmoothieClientHandler<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
+export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
   options: {
     name: keyof T;
     httpMethod: HttpMethod;
@@ -43,10 +43,11 @@ export type _SmoothieClientHandler<OPTS extends Record<string, KnownAny> = Recor
   } & OPTS
 ) => KnownAny;
 
-export type _SmoothieClientOptions = {
+export type _SmoothieClientOptions<OPTS> = {
   disableClientValidation?: boolean;
   validateOnClient?: (
     input: { body?: unknown; query?: unknown },
     validators: { body?: unknown; query?: unknown }
   ) => unknown;
+  defaultOptions?: Partial<OPTS>;
 };

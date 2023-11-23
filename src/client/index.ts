@@ -1,8 +1,12 @@
 import { _clientizeController as clientizeController } from './clientizeController';
-import {
-  _SmoothieClientHandler as SmoothieClientHandler,
+import type {
+  _SmoothieClientFetcher as SmoothieClientFetcher,
   _SmoothieClientOptions as SmoothieClientOptions,
 } from './types';
+import { 
+  type _DefaultFetcherOptions as DefaultFetcherOptions,
+  _defaultFetcher as defaultFetcher 
+} from './defaultFetcher';
 
-export { clientizeController };
-export type { SmoothieClientHandler, SmoothieClientOptions };
+export { clientizeController, defaultFetcher };
+export type { SmoothieClientFetcher, SmoothieClientOptions, DefaultFetcherOptions };

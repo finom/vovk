@@ -12,6 +12,7 @@ import HeadersController from '../../../controllers/HeadersController';
 import RedirectController from '../../../controllers/RedirectController';
 import MiscController from '../../../controllers/MiscController';
 import AutoDecoratorsController from '../../../controllers/AutoDecoratorsController';
+import ClientController from '../../../client/ClientController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers(
   [
@@ -28,6 +29,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
     RedirectController,
     MiscController,
     AutoDecoratorsController,
+    ClientController,
   ],
   {
     onError: (err) => {
@@ -35,3 +37,16 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
     },
   }
 );
+
+// generate metadata for client controller only
+activateControllers([ClientController], {
+  onMetadata: async (metadata) => {
+    if (process.env.NODE_ENV === 'development') {
+      const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
+      await fs.writeFile(
+        path.join(__dirname.replace('.next/server/app', 'src'), '../../controllers-metadata.json'),
+        JSON.stringify(metadata, null, 2)
+      );
+    }
+  },
+});

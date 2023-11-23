@@ -1,6 +1,6 @@
-import { _SmoothieController as SmoothieController, _KnownAny as KnownAny } from '../types';
+import { _SmoothieController as SmoothieController, _KnownAny as KnownAny,  _SmoothieControllerMetadata as SmoothieControllerMetadata, _SmoothieControllerMetadata, _SmoothieControllerMetadataJson as SmoothieControllerMetadataJson } from '../types';
 import {
-  _SmoothieClientHandler as SmoothieClientHandler,
+  _SmoothieClientFetcher as SmoothieClientFetcher,
   _SmoothieClientOptions as SmoothieClientOptions,
   _SmoothieClient as SmoothieClient,
 } from './types';
@@ -17,6 +17,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   params?: SmoothieParams<T>,
   query?: SmoothieQuery<T>
 ) => {
+  console.log('endpoint', endpoint)
   let result = endpoint;
   for (const [key, value] of Object.entries(params ?? {})) {
     result = result.replace(`:${key}`, value as string);
@@ -28,19 +29,16 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
     searchParams.set(key, value as string);
     hasQuery = true;
   }
+
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
 };
 
 export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
-  givenController: {
-    controllerName: string;
-    _prefix?: string;
-    _handlers: Record<string, { path: string; httpMethod: string }>;
-  },
-  handler: SmoothieClientHandler<OPTS, T>,
-  options?: SmoothieClientOptions
+  givenController: SmoothieControllerMetadataJson,
+  fetcher: SmoothieClientFetcher<OPTS, T>,
+  options?: SmoothieClientOptions<OPTS>
 ): SmoothieClient<T, OPTS> => {
-  const controller = givenController as T & Pick<SmoothieController, 'controllerName' | '_handlers' | '_prefix'>;
+  const controller = givenController as T & SmoothieControllerMetadata;
   const client = {} as SmoothieClient<T, OPTS>;
   const metadata = controller._handlers;
   if (!metadata) throw new Error(`No metadata for controller ${String(controller?.controllerName)}`);
@@ -48,7 +46,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
 
   for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(metadata)) {
     const getPath = (params: { [key: string]: string }, query: { [key: string]: string }) =>
-      getHandlerPath([prefix, path].join('/'), params, query);
+      getHandlerPath([prefix, path].filter(Boolean).join('/'), params, query);
 
     const validate = ({ body, query }: { body?: unknown; query?: unknown }) => {
       if (options?.disableClientValidation) return;
@@ -63,13 +61,14 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         params?: { [key: string]: string };
       } & OPTS = {} as OPTS
     ) => {
-      return handler(
+      return fetcher(
         { name: staticMethodName as keyof T, httpMethod, getPath, validate },
         {
           ...input,
           body: input.body ?? null,
           query: input.query ?? {},
           params: input.params ?? {},
+          ...options?.defaultOptions,
         }
       ) as unknown;
     };

@@ -1,9 +1,5 @@
 import type { NextRequest } from 'next/server';
-import type {
-  _KnownAny as KnownAny,
-  _SmoothieController as SmoothieController,
-  _HandlerMetadata as HandlerMetadata,
-} from './types';
+import type { _KnownAny as KnownAny, _SmoothieController as SmoothieController } from './types';
 
 type Next = () => Promise<unknown>;
 
@@ -34,7 +30,7 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = NextRequest>(
           controller._handlers = {
             ...controller._handlers,
             [propertyKey]: {
-              ...(controller._handlers?.[propertyKey] as HandlerMetadata),
+              ...controller._handlers?.[propertyKey],
               clientValidators: initResult.clientValidators,
             },
           };

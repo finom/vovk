@@ -2,8 +2,9 @@ import { _Segment as Segment } from './Segment';
 import {
   _HttpMethod as HttpMethod,
   _KnownAny as KnownAny,
-  _RouteHandler as RouteHandler,
-  _SmoothieController as SmoothieController,
+  type _RouteHandler as RouteHandler,
+  type _SmoothieController as SmoothieController,
+  type _SmoothieControllerMetadata as SmoothieControllerMetadata,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -106,7 +107,8 @@ export function _createSegment() {
     // eslint-disable-next-line @typescript-eslint/ban-types
     controllers: Function[],
     options?: {
-      onError?: (err: Error) => void;
+      onError?: (err: Error) => void | Promise<void>;
+      onMetadata?: (metadata: Record<string, SmoothieControllerMetadata>) => void | Promise<void>;
     }
   ) => {
     for (const controller of controllers as SmoothieController[]) {
@@ -120,6 +122,25 @@ export function _createSegment() {
           );
         }
       }
+    }
+
+    if (options?.onMetadata) {
+      const metadata: Record<string, SmoothieControllerMetadata> = {};
+
+      for (const controller of controllers as unknown as SmoothieController[]) {
+        if (!controller.controllerName) {
+          throw new Error(`Client metadata error: controller ${controller.name} does not have a controllerName`);
+        }
+
+        // TODO use type of first createClient argument
+        metadata[controller.controllerName] = {
+          controllerName: controller.controllerName,
+          _prefix: controller._prefix,
+          _handlers: { ...controller._handlers },
+        };
+      }
+
+      void options.onMetadata(metadata);
     }
 
     return {
