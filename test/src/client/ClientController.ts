@@ -23,7 +23,6 @@ export default class ClientController {
     params: { hello: 'world' }
   ) {
     const body = await req.json();
-    console.log('body', body);
     const query = req.nextUrl.searchParams.get('query');
     return { params, body, query: { query } };
   }

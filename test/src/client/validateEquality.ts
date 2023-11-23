@@ -15,8 +15,6 @@ const validateEquality = createDecorator(
 
       if (!isEqual(body, bodyValidate)) {
         throw new HttpException(HttpStatus.BAD_REQUEST, 'Invalid body');
-      } else {
-        console.log('VALID', body, bodyValidate);
       }
     }
 
