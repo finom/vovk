@@ -1,6 +1,8 @@
 import { headers } from 'next/headers';
 import { SmoothieRequest, get, post, prefix } from '../../../src';
 import validateEquality from './validateEquality';
+import zodSmoothie from 'next-smoothie-zod';
+import * as z from 'zod';
 
 @prefix('client')
 export default class ClientController {
@@ -33,5 +35,12 @@ export default class ClientController {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
     return { body, query: { hey } };
+  }
+
+  @post.auto()
+  @zodSmoothie(z.object({ hello: z.string() }))
+  static async postWithZodValidation(req: SmoothieRequest<{ hello: string }>) {
+    const body = await req.json();
+    return { body };
   }
 }

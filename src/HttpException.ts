@@ -9,7 +9,5 @@ export class _HttpException extends Error {
     super(message);
     this.statusCode = statusCode;
     this.message = message;
-
-    throw this;
   }
 }

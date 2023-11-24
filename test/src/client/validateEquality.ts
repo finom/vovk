@@ -14,7 +14,7 @@ const validateEquality = createDecorator(
       req.json = () => Promise.resolve(body);
 
       if (!isEqual(body, bodyValidate)) {
-        throw new HttpException(HttpStatus.BAD_REQUEST, 'Invalid body');
+        throw new HttpException(HttpStatus.BAD_REQUEST, 'Server exception. Invalid body');
       }
     }
 
@@ -22,7 +22,7 @@ const validateEquality = createDecorator(
       const query = Object.fromEntries(req.nextUrl.searchParams.entries());
 
       if (!isEqual(query, queryValidate)) {
-        throw new HttpException(HttpStatus.BAD_REQUEST, 'Invalid query');
+        throw new HttpException(HttpStatus.BAD_REQUEST, 'Server exception. Invalid query');
       }
     }
 
@@ -39,13 +39,13 @@ const validateEquality = createDecorator(
 export const validateEqualityOnClient: SmoothieClientOptions['validateOnClient'] = (input, validators) => {
   if (validators.body) {
     if (!isEqual(input.body, validators.body)) {
-      throw new Error(`Invalid body`);
+      throw new HttpException(HttpStatus.NULL, `Client exception. Invalid body`);
     }
   }
 
   if (validators.query) {
     if (!isEqual(input.query, validators.query)) {
-      throw new Error(`Invalid query`);
+      throw new HttpException(HttpStatus.NULL, `Client exception. Invalid query`);
     }
   }
 };

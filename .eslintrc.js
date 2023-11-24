@@ -15,7 +15,7 @@ module.exports = {
   rules: {
     'no-unused-vars': 0, // we use typescript
   },
-  ignorePatterns: ["dist", "client/src", "client/test"],
+  ignorePatterns: ["dist", "client/src", "client/test", ".eslintrc.js"],
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',

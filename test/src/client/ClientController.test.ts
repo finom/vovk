@@ -1,8 +1,9 @@
 import metadata from '../controllers-metadata.json';
 import type ClientController from './ClientController';
 import { clientizeController, defaultFetcher, type DefaultFetcherOptions } from '../../../src/client';
-import { ErrorResponseBody, SmoothieBody, SmoothieParams, SmoothieQuery, SmoothieReturnType } from '../../../src';
+import { HttpException, SmoothieBody, SmoothieParams, SmoothieQuery, SmoothieReturnType } from '../../../src';
 import { it, expect, describe } from '@jest/globals';
+
 import { validateEqualityOnClient } from './validateEquality';
 
 type ClientControllerType = typeof ClientController;
@@ -108,27 +109,33 @@ describe('Client', () => {
       query: { hey: 'query' },
     });
 
-    expect(
+    await expect(async () => {
       await clientValidationController.postWithEqualityValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
-      })
-    ).toEqual({
-      statusCode: 0,
-      message: 'Invalid body',
-      isError: true,
-    } satisfies ErrorResponseBody);
+      });
+    }).rejects.toThrow(/Client exception. Invalid body/);
 
-    expect(
+    await expect(async () => {
+      await clientValidationController.postWithEqualityValidation({
+        body: { hello: 'wrong' },
+        query: { hey: 'query' },
+      });
+    }).rejects.toThrowError(HttpException);
+
+    await expect(async () => {
       await clientValidationController.postWithEqualityValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
-      })
-    ).toEqual({
-      statusCode: 0,
-      message: 'Invalid query',
-      isError: true,
-    } satisfies ErrorResponseBody);
+      });
+    }).rejects.toThrow(/Client exception. Invalid query/);
+
+    await expect(async () => {
+      await clientValidationController.postWithEqualityValidation({
+        body: { hello: 'body' },
+        query: { hey: 'wrong' },
+      });
+    }).rejects.toThrowError(HttpException);
   });
 
   it('Should handle basic server validation', async () => {
@@ -152,27 +159,33 @@ describe('Client', () => {
       query: { hey: 'query' },
     });
 
-    expect(
+    await expect(async () => {
       await serverValidationController.postWithEqualityValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
-      })
-    ).toEqual({
-      statusCode: 400,
-      message: 'Invalid body',
-      isError: true,
-    } satisfies ErrorResponseBody);
+      });
+    }).rejects.toThrow(/Server exception. Invalid body/);
 
-    expect(
+    await expect(async () => {
+      await serverValidationController.postWithEqualityValidation({
+        body: { hello: 'wrong' },
+        query: { hey: 'query' },
+      });
+    }).rejects.toThrowError(HttpException);
+
+    await expect(async () => {
       await serverValidationController.postWithEqualityValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
-      })
-    ).toEqual({
-      statusCode: 400,
-      message: 'Invalid query',
-      isError: true,
-    } satisfies ErrorResponseBody);
+      });
+    }).rejects.toThrow(/Server exception. Invalid query/);
+
+    await expect(async () => {
+      await serverValidationController.postWithEqualityValidation({
+        body: { hello: 'body' },
+        query: { hey: 'wrong' },
+      });
+    }).rejects.toThrowError(HttpException);
   });
 
   // zod validation

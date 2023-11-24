@@ -26,6 +26,25 @@
         },
         "path": "client-controller/post-with-equality-validation",
         "httpMethod": "POST"
+      },
+      "postWithZodValidation": {
+        "clientValidators": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "hello": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "hello"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        "path": "client-controller/post-with-zod-validation",
+        "httpMethod": "POST"
       }
     }
   }
