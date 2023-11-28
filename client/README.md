@@ -10,7 +10,7 @@
 
 
 <p align="center">
-<strong>WIP. Coming soon.</strong>
+<strong>WIP. Coming soon with the new archirecture pattern called "SCRIViS" (Service - Controller - Repository - Isomorphic Service - View - State).</strong>
 <br />
 </p>
 

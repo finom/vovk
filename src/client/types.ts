@@ -6,6 +6,7 @@ import {
   _SmoothieQuery,
   _SmoothieParams,
 } from '../types';
+import { _StreamResponse as StreamResponse } from '../StreamResponse';
 
 export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_SmoothieBody<T> extends undefined | void
   ? { body?: undefined }
@@ -17,15 +18,29 @@ export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_SmoothieBo
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
-type ClientMethod<T extends (...args: KnownAny[]) => KnownAny, OPTS extends Record<string, KnownAny>> = <R>(
-  options: _StaticMethodInput<T> & OPTS extends { body?: undefined | null; query?: undefined; params?: undefined }
-    ? void
+type ClientMethod<
+  T extends (...args: KnownAny[]) => void | object | StreamResponse<STREAM> | Promise<StreamResponse<STREAM>>,
+  OPTS extends Record<string, KnownAny>,
+  STREAM extends KnownAny = unknown,
+> = <R>(
+  options: (_StaticMethodInput<T> & OPTS extends { body?: undefined | null; query?: undefined; params?: undefined }
+    ? unknown
     : Parameters<T>[0] extends void
-      ? (_StaticMethodInput<T>['params'] extends object ? { params: _StaticMethodInput<T>['params'] } : void) | OPTS
-      : _StaticMethodInput<T> & OPTS
-) => R extends object ? Promise<R> : ToPromise<ReturnType<T>>;
+      ? _StaticMethodInput<T>['params'] extends object
+        ? { params: _StaticMethodInput<T>['params'] }
+        : unknown
+      : _StaticMethodInput<T>) & { isStream?: boolean } & OPTS
+) => ReturnType<T> extends Promise<StreamResponse<infer U>> | StreamResponse<infer U>
+  ? Promise<U[]> & {
+      onMessage: (handler: (message: U) => void) => Promise<U[]> & {
+        onMessage: (handler: (message: U) => void) => void;
+      };
+    }
+  : R extends object
+    ? Promise<R>
+    : ToPromise<ReturnType<T>>;
 
-export type _SmoothieClient<T, OPTS extends Record<string, KnownAny>> = {
+export type _SmoothieClient<T, OPTS extends { [key: string]: KnownAny }> = {
   [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> : never;
 };
 
@@ -35,6 +50,7 @@ export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Recor
     httpMethod: HttpMethod;
     getPath: (params: { [key: string]: string }, query: { [key: string]: string }) => string;
     validate: (input: { body?: unknown; query?: unknown }) => void;
+    onStreamMessage?: (message: unknown) => void;
   },
   input: {
     body: unknown;
@@ -43,8 +59,9 @@ export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Recor
   } & OPTS
 ) => KnownAny;
 
-export type _SmoothieClientOptions<OPTS = undefined> = {
+export type _SmoothieClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
   disableClientValidation?: boolean;
+  streamFetcher?: _SmoothieClientFetcher<OPTS> | null;
   validateOnClient?: (
     input: { body?: unknown; query?: unknown },
     validators: { body?: unknown; query?: unknown }

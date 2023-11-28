@@ -27,9 +27,9 @@
         "path": "client-controller/post-with-equality-validation",
         "httpMethod": "POST"
       },
-      "postWithZodValidation": {
+      "postFormData": {
         "clientValidators": {
-          "body": {
+          "query": {
             "type": "object",
             "properties": {
               "hello": {
@@ -43,7 +43,51 @@
             "$schema": "http://json-schema.org/draft-07/schema#"
           }
         },
-        "path": "client-controller/post-with-zod-validation",
+        "path": "client-controller/post-form-data",
+        "httpMethod": "POST"
+      },
+      "postWithZodValidationAndEqualityValidation": {
+        "clientValidators": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "hello": {
+                "type": "string",
+                "const": "body"
+              }
+            },
+            "required": [
+              "hello"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          },
+          "query": {
+            "type": "object",
+            "properties": {
+              "hey": {
+                "type": "string",
+                "const": "query"
+              }
+            },
+            "required": [
+              "hey"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        "path": "client-controller/post-with-zod-validation-and-equality-validation",
+        "httpMethod": "POST"
+      }
+    }
+  },
+  "StreamingController": {
+    "controllerName": "StreamingController",
+    "_prefix": "streaming",
+    "_handlers": {
+      "postWithStreaming": {
+        "path": "streaming-controller/post-with-streaming",
         "httpMethod": "POST"
       }
     }

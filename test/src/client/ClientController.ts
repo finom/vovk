@@ -38,9 +38,20 @@ export default class ClientController {
   }
 
   @post.auto()
-  @zodSmoothie(z.object({ hello: z.string() }))
-  static async postWithZodValidation(req: SmoothieRequest<{ hello: string }>) {
+  @zodSmoothie(null, z.object({ hello: z.string() }))
+  static async postFormData(req: SmoothieRequest<FormData, { hello: string }>) {
+    const hello = req.nextUrl.searchParams.get('hello');
+    const data = await req.formData();
+    const formData = Object.fromEntries(data.entries());
+
+    return { query: { hello }, formData };
+  }
+
+  @post.auto()
+  @zodSmoothie(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') }))
+  static async postWithZodValidationAndEqualityValidation(req: SmoothieRequest<{ hello: string }, { hey: string }>) {
     const body = await req.json();
-    return { body };
+    const hey = req.nextUrl.searchParams.get('hey');
+    return { body, query: { hey } };
   }
 }

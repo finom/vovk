@@ -14,6 +14,8 @@ import {
   _SmoothieQuery as SmoothieQuery,
 } from '../types';
 
+import { _defaultStreamFetcher as defaultStreamFetcher } from './defaultStreamFetcher';
+
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
 const getHandlerPath = <T extends ControllerStaticMethod>(
@@ -46,6 +48,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
   const metadata = controller._handlers;
   if (!metadata) throw new Error(`No metadata for controller ${String(controller?.controllerName)}`);
   const prefix = trimPath(controller._prefix ?? '');
+  const { streamFetcher = defaultStreamFetcher } = options ?? {};
 
   for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(metadata)) {
     const getPath = (params: { [key: string]: string }, query: { [key: string]: string }) =>
@@ -56,25 +59,72 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
       return options?.validateOnClient?.({ body, query }, clientValidators ?? {});
     };
 
-    // @ts-expect-error TODO fix later
-    client[staticMethodName] = (
+    const handler = (
       input: {
         body?: unknown;
         query?: { [key: string]: string };
         params?: { [key: string]: string };
+        isStream?: boolean;
       } & OPTS = {} as OPTS
     ) => {
-      return fetcher(
-        { name: staticMethodName as keyof T, httpMethod, getPath, validate },
-        {
-          ...input,
-          body: input.body ?? null,
-          query: input.query ?? {},
-          params: input.params ?? {},
-          ...options?.defaultOptions,
-        }
-      ) as unknown;
+      const internalOptions: Parameters<typeof fetcher>[0] = {
+        name: staticMethodName as keyof T,
+        httpMethod,
+        getPath,
+        validate,
+      };
+      const internalInput = {
+        ...input,
+        body: input.body ?? null,
+        query: input.query ?? {},
+        params: input.params ?? {},
+        ...options?.defaultOptions,
+      };
+
+      if (input.isStream) {
+        type Handler = (message: unknown) => void;
+        const handlers: Handler[] = [];
+        const messages: unknown[] = [];
+        if (!streamFetcher) throw new Error('Stream fetcher is not provided');
+
+        internalOptions.onStreamMessage = (message: unknown) => {
+          messages.push(message);
+          handlers.forEach((handler) => handler(message));
+        };
+
+        const fetcherPromise = streamFetcher(internalOptions, internalInput) as Promise<unknown>;
+
+        if (!(fetcherPromise instanceof Promise)) throw new Error('Stream fetcher must return a promise');
+
+        const resultPromise: Promise<unknown> & {
+          onMessage?: (handler: Handler) => Promise<unknown>;
+        } = fetcherPromise.then(() => messages);
+
+        resultPromise.onMessage = (handler: Handler) => {
+          handlers.push(handler);
+          return fetcherPromise.then(() => messages);
+        };
+
+        return resultPromise;
+      }
+
+      const fetcherPromise = fetcher(internalOptions, internalInput) as Promise<unknown> & {
+        onMessage: (handler: (message: unknown) => void) => void;
+      };
+
+      if (!(fetcherPromise instanceof Promise)) throw new Error('Fetcher must return a promise');
+
+      fetcherPromise.onMessage = () => {
+        throw new Error('onMessage is not supported for non-streaming requests');
+      };
+
+      return fetcherPromise;
     };
+
+    // @ts-expect-error TODO: Fix this
+    client[staticMethodName] = handler;
+
+    // client[staticMethodName].onMessage = (handler: (message: unknown) => void) => {};
   }
 
   return client;

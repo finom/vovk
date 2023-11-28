@@ -11,6 +11,7 @@ import {
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
+import { _StreamResponse as StreamResponse } from './StreamResponse';
 
 export {
   type ErrorResponseBody,
@@ -24,6 +25,7 @@ export {
   HttpMethod,
   createSegment,
   createDecorator,
+  StreamResponse,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, activateControllers } = createSegment();

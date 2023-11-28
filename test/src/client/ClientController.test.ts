@@ -5,6 +5,7 @@ import { HttpException, SmoothieBody, SmoothieParams, SmoothieQuery, SmoothieRet
 import { it, expect, describe } from '@jest/globals';
 
 import { validateEqualityOnClient } from './validateEquality';
+import { zodValidateOnClient } from 'next-smoothie-zod';
 
 type ClientControllerType = typeof ClientController;
 
@@ -186,6 +187,121 @@ describe('Client', () => {
         query: { hey: 'wrong' },
       });
     }).rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle zod client validation', async () => {
+    const clientZodController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
+      metadata.ClientController,
+      defaultFetcher,
+      {
+        defaultOptions: { prefix },
+        validateOnClient: zodValidateOnClient,
+      }
+    );
+
+    const result = await clientZodController.postWithZodValidationAndEqualityValidation({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+    });
+
+    expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+    });
+
+    await expect(async () => {
+      await clientZodController.postWithZodValidationAndEqualityValidation({
+        body: { hello: 'wrong' },
+        query: { hey: 'query' },
+      });
+    }).rejects.toThrow(/Invalid body on client/);
+
+    await expect(async () => {
+      await clientZodController.postWithZodValidationAndEqualityValidation({
+        body: { hello: 'wrong' },
+        query: { hey: 'query' },
+      });
+    }).rejects.toThrowError(HttpException);
+
+    await expect(async () => {
+      await clientZodController.postWithZodValidationAndEqualityValidation({
+        body: { hello: 'body' },
+        query: { hey: 'wrong' },
+      });
+    }).rejects.toThrow(/Invalid query on client/);
+
+    await expect(async () => {
+      await clientZodController.postWithZodValidationAndEqualityValidation({
+        body: { hello: 'body' },
+        query: { hey: 'wrong' },
+      });
+    }).rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle zod server validation', async () => {
+    const serverZodController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
+      metadata.ClientController,
+      defaultFetcher,
+      {
+        defaultOptions: { prefix },
+        validateOnClient: zodValidateOnClient,
+        disableClientValidation: true,
+      }
+    );
+
+    const result = await serverZodController.postWithZodValidationAndEqualityValidation({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+    });
+
+    expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+    });
+
+    await expect(async () => {
+      await serverZodController.postWithZodValidationAndEqualityValidation({
+        body: { hello: 'wrong' },
+        query: { hey: 'query' },
+      });
+    }).rejects.toThrow(/Invalid body on server/);
+
+    await expect(async () => {
+      await serverZodController.postWithZodValidationAndEqualityValidation({
+        body: { hello: 'wrong' },
+        query: { hey: 'query' },
+      });
+    }).rejects.toThrowError(HttpException);
+
+    await expect(async () => {
+      await serverZodController.postWithZodValidationAndEqualityValidation({
+        body: { hello: 'body' },
+        query: { hey: 'wrong' },
+      });
+    }).rejects.toThrow(/Invalid query on server/);
+
+    await expect(async () => {
+      await serverZodController.postWithZodValidationAndEqualityValidation({
+        body: { hello: 'body' },
+        query: { hey: 'wrong' },
+      });
+    }).rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle form data and ignore zod errors', async () => {
+    const formData = new FormData();
+    formData.append('foo1', 'bar1');
+    formData.append('foo2', 'bar2');
+
+    const result = await defaultController.postFormData({
+      body: formData,
+      query: { hello: 'world' },
+    });
+
+    expect(result).toEqual({
+      query: { hello: 'world' },
+      formData: { foo1: 'bar1', foo2: 'bar2' },
+    });
   });
 
   // zod validation

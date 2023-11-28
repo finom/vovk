@@ -13,6 +13,7 @@ import RedirectController from '../../../controllers/RedirectController';
 import MiscController from '../../../controllers/MiscController';
 import AutoDecoratorsController from '../../../controllers/AutoDecoratorsController';
 import ClientController from '../../../client/ClientController';
+import StreamingController from '../../../client/StreamingController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers(
   [
@@ -30,6 +31,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
     MiscController,
     AutoDecoratorsController,
     ClientController,
+    StreamingController,
   ],
   {
     onError: (err) => {
@@ -39,7 +41,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
 );
 
 // generate metadata for client controller only
-activateControllers([ClientController], {
+activateControllers([ClientController, StreamingController], {
   onMetadata: async (metadata) => {
     if (process.env.NODE_ENV === 'development') {
       const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);

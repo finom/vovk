@@ -7,7 +7,7 @@ export interface _DefaultFetcherOptions extends Omit<RequestInit, 'body' | 'meth
   prefix?: string;
 }
 
-const DEFAULT_ERROR_MESSAGE = 'Unknown error';
+export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultFetcher';
 
 // defaultFetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
 // For normal HTTP errors, it uses message and status code from the response of ErrorResponseBody type
@@ -28,9 +28,14 @@ export const _defaultFetcher: SmoothieClientFetcher<_DefaultFetcherOptions> = as
 
   const init: RequestInit = {
     method: httpMethod,
-    body: body ? JSON.stringify(body) : undefined,
     ...options,
   };
+
+  if (body instanceof FormData) {
+    init.body = body as BodyInit;
+  } else if (body) {
+    init.body = JSON.stringify(body);
+  }
 
   let result: unknown;
   let response: Response;
