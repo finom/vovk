@@ -1,18 +1,17 @@
 /**
- 
 await controller.postWithStreaming({ body }).onMessage((message) => {}))
  */
 
-import { _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultFetcher';
-import { _HttpStatus as HttpStatus } from '../types';
-import { _SmoothieClientFetcher as SmoothieClientFetcher } from './types';
+import { type _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultFetcher';
+import { _HttpStatus as HttpStatus, type _ErrorResponseBody as ErrorResponseBody } from '../types';
+import { type _SmoothieClientFetcher as SmoothieClientFetcher } from './types';
 import { _HttpException as HttpException } from '../HttpException';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamFetcher';
 
 export const _defaultStreamFetcher: SmoothieClientFetcher<DefaultFetcherOptions> = async (
-  { httpMethod, getPath, validate, onStreamMessage },
+  { httpMethod, getPath, validate, onStreamMessage, setReader },
   { params, query, body, prefix = '', ...options }
 ) => {
   const endpoint = (prefix.endsWith('/') ? prefix : `${prefix}/`) + getPath(params, query);
@@ -48,15 +47,30 @@ export const _defaultStreamFetcher: SmoothieClientFetcher<DefaultFetcherOptions>
     throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE);
   }
 
+  if (!response.ok) {
+    let result: unknown;
+    try {
+      result = await response.json();
+    } catch {
+      // ignore parsing errors
+    }
+    // handle server errors
+    throw new HttpException(response.status, (result as ErrorResponseBody).message ?? DEFAULT_ERROR_MESSAGE);
+  }
+
   if (!response.body) throw new HttpException(HttpStatus.NULL, 'Stream body is falsy. Check your controller code.');
 
   const reader = response.body.getReader();
 
+  setReader?.(reader);
+
   const messages: unknown[] = [];
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises, no-async-promise-executor
-  return new Promise(async (resolve) => {
+  const promise = new Promise(async (resolve, reject) => {
     let prepend = '';
+    let upcomingError: unknown;
+
     // eslint-disable-next-line no-constant-condition
     while (true) {
       let value: Uint8Array | undefined;
@@ -65,7 +79,13 @@ export const _defaultStreamFetcher: SmoothieClientFetcher<DefaultFetcherOptions>
       try {
         ({ value, done } = await reader.read());
       } catch (error) {
-        throw new HttpException(HttpStatus.NULL, 'Stream error. ' + String(error));
+        if (upcomingError) {
+          if (typeof upcomingError === 'string') {
+            return reject(new Error(upcomingError));
+          }
+          return reject(upcomingError);
+        }
+        return reject(new Error('Stream error. ' + String(error)));
       }
 
       if (done) {
@@ -78,7 +98,7 @@ export const _defaultStreamFetcher: SmoothieClientFetcher<DefaultFetcherOptions>
       for (const line of lines) {
         let data;
         try {
-          data = JSON.parse(line) as unknown;
+          data = JSON.parse(line) as object;
           prepend = '';
         } catch (error) {
           // 'Error parsing JSON. Runnig prepend workaround.
@@ -87,12 +107,21 @@ export const _defaultStreamFetcher: SmoothieClientFetcher<DefaultFetcherOptions>
         }
 
         if (data) {
-          messages.push(data);
-          onStreamMessage(data);
+          if ('isError' in data && 'reason' in data) {
+            upcomingError = data.reason;
+          } else {
+            messages.push(data);
+            onStreamMessage(data);
+          }
         }
       }
     }
   });
+
+  // Promise should have reader property to be able to cancel the stream
+  (promise as unknown as { reader: ReadableStreamDefaultReader<Uint8Array> }).reader = reader;
+
+  return promise;
 };
 
 /* 

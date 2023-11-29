@@ -18,6 +18,11 @@ export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_SmoothieBo
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
+export type _PromiseWithStream<T> = Promise<T[]> & {
+  onMessage: (handler: (message: T) => void | Promise<void>) => _PromiseWithStream<T>;
+  cancel: () => Promise<void> | void;
+};
+
 type ClientMethod<
   T extends (...args: KnownAny[]) => void | object | StreamResponse<STREAM> | Promise<StreamResponse<STREAM>>,
   OPTS extends Record<string, KnownAny>,
@@ -31,11 +36,7 @@ type ClientMethod<
         : unknown
       : _StaticMethodInput<T>) & { isStream?: boolean } & OPTS
 ) => ReturnType<T> extends Promise<StreamResponse<infer U>> | StreamResponse<infer U>
-  ? Promise<U[]> & {
-      onMessage: (handler: (message: U) => void) => Promise<U[]> & {
-        onMessage: (handler: (message: U) => void) => void;
-      };
-    }
+  ? _PromiseWithStream<U>
   : R extends object
     ? Promise<R>
     : ToPromise<ReturnType<T>>;
@@ -51,6 +52,7 @@ export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Recor
     getPath: (params: { [key: string]: string }, query: { [key: string]: string }) => string;
     validate: (input: { body?: unknown; query?: unknown }) => void;
     onStreamMessage?: (message: unknown) => void;
+    setReader?: (reader: ReadableStreamDefaultReader<Uint8Array>) => void;
   },
   input: {
     body: unknown;

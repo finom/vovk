@@ -1,28 +1,48 @@
+import { _KnownAny as KnownAny, _StreamAbortMessage as StreamAbortMessage } from './types';
+
 export class _StreamResponse<T> extends Response {
-  static JSON_DIVIDER = '__##DIV123##__'; // protects collisions with JSON data
+  public static readonly JSON_DIVIDER = '__##DIV123##__'; // protects collisions with JSON data
 
-  private writer: WritableStreamDefaultWriter;
+  public static defaultHeaders = {
+    'Content-Type': 'text/event-stream',
+    Connection: 'keep-alive',
+    'Content-Encoding': 'none',
+    'Cache-Control': 'no-cache, no-transform',
+  };
 
-  private encoder: TextEncoder;
+  public readonly writer: WritableStreamDefaultWriter;
 
-  constructor(init: ResponseInit) {
+  public readonly encoder: TextEncoder;
+
+  constructor(init?: ResponseInit) {
     const responseStream = new TransformStream();
     const writer = responseStream.writable.getWriter();
     const encoder = new TextEncoder();
 
-    super(responseStream.readable, init);
+    super(responseStream.readable, {
+      ...init,
+      headers: init?.headers ?? _StreamResponse.defaultHeaders,
+    });
 
     this.writer = writer;
     this.encoder = encoder;
   }
 
-  send(data: T) {
+  public send(data: T | StreamAbortMessage) {
     const { writer, encoder } = this;
     return writer.write(encoder.encode(JSON.stringify(data) + _StreamResponse.JSON_DIVIDER));
   }
 
-  end() {
+  public end() {
     const { writer } = this;
     return writer.close();
+  }
+
+  public async throw(e: KnownAny) {
+    const { writer } = this;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    await this.send({ isError: true, reason: e instanceof Error ? e.message : e });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return writer.abort(e);
   }
 }

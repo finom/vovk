@@ -11,14 +11,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new StreamResponse<Token>({
-      headers: {
-        'Content-Type': 'text/event-stream',
-        Connection: 'keep-alive',
-        'Content-Encoding': 'none',
-        'Cache-Control': 'no-cache, no-transform',
-      },
-    });
+    const response = new StreamResponse<Token>();
 
     void (async () => {
       for (const token of body) {
@@ -27,6 +20,61 @@ export default class StreamingController {
       }
 
       await response.end();
+    })();
+
+    return response;
+  }
+
+  @post.auto()
+  static postWithStreamingAndImmediateError(req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
+    if (req) {
+      throw new Error('Immediate error');
+    }
+
+    const response = new StreamResponse<Token>();
+
+    return response;
+  }
+
+  @post.auto()
+  static async postWithStreamingAndDelayedError(req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
+    const body = await req.json();
+    const query = req.nextUrl.searchParams.get('query');
+
+    const response = new StreamResponse<Token>();
+
+    let count = 0;
+    void (async () => {
+      for (const token of body) {
+        if (++count === 3) {
+          return response.throw('velyka dupa');
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        await response.send({ ...token, query });
+      }
+    })();
+
+    return response;
+  }
+
+  @post.auto()
+  static async postWithStreamingAndDelayedCustomError(
+    req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>
+  ) {
+    const body = await req.json();
+    const query = req.nextUrl.searchParams.get('query');
+
+    const response = new StreamResponse<Token>();
+
+    let count = 0;
+    void (async () => {
+      for (const token of body) {
+        if (++count === 3) {
+          return response.throw({ customError: 'custom error' });
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        await response.send({ ...token, query });
+      }
     })();
 
     return response;

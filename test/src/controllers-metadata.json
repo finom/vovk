@@ -89,6 +89,18 @@
       "postWithStreaming": {
         "path": "streaming-controller/post-with-streaming",
         "httpMethod": "POST"
+      },
+      "postWithStreamingAndImmediateError": {
+        "path": "streaming-controller/post-with-streaming-and-immediate-error",
+        "httpMethod": "POST"
+      },
+      "postWithStreamingAndDelayedError": {
+        "path": "streaming-controller/post-with-streaming-and-delayed-error",
+        "httpMethod": "POST"
+      },
+      "postWithStreamingAndDelayedCustomError": {
+        "path": "streaming-controller/post-with-streaming-and-delayed-custom-error",
+        "httpMethod": "POST"
       }
     }
   }

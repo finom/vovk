@@ -132,7 +132,6 @@ export function _createSegment() {
           throw new Error(`Client metadata error: controller ${controller.name} does not have a controllerName`);
         }
 
-        // TODO use type of first createClient argument
         metadata[controller.controllerName] = {
           controllerName: controller.controllerName,
           _prefix: controller._prefix,

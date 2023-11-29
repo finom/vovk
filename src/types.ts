@@ -87,6 +87,11 @@ export type _SmoothieReturnType<
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<T>>;
 
+export type _StreamAbortMessage = {
+  isError: true;
+  reason: _KnownAny;
+};
+
 export enum _HttpMethod {
   GET = 'GET',
   POST = 'POST',

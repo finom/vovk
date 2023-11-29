@@ -1,5 +1,5 @@
-import { _SmoothieClientFetcher as SmoothieClientFetcher } from './types';
-import { _ErrorResponseBody as ErrorResponseBody, _HttpStatus as HttpStatus } from '../types';
+import { type _SmoothieClientFetcher as SmoothieClientFetcher } from './types';
+import { type _ErrorResponseBody as ErrorResponseBody, _HttpStatus as HttpStatus } from '../types';
 import { _HttpException as HttpException } from '../HttpException';
 
 // `RequestInit` is the type of options passed to fetch function
@@ -44,19 +44,19 @@ export const _defaultFetcher: SmoothieClientFetcher<_DefaultFetcherOptions> = as
     response = await fetch(endpoint, init);
   } catch (e) {
     // handle network errors
-    throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE);
+    throw new HttpException(HttpStatus.NULL, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);
   }
 
   try {
     result = await response.json();
   } catch (e) {
     // handle parsing errors
-    throw new HttpException(response.status, (e as Error).message ?? DEFAULT_ERROR_MESSAGE);
+    throw new HttpException(response.status, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);
   }
 
   if (!response.ok) {
     // handle server errors
-    throw new HttpException(response.status, (result as ErrorResponseBody).message ?? DEFAULT_ERROR_MESSAGE);
+    throw new HttpException(response.status, (result as ErrorResponseBody)?.message ?? DEFAULT_ERROR_MESSAGE);
   }
 
   return result;
