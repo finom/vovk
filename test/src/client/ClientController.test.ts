@@ -32,6 +32,11 @@ describe('Client', () => {
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
   });
 
+  it(`Should handle simple requests and use empty generic`, async () => {
+    const result = await defaultController.getHelloWorldAndEmptyGeneric();
+    expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
+  });
+
   it(`Should handle simple requests with default options`, async () => {
     const result = await defaultController.getHelloWorld({
       headers: { 'x-test': 'world' },

@@ -14,6 +14,12 @@ export default class ClientController {
     return { hello: world };
   }
 
+  @get.auto()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static getHelloWorldAndEmptyGeneric(_req: SmoothieRequest) {
+    return { hello: 'world' };
+  }
+
   @get('with-params/:hello')
   static getWithParams(_req: SmoothieRequest<undefined>, { hello }: { hello: 'world' }) {
     return { hello };

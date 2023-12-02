@@ -7,6 +7,10 @@
         "path": "client-controller/get-hello-world",
         "httpMethod": "GET"
       },
+      "getHelloWorldAndEmptyGeneric": {
+        "path": "client-controller/get-hello-world-and-empty-generic",
+        "httpMethod": "GET"
+      },
       "getWithParams": {
         "path": "with-params/:hello",
         "httpMethod": "GET"

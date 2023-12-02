@@ -28,13 +28,14 @@ type ClientMethod<
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = <R>(
-  options: (_StaticMethodInput<T> & OPTS extends { body?: undefined | null; query?: undefined; params?: undefined }
+  options: (_StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? unknown
     : Parameters<T>[0] extends void
       ? _StaticMethodInput<T>['params'] extends object
         ? { params: _StaticMethodInput<T>['params'] }
         : unknown
-      : _StaticMethodInput<T>) & { isStream?: boolean } & OPTS
+      : _StaticMethodInput<T>) &
+    (({ isStream?: boolean } & Partial<OPTS>) | void)
 ) => ReturnType<T> extends Promise<StreamResponse<infer U>> | StreamResponse<infer U>
   ? _PromiseWithStream<U>
   : R extends object
