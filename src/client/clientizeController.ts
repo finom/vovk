@@ -47,7 +47,8 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
   if (!controller) throw new Error(`Unable to clientize. Controller metadata is not provided`);
   if (!fetcher) throw new Error(`Unable to clientize. Fetcher is not provided`);
   const metadata = controller._handlers;
-  if (!metadata) throw new Error(`Unable to clientize. No metadata for controller ${String(controller?.controllerName)}`);
+  if (!metadata)
+    throw new Error(`Unable to clientize. No metadata for controller ${String(controller?.controllerName)}`);
   const prefix = trimPath(controller._prefix ?? '');
   const { streamFetcher = defaultStreamFetcher } = options ?? {};
 
