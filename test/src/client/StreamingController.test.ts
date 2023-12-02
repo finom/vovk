@@ -1,7 +1,7 @@
 import metadata from '../controllers-metadata.json';
 import type StreamingController from './StreamingController';
 import { clientizeController, defaultFetcher, type DefaultFetcherOptions } from '../../../src/client';
-import { it, expect, describe } from '@jest/globals';
+import { it, expect, describe, xit } from '@jest/globals';
 import { HttpException } from '../../../src';
 
 type StreamingControllerType = typeof StreamingController;
@@ -116,6 +116,27 @@ describe('Streaming', () => {
     });
 
     await expect(promise).rejects.toEqual({ customError: 'custom error' });
+
+    expect(expected).toEqual(expectedCollected);
+  });
+
+  // TODO thrown: "Exceeded timeout of 5000 ms for a test". How to end the stream properly?
+  xit('Should handle unhandled errors in the middle of stream', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
+    const expectedCollected: typeof expected = [];
+
+    const promise = defaultController.postWithStreamingAndDelayedUnhandledError({
+      body: tokens,
+      query: { query: 'queryValue' },
+      isStream: true,
+    });
+
+    void promise.onMessage((message) => {
+      expectedCollected.push(message);
+    });
+
+    await expect(promise).rejects.toThrow();
 
     expect(expected).toEqual(expectedCollected);
   });

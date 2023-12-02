@@ -101,6 +101,10 @@
       "postWithStreamingAndDelayedCustomError": {
         "path": "streaming-controller/post-with-streaming-and-delayed-custom-error",
         "httpMethod": "POST"
+      },
+      "postWithStreamingAndDelayedUnhandledError": {
+        "path": "streaming-controller/post-with-streaming-and-delayed-unhandled-error",
+        "httpMethod": "POST"
       }
     }
   }

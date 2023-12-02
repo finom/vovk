@@ -33,7 +33,7 @@ export class _StreamResponse<T> extends Response {
     return writer.write(encoder.encode(JSON.stringify(data) + _StreamResponse.JSON_DIVIDER));
   }
 
-  public end() {
+  public close() {
     const { writer } = this;
     return writer.close();
   }

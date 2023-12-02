@@ -19,7 +19,7 @@ export default class StreamingController {
         await response.send({ ...token, query });
       }
 
-      await response.end();
+      await response.close();
     })();
 
     return response;
@@ -71,6 +71,29 @@ export default class StreamingController {
       for (const token of body) {
         if (++count === 3) {
           return response.throw({ customError: 'custom error' });
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        await response.send({ ...token, query });
+      }
+    })();
+
+    return response;
+  }
+
+  @post.auto()
+  static async postWithStreamingAndDelayedUnhandledError(
+    req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>
+  ) {
+    const body = await req.json();
+    const query = req.nextUrl.searchParams.get('query');
+
+    const response = new StreamResponse<Token>();
+
+    let count = 0;
+    void (async () => {
+      for (const token of body) {
+        if (++count === 3) {
+          throw new Error('Unhandled error');
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
         await response.send({ ...token, query });
