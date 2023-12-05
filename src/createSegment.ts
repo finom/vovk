@@ -10,7 +10,9 @@ import {
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
-const deepEqual = (obj1: Record<string, KnownAny>, obj2: Record<string, KnownAny>): boolean => {
+const deepEqual = (o1: KnownAny, o2: KnownAny): boolean => {
+  const obj1 = o1 as Record<string, KnownAny>;
+  const obj2 = o2 as Record<string, KnownAny>;
   if (obj1 === obj2) {
     return true;
   }
@@ -27,10 +29,7 @@ const deepEqual = (obj1: Record<string, KnownAny>, obj2: Record<string, KnownAny
   }
 
   for (const key of keys1) {
-    if (
-      !keys2.includes(key) ||
-      !deepEqual(obj1[key] as Record<string, KnownAny>, obj2[key] as Record<string, KnownAny>)
-    ) {
+    if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) {
       return false;
     }
   }
