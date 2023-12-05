@@ -164,7 +164,7 @@ export function _createSegment() {
 
         metadata[controller.controllerName] = {
           controllerName: controller.controllerName,
-          _prefix: controller._prefix,
+          _prefix: controller._prefix ?? '',
           _handlers: { ...controller._handlers },
         };
       }
