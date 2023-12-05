@@ -35,13 +35,14 @@ type ClientMethod<
         ? { params: _StaticMethodInput<T>['params'] }
         : unknown
       : _StaticMethodInput<T>) &
-    (({ isStream?: boolean } & Partial<OPTS>) | void)
+    (({ isStream?: boolean } & Partial<OPTS>) | void) // TODO I need help here: I have to set options to be partial to make possible to pass an empty object to the client method
 ) => ReturnType<T> extends Promise<StreamResponse<infer U>> | StreamResponse<infer U>
   ? _PromiseWithStream<U>
   : R extends object
     ? Promise<R>
     : ToPromise<ReturnType<T>>;
 
+// TODO I need help here: How to filter out functions only?
 export type _SmoothieClient<T, OPTS extends { [key: string]: KnownAny }> = {
   [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> : never;
 };

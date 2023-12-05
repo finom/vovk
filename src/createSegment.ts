@@ -10,6 +10,34 @@ import {
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
+const deepEqual = (obj1: Record<string, KnownAny>, obj2: Record<string, KnownAny>): boolean => {
+  if (obj1 === obj2) {
+    return true;
+  }
+
+  if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 == null || obj2 == null) {
+    return false;
+  }
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  for (const key of keys1) {
+    if (
+      !keys2.includes(key) ||
+      !deepEqual(obj1[key] as Record<string, KnownAny>, obj2[key] as Record<string, KnownAny>)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export function _createSegment() {
   const r = new Segment();
 
@@ -108,7 +136,10 @@ export function _createSegment() {
     controllers: Function[],
     options?: {
       onError?: (err: Error) => void | Promise<void>;
-      onMetadata?: (metadata: Record<string, SmoothieControllerMetadata>) => void | Promise<void>;
+      onMetadata?: (
+        metadata: Record<string, SmoothieControllerMetadata>,
+        equal: typeof deepEqual
+      ) => void | Promise<void>;
     }
   ) => {
     for (const controller of controllers as SmoothieController[]) {
@@ -139,7 +170,7 @@ export function _createSegment() {
         };
       }
 
-      void options.onMetadata(metadata);
+      void options.onMetadata(metadata, deepEqual);
     }
 
     return {
