@@ -10,7 +10,7 @@ import {
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
-const deepEqual = (o1: KnownAny, o2: KnownAny): boolean => {
+const isEqual = (o1: KnownAny, o2: KnownAny): boolean => {
   const obj1 = o1 as Record<string, KnownAny>;
   const obj2 = o2 as Record<string, KnownAny>;
   if (obj1 === obj2) {
@@ -29,12 +29,27 @@ const deepEqual = (o1: KnownAny, o2: KnownAny): boolean => {
   }
 
   for (const key of keys1) {
-    if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) {
+    if (!keys2.includes(key) || !isEqual(obj1[key], obj2[key])) {
       return false;
     }
   }
 
   return true;
+};
+
+const writeMetadataInDevelopment = async (
+  metadataPath: string,
+  metadata: Record<string, SmoothieControllerMetadata>
+) => {
+  if (process.env.NODE_ENV === 'development') {
+    const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
+
+    await fs.mkdir(path.dirname(metadataPath), { recursive: true });
+
+    const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => '{}');
+    if (isEqual(JSON.parse(existingMetadata), metadata)) return;
+    await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+  }
 };
 
 export function _createSegment() {
@@ -137,7 +152,7 @@ export function _createSegment() {
       onError?: (err: Error) => void | Promise<void>;
       onMetadata?: (
         metadata: Record<string, SmoothieControllerMetadata>,
-        equal: typeof deepEqual
+        writeInDevelopment: typeof writeMetadataInDevelopment
       ) => void | Promise<void>;
     }
   ) => {
@@ -169,7 +184,7 @@ export function _createSegment() {
         };
       }
 
-      void options.onMetadata(metadata, deepEqual);
+      void options.onMetadata(metadata, writeMetadataInDevelopment);
     }
 
     return {

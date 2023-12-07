@@ -42,13 +42,11 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
 
 // generate metadata for client controller only
 activateControllers([ClientController, StreamingController], {
-  onMetadata: async (metadata, deepEqual) => {
+  onMetadata: async (metadata, write) => {
     if (process.env.NODE_ENV === 'development') {
-      const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
+      const path = await import('path');
       const metadataPath = path.join(__dirname.replace('.next/server/app', 'src'), '../../controllers-metadata.json');
-      const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => '{}');
-      if (deepEqual(JSON.parse(existingMetadata), metadata)) return;
-      await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+      await write(metadataPath, metadata);
     }
   },
 });
