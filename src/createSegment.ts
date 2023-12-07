@@ -39,17 +39,17 @@ const isEqual = (o1: KnownAny, o2: KnownAny): boolean => {
 
 const writeMetadataInDevelopment = async (
   metadataPath: string,
-  metadata: Record<string, SmoothieControllerMetadata>
-) => {
-  if (process.env.NODE_ENV === 'development') {
-    const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
-
-    await fs.mkdir(path.dirname(metadataPath), { recursive: true });
-
-    const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => '{}');
-    if (isEqual(JSON.parse(existingMetadata), metadata)) return;
-    await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+  metadata: Record<string, SmoothieControllerMetadata>,
+  lib: {
+    fs: typeof import('fs/promises');
+    path: typeof import('path');
   }
+) => {
+  const { fs, path } = lib;
+  await fs.mkdir(path.dirname(metadataPath), { recursive: true });
+  const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => '{}');
+  if (isEqual(JSON.parse(existingMetadata), metadata)) return;
+  await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 };
 
 export function _createSegment() {
