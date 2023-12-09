@@ -134,43 +134,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
 
     // @ts-expect-error TODO: Fix this
     client[staticMethodName] = handler;
-
-    // client[staticMethodName].onMessage = (handler: (message: unknown) => void) => {};
   }
 
   return client;
 };
-
-/*
-
-import { get, post } from 'next-smoothie';
-
-class X {
-  @get('/foo/:yo')
-  static foo(req: SmoothieRequest<{ hello: 'world' }, { q: 'foo' }>, params: { yo: string }) {
-    return Promise.resolve(`foo: `);
-  }
-
-  @post('/foo/:yo')
-  static bar(req: SmoothieRequest<{ name: string }>): number {
-    return 1;
-  }
-}
-
-const clientX = clientizeController<typeof X, { zalupa: 'ebalo' }>(
-  X,
-  ({ name, httpMethod, getPath }, { body, query, params, zalupa }) => {
-    return console.info({ name, httpMethod, getPath, body, query, params, zalupa });
-  }
-);
-
-const x = await clientX.foo<string>({
-  body: { hello: 'world' },
-  query: { q: 'foo' },
-  params: { yo: 'yo' },
-  zalupa: 'ebalo',
-});
-
-void clientX.bar({ body: { name: 'John Doe' } });
-
-*/

@@ -16,7 +16,10 @@ export const _defaultFetcher: SmoothieClientFetcher<_DefaultFetcherOptions> = as
   { httpMethod, getPath, validate },
   { params, query, body, prefix = '', ...options }
 ) => {
-  const endpoint = (prefix.endsWith('/') ? prefix : `${prefix}/`) + getPath(params, query);
+  const endpoint =
+    (prefix.startsWith('http://') || prefix.startsWith('https://') ? '' : '/') +
+    (prefix.endsWith('/') ? prefix : `${prefix}/`) +
+    getPath(params, query);
 
   try {
     validate({ body, query });

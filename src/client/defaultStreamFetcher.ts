@@ -14,7 +14,10 @@ export const _defaultStreamFetcher: SmoothieClientFetcher<DefaultFetcherOptions>
   { httpMethod, getPath, validate, onStreamMessage, setReader },
   { params, query, body, prefix = '', ...options }
 ) => {
-  const endpoint = (prefix.endsWith('/') ? prefix : `${prefix}/`) + getPath(params, query);
+  const endpoint =
+    (prefix.startsWith('http://') || prefix.startsWith('https://') ? '' : '/') +
+    (prefix.endsWith('/') ? prefix : `${prefix}/`) +
+    getPath(params, query);
 
   if (!onStreamMessage) throw new Error('onMessage is not provided at defaultStreamFetcher');
 
