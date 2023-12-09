@@ -13,7 +13,6 @@ const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
 const defaultController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
   metadata.ClientController,
-  defaultFetcher,
   {
     defaultOptions: { prefix },
   }
@@ -22,8 +21,7 @@ const defaultController = clientizeController<typeof ClientController, DefaultFe
 describe('Client', () => {
   it(`Should handle simple requests + headers`, async () => {
     const noOptionsController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
-      metadata.ClientController,
-      defaultFetcher
+      metadata.ClientController
     );
     const result = await noOptionsController.getHelloWorld({
       prefix,
@@ -98,10 +96,10 @@ describe('Client', () => {
   it('Should handle basic client validation', async () => {
     const clientValidationController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
       metadata.ClientController,
-      defaultFetcher,
       {
         defaultOptions: { prefix },
         validateOnClient: validateEqualityOnClient,
+        fetcher: defaultFetcher,
       }
     );
 
@@ -147,7 +145,6 @@ describe('Client', () => {
   it('Should handle basic server validation', async () => {
     const serverValidationController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
       metadata.ClientController,
-      defaultFetcher,
       {
         defaultOptions: { prefix },
         validateOnClient: validateEqualityOnClient,
@@ -197,10 +194,10 @@ describe('Client', () => {
   it('Should handle zod client validation', async () => {
     const clientZodController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
       metadata.ClientController,
-      defaultFetcher,
       {
         defaultOptions: { prefix },
         validateOnClient: zodValidateOnClient,
+        fetcher: defaultFetcher,
       }
     );
 
@@ -246,7 +243,6 @@ describe('Client', () => {
   it('Should handle zod server validation', async () => {
     const serverZodController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
       metadata.ClientController,
-      defaultFetcher,
       {
         defaultOptions: { prefix },
         validateOnClient: zodValidateOnClient,

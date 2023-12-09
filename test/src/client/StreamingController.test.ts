@@ -1,6 +1,6 @@
 import metadata from '../controllers-metadata.json';
 import type StreamingController from './StreamingController';
-import { clientizeController, defaultFetcher, type DefaultFetcherOptions } from '../../../src/client';
+import { clientizeController, type DefaultFetcherOptions } from '../../../src/client';
 import { it, expect, describe, xit } from '@jest/globals';
 import { HttpException } from '../../../src';
 
@@ -10,7 +10,6 @@ const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
 const defaultController = clientizeController<StreamingControllerType, DefaultFetcherOptions>(
   metadata.StreamingController,
-  defaultFetcher,
   {
     defaultOptions: { prefix },
   }

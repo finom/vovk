@@ -7,13 +7,13 @@ import {
   type _SmoothieQuery as SmoothieQuery,
 } from '../types';
 import {
-  type _SmoothieClientFetcher as SmoothieClientFetcher,
   type _SmoothieClientOptions as SmoothieClientOptions,
   type _SmoothieClient as SmoothieClient,
   type _PromiseWithStream as PromiseWithStream,
 } from './types';
 
 import { _defaultStreamFetcher as defaultStreamFetcher } from './defaultStreamFetcher';
+import { defaultFetcher } from '.';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -39,18 +39,16 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 
 export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
   givenController: SmoothieControllerMetadataJson,
-  fetcher: SmoothieClientFetcher<OPTS, T>,
   options?: SmoothieClientOptions<OPTS>
 ): SmoothieClient<T, OPTS> => {
   const controller = givenController as T & SmoothieControllerMetadata;
   const client = {} as SmoothieClient<T, OPTS>;
   if (!controller) throw new Error(`Unable to clientize. Controller metadata is not provided`);
-  if (!fetcher) throw new Error(`Unable to clientize. Fetcher is not provided`);
   const metadata = controller._handlers;
   if (!metadata)
     throw new Error(`Unable to clientize. No metadata for controller ${String(controller?.controllerName)}`);
   const prefix = trimPath(controller._prefix ?? '');
-  const { streamFetcher = defaultStreamFetcher } = options ?? {};
+  const { fetcher = defaultFetcher, streamFetcher = defaultStreamFetcher } = options ?? {};
 
   for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(metadata)) {
     const getPath = (params: { [key: string]: string }, query: { [key: string]: string }) =>

@@ -65,6 +65,7 @@ export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Recor
 
 export type _SmoothieClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
   disableClientValidation?: boolean;
+  fetcher?: _SmoothieClientFetcher<OPTS>;
   streamFetcher?: _SmoothieClientFetcher<OPTS> | null;
   validateOnClient?: (
     input: { body?: unknown; query?: unknown },
