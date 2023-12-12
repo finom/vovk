@@ -15,7 +15,7 @@ export const _defaultStreamFetcher: SmoothieClientFetcher<DefaultFetcherOptions>
   { params, query, body, prefix = '', ...options }
 ) => {
   const endpoint =
-    (prefix.startsWith('http://') || prefix.startsWith('https://') ? '' : '/') +
+    (prefix.startsWith('http://') || prefix.startsWith('https://') || prefix.startsWith('/') ? '' : '/') +
     (prefix.endsWith('/') ? prefix : `${prefix}/`) +
     getPath(params, query);
 
