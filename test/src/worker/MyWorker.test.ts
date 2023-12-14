@@ -1,5 +1,5 @@
 import puppeteer, { type Page } from 'puppeteer';
-import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
+import { it, expect, describe, beforeAll, afterAll, xit } from '@jest/globals';
 import type { _WorkerPromiseInstance as WorkerPromiseInstance } from '../../../src/worker/types';
 import type MyWorker from './MyWorker';
 
@@ -38,4 +38,6 @@ describe('Worker', () => {
 
     expect(result).toEqual(99991);
   });
+
+  xit('Can call other workers', () => {});
 });

@@ -33,6 +33,7 @@
       },
       "postFormData": {
         "clientValidators": {
+          "body": null,
           "query": {
             "type": "object",
             "properties": {
