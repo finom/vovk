@@ -111,5 +111,13 @@
         "httpMethod": "POST"
       }
     }
+  },
+  "workers": {
+    "MyWorker": {
+      "workerName": "MyWorker",
+      "_handlers": {
+        "findLargestPrimeBelow": {}
+      }
+    }
   }
 }

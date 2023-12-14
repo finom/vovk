@@ -14,6 +14,7 @@ import MiscController from '../../../controllers/MiscController';
 import AutoDecoratorsController from '../../../controllers/AutoDecoratorsController';
 import ClientController from '../../../client/ClientController';
 import StreamingController from '../../../client/StreamingController';
+import MyWorker from '../../../worker/MyWorker';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers(
   [
@@ -42,6 +43,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
 
 // generate metadata for client controller only
 activateControllers([ClientController, StreamingController], {
+  workers: [MyWorker],
   onMetadata: async (metadata, write) => {
     if (process.env.NODE_ENV === 'development') {
       const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);

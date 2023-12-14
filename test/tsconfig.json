@@ -5,13 +5,14 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/**/*.ts",
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules"
   ],
   "compilerOptions": {
     "noEmit": true,
+    "module": "esnext",
     "moduleResolution": "node",
     "plugins": [
       {

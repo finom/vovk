@@ -32,6 +32,11 @@ export type _SmoothieControllerMetadataJson = {
   _handlers: Record<string, _HandlerMetadataJson>;
 };
 
+export type _SmoothieWorkerMetadata = {
+  workerName: string;
+  _handlers: Record<string, Record<string, never>>;
+};
+
 export type _SmoothieControllerInternal = _SmoothieControllerMetadata & {
   _activated?: true;
   _onError?: (err: Error) => void;
@@ -40,6 +45,12 @@ export type _SmoothieControllerInternal = _SmoothieControllerMetadata & {
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type _SmoothieController = Function &
   _SmoothieControllerInternal & {
+    [key: string]: unknown;
+  };
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type _SmoothieWorker = Function &
+  _SmoothieWorkerMetadata & {
     [key: string]: unknown;
   };
 

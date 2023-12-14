@@ -1,10 +1,12 @@
 import { _Segment as Segment } from './Segment';
 import {
   _HttpMethod as HttpMethod,
-  _KnownAny as KnownAny,
+  type _KnownAny as KnownAny,
+  type _SmoothieWorkerMetadata as SmoothieWorkerMetadata,
   type _RouteHandler as RouteHandler,
   type _SmoothieController as SmoothieController,
   type _SmoothieControllerMetadata as SmoothieControllerMetadata,
+  type _SmoothieWorker as SmoothieWorker,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -149,9 +151,11 @@ export function _createSegment() {
     // eslint-disable-next-line @typescript-eslint/ban-types
     controllers: Function[],
     options?: {
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      workers?: Function[];
       onError?: (err: Error) => void | Promise<void>;
       onMetadata?: (
-        metadata: Record<string, SmoothieControllerMetadata>,
+        metadata: Record<string, SmoothieControllerMetadata> & { workers?: Record<string, SmoothieWorkerMetadata> },
         writeInDevelopment: typeof writeMetadataInDevelopment
       ) => void | Promise<void>;
     }
@@ -169,8 +173,20 @@ export function _createSegment() {
       }
     }
 
+    for (const worker of (options?.workers ?? []) as SmoothieWorker[]) {
+      if (process.env.NODE_ENV === 'development') {
+        if (worker.workerName && worker.workerName !== worker.name) {
+          throw new Error(
+            `Worker "${worker.name}" has a static property "workerName" that does not match the worker class name.`
+          );
+        }
+      }
+    }
+
     if (options?.onMetadata) {
-      const metadata: Record<string, SmoothieControllerMetadata> = {};
+      const metadata: Record<string, SmoothieControllerMetadata> & {
+        workers?: Record<string, SmoothieWorkerMetadata>;
+      } = {};
 
       for (const controller of controllers as unknown as SmoothieController[]) {
         if (!controller.controllerName) {
@@ -181,6 +197,18 @@ export function _createSegment() {
           controllerName: controller.controllerName,
           _prefix: controller._prefix ?? '',
           _handlers: { ...controller._handlers },
+        };
+      }
+
+      for (const worker of (options?.workers ?? []) as SmoothieWorker[]) {
+        if (!worker.workerName) {
+          throw new Error(`Client metadata error: worker ${worker.name} does not have a workerName`);
+        }
+
+        metadata.workers = metadata.workers ?? {};
+        metadata.workers[worker.workerName] = {
+          workerName: worker.workerName,
+          _handlers: { ...worker._handlers },
         };
       }
 
