@@ -1,5 +1,5 @@
 import puppeteer, { type Page } from 'puppeteer';
-import { it, expect, describe, beforeAll } from '@jest/globals';
+import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
 import type { _WorkerPromiseInstance as WorkerPromiseInstance } from '../../../src/worker/types';
 import type MyWorker from './MyWorker';
 
@@ -11,6 +11,10 @@ describe('Worker', () => {
     page = await browser.newPage();
     await page.goto('http://localhost:' + process.env.PORT);
     page.on('console', (consoleObj) => console.log(consoleObj.text()));
+  });
+
+  afterAll(async () => {
+    await page.close();
   });
 
   it('Should work with metadata', async () => {

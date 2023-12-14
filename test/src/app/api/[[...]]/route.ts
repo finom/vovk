@@ -45,10 +45,8 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
 activateControllers([ClientController, StreamingController], {
   workers: [MyWorker],
   onMetadata: async (metadata, write) => {
-    if (process.env.NODE_ENV === 'development') {
-      const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
-      const metadataPath = path.join(__dirname.replace('.next/server/app', 'src'), '../../controllers-metadata.json');
-      await write(metadataPath, metadata, { fs, path });
-    }
+    const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
+    const metadataPath = path.join(__dirname.replace('.next/server/app', 'src'), '../../controllers-metadata.json');
+    await write(metadataPath, metadata, { fs, path });
   },
 });

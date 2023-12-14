@@ -153,6 +153,7 @@ export function _createSegment() {
     options?: {
       // eslint-disable-next-line @typescript-eslint/ban-types
       workers?: Function[];
+      exposeValidation?: boolean;
       onError?: (err: Error) => void | Promise<void>;
       onMetadata?: (
         metadata: Record<string, SmoothieControllerMetadata> & { workers?: Record<string, SmoothieWorkerMetadata> },
@@ -184,6 +185,7 @@ export function _createSegment() {
     }
 
     if (options?.onMetadata) {
+      const exposeValidation = options?.exposeValidation ?? true;
       const metadata: Record<string, SmoothieControllerMetadata> & {
         workers?: Record<string, SmoothieWorkerMetadata>;
       } = {};
@@ -196,7 +198,16 @@ export function _createSegment() {
         metadata[controller.controllerName] = {
           controllerName: controller.controllerName,
           _prefix: controller._prefix ?? '',
-          _handlers: { ...controller._handlers },
+          _handlers: {
+            ...(exposeValidation
+              ? controller._handlers
+              : Object.fromEntries(
+                  Object.entries(controller._handlers).map(([key, value]) => [
+                    key,
+                    { ...value, clientValidators: undefined },
+                  ])
+                )),
+          },
         };
       }
 
