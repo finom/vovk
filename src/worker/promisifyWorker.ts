@@ -29,7 +29,6 @@ export function _promisifyWorker<T extends object>(w: Worker, givenWorkerService
         };
 
         const onMessage = (e: MessageEvent<WorkerOutput>) => {
-          console.log('DATA', e.data);
           const { result, error, key: k, method: m } = e.data;
           if (k !== key || m !== method) {
             return;
