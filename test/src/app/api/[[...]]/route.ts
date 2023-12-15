@@ -36,6 +36,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
   ],
   {
     onError: (err) => {
+      // eslint-disable-next-line no-console
       console.log('onError', err);
     },
   }

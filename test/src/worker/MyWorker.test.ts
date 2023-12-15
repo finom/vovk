@@ -10,6 +10,7 @@ describe('Worker', () => {
     const browser = await puppeteer.launch({ headless: 'new' });
     page = await browser.newPage();
     await page.goto('http://localhost:' + process.env.PORT);
+    // eslint-disable-next-line no-console
     page.on('console', (consoleObj) => console.log(consoleObj.text()));
   });
 

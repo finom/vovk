@@ -9,7 +9,7 @@ import {
 import {
   type _SmoothieClientOptions as SmoothieClientOptions,
   type _SmoothieClient as SmoothieClient,
-  type _PromiseWithStream as PromiseWithStream,
+  type _StreamAsyncIterator as StreamAsyncIterator,
 } from './types';
 
 import { _defaultStreamFetcher as defaultStreamFetcher } from './defaultStreamFetcher';
@@ -67,15 +67,11 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         isStream?: boolean;
       } & OPTS = {} as OPTS
     ) => {
-      let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
       const internalOptions: Parameters<typeof fetcher>[0] = {
         name: staticMethodName as keyof T,
         httpMethod,
         getPath,
         validate,
-        setReader: (r) => {
-          reader = r;
-        },
       };
       const internalInput = {
         ...input,
@@ -86,46 +82,16 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
       };
 
       if (input.isStream) {
-        type Handler = (message: unknown) => void;
-        const handlers: Handler[] = [];
-        const messages: unknown[] = [];
         if (!streamFetcher) throw new Error('Stream fetcher is not provided');
 
-        internalOptions.onStreamMessage = (message: unknown) => {
-          messages.push(message);
-          handlers.forEach((handler) => handler(message));
-        };
+        const fetcherPromise = streamFetcher(internalOptions, internalInput) as StreamAsyncIterator<unknown>;
 
-        const fetcherPromise = streamFetcher(internalOptions, internalInput) as Promise<unknown>;
-
-        if (!(fetcherPromise instanceof Promise)) throw new Error('Stream fetcher must return a promise');
-
-        const resultPromise = fetcherPromise.then(() => messages) as PromiseWithStream<unknown>;
-
-        resultPromise.onMessage = (handler: Handler) => {
-          handlers.push(handler);
-          return resultPromise;
-        };
-
-        resultPromise.cancel = () => {
-          if (!reader) throw new Error('Unable to cancel: reader is not set. Check your stream fetcher');
-          return reader.cancel();
-        };
-
-        return resultPromise;
+        return fetcherPromise;
       }
 
-      const fetcherPromise = fetcher(internalOptions, internalInput) as PromiseWithStream<unknown>;
+      const fetcherPromise = fetcher(internalOptions, internalInput) as Promise<unknown>;
 
       if (!(fetcherPromise instanceof Promise)) throw new Error('Fetcher must return a promise');
-
-      fetcherPromise.onMessage = () => {
-        throw new Error('onMessage is not supported for non-streaming requests');
-      };
-
-      fetcherPromise.cancel = () => {
-        throw new Error('cancel is not supported for non-streaming requests');
-      };
 
       return fetcherPromise;
     };

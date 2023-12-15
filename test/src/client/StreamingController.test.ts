@@ -20,27 +20,18 @@ describe('Streaming', () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
-    const expectedCollected2: typeof expected = [];
 
-    const promise = defaultController.postWithStreaming({
+    const resp = await defaultController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
       isStream: true,
     });
 
-    const messagePromise = promise.onMessage((message) => {
+    for await (const message of resp) {
       expectedCollected.push(message);
-    });
+    }
 
-    const messagePromise2 = promise.onMessage((message) => {
-      expectedCollected2.push(message);
-    });
-
-    expect(await promise).toEqual(expectedCollected);
-    expect(await messagePromise).toEqual(expectedCollected2);
-    expect(await promise).toEqual(expected);
-    expect(await messagePromise).toEqual(expected);
-    expect(await messagePromise2).toEqual(expected);
+    expect(expected).toEqual(expectedCollected);
   });
 
   it('Should be able to cancel', async () => {
@@ -48,7 +39,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const promise = defaultController.postWithStreaming({
+    const resp = await defaultController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
       isStream: true,
@@ -56,27 +47,24 @@ describe('Streaming', () => {
 
     let count = 0;
 
-    const messagePromise = promise.onMessage(async (message) => {
-      if (++count === 2) await promise.cancel();
+    for await (const message of resp) {
+      if (++count === 2) await resp.cancel();
       expectedCollected.push(message);
-    });
+    }
 
-    expect(await promise).toEqual(expectedCollected);
-    expect(await messagePromise).toEqual(expectedCollected);
-    expect(await promise).toEqual(expected);
-    expect(await messagePromise).toEqual(expected);
+    expect(expected).toEqual(expectedCollected);
   });
 
   it('Should handle immediate errors', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
 
-    const promise = defaultController.postWithStreamingAndImmediateError({
+    const respPromise = defaultController.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
       isStream: true,
     });
 
-    await expect(promise).rejects.toThrowError(HttpException);
+    await expect(() => respPromise).rejects.toThrowError(HttpException);
   });
 
   it('Should handle errors in the middle of stream', async () => {
@@ -84,17 +72,17 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const promise = defaultController.postWithStreamingAndDelayedError({
+    const resp = await defaultController.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
       isStream: true,
     });
 
-    void promise.onMessage((message) => {
-      expectedCollected.push(message);
-    });
-
-    await expect(promise).rejects.toThrowError(/velyka dupa/);
+    await expect(async () => {
+      for await (const message of resp) {
+        expectedCollected.push(message);
+      }
+    }).rejects.toThrowError(/velyka dupa/);
 
     expect(expected).toEqual(expectedCollected);
   });
@@ -104,17 +92,24 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const promise = defaultController.postWithStreamingAndDelayedCustomError({
+    const resp = await defaultController.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
       isStream: true,
     });
 
-    void promise.onMessage((message) => {
-      expectedCollected.push(message);
-    });
+    // TODO I don't know why rejects.toThrowError doesn't work here
+    const call = async () => {
+      try {
+        for await (const message of resp) {
+          expectedCollected.push(message);
+        }
+      } catch (e) {
+        return e;
+      }
+    };
 
-    await expect(promise).rejects.toEqual({ customError: 'custom error' });
+    expect(await call()).toEqual({ customError: 'custom error' });
 
     expect(expected).toEqual(expectedCollected);
   });
@@ -125,17 +120,17 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const promise = defaultController.postWithStreamingAndDelayedUnhandledError({
+    const resp = await defaultController.postWithStreamingAndDelayedUnhandledError({
       body: tokens,
       query: { query: 'queryValue' },
       isStream: true,
     });
 
-    void promise.onMessage((message) => {
-      expectedCollected.push(message);
-    });
-
-    await expect(promise).rejects.toThrow();
+    await expect(async () => {
+      for await (const message of resp) {
+        expectedCollected.push(message);
+      }
+    }).rejects.toThrow();
 
     expect(expected).toEqual(expectedCollected);
   });

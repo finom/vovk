@@ -166,6 +166,7 @@ export class _Segment {
       try {
         controller._onError?.(err);
       } catch (onErrorError) {
+        // eslint-disable-next-line no-console
         console.error(onErrorError);
       }
 

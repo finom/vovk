@@ -14,6 +14,7 @@ module.exports = {
   },
   rules: {
     'no-unused-vars': 0, // we use typescript
+    'no-console': "error"
   },
   ignorePatterns: ["dist", "client/src", "client/test", ".eslintrc.js"],
   parserOptions: {

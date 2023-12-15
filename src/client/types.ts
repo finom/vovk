@@ -1,4 +1,4 @@
-import {
+import type {
   _KnownAny as KnownAny,
   _HttpMethod as HttpMethod,
   _ControllerStaticMethod,
@@ -18,8 +18,8 @@ export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_SmoothieBo
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
-export type _PromiseWithStream<T> = Promise<T[]> & {
-  onMessage: (handler: (message: T) => void | Promise<void>) => _PromiseWithStream<T>;
+export type _StreamAsyncIterator<T> = {
+  [Symbol.asyncIterator](): AsyncIterator<T>;
   cancel: () => Promise<void> | void;
 };
 
@@ -37,7 +37,7 @@ type ClientMethod<
       : _StaticMethodInput<T>) &
     (Partial<OPTS> | void) // TODO I need help here: I have to set options to be partial to make possible to pass an empty object to the client method
 ) => ReturnType<T> extends Promise<StreamResponse<infer U>> | StreamResponse<infer U>
-  ? _PromiseWithStream<U>
+  ? Promise<_StreamAsyncIterator<U>>
   : R extends object
     ? Promise<R>
     : ToPromise<ReturnType<T>>;
@@ -53,8 +53,6 @@ export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Recor
     httpMethod: HttpMethod;
     getPath: (params: { [key: string]: string }, query: { [key: string]: string }) => string;
     validate: (input: { body?: unknown; query?: unknown }) => void;
-    onStreamMessage?: (message: unknown) => void;
-    setReader?: (reader: ReadableStreamDefaultReader<Uint8Array>) => void;
   },
   input: {
     body: unknown;
