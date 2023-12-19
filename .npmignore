@@ -1,5 +1,6 @@
 src
 test
+docs
 client-lib
 .eslintrc.js
 jest.config.js

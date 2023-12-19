@@ -196,7 +196,6 @@ describe('Client', () => {
       metadata.ClientController,
       {
         defaultOptions: { prefix },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         validateOnClient: zodValidateOnClient,
         fetcher: defaultFetcher,
       }
@@ -246,7 +245,6 @@ describe('Client', () => {
       metadata.ClientController,
       {
         defaultOptions: { prefix },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         validateOnClient: zodValidateOnClient,
         disableClientValidation: true,
       }

@@ -41,7 +41,7 @@ export default class ClientController {
   }
 
   @post.auto()
-  @vovkZod(null, z.object({ hello: z.string() })) // eslint-disable-line @typescript-eslint/no-unsafe-call
+  @vovkZod(null, z.object({ hello: z.string() }))
   static async postFormData(req: VovkRequest<FormData, { hello: string }>) {
     const hello = req.nextUrl.searchParams.get('hello');
     const data = await req.formData();
@@ -51,7 +51,7 @@ export default class ClientController {
   }
 
   @post.auto()
-  @vovkZod(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') })) // eslint-disable-line @typescript-eslint/no-unsafe-call
+  @vovkZod(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') }))
   static async postWithZodValidationAndEqualityValidation(req: VovkRequest<{ hello: string }, { hey: string }>) {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
