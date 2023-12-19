@@ -1,9 +1,9 @@
 <p align="center">
-  <img width="250" alt="next-smoothie" src="./.assets/smoothy.png"> <br>
+  <img width="250" alt="next-smoothie" src="https://github.com/finom/vovk/assets/1082083/86bfbbbb-3600-435b-a74c-c07bd0c4af4b"> <br>
   <picture>
-    <source width="500" media="(prefers-color-scheme: dark)" srcset="./.assets/text-smoothie-white.png">
-    <source width="500" media="(prefers-color-scheme: light)" srcset="./.assets/text-smoothie-dark.png">
-    <img width="500" alt="next-smoothie" src="./.assets/text-smoothie-dark.png">
+    <source width="350" media="(prefers-color-scheme: dark)" srcset="https://github.com/finom/vovk/assets/1082083/f836a865-cd9c-4c60-b9c3-2856d39dd6d2">
+    <source width="350" media="(prefers-color-scheme: light)" srcset="https://github.com/finom/vovk/assets/1082083/480a5fea-abde-4e0f-8566-16e00b85151f">
+    <img width="350" alt="next-smoothie" src="https://github.com/finom/vovk/assets/1082083/480a5fea-abde-4e0f-8566-16e00b85151f">
   </picture>
 </p>
 
@@ -13,6 +13,11 @@
   <br />
   <em>6 minutes of reading</em>
 </p>
+![vov-text-black](https://github.com/finom/vovk/assets/1082083/480a5fea-abde-4e0f-8566-16e00b85151f)
+![vov-text-white](https://github.com/finom/vovk/assets/1082083/f836a865-cd9c-4c60-b9c3-2856d39dd6d2)
+
+
+
 
 ## Quick start
 
