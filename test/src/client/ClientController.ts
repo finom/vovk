@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { VovkRequest, get, post, prefix } from '../../../src';
 import validateEquality from './validateEquality';
-import zodVovk from 'vovk-zod';
+import vovkZod from 'vovk-zod';
 import * as z from 'zod';
 
 @prefix('client')
@@ -41,7 +41,7 @@ export default class ClientController {
   }
 
   @post.auto()
-  @zodVovk(null, z.object({ hello: z.string() }))
+  @vovkZod(null, z.object({ hello: z.string() })) // eslint-disable-line @typescript-eslint/no-unsafe-call
   static async postFormData(req: VovkRequest<FormData, { hello: string }>) {
     const hello = req.nextUrl.searchParams.get('hello');
     const data = await req.formData();
@@ -51,7 +51,7 @@ export default class ClientController {
   }
 
   @post.auto()
-  @zodVovk(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') }))
+  @vovkZod(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') })) // eslint-disable-line @typescript-eslint/no-unsafe-call
   static async postWithZodValidationAndEqualityValidation(req: VovkRequest<{ hello: string }, { hey: string }>) {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');

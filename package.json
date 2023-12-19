@@ -57,7 +57,7 @@
     "lodash": "^4.17.21",
     "next": "^14.0.4",
     "vovk": "^0.3.2",
-    "vovk-zod": "latest",
+    "vovk-zod": "^0.0.9",
     "prettier": "^3.1.1",
     "puppeteer": "^21.6.1",
     "supertest": "^6.3.3",
