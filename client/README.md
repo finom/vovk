@@ -1,10 +1,10 @@
 <p align="center">
-<img width="250" alt="next-smoothie" src="../.assets/smoothy.png"> <br>
+<img width="250" alt="vovk" src="../.assets/smoothy.png"> <br>
  <br>
 <picture>
   <source width="600" media="(prefers-color-scheme: dark)" srcset="../.assets/text-smoothie-client-white.png">
   <source width="600" media="(prefers-color-scheme: light)" srcset="../.assets/text-smoothie-client-dark.png">
-  <img width="600" alt="next-smoothie" src="../.assets/text-smoothie-client-dark.png">
+  <img width="600" alt="vovk" src="../.assets/text-smoothie-client-dark.png">
 </picture>
 </p>
 

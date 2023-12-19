@@ -1,9 +1,9 @@
 <p align="center">
-  <img width="250" alt="next-smoothie" src="./.assets/smoothy.png"> <br>
+  <img width="250" alt="vovk" src="./.assets/smoothy.png"> <br>
   <picture>
     <source width="500" media="(prefers-color-scheme: dark)" srcset="./.assets/text-smoothie-white.png">
     <source width="500" media="(prefers-color-scheme: light)" srcset="./.assets/text-smoothie-dark.png">
-    <img width="500" alt="next-smoothie" src="./.assets/text-smoothie-dark.png">
+    <img width="500" alt="vovk" src="./.assets/text-smoothie-dark.png">
   </picture>
 </p>
 
@@ -18,13 +18,13 @@
 
 Set up a regular Next.js project with App routerusing [CLI and this instruction](https://nextjs.org/docs/getting-started/installation).
 
-Install the library: `npm i next-smoothie` or `yarn add next-smoothie`.
+Install the library: `npm i vovk` or `yarn add vovk`.
 
 Create the first controller:
 
 ```ts
 // /src/controllers/UserController.ts
-import { get, post, prefix } from 'next-smoothie';
+import { get, post, prefix } from 'vovk';
 import type { NextRequest } from 'next/server';
 
 @prefix('users') 
@@ -47,7 +47,7 @@ Finally, create the catch-all route with an optional slug (`[[...slug]]`) and ca
 
 ```ts
 // /src/app/api/[[...]]/route.ts
-import { activateControllers } from 'next-smoothie';
+import { activateControllers } from 'vovk';
 import UserController from '../../../controllers/UserController';
 
 export const { GET, POST } = activateControllers([UserController]);
@@ -63,14 +63,14 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
 });
 ```
 
-<a href="https://www.npmjs.com/package/next-smoothie">
-<img src="https://badge.fury.io/js/next-smoothie.svg" alt="npm version" /> 
+<a href="https://www.npmjs.com/package/vovk">
+<img src="https://badge.fury.io/js/vovk.svg" alt="npm version" /> 
 </a>
 <a href="https://www.typescriptlang.org/">
 <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
 </a>
-<a href="https://github.com/finom/next-smoothie/actions/workflows/main.yml">
-<img src="https://github.com/finom/next-smoothie/actions/workflows/main.yml/badge.svg" alt="Build status" />
+<a href="https://github.com/finom/vovk/actions/workflows/main.yml">
+<img src="https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg" alt="Build status" />
 </a>
 
 
@@ -83,7 +83,7 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
   * [Why Next.js is a good choice?](#why-nextjs-is-a-good-choice)
   * [Limitations of Next.js API Routes](#limitations-of-nextjs-api-routes)
   * [A potential solution: Pairing Next.js with NestJS](#a-potential-solution-pairing-nextjs-with-nestjs)
-  * [The new solution: next-smoothie](#the-new-solution-next-smoothie)
+  * [The new solution: vovk](#the-new-solution-vovk)
     + [Custom decorators](#custom-decorators)
     + [Service-Controller pattern](#service-controller-pattern)
     + [Return type](#return-type)
@@ -100,7 +100,7 @@ fetch(`/api/users/hello/${id}/world?q=foo`, {
 
 ## Features
 
-**next-smoothie** offers a range of features to streamline your Next.js [App Router](https://nextjs.org/docs/app) experience:
+**vovk** offers a range of features to streamline your Next.js [App Router](https://nextjs.org/docs/app) experience:
 
 - Elegant decorator syntax (all HTTP methods are available). Custom decorators for varied needs are supported.
 - Direct data return from the handler (`Response` or `NextResponse` usage isn't required).
@@ -204,7 +204,7 @@ It would be nice if we could:
 - Apply NestJS-like syntax to define routes;
 - Make the project development and infrastructure cheaper.
 
-### The new solution: next-smoothie
+### The new solution: vovk
 
 Next.js includes [Dynamic Routes](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) that enable us to create "catch-all" route handlers for a specific endpoint prefix. The library uses this feature to implement creation of route handlers with much more friendly syntax. The route handlers are going to be exported on one catch-all route file. To achieve that you're going to need to create the following files:
 
@@ -221,7 +221,7 @@ Create your controllers:
 
 ```ts
 // /controllers/UserController.ts
-import { get, post, put, prefix } from 'next-smoothie';
+import { get, post, put, prefix } from 'vovk';
 
 @prefix('users')
 export default class UserController {
@@ -257,7 +257,7 @@ export default class UserController {
 
 ```ts
 // /controllers/TeamController.ts
-import { get, post, prefix } from 'next-smoothie';
+import { get, post, prefix } from 'vovk';
 
 @prefix('teams')
 export default class TeamController {
@@ -282,7 +282,7 @@ Finally, create the catch-all route.
 
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
-import { activateControllers } from 'next-smoothie';
+import { activateControllers } from 'vovk';
 import UserController from '../controllers/UserController';
 import TeamController from '../controllers/TeamController';
 
@@ -363,7 +363,7 @@ Then initialise the controller as before:
 
 ```ts
 // /api/[[...]]/route.ts
-import { activateControllers } from 'next-smoothie';
+import { activateControllers } from 'vovk';
 import UserController from '../controllers/user/UserController';
 
 export const { GET } = activateControllers([UserController]);
@@ -531,7 +531,7 @@ You can throw errors directly from the controller method. The library catches th
 
 ```ts
 // some client-side code
-import { type ErrorResponseBody } from 'next-smoothie';
+import { type ErrorResponseBody } from 'vovk';
 
 const dataOrError: MyData | ErrorResponseBody = await (await fetch('...')).json();
 ```
@@ -549,7 +549,7 @@ type ErrorResponseBody = {
 To throw an error you can use `HttpException` class together with `HttpStatus` enum. You can also throw the errors from the service methods.
 
 ```ts
-import { HttpException, HttpStatus } from 'next-smoothie'
+import { HttpException, HttpStatus } from 'vovk'
 
 // ...
 @get()
@@ -591,7 +591,7 @@ import {
   get, post, put, patch, del, head, options, 
   prefix, 
   activateControllers,
-} from 'next-smoothie';
+} from 'vovk';
 ```
 
 ### `createSegment` function, global decorators and handlers
@@ -615,7 +615,7 @@ The function `createSegment` initialises route handlers for one particular route
 In this example, only the `users` dynamic route will utilize the library. With `createSegment` you can define local variables that are going to be used for one particular segment.
 
 ```ts
-import { createSegment } from 'next-smoothie';
+import { createSegment } from 'vovk';
 
 const { get, post, activateControllers } = createSegment();
 
@@ -664,7 +664,7 @@ import {
   get, post, put, patch, del, head, options, 
   prefix, 
   activateControllers,
-} from 'next-smoothie';
+} from 'vovk';
 ```
 
 
@@ -674,7 +674,7 @@ import {
 `HttpException` accepts 2 arguments. The first one is an HTTP code that can be retrieved from `HttpStatus`, the other one is error text.
 
 ```ts
-import { HttpException, HttpStatus } from 'next-smoothie';
+import { HttpException, HttpStatus } from 'vovk';
 
 // ...
 throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
@@ -700,7 +700,7 @@ fetch('...', {
 - Additional arguments are passed through to the decorator factory.
 
 ```ts
-import { createDecorator, get } from 'next-smoothie';
+import { createDecorator, get } from 'vovk';
 
 const myDecorator = createDecorator((req, next, a: string, b: number) => {
   console.log(a, b); // Outputs: "foo", 1
@@ -745,7 +745,7 @@ Then define the `authGuard` decorator itself.
 
 ```ts
 // authGuard.ts
-import { HttpException, HttpStatus, createDecorator } from 'next-smoothie';
+import { HttpException, HttpStatus, createDecorator } from 'vovk';
 import { NextRequest } from 'next/server';
 import checkAuth from './checkAuth';
 
@@ -790,7 +790,7 @@ You can catch any error in your custom decorator and provide relevant response t
 
 ```ts
 import { ZodError } from 'zod';
-import { HttpException, HttpStatus, createDecorator } from 'next-smoothie';
+import { HttpException, HttpStatus, createDecorator } from 'vovk';
 
 const handleZodErrors = createDecorator(async (req, next) => {
   try {
@@ -827,3 +827,13 @@ export default class UserController {
 ```
 
 Enjoy!
+<!--
+
+Getting Started
+Vovk Architecture
+Clientize Controller
+  Regular Request
+  Streaming Request
+Worker
+
+-->

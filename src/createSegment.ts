@@ -2,11 +2,11 @@ import { _Segment as Segment } from './Segment';
 import {
   _HttpMethod as HttpMethod,
   type _KnownAny as KnownAny,
-  type _SmoothieWorkerMetadata as SmoothieWorkerMetadata,
+  type _VovkWorkerMetadata as VovkWorkerMetadata,
   type _RouteHandler as RouteHandler,
-  type _SmoothieController as SmoothieController,
-  type _SmoothieControllerMetadata as SmoothieControllerMetadata,
-  type _SmoothieWorker as SmoothieWorker,
+  type _VovkController as VovkController,
+  type _VovkControllerMetadata as VovkControllerMetadata,
+  type _VovkWorker as VovkWorker,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -41,7 +41,7 @@ const isEqual = (o1: KnownAny, o2: KnownAny): boolean => {
 
 const writeMetadataInDevelopment = async (
   metadataPath: string,
-  metadata: Record<string, SmoothieControllerMetadata>,
+  metadata: Record<string, VovkControllerMetadata>,
   lib: {
     fs: typeof import('fs/promises');
     path: typeof import('path');
@@ -58,7 +58,7 @@ export function _createSegment() {
   const r = new Segment();
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {
-    const assignMetadata = (controller: SmoothieController, propertyKey: string, path: string) => {
+    const assignMetadata = (controller: VovkController, propertyKey: string, path: string) => {
       if (typeof window !== 'undefined') {
         throw new Error(
           'Decorators are intended for server-side use only. You have probably imported a controller on the client-side.'
@@ -80,7 +80,7 @@ export function _createSegment() {
 
       handlers[propertyKey] = { ...handlers[propertyKey], path, httpMethod };
 
-      (controller[propertyKey] as { _controller: SmoothieController })._controller = controller;
+      (controller[propertyKey] as { _controller: VovkController })._controller = controller;
 
       methods[path] = controller[propertyKey] as RouteHandler;
     };
@@ -89,7 +89,7 @@ export function _createSegment() {
       const path = trimPath(givenPath);
 
       function decorator(givenTarget: KnownAny, propertyKey: string) {
-        const target = givenTarget as SmoothieController;
+        const target = givenTarget as VovkController;
         assignMetadata(target, propertyKey, path);
       }
 
@@ -109,7 +109,7 @@ export function _createSegment() {
 
     const auto = () => {
       function decorator(givenTarget: KnownAny, propertyKey: string) {
-        const target = givenTarget as SmoothieController;
+        const target = givenTarget as VovkController;
         const controllerName = target.controllerName;
 
         if (!controllerName) {
@@ -140,7 +140,7 @@ export function _createSegment() {
     const path = trimPath(givenPath);
 
     return (givenTarget: KnownAny) => {
-      const target = givenTarget as SmoothieController;
+      const target = givenTarget as VovkController;
       target._prefix = path;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return givenTarget;
@@ -156,12 +156,12 @@ export function _createSegment() {
       exposeValidation?: boolean;
       onError?: (err: Error) => void | Promise<void>;
       onMetadata?: (
-        metadata: Record<string, SmoothieControllerMetadata> & { workers?: Record<string, SmoothieWorkerMetadata> },
+        metadata: Record<string, VovkControllerMetadata> & { workers?: Record<string, VovkWorkerMetadata> },
         writeInDevelopment: typeof writeMetadataInDevelopment
       ) => void | Promise<void>;
     }
   ) => {
-    for (const controller of controllers as SmoothieController[]) {
+    for (const controller of controllers as VovkController[]) {
       controller._activated = true;
       controller._onError = options?.onError;
 
@@ -174,7 +174,7 @@ export function _createSegment() {
       }
     }
 
-    for (const worker of (options?.workers ?? []) as SmoothieWorker[]) {
+    for (const worker of (options?.workers ?? []) as VovkWorker[]) {
       if (process.env.NODE_ENV === 'development') {
         if (worker.workerName && worker.workerName !== worker.name) {
           throw new Error(
@@ -186,11 +186,11 @@ export function _createSegment() {
 
     if (options?.onMetadata) {
       const exposeValidation = options?.exposeValidation ?? true;
-      const metadata: Record<string, SmoothieControllerMetadata> & {
-        workers?: Record<string, SmoothieWorkerMetadata>;
+      const metadata: Record<string, VovkControllerMetadata> & {
+        workers?: Record<string, VovkWorkerMetadata>;
       } = {};
 
-      for (const controller of controllers as unknown as SmoothieController[]) {
+      for (const controller of controllers as unknown as VovkController[]) {
         if (!controller.controllerName) {
           throw new Error(`Client metadata error: controller ${controller.name} does not have a controllerName`);
         }
@@ -211,7 +211,7 @@ export function _createSegment() {
         };
       }
 
-      for (const worker of (options?.workers ?? []) as SmoothieWorker[]) {
+      for (const worker of (options?.workers ?? []) as VovkWorker[]) {
         if (!worker.workerName) {
           throw new Error(`Client metadata error: worker ${worker.name} does not have a workerName`);
         }

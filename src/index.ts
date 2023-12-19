@@ -1,11 +1,11 @@
 import { _createSegment as createSegment } from './createSegment';
 import {
   type _ErrorResponseBody as ErrorResponseBody,
-  type _SmoothieRequest as SmoothieRequest,
-  type _SmoothieBody as SmoothieBody,
-  type _SmoothieQuery as SmoothieQuery,
-  type _SmoothieParams as SmoothieParams,
-  type _SmoothieReturnType as SmoothieReturnType,
+  type _VovkRequest as VovkRequest,
+  type _VovkBody as VovkBody,
+  type _VovkQuery as VovkQuery,
+  type _VovkParams as VovkParams,
+  type _VovkReturnType as VovkReturnType,
   _HttpStatus as HttpStatus,
   _HttpMethod as HttpMethod,
 } from './types';
@@ -15,11 +15,11 @@ import { _StreamResponse as StreamResponse } from './StreamResponse';
 
 export {
   type ErrorResponseBody,
-  type SmoothieRequest,
-  type SmoothieBody,
-  type SmoothieQuery,
-  type SmoothieParams,
-  type SmoothieReturnType,
+  type VovkRequest,
+  type VovkBody,
+  type VovkQuery,
+  type VovkParams,
+  type VovkReturnType,
   HttpException,
   HttpStatus,
   HttpMethod,

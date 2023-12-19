@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
-import { SmoothieRequest, get, post, prefix } from '../../../src';
+import { VovkRequest, get, post, prefix } from '../../../src';
 import validateEquality from './validateEquality';
-import zodSmoothie from 'next-smoothie-zod';
+import zodVovk from 'vovk-zod';
 import * as z from 'zod';
 
 @prefix('client')
@@ -16,18 +16,18 @@ export default class ClientController {
 
   @get.auto()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static getHelloWorldAndEmptyGeneric(_req: SmoothieRequest) {
+  static getHelloWorldAndEmptyGeneric(_req: VovkRequest) {
     return { hello: 'world' };
   }
 
   @get('with-params/:hello')
-  static getWithParams(_req: SmoothieRequest<undefined>, { hello }: { hello: 'world' }) {
+  static getWithParams(_req: VovkRequest<undefined>, { hello }: { hello: 'world' }) {
     return { hello };
   }
 
   @post('with-params/:hello')
   static async postWithParams(
-    req: SmoothieRequest<{ isBody: true }, { query: 'queryValue' }>,
+    req: VovkRequest<{ isBody: true }, { query: 'queryValue' }>,
     params: { hello: 'world' }
   ) {
     const body = await req.json();
@@ -37,15 +37,15 @@ export default class ClientController {
 
   @post.auto()
   @validateEquality({ hello: 'body' }, { hey: 'query' })
-  static async postWithEqualityValidation(req: SmoothieRequest<{ hello: string }, { hey: string }>) {
+  static async postWithEqualityValidation(req: VovkRequest<{ hello: string }, { hey: string }>) {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
     return { body, query: { hey } };
   }
 
   @post.auto()
-  @zodSmoothie(null, z.object({ hello: z.string() }))
-  static async postFormData(req: SmoothieRequest<FormData, { hello: string }>) {
+  @zodVovk(null, z.object({ hello: z.string() }))
+  static async postFormData(req: VovkRequest<FormData, { hello: string }>) {
     const hello = req.nextUrl.searchParams.get('hello');
     const data = await req.formData();
     const formData = Object.fromEntries(data.entries());
@@ -54,8 +54,8 @@ export default class ClientController {
   }
 
   @post.auto()
-  @zodSmoothie(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') }))
-  static async postWithZodValidationAndEqualityValidation(req: SmoothieRequest<{ hello: string }, { hey: string }>) {
+  @zodVovk(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') }))
+  static async postWithZodValidationAndEqualityValidation(req: VovkRequest<{ hello: string }, { hey: string }>) {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
     return { body, query: { hey } };

@@ -1,9 +1,9 @@
-import type { _SmoothieWorkerMetadata as SmoothieWorkerMetadata } from '../types';
+import type { _VovkWorkerMetadata as VovkWorkerMetadata } from '../types';
 import type { _WorkerInput as WorkerInput, _WorkerOutput as WorkerOutput } from './types';
 
 export function _worker() {
   return (t: object) => {
-    const target = t as Record<string, (...args: unknown[]) => unknown> & SmoothieWorkerMetadata;
+    const target = t as Record<string, (...args: unknown[]) => unknown> & VovkWorkerMetadata;
     target._handlers = {};
 
     for (const key of Object.getOwnPropertyNames(target)) {

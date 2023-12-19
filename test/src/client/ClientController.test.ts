@@ -1,11 +1,11 @@
 import metadata from '../controllers-metadata.json';
 import type ClientController from './ClientController';
 import { clientizeController, defaultFetcher, type DefaultFetcherOptions } from '../../../src/client';
-import { HttpException, SmoothieBody, SmoothieParams, SmoothieQuery, SmoothieReturnType } from '../../../src';
+import { HttpException, VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
 import { it, expect, describe } from '@jest/globals';
 
 import { validateEqualityOnClient } from './validateEquality';
-import { zodValidateOnClient } from 'next-smoothie-zod';
+import { zodValidateOnClient } from 'vovk-zod';
 
 type ClientControllerType = typeof ClientController;
 
@@ -47,16 +47,16 @@ describe('Client', () => {
       params: { hello: 'world' },
     });
 
-    type Params = SmoothieParams<ClientControllerType['getWithParams']>;
+    type Params = VovkParams<ClientControllerType['getWithParams']>;
 
-    null as unknown as SmoothieParams<ClientControllerType['getWithParams']> satisfies Params;
+    null as unknown as VovkParams<ClientControllerType['getWithParams']> satisfies Params;
     // @ts-expect-error Expect error
-    null as unknown as SmoothieBody<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
-    null as unknown as SmoothieBody<ClientControllerType['getWithParams']> satisfies undefined;
+    null as unknown as VovkBody<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
+    null as unknown as VovkBody<ClientControllerType['getWithParams']> satisfies undefined;
 
     // @ts-expect-error Expect error
-    null as unknown as SmoothieQuery<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
-    null as unknown as SmoothieQuery<ClientControllerType['getWithParams']> satisfies undefined;
+    null as unknown as VovkQuery<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
+    null as unknown as VovkQuery<ClientControllerType['getWithParams']> satisfies undefined;
 
     expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
   });
@@ -68,25 +68,25 @@ describe('Client', () => {
       query: { query: 'queryValue' },
     });
 
-    type Body = SmoothieBody<ClientControllerType['postWithParams']>;
+    type Body = VovkBody<ClientControllerType['postWithParams']>;
 
-    type Query = SmoothieQuery<ClientControllerType['postWithParams']>;
+    type Query = VovkQuery<ClientControllerType['postWithParams']>;
 
-    type Params = SmoothieParams<ClientControllerType['postWithParams']>;
+    type Params = VovkParams<ClientControllerType['postWithParams']>;
 
-    null as unknown as SmoothieBody<ClientControllerType['postWithParams']> satisfies Body;
+    null as unknown as VovkBody<ClientControllerType['postWithParams']> satisfies Body;
     // @ts-expect-error Expect error
-    null as unknown as SmoothieBody<ClientControllerType['postWithParams']> satisfies { hello: 'foo' };
+    null as unknown as VovkBody<ClientControllerType['postWithParams']> satisfies { hello: 'foo' };
 
-    null as unknown as SmoothieQuery<ClientControllerType['postWithParams']> satisfies Query;
+    null as unknown as VovkQuery<ClientControllerType['postWithParams']> satisfies Query;
     // @ts-expect-error Expect error
-    null as unknown as SmoothieQuery<ClientControllerType['postWithParams']> satisfies { query: 'bar' };
+    null as unknown as VovkQuery<ClientControllerType['postWithParams']> satisfies { query: 'bar' };
 
-    null as unknown as SmoothieParams<ClientControllerType['postWithParams']> satisfies Params;
+    null as unknown as VovkParams<ClientControllerType['postWithParams']> satisfies Params;
     // @ts-expect-error Expect error
-    null as unknown as SmoothieBody<ClientControllerType['postWithParams']> satisfies { hello: 'baz' };
+    null as unknown as VovkBody<ClientControllerType['postWithParams']> satisfies { hello: 'baz' };
 
-    expect(result satisfies SmoothieReturnType<ClientControllerType['postWithParams']>).toEqual({
+    expect(result satisfies VovkReturnType<ClientControllerType['postWithParams']>).toEqual({
       params: { hello: 'world' },
       body: { isBody: true },
       query: { query: 'queryValue' },

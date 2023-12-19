@@ -1,4 +1,4 @@
-import type { _SmoothieWorkerMetadata as SmoothieWorkerMetadata } from '../types';
+import type { _VovkWorkerMetadata as VovkWorkerMetadata } from '../types';
 import type {
   _WorkerInput as WorkerInput,
   _WorkerOutput as WorkerOutput,
@@ -6,7 +6,7 @@ import type {
 } from './types';
 
 export function _promisifyWorker<T extends object>(w: Worker, givenWorkerService: object): WorkerPromiseInstance<T> {
-  const workerService = givenWorkerService as T & SmoothieWorkerMetadata;
+  const workerService = givenWorkerService as T & VovkWorkerMetadata;
   const instance = {} as WorkerPromiseInstance<T>;
   let callsKey = 0;
 

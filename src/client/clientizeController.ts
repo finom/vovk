@@ -1,14 +1,14 @@
 import {
   type _KnownAny as KnownAny,
-  type _SmoothieControllerMetadata as SmoothieControllerMetadata,
-  type _SmoothieControllerMetadataJson as SmoothieControllerMetadataJson,
+  type _VovkControllerMetadata as VovkControllerMetadata,
+  type _VovkControllerMetadataJson as VovkControllerMetadataJson,
   type _ControllerStaticMethod as ControllerStaticMethod,
-  type _SmoothieParams as SmoothieParams,
-  type _SmoothieQuery as SmoothieQuery,
+  type _VovkParams as VovkParams,
+  type _VovkQuery as VovkQuery,
 } from '../types';
 import {
-  type _SmoothieClientOptions as SmoothieClientOptions,
-  type _SmoothieClient as SmoothieClient,
+  type _VovkClientOptions as VovkClientOptions,
+  type _VovkClient as VovkClient,
   type _StreamAsyncIterator as StreamAsyncIterator,
 } from './types';
 
@@ -19,8 +19,8 @@ const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
 const getHandlerPath = <T extends ControllerStaticMethod>(
   endpoint: string,
-  params?: SmoothieParams<T>,
-  query?: SmoothieQuery<T>
+  params?: VovkParams<T>,
+  query?: VovkQuery<T>
 ) => {
   let result = endpoint;
   for (const [key, value] of Object.entries(params ?? {})) {
@@ -38,11 +38,11 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 };
 
 export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
-  givenController: SmoothieControllerMetadataJson,
-  options?: SmoothieClientOptions<OPTS>
-): SmoothieClient<T, OPTS> => {
-  const controller = givenController as T & SmoothieControllerMetadata;
-  const client = {} as SmoothieClient<T, OPTS>;
+  givenController: VovkControllerMetadataJson,
+  options?: VovkClientOptions<OPTS>
+): VovkClient<T, OPTS> => {
+  const controller = givenController as T & VovkControllerMetadata;
+  const client = {} as VovkClient<T, OPTS>;
   if (!controller) throw new Error(`Unable to clientize. Controller metadata is not provided`);
   const metadata = controller._handlers;
   if (!metadata)

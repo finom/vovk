@@ -1,4 +1,4 @@
-import { type _SmoothieClientFetcher as SmoothieClientFetcher } from './types';
+import { type _VovkClientFetcher as VovkClientFetcher } from './types';
 import { type _ErrorResponseBody as ErrorResponseBody, _HttpStatus as HttpStatus } from '../types';
 import { _HttpException as HttpException } from '../HttpException';
 
@@ -12,7 +12,7 @@ export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultFetcher';
 
 // defaultFetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
 // For normal HTTP errors, it uses message and status code from the response of ErrorResponseBody type
-export const _defaultFetcher: SmoothieClientFetcher<_DefaultFetcherOptions> = async (
+export const _defaultFetcher: VovkClientFetcher<_DefaultFetcherOptions> = async (
   { httpMethod, getPath, validate },
   { params, query, body, prefix = '', ...options }
 ) => {

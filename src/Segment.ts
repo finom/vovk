@@ -4,7 +4,7 @@ import {
   _HttpStatus as HttpStatus,
   type _RouteHandler as RouteHandler,
   type _ErrorResponseBody as ErrorResponseBody,
-  type _SmoothieController as SmoothieController,
+  type _VovkController as VovkController,
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
 
@@ -65,7 +65,7 @@ export class _Segment {
     const methodParams: Record<string, string> = {};
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const handlers: Record<string, { staticMethod: RouteHandler; controller: SmoothieController }> = Object.fromEntries(
+    const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = Object.fromEntries(
       [...controllers.entries()]
         .map(([controller, staticMethods]) => {
           const prefix = controller._prefix ?? '';

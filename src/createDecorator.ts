@@ -1,15 +1,15 @@
 import type {
   _KnownAny as KnownAny,
-  _SmoothieController as SmoothieController,
-  _SmoothieRequest as SmoothieRequest,
+  _VovkController as VovkController,
+  _VovkRequest as VovkRequest,
 } from './types';
 
 type Next = () => Promise<unknown>;
 
-export function _createDecorator<ARGS extends unknown[], REQUEST = SmoothieRequest<unknown>>(
-  handler: (this: SmoothieController, req: REQUEST, next: Next, ...args: ARGS) => unknown,
+export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<unknown>>(
+  handler: (this: VovkController, req: REQUEST, next: Next, ...args: ARGS) => unknown,
   initHandler?: (
-    this: SmoothieController,
+    this: VovkController,
     ...args: ARGS
   ) =>
     | {
@@ -23,7 +23,7 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = SmoothieReque
 ) {
   return function decoratorCreator(...args: ARGS) {
     return function decorator(target: KnownAny, propertyKey: string) {
-      const controller = target as SmoothieController;
+      const controller = target as VovkController;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const originalMethod: unknown = controller[propertyKey];
       if (typeof originalMethod === 'function') {
@@ -52,7 +52,7 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = SmoothieReque
         method._controller = controller;
 
         // TODO define internal method type
-        (originalMethod as unknown as { _controller: SmoothieController })._controller = controller;
+        (originalMethod as unknown as { _controller: VovkController })._controller = controller;
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         controller[propertyKey] = method;

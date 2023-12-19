@@ -14,7 +14,7 @@ export type _HandlerMetadata = {
   clientValidators?: { query?: _KnownAny; body?: _KnownAny };
 };
 
-export type _SmoothieControllerMetadata = {
+export type _VovkControllerMetadata = {
   controllerName: string;
   _prefix?: string;
   _handlers: Record<string, _HandlerMetadata>;
@@ -26,37 +26,37 @@ export type _HandlerMetadataJson = {
   clientValidators?: { query?: _KnownAny; body?: _KnownAny };
 };
 
-export type _SmoothieControllerMetadataJson = {
+export type _VovkControllerMetadataJson = {
   controllerName: string;
   _prefix?: string;
   _handlers: Record<string, _HandlerMetadataJson>;
 };
 
-export type _SmoothieWorkerMetadata = {
+export type _VovkWorkerMetadata = {
   workerName: string;
   _handlers: Record<string, Record<string, never>>;
 };
 
-export type _SmoothieControllerInternal = _SmoothieControllerMetadata & {
+export type _VovkControllerInternal = _VovkControllerMetadata & {
   _activated?: true;
   _onError?: (err: Error) => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type _SmoothieController = Function &
-  _SmoothieControllerInternal & {
+export type _VovkController = Function &
+  _VovkControllerInternal & {
     [key: string]: unknown;
   };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type _SmoothieWorker = Function &
-  _SmoothieWorkerMetadata & {
+export type _VovkWorker = Function &
+  _VovkWorkerMetadata & {
     [key: string]: unknown;
   };
 
 export type _RouteHandler = (req: NextRequest, params: Record<string, string>) => Response | Promise<Response>;
 
-export interface _SmoothieRequest<BODY = undefined, QUERY extends Record<string, string> | undefined = undefined>
+export interface _VovkRequest<BODY = undefined, QUERY extends Record<string, string> | undefined = undefined>
   extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<BODY>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
@@ -68,33 +68,33 @@ export interface _SmoothieRequest<BODY = undefined, QUERY extends Record<string,
 }
 
 export type _ControllerStaticMethod<
-  REQ extends _SmoothieRequest<undefined, _KnownAny> = _SmoothieRequest<undefined, Record<string, string>>,
+  REQ extends _VovkRequest<undefined, _KnownAny> = _VovkRequest<undefined, Record<string, string>>,
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = ((req: REQ, params: PARAMS) => unknown) & {
-  _controller?: _SmoothieController;
+  _controller?: _VovkController;
 };
 
-export type _SmoothieBody<
+export type _VovkBody<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
+  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<Parameters<T>[0]['json']>>;
 
-export type _SmoothieQuery<
+export type _VovkQuery<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
+  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'];
 
-export type _SmoothieParams<
+export type _VovkParams<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
+  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[1];
 
-export type _SmoothieReturnType<
+export type _VovkReturnType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _SmoothieRequest<undefined, _KnownAny> = Parameters<T>[0],
+  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<T>>;
 

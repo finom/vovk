@@ -9,11 +9,11 @@ const expect = require('expect.js');
 
 const {
   createDecorator, createSegment
-} = require('next-smoothie');
+} = require('vovk');
 
 const {
   clientizeController
-} = require('next-smoothie/client');
+} = require('vovk/client');
 
 for (const f of [createDecorator, createSegment, clientizeController]) {
   expect(typeof f === 'function').to.be(true);

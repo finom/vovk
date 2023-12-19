@@ -1,4 +1,4 @@
-import { SmoothieRequest, StreamResponse, post, prefix } from '../../../src';
+import { VovkRequest, StreamResponse, post, prefix } from '../../../src';
 
 type Token = { token: string; query: 'queryValue' };
 
@@ -7,7 +7,7 @@ export default class StreamingController {
   static controllerName = 'StreamingController';
 
   @post.auto()
-  static async postWithStreaming(req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
+  static async postWithStreaming(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
@@ -26,7 +26,7 @@ export default class StreamingController {
   }
 
   @post.auto()
-  static postWithStreamingAndImmediateError(req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
+  static postWithStreamingAndImmediateError(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
     if (req) {
       throw new Error('Immediate error');
     }
@@ -37,7 +37,7 @@ export default class StreamingController {
   }
 
   @post.auto()
-  static async postWithStreamingAndDelayedError(req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
+  static async postWithStreamingAndDelayedError(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
@@ -59,7 +59,7 @@ export default class StreamingController {
 
   @post.auto()
   static async postWithStreamingAndDelayedCustomError(
-    req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>
+    req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>
   ) {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
@@ -82,7 +82,7 @@ export default class StreamingController {
 
   @post.auto()
   static async postWithStreamingAndDelayedUnhandledError(
-    req: SmoothieRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>
+    req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>
   ) {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');

@@ -40,5 +40,27 @@ describe('Worker', () => {
     expect(result).toEqual(99991);
   });
 
-  xit('Can call other workers', () => {});
+  it('Can call other workers', async () => {
+    const result = await page.evaluate(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // eslint-disable-next-line no-undef
+      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      return metadataWorker.calculateFibonacci(10);
+    });
+
+    expect(result).toEqual(55);
+  });
+
+  it('Can use clientized controllers', async () => {
+    const result = await page.evaluate(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // eslint-disable-next-line no-undef
+      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      return metadataWorker.getHetClientizeHelloWorld();
+    });
+
+    expect(result).toEqual({ hello: 'world' });
+  });
+
+  xit('Implements async generator', () => {});
 });

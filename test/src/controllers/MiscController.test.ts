@@ -1,12 +1,12 @@
 import { it, expect, describe } from '@jest/globals';
 import MiscController from './MiscController';
-import { type _SmoothieController as SmoothieController } from '../../../src/types';
+import { type _VovkController as VovkController } from '../../../src/types';
 import { NextRequest } from 'next/server';
 import { createDecorator, get } from '../../../src';
 
 describe('Hidden features', () => {
   it(`Metadata`, () => {
-    expect((MiscController as unknown as SmoothieController)._handlers).toHaveProperty(`getMethod`);
+    expect((MiscController as unknown as VovkController)._handlers).toHaveProperty(`getMethod`);
   });
 
   it('Method preserves name and controller properties', () => {
@@ -60,13 +60,13 @@ describe('Hidden features', () => {
       }
     }
 
-    expect((MyController as unknown as SmoothieController)._handlers).toHaveProperty('myMethod');
+    expect((MyController as unknown as VovkController)._handlers).toHaveProperty('myMethod');
 
-    expect((MyController as unknown as SmoothieController)._handlers?.myMethod.clientValidators?.body).toEqual({
+    expect((MyController as unknown as VovkController)._handlers?.myMethod.clientValidators?.body).toEqual({
       iAmABodyValidator: 'helloBody',
     });
 
-    expect((MyController as unknown as SmoothieController)._handlers?.myMethod.clientValidators?.query).toEqual({
+    expect((MyController as unknown as VovkController)._handlers?.myMethod.clientValidators?.query).toEqual({
       iAmAQueryValidator: 'helloQuery',
     });
   });

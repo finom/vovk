@@ -117,7 +117,15 @@
     "MyWorker": {
       "workerName": "MyWorker",
       "_handlers": {
+        "getHetClientizeHelloWorld": {},
+        "calculateFibonacci": {},
         "findLargestPrimeBelow": {}
+      }
+    },
+    "MyInnerWorker": {
+      "workerName": "MyInnerWorker",
+      "_handlers": {
+        "calculateFibonacci": {}
       }
     }
   }

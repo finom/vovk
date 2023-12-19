@@ -2,19 +2,19 @@ import type {
   _KnownAny as KnownAny,
   _HttpMethod as HttpMethod,
   _ControllerStaticMethod,
-  _SmoothieBody,
-  _SmoothieQuery,
-  _SmoothieParams,
+  _VovkBody,
+  _VovkQuery,
+  _VovkParams,
 } from '../types';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
 
-export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_SmoothieBody<T> extends undefined | void
+export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_VovkBody<T> extends undefined | void
   ? { body?: undefined }
-  : _SmoothieBody<T> extends null
+  : _VovkBody<T> extends null
     ? { body?: null }
-    : { body: _SmoothieBody<T> }) &
-  (_SmoothieQuery<T> extends undefined | void ? { query?: undefined } : { query: _SmoothieQuery<T> }) &
-  (_SmoothieParams<T> extends undefined | void ? { params?: undefined } : { params: _SmoothieParams<T> });
+    : { body: _VovkBody<T> }) &
+  (_VovkQuery<T> extends undefined | void ? { query?: undefined } : { query: _VovkQuery<T> }) &
+  (_VovkParams<T> extends undefined | void ? { params?: undefined } : { params: _VovkParams<T> });
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
@@ -43,11 +43,11 @@ type ClientMethod<
     : ToPromise<ReturnType<T>>;
 
 // TODO I need help here: How to filter out functions only?
-export type _SmoothieClient<T, OPTS extends { [key: string]: KnownAny }> = {
+export type _VovkClient<T, OPTS extends { [key: string]: KnownAny }> = {
   [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> : never;
 };
 
-export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
+export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
   options: {
     name: keyof T;
     httpMethod: HttpMethod;
@@ -61,10 +61,10 @@ export type _SmoothieClientFetcher<OPTS extends Record<string, KnownAny> = Recor
   } & OPTS
 ) => KnownAny;
 
-export type _SmoothieClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
+export type _VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
   disableClientValidation?: boolean;
-  fetcher?: _SmoothieClientFetcher<OPTS>;
-  streamFetcher?: _SmoothieClientFetcher<OPTS> | null;
+  fetcher?: _VovkClientFetcher<OPTS>;
+  streamFetcher?: _VovkClientFetcher<OPTS> | null;
   validateOnClient?: (
     input: { body?: unknown; query?: unknown },
     validators: { body?: unknown; query?: unknown }

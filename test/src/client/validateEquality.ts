@@ -1,12 +1,12 @@
 import { isEqual } from 'lodash';
-import { HttpException, HttpStatus, SmoothieRequest, createDecorator } from '../../../src';
-import { SmoothieClientOptions } from '../../../src/client';
+import { HttpException, HttpStatus, VovkRequest, createDecorator } from '../../../src';
+import { VovkClientOptions } from '../../../src/client';
 
 type BodyValidate = Record<string, unknown> | null;
 type QueryValidate = Record<string, string> | null;
 
 const validateEquality = createDecorator(
-  async (req: SmoothieRequest<unknown>, next, bodyValidate?: BodyValidate, queryValidate?: QueryValidate) => {
+  async (req: VovkRequest<unknown>, next, bodyValidate?: BodyValidate, queryValidate?: QueryValidate) => {
     if (bodyValidate) {
       const body = await req.json();
 
@@ -36,7 +36,7 @@ const validateEquality = createDecorator(
   })
 );
 
-export const validateEqualityOnClient: SmoothieClientOptions['validateOnClient'] = (input, validators) => {
+export const validateEqualityOnClient: VovkClientOptions['validateOnClient'] = (input, validators) => {
   if (validators.body) {
     if (!isEqual(input.body, validators.body)) {
       throw new HttpException(HttpStatus.NULL, `Client exception. Invalid body`);

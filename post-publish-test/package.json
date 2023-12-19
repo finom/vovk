@@ -1,7 +1,7 @@
 {
-  "name": "next-smoothie",
+  "name": "vovk",
   "dependencies": {
-    "next-smoothie": "*"
+    "vovk": "*"
   },
   "devDependencies": {
     "expect.js": "*"

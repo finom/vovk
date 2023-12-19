@@ -2,14 +2,14 @@ import type { _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultF
 import { _HttpStatus as HttpStatus, type _ErrorResponseBody as ErrorResponseBody } from '../types';
 import type {
   _StreamAsyncIterator as StreamAsyncIterator,
-  _SmoothieClientFetcher as SmoothieClientFetcher,
+  _VovkClientFetcher as VovkClientFetcher,
 } from './types';
 import { _HttpException as HttpException } from '../HttpException';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamFetcher';
 
-export const _defaultStreamFetcher: SmoothieClientFetcher<DefaultFetcherOptions> = async (
+export const _defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = async (
   { httpMethod, getPath, validate },
   { params, query, body, prefix = '', ...options }
 ): Promise<StreamAsyncIterator<unknown>> => {

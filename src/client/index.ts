@@ -1,7 +1,7 @@
 import { _clientizeController as clientizeController } from './clientizeController';
 import type {
-  _SmoothieClientFetcher as SmoothieClientFetcher,
-  _SmoothieClientOptions as SmoothieClientOptions,
+  _VovkClientFetcher as VovkClientFetcher,
+  _VovkClientOptions as VovkClientOptions,
 } from './types';
 import {
   type _DefaultFetcherOptions as DefaultFetcherOptions,
@@ -9,4 +9,4 @@ import {
 } from './defaultFetcher';
 
 export { clientizeController, defaultFetcher };
-export type { SmoothieClientFetcher, SmoothieClientOptions, DefaultFetcherOptions };
+export type { VovkClientFetcher, VovkClientOptions, DefaultFetcherOptions };
