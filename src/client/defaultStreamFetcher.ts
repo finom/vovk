@@ -1,9 +1,6 @@
 import type { _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultFetcher';
 import { _HttpStatus as HttpStatus, type _ErrorResponseBody as ErrorResponseBody } from '../types';
-import type {
-  _StreamAsyncIterator as StreamAsyncIterator,
-  _VovkClientFetcher as VovkClientFetcher,
-} from './types';
+import type { _StreamAsyncIterator as StreamAsyncIterator, _VovkClientFetcher as VovkClientFetcher } from './types';
 import { _HttpException as HttpException } from '../HttpException';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
 

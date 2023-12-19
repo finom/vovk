@@ -26,10 +26,7 @@ export default class ClientController {
   }
 
   @post('with-params/:hello')
-  static async postWithParams(
-    req: VovkRequest<{ isBody: true }, { query: 'queryValue' }>,
-    params: { hello: 'world' }
-  ) {
+  static async postWithParams(req: VovkRequest<{ isBody: true }, { query: 'queryValue' }>, params: { hello: 'world' }) {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
     return { params, body, query: { query } };

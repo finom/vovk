@@ -1,8 +1,4 @@
-import type {
-  _KnownAny as KnownAny,
-  _VovkController as VovkController,
-  _VovkRequest as VovkRequest,
-} from './types';
+import type { _KnownAny as KnownAny, _VovkController as VovkController, _VovkRequest as VovkRequest } from './types';
 
 type Next = () => Promise<unknown>;
 
