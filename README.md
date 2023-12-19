@@ -13,10 +13,6 @@
   <br />
   <em>6 minutes of reading</em>
 </p>
-![vov-text-black](https://github.com/finom/vovk/assets/1082083/480a5fea-abde-4e0f-8566-16e00b85151f)
-![vov-text-white](https://github.com/finom/vovk/assets/1082083/f836a865-cd9c-4c60-b9c3-2856d39dd6d2)
-
-
 
 
 ## Quick start
