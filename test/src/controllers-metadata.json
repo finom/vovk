@@ -119,7 +119,19 @@
       "_handlers": {
         "getHetClientizeHelloWorld": {},
         "calculateFibonacci": {},
-        "findLargestPrimeBelow": {}
+        "findLargestPrimeBelow": {},
+        "asyncGenerator": {
+          "isGenerator": true
+        },
+        "asyncGeneratorWithError": {
+          "isGenerator": true
+        },
+        "generator": {
+          "isGenerator": true
+        },
+        "generatorWithError": {
+          "isGenerator": true
+        }
       }
     },
     "MyInnerWorker": {

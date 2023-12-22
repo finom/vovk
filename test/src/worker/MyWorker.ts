@@ -49,4 +49,36 @@ export default class MyWorker {
 
     return -1;
   }
+
+  static async *asyncGenerator() {
+    for (let i = 0; i < 10; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      yield i;
+    }
+  }
+
+  static async *asyncGeneratorWithError() {
+    for (let i = 0; i < 10; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (i === 5) {
+        throw new Error('Not good');
+      }
+      yield i;
+    }
+  }
+
+  static *generator() {
+    for (let i = 0; i < 10; i++) {
+      yield i;
+    }
+  }
+
+  static *generatorWithError() {
+    for (let i = 0; i < 10; i++) {
+      if (i === 5) {
+        throw new Error('Not good');
+      }
+      yield i;
+    }
+  }
 }

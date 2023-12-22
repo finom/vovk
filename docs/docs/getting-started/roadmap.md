@@ -4,7 +4,6 @@
 
 - Support async iterable for stream responses at `VovkReturnType` type.
 - An option to obfuscate endpoint names when `.auto()` decorators are used.
-- Implement async generators for workers for continious event streaming.
 - Implement async generators for stream responses (`yield` an instance of `StreamResponse`, then `yield` stream messages, or let me know if there are better solutions).
 - Support [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects) at workers.
 - (Experimental) Add [AssemblyScript](https://www.assemblyscript.org/) as an additional piece of Vovk architecture.

@@ -7,10 +7,10 @@ Worker Service can be easily created from an Isomorphic Service. Reminder: Isomo
 To define required `onmessage` handlers use `@worker()` decorator and static `workerName` property.
 
 ```ts
-// vovk/hello/HelloIsomorphicService.ts
+// vovk/hello/HelloWorkerService.ts
 @worker()
-export default class HelloIsomorphicService {
-    static workerName = 'HelloIsomorphicService';
+export default class HelloWorkerService {
+    static workerName = 'HelloWorkerService';
 
     static heavyCalculation(iterations: number) {
         let sum = 0;
@@ -33,9 +33,9 @@ In a non-worker environment `@worker()` does nothing. You can import the Isomorp
 To create the main-thread library that utilises the Isomorphic Service in a separate thread use `promisifyWorker`. Thanks to Next.js you can create a Web Worker from at .ts file with no need to set up custom Webpack loaders.
 
 ```ts
-const worker = promisifyWorker<typeof HelloIsomorphicService>(
-    new Worker(new URL('./HelloIsomorphicService.ts', import.meta.url)),
-    metadata.workers.HelloIsomorphicService
+const worker = promisifyWorker<typeof HelloWorkerService>(
+    new Worker(new URL('./HelloWorkerService.ts', import.meta.url)),
+    metadata.workers.HelloWorkerService
 );
 
 const result = await worker.heavyCalculation(100_000_000);
@@ -48,13 +48,13 @@ If you use `Worker` constructor outside of `useEffect` it's recommended to check
 ```ts
 // vovk/hello/HelloState.ts
 import { promisifyWorker } from 'vovk/worker';
-import type HelloIsomorphicService from './HelloIsomorphicService';
+import type HelloWorkerService from './HelloWorkerService';
 import metadata from '../vovk-metadata.json' assert { type: 'json' };
 
 const worker = typeof Worker !== 'undefined' ?
-    promisifyWorker<typeof HelloIsomorphicService>(
-        new Worker(new URL('./HelloIsomorphicService.ts', import.meta.url)),
-        metadata.workers.HelloIsomorphicService
+    promisifyWorker<typeof HelloWorkerService>(
+        new Worker(new URL('./HelloWorkerService.ts', import.meta.url)),
+        metadata.workers.HelloWorkerService
     ) : null;
 
 const helloState = {
@@ -67,6 +67,53 @@ const helloState = {
         // result is casted as number
         return result;
     }
+}
+```
+
+## Worker termination
+
+A worker can be terminated with built-in `terminate` method.
+
+```ts
+worker?.terminate();
+```
+
+## Async generators
+
+Worker Service supports generators and async generators to implement continious event streaming. 
+
+```ts
+// vovk/hello/HelloWorkerService.ts
+@worker()
+export default class HelloWorkerService {
+    static workerName = 'HelloWorkerService';
+
+    static *generator() {
+        for (let i = 0; i < 10; i++) {
+            yield i;
+        }
+    }
+
+    static async *asyncGenerator() {
+        for (let i = 0; i < 10; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            yield i;
+        }
+    }
+}
+```
+
+When promisified they both turn into an async generator.
+
+```ts
+const worker = promisifyWorker<typeof HelloWorkerService>(/* ... */);
+
+for await (const number of worker.generator()) {
+    console.log(number); // 0 ... 9
+}
+
+for await (const number of worker.asyncGenerator()) {
+    console.log(number); // 0 ... 9
 }
 ```
 
@@ -100,7 +147,7 @@ type HelloControllerType = typeof HelloController;
 export default class HelloWorkerService {
     static workerName = 'HelloWorkerService';
 
-    static private controller = clientizeController<HelloControllerType>(metadata.HelloController);
+    private static controller = clientizeController<HelloControllerType>(metadata.HelloController);
 
     static async heavyCalculation() {
         const { iterations } = await this.controller.getIterations();
@@ -160,15 +207,15 @@ export default class WorkerService {
 
 ## Forking the worker
 
-To fork the worker you can simply call `promisifyWorker` again. The methods of the forks are going to be run in parallel.
+To fork the worker you can simply call `promisifyWorker` multiple times. The methods of the forks are going to be run in parallel.
 
 
 ```ts
 const fork = () => {
     const worker = typeof Worker !== 'undefined' ?
-        promisifyWorker<typeof HelloIsomorphicService>(
-            new Worker(new URL('./HelloIsomorphicService.ts', import.meta.url)),
-            metadata.workers.HelloIsomorphicService
+        promisifyWorker<typeof HelloWorkerService>(
+            new Worker(new URL('./HelloWorkerService.ts', import.meta.url)),
+            metadata.workers.HelloWorkerService
         ) : null;
 
     return worker;

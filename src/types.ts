@@ -34,9 +34,12 @@ export type _VovkControllerMetadataJson = {
 
 export type _VovkWorkerMetadata = {
   workerName: string;
-  _handlers: Record<string, {
-    isGenerator?: true;
-  }>;
+  _handlers: Record<
+    string,
+    {
+      isGenerator?: true;
+    }
+  >;
 };
 
 export type _VovkControllerInternal = _VovkControllerMetadata & {

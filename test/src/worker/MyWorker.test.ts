@@ -1,5 +1,5 @@
 import puppeteer, { type Page } from 'puppeteer';
-import { it, expect, describe, beforeAll, afterAll, xit } from '@jest/globals';
+import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
 import type { _WorkerPromiseInstance as WorkerPromiseInstance } from '../../../src/worker/types';
 import type MyWorker from './MyWorker';
 
@@ -62,5 +62,85 @@ describe('Worker', () => {
     expect(result).toEqual({ hello: 'world' });
   });
 
-  xit('Implements async generator', () => {});
+  it('Implements generator', async () => {
+    const result = await page.evaluate(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // eslint-disable-next-line no-undef
+      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const numbers: number[] = [];
+
+      for await (const number of metadataWorker.generator()) {
+        numbers.push(number);
+      }
+
+      return numbers;
+    });
+
+    expect(result).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
+  it('Implements async generator', async () => {
+    const result = await page.evaluate(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // eslint-disable-next-line no-undef
+      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const numbers: number[] = [];
+
+      for await (const number of metadataWorker.asyncGenerator()) {
+        numbers.push(number);
+      }
+
+      return numbers;
+    });
+
+    expect(result).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
+  it('Generator throws an error', async () => {
+    const result = await page.evaluate(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // eslint-disable-next-line no-undef
+      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const numbers: number[] = [];
+
+      let error: string | undefined;
+
+      try {
+        for await (const number of metadataWorker.generatorWithError()) {
+          numbers.push(number);
+        }
+      } catch (e) {
+        error = (e as Error).message;
+      }
+
+      return { numbers, error };
+    });
+
+    expect(result.numbers).toEqual([0, 1, 2, 3, 4]);
+    expect(result.error).toEqual('Not good');
+  });
+
+  it('Async generator throws an error', async () => {
+    const result = await page.evaluate(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // eslint-disable-next-line no-undef
+      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const numbers: number[] = [];
+
+      let error: string | undefined;
+
+      try {
+        for await (const number of metadataWorker.asyncGeneratorWithError()) {
+          numbers.push(number);
+        }
+      } catch (e) {
+        error = (e as Error).message;
+      }
+
+      return { numbers, error };
+    });
+
+    expect(result.numbers).toEqual([0, 1, 2, 3, 4]);
+    expect(result.error).toEqual('Not good');
+  });
 });
