@@ -23,4 +23,7 @@ Cases covered by the unit tests:
 - If `Response` was returned
 - Get header with `next/headers`
 - Redirect with `next/navigation`
+- Worker
+- Client
+- Stream Response
 

@@ -7,8 +7,14 @@ export function _worker() {
     target._handlers = {};
 
     for (const key of Object.getOwnPropertyNames(target)) {
-      if (typeof target[key] === 'function') {
+      const member = target[key];
+      if (typeof member === 'function') {
+        const isGenerator = Object.getPrototypeOf(member) === Object.getPrototypeOf(function*(){});
         target._handlers[key] = {};
+
+        if (isGenerator) {
+          target._handlers[key].isGenerator = true;
+        }
       }
     }
 

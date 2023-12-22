@@ -828,16 +828,3 @@ export default class UserController {
 ```
 
 Enjoy!
-<!--
-
-Getting Started
-Vovk Architecture
-Clientize Controller
-  Regular Request
-  Streaming Request
-  Validation
-Worker
-  Getting started
-  Clientize and Workers
-
--->

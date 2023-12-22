@@ -34,7 +34,9 @@ export type _VovkControllerMetadataJson = {
 
 export type _VovkWorkerMetadata = {
   workerName: string;
-  _handlers: Record<string, Record<string, never>>;
+  _handlers: Record<string, {
+    isGenerator?: true;
+  }>;
 };
 
 export type _VovkControllerInternal = _VovkControllerMetadata & {
@@ -92,6 +94,7 @@ export type _VovkParams<
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[1];
 
+// TODO Implement for streams
 export type _VovkReturnType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
