@@ -14,7 +14,7 @@
     "build": "rm -rf dist && npm run toc && tsc && cp package.json dist && cp README.md dist && cp package-lock.json dist",
     "lint-nofix": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-nofix -- --fix",
-    "toc": "npx markdown-toc README.md -i && npx markdown-toc client/README.md -i",
+    "toc": "npx markdown-toc README.md -i",
     "patch": "npm t && npm version patch && npm run build && npm publish ./dist && git push && git push --tags",
     "minor": "npm t && npm version minor && npm run build && npm publish ./dist && git push && git push --tags",
     "BREAKING-major": "npm t && npm version major && npm run build && npm publish ./dist && git push && git push --tags",
