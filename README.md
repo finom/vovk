@@ -8,9 +8,13 @@
 </p>
 
 <p align="center">
-  <strong>The missing decorator-based API router for Next.js 13+</strong>
-  <br />
-  <em>6 minutes of reading</em>
+  (WIP) Framework for
+  <br><br>
+  <picture>
+    <source width="200" media="(prefers-color-scheme: dark)" srcset="https://github.com/finom/vovk/assets/1082083/d802ddc7-dc93-4f9c-8531-1f847148a0d7">
+    <source width="200" media="(prefers-color-scheme: light)" srcset="https://github.com/finom/vovk/assets/1082083/a4606ef0-74fd-46e8-bb0e-a67401285e57">
+    <img width="200" alt="next" src="https://github.com/finom/vovk/assets/1082083/a4606ef0-74fd-46e8-bb0e-a67401285e57">
+  </picture>
 </p>
 
 
