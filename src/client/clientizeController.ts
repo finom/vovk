@@ -1,5 +1,4 @@
 import {
-  type _KnownAny as KnownAny,
   type _VovkControllerMetadata as VovkControllerMetadata,
   type _VovkControllerMetadataJson as VovkControllerMetadataJson,
   type _ControllerStaticMethod as ControllerStaticMethod,
@@ -13,7 +12,10 @@ import {
 } from './types';
 
 import { _defaultStreamFetcher as defaultStreamFetcher } from './defaultStreamFetcher';
-import { defaultFetcher } from '.';
+import {
+  _defaultFetcher as defaultFetcher,
+  type _DefaultFetcherOptions as DefaultFetcherOptions,
+} from './defaultFetcher';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -37,7 +39,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
 };
 
-export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
+export const _clientizeController = <T, OPTS extends DefaultFetcherOptions>(
   givenController: VovkControllerMetadataJson,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {

@@ -14,7 +14,7 @@ export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultFetcher';
 // For normal HTTP errors, it uses message and status code from the response of ErrorResponseBody type
 export const _defaultFetcher: VovkClientFetcher<_DefaultFetcherOptions> = async (
   { httpMethod, getPath, validate },
-  { params, query, body, prefix = '', ...options }
+  { params, query, body, prefix = '/api', ...options }
 ) => {
   const endpoint =
     (prefix.startsWith('http://') || prefix.startsWith('https://') || prefix.startsWith('/') ? '' : '/') +

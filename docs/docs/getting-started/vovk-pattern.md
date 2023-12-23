@@ -152,7 +152,7 @@ Services can be injected to a controller or other services using `private static
 
 ## Isomorphic Service
 
-Isomorphic Service is very similar to a Back-end Service but can be used both by front-end (State, Components, Worker Service, hooks, other Isomorphic Services ...) and back-end (Back-end Service, Controller, CLI scripts). The only difference is that its methods need to be pure functions. It means that it shouldn't perform DB calls nor access application state but can use other Isomorphic Services. 
+Isomorphic Service is very similar to a Back-end Service but can be used both by front-end (State, Components, Worker Service, hooks, other Isomorphic Services ...) and back-end (Back-end Service, Controller, CLI scripts). The only difference is that its methods need to be pure functions (besides using `console` object). It means that it shouldn't perform DB calls nor access application state but can use other Isomorphic Services. 
 
 ```ts
 // vovk/comment/CommentIsomorphicService.ts
