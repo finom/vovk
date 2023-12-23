@@ -39,7 +39,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
 };
 
-export const _clientizeController = <T, OPTS extends DefaultFetcherOptions>(
+export const _clientizeController = <T, OPTS extends DefaultFetcherOptions = DefaultFetcherOptions>(
   givenController: VovkControllerMetadataJson,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
