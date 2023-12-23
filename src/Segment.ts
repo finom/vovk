@@ -152,7 +152,7 @@ export class _Segment {
     const { staticMethod, controller } = handler;
 
     try {
-      const result = await staticMethod.call(this, req, methodParams);
+      const result = await staticMethod.call(controller, req, methodParams);
 
       if (result instanceof Response) {
         return result;

@@ -4,20 +4,30 @@ import validateEquality from './validateEquality';
 import vovkZod from 'vovk-zod';
 import * as z from 'zod';
 
+class Service {
+  static getHello(hello: string) {
+    return { hello };
+  }
+}
+
 @prefix('client')
 export default class ClientController {
   static controllerName = 'ClientController';
 
+  static service = Service;
+
   @get.auto()
   static getHelloWorld() {
-    const world = headers().get('x-test');
-    return { hello: world };
+    const hello = headers().get('x-test');
+    // additional check for the context
+    if (this.service !== Service) throw new Error('Service is not the same');
+    return this.service.getHello(hello!);
   }
 
   @get.auto()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static getHelloWorldAndEmptyGeneric(_req: VovkRequest) {
-    return { hello: 'world' };
+    return this.service.getHello('world');
   }
 
   @get('with-params/:hello')
