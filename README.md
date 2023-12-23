@@ -7,7 +7,6 @@
   </picture>
 </p>
 
-
 <p align="center">
   <strong>The missing decorator-based API router for Next.js 13+</strong>
   <br />
