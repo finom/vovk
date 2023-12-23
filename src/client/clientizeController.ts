@@ -4,6 +4,7 @@ import {
   type _ControllerStaticMethod as ControllerStaticMethod,
   type _VovkParams as VovkParams,
   type _VovkQuery as VovkQuery,
+  type _KnownAny as KnownAny,
 } from '../types';
 import {
   type _VovkClientOptions as VovkClientOptions,
@@ -39,7 +40,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
 };
 
-export const _clientizeController = <T, OPTS extends DefaultFetcherOptions = DefaultFetcherOptions>(
+export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = DefaultFetcherOptions>(
   givenController: VovkControllerMetadataJson,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
