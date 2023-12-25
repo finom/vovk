@@ -130,7 +130,7 @@ You can set `disableClientValidation` option mentioned above to `true` to disabl
 ```ts
 // api/[[...]]/route.ts
 // ...
-export const { GET, POST, PATCH, PUT} = activateControllers(controllers, {
+export const { GET, POST, PATCH, PUT} = initVovk(controllers, {
     exposeValidation: false // don't populate metadata file with validation information
     onMetadata: // ...
 });

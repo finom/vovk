@@ -26,7 +26,7 @@ export default class HelloWorkerService {
 
 In a non-worker environment `@worker()` does nothing. You can import the Isomorphic Service class safely in other modules as before. If the Isomorphic Service is intended to be used in a worker environment only, I would recommend to call this service as Worker Service or at this case `HelloWorkerService`.
 
-`activateControllers` accepts `workers` array as an option to pupulate metadata with worker information.
+`initVovk` accepts `workers` array as an option to pupulate metadata with worker information.
 
 ////////
 

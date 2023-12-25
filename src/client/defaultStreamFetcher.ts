@@ -59,10 +59,12 @@ export const _defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = a
 
   const reader = response.body.getReader();
 
-  async function* iterator() {
+  // if streaming is too rapid, we need to make sure that the loop is stopped
+  let canceled = false;
+
+  async function* asyncIterator() {
     let prepend = '';
 
-    // Remove the Promise wrapper, as we will use async generator
     while (true) {
       let value: Uint8Array | undefined;
       let done = false;
@@ -98,8 +100,9 @@ export const _defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = a
             if (typeof upcomingError === 'string') {
               throw new Error(upcomingError);
             }
+
             throw upcomingError;
-          } else {
+          } else if (!canceled) {
             yield data;
           }
         }
@@ -108,7 +111,12 @@ export const _defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = a
   }
 
   return {
-    [Symbol.asyncIterator]: iterator,
-    cancel: () => reader.cancel(),
+    // @ts-expect-error xxx
+    status: response.status,
+    [Symbol.asyncIterator]: asyncIterator,
+    cancel: () => {
+      canceled = true;
+      return reader.cancel();
+    },
   };
 };

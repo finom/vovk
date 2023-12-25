@@ -1,6 +1,6 @@
 import { createSegment } from '../../../../../../src';
 
-const { get, activateControllers } = createSegment();
+const { get, initVovk } = createSegment();
 
 class IsolatedController {
   @get()
@@ -9,4 +9,4 @@ class IsolatedController {
   }
 }
 
-export const { GET } = activateControllers([IsolatedController]);
+export const { GET } = initVovk({ controllers: [IsolatedController] });

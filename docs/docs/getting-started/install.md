@@ -14,7 +14,7 @@ Inside the project folder run `npm run dev` and open [http://localhost:3000](htt
 
 ### 1. Create Next.js APP
 
-Follow [this instruction](https://nextjs.org/docs/getting-started/installation) to install Next.js. Use TypeScript, App Router and `src/` directory. If you're using **create-next-app** answer to all questions "Yes".
+Follow [this instruction](https://nextjs.org/docs/getting-started/installation) to install Next.js. Use TypeScript, App Router and `src/` directory. If you're using **create-next-app** answer to all questions (besides import alias, which is optional) "Yes".
 
 ![](https://github.com/finom/vovk/assets/1082083/b9e600da-a43a-4e30-a089-43e5e4b147ef)
 
@@ -37,11 +37,11 @@ Create file **/src/app/[[...]]/route.ts** where **[[...]]** is a real folder nam
 
 ```ts
 // /src/app/[[...]]/route.ts
-import { activateControllers } from 'vovk';
+import { initVovk } from 'vovk';
 
 const controllers = [];
 
-export const { GET, POST, PUT, DELETE } = activateControllers(controllers, {
+export const { GET, POST, PUT, DELETE } = initVovk(controllers, {
   async onMetadata(metadata, write) {
     if (process.env.NODE_ENV === 'development') {
       const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
@@ -148,10 +148,10 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
+    <>
         <div onClick={() => HelloState.count++}>Clicks: {count}</div>
-        <div className="w-1/2 font-bold">{serverResponse?.greeting ?? 'Loading...'}</div>
-    </div>
+        <div>{serverResponse?.greeting ?? 'Loading...'}</div>
+    </>
   );
 }
 ```

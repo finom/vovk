@@ -28,4 +28,4 @@ export {
   StreamResponse,
 };
 
-export const { get, post, put, patch, del, head, options, prefix, activateControllers } = createSegment();
+export const { get, post, put, patch, del, head, options, prefix, initVovk } = createSegment();

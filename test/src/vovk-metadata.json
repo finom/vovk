@@ -113,6 +113,36 @@
       }
     }
   },
+  "StreamingGeneratorController": {
+    "controllerName": "StreamingGeneratorController",
+    "_prefix": "streaming-generator",
+    "_handlers": {
+      "postWithAsyncStreaming": {
+        "path": "streaming-generator-controller/post-with-async-streaming",
+        "httpMethod": "POST"
+      },
+      "postWithStreaming": {
+        "path": "streaming-generator-controller/post-with-streaming",
+        "httpMethod": "POST"
+      },
+      "postWithStreamingAndImmediateError": {
+        "path": "streaming-generator-controller/post-with-streaming-and-immediate-error",
+        "httpMethod": "POST"
+      },
+      "postWithStreamingAndDelayedError": {
+        "path": "streaming-generator-controller/post-with-streaming-and-delayed-error",
+        "httpMethod": "POST"
+      },
+      "postWithStreamingAndDelayedCustomError": {
+        "path": "streaming-generator-controller/post-with-streaming-and-delayed-custom-error",
+        "httpMethod": "POST"
+      },
+      "postWithStreamingAndDelayedUnhandledError": {
+        "path": "streaming-generator-controller/post-with-streaming-and-delayed-unhandled-error",
+        "httpMethod": "POST"
+      }
+    }
+  },
   "workers": {
     "MyWorker": {
       "workerName": "MyWorker",

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { promisifyWorker } from '../../../src/worker';
-import metadata from '../controllers-metadata.json' assert { type: 'json' };
+import metadata from '../vovk-metadata.json' assert { type: 'json' };
 import MyWorker from '../worker/MyWorker';
 
 export default function Home() {

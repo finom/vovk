@@ -59,7 +59,10 @@ export type _VovkWorker = Function &
     [key: string]: unknown;
   };
 
-export type _RouteHandler = (req: NextRequest, params: Record<string, string>) => Response | Promise<Response>;
+export type _RouteHandler = (
+  req: NextRequest,
+  params: Record<string, string>
+) => Response | Promise<Response> | Iterable<unknown> | AsyncIterable<unknown>;
 
 export interface _VovkRequest<BODY = undefined, QUERY extends Record<string, string> | undefined = undefined>
   extends Omit<NextRequest, 'json' | 'nextUrl'> {

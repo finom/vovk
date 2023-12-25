@@ -21,7 +21,7 @@ const config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'finom', // Usually your GitHub org/user name.
-  projectName: 'vovk-website', // Usually your repo name.
+  projectName: 'docs.vovk.dev', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',

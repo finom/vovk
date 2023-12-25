@@ -47,14 +47,14 @@ export default class UserController {
 }
 ```
 
-Finally, create the catch-all route with an optional slug (`[[...slug]]`) and call `activateControllers` with all your controllers. The slug is never used so you may want to keep it empty (`[[...]]`).
+Finally, create the catch-all route with an optional slug (`[[...slug]]`) and call `initVovk` with all your controllers. The slug is never used so you may want to keep it empty (`[[...]]`).
 
 ```ts
 // /src/app/api/[[...]]/route.ts
-import { activateControllers } from 'vovk';
+import { initVovk } from 'vovk';
 import UserController from '../../../controllers/UserController';
 
-export const { GET, POST } = activateControllers([UserController]);
+export const { GET, POST } = initVovk([UserController]);
 ```
 
 After that you can load the data using any fetching library.
@@ -286,11 +286,11 @@ Finally, create the catch-all route.
 
 ```ts
 // /api/[[...]]/route.ts - this is a real file path where [[...]] is a folder name
-import { activateControllers } from 'vovk';
+import { initVovk } from 'vovk';
 import UserController from '../controllers/UserController';
 import TeamController from '../controllers/TeamController';
 
-export const { GET, POST, PUT } = activateControllers([UserController, TeamController]);
+export const { GET, POST, PUT } = initVovk([UserController, TeamController]);
 ```
 
 That's it. Notice that the methods modified by the decorators defined as `static` methods and the classes are never instantiated.
@@ -367,10 +367,10 @@ Then initialise the controller as before:
 
 ```ts
 // /api/[[...]]/route.ts
-import { activateControllers } from 'vovk';
+import { initVovk } from 'vovk';
 import UserController from '../controllers/user/UserController';
 
-export const { GET } = activateControllers([UserController]);
+export const { GET } = initVovk([UserController]);
 ```
 
 Potential file structure with users, posts and comments may look like that:
@@ -594,7 +594,7 @@ import {
   // global controller members created with createSegment
   get, post, put, patch, del, head, options, 
   prefix, 
-  activateControllers,
+  initVovk,
 } from 'vovk';
 ```
 
@@ -621,7 +621,7 @@ In this example, only the `users` dynamic route will utilize the library. With `
 ```ts
 import { createSegment } from 'vovk';
 
-const { get, post, activateControllers } = createSegment();
+const { get, post, initVovk } = createSegment();
 
 class UserController {
   @get()
@@ -635,7 +635,7 @@ class UserController {
   }
 }
 
-export const { GET, POST } = activateControllers([UserController]);
+export const { GET, POST } = initVovk([UserController]);
 ```
 
 This is what `createSegment` returns:
@@ -644,16 +644,16 @@ This is what `createSegment` returns:
 const {  
   get, post, put, patch, del, head, options, // HTTP methods
   prefix, 
-  activateControllers, 
+  initVovk, 
 } = createSegment();
 ```
 
 (notice that DELETE method decorator is shortned to `@del`).
 
-`activateControllers` returns all route handlers for all supported HTTP methods and also accepts options with `onError` handler that allows to listen to all errors for logging. It is important to remember that it is also called on [NEXT_REDIRECT](https://nextjs.org/docs/app/api-reference/functions/redirect). 
+`initVovk` returns all route handlers for all supported HTTP methods and also accepts options with `onError` handler that allows to listen to all errors for logging. It is important to remember that it is also called on [NEXT_REDIRECT](https://nextjs.org/docs/app/api-reference/functions/redirect). 
 
 ```ts
-export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = activateControllers(controllers, { 
+export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = initVovk(controllers, { 
   onError(error) {
     console.log(error);
   }
@@ -667,7 +667,7 @@ As you may already guess, some of the the variables imported from the library ar
 import {
   get, post, put, patch, del, head, options, 
   prefix, 
-  activateControllers,
+  initVovk,
 } from 'vovk';
 ```
 

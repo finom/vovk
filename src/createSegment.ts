@@ -147,21 +147,19 @@ export function _createSegment() {
     };
   };
 
-  const activateControllers = (
+  const initVovk = (options: {
     // eslint-disable-next-line @typescript-eslint/ban-types
-    controllers: Function[],
-    options?: {
-      // eslint-disable-next-line @typescript-eslint/ban-types
-      workers?: Function[];
-      exposeValidation?: boolean;
-      onError?: (err: Error) => void | Promise<void>;
-      onMetadata?: (
-        metadata: Record<string, VovkControllerMetadata> & { workers?: Record<string, VovkWorkerMetadata> },
-        writeInDevelopment: typeof writeMetadataInDevelopment
-      ) => void | Promise<void>;
-    }
-  ) => {
-    for (const controller of controllers as VovkController[]) {
+    controllers: Function[];
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    workers?: Function[];
+    exposeValidation?: boolean;
+    onError?: (err: Error) => void | Promise<void>;
+    onMetadata?: (
+      metadata: Record<string, VovkControllerMetadata> & { workers?: Record<string, VovkWorkerMetadata> },
+      writeInDevelopment: typeof writeMetadataInDevelopment
+    ) => void | Promise<void>;
+  }) => {
+    for (const controller of options.controllers as VovkController[]) {
       controller._activated = true;
       controller._onError = options?.onError;
 
@@ -190,7 +188,7 @@ export function _createSegment() {
         workers?: Record<string, VovkWorkerMetadata>;
       } = {};
 
-      for (const controller of controllers as unknown as VovkController[]) {
+      for (const controller of options.controllers as unknown as VovkController[]) {
         if (!controller.controllerName) {
           throw new Error(`Client metadata error: controller ${controller.name} does not have a controllerName`);
         }
@@ -246,6 +244,6 @@ export function _createSegment() {
     head: getDecoratorCreator(HttpMethod.HEAD),
     options: getDecoratorCreator(HttpMethod.OPTIONS),
     prefix,
-    activateControllers,
+    initVovk,
   };
 }

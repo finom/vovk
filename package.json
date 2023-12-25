@@ -7,6 +7,7 @@
     "upgrade": "npx npm-check-updates -u && npm i",
     "test": "npm run lint-nofix && tsc --noemit && npm run unit",
     "unit": "PORT=3210 concurrently \"sleep 20 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
+    "unit:watch": "PORT=3210 concurrently \"sleep 20 && npm run test:unit:watch\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
     "postpublish": "node ../post-publish-test/post-publish.js",

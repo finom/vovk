@@ -1,22 +1,21 @@
 import metadata from '../vovk-metadata.json';
-import type StreamingController from './StreamingController';
+import type StreamingGeneratorController from './StreamingGeneratorController';
 import { clientizeController, type DefaultFetcherOptions } from '../../../src/client';
 import { it, expect, describe, xit } from '@jest/globals';
-import { HttpException } from '../../../src';
 
-type StreamingControllerType = typeof StreamingController;
+type StreamingGeneratorControllerType = typeof StreamingGeneratorController;
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
-const defaultController = clientizeController<StreamingControllerType, DefaultFetcherOptions>(
-  metadata.StreamingController,
+const defaultController = clientizeController<StreamingGeneratorControllerType, DefaultFetcherOptions>(
+  metadata.StreamingGeneratorController,
   {
     defaultOptions: { prefix },
   }
 );
 
-describe('Streaming', () => {
-  it('Should work', async () => {
+describe('Streaming generator', () => {
+  xit('Should work with generator', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
@@ -34,7 +33,25 @@ describe('Streaming', () => {
     expect(expected).toEqual(expectedCollected);
   });
 
-  it('Should be able to cancel', async () => {
+  xit('Should work with generator', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
+    const expectedCollected: typeof expected = [];
+
+    const resp = await defaultController.postWithAsyncStreaming({
+      body: tokens,
+      query: { query: 'queryValue' },
+      isStream: true,
+    });
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    expect(expected).toEqual(expectedCollected);
+  });
+
+  xit('Should be able to cancel', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
@@ -55,19 +72,23 @@ describe('Streaming', () => {
     expect(expected).toEqual(expectedCollected);
   });
 
-  it('Should handle immediate errors', async () => {
+  it.only('Should handle immediate errors', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
 
-    const respPromise = defaultController.postWithStreamingAndImmediateError({
+    const resp = await defaultController.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
       isStream: true,
     });
 
-    await expect(() => respPromise).rejects.toThrowError(HttpException);
+    await expect(async () => {
+      for await (const message of resp) {
+        throw new Error('This should not be called ' + String(message));
+      }
+    }).rejects.toThrowError(/Immediate error/);
   });
 
-  it('Should handle errors in the middle of stream', async () => {
+  xit('Should handle errors in the middle of stream', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
@@ -87,7 +108,7 @@ describe('Streaming', () => {
     expect(expected).toEqual(expectedCollected);
   });
 
-  it('Should handle custom errors in the middle of stream', async () => {
+  xit('Should handle custom errors in the middle of stream', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];

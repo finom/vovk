@@ -36,7 +36,11 @@ type ClientMethod<
         : unknown
       : _StaticMethodInput<T>) &
     (Partial<OPTS> | void) // TODO I need help here: I have to set options to be partial to make possible to pass an empty object to the client method
-) => ReturnType<T> extends Promise<StreamResponse<infer U>> | StreamResponse<infer U>
+) => ReturnType<T> extends
+  | Promise<StreamResponse<infer U>>
+  | StreamResponse<infer U>
+  | Iterator<infer U>
+  | AsyncIterator<infer U>
   ? Promise<_StreamAsyncIterator<U>>
   : R extends object
     ? Promise<R>

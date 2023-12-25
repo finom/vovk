@@ -7,6 +7,7 @@ import {
   type _VovkController as VovkController,
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
+import { StreamResponse } from '.';
 
 export class _Segment {
   _routes: Record<
@@ -152,7 +153,33 @@ export class _Segment {
     const { staticMethod, controller } = handler;
 
     try {
-      const result = await staticMethod.call(controller, req, methodParams);
+      const promiseOrGenerator = await staticMethod.call(controller, req, methodParams);
+
+      const isIterator =
+        (Reflect.has(promiseOrGenerator, Symbol.iterator) &&
+          typeof (promiseOrGenerator as Iterable<unknown>)[Symbol.iterator] === 'function') ||
+        (Reflect.has(promiseOrGenerator, Symbol.asyncIterator) &&
+          typeof (promiseOrGenerator as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function');
+
+      if (isIterator) {
+        const streamResponse = new StreamResponse();
+
+        void (async () => {
+          try {
+            for await (const chunk of promiseOrGenerator as AsyncGenerator<unknown>) {
+              await streamResponse.send(chunk);
+            }
+          } catch (e) {
+            return streamResponse.throw(e);
+          }
+
+          return streamResponse.close();
+        })();
+
+        return streamResponse;
+      }
+
+      const result = promiseOrGenerator;
 
       if (result instanceof Response) {
         return result;

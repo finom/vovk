@@ -1,4 +1,4 @@
-import { activateControllers } from '../../../../../src';
+import { initVovk } from '../../../../../src';
 import trimControllers from '../../../controllers/TrimControllers';
 import InputController from '../../../controllers/InputController';
 import CustomDecoratorController from '../../../controllers/CustomDecoratorController';
@@ -16,9 +16,10 @@ import ClientController from '../../../client/ClientController';
 import StreamingController from '../../../client/StreamingController';
 import MyWorker from '../../../worker/MyWorker';
 import MyInnerWorker from '../../../worker/MyInnerWorker';
+import StreamingGeneratorController from '../../../client/StreamingGeneratorController';
 
-export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControllers(
-  [
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
+  controllers: [
     ...trimControllers,
     InputController,
     CustomDecoratorController,
@@ -34,21 +35,21 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = activateControll
     AutoDecoratorsController,
     ClientController,
     StreamingController,
+    StreamingGeneratorController,
   ],
-  {
-    onError: (err) => {
-      // eslint-disable-next-line no-console
-      console.log('onError', err);
-    },
-  }
-);
+  onError: (err) => {
+    // eslint-disable-next-line no-console
+    console.log('onError', err.message);
+  },
+});
 
 // generate metadata for client controller only
-activateControllers([ClientController, StreamingController], {
+initVovk({
+  controllers: [ClientController, StreamingController, StreamingGeneratorController],
   workers: [MyWorker, MyInnerWorker],
   onMetadata: async (metadata, write) => {
     const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
-    const metadataPath = path.join(__dirname.replace('.next/server/app', 'src'), '../../controllers-metadata.json');
+    const metadataPath = path.join(__dirname.replace('.next/server/app', 'src'), '../../vovk-metadata.json');
     await write(metadataPath, metadata, { fs, path });
   },
 });

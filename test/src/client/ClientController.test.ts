@@ -1,4 +1,4 @@
-import metadata from '../controllers-metadata.json';
+import metadata from '../vovk-metadata.json';
 import type ClientController from './ClientController';
 import { clientizeController, defaultFetcher, type DefaultFetcherOptions } from '../../../src/client';
 import { HttpException, VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';

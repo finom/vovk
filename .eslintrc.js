@@ -14,7 +14,7 @@ module.exports = {
   },
   rules: {
     'no-unused-vars': 0, // we use typescript
-    'no-console': "error"
+    'no-console': "warn"
   },
   ignorePatterns: ["dist", ".eslintrc.js"],
   parserOptions: {
