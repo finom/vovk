@@ -8,7 +8,7 @@ export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamFetcher';
 
 export const _defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = async (
   { httpMethod, getPath, validate },
-  { params, query, body, prefix = '', ...options }
+  { params, query, body, prefix = '/api', ...options }
 ): Promise<StreamAsyncIterator<unknown>> => {
   const endpoint =
     (prefix.startsWith('http://') || prefix.startsWith('https://') || prefix.startsWith('/') ? '' : '/') +
