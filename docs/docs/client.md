@@ -1,17 +1,24 @@
-# Vovk Client
+---
+sidebar_position: 2
+---
 
-**vovk/client** module exports utilities that turn controllers in a well-typed TypeScript library. It recognises types imported with `import type` from controllers.
+# Client
+
+**vovk/client** module exports utilities that turn controllers in a well-typed TypeScript library. It recognises types imported with `import type` from controllers and generates a fetching library that implements the same methods that are implemented by controllers.
 
 
 ```ts
-// vovk/hello/HelloController.ts - the back-end
+// /src/vovk/hello/HelloController.ts
 import { post, type VovkRequest } from 'vovk';
 
 export class HelloController {
     static controllerName = 'HelloController';
 
     @post('hello/:someParam')
-    static postSomeData(req: VovkRequest<{ hello: number }, { foo: string }>, { someParam }: { someParam: string }) {
+    static postSomeData(
+        req: VovkRequest<{ hello: number }, { foo: string }>, 
+        { someParam }: { someParam: string }
+    ) {
         const body = await req.json(); // casted as { hello: number }
         const foo = req.nextUrl.get('foo'); // casted as string
         const bar = req.nextUrl.get('bar'); // casted as never
@@ -25,45 +32,39 @@ export class HelloController {
 }
 ```
 
-`clientizeController` accepts controller types and controller metadata as an input and returns fetching library. The fetching library consists all controller methods as well as type recognition for body, query, params and return type. It's worthy to mention that Proxy object isn't used here.
-
-Vovk supports any application state library. At this example I'm going to use a simple object.
+`clientizeController` accepts controller type and controller metadata as an input and returns the fetching library. The library recognises types of body, query, params and the return type so you don't need to repeat types or store them in another file.
 
 ```ts
-// vovk/hello/HelloState.ts - the front-end
+// /src/vovk/hello/HelloState.ts
 import { clientizeController } from 'vovk/client';
 import type HelloController from './HelloController';
 import metadata from '../vovk-metadata.json' assert { type: 'json' };
 
-type HelloControllerType = typeof HelloController;
+const controller = clientizeController<typeof HelloController>(metadata.HelloController);
 
-const controller = clientizeController<HelloControllerType>(metadata.HelloController);
+export async function postSomeData(hello: string, foo: string) {
+    /* controller.postSomeData is casted as 
+        ({
+        body: { hello: number },
+        query: { foo: string },
+        params: { someParam: string }
+        }) => Promise<{ hello: number; foo: string; someParam: string }>
+    */
+    const result = await controller.postSomeData({
+        body: { hello: 42 },
+        query: { foo: 'baz' },
+        params: { someParam: 'param' }
+    });
 
-const helloState = {
-    postSomeData: async (hello: string, foo: string) => {
-        /* controller.postSomeData is casted as 
-          ({
-            body: { hello: number },
-            query: { foo: string },
-            params: { someParam: string }
-          }) => Promise<{ hello: number; foo: string; someParam: string }>
-        */
-        const result = await controller.postSomeData({
-            body: { hello: 42 },
-            query: { foo: 'baz' },
-            params: { someParam: 'param' }
-        });
-
-        // result is casted as { hello: string; foo: string; someParam: string }
-        return result;
-    }
+    // result is casted as { hello: string; foo: string; someParam: string }
+    return result;
 }
 ```
 
 `VovkRequest` also supports branded and flavoured types.
 
 ```ts
-// vovk/hello/HelloController.ts
+// /src/vovk/hello/HelloController.ts
 export type Hello = number & { __type: 'hello' };
 export type Foo = string & { __type: 'foo' };
 
@@ -92,27 +93,25 @@ import type { default as HelloController, Hello, Foo } from './HelloController';
 // ...
 ```
 
-## Overriding default fetch function
+## Overriding the default fetch function
 
 Almost every complex React project requires its own fetching implementation to interact with application state, show success and error messages, log errors to a third-party service such as Sentry. `clientizeController` provides a set of options, and one of them is `fetcher` that overrides the default fetcher that's provided out of the box.
 
 ```ts
-// vovk/hello/HelloState.ts
-import { myCustomFetcher } from '../lib/client';
+// /src/vovk/hello/HelloState.ts
+import { myCustomFetcher } from '../lib/myClient';
 import type HelloController from './HelloController';
 import metadata from '../vovk-metadata.json' assert { type: 'json' };
 
-type HelloControllerType = typeof HelloController;
-
-const controller = clientizeController<HelloControllerType>(metadata.HelloController, {
+const controller = clientizeController<typeof HelloController>(metadata.HelloController, {
     fetcher: myCustomFetcher,
 });
 ```
 
-The fetcher implements type `VovkClientFetcher<ApiOptions>` imported from **vovk/client** where `ApiOptions` generic indicates custom options that you may find useful to implement at the client-side library.
+The fetcher implements type `VovkClientFetcher<API_OPTIONS>` imported from **vovk/client** where `API_OPTIONS` generic parameter indicates custom options that you may find useful to implement at your own client-side fetching library.
 
 ```ts
-// lib/client
+// /src/lib/myClient
 type ApiOptions = {
     successMesage: string;
 };
@@ -149,8 +148,8 @@ const myCustomFetcher: VovkClientFetcher<ApiOptions> = (
 ```
 
 ```ts
-// vovk/hello/HelloState.ts
-import { myCustomFetcher } from '../lib/client';
+// /src/vovk/hello/HelloState.ts
+import { myCustomFetcher } from '../lib/myClient';
 // ... rest imports
 
 const controller = clientizeController<HelloControllerType>(metadata.HelloController, {
@@ -161,7 +160,7 @@ const controller = clientizeController<HelloControllerType>(metadata.HelloContro
 You can also export your own clientize function to avoid repeating yourself.
 
 ```ts
-// lib/client
+// /src/lib/myClient
 
 type ApiOptions = // ...
 
@@ -169,7 +168,7 @@ const myCustomFetcher = // ...
 
 export const clientize = <T>(controllerMetadata: Parameters<typeof clientizeController>[0]) => {
   return clientizeController<T, ApiOptions>(controllerMetadata, {
-    fetcher: clientFetcher,
+    fetcher: myCustomFetcher,
   });
 };
 ```
@@ -177,15 +176,43 @@ export const clientize = <T>(controllerMetadata: Parameters<typeof clientizeCont
 Then import it to your state file:
 
 ```ts
-// vovk/hello/HelloState.ts
-import { clientize } from '../lib/client';
+// /src/vovk/hello/HelloState.ts
+import { clientize } from '../lib/myClient';
 import type HelloController from './HelloController';
 
-type HelloControllerType = typeof HelloController;
-
-const controller = clientize<HelloControllerType>(metadata.HelloController);
+const controller = clientize<typeof HelloController>(metadata.HelloController);
 
 // ...
+await controller.postSomeData({
+    // ...
+    successMessage: 'Successfully posted some data',
+})
+```
+
+## Default options
+
+`clientizeController` accepts `defaultOptions` option to support default values for your custom message. Extending the example above you can define `defaultOptions.successMessage` for all API calls by default.
+
+```ts
+// /src/vovk/hello/HelloState.ts
+const controller = clientize<typeof HelloController>(metadata.HelloController, {
+    defaultOptions: {
+        successMessage: 'Success!',
+    }
+});
+```
+
+In case if you use the defaul fetcher, the options would be 
+
+- `prefix` that defines relative path to the API route (default `/api`).
+- `isStream` to enable streaming for this specific instance by default.
+
+```ts
+const controller = clientizeController<HelloControllerType>(metadata.HelloController, {
+    defaultOptions: {
+        prefix: '/my-custom-api-prefix'
+    }
+});
 ```
 
 ## Automatically generated endpoints
@@ -193,7 +220,7 @@ const controller = clientize<HelloControllerType>(metadata.HelloController);
 If the API (or part of it) of the Vovk app isn't going to be exposed for remote use, you can avoid endpoint definition completely. All HTTP decorators have `.auto()` method that generates endpoint name automatically from controller name and static method name.
 
 ```ts
-// vovk/hello/HelloController.ts - the back-end
+// /src/vovk/hello/HelloController.ts - the back-end
 import { get, type VovkRequest } from 'vovk';
 
 export class HelloController {
@@ -206,10 +233,10 @@ export class HelloController {
 }
 ```
 
-The above example is going to create GET endpoint with path *hello-controller/post-some-data*. If `@prefix` is used, the endpoint path is going to be concatenated with it.
+The above example is going to create GET endpoint with path **hello-controller/post-some-data**. If `@prefix` is used, the endpoint path is going to be concatenated with it.
 
 ```ts
-// vovk/hello/HelloController.ts - the back-end
+// /src/vovk/hello/HelloController.ts - the back-end
 import { get, prefix, type VovkRequest } from 'vovk';
 
 @prefix('foo')
@@ -223,15 +250,15 @@ export class HelloController {
 }
 ```
 
-The example above creates GET endpoint with path *foo/hello-controller/post-some-data*. Endpoint obfuscation is prioritised at the project roadmap.
+The example above creates GET endpoint with path **foo/hello-controller/post-some-data**. Endpoint obfuscation is prioritised at the project roadmap.
 
 ## Error handling
 
-Errors thrown by controller are re-thrown at client-side. The error object implements `ErrorResponseBody` type that looks like that:
+Errors thrown by controller are re-thrown at client-side. The error object implements `VovkErrorResponse` type that looks like that:
 
 ```ts
 // internal Vovk type
-export type ErrorResponseBody = {
+export type VovkErrorResponse = {
   statusCode: HttpStatus;
   message: string;
   isError: true;
@@ -239,7 +266,7 @@ export type ErrorResponseBody = {
 ```
 
 ```ts
-// vovk/hello/HelloController.ts
+// /src/vovk/hello/HelloController.ts
 import { get, type VovkRequest } from 'vovk';
 
 export class HelloController {
@@ -257,8 +284,8 @@ export class HelloController {
 There is how you handle the errors on the client-side:
 
 ```ts
-// vovk/hello/HelloState.ts
-import type { ErrorResponseBody } from 'vovk';
+// /src/vovk/hello/HelloState.ts
+import type { VovkErrorResponse } from 'vovk';
 
 // ...
 export const helloState = {
@@ -266,7 +293,7 @@ export const helloState = {
         try {
             await controller.doSomething({ body, query, params });
         } catch (e) {
-            const err = e as ErrorResponseBody;
+            const err = e as VovkErrorResponse;
 
             console.log(err); // { message: 'Some error', statusCode: 500, isError: true }
         }
@@ -277,7 +304,7 @@ export const helloState = {
 Regular errors are treated as 500 errors. To throw specific error codes at the controller you can throw an instance of `HttpException` that receives `HttpStatus` enum value as the first argument and error message as the second.
 
 ```ts
-// vovk/hello/HelloController.ts
+// /src/vovk/hello/HelloController.ts
 import { get, HttpStatus, HttpException } from 'vovk';
 
 export class HelloController {
@@ -293,12 +320,12 @@ export class HelloController {
 ```
 
 ```ts
-// vovk/hello/HelloState.ts
+// /src/vovk/hello/HelloState.ts
 // ...
 try {
     await controller.doSomething({ body, query, params });
 } catch (e) {
-    const err = e as ErrorResponseBody;
+    const err = e as VovkErrorResponse;
 
     console.log(err); // { message: 'Some error', statusCode: 400, isError: true }
 }
@@ -312,14 +339,17 @@ Vovk.ts provides some useful types that allow you to extract type from the contr
 Let's say you have the following controller:
 
 ```ts
-// vovk/hello/HelloController.ts - the back-end
+// /src/vovk/hello/HelloController.ts - the back-end
 import { get, type VovkRequest } from 'vovk';
 
 export class HelloController {
     static controllerName = 'HelloController';
 
     @get(':someParam')
-    static doSomething(req: VovkRequest<{ body: true }, { query: string }>, { someParam }: { someParam: string }) {
+    static doSomething(
+        req: VovkRequest<{ body: true }, { query: string }>, 
+        { someParam }: { someParam: string }
+    ) {
         // ...
         return { success: true };
     }
@@ -329,7 +359,7 @@ export class HelloController {
 You can extract types of `doSomething` defined with `VovkRequest` the wollowing way:
 
 ```ts
-// vovk/hello/HelloState.ts
+// /src/vovk/hello/HelloState.ts
 import type { VovkBody, VovkQuery, VovkParams, VovkReturnType } from 'vovk';
 import type HelloController from './HelloController';
 
@@ -348,21 +378,18 @@ type DoSomethingReturnType = VovkReturnType<HelloControllerType['doSomething']>;
 And you can use these types to define client-side methods that invoke clientized controller methods. 
 
 ```ts
-// vovk/hello/HelloState.ts
+// /src/vovk/hello/HelloState.ts
 import type { VovkBody, VovkQuery, VovkParams, VovkReturnType } from 'vovk';
 import type HelloController from './HelloController';
 
 // const controller = clientizeController ...
-
-export const helloState = {
-    doSomething: (
-        body: VovkBody<HelloControllerType['doSomething']>, 
-        query: VovkQuery<HelloControllerType['doSomething']>, 
-        params: VovkParams<HelloControllerType['doSomething']>
-    ): Promise<VovkReturnType<HelloControllerType['doSomething']>> => {
-        return controller.doSomething({ body, query, params });
-    }
-};
+export function doSomething: (
+    body: VovkBody<HelloControllerType['doSomething']>, 
+    query: VovkQuery<HelloControllerType['doSomething']>, 
+    params: VovkParams<HelloControllerType['doSomething']>
+): Promise<VovkReturnType<HelloControllerType['doSomething']>> {
+    return controller.doSomething({ body, query, params });
+}
 ```
 
 

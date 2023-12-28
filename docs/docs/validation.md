@@ -1,14 +1,58 @@
+---
+sidebar_position: 3
+---
+
 # Request validation
 
 **Vovk.ts** offers API that allows to validate request body and query string on back-end and, thanks to the metadata mechanism, performs zero-cost validation on client-side before request to the server is even made.
 
 ## vovk-zod
 
-**vovk-zod** is the library that implements Zod validation of query and body on server-side, converts /////////
+**vovk-zod** is the library that implements [Zod](https://zod.dev/) validation. It performs validation on the Controller with `ZodModel.parse`, [converts the Zod object to a JSON Schema](https://www.npmjs.com/package/zod-to-json-schema) that's stored at the metadata file, and runs validation on client before the request is made with [Ajv](https://ajv.js.org/).
+
+```ts
+// /src/vovk/user/UserController.ts
+
+// ...
+export default class UserController {
+    static controllerName = 'UserController';
+
+    static userService = UserService;
+
+    @put()
+    @vovkZod(UpdateUserModel, UpdateUserQueryModel)
+    static updateUser(
+        req: VovkRequest<z.infer<typeof UpdateUserModel>, z.infer<typeof UpdateUserQueryModel>>
+    ) {
+        const { name, email } = await req.json();
+        const id = req.nextUrl.searchParams.get('id');
+
+        return this.userService.updateUser(id, { name, email });
+    }
+}
+```
+
+On the client-side validation is enabled with `validateOnClient` option.
+
+```ts
+import { zodValidateOnClient } from 'vovk-zod';
+import type UserController from './UserController';
+import metadata from '../vovk-metadata.json' assert { type: "json" };
+
+const controller = clientizeController<typeof UserController>(metadata.UserController, {
+    validateOnClient: zodValidateOnClient,
+});
+
+export function updateUser(id: string, { name, email }: { name: string; email: string }) {
+  // validates on client
+  return this.controller.updateUser({
+      query: { id },
+      body: { name, email },
+  });
+}
+```
 
 ## Creating a custom validation library
-
-Please check `createDecorator` /////// and client //// documentation before moving forward.
 
 You can create a decorator that, first of all, validates request on the server-side and optionally populates controller metadata with validation information that is going to be used by `fetcher` and `streamFetcher` when they call `validate` function. 
 
@@ -17,7 +61,7 @@ The simplest example of the validation would be equality validation. It does not
 At the example below `validateEquality` decorator is created with `createDecorator` that accepts 2 arguments: server validation function and init function that uses `clientValidators` object to indicate that validation information should be stored at metadata file.
 
 ```ts
-// lib/validateEquality.ts
+// /src/decorators/validateEquality.ts
 import { isEqual } from 'lodash';
 import { HttpException, HttpStatus, createDecorator, type VovkRequest } from 'vovk';
 import type { VovkClientOptions } from 'vovk/client';
@@ -78,7 +122,7 @@ Another exported variable is `validateEqualityOnClient` that implements `VovkCli
 Here is how the newly created decorator is used at controller.
 
 ```ts
-// vovk/hello/HelloController.ts
+// /src/vovk/hello/HelloController.ts
 import type { VovkRequest } from 'vovk';
 import validateEquality from '../lib/validateEquality';
 
@@ -96,10 +140,10 @@ export default class HelloController {
 In your state file you need to import `validateEqualityOnClient` and pass it to `clientizeController` as an option.
 
 ```ts
-// vovk/hello/HelloState.ts
+// /src/vovk/hello/HelloState.ts
 import { clientizeController } from 'vovk/client';
 import type HelloController from './HelloController';
-import { validateEqualityOnClient } from '../lib/validateEquality';
+import { validateEqualityOnClient } from '../../decorators/validateEquality';
 import metadata from '../vovk-metadata.json' assert { type: 'json' };
 
 type HelloControllerType = typeof HelloController;
@@ -128,9 +172,10 @@ const helloState = {
 You can set `disableClientValidation` option mentioned above to `true` to disable client validation for debugging purposes. If you want to disable it completely and remove it from the metadata file (in case if you want to hide server-side validation implementation) you can use `exposeValidation` option set to `false` at the Next.js wildcard router level.
 
 ```ts
-// api/[[...]]/route.ts
+// /src/api/[[...]]/route.ts
 // ...
-export const { GET, POST, PATCH, PUT} = initVovk(controllers, {
+export const { GET, POST, PATCH, PUT } = initVovk({
+    controllers: [/* ... */],
     exposeValidation: false // don't populate metadata file with validation information
     onMetadata: // ...
 });

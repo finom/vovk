@@ -68,7 +68,7 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
 export type _VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
   disableClientValidation?: boolean;
   fetcher?: _VovkClientFetcher<OPTS>;
-  streamFetcher?: _VovkClientFetcher<OPTS> | null;
+  streamFetcher?: _VovkClientFetcher<OPTS>;
   validateOnClient?: (
     input: { body?: unknown; query?: unknown },
     validators: { body?: unknown; query?: unknown }

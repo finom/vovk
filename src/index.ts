@@ -1,6 +1,6 @@
 import { _createSegment as createSegment } from './createSegment';
 import {
-  type _ErrorResponseBody as ErrorResponseBody,
+  type _VovkErrorResponse as VovkErrorResponse,
   type _VovkRequest as VovkRequest,
   type _VovkBody as VovkBody,
   type _VovkQuery as VovkQuery,
@@ -11,10 +11,9 @@ import {
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
-import { _StreamResponse as StreamResponse } from './StreamResponse';
 
 export {
-  type ErrorResponseBody,
+  type VovkErrorResponse,
   type VovkRequest,
   type VovkBody,
   type VovkQuery,
@@ -25,7 +24,6 @@ export {
   HttpMethod,
   createSegment,
   createDecorator,
-  StreamResponse,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initVovk } = createSegment();

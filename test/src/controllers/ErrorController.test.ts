@@ -1,4 +1,4 @@
-import { ErrorResponseBody } from '../../../src';
+import { VovkErrorResponse } from '../../../src';
 import { request } from '../lib';
 import { it, expect, describe } from '@jest/globals';
 
@@ -11,7 +11,7 @@ describe('Errors', () => {
       message: 'ERROR1',
       statusCode: 500,
       isError: true,
-    } satisfies ErrorResponseBody);
+    } satisfies VovkErrorResponse);
   });
 
   it('Handle code errors', async () => {
@@ -22,7 +22,7 @@ describe('Errors', () => {
       message: '{}.someMethod is not a function',
       statusCode: 500,
       isError: true,
-    } satisfies ErrorResponseBody);
+    } satisfies VovkErrorResponse);
   });
 
   it('Handle HttpException', async () => {
@@ -33,6 +33,6 @@ describe('Errors', () => {
       message: 'ERROR3',
       statusCode: 418,
       isError: true,
-    } satisfies ErrorResponseBody);
+    } satisfies VovkErrorResponse);
   });
 });

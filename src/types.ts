@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type _ErrorResponseBody = {
+export type _VovkErrorResponse = {
   statusCode: _HttpStatus;
   message: string;
   isError: true;

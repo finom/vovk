@@ -3,11 +3,11 @@ import {
   _HttpMethod as HttpMethod,
   _HttpStatus as HttpStatus,
   type _RouteHandler as RouteHandler,
-  type _ErrorResponseBody as ErrorResponseBody,
+  type _VovkErrorResponse as VovkErrorResponse,
   type _VovkController as VovkController,
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
-import { StreamResponse } from '.';
+import { _StreamResponse as StreamResponse } from './StreamResponse';
 
 export class _Segment {
   _routes: Record<
@@ -58,7 +58,7 @@ export class _Segment {
       statusCode,
       message,
       isError: true,
-    } satisfies ErrorResponseBody);
+    } satisfies VovkErrorResponse);
   };
 
   #callMethod = async (httpMethod: HttpMethod, req: NextRequest, params: Record<string, string[]>) => {

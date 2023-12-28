@@ -1,47 +1,185 @@
 ---
-sidebar_position: 1
+sidebar_position: 0
 ---
 
-# Tutorial Intro
+# Getting started
 
-Let's discover **Docusaurus in less than 5 minutes**.
+## Quick install
 
-## Getting Started
+Setup Vovk.ts with [create-next-app](https://www.npmjs.com/package/create-next-app)
 
-Get started by **creating a new site**.
-
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
-
-### What you'll need
-
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
-
-## Generate a new site
-
-Generate a new Docusaurus site using the **classic template**.
-
-The classic template will automatically be added to your project after you run the command:
-
-```bash
-npm init docusaurus@latest my-website classic
+```
+npx create-next-app -e https://github.com/finom/vovk-hello-world
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+Inside the project folder run `npm run dev` and open [http://localhost:3000](http://localhost:3000).
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+## Manual install
 
-## Start your site
+### 1. Create Next.js APP and install Vovk.ts
 
-Run the development server:
+Follow [this instruction](https://nextjs.org/docs/getting-started/installation) to install Next.js. Use TypeScript, App Router and `src/` directory. If you're using **create-next-app** you can simply answer to all questions "Yes".
 
-```bash
-cd my-website
-npm run start
+```
+npx create-next-app
 ```
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+![](https://github.com/finom/vovk/assets/1082083/b9e600da-a43a-4e30-a089-43e5e4b147ef)
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+At the newly created folder run:
+
+```
+npm i vovk
+```
+
+
+### 2. Enable decorators
+
+In your **tsconfig.json** set `"experimentalDecorators"` to `true`.
+
+```json
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        // ...
+    }
+}
+```
+
+### 3. Set up Next.js wildcard route handler
+
+Create file **/src/app/api/[[...]]/route.ts** where **[[...]]** is a real folder name. This is the core entry point for all Vovk.ts routes.
+
+```ts
+// /src/app/api/[[...]]/route.ts
+import { initVovk } from 'vovk';
+
+export const { GET, POST, PUT, DELETE } = initVovk({
+  controllers: [],
+  async onMetadata(metadata, write) {
+    if (process.env.NODE_ENV === 'development') {
+      const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
+      const metadataPath = path.join(
+        __dirname.replace('.next/server/app', 'src/vovk'),
+        '../../vovk-metadata.json'
+      );
+
+      await write(metadataPath, metadata, { fs, path });
+    }
+  },
+});
+```
+
+For now the `controllers` array is empty. Notice the `onMetadata` option. It's called whenever the Next.js route is initialised. The function provides two arguments: `metadata` - the metadata of controllers and workers, and `write` - a function created to shorten the code that checks if metadata is changed and updates the metadata file. Let's breakit down.
+
+- `process.env.NODE_ENV === 'development'` checks if mode is development. In other words, the code inside isn't called in production and **vovk-metadata.json** is created on the local machine.
+- `const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);` imports required Node.js modules. Next.js doesn't throw compilation error because of the `NODE_ENV` check.
+- `const metadataPath = path.join(...)` builds path to the metadata file. `".next/server/app"` is the folder path where Next.js compiles files. At this case `metadataPath` is **/src/vovk/vovk-metadata.json**.
+- `await write(metadataPath, metadata, { fs, path });` writes metadata file. It accepts 3 arguments: the path to the metadata, the metadata object and reference to standard Node.js libraries (`'fs/promises'` and `'path'`). The last one makes internal Vovk.ts code to not import these modules by itself and prevents compilation errors.
+
+`initVovk` returns an object that includes all handlers for any potential HTTP method.
+
+```ts
+export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = initVovk(/* ... */)
+```
+
+### 4. Create first service and controller
+
+Create two files `HelloService.ts` and `HelloController.ts` at **/src/vovk/hello/**. The first one is a back-end service that should perform DB calls or invoke third-party APIs, the second one is a controller that handles incoming HTTP requests and calls service methods.
+
+
+```ts
+// /src/vovk/hello/HelloService.ts
+export default class HelloService {
+  static async getHello() {
+    return { greeting: 'Hello world!' };
+  }
+}
+```
+
+```ts
+// /src/vovk/hello/HelloController.ts
+import { get, prefix } from "vovk";
+import HelloService from "./HelloService"
+
+@prefix('hello')
+export default class HelloController {
+    static controllerName = 'HelloController';
+    
+    private static helloService = HelloService;
+
+    /**
+     * Return a greeting from the HelloService
+     */
+    @get('greeting')
+    static async getHello() {
+        return this.helloService.getHello();
+    }
+}
+```
+
+- `@prefix` and `@get` build API endpoint `/api/hello/greeting`.
+- `controllerName` is required to build **vovk-metadata.json**.
+- `HelloService` is assigned as a `private static` and called at the route handler `getHello`.
+
+### 5. Add the controller to the controllers array
+
+```ts
+// /src/app/api/[[...]]/route.ts
+import { initVovk } from 'vovk';
+import HelloController from '../../../HelloController'
+
+export const { GET, POST, PUT, DELETE } = initVovk({
+  controllers: [HelloController],
+  // ...
+});
+```
+
+To trigger metadata creation manually, open [http://localhost:3000/api](http://localhost:3000/api) in your browser (it's OK to see 404 error since the root endpoint isn't defined).
+
+### 6. Set up application state and clientize the controller
+
+**Vovk.ts** archirecture assumes that a developer is going to be free to choose any app state management library (Redux/Toolkit, Mobx, Recoil, custom context, etc).
+
+```ts
+// /src/vovk/hello/HelloState.ts
+import { clientizeController } from "vovk/client";
+import type HelloWorkerService from "./HelloWorkerService";
+import type HelloController from "./HelloController";
+import metadata from '../vovk-metadata.json' assert { type: "json" };
+
+const controller = clientizeController<typeof HelloController>(metadata.HelloController);
+
+export function getHello() {
+  return controller.getHello();
+}
+```
+
+
+### 7. Make the first request from page.tsx
+
+Call `getHello()` inside the `useEffect` hook to make tha HTTP request to receive data from the Back-end Service.
+
+```tsx
+// /src/app/page.tsx
+"use client";
+import { useEffect, useState } from 'react';
+import { getHello } from '../vovk/hello/HelloState';
+
+export default function Home() {
+  const [serverResponse, setServerResponse] = useState<{ greeting: string } | null>(null);
+
+  useEffect(() => {
+    getHello().then(setServerResponse);
+  }, []);
+
+  return (
+    <div>{serverResponse?.greeting ?? 'Loading...'}</div>
+  );
+}
+```
+
+## Next steps
+
+///////

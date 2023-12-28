@@ -1,6 +1,6 @@
 import metadata from '../vovk-metadata.json';
 import type ClientController from './ClientController';
-import { clientizeController, defaultFetcher, type DefaultFetcherOptions } from '../../../src/client';
+import { clientizeController } from '../../../src/client';
 import { HttpException, VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
 import { it, expect, describe } from '@jest/globals';
 
@@ -11,18 +11,13 @@ type ClientControllerType = typeof ClientController;
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
-const defaultController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
-  metadata.ClientController,
-  {
-    defaultOptions: { prefix },
-  }
-);
+const defaultController = clientizeController<typeof ClientController>(metadata.ClientController, {
+  defaultOptions: { prefix },
+});
 
 describe('Client', () => {
   it(`Should handle simple requests + headers`, async () => {
-    const noOptionsController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
-      metadata.ClientController
-    );
+    const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
     const result = await noOptionsController.getHelloWorld({
       prefix,
       headers: { 'x-test': 'world' },
@@ -94,14 +89,10 @@ describe('Client', () => {
   });
 
   it('Should handle basic client validation', async () => {
-    const clientValidationController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
-      metadata.ClientController,
-      {
-        defaultOptions: { prefix },
-        validateOnClient: validateEqualityOnClient,
-        fetcher: defaultFetcher,
-      }
-    );
+    const clientValidationController = clientizeController<typeof ClientController>(metadata.ClientController, {
+      defaultOptions: { prefix },
+      validateOnClient: validateEqualityOnClient,
+    });
 
     const result = await clientValidationController.postWithEqualityValidation({
       body: { hello: 'body' },
@@ -143,14 +134,11 @@ describe('Client', () => {
   });
 
   it('Should handle basic server validation', async () => {
-    const serverValidationController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
-      metadata.ClientController,
-      {
-        defaultOptions: { prefix },
-        validateOnClient: validateEqualityOnClient,
-        disableClientValidation: true,
-      }
-    );
+    const serverValidationController = clientizeController<typeof ClientController>(metadata.ClientController, {
+      defaultOptions: { prefix },
+      validateOnClient: validateEqualityOnClient,
+      disableClientValidation: true,
+    });
 
     const result = await serverValidationController.postWithEqualityValidation({
       body: { hello: 'body' },
@@ -192,14 +180,10 @@ describe('Client', () => {
   });
 
   it('Should handle zod client validation', async () => {
-    const clientZodController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
-      metadata.ClientController,
-      {
-        defaultOptions: { prefix },
-        validateOnClient: zodValidateOnClient,
-        fetcher: defaultFetcher,
-      }
-    );
+    const clientZodController = clientizeController<typeof ClientController>(metadata.ClientController, {
+      defaultOptions: { prefix },
+      validateOnClient: zodValidateOnClient,
+    });
 
     const result = await clientZodController.postWithZodValidationAndEqualityValidation({
       body: { hello: 'body' },
@@ -241,14 +225,11 @@ describe('Client', () => {
   });
 
   it('Should handle zod server validation', async () => {
-    const serverZodController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
-      metadata.ClientController,
-      {
-        defaultOptions: { prefix },
-        validateOnClient: zodValidateOnClient,
-        disableClientValidation: true,
-      }
-    );
+    const serverZodController = clientizeController<typeof ClientController>(metadata.ClientController, {
+      defaultOptions: { prefix },
+      validateOnClient: zodValidateOnClient,
+      disableClientValidation: true,
+    });
 
     const result = await serverZodController.postWithZodValidationAndEqualityValidation({
       body: { hello: 'body' },

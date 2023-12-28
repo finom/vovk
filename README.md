@@ -531,19 +531,19 @@ export default function GET() {
 
 #### Error handling
 
-You can throw errors directly from the controller method. The library catches thrown exception and returns an object of type `ErrorResponseBody`.
+You can throw errors directly from the controller method. The library catches thrown exception and returns an object of type `VovkErrorResponse`.
 
 ```ts
 // some client-side code
-import { type ErrorResponseBody } from 'vovk';
+import { type VovkErrorResponse } from 'vovk';
 
-const dataOrError: MyData | ErrorResponseBody = await (await fetch('...')).json();
+const dataOrError: MyData | VovkErrorResponse = await (await fetch('...')).json();
 ```
 
 The shape of this type is the following:
 
 ```ts
-type ErrorResponseBody = {
+type VovkErrorResponse = {
   statusCode: HttpStatus;
   message: string;
   isError: true;
@@ -585,7 +585,7 @@ static getSomething() {
 ```ts
 import { 
   // main API
-  type ErrorResponseBody, 
+  type VovkErrorResponse, 
   HttpException, 
   HttpStatus, 
   createSegment,

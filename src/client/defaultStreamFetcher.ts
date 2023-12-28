@@ -1,5 +1,5 @@
 import type { _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultFetcher';
-import { _HttpStatus as HttpStatus, type _ErrorResponseBody as ErrorResponseBody } from '../types';
+import { _HttpStatus as HttpStatus, type _VovkErrorResponse as VovkErrorResponse } from '../types';
 import type { _StreamAsyncIterator as StreamAsyncIterator, _VovkClientFetcher as VovkClientFetcher } from './types';
 import { _HttpException as HttpException } from '../HttpException';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
@@ -52,7 +52,7 @@ export const _defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = a
       // ignore parsing errors
     }
     // handle server errors
-    throw new HttpException(response.status, (result as ErrorResponseBody).message ?? DEFAULT_ERROR_MESSAGE);
+    throw new HttpException(response.status, (result as VovkErrorResponse).message ?? DEFAULT_ERROR_MESSAGE);
   }
 
   if (!response.body) throw new HttpException(HttpStatus.NULL, 'Stream body is falsy. Check your controller code.');
