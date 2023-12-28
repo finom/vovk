@@ -1,18 +1,15 @@
 import metadata from '../vovk-metadata.json';
 import type StreamingGeneratorController from './StreamingGeneratorController';
-import { clientizeController, type DefaultFetcherOptions } from '../../../src/client';
+import { clientizeController } from '../../../src/client';
 import { it, expect, describe, xit } from '@jest/globals';
 
 type StreamingGeneratorControllerType = typeof StreamingGeneratorController;
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
-const defaultController = clientizeController<StreamingGeneratorControllerType, DefaultFetcherOptions>(
-  metadata.StreamingGeneratorController,
-  {
-    defaultOptions: { prefix },
-  }
-);
+const defaultController = clientizeController<StreamingGeneratorControllerType>(metadata.StreamingGeneratorController, {
+  defaultOptions: { prefix },
+});
 
 describe('Streaming generator', () => {
   xit('Should work with generator', async () => {
