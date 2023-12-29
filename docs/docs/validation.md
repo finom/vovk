@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# Request validation
+# Request Validation
 
 **Vovk.ts** offers API that allows to validate request body and query string on back-end and, thanks to the metadata mechanism, performs zero-cost validation on client-side before request to the server is even made.
 
