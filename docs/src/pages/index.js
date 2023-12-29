@@ -1,15 +1,13 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import { useColorMode } from '@docusaurus/theme-common';
 import Layout from '@theme/Layout';
 
 import styles from './index.module.css';
 
-export default function Home() {
-  const { siteConfig } = useDocusaurusContext();
+function Content() {
+  const { isDarkTheme } = useColorMode();
+
   return (
-    <Layout
-      title={`Hello from ${siteConfig.title} xxxxxx`}
-      description="Description will go into a meta tag in <head />"
-    >
+    <>
       <p className={styles.main}>
         <img
           width="250"
@@ -17,26 +15,23 @@ export default function Home() {
           src="https://github.com/finom/vovk/assets/1082083/86bfbbbb-3600-435b-a74c-c07bd0c4af4b"
         />{' '}
         <br />
-        <picture>
-          <source
+        {isDarkTheme ? (
+          <img
             width="350"
-            media="(prefers-color-scheme: dark)"
-            srcset="https://github.com/finom/vovk/assets/1082083/35887c40-ad37-42ca-b0b3-1d3ec359b090"
+            alt="vovk"
+            src="https://github.com/finom/vovk/assets/1082083/35887c40-ad37-42ca-b0b3-1d3ec359b090"
           />
-          <source
-            width="350"
-            media="(prefers-color-scheme: light)"
-            srcset="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513"
-          />
+        ) : (
           <img
             width="350"
             alt="vovk"
             src="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513"
           />
-        </picture>
+        )}
       </p>
       <p style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
-        Welcome to Vovk.ts documentation! It's built to help you get started as quickly as possible and dosn't contain phislisophical discussions.
+        Welcome to Vovk.ts documentation! It's built to help you get started as quickly as possible and dosn't contain
+        phislisophical discussions.
       </p>
       <p className={styles.buttons}>
         <a class={styles.button} href="/docs/intro">
@@ -60,6 +55,19 @@ export default function Home() {
           Github
         </a>
       </p>
+    </>
+  );
+}
+
+export default function Home() {
+  return (
+    <Layout
+      title={`Vovk.ts Documentation`}
+      description="Welcome to Vovk.ts documentation! It's built to help you get started as quickly as possible and dosn't contain phislisophical discussions."
+    >
+      <header className={styles.header}>
+        <Content />
+      </header>
     </Layout>
   );
 }
