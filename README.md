@@ -12,7 +12,33 @@
 </p>
 
 <p align="center">
-  Framework for <strong>Next.js</strong>
+  <a href="https://docs.vovk.dev/">
+    Documentation
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://vovk.dev/">
+    Website
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/finom/vovk-zod">
+    vovk-zod
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/finom/vovk-hello-world">
+    vovk-hello-world
+  </a>
+</p>
+<br>
+<p align="center">
+  <a href="https://www.npmjs.com/package/vovk">
+  <img src="https://badge.fury.io/js/vovk.svg" alt="npm version" /> 
+  </a>
+  <a href="https://www.typescriptlang.org/">
+  <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /> 
+  </a>
+  <a href="https://github.com/finom/vovk/actions/workflows/main.yml">
+  <img src="https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg" alt="Build status" />
+  </a>
 </p>
 
 **Vovk.ts** is a meta-isomorphic full-stack framework built on top of Next.js that solves multiple core issues in web development:
@@ -27,8 +53,3 @@
     - Solves very old problem on how to share TypeScript code between back-end and front-end introducing so-called Isomorphic Service
 
 ![jump-to-controller](https://github.com/finom/vovk/assets/1082083/6d73e28d-2634-4c52-b895-4fdf55240307)
-
-
-- Documentation
-- Website
-- vovk-zod
