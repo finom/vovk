@@ -12,12 +12,12 @@
 </p>
 
 <p align="center">
-  <a href="https://docs.vovk.dev/">
-    Documentation
-  </a>
-  &nbsp;&nbsp;
   <a href="https://vovk.dev/">
     Website
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://docs.vovk.dev/">
+    Documentation
   </a>
   &nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-zod">
