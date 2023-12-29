@@ -11,7 +11,7 @@ Cases covered by the unit tests:
 - Auto HTTP decorators
 - Custom decorator
 - Custom decorator created with `createDecorator`
-- Errors
+- Errors and error re-throw
 - Path variations (`/foo`, `foo/`, `/foo/`, `foo`)
 - Multiple parameters (`/:foo/:bar`)
 - Conflicting parameters (`/:foo/:bar/:foo`)

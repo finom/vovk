@@ -35,13 +35,17 @@ import {
 } from 'vovk';
 
 import { 
+  // function
   clientizeController, 
+  // types
   type VovkClientFetcher, 
   type VovkClientOptions 
 } from 'vovk/client';
 
 import { 
+  // decorator
   worker, 
+  // function
   promisifyWorker 
 } from 'vovk/worker';
 ```

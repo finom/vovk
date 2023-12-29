@@ -77,6 +77,11 @@ const config = {
             label: 'Getting Started',
           },
           {
+            href: '/docs/api',
+            label: 'API Reference',
+            position: 'left',
+          },
+          {
             href: 'https://github.com/finom/vovk',
             label: 'GitHub',
             position: 'right',
