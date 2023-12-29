@@ -8,8 +8,8 @@ import { themes as prismThemes } from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'Vovk.ts',
+  tagline: 'Vovk.ts framework',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -66,7 +66,7 @@ const config = {
       navbar: {
         title: 'Vovk.ts Framework',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'Vovk.ts Logo',
           src: 'https://github.com/finom/vovk/assets/1082083/86bfbbbb-3600-435b-a74c-c07bd0c4af4b',
         },
         items: [

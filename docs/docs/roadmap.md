@@ -8,7 +8,6 @@ sidebar_position: 8
 
 - Support async iterable for stream responses at `VovkReturnType` type.
 - An option to obfuscate endpoint names when `.auto()` decorators are used.
-- Implement async generators for stream responses (`yield` an instance of `StreamResponse`, then `yield` stream messages, or let me know if there are better solutions).
 - Support [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects) at workers.
 - (Experimental) Add [AssemblyScript](https://www.assemblyscript.org/) as an additional piece of Vovk architecture.
 - (Experimental) Implement shared object that read by all workers and the main thread using `Atomics` and `SharedArrayBuffer`.
@@ -19,7 +18,3 @@ sidebar_position: 8
 - TodoMVC with SQLite and Prisma.
 - How to create API library for free and publish it on NPM.
 - React Native example.
-
-## Articles
-
-- Comparison to NestJS.
