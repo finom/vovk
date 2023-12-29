@@ -43,13 +43,13 @@ const config = {
           sidebarPath: './sidebars.js',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/finom/vovk/tree/main/docs/',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          // editUrl: 'https://github.com/finom/vovk/tree/main/',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -62,9 +62,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      image: 'img/vovk-og.png',
       navbar: {
-        title: 'Vovk.ts',
+        title: 'Vovk.ts Framework',
         logo: {
           alt: 'My Site Logo',
           src: 'https://github.com/finom/vovk/assets/1082083/86bfbbbb-3600-435b-a74c-c07bd0c4af4b',
@@ -74,10 +74,10 @@ const config = {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Getting Started',
           },
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/finom/vovk',
             label: 'GitHub',
             position: 'right',
           },
@@ -97,7 +97,7 @@ const config = {
           },
           {
             title: 'Community',
-            items: [
+            items: [/*
               {
                 label: 'Stack Overflow',
                 href: 'https://stackoverflow.com/questions/tagged/docusaurus',
@@ -110,19 +110,19 @@ const config = {
                 label: 'Twitter',
                 href: 'https://twitter.com/docusaurus',
               },
-            ],
+            */],
           },
           {
             title: 'More',
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/finom/vovk',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,

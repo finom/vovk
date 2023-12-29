@@ -2,7 +2,7 @@
 sidebar_position: 0
 ---
 
-# Getting started
+# Getting Started
 
 ## Quick install
 
@@ -179,7 +179,3 @@ export default function Home() {
   );
 }
 ```
-
-## Next steps
-
-///////
