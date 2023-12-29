@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  Framework for <strong>Next.js</strong>
+  Meta-isomorphic framework built on top of <strong>Next.js</strong> public API
 </p>
 
 <p align="center">
