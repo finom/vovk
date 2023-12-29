@@ -8,16 +8,16 @@
 </p>
 
 <p align="center">
-  Framework for <strong>Next.js</strong>
+  Meta-isomorphic framework built on top of <strong>Next.js</strong> public API
 </p>
 
 <p align="center">
-  <a href="https://docs.vovk.dev/">
-    Documentation
-  </a>
-  &nbsp;&nbsp;
   <a href="https://vovk.dev/">
     Website
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://docs.vovk.dev/">
+    Documentation
   </a>
   &nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-zod">
