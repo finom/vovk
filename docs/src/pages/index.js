@@ -11,6 +11,7 @@ function Content() {
       <p className={styles.main}>
         <img
           width="250"
+          height="345"
           alt="vovk"
           src="https://github.com/finom/vovk/assets/1082083/86bfbbbb-3600-435b-a74c-c07bd0c4af4b"
         />{' '}
@@ -18,12 +19,14 @@ function Content() {
         {isDarkTheme ? (
           <img
             width="350"
+            height="72"
             alt="vovk"
             src="https://github.com/finom/vovk/assets/1082083/35887c40-ad37-42ca-b0b3-1d3ec359b090"
           />
         ) : (
           <img
             width="350"
+            height="72"
             alt="vovk"
             src="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513"
           />
