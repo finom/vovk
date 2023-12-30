@@ -84,6 +84,48 @@ For now the `controllers` array is empty. Notice the `onMetadata` option. It's c
 export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD } = initVovk(/* ... */)
 ```
 
+The resulting JSON is going to contain information about controllers and workers and would look like that:
+
+```json
+{
+  "HelloController": {
+    "controllerName": "HelloController",
+    "_prefix": "hello",
+    "_handlers": {
+      "getHello": {
+        "path": "get-hello",
+        "httpMethod": "GET"
+      },
+      "postHello": {
+        "path": "post-hello",
+        "httpMethod": "POST"
+      }
+    }
+  },
+  "UserController":  {
+    "controllerName": "UserController",
+    "_prefix": "user",
+    "_handlers": {
+      "getHello": {
+        "path": "update-user",
+        "httpMethod": "PUT"
+      }
+    }
+  },
+  "workers": {
+    "HelloWorkerService": {
+      "workerName": "HelloWorkerService",
+      "_handlers": {
+        "calculatePi": {
+          "isGenerator": true
+        }
+      }
+    }
+  }
+}
+```
+
+
 ### 4. Create first service and controller
 
 Create two files `HelloService.ts` and `HelloController.ts` at **/src/vovk/hello/**. The first one is a back-end service that should perform DB calls or invoke third-party APIs, the second one is a controller that handles incoming HTTP requests and calls service methods.

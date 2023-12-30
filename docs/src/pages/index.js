@@ -2,9 +2,23 @@ import { useColorMode } from '@docusaurus/theme-common';
 import Layout from '@theme/Layout';
 
 import styles from './index.module.css';
+import { useRef, useState, useEffect } from 'react';
 
 function Content() {
-  const { isDarkTheme } = useColorMode();
+  // https://github.com/facebook/docusaurus/issues/9629
+  const { colorMode } = useColorMode();
+  // eslint-disable-next-line no-undef
+  const rendersRef = useRef(1);
+
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    const localStorageColorMode = localStorage.getItem('theme');
+    if (rendersRef.current === 1 && localStorageColorMode) {
+      // eslint-disable-next-line no-undef, @typescript-eslint/no-unsafe-member-access
+      document.querySelector('.invert').style.filter = localStorageColorMode === 'dark' ? 'invert(1)' : 'none';
+    }
+    rendersRef.current += 1;
+  }, [colorMode]);
 
   return (
     <>
@@ -16,28 +30,22 @@ function Content() {
           src="https://github.com/finom/vovk/assets/1082083/86bfbbbb-3600-435b-a74c-c07bd0c4af4b"
         />{' '}
         <br />
-        {isDarkTheme ? (
-          <img
-            width="350"
-            height="72"
-            alt="vovk"
-            src="https://github.com/finom/vovk/assets/1082083/35887c40-ad37-42ca-b0b3-1d3ec359b090"
-          />
-        ) : (
-          <img
-            width="350"
-            height="72"
-            alt="vovk"
-            src="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513"
-          />
-        )}
+        <img
+          key={colorMode}
+          width="350"
+          height="72"
+          alt="vovk"
+          className="invert"
+          style={colorMode === 'dark' ? { filter: 'invert(1)' } : {}}
+          src="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513"
+        />
       </p>
       <p style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
         Welcome to Vovk.ts documentation! It's built to help you get started as quickly as possible and dosn't contain
         phislisophical discussions.
       </p>
       <p className={styles.buttons}>
-        <a class={styles.button} href="/docs/intro">
+        <a className={styles.button} href="/docs/intro">
           <span>Getting Started</span>{' '}
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path

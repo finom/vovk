@@ -41,7 +41,7 @@ sidebar_position: 6
         /CommentController.ts
 ```
 
-Every item (service, controller, state etc) in a "thing" folder is optional. Some parts of your app would require to have state only, but no controller. In other case you can have a state and controller, but database request in your controller is too simple to move it to a Service.
+Every item (service, controller, state etc) in a module folder is optional. Some parts of your app would require to have state only, but no controller. In other case you can have a state and controller, but database request in your controller is too simple to move it to a Service.
 
 The Vovk pattern extends Service-Controller-Repository pattern by adding State, Isomorphic Service, Worker Service, so the full name of this pattern would be Service-Controller-Repository-IsomorphicService-WorkerService-State-View.  Unfortunately the best acronym I found sounded like "Screw it", that's why I simply call it "The Vovk Pattern" instead of using an acronym like MVC.
 
@@ -134,7 +134,7 @@ await controller.updatePost({
 
 ## Back-end Service
 
-Back-end Service (or just "Service") is a static class that implements third-party API calls or performs requests do the project database. By the pattern design Back-end Service does not validate incoming data. It doesn't require any decorators to be used and plays the role of a back-end library for your "thing". 
+Back-end Service (or just "Service") is a static class that implements third-party API calls or performs requests do the project database. By the pattern design Back-end Service does not validate incoming data. It doesn't require any decorators to be used and plays the role of a back-end library for your module. 
 
 ```ts
 // /src/vovk/comment/CommentService.ts
@@ -222,7 +222,7 @@ Workers can use other Isomorphic Services, Worker Services (using `promisifyWork
 
 ## State
 
-State file contains application state code corresponding to the "thing". It can use Isomorphic Services, promisified Worker Services and clientized controllers. State can be implemented with any application state library: Recoil, Redux, Redux Toolkit, MobX, custom context, or anything else because **Vovk.ts** does not cover state management topic.
+State file contains application state code corresponding to the module. It can use Isomorphic Services, promisified Worker Services and clientized controllers. State can be implemented with any application state library: Recoil, Redux, Redux Toolkit, MobX, custom context, or anything else because **Vovk.ts** does not cover state management topic.
 
 If a promisified worker is initialised outside of `useEffect` or `useCallback` it's recommended to check if `Worker` exists in the current context and make the variable to equal `null` in SSR environment.
 
@@ -254,7 +254,7 @@ export function computeSomething() {
 
 ## Other ideas
 
-Vovk pattern isn't limited by the things described above. I can imagine that you may want to add more files into your "thing" folder.
+Vovk pattern isn't limited by the things described above. I can imagine that you may want to add more files into your module folder.
 
 - More Isomorphic Services to simplify the code.
 - More Worker Services.
