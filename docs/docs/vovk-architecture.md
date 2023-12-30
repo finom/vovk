@@ -2,9 +2,9 @@
 sidebar_position: 6
 ---
 
-# The Vovk Pattern
+# The Vovk Architecture
 
-**Vovk.ts** combines back-end and front-end code into one code base. The logical parts of the app are split into folders given them corresponding name. The folders are split into "things" such as user, post, comment, app settings, auth features etc. Besically "a thing" can belong to 2 categories:
+**Vovk.ts** combines back-end and front-end code into one code base. The logical parts of the app are split into folders called "modules" (or "virtual modules") given them corresponding name. The folders are split into "things" such as user, post, comment, app settings, auth features etc. Besically "a thing" can belong to 2 categories:
 
 1. An entity (a model) like "user" or "post" requires to put all or most of the user code into "user" folder.
 1. Anything what doesn't belong to some specific entity: app settings, auth, AI stuff... The typical structure of the app would look like that:
@@ -43,11 +43,11 @@ sidebar_position: 6
 
 Every item (service, controller, state etc) in a module folder is optional. Some parts of your app would require to have state only, but no controller. In other case you can have a state and controller, but database request in your controller is too simple to move it to a Service.
 
-The Vovk pattern extends Service-Controller-Repository pattern by adding State, Isomorphic Service, Worker Service, so the full name of this pattern would be Service-Controller-Repository-IsomorphicService-WorkerService-State-View.  Unfortunately the best acronym I found sounded like "Screw it", that's why I simply call it "The Vovk Pattern" instead of using an acronym like MVC.
+The Vovk Architecture extends Service-Controller-Repository pattern by adding State, Isomorphic Service, Worker Service, so the full name of this pattern would be Service-Controller-Repository-IsomorphicService-WorkerService-State-View. Unfortunately the best acronym I found sounded like "Screw it", that's why I simply call it "The Vovk Architecture" instead of using an acronym like MVC.
 
 The image below illustrates how different components of the application import each other: thru regular `import` or `import type` + `import metadata`.
 
-![The Vovk Pattern](/img/vovk-pattern.svg)
+![The Vovk Architecture](/img/vovk-architecture.svg)
 
 ## Controller
 
@@ -254,7 +254,7 @@ export function computeSomething() {
 
 ## Other ideas
 
-Vovk pattern isn't limited by the things described above. I can imagine that you may want to add more files into your module folder.
+The Vovk Architecture isn't limited by the things described above. I can imagine that you may want to add more files into your module folder.
 
 - More Isomorphic Services to simplify the code.
 - More Worker Services.
