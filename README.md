@@ -25,7 +25,7 @@
 </p>
 
 
-## Vovk.ts: A Meta-Isomorphic Full-Stack Framework Elevating Web Development
+## Vovk.ts: A Type-Isomorphic Full-Stack Framework Elevating Web Development
 
 1. **Unified Back-End and Front-End Operation on a Single Port**: 
    - Utilizing Next.js's advanced front-end architecture, Vovk.ts integrates settings for Server-Side Rendering (SSR), Hot Module Replacement (HMR), Web Worker Webpack loader, and router structure. These are typically manual setups for developers, now streamlined for efficiency.
