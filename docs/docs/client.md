@@ -293,9 +293,9 @@ export const helloState = {
         try {
             await controller.doSomething({ body, query, params });
         } catch (e) {
-            const err = e as VovkErrorResponse;
+            const err = e as HttpException;
 
-            console.log(err); // { message: 'Some error', statusCode: 500, isError: true }
+            console.log(err); // HttpException<{ message: 'Some error', statusCode: 500 }>
         }
     }
 };
@@ -325,9 +325,9 @@ export class HelloController {
 try {
     await controller.doSomething({ body, query, params });
 } catch (e) {
-    const err = e as VovkErrorResponse;
+    const err = e as HttpException;
 
-    console.log(err); // { message: 'Some error', statusCode: 400, isError: true }
+    console.log(err); // HttpException<{ message: 'Some error', statusCode: 400 }>
 }
 // ...
 ```

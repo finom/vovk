@@ -74,7 +74,7 @@ All potential HTTP methods are supported.
 import { get, post, put, patch, del, head, options } from 'vovk';
 ```
 
-Controllers can be "clientized" using `clientizeController` to be used on the client-side. Please check Client documentation.
+Controllers can be "clientized" using `clientizeController` to be used on the client-side. Please check [Client documentation](./client).
 
 ## `HttpException` class and `HttpStatus` enum
 
@@ -88,7 +88,7 @@ throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
 
 ## `VovkRequest` type
 
-Every route handler receives two arguments: request object and a record of parameters extracted from the route path. The request object defined as `VovkRequest<BODY, QUERY>` is the standard `NextRequest` object extended by body and query. It re-defines type of `NextRequest['json']` and `NextRequest['nextUrl']['searchParams']['get']` so you don't need to re-type body of `any` type or search param of `string | null` type.
+Every route handler receives two arguments: request object and a record of parameters extracted from the route path. The request object defined as `VovkRequest<BODY, QUERY>` is the standard `NextRequest` object extended by body and query. It re-defines type of `NextRequest['json']` and `NextRequest['nextUrl']['searchParams']['get']` so you don't need to force types for body of `any` type or search param of `string | null` type.
 
 ```ts
 // /src/vovk/post/PostController.ts
@@ -114,7 +114,7 @@ export default class PostController {
 }
 ```
 
-At the example above `title` and `content` are recognised as strings and `id` param is recognised as `PostId`. `PostId` is an imaginary flavoured type defined like that:
+At the example above `title` and `content` are recognised as strings and `id` param is recognised as `PostId`. `PostId` is an imaginary flavoured type that can be defined like that:
 
 ```ts
 // /src/types.ts

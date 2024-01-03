@@ -56,7 +56,7 @@ export function updateUser(id: string, { name, email }: { name: string; email: s
 
 You can create a decorator that, first of all, validates request on the server-side and optionally populates controller metadata with validation information that is going to be used by `fetcher` and `streamFetcher` when they call `validate` function. 
 
-The simplest example of the validation would be equality validation. It does nothing than checking if received query and body are equal to some definite object.
+The simplest example of the validation would be equality validation. It does nothing than checking if received query and body are equal to some definite object but has no practical use outside of this documentation.
 
 At the example below `validateEquality` decorator is created with `createDecorator` that accepts 2 arguments: server validation function and init function that uses `clientValidators` object to indicate that validation information should be stored at metadata file.
 

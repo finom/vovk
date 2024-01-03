@@ -47,11 +47,11 @@ export const { GET, POST, PUT, DELETE } = initVovk({
 });
 ```
 
-To trigger metadata creation manually, open [http://localhost:3000/api](http://localhost:3000/api) in your browser (it's OK to see 404 error since the root endpoint isn't defined).
+To trigger metadata creation manually, open [http://localhost:3000/api](http://localhost:3000/api) in your browser (it's OK to see 404 error if the root endpoint isn't defined).
 
 ## Promisify Worker Service
 
-To create the main-thread library that utilises the Worker Service in a separate thread use `promisifyWorker`. Thanks to Next.js you can create a Web Worker from at .ts file with no need to set up custom Webpack loaders.
+To create the main-thread library that utilises the Worker Service in a separate thread use `promisifyWorker`. Thanks to Next.js you can create a Web Worker from at .ts file with no need to set up custom and hard to use Webpack loaders.
 
 ```ts
 // /src/vovk/hello/HelloState.ts
@@ -79,11 +79,11 @@ import { promisifyWorker } from 'vovk/worker';
 import type HelloWorkerService from './HelloWorkerService';
 import metadata from '../vovk-metadata.json' assert { type: 'json' };
 
-const worker = typeof Worker !== 'undefined' ?
+const worker = typeof Worker === 'undefined' ? null :
     promisifyWorker<typeof HelloWorkerService>(
         new Worker(new URL('./HelloWorkerService.ts', import.meta.url)),
         metadata.workers.HelloWorkerService
-    ) : null;
+    );
 
 export async function performHeavyCalculation (iterations: number) {
     /* worker?.heavyCalculation is casted as 
@@ -230,11 +230,10 @@ To fork the worker you can simply call `promisifyWorker` multiple times. The met
 
 ```ts
 const fork = () => {
-    const worker = typeof Worker !== 'undefined' ?
-        promisifyWorker<typeof HelloWorkerService>(
-            new Worker(new URL('./HelloWorkerService.ts', import.meta.url)),
-            metadata.workers.HelloWorkerService
-        ) : null;
+    const worker = promisifyWorker<typeof HelloWorkerService>(
+        new Worker(new URL('./HelloWorkerService.ts', import.meta.url)),
+        metadata.workers.HelloWorkerService
+    );
 
     return worker;
 }
@@ -244,9 +243,9 @@ const worker2 = fork();
 const worker3 = fork();
 
 const [result1, result2, result3] = await Promise.all([
-    worker1?.heavyCalculation(),
-    worker2?.heavyCalculation(),
-    worker3?.heavyCalculation(),
+    worker1.heavyCalculation(),
+    worker2.heavyCalculation(),
+    worker3.heavyCalculation(),
 ]);
 ```
 

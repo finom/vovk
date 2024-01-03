@@ -4,9 +4,9 @@ sidebar_position: 6
 
 # The Vovk Architecture
 
-**Vovk.ts** combines back-end and front-end code into one code base. The logical parts of the app are split into folders called "modules" (or "virtual modules") given them corresponding name. The folders are split into "things" such as user, post, comment, app settings, auth features etc. Besically "a thing" can belong to 2 categories:
+**Vovk.ts** combines back-end and front-end code into one code base. The logical parts of the app are split into folders called "modules" (or "virtual modules") given them corresponding name such as user, post, comment, app settings, auth features etc. Besically a module can belong to 2 categories:
 
-1. An entity (a model) like "user" or "post" requires to put all or most of the user code into "user" folder.
+1. An entity (a model) like "user" ("post", "comment" etc) requires to put all or most of the user code into "user" folder.
 1. Anything what doesn't belong to some specific entity: app settings, auth, AI stuff... The typical structure of the app would look like that:
 
 ```
@@ -201,7 +201,7 @@ export default class HelloWorkerService {
 The worker can be promisified on the client-side.
 
 ```ts
-// app/page.tsx
+// /src/app/page.tsx
 import type HelloWorkerService from '../vovk/hello/HelloWorkerService';
 import metadata from '../vovk/vovk-metadata.json';
 
@@ -218,7 +218,7 @@ const onClick = useCallback(async () => {
 }, []);
 ```
 
-Workers can use other Isomorphic Services, Worker Services (using `promisifyWorker`) and Back-end controllers using `clientizeController`. Please check documentation of Worker Serices.
+Workers can use other Isomorphic Services, Worker Services (using `promisifyWorker`) and Back-end controllers using `clientizeController`. Please check documentation of [Worker Serices](./worker).
 
 ## State
 
@@ -236,11 +236,11 @@ import metadata from '../vovk-metadata.json' assert { type: 'json' };
 
 const controller = clientizeController<typeof PostController>(metadata.PostController);
 
-const worker = typeof Worker !== 'undefined' ?
+const worker = typeof Worker === 'undefined' ? null :
     promisifyWorker<typeof PostWorker>(
         new Worker(new URL('./PostWorkerService.ts', import.meta.url)),
         metadata.workers.PostWorker
-    ) : null;
+    );
 
 export function updatePost() {
     return controller.updatePost(/* ... */);

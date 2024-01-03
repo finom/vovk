@@ -58,7 +58,7 @@ To extend `req` object you can define your custom interface that extends `VovkRe
 ```ts
 // /src/types.ts
 import type { VovkRequest } from 'vovk'
-import { type User } from '@prisma/client';
+import type { User } from '@prisma/client';
 
 export interface GuardedRequest<BODY = undefined, QUERY extends Record<string, string> | undefined = undefined>
   extends VovkRequest<BODY, QUERY> {
@@ -101,7 +101,7 @@ export default class UserController {
   // ...
   @get('current-user')
   @authGuard()
-  static async getCurrentUser(req: GuardedRequest) {
+  static async getCurrentUser(req: GuardedRequest</* ... */>) {
     return req.currentUser;
   }
 

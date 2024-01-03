@@ -26,7 +26,6 @@ import {
   HttpStatus,
   HttpMethod,
   // types
-  type VovkErrorResponse,
   type VovkRequest,
   type VovkBody,
   type VovkQuery,
@@ -142,7 +141,7 @@ class MyController {
 
 #### `@get.auto`, `@post.auto`, `@put.auto`...
 
-`@HTTP_METHOD(p: string)` define HTTP method and generate endpoint string automatically from controller and method name.
+`@HTTP_METHOD.auto()` define HTTP method and generate endpoint string automatically from controller and method name.
 
 ```ts
 import { prefix, get, post, put, patch, del, head, options } from 'vovk';
@@ -360,7 +359,7 @@ Please check [Client Documentation](./client) for more info.
 - `disableClientValidation?: boolean` disables client-side validation for debugging purposes.
 - `fetcher?: _VovkClientFetcher<OPTS>` overrides default fetcher.
 - `streamFetcher?: _VovkClientFetcher<OPTS>` overrides default stream fetcher.
-- `validateOnClient?: ( input: { body?: unknown; query?: unknown }, validators: { body?: unknown; query?: unknown }) => unknown;` defines client-side validation function.
+- `validateOnClient?: (input: { body?: unknown; query?: unknown }, validators: { body?: unknown; query?: unknown }) => unknown;` defines client-side validation function.
 - `defaultOptions?: Partial<OPTS>` allows to set default options for the client-side fetching library.
 
 

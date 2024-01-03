@@ -6,7 +6,7 @@ sidebar_position: 0
 
 ## Quick install
 
-Setup Vovk.ts with [create-next-app](https://www.npmjs.com/package/create-next-app)
+Setup Vovk.ts with [create-next-app](https://www.npmjs.com/package/create-next-app).
 
 ```
 npx create-next-app -e https://github.com/finom/vovk-hello-world
@@ -49,7 +49,7 @@ In your **tsconfig.json** set `"experimentalDecorators"` to `true`.
 
 ### 3. Set up Next.js wildcard route handler
 
-Create file **/src/app/api/[[...]]/route.ts** where **[[...]]** is a real folder name. This is the core entry point for all Vovk.ts routes.
+Create file **/src/app/api/[[...]]/route.ts** where **[[...]]** is a real folder name indicating an empty slug. This is the core entry point for all **Vovk.ts** routes.
 
 ```ts
 // /src/app/api/[[...]]/route.ts
@@ -220,4 +220,30 @@ export default function Home() {
     <div>{serverResponse?.greeting ?? 'Loading...'}</div>
   );
 }
+```
+
+## 8. Optional: create metadata.ts for easier import
+
+It's hard to type `import metadata from '../vovk-metadata.json'` every time since TypeScript doesn't know what you're going to name this variable. For easier import you can create another file called **metadata.ts**
+ that re-exports the Vovk metadata.
+
+
+
+```ts
+// /src/vovk/metadata.ts
+import metadata from '../vovk-metadata.json' assert { type: "json" };
+
+export default metadata;
+```
+
+Now when you type "metad..." word your code editor is going to propose you to import the created variable.
+
+```ts
+// /src/vovk/hello/HelloState.ts
+// ...
+import metadata from '../metadata';
+
+const controller = clientizeController<typeof HelloController>(metadata.HelloController);
+
+// ...
 ```
