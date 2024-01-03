@@ -41,7 +41,4 @@
    - Streamlines workflow by eliminating the need to switch between different repositories or folders in a monorepository. Developers can now directly navigate to the controller implementation with Ctrl+Click in VSCode.
    - Addresses the longstanding challenge of sharing TypeScript code between back-end and front-end. This is achieved through the innovative introduction of an 'Isomorphic Service' concept, a small but significant leap in web development practices.
 
-Vovk.ts is not just a framework; it's a paradigm shift in how we approach web development, offering a structured, efficient, and integrated experience.
-
-
 ![jump-to-controller](https://github.com/finom/vovk/assets/1082083/6d73e28d-2634-4c52-b895-4fdf55240307)
