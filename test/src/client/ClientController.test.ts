@@ -25,6 +25,15 @@ describe('Client', () => {
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
   });
 
+  it(`Should handle simple requests and return a normal array`, async () => {
+    const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
+    const result = await noOptionsController.getHelloWorldArray({
+      prefix,
+      headers: { 'x-test': 'world' },
+    });
+    expect(result satisfies { hello: string }[]).toEqual([{ hello: 'world' }]);
+  });
+
   it(`Should handle simple requests and use empty generic`, async () => {
     const result = await defaultController.getHelloWorldAndEmptyGeneric();
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });

@@ -161,7 +161,7 @@ export class _Segment {
         (Reflect.has(promiseOrGenerator, Symbol.asyncIterator) &&
           typeof (promiseOrGenerator as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function');
 
-      if (isIterator) {
+      if (isIterator && !(promiseOrGenerator instanceof Array)) {
         const streamResponse = new StreamResponse();
 
         void (async () => {

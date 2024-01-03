@@ -25,6 +25,11 @@ export default class ClientController {
   }
 
   @get.auto()
+  static getHelloWorldArray() {
+    return [this.service.getHello('world')];
+  }
+
+  @get.auto()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static getHelloWorldAndEmptyGeneric(_req: VovkRequest) {
     return this.service.getHello('world');
