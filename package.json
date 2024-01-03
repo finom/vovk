@@ -1,7 +1,7 @@
 {
   "name": "vovk",
   "version": "0.1.8",
-  "description": "A compact, zero-dependency library that constructs Next.js 13+ App Route Handlers from decorated classes",
+  "description": "Type-isomorphic framework built on top of Next.js public API",
   "main": "/index.js",
   "scripts": {
     "upgrade": "npx npm-check-updates -u && npm i",
