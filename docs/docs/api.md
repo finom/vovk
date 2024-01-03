@@ -38,7 +38,8 @@ import {
   clientizeController, 
   // types
   type VovkClientFetcher, 
-  type VovkClientOptions 
+  type VovkClientOptions,
+  type VovkDefaultFetcherOptions,
 } from 'vovk/client';
 
 import { 
@@ -348,7 +349,7 @@ type DoSomethingReturnType = VovkReturnType<HelloControllerType['doSomething']>;
 
 Turns Controller types and metadata into client-side fetching library. Types of body, query and params are inferred from the controller method signature.
 
-`clientizeController<T, OPTS>(controllerMetadata: object, options?: VovkClientOptions<OPTS>)` accepts controller type as first generic parameter, optional custom fetcher options as second generic parameter, metadata object as the first argument and optional clientize settings object as the second argument.
+`clientizeController<T, OPTS = VovkDefaultFetcherOptions>(controllerMetadata: object, options?: VovkClientOptions<OPTS>)` accepts controller type as first generic parameter, optional custom fetcher options as second generic parameter, metadata object as the first argument and optional clientize settings object as the second argument.
 
 Please check [Client Documentation](./client) for more info.
 
@@ -381,7 +382,7 @@ Custom fetchers need to satisfy `VovkClientFetcher<OPTS>` type. The `OPTS` param
 
 ```ts
 // /src/lib/myClient
-type ApiOptions = {
+type ApiOptions = VovkDefaultFetcherOptions & {
     successMesage: string;
 };
 
@@ -410,6 +411,10 @@ const controller = clientizeController<HelloControllerType>(metadata.HelloContro
 await controller.doSomething({ successMessage: 'Success!' });
 ```
 
+
+### `VovkDefaultFetcherOptions` type 
+
+Default options for the built-in fetcher. Consists of `isStream` and `prefix` members.
 
 ## "vovk/worker" module
 
