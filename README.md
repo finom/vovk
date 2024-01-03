@@ -24,15 +24,21 @@
   <a href="https://github.com/finom/vovk/actions/workflows/main.yml"><img src="https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg" alt="Build status" /></a>
 </p>
 
-**Vovk.ts** is a meta-isomorphic full-stack framework built on top of Next.js that solves multiple core issues in web development:
 
-1. Run well-structured back-end and front-end on one port. 
-    - Next.js provides well-established front-end arthitecture with settings preset that implement SSR, HMR, Web Worker Webpack loader, router structure, and many other things that developers needed to set up manually before.
-    - Vovk.ts is built over the public Next.js App router API and provides the missing detail: clear, well-structured decorator-based (insppired by NestJS) routes.
-1. Create a TypeScript library with `clientizeController` that fetches controller methods using their types and metadata. Types are read directly from a controller using `VovkRequest<BODY, QUERY>` that extends `NextRequest`.
-1. Provides useful interface to use Web Workers with `promisifyWorker` that intended to popularise usage of Web Workers and make web a little bit faster.
-1. Introduces the new architecture pattern to keep all your back-end and app state code in one place.
-    - No need to switch between repositories or folders in a monorepository. Jump thraight to the controller implementation with Ctrl+Click in VSCode.
-    - Solves very old problem on how to share TypeScript code between back-end and front-end introducing so-called Isomorphic Service
+## Vovk.ts: A Type-Isomorphic Full-Stack Framework Elevating Web Development
+
+1. **Unified Back-End and Front-End Operation on a Single Port**: 
+   - Utilizing Next.js's advanced front-end architecture, Vovk.ts integrates settings for Server-Side Rendering (SSR), Hot Module Replacement (HMR), Web Worker Webpack loader, and router structure. These are typically manual setups for developers, now streamlined for efficiency.
+   - Built atop the public Next.js App router API, Vovk.ts enriches this foundation with clear, well-structured, decorator-based routes, inspired by NestJS, bridging a crucial gap in web development.
+
+2. **Advanced TypeScript Library with `clientizeController`**:
+   - This feature innovatively fetches controller methods using their types and metadata. Types are directly extracted from controllers via `VovkRequest<BODY, QUERY>`, extending `NextRequest`, for enhanced functionality and integration.
+
+3. **Facilitating Web Worker Utilization with `promisifyWorker`**:
+   - Vovk.ts introduces a user-friendly interface for Web Workers through `promisifyWorker`. This tool is designed to popularize Web Worker usage and contribute to a faster web experience.
+
+4. **Revolutionary Architecture Pattern for Code Centralization**:
+   - Streamlines workflow by eliminating the need to switch between different repositories or folders in a monorepository. Developers can now directly navigate to the controller implementation with Ctrl+Click in VSCode.
+   - Addresses the longstanding challenge of sharing TypeScript code between back-end and front-end. This is achieved through the innovative introduction of an 'Isomorphic Service' concept, a small but significant leap in web development practices.
 
 ![jump-to-controller](https://github.com/finom/vovk/assets/1082083/6d73e28d-2634-4c52-b895-4fdf55240307)
