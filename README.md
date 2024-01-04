@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  Framework built on top of <strong>Next.js</strong> public API
+  The cheapest way to do build and deploy a full-stack Node.js + React app
 </p>
 
 <p align="center">
