@@ -8,7 +8,9 @@
 </p>
 
 <p align="center">
-  The cheapest way to do build and deploy a full-stack Node.js + React app
+  <strong>The cheapest way to do build and deploy a full-stack Node.js + React app</strong>
+  <br />
+  Built on top of Next.js App Router
 </p>
 
 <p align="center">
