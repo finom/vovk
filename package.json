@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Type-isomorphic framework built on top of Next.js public API",
   "main": "/index.js",
   "scripts": {
