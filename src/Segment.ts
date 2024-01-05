@@ -185,9 +185,7 @@ export class _Segment {
         return result;
       }
 
-      if (typeof result !== 'undefined') {
-        return this.#respond(200, result);
-      }
+      return this.#respond(200, result ?? null);
     } catch (e) {
       const err = e as HttpException;
       try {
