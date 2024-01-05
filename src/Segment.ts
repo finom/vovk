@@ -156,7 +156,8 @@ export class _Segment {
       const promiseOrGenerator = await staticMethod.call(controller, req, methodParams);
 
       const isIterator =
-        (!!promiseOrGenerator &&
+        (typeof promiseOrGenerator === 'object' &&
+          !!promiseOrGenerator &&
           Reflect.has(promiseOrGenerator, Symbol.iterator) &&
           typeof (promiseOrGenerator as Iterable<unknown>)[Symbol.iterator] === 'function') ||
         (Reflect.has(promiseOrGenerator, Symbol.asyncIterator) &&
