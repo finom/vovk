@@ -14,7 +14,23 @@ export function _promisifyWorker<T extends object>(w: Worker, givenWorkerService
     throw new Error('Worker is not provided');
   }
 
-  instance.terminate = () => w.terminate();
+  instance.terminate = () => {
+    if (instance._isTerminated) return;
+    instance._isTerminated = true;
+    w.terminate();
+  };
+
+  if (typeof Symbol.dispose !== 'symbol') {
+    Object.defineProperty(Symbol, 'dispose', {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: Symbol.for('dispose'),
+    });
+  }
+  if (Symbol.dispose) {
+    instance[Symbol.dispose] = () => instance.terminate();
+  }
 
   for (const method of Object.keys(workerService._handlers) as (keyof T & string)[]) {
     const { isGenerator } = workerService._handlers[method];

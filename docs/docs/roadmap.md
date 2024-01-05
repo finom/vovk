@@ -6,7 +6,7 @@ sidebar_position: 8
 
 ## Framework
 
-- Implement disposable objects (`using` keyword) for Worker termination and to close stream response.
+
 - Export `StreamResponse` class to use as a response pointer in Services and to implement streaming without generators syntax.
 - Support async iterable for stream responses at `VovkReturnType` type.
 - An option to obfuscate endpoint names when `.auto()` decorators are used.
@@ -14,6 +14,7 @@ sidebar_position: 8
 - (Experimental) Add [AssemblyScript](https://www.assemblyscript.org/) as an additional piece of Vovk architecture.
 - (Experimental) Implement shared object that read by all workers and the main thread using `Atomics` and `SharedArrayBuffer`.
 - CLI (to be discussed).
+- ✅ ~Implement disposable objects (`using` keyword) for Worker termination and to close stream response.~
 
 ## Examples
 

@@ -10,8 +10,22 @@ describe('Worker', () => {
     const browser = await puppeteer.launch({ headless: 'new' });
     page = await browser.newPage();
     await page.goto('http://localhost:' + process.env.PORT);
-    // eslint-disable-next-line no-console
-    page.on('console', (consoleObj) => console.log(consoleObj.text()));
+    // eslint-disable-next-line no-console, @typescript-eslint/no-misused-promises
+    page.on('console', async (message) => {
+      if (message.text() != 'JSHandle@error') {
+        // eslint-disable-next-line no-console
+        console.log(`${message.type().substring(0, 3).toUpperCase()} ${message.text()}`);
+        return;
+      }
+      const messages = await Promise.all(
+        message.args().map((arg) => {
+          return arg.getProperty('message');
+        })
+      );
+
+      // eslint-disable-next-line no-console
+      console.log(`${message.type().substring(0, 3).toUpperCase()} ${messages.filter(Boolean).join(', ')}`);
+    });
   });
 
   afterAll(async () => {
@@ -142,5 +156,21 @@ describe('Worker', () => {
 
     expect(result.numbers).toEqual([0, 1, 2, 3, 4]);
     expect(result.error).toEqual('Not good');
+  });
+
+  it('Terminates', async () => {
+    const result = await page.evaluate(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // eslint-disable-next-line no-undef
+      const { isTerminated, isUsingTerminated } = window as unknown as {
+        isTerminated: boolean;
+        isUsingTerminated: boolean;
+      };
+
+      return { isTerminated, isUsingTerminated };
+    });
+
+    expect(result.isTerminated).toEqual(true);
+    expect(result.isUsingTerminated).toEqual(true);
   });
 });

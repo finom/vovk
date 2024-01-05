@@ -101,7 +101,18 @@ export async function performHeavyCalculation (iterations: number) {
 A worker can be terminated with built-in `terminate` method.
 
 ```ts
-worker?.terminate();
+worker.terminate();
+```
+
+The object returned from `promisifyWorker` implements a [disposable object](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html) that can be terminated automatically with `using` declaration syntax when code block is ended.
+
+```ts
+{
+    using worker = promisifyWorker<typeof HelloWorkerService>(/* ... */);
+    const result = await worker.heavyCalculation();
+    console.log(result);
+}
+// worker is terminated
 ```
 
 ## Async generators

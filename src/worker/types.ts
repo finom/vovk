@@ -16,6 +16,8 @@ export type _WorkerPromiseInstance<T> = {
     : never;
 } & {
   terminate: () => void;
+  _isTerminated?: true;
+  [Symbol.dispose]: () => void;
 };
 
 export interface _WorkerInput {
