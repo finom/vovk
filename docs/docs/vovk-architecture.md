@@ -47,7 +47,7 @@ The Vovk Architecture extends Service-Controller-Repository pattern by adding St
 
 The image below illustrates how different components of the application import each other: thru regular `import` or `import type` + `import metadata`.
 
-![The Vovk Architecture](/img/vovk-architecture.svg)
+![The Vovk Architecture](/img/vovk-pattern.svg)
 
 ## Controller
 

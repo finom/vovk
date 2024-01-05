@@ -6,6 +6,8 @@ sidebar_position: 8
 
 ## Framework
 
+- Implement disposable objects (`using` keyword) for Worker termination and to close stream response.
+- Export `StreamResponse` class to use as a response pointer in Services and to implement streaming without generators syntax.
 - Support async iterable for stream responses at `VovkReturnType` type.
 - An option to obfuscate endpoint names when `.auto()` decorators are used.
 - Support [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects) at workers.
