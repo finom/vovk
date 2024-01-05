@@ -153,22 +153,22 @@ export class _Segment {
     const { staticMethod, controller } = handler;
 
     try {
-      const promiseOrGenerator = await staticMethod.call(controller, req, methodParams);
+      const result = await staticMethod.call(controller, req, methodParams);
 
       const isIterator =
-        typeof promiseOrGenerator === 'object' &&
-        !!promiseOrGenerator &&
-        ((Reflect.has(promiseOrGenerator, Symbol.iterator) &&
-          typeof (promiseOrGenerator as Iterable<unknown>)[Symbol.iterator] === 'function') ||
-          (Reflect.has(promiseOrGenerator, Symbol.asyncIterator) &&
-            typeof (promiseOrGenerator as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
+        typeof result === 'object' &&
+        !!result &&
+        ((Reflect.has(result, Symbol.iterator) &&
+          typeof (result as Iterable<unknown>)[Symbol.iterator] === 'function') ||
+          (Reflect.has(result, Symbol.asyncIterator) &&
+            typeof (result as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
 
-      if (isIterator && !(promiseOrGenerator instanceof Array)) {
+      if (isIterator && !(result instanceof Array)) {
         const streamResponse = new StreamResponse();
 
         void (async () => {
           try {
-            for await (const chunk of promiseOrGenerator as AsyncGenerator<unknown>) {
+            for await (const chunk of result as AsyncGenerator<unknown>) {
               await streamResponse.send(chunk);
             }
           } catch (e) {
@@ -180,8 +180,6 @@ export class _Segment {
 
         return streamResponse;
       }
-
-      const result = promiseOrGenerator;
 
       if (result instanceof Response) {
         return result;
