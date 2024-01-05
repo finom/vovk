@@ -156,12 +156,12 @@ export class _Segment {
       const promiseOrGenerator = await staticMethod.call(controller, req, methodParams);
 
       const isIterator =
-        (typeof promiseOrGenerator === 'object' &&
-          !!promiseOrGenerator &&
-          Reflect.has(promiseOrGenerator, Symbol.iterator) &&
+        typeof promiseOrGenerator === 'object' &&
+        !!promiseOrGenerator &&
+        ((Reflect.has(promiseOrGenerator, Symbol.iterator) &&
           typeof (promiseOrGenerator as Iterable<unknown>)[Symbol.iterator] === 'function') ||
-        (Reflect.has(promiseOrGenerator, Symbol.asyncIterator) &&
-          typeof (promiseOrGenerator as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function');
+          (Reflect.has(promiseOrGenerator, Symbol.asyncIterator) &&
+            typeof (promiseOrGenerator as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
 
       if (isIterator && !(promiseOrGenerator instanceof Array)) {
         const streamResponse = new StreamResponse();
