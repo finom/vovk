@@ -43,8 +43,6 @@ sidebar_position: 6
 
 Every item (service, controller, state etc) in a module folder is optional. Some parts of your app would require to have state only, but no controller. In other case you can have a state and controller, but database request in your controller is too simple to move it to a Service.
 
-The Vovk Architecture extends Service-Controller-Repository pattern by adding State, Isomorphic Service, Worker Service, so the full name of this pattern would be Service-Controller-Repository-IsomorphicService-WorkerService-State-View. Unfortunately the best acronym I found sounded like "Screw it", that's why I simply call it "The Vovk Architecture" instead of using an acronym like MVC.
-
 The image below illustrates how different components of the application import each other: thru regular `import` or `import type` + `import metadata`.
 
 ![The Vovk Architecture](/img/vovk-pattern.svg)
