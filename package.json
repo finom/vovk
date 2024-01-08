@@ -1,7 +1,7 @@
 {
   "name": "vovk",
   "version": "0.2.0",
-  "description": "Type-isomorphic framework built on top of Next.js public API",
+  "description": "Structural add-on for Next.js",
   "main": "/index.js",
   "scripts": {
     "upgrade": "npx npm-check-updates -u && npm i",

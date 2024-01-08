@@ -42,11 +42,13 @@ function Content() {
       </p>
       <p style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
         Welcome to Vovk.ts documentation! It's built to help you get started as quickly as possible and dosn't contain
-        phislisophical discussions. 
-        
+        phislisophical discussions.
         <br />
-        Before you get started I would recommend to read Next.js documentation for <a href="https://nextjs.org/docs/app" target="_blank">App&nbsp;Router</a>  and then come back here.
-          Enjoy!
+        Before you get started I would recommend to read Next.js documentation for{' '}
+        <a href="https://nextjs.org/docs/app" target="_blank">
+          App&nbsp;Router
+        </a>{' '}
+        and then come back here.Enjoy!
       </p>
       <p className={styles.buttons}>
         <a className={styles.button} href="/docs/intro">

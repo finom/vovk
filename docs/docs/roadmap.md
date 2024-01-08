@@ -4,9 +4,9 @@ sidebar_position: 8
 
 # Roadmap
 
-## Framework
+## The library
 
-
+- Support OpenAPI export.
 - Export `StreamResponse` class to use as a response pointer in Services and to implement streaming without generators syntax.
 - Support async iterable for stream responses at `VovkReturnType` type.
 - An option to obfuscate endpoint names when `.auto()` decorators are used.
