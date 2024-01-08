@@ -217,7 +217,7 @@ const controller = clientizeController<HelloControllerType>(metadata.HelloContro
 
 ## Automatically generated endpoints
 
-If the API (or part of it) of the Vovk app isn't going to be exposed for remote use, you can avoid endpoint definition completely. All HTTP decorators have `.auto()` method that generates endpoint name automatically from controller name and static method name.
+If the API (or part of it) of Vovk app isn't going to be exposed for remote use, you can avoid endpoint definition completely. All HTTP decorators have `.auto()` method that generates endpoint name automatically from controller name and static method name.
 
 ```ts
 // /src/vovk/hello/HelloController.ts - the back-end

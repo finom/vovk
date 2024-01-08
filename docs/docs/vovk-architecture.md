@@ -2,7 +2,7 @@
 sidebar_position: 6
 ---
 
-# The Vovk Architecture
+# Vovk Architecture
 
 **Vovk.ts** combines back-end and front-end code into one code base. The logical parts of the app are split into folders called "modules" (or "virtual modules") given them corresponding name such as user, post, comment, app settings, auth features etc. Besically a module can belong to 2 categories:
 
@@ -45,7 +45,7 @@ Every item (service, controller, state etc) in a module folder is optional. Some
 
 The image below illustrates how different components of the application import each other: thru regular `import` or `import type` + `import metadata`.
 
-![The Vovk Architecture](/img/vovk-pattern.svg)
+![Vovk Architecture](/img/vovk-pattern.svg)
 
 ## Controller
 
@@ -252,7 +252,7 @@ export function computeSomething() {
 
 ## Other ideas
 
-The Vovk Architecture isn't limited by the things described above. I can imagine that you may want to add more files into your module folder.
+Vovk Architecture isn't limited by the things described above. I can imagine that you may want to add more files into your module folder.
 
 - More Isomorphic Services to simplify the code.
 - More Worker Services.

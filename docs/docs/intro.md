@@ -225,7 +225,7 @@ export default function Home() {
 ## 8. Optional: create metadata.ts for easier import
 
 It's hard to type `import metadata from '../vovk-metadata.json'` every time since TypeScript doesn't know what you're going to name this variable. For easier import you can create another file called **metadata.ts**
- that re-exports the Vovk metadata.
+ that re-exports Vovk metadata.
 
 
 
