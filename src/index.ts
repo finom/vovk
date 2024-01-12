@@ -1,4 +1,4 @@
-import { _createSegment as createSegment } from './createSegment';
+import { _createSegment as createSegment, _writeMetadata as writeMetadata } from './createSegment';
 import {
   type _VovkErrorResponse as VovkErrorResponse,
   type _VovkRequest as VovkRequest,
@@ -24,6 +24,7 @@ export {
   HttpMethod,
   createSegment,
   createDecorator,
+  writeMetadata,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initVovk } = createSegment();
