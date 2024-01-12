@@ -6,6 +6,7 @@ import {
   type _VovkQuery as VovkQuery,
   type _VovkParams as VovkParams,
   type _VovkReturnType as VovkReturnType,
+  type _VovkMetadata as VovkMetadata,
   _HttpStatus as HttpStatus,
   _HttpMethod as HttpMethod,
 } from './types';
@@ -13,6 +14,7 @@ import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
 
 export {
+  type VovkMetadata,
   type VovkErrorResponse,
   type VovkRequest,
   type VovkBody,

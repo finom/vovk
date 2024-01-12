@@ -7,6 +7,7 @@ import {
   type _VovkController as VovkController,
   type _VovkControllerMetadata as VovkControllerMetadata,
   type _VovkWorker as VovkWorker,
+  type _VovkMetadata as VovkMetadata,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -41,7 +42,7 @@ const isEqual = (o1: KnownAny, o2: KnownAny): boolean => {
 
 export const _writeMetadata = async (
   metadataPath: string,
-  metadata: Record<string, VovkControllerMetadata>,
+  metadata: VovkMetadata,
   lib: {
     fs: typeof import('fs/promises');
     path: typeof import('path');
@@ -154,10 +155,7 @@ export function _createSegment() {
     workers?: Function[];
     exposeValidation?: boolean;
     onError?: (err: Error) => void | Promise<void>;
-    onMetadata?: (
-      metadata: Record<string, VovkControllerMetadata> & { workers?: Record<string, VovkWorkerMetadata> },
-      writeInDevelopment: typeof _writeMetadata
-    ) => void | Promise<void>;
+    onMetadata?: (metadata: VovkMetadata, writeInDevelopment: typeof _writeMetadata) => void | Promise<void>;
   }) => {
     for (const controller of options.controllers as VovkController[]) {
       controller._activated = true;
