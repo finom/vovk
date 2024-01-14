@@ -92,7 +92,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
 
       const fetcherPromise = fetcher(internalOptions, internalInput) as Promise<unknown>;
 
-      if (!(fetcherPromise instanceof Promise)) throw new Error('Fetcher must return a promise');
+      if (!(fetcherPromise instanceof Promise)) return Promise.resolve(fetcherPromise);
 
       return fetcherPromise;
     };

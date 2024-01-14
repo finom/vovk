@@ -25,10 +25,12 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   let js = `const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
 const metadata = require('./vovk-metadata.json');
-const fetcher = require('${fetcherPath}');
-const streamFetcher = require('${streamFetcherPath}');
+const { default: fetcher } = require('${fetcherPath}');
+const { default: streamFetcher } = require('${streamFetcherPath}');
 const prefix = '${vovkrc.prefix ?? '/api'}';
-const validateOnClient = ${vovkrc.validateOnClient ? `require('${vovkrc.validateOnClient}')` : 'null'};
+const { default: validateOnClient = null } = ${
+    vovkrc.validateOnClient ? `require('${vovkrc.validateOnClient}')` : '{}'
+  };
 
 `;
   const metadataJson = await fs
