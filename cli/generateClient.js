@@ -17,10 +17,10 @@ async function generateClient(rcPath) {
   let ts = `import type { Controllers } from "${controllersPath}";
 import type { clientizeController } from 'vovk/client';
 import type { promisifyWorker } from 'vovk/worker';
-import type { VovkFetcherOptions } from 'vovk/client';
+import type { VovkClientFetcher } from 'vovk/client';
 import type fetcher from '${fetcherPath}';
 
-type Options = typeof fetcher extends VovkFetcherOptions<infer U> ? U : never;
+type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
   let js = `const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');

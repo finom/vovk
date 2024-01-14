@@ -6,6 +6,7 @@ import { _HttpException as HttpException } from '../HttpException';
 export interface _DefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
   prefix?: string;
   isStream?: boolean;
+  disableClientValidation?: true;
 }
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultFetcher';
@@ -21,13 +22,15 @@ const defaultFetcher: VovkClientFetcher<_DefaultFetcherOptions> = async (
     (prefix.endsWith('/') ? prefix : `${prefix}/`) +
     getPath(params, query);
 
-  try {
-    validate({ body, query });
-  } catch (e) {
-    // if HttpException is thrown, rethrow it
-    if (e instanceof HttpException) throw e;
-    // otherwise, throw HttpException with status 0
-    throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE);
+  if (!options.disableClientValidation) {
+    try {
+      await validate({ body, query });
+    } catch (e) {
+      // if HttpException is thrown, rethrow it
+      if (e instanceof HttpException) throw e;
+      // otherwise, throw HttpException with status 0
+      throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE);
+    }
   }
 
   const init: RequestInit = {

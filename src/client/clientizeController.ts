@@ -54,9 +54,8 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
     const getPath = (params: { [key: string]: string }, query: { [key: string]: string }) =>
       getHandlerPath([prefix, path].filter(Boolean).join('/'), params, query);
 
-    const validate = ({ body, query }: { body?: unknown; query?: unknown }) => {
-      if (options?.disableClientValidation) return;
-      return options?.validateOnClient?.({ body, query }, clientValidators ?? {});
+    const validate = async ({ body, query }: { body?: unknown; query?: unknown }) => {
+      await options?.validateOnClient?.({ body, query }, clientValidators ?? {});
     };
 
     const handler = (

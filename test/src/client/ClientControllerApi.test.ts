@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import metadata from '../vovk-metadata.json';
 import type ClientController from './ClientController';
-import { ClientController as ClientControllerClientized } from '@vovkts/client';
 import { clientizeController } from '../../../src/client';
 import { HttpException, VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
 import { it, expect, describe } from '@jest/globals';
@@ -17,9 +16,10 @@ const defaultController = clientizeController<typeof ClientController>(metadata.
   defaultOptions: { prefix },
 });
 
-describe('Client with @vovkts/client', () => {
+describe('Client API', () => {
   it(`Should handle simple requests + headers`, async () => {
-    const result = await ClientControllerClientized.getHelloWorld({
+    const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
+    const result = await noOptionsController.getHelloWorld({
       prefix,
       headers: { 'x-test': 'world' },
     });
@@ -27,7 +27,8 @@ describe('Client with @vovkts/client', () => {
   });
 
   it(`Should handle simple requests and return a normal array`, async () => {
-    const result = await ClientControllerClientized.getHelloWorldArray({
+    const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
+    const result = await noOptionsController.getHelloWorldArray({
       prefix,
       headers: { 'x-test': 'world' },
     });
@@ -35,19 +36,19 @@ describe('Client with @vovkts/client', () => {
   });
 
   it(`Should handle simple requests and use empty generic`, async () => {
-    const result = await ClientControllerClientized.getHelloWorldAndEmptyGeneric();
+    const result = await defaultController.getHelloWorldAndEmptyGeneric();
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
   });
 
   it(`Should handle simple requests with default options`, async () => {
-    const result = await ClientControllerClientized.getHelloWorld({
+    const result = await defaultController.getHelloWorld({
       headers: { 'x-test': 'world' },
     });
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
   });
 
   it('Should handle requests with params', async () => {
-    const result = await ClientControllerClientized.getWithParams({
+    const result = await defaultController.getWithParams({
       params: { hello: 'world' },
     });
 
@@ -66,7 +67,7 @@ describe('Client with @vovkts/client', () => {
   });
 
   it('Should handle requests with params, body and query', async () => {
-    const result = await ClientControllerClientized.postWithParams({
+    const result = await defaultController.postWithParams({
       params: { hello: 'world' },
       body: { isBody: true },
       query: { query: 'queryValue' },
@@ -98,7 +99,12 @@ describe('Client with @vovkts/client', () => {
   });
 
   it('Should handle basic client validation', async () => {
-    const result = await ClientControllerClientized.postWithEqualityValidation({
+    const clientValidationController = clientizeController<typeof ClientController>(metadata.ClientController, {
+      defaultOptions: { prefix },
+      validateOnClient: validateEqualityOnClient,
+    });
+
+    const result = await clientValidationController.postWithEqualityValidation({
       body: { hello: 'body' },
       query: { hey: 'query' },
     });
@@ -109,28 +115,28 @@ describe('Client with @vovkts/client', () => {
     });
 
     await expect(async () => {
-      await ClientControllerClientized.postWithEqualityValidation({
+      await clientValidationController.postWithEqualityValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
       });
     }).rejects.toThrow(/Client exception. Invalid body/);
 
     await expect(async () => {
-      await ClientControllerClientized.postWithEqualityValidation({
+      await clientValidationController.postWithEqualityValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
       });
     }).rejects.toThrowError(HttpException);
 
     await expect(async () => {
-      await ClientControllerClientized.postWithEqualityValidation({
+      await clientValidationController.postWithEqualityValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
       });
     }).rejects.toThrow(/Client exception. Invalid query/);
 
     await expect(async () => {
-      await ClientControllerClientized.postWithEqualityValidation({
+      await clientValidationController.postWithEqualityValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
       });
@@ -138,7 +144,12 @@ describe('Client with @vovkts/client', () => {
   });
 
   it('Should handle basic server validation', async () => {
-    const result = await ClientControllerClientized.postWithEqualityValidation({
+    const serverValidationController = clientizeController<typeof ClientController>(metadata.ClientController, {
+      defaultOptions: { prefix },
+      validateOnClient: validateEqualityOnClient,
+    });
+
+    const result = await serverValidationController.postWithEqualityValidation({
       body: { hello: 'body' },
       query: { hey: 'query' },
       disableClientValidation: true,

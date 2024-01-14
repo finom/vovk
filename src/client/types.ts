@@ -56,7 +56,7 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
     name: keyof T;
     httpMethod: HttpMethod;
     getPath: (params: { [key: string]: string }, query: { [key: string]: string }) => string;
-    validate: (input: { body?: unknown; query?: unknown }) => void;
+    validate: (input: { body?: unknown; query?: unknown }) => void | Promise<void>;
   },
   input: {
     body: unknown;
@@ -66,7 +66,6 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
 ) => KnownAny;
 
 export type _VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
-  disableClientValidation?: boolean;
   fetcher?: _VovkClientFetcher<OPTS>;
   streamFetcher?: _VovkClientFetcher<OPTS>;
   validateOnClient?: (

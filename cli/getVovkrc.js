@@ -9,8 +9,8 @@ function getVovkrc(rcPath) {
 
   const vovkRc = {
     route: 'src/app/api/[[...]]/route.ts',
-    fetcher: 'vovk/client/fetcher',
-    streamFetcher: 'vovk/client/streamFetcher',
+    fetcher: 'vovk/client/defaultFetcher',
+    streamFetcher: 'vovk/client/defaultStreamFetcher',
     prefix: '/api',
     // validateOnClient: 'vovk-zod/validateOnClient',
   };

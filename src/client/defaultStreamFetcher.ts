@@ -16,7 +16,7 @@ const defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = async (
     getPath(params, query);
 
   try {
-    validate({ body, query });
+    await validate({ body, query });
   } catch (e) {
     // if HttpException is thrown, rethrow it
     if (e instanceof HttpException) throw e;
