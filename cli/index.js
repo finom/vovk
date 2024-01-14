@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-//// @ts-check
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const { concurrently } = require('concurrently');
