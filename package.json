@@ -2,7 +2,9 @@
   "name": "vovk",
   "version": "0.2.2",
   "description": "Structural add-on for Next.js",
-  "main": "/index.js",
+  "bin": {
+    "vovk": "./cli"
+  },
   "scripts": {
     "upgrade": "npx npm-check-updates -u && npm i",
     "test": "npm run lint-nofix && tsc --noemit && npm run unit",
@@ -19,7 +21,6 @@
     "toc": "npx markdown-toc README.md -i",
     "patch": "npm t && npm version patch && npm run build && npm publish ./dist && git push && git push --tags",
     "minor": "npm t && npm version minor && npm run build && npm publish ./dist && git push && git push --tags",
-    "BREAKING-major": "npm t && npm version major && npm run build && npm publish ./dist && git push && git push --tags",
     "beta": "npm t && npm version prerelease --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "beta-patch": "npm t && npm version prepatch --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "beta-minor": "npm t && npm version preminor --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",

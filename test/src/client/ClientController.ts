@@ -67,7 +67,7 @@ export default class ClientController {
 
   @post.auto()
   @vovkZod(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') }))
-  static async postWithZodValidationAndEqualityValidation(req: VovkRequest<{ hello: string }, { hey: string }>) {
+  static async postWithZodValidation(req: VovkRequest<{ hello: string }, { hey: string }>) {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
     return { body, query: { hey } };

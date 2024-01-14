@@ -107,7 +107,8 @@ const config = {
           },
           {
             title: 'Community',
-            items: [/*
+            items: [
+              /*
               {
                 label: 'Stack Overflow',
                 href: 'https://stackoverflow.com/questions/tagged/docusaurus',
@@ -120,7 +121,8 @@ const config = {
                 label: 'Twitter',
                 href: 'https://twitter.com/docusaurus',
               },
-            */],
+            */
+            ],
           },
           {
             title: 'More',

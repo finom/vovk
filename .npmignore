@@ -1,10 +1,10 @@
 src
 test
 docs
-client-lib
 .eslintrc.js
 jest.config.js
 tsconfig.tsbuildinfo
 .github
 .assets
 tsconfig.eslint.json
+post-publish-test

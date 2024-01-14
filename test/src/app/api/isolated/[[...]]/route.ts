@@ -9,4 +9,7 @@ class IsolatedController {
   }
 }
 
-export const { GET } = initVovk({ controllers: [IsolatedController] });
+export const { GET } = initVovk({
+  controllers: { IsolatedController },
+  emitMetadata: false,
+});

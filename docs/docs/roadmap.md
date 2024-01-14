@@ -7,6 +7,7 @@ sidebar_position: 8
 ## The library
 
 - Support OpenAPI export.
+- Support Edge Rumtime.
 - Export `StreamResponse` class to use as a response pointer in Services and to implement streaming without generators syntax.
 - Support async iterable for stream responses at `VovkReturnType` type.
 - An option to obfuscate endpoint names when `.auto()` decorators are used.
@@ -21,3 +22,13 @@ sidebar_position: 8
 - TodoMVC with SQLite and Prisma.
 - How to create API library for free and publish it on NPM.
 - React Native example.
+
+## Ideas
+
+Auto-generated client for edge runtime.
+
+```ts
+import { MyController } from '@vovk/client';
+
+await MyController.doSomething();
+```

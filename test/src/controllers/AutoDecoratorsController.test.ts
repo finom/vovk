@@ -6,7 +6,7 @@ describe('Auto decorators', () => {
 
   for (const name of names) {
     it(`Should handle ${name} requests`, async () => {
-      const response = await request[name](`/auto-decorators/auto-decorators-controller/${name}-method`);
+      const response = await request[name](`/auto-decorators/${name}-method`);
 
       expect(response.status).toBe(200);
     });

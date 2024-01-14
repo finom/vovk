@@ -17,7 +17,7 @@ export type _HandlerMetadata = {
 };
 
 export type _VovkControllerMetadata = {
-  controllerName: string;
+  _controllerName: string;
   _prefix?: string;
   _handlers: Record<string, _HandlerMetadata>;
 };
@@ -29,13 +29,13 @@ export type _HandlerMetadataJson = {
 };
 
 export type _VovkControllerMetadataJson = {
-  controllerName: string;
+  _controllerName: string;
   _prefix?: string;
   _handlers: Record<string, _HandlerMetadataJson>;
 };
 
 export type _VovkWorkerMetadata = {
-  workerName: string;
+  _workerName: string;
   _handlers: Record<
     string,
     {

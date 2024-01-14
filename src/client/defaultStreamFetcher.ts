@@ -6,7 +6,7 @@ import { _StreamResponse as StreamResponse } from '../StreamResponse';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamFetcher';
 
-export const _defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = async (
+const defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = async (
   { httpMethod, getPath, validate },
   { params, query, body, prefix = '/api', ...options }
 ): Promise<StreamAsyncIterator<unknown>> => {
@@ -120,3 +120,5 @@ export const _defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = a
     },
   };
 };
+
+export default defaultStreamFetcher;

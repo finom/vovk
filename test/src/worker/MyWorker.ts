@@ -1,4 +1,6 @@
-import { DefaultFetcherOptions, clientizeController } from 'vovk/client';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+import { VovkDefaultFetcherOptions, clientizeController } from '../../../src/client';
 import { promisifyWorker, worker } from '../../../src/worker';
 import metadata from '../vovk-metadata.json' assert { type: 'json' };
 import type MyInnerWorker from './MyInnerWorker';
@@ -8,7 +10,7 @@ import type ClientController from '../client/ClientController';
 export default class MyWorker {
   static workerName = 'MyWorker';
 
-  private static defaultController = clientizeController<typeof ClientController, DefaultFetcherOptions>(
+  private static defaultController = clientizeController<typeof ClientController, VovkDefaultFetcherOptions>(
     metadata.ClientController,
     {
       defaultOptions: { prefix: '/api' },

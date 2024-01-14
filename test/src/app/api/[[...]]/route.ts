@@ -19,7 +19,8 @@ import MyInnerWorker from '../../../worker/MyInnerWorker';
 import StreamingGeneratorController from '../../../client/StreamingGeneratorController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
-  controllers: [
+  emitMetadata: false,
+  controllers: {
     ...trimControllers,
     InputController,
     CustomDecoratorController,
@@ -36,17 +37,23 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
     ClientController,
     StreamingController,
     StreamingGeneratorController,
-  ],
+  },
   onError: (err) => {
     // eslint-disable-next-line no-console
     console.log('onError', err.message);
   },
 });
 
+const controllers = { ClientController, StreamingController, StreamingGeneratorController };
+const workers = { MyWorker, MyInnerWorker };
+
+export type Controllers = typeof controllers;
+export type Workers = typeof workers;
+
 // generate metadata for client controller only
 initVovk({
-  controllers: [ClientController, StreamingController, StreamingGeneratorController],
-  workers: [MyWorker, MyInnerWorker],
+  controllers,
+  workers,
   onMetadata: async (metadata, write) => {
     const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
     const metadataPath = path.join(__dirname.replace('.next/server/app', 'src'), '../../vovk-metadata.json');

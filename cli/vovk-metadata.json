@@ -3,18 +3,6 @@
     "_controllerName": "ClientController",
     "_prefix": "client",
     "_handlers": {
-      "getHelloWorld": {
-        "httpMethod": "GET",
-        "path": "get-hello-world"
-      },
-      "getHelloWorldArray": {
-        "httpMethod": "GET",
-        "path": "get-hello-world-array"
-      },
-      "getHelloWorldAndEmptyGeneric": {
-        "httpMethod": "GET",
-        "path": "get-hello-world-and-empty-generic"
-      },
       "getWithParams": {
         "path": "with-params/:hello",
         "httpMethod": "GET"
@@ -32,8 +20,8 @@
             "hey": "query"
           }
         },
-        "httpMethod": "POST",
-        "path": "post-with-equality-validation"
+        "path": "client-controller/post-with-equality-validation",
+        "httpMethod": "POST"
       },
       "postFormData": {
         "clientValidators": {
@@ -52,10 +40,10 @@
             "$schema": "http://json-schema.org/draft-07/schema#"
           }
         },
-        "httpMethod": "POST",
-        "path": "post-form-data"
+        "path": "client-controller/post-form-data",
+        "httpMethod": "POST"
       },
-      "postWithZodValidation": {
+      "postWithZodValidationAndEqualityValidation": {
         "clientValidators": {
           "body": {
             "type": "object",
@@ -86,8 +74,20 @@
             "$schema": "http://json-schema.org/draft-07/schema#"
           }
         },
-        "httpMethod": "POST",
-        "path": "post-with-zod-validation"
+        "path": "client-controller/post-with-zod-validation-and-equality-validation",
+        "httpMethod": "POST"
+      },
+      "getHelloWorld": {
+        "path": "client-controller/get-hello-world",
+        "httpMethod": "GET"
+      },
+      "getHelloWorldArray": {
+        "path": "client-controller/get-hello-world-array",
+        "httpMethod": "GET"
+      },
+      "getHelloWorldAndEmptyGeneric": {
+        "path": "client-controller/get-hello-world-and-empty-generic",
+        "httpMethod": "GET"
       }
     }
   },
@@ -96,24 +96,24 @@
     "_prefix": "streaming",
     "_handlers": {
       "postWithStreaming": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming"
+        "path": "streaming-controller/post-with-streaming",
+        "httpMethod": "POST"
       },
       "postWithStreamingAndImmediateError": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming-and-immediate-error"
+        "path": "streaming-controller/post-with-streaming-and-immediate-error",
+        "httpMethod": "POST"
       },
       "postWithStreamingAndDelayedError": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming-and-delayed-error"
+        "path": "streaming-controller/post-with-streaming-and-delayed-error",
+        "httpMethod": "POST"
       },
       "postWithStreamingAndDelayedCustomError": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming-and-delayed-custom-error"
+        "path": "streaming-controller/post-with-streaming-and-delayed-custom-error",
+        "httpMethod": "POST"
       },
       "postWithStreamingAndDelayedUnhandledError": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming-and-delayed-unhandled-error"
+        "path": "streaming-controller/post-with-streaming-and-delayed-unhandled-error",
+        "httpMethod": "POST"
       }
     }
   },
@@ -122,28 +122,28 @@
     "_prefix": "streaming-generator",
     "_handlers": {
       "postWithAsyncStreaming": {
-        "httpMethod": "POST",
-        "path": "post-with-async-streaming"
+        "path": "streaming-generator-controller/post-with-async-streaming",
+        "httpMethod": "POST"
       },
       "postWithStreaming": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming"
+        "path": "streaming-generator-controller/post-with-streaming",
+        "httpMethod": "POST"
       },
       "postWithStreamingAndImmediateError": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming-and-immediate-error"
+        "path": "streaming-generator-controller/post-with-streaming-and-immediate-error",
+        "httpMethod": "POST"
       },
       "postWithStreamingAndDelayedError": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming-and-delayed-error"
+        "path": "streaming-generator-controller/post-with-streaming-and-delayed-error",
+        "httpMethod": "POST"
       },
       "postWithStreamingAndDelayedCustomError": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming-and-delayed-custom-error"
+        "path": "streaming-generator-controller/post-with-streaming-and-delayed-custom-error",
+        "httpMethod": "POST"
       },
       "postWithStreamingAndDelayedUnhandledError": {
-        "httpMethod": "POST",
-        "path": "post-with-streaming-and-delayed-unhandled-error"
+        "path": "streaming-generator-controller/post-with-streaming-and-delayed-unhandled-error",
+        "httpMethod": "POST"
       }
     }
   },

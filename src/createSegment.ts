@@ -75,11 +75,15 @@ export function _createSegment() {
 
       const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(controller) ?? {};
       r._routes[httpMethod].set(controller, methods);
-      const handlers = controller._handlers ?? {};
 
-      controller._handlers = handlers;
-
-      handlers[propertyKey] = { ...handlers[propertyKey], path, httpMethod };
+      controller._handlers = {
+        ...controller._handlers,
+        [propertyKey]: {
+          ...(controller._handlers ?? {})[propertyKey],
+          path,
+          httpMethod,
+        },
+      };
 
       (controller[propertyKey] as { _controller: VovkController })._controller = controller;
 
@@ -110,18 +114,19 @@ export function _createSegment() {
 
     const auto = () => {
       function decorator(givenTarget: KnownAny, propertyKey: string) {
-        const target = givenTarget as VovkController;
-        const controllerName = target.controllerName;
+        const controller = givenTarget as VovkController;
+        const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(controller) ?? {};
+        r._routes[httpMethod].set(controller, methods);
 
-        if (!controllerName) {
-          throw new Error(
-            `Controller must have a static property "controllerName" when auto() decorators are used. Check the controller named "${
-              target.name ?? 'unknown'
-            }".`
-          );
-        }
+        controller._handlers = {
+          ...controller._handlers,
+          [propertyKey]: {
+            ...(controller._handlers ?? {})[propertyKey],
+            httpMethod,
+          },
+        };
 
-        assignMetadata(target, propertyKey, `${toKebabCase(controllerName)}/${toKebabCase(propertyKey)}`);
+        assignMetadata(controller, propertyKey, toKebabCase(propertyKey));
       }
 
       return decorator;
@@ -141,85 +146,93 @@ export function _createSegment() {
     const path = trimPath(givenPath);
 
     return (givenTarget: KnownAny) => {
-      const target = givenTarget as VovkController;
-      target._prefix = path;
+      const controller = givenTarget as VovkController;
+      controller._prefix = path;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return givenTarget;
     };
   };
 
+  const getMetadata = (options: {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    controllers: Record<string, Function>;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    workers?: Record<string, Function>;
+    exposeValidation?: boolean;
+  }) => {
+    const exposeValidation = options?.exposeValidation ?? true;
+    const metadata: Record<string, VovkControllerMetadata> & {
+      workers?: Record<string, VovkWorkerMetadata>;
+    } = {};
+
+    for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
+      metadata[controllerName] = {
+        _controllerName: controllerName,
+        _prefix: controller._prefix ?? '',
+        _handlers: {
+          ...(exposeValidation
+            ? controller._handlers
+            : Object.fromEntries(
+                Object.entries(controller._handlers).map(([key, value]) => [
+                  key,
+                  { ...value, clientValidators: undefined },
+                ])
+              )),
+        },
+      };
+    }
+
+    for (const [workerName, worker] of Object.entries(options.workers ?? {}) as [string, VovkWorker][]) {
+      metadata.workers = metadata.workers ?? {};
+      metadata.workers[workerName] = {
+        _workerName: workerName,
+        _handlers: { ...worker._handlers },
+      };
+    }
+
+    return metadata;
+  };
+
   const initVovk = (options: {
     // eslint-disable-next-line @typescript-eslint/ban-types
-    controllers: Function[];
+    controllers: Record<string, Function>;
     // eslint-disable-next-line @typescript-eslint/ban-types
-    workers?: Function[];
+    workers?: Record<string, Function>;
     exposeValidation?: boolean;
+    emitMetadata?: boolean;
     onError?: (err: Error) => void | Promise<void>;
     onMetadata?: (metadata: VovkMetadata, writeInDevelopment: typeof _writeMetadata) => void | Promise<void>;
   }) => {
-    for (const controller of options.controllers as VovkController[]) {
+    for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
+      controller._controllerName = controllerName;
       controller._activated = true;
       controller._onError = options?.onError;
-
-      if (process.env.NODE_ENV === 'development') {
-        if (controller.controllerName && controller.controllerName !== controller.name) {
-          throw new Error(
-            `Controller "${controller.name}" has a static property "controllerName" that does not match the controller name.`
-          );
-        }
-      }
     }
 
-    for (const worker of (options?.workers ?? []) as VovkWorker[]) {
-      if (process.env.NODE_ENV === 'development') {
-        if (worker.workerName && worker.workerName !== worker.name) {
-          throw new Error(
-            `Worker "${worker.name}" has a static property "workerName" that does not match the worker class name.`
-          );
-        }
-      }
-    }
+    const metadata = getMetadata(options);
 
-    if (options?.onMetadata) {
-      const exposeValidation = options?.exposeValidation ?? true;
-      const metadata: Record<string, VovkControllerMetadata> & {
-        workers?: Record<string, VovkWorkerMetadata>;
-      } = {};
-
-      for (const controller of options.controllers as unknown as VovkController[]) {
-        if (!controller.controllerName) {
-          throw new Error(`Client metadata error: controller ${controller.name} does not have a controllerName`);
-        }
-
-        metadata[controller.controllerName] = {
-          controllerName: controller.controllerName,
-          _prefix: controller._prefix ?? '',
-          _handlers: {
-            ...(exposeValidation
-              ? controller._handlers
-              : Object.fromEntries(
-                  Object.entries(controller._handlers).map(([key, value]) => [
-                    key,
-                    { ...value, clientValidators: undefined },
-                  ])
-                )),
-          },
-        };
+    if (options.emitMetadata !== false) {
+      if (process.env.NODE_ENV === 'development' || process.env.NEXT_PHASE === 'phase-production-build') {
+        void fetch(`http://localhost:${process.env.VOVK_PORT || 3420}/__metadata`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(metadata),
+        })
+          .then((resp) => {
+            if (!resp.ok) {
+              // eslint-disable-next-line no-console
+              console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
+            }
+          })
+          .catch((err) => {
+            // eslint-disable-next-line no-console
+            console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
+          });
       }
 
-      for (const worker of (options?.workers ?? []) as VovkWorker[]) {
-        if (!worker.workerName) {
-          throw new Error(`Client metadata error: worker ${worker.name} does not have a workerName`);
-        }
-
-        metadata.workers = metadata.workers ?? {};
-        metadata.workers[worker.workerName] = {
-          workerName: worker.workerName,
-          _handlers: { ...worker._handlers },
-        };
+      if (options?.onMetadata) {
+        void options.onMetadata(metadata, _writeMetadata);
       }
-
-      void options.onMetadata(metadata, _writeMetadata);
     }
 
     return {

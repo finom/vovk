@@ -12,11 +12,8 @@ import {
   type _StreamAsyncIterator as StreamAsyncIterator,
 } from './types';
 
-import { _defaultStreamFetcher as defaultStreamFetcher } from './defaultStreamFetcher';
-import {
-  _defaultFetcher as defaultFetcher,
-  type _DefaultFetcherOptions as DefaultFetcherOptions,
-} from './defaultFetcher';
+import defaultStreamFetcher from './defaultStreamFetcher';
+import { default as defaultFetcher, type _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultFetcher';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -49,7 +46,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
   if (!controller) throw new Error(`Unable to clientize. Controller metadata is not provided`);
   const metadata = controller._handlers;
   if (!metadata)
-    throw new Error(`Unable to clientize. No metadata for controller ${String(controller?.controllerName)}`);
+    throw new Error(`Unable to clientize. No metadata for controller ${String(controller?._controllerName)}`);
   const prefix = trimPath(controller._prefix ?? '');
   const { fetcher = defaultFetcher, streamFetcher = defaultStreamFetcher } = options ?? {};
 

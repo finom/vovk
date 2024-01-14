@@ -7,6 +7,7 @@ type QueryValidate = Record<string, string> | null;
 
 const validateEquality = createDecorator(
   async (req: VovkRequest<unknown>, next, bodyValidate?: BodyValidate, queryValidate?: QueryValidate) => {
+    console.log('PIZDA0');
     if (bodyValidate) {
       const body = await req.json();
 
