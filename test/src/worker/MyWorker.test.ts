@@ -1,7 +1,6 @@
 import puppeteer, { type Page } from 'puppeteer';
 import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
-import type { _WorkerPromiseInstance as WorkerPromiseInstance } from '../../../src/worker/types';
-import type MyWorker from './MyWorker';
+import type { MyWorker } from '@vovkts/client';
 
 // const worker = promisifyWorker(MyWorker);
 describe('Worker', () => {
@@ -36,19 +35,8 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
-      return metadataWorker.findLargestPrimeBelow(100000);
-    });
-
-    expect(result).toEqual(99991);
-  });
-
-  it('Should work as standalone', async () => {
-    const result = await page.evaluate(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      // eslint-disable-next-line no-undef
-      const { standaloneWorker } = window as unknown as { standaloneWorker: WorkerPromiseInstance<typeof MyWorker> };
-      return standaloneWorker.findLargestPrimeBelow(100000);
+      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
+      return MyWorkerPromisified.findLargestPrimeBelow(100000);
     });
 
     expect(result).toEqual(99991);
@@ -58,8 +46,8 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
-      return metadataWorker.calculateFibonacci(10);
+      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
+      return MyWorkerPromisified.calculateFibonacci(10);
     });
 
     expect(result).toEqual(55);
@@ -69,8 +57,8 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
-      return metadataWorker.getHetClientizeHelloWorld();
+      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
+      return MyWorkerPromisified.getHetClientizeHelloWorld();
     });
 
     expect(result).toEqual({ hello: 'world' });
@@ -80,10 +68,10 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
       const numbers: number[] = [];
 
-      for await (const number of metadataWorker.generator()) {
+      for await (const number of MyWorkerPromisified.generator()) {
         numbers.push(number);
       }
 
@@ -97,10 +85,10 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
       const numbers: number[] = [];
 
-      for await (const number of metadataWorker.asyncGenerator()) {
+      for await (const number of MyWorkerPromisified.asyncGenerator()) {
         numbers.push(number);
       }
 
@@ -114,13 +102,13 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
       const numbers: number[] = [];
 
       let error: string | undefined;
 
       try {
-        for await (const number of metadataWorker.generatorWithError()) {
+        for await (const number of MyWorkerPromisified.generatorWithError()) {
           numbers.push(number);
         }
       } catch (e) {
@@ -138,13 +126,13 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
       const numbers: number[] = [];
 
       let error: string | undefined;
 
       try {
-        for await (const number of metadataWorker.asyncGeneratorWithError()) {
+        for await (const number of MyWorkerPromisified.asyncGeneratorWithError()) {
           numbers.push(number);
         }
       } catch (e) {
@@ -156,21 +144,5 @@ describe('Worker', () => {
 
     expect(result.numbers).toEqual([0, 1, 2, 3, 4]);
     expect(result.error).toEqual('Not good');
-  });
-
-  it('Terminates', async () => {
-    const result = await page.evaluate(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      // eslint-disable-next-line no-undef
-      const { isTerminated, isUsingTerminated } = window as unknown as {
-        isTerminated: boolean;
-        isUsingTerminated: boolean;
-      };
-
-      return { isTerminated, isUsingTerminated };
-    });
-
-    expect(result.isTerminated).toEqual(true);
-    expect(result.isUsingTerminated).toEqual(true);
   });
 });

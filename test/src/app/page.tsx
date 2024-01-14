@@ -1,5 +1,6 @@
 'use client';
 import { useEffect } from 'react';
+import { MyWorker as MyWorkerPromisified } from '@vovkts/client';
 import { promisifyWorker } from '../../../src/worker';
 import metadata from '../vovk-metadata.json' assert { type: 'json' };
 import MyWorker from '../worker/MyWorker';
@@ -11,10 +12,14 @@ export default function Home() {
     const win = window as unknown as {
       metadataWorker: typeof metadataWorker;
       standaloneWorker: typeof standaloneWorker;
+      MyWorkerPromisified: typeof MyWorkerPromisified;
       isTerminated: boolean;
       isUsingTerminated: boolean;
     };
     if (win.metadataWorker) return;
+
+    MyWorkerPromisified.use(new Worker(new URL('../worker/MyWorker.ts', import.meta.url)));
+
     const metadataWorker = promisifyWorker<typeof MyWorker>(
       new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
       metadata.workers.MyWorker
@@ -45,6 +50,7 @@ export default function Home() {
 
     win.metadataWorker = metadataWorker;
     win.standaloneWorker = standaloneWorker;
+    win.MyWorkerPromisified = MyWorkerPromisified;
 
     win.isTerminated = toBeTerminated._isTerminated ?? false;
     win.isUsingTerminated = toBeUsingTerminated._isTerminated ?? false;

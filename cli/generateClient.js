@@ -47,7 +47,7 @@ const { default: validateOnClient = null } = ${
 
   for (const key of Object.keys(metadata.workers ?? {})) {
     ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>;\n`;
-    js += `exports.${key} = promisifyWorker(metadata.workers.${key});\n`;
+    js += `exports.${key} = promisifyWorker(null, metadata.workers.${key});\n`;
   }
 
   await fs.mkdir('../../.vovk', { recursive: true });
