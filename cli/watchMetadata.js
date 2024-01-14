@@ -21,6 +21,9 @@ async function watchMetadata() {
 
   const jsonWatcher = watch(path.join(__dirname, '../../.vovk/vovk-metadata.json'));
 
+  await generateClient(argv.rc, argv.output);
+  console.info(' 🐺 Client generated');
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for await (const _event of jsonWatcher) {
     await generateClient(argv.rc, argv.output);
