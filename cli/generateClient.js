@@ -14,7 +14,7 @@ async function generateClient(rcPath) {
     : vovkrc.streamFetcher;
 
   const controllersPath = path.join('../..', vovkrc.route).replace(/\.ts$/, '');
-  let ts = `import type { Controllers } from "${controllersPath}";
+  let ts = `import type { Controllers, Workers } from "${controllersPath}";
 import type { clientizeController } from 'vovk/client';
 import type { promisifyWorker } from 'vovk/worker';
 import type { VovkClientFetcher } from 'vovk/client';
@@ -46,7 +46,7 @@ const { default: validateOnClient = null } = ${
   }
 
   for (const key of Object.keys(metadata.workers ?? {})) {
-    ts += `export const ${key}: ReturnType<typeof promisifyWorker<${key}>>;\n`;
+    ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>;\n`;
     js += `exports.${key} = promisifyWorker(metadata.workers.${key});\n`;
   }
 
