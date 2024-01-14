@@ -53,7 +53,7 @@ const server = http.createServer((req, res) => {
     req.on('end', async () => {
       try {
         const metadata = JSON.parse(body); // Parse the JSON data
-        const filePath = path.join(__dirname, '../.vovk/vovk-metadata.json');
+        const filePath = path.join(__dirname, '../../.vovk/vovk-metadata.json');
         await writeMetadata(filePath, metadata);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');

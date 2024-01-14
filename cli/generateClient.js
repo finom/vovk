@@ -31,7 +31,9 @@ const prefix = '${vovkrc.prefix ?? '/api'}';
 const validateOnClient = ${vovkrc.validateOnClient ? `require('${vovkrc.validateOnClient}')` : 'null'};
 
 `;
-  const metadataJson = await fs.readFile(path.join(__dirname, 'vovk-metadata.json'), 'utf-8');
+  const metadataJson = await fs
+    .readFile(path.join(__dirname, '../../.vovk/vovk-metadata.json'), 'utf-8')
+    .catch(() => null);
   const metadata = JSON.parse(metadataJson || '{}');
 
   for (const key of Object.keys(metadata)) {
@@ -44,7 +46,7 @@ const validateOnClient = ${vovkrc.validateOnClient ? `require('${vovkrc.validate
   /* for(const key of Object.keys(metadata.workers ?? {})) {
     code += `export const ${key} = promisifyWorker<${key}>(metadata.workers.${key});\n`;
 } */
-
+  await fs.mkdir('../../.vovk');
   await fs.writeFile(path.join(__dirname, '../../.vovk/index.d.ts'), ts);
   await fs.writeFile(path.join(__dirname, '../../.vovk/index.js'), js);
 }
