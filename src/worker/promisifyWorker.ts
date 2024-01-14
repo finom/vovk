@@ -9,6 +9,7 @@ export function _promisifyWorker<T extends object>(
   currentWorker: Worker | null,
   givenWorkerService: object
 ): WorkerPromiseInstance<T> {
+  if (!givenWorkerService) throw new Error('Worker metadata is not provided');
   const workerService = givenWorkerService as T & VovkWorkerMetadata;
   const instance = {} as WorkerPromiseInstance<T>;
   let callsKey = 0;
@@ -41,9 +42,8 @@ export function _promisifyWorker<T extends object>(
       value: Symbol.for('dispose'),
     });
   }
-  if (Symbol.dispose) {
-    instance[Symbol.dispose] = () => instance.terminate();
-  }
+
+  instance[Symbol.dispose] = () => instance.terminate();
 
   for (const method of Object.keys(workerService._handlers) as (keyof T & string)[]) {
     const { isGenerator } = workerService._handlers[method];
