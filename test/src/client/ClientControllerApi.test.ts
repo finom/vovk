@@ -158,7 +158,6 @@ describe('Client API', () => {
     expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
       body: { hello: 'body' },
       query: { hey: 'query' },
-      disableClientValidation: true,
     });
 
     await expect(async () => {
@@ -254,7 +253,6 @@ describe('Client API', () => {
     expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
       body: { hello: 'body' },
       query: { hey: 'query' },
-      disableClientValidation: true,
     });
 
     await expect(async () => {

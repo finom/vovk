@@ -1,21 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import metadata from '../vovk-metadata.json';
 import type ClientController from './ClientController';
 import { ClientController as ClientControllerClientized } from '@vovkts/client';
-import { clientizeController } from '../../../src/client';
 import { HttpException, VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
 import { it, expect, describe } from '@jest/globals';
-
-import { validateEqualityOnClient } from './validateEquality';
-import { zodValidateOnClient } from 'vovk-zod';
 
 type ClientControllerType = typeof ClientController;
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
-
-const defaultController = clientizeController<typeof ClientController>(metadata.ClientController, {
-  defaultOptions: { prefix },
-});
 
 describe('Client with @vovkts/client', () => {
   it(`Should handle simple requests + headers`, async () => {
@@ -147,11 +138,10 @@ describe('Client with @vovkts/client', () => {
     expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
       body: { hello: 'body' },
       query: { hey: 'query' },
-      disableClientValidation: true,
     });
 
     await expect(async () => {
-      await serverValidationController.postWithEqualityValidation({
+      await ClientControllerClientized.postWithEqualityValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
         disableClientValidation: true,
@@ -159,7 +149,7 @@ describe('Client with @vovkts/client', () => {
     }).rejects.toThrow(/Server exception. Invalid body/);
 
     await expect(async () => {
-      await serverValidationController.postWithEqualityValidation({
+      await ClientControllerClientized.postWithEqualityValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
         disableClientValidation: true,
@@ -167,7 +157,7 @@ describe('Client with @vovkts/client', () => {
     }).rejects.toThrowError(HttpException);
 
     await expect(async () => {
-      await serverValidationController.postWithEqualityValidation({
+      await ClientControllerClientized.postWithEqualityValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
         disableClientValidation: true,
@@ -175,7 +165,7 @@ describe('Client with @vovkts/client', () => {
     }).rejects.toThrow(/Server exception. Invalid query/);
 
     await expect(async () => {
-      await serverValidationController.postWithEqualityValidation({
+      await ClientControllerClientized.postWithEqualityValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
         disableClientValidation: true,
@@ -184,12 +174,7 @@ describe('Client with @vovkts/client', () => {
   });
 
   it('Should handle zod client validation', async () => {
-    const clientZodController = clientizeController<typeof ClientController>(metadata.ClientController, {
-      defaultOptions: { prefix },
-      validateOnClient: zodValidateOnClient,
-    });
-
-    const result = await clientZodController.postWithZodValidation({
+    const result = await ClientControllerClientized.postWithZodValidation({
       body: { hello: 'body' },
       query: { hey: 'query' },
     });
@@ -200,28 +185,28 @@ describe('Client with @vovkts/client', () => {
     });
 
     await expect(async () => {
-      await clientZodController.postWithZodValidation({
+      await ClientControllerClientized.postWithZodValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
       });
     }).rejects.toThrow(/Invalid body on client/);
 
     await expect(async () => {
-      await clientZodController.postWithZodValidation({
+      await ClientControllerClientized.postWithZodValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
       });
     }).rejects.toThrowError(HttpException);
 
     await expect(async () => {
-      await clientZodController.postWithZodValidation({
+      await ClientControllerClientized.postWithZodValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
       });
     }).rejects.toThrow(/Invalid query on client/);
 
     await expect(async () => {
-      await clientZodController.postWithZodValidation({
+      await ClientControllerClientized.postWithZodValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
       });
@@ -229,12 +214,7 @@ describe('Client with @vovkts/client', () => {
   });
 
   it('Should handle zod server validation', async () => {
-    const serverZodController = clientizeController<typeof ClientController>(metadata.ClientController, {
-      defaultOptions: { prefix },
-      validateOnClient: zodValidateOnClient,
-    });
-
-    const result = await serverZodController.postWithZodValidation({
+    const result = await ClientControllerClientized.postWithZodValidation({
       body: { hello: 'body' },
       query: { hey: 'query' },
       disableClientValidation: true,
@@ -243,11 +223,10 @@ describe('Client with @vovkts/client', () => {
     expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
       body: { hello: 'body' },
       query: { hey: 'query' },
-      disableClientValidation: true,
     });
 
     await expect(async () => {
-      await serverZodController.postWithZodValidation({
+      await ClientControllerClientized.postWithZodValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
         disableClientValidation: true,
@@ -255,7 +234,7 @@ describe('Client with @vovkts/client', () => {
     }).rejects.toThrow(/Invalid body on server/);
 
     await expect(async () => {
-      await serverZodController.postWithZodValidation({
+      await ClientControllerClientized.postWithZodValidation({
         body: { hello: 'wrong' },
         query: { hey: 'query' },
         disableClientValidation: true,
@@ -263,7 +242,7 @@ describe('Client with @vovkts/client', () => {
     }).rejects.toThrowError(HttpException);
 
     await expect(async () => {
-      await serverZodController.postWithZodValidation({
+      await ClientControllerClientized.postWithZodValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
         disableClientValidation: true,
@@ -271,7 +250,7 @@ describe('Client with @vovkts/client', () => {
     }).rejects.toThrow(/Invalid query on server/);
 
     await expect(async () => {
-      await serverZodController.postWithZodValidation({
+      await ClientControllerClientized.postWithZodValidation({
         body: { hello: 'body' },
         query: { hey: 'wrong' },
         disableClientValidation: true,
@@ -284,7 +263,7 @@ describe('Client with @vovkts/client', () => {
     formData.append('foo1', 'bar1');
     formData.append('foo2', 'bar2');
 
-    const result = await defaultController.postFormData({
+    const result = await ClientControllerClientized.postFormData({
       body: formData,
       query: { hello: 'world' },
     });

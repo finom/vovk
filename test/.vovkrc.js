@@ -1,3 +1,3 @@
 module.exports = {
-    validateOnClient: "vovk-zod/validateOnClient"
+    validateOnClient: "vovk-zod/zodValidateOnClient"
 }

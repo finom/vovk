@@ -13,8 +13,8 @@
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18",
-    "vovk": "^0.2.3-beta.10",
-    "vovk-zod": "^0.0.13"
+    "vovk": "^0.2.3-beta.11",
+    "vovk-zod": "^0.0.14"
   },
   "devDependencies": {
     "@types/node": "^20",
