@@ -16,6 +16,8 @@ export type _WorkerPromiseInstance<T> = {
     : never;
 } & {
   terminate: () => void;
+  use: (w: Worker) => _WorkerPromiseInstance<T>;
+  fork: (w: Worker) => _WorkerPromiseInstance<T>;
   _isTerminated?: true;
   [Symbol.dispose]: () => void;
 };

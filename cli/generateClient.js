@@ -2,7 +2,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const getVovkrc = require('./getVovkrc');
 /**
- * Generates client code with string concatenation so it should be super fast
+ * Generates client code with string concatenation so it should be much faster than using AST
  * @type {(rcPath: string) => Promise<void>}
  */
 async function generateClient(rcPath) {
@@ -45,9 +45,11 @@ const { default: validateOnClient = null } = ${
     }
   }
 
-  /* for(const key of Object.keys(metadata.workers ?? {})) {
-    code += `export const ${key} = promisifyWorker<${key}>(metadata.workers.${key});\n`;
-} */
+  for (const key of Object.keys(metadata.workers ?? {})) {
+    ts += `export const ${key}: ReturnType<typeof promisifyWorker<${key}>>;\n`;
+    js += `exports.${key} = promisifyWorker(metadata.workers.${key});\n`;
+  }
+
   await fs.mkdir('../../.vovk', { recursive: true });
   await fs.writeFile(path.join(__dirname, '../../.vovk/index.d.ts'), ts);
   await fs.writeFile(path.join(__dirname, '../../.vovk/index.js'), js);

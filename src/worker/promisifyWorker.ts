@@ -5,19 +5,32 @@ import type {
   _WorkerPromiseInstance as WorkerPromiseInstance,
 } from './types';
 
-export function _promisifyWorker<T extends object>(w: Worker, givenWorkerService: object): WorkerPromiseInstance<T> {
+export function _promisifyWorker<T extends object>(
+  currentWorker: Worker | null,
+  givenWorkerService: object
+): WorkerPromiseInstance<T> {
   const workerService = givenWorkerService as T & VovkWorkerMetadata;
   const instance = {} as WorkerPromiseInstance<T>;
   let callsKey = 0;
 
-  if (typeof Worker === 'undefined' || !(w instanceof Worker)) {
-    throw new Error('Worker is not provided');
-  }
-
   instance.terminate = () => {
     if (instance._isTerminated) return;
     instance._isTerminated = true;
-    w.terminate();
+    currentWorker?.terminate();
+    currentWorker = null;
+  };
+
+  instance.use = (worker: Worker) => {
+    if (instance._isTerminated) return instance;
+    instance._isTerminated = true;
+    currentWorker = worker;
+    return instance;
+  };
+
+  instance.fork = (worker: Worker) => {
+    const forked = _promisifyWorker<T>(worker, givenWorkerService);
+    forked.use(worker);
+    return forked;
   };
 
   if (typeof Symbol.dispose !== 'symbol') {
@@ -43,6 +56,10 @@ export function _promisifyWorker<T extends object>(w: Worker, givenWorkerService
         callsKey += 1;
         return {
           async *[Symbol.asyncIterator]() {
+            if (!currentWorker) {
+              throw new Error('Worker is not provided or terminated');
+            }
+            const w = currentWorker;
             const messageQueue: WorkerOutput[] = [];
             let messageResolver: ((message: WorkerOutput) => void) | null = null;
 
@@ -114,6 +131,10 @@ export function _promisifyWorker<T extends object>(w: Worker, givenWorkerService
     } else {
       // @ts-expect-error TODO Fix this
       instance[method] = (...args: Parameters<typeof value>) => {
+        if (!currentWorker) {
+          throw new Error('Worker is not provided or terminated');
+        }
+        const w = currentWorker;
         return new Promise((resolve, reject) => {
           const key = callsKey;
           callsKey += 1;
