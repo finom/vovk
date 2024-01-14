@@ -2,9 +2,7 @@
   "name": "vovk",
   "version": "0.2.3-beta.1",
   "description": "Structural add-on for Next.js",
-  "bin": {
-    "vovk": "./cli/index.js"
-  },
+  "bin": "./cli/index.js",
   "scripts": {
     "upgrade": "npx npm-check-updates -u && npm i",
     "test": "npm run lint-nofix && tsc --noemit && npm run unit",
