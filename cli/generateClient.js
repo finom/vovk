@@ -38,7 +38,7 @@ const validateOnClient = ${vovkrc.validateOnClient ? `require('${vovkrc.validate
 
   for (const key of Object.keys(metadata)) {
     if (key !== 'workers') {
-      ts += `export type ${key} = ReturnType<typeof clientizeController<Controllers["${key}"], Options>>;\n`;
+      ts += `export const ${key}: ReturnType<typeof clientizeController<Controllers["${key}"], Options>>;\n`;
       js += `exports.${key} = clientizeController(metadata.${key}, { fetcher, streamFetcher, validateOnClient, defaultOptions: { prefix } });\n`;
     }
   }

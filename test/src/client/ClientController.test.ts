@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import metadata from '../vovk-metadata.json';
 import type ClientController from './ClientController';
+import { ClientController as ClientControllerClientized } from '@vovkts/client';
 import { clientizeController } from '../../../src/client';
 import { HttpException, VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
 import { it, expect, describe } from '@jest/globals';
@@ -21,6 +21,14 @@ describe('Client', () => {
   it(`Should handle simple requests + headers`, async () => {
     const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
     const result = await noOptionsController.getHelloWorld({
+      prefix,
+      headers: { 'x-test': 'world' },
+    });
+    expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
+  });
+
+  it(`Should handle simple requests + headers using @vovkts/client`, async () => {
+    const result = await ClientControllerClientized.getHelloWorld({
       prefix,
       headers: { 'x-test': 'world' },
     });
