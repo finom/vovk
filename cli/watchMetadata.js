@@ -15,7 +15,7 @@ async function watchMetadata() {
     .catch(() => false);
 
   if (!exists) {
-    await fs.mkdir(path.join(__dirname, '../../.vovk'));
+    await fs.mkdir(path.join(__dirname, '../../.vovk'), { recursive: true });
     await fs.writeFile(path.join(__dirname, '../../.vovk/vovk-metadata.json'), '{}');
   }
 
