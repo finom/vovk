@@ -1,4 +1,5 @@
 src
+client
 test
 docs
 .eslintrc.js
