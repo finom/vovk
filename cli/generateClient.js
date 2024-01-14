@@ -13,7 +13,7 @@ async function generateClient(rcPath) {
     ? path.join(process.cwd(), vovkrc.streamFetcher)
     : vovkrc.streamFetcher;
 
-  const controllersPath = path.join('..', vovkrc.route).replace(/\.ts$/, '');
+  const controllersPath = path.join('../..', vovkrc.route).replace(/\.ts$/, '');
   let ts = `import type { Controllers } from "${controllersPath}";
 import type { clientizeController } from 'vovk/client';
 import type { promisifyWorker } from 'vovk/worker';
