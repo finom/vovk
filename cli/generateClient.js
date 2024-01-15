@@ -19,7 +19,9 @@ function canRequire(moduleName) {
 async function generateClient(rcPath) {
   const vovkrc = getVovkrc(rcPath);
   const jsonPath = '../../.vovk.json';
-  const fetcherPath = vovkrc.fetcher.startsWith('.') ? path.join(__dirname, '../..', vovkrc.fetcher) : vovkrc.fetcher;
+  const fetcherPath = vovkrc.fetcher.startsWith('.')
+    ? path.join(__dirname, '../../..', vovkrc.fetcher)
+    : vovkrc.fetcher;
   const streamFetcherPath = vovkrc.streamFetcher.startsWith('.')
     ? path.join(process.cwd(), vovkrc.streamFetcher)
     : vovkrc.streamFetcher;
