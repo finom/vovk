@@ -83,5 +83,5 @@ if (!VOVK_PORT) {
   process.exit(1);
 }
 server.listen(VOVK_PORT, () => {
-  console.info(` 🐺 Vovk Metadata Server running on port ${VOVK_PORT}`);
+  console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}`);
 });
