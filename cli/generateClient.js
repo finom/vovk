@@ -62,7 +62,7 @@ const { default: validateOnClient = null } = ${
   };
 
 `;
-  const metadataJson = await fs.readFile(path.join(__dirname, '../../../.vovk.json'), 'utf-8').catch(() => null);
+  const metadataJson = await fs.readFile(path.join(__dirname, localJsonPath), 'utf-8').catch(() => null);
   const metadata = JSON.parse(metadataJson || '{}');
 
   for (const key of Object.keys(metadata)) {
