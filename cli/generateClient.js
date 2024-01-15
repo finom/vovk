@@ -20,10 +20,10 @@ async function generateClient(rcPath) {
   const vovkrc = getVovkrc(rcPath);
   const jsonPath = '../../.vovk.json';
   const localJsonPath = path.join('..', jsonPath);
-  const fetcherPath = vovkrc.fetcher.startsWith('.') ? path.join(__dirname, '../..', vovkrc.fetcher) : vovkrc.fetcher;
+  const fetcherPath = vovkrc.fetcher.startsWith('.') ? path.join('../..', vovkrc.fetcher) : vovkrc.fetcher;
 
   const streamFetcherPath = vovkrc.streamFetcher.startsWith('.')
-    ? path.join(__dirname, '../..', vovkrc.streamFetcher)
+    ? path.join('../..', vovkrc.streamFetcher)
     : vovkrc.streamFetcher;
   const validatePath = vovkrc.validateOnClient?.startsWith('.')
     ? path.join(__dirname, '../..', vovkrc.validateOnClient)
