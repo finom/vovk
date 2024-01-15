@@ -25,8 +25,8 @@ async function generateClient(rcPath) {
     : vovkrc.streamFetcher;
 
   if (typeof vovkrc.validateOnClient === 'undefined') {
-    vovkrc.validateOnClient = canRequire('vovk-zod/validateOnClient') ? 'vovk-zod/validateOnClient' : null;
-  } else if (!canRequire(vovkrc.validateOnClient)) {
+    vovkrc.validateOnClient = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : null;
+  } else if (vovkrc.validateOnClient && !canRequire(vovkrc.validateOnClient)) {
     throw new Error(
       `Unble to generate Vovk Client: cannot find "validateOnClient" module '${vovkrc.validateOnClient}'. Check your .vovkrc.js file`
     );
