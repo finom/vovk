@@ -21,6 +21,7 @@ async function generateClient(rcPath) {
   const jsonPath = '../../.vovk.json';
   const localJsonPath = path.join('..', jsonPath);
   const fetcherPath = vovkrc.fetcher.startsWith('.') ? path.join(__dirname, '../..', vovkrc.fetcher) : vovkrc.fetcher;
+
   const streamFetcherPath = vovkrc.streamFetcher.startsWith('.')
     ? path.join(__dirname, '../..', vovkrc.streamFetcher)
     : vovkrc.streamFetcher;
@@ -52,7 +53,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
   let js = `const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
-const metadata = require('${localJsonPath}');
+const metadata = require('${jsonPath}');
 const { default: fetcher } = require('${fetcherPath}');
 const { default: streamFetcher } = require('${streamFetcherPath}');
 const prefix = '${vovkrc.prefix ?? '/api'}';
