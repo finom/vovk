@@ -19,23 +19,42 @@ function canRequire(moduleName) {
 async function generateClient(rcPath) {
   const vovkrc = getVovkrc(rcPath);
   const jsonPath = '../../.vovk.json';
-  const fetcherPath = vovkrc.fetcher.startsWith('.')
-    ? path.join(__dirname, '../../..', vovkrc.fetcher)
-    : vovkrc.fetcher;
+  const localJsonPath = path.join('..', jsonPath);
+  const fetcherPath = vovkrc.fetcher.startsWith('.') ? path.join(__dirname, '../..', vovkrc.fetcher) : vovkrc.fetcher;
+  const localFetcherPath = vovkrc.fetcher.startsWith('.') ? path.join('..', fetcherPath) : fetcherPath;
   const streamFetcherPath = vovkrc.streamFetcher.startsWith('.')
-    ? path.join(__dirname, '../../..', vovkrc.streamFetcher)
+    ? path.join(__dirname, '../..', vovkrc.streamFetcher)
     : vovkrc.streamFetcher;
+  const localStreamFetcherPath = vovkrc.streamFetcher.startsWith('.')
+    ? path.join('..', streamFetcherPath)
+    : streamFetcherPath;
+  const validatePath = vovkrc.validateOnClient?.startsWith('.')
+    ? path.join(__dirname, '../..', vovkrc.validateOnClient)
+    : vovkrc.validateOnClient;
+  const localValidatePath = vovkrc.validateOnClient?.startsWith('.') ? path.join('..', validatePath) : validatePath;
 
   if (typeof vovkrc.validateOnClient === 'undefined') {
     vovkrc.validateOnClient = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : null;
-  } else if (vovkrc.validateOnClient && !canRequire(vovkrc.validateOnClient)) {
+  } else if (vovkrc.validateOnClient && !canRequire(localValidatePath)) {
     throw new Error(
       `Unble to generate Vovk Client: cannot find "validateOnClient" module '${vovkrc.validateOnClient}'. Check your .vovkrc.js file`
     );
   }
 
-  if (!canRequire(jsonPath)) {
+  if (!canRequire(localJsonPath)) {
     throw new Error(`Unble to generate Vovk Client: cannot find ".vovk.json" file '${jsonPath}'.`);
+  }
+
+  if (!canRequire(localFetcherPath)) {
+    throw new Error(
+      `Unble to generate Vovk Client: cannot find "fetcher" module '${vovkrc.fetcher}'. Check your .vovkrc.js file`
+    );
+  }
+
+  if (!canRequire(localStreamFetcherPath)) {
+    throw new Error(
+      `Unble to generate Vovk Client: cannot find "streamFetcher" module '${vovkrc.streamFetcher}'. Check your .vovkrc.js file`
+    );
   }
 
   const controllersPath = path.join('../..', vovkrc.route).replace(/\.ts$/, '');
@@ -49,7 +68,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
   let js = `const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
-const metadata = require('${jsonPath}');
+const metadata = require('${localJsonPath}');
 const { default: fetcher } = require('${fetcherPath}');
 const { default: streamFetcher } = require('${streamFetcherPath}');
 const prefix = '${vovkrc.prefix ?? '/api'}';
