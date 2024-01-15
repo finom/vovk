@@ -26,7 +26,7 @@ function getAvailablePort(startPort, maxAttempts, attempt = 1) {
       if (isAvailable) {
         resolve(startPort); // Found an available port
       } else if (attempt < maxAttempts) {
-        resolve(getAvailablePort(startPort + 1, maxAttempts, attempt + 1));
+        getAvailablePort(startPort + 1, maxAttempts, attempt + 1).then(resolve, reject);
       } else {
         reject(null);
       }

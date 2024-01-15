@@ -50,9 +50,16 @@ const { default: validateOnClient = null } = ${
     js += `exports.${key} = promisifyWorker(null, metadata.workers.${key});\n`;
   }
 
+  const jsPath = path.join(__dirname, '../../.vovk/index.js');
+  const tsPath = path.join(__dirname, '../../.vovk/index.d.ts');
   await fs.mkdir('../../.vovk', { recursive: true });
-  await fs.writeFile(path.join(__dirname, '../../.vovk/index.d.ts'), ts);
-  await fs.writeFile(path.join(__dirname, '../../.vovk/index.js'), js);
+  const existingJs = await fs.readFile(jsPath, 'utf-8').catch(() => '');
+  const existingTs = await fs.readFile(tsPath, 'utf-8').catch(() => '');
+  if (existingJs === js && existingTs === ts) return false;
+  await fs.writeFile(tsPath, ts);
+  await fs.writeFile(tsPath, js);
+
+  return true;
 }
 
 module.exports = generateClient;

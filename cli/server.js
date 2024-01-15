@@ -37,8 +37,9 @@ const isEqual = (obj1, obj2) => {
 const writeMetadata = async (metadataPath, metadata) => {
   await fs.mkdir(path.dirname(metadataPath), { recursive: true });
   const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => '{}');
-  if (isEqual(JSON.parse(existingMetadata), metadata)) return;
+  if (isEqual(JSON.parse(existingMetadata), metadata)) return false;
   await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+  return true;
 };
 
 const server = http.createServer((req, res) => {
@@ -54,11 +55,15 @@ const server = http.createServer((req, res) => {
       try {
         const metadata = JSON.parse(body); // Parse the JSON data
         const filePath = path.join(__dirname, '../../.vovk/vovk-metadata.json');
-        await writeMetadata(filePath, metadata);
-        await generateClient(argv.rc, argv.output);
+        const metadataWritten = await writeMetadata(filePath, metadata);
+        const codeWritten = await generateClient(argv.rc, argv.output);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
-        console.info(' 🐺 JSON data received and the client is generated');
+        if (metadataWritten || codeWritten) {
+          console.info(' 🐺 JSON metadata received and the client is generated');
+        } else if (once) {
+          console.info(' 🐺 JSON metadata received and the client is not changed');
+        }
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'text/plain' });
         res.end('Invalid JSON');
@@ -74,9 +79,9 @@ const server = http.createServer((req, res) => {
 
 const VOVK_PORT = process.env.VOVK_PORT;
 if (!VOVK_PORT) {
-  console.error(' 🐺 Unable to run Vovk Metadata server: no port specified');
+  console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
   process.exit(1);
 }
 server.listen(VOVK_PORT, () => {
-  console.info(` 🐺 Vovk Server running on port ${VOVK_PORT}`);
+  console.info(` 🐺 Vovk Metadata Server running on port ${VOVK_PORT}`);
 });
