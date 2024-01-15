@@ -39,7 +39,6 @@ const writeMetadata = async (metadataPath, metadata) => {
   const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => '{}');
   if (isEqual(JSON.parse(existingMetadata), metadata)) return;
   await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
-  console.info(' 🐺 JSON data received and metadata file created');
 };
 
 const server = http.createServer((req, res) => {
@@ -59,6 +58,7 @@ const server = http.createServer((req, res) => {
         await generateClient(argv.rc, argv.output);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
+        console.info(' 🐺 JSON data received and the client is generated');
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'text/plain' });
         res.end('Invalid JSON');

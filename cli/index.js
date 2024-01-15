@@ -106,12 +106,7 @@ if (argv._.includes('build')) {
         options
       );
 
-      void result
-        .catch((e) => console.error(e))
-        .then(async () => {
-          await generateClient(argv.rc, argv.output);
-          console.info(' 🐺 Both processes have completed and the client is generated.');
-        });
+      void result.catch((e) => console.error(e));
     })
     .catch(() => {
       console.error(' 🐺 Failed to find available port.');
