@@ -57,7 +57,7 @@ const { default: validateOnClient = null } = ${
   const existingTs = await fs.readFile(tsPath, 'utf-8').catch(() => '');
   if (existingJs === js && existingTs === ts) return false;
   await fs.writeFile(tsPath, ts);
-  await fs.writeFile(tsPath, js);
+  await fs.writeFile(jsPath, js);
 
   return true;
 }
