@@ -15,10 +15,7 @@ function concurrent(commands) {
     });
 
     function runCommand(command, name, onExit) {
-      const proc = spawn(command, { shell: true, env: process.env, stdio: ['inherit', 'pipe', 'pipe'] });
-
-      proc.stdout.pipe(process.stdout);
-      proc.stderr.pipe(process.stderr);
+      const proc = spawn(command, { shell: true, env: process.env, stdio: ['inherit', 'inherit', 'inherit'] });
 
       proc.on('exit', onExit);
 
