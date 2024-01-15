@@ -9,28 +9,29 @@ function concurrent(commands) {
     commands.forEach((cmd) => {
       const processObj = {
         name: cmd.name,
-        process: runCommand(cmd.command, cmd.name, (code) => handleProcessExit(code, resolve, reject)),
+        process: runCommand(cmd.command, cmd.name, (code) => handleProcessExit(code, cmd.name, resolve, reject)),
       };
       processes.push(processObj);
     });
 
     function runCommand(command, name, onExit) {
-      const parts = command.split(' ');
-      const mainCommand = parts.shift();
-      const args = parts;
+      const proc = spawn(command, { shell: true, env: process.env, stdio: ['inherit', 'pipe', 'pipe'] });
 
-      const proc = spawn(mainCommand, args, { shell: true, env: process.env, stdio: 'inherit' });
+      proc.stdout.pipe(process.stdout);
+      proc.stderr.pipe(process.stderr);
 
       proc.on('exit', onExit);
 
       return proc;
     }
 
-    function handleProcessExit(code, resolve, reject) {
+    function handleProcessExit(code, name, resolve, reject) {
       if (!processes.length) {
+        // resolved or rejected already
         return;
       }
-      processes.forEach((p) => p.process.kill());
+
+      processes.forEach((p) => p.name !== name && p.process.kill());
 
       processes = [];
 
