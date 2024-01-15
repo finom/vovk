@@ -13,7 +13,7 @@ function canRequire(moduleName) {
 
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
- * TODO: Check modules for existence before compiling, use vovk-zod by default
+ * TODO: Check fetcher and streamFetcher for existence
  * @type {(rcPath: string) => Promise<void>}
  */
 async function generateClient(rcPath) {
@@ -23,7 +23,7 @@ async function generateClient(rcPath) {
     ? path.join(__dirname, '../../..', vovkrc.fetcher)
     : vovkrc.fetcher;
   const streamFetcherPath = vovkrc.streamFetcher.startsWith('.')
-    ? path.join(process.cwd(), vovkrc.streamFetcher)
+    ? path.join(__dirname, '../../..', vovkrc.streamFetcher)
     : vovkrc.streamFetcher;
 
   if (typeof vovkrc.validateOnClient === 'undefined') {
@@ -31,18 +31,6 @@ async function generateClient(rcPath) {
   } else if (vovkrc.validateOnClient && !canRequire(vovkrc.validateOnClient)) {
     throw new Error(
       `Unble to generate Vovk Client: cannot find "validateOnClient" module '${vovkrc.validateOnClient}'. Check your .vovkrc.js file`
-    );
-  }
-
-  if (!canRequire(fetcherPath)) {
-    throw new Error(
-      `Unble to generate Vovk Client: cannot find "fetcher" module '${fetcherPath}'. Check your .vovkrc.js file`
-    );
-  }
-
-  if (!canRequire(streamFetcherPath)) {
-    throw new Error(
-      `Unble to generate Vovk Client: cannot find "streamFetcher" module '${streamFetcherPath}'. Check your .vovkrc.js file`
     );
   }
 
