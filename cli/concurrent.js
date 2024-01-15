@@ -9,7 +9,7 @@ function concurrent(commands) {
     commands.forEach((cmd) => {
       const processObj = {
         name: cmd.name,
-        process: runCommand(cmd.command, cmd.name, (code) => handleProcessExit(code, cmd.name, resolve, reject)),
+        process: runCommand(cmd.command, cmd.name, (code) => handleProcessExit(code, cmd.name)),
       };
       processes.push(processObj);
     });
@@ -22,20 +22,17 @@ function concurrent(commands) {
       return proc;
     }
 
-    function handleProcessExit(code, name, resolve, reject) {
-      if (!processes.length) {
-        // resolved or rejected already
-        return;
+    function handleProcessExit(code, name) {
+      processes = processes.filter((p) => p.name !== name);
+
+      if (code !== 0) {
+        processes.forEach((p) => p.process.kill());
+        processes = [];
+        return reject(new Error(`Process exited with code ${code}`));
       }
 
-      processes.forEach((p) => p.name !== name && p.process.kill());
-
-      processes = [];
-
-      if (code === 0) {
+      if (!processes.length) {
         resolve();
-      } else {
-        reject(new Error(`Process exited with code ${code}`));
       }
     }
   });
