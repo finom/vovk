@@ -10,11 +10,17 @@ type ToProperReturnType<T> = T extends Generator<unknown, unknown, unknown> | As
   ? ToAsyncGenerator<T>
   : ToPromise<T>;
 
-export type _WorkerPromiseInstance<T> = {
+type OmitNever<T> = {
+  [K in keyof T as T[K] extends never ? never : K]: T[K];
+};
+
+export type _WorkerPromiseInstanceWithNever<T> = {
   [K in keyof T]: T[K] extends (...args: KnownAny[]) => KnownAny
     ? (...args: Parameters<T[K]>) => ToProperReturnType<ReturnType<T[K]>>
     : never;
-} & {
+};
+
+export type _WorkerPromiseInstance<T> = OmitNever<_WorkerPromiseInstanceWithNever<T>> & {
   terminate: () => void;
   use: (w: Worker) => _WorkerPromiseInstance<T>;
   fork: (w: Worker) => _WorkerPromiseInstance<T>;

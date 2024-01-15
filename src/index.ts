@@ -1,4 +1,4 @@
-import { _createSegment as createSegment, _writeMetadata as writeMetadata } from './createSegment';
+import { _createSegment as createSegment } from './createSegment';
 import {
   type _VovkErrorResponse as VovkErrorResponse,
   type _VovkRequest as VovkRequest,
@@ -6,6 +6,10 @@ import {
   type _VovkQuery as VovkQuery,
   type _VovkParams as VovkParams,
   type _VovkReturnType as VovkReturnType,
+  type _VovkClientBody as VovkClientBody,
+  type _VovkClientQuery as VovkClientQuery,
+  type _VovkClientParams as VovkClientParams,
+  type _VovkClientReturnType as VovkClientReturnType,
   type _VovkMetadata as VovkMetadata,
   _HttpStatus as HttpStatus,
   _HttpMethod as HttpMethod,
@@ -21,12 +25,15 @@ export {
   type VovkQuery,
   type VovkParams,
   type VovkReturnType,
+  type VovkClientBody,
+  type VovkClientQuery,
+  type VovkClientParams,
+  type VovkClientReturnType,
   HttpException,
   HttpStatus,
   HttpMethod,
   createSegment,
   createDecorator,
-  writeMetadata,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initVovk } = createSegment();

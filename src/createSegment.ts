@@ -40,7 +40,7 @@ const isEqual = (o1: KnownAny, o2: KnownAny): boolean => {
   return true;
 };
 
-export const _writeMetadata = async (
+const writeMetadata = async (
   metadataPath: string,
   metadata: VovkMetadata,
   lib: {
@@ -201,7 +201,7 @@ export function _createSegment() {
     exposeValidation?: boolean;
     emitMetadata?: boolean;
     onError?: (err: Error) => void | Promise<void>;
-    onMetadata?: (metadata: VovkMetadata, writeInDevelopment: typeof _writeMetadata) => void | Promise<void>;
+    onMetadata?: (metadata: VovkMetadata, writeInDevelopment: typeof writeMetadata) => void | Promise<void>;
   }) => {
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
       controller._controllerName = controllerName;
@@ -231,7 +231,7 @@ export function _createSegment() {
       }
 
       if (options?.onMetadata) {
-        void options.onMetadata(metadata, _writeMetadata);
+        void options.onMetadata(metadata, writeMetadata);
       }
     }
 

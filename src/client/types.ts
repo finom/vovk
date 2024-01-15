@@ -46,10 +46,15 @@ type ClientMethod<
     ? Promise<R>
     : ToPromise<ReturnType<T>>;
 
-// TODO I need help here: How to filter out functions only?
-export type _VovkClient<T, OPTS extends { [key: string]: KnownAny }> = {
+type OmitNever<T> = {
+  [K in keyof T as T[K] extends never ? never : K]: T[K];
+};
+
+type _VovkClientWithNever<T, OPTS extends { [key: string]: KnownAny }> = {
   [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> : never;
 };
+
+export type _VovkClient<T, OPTS extends { [key: string]: KnownAny }> = OmitNever<_VovkClientWithNever<T, OPTS>>;
 
 export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
   options: {

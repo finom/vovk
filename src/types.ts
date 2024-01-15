@@ -102,12 +102,32 @@ export type _VovkParams<
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[1];
 
+export type _VovkClientBody<
+  T extends (options: OPTIONS) => _KnownAny,
+  OPTIONS extends { body: B; [key: string]: _KnownAny } = Parameters<T>[0],
+  B = _KnownAny,
+> = Parameters<T>[0]['body'];
+
+export type _VovkClientQuery<
+  T extends (options: OPTIONS) => _KnownAny,
+  OPTIONS extends { query: Q; [key: string]: _KnownAny } = Parameters<T>[0],
+  Q = _KnownAny,
+> = Parameters<T>[0]['query'];
+
+export type _VovkClientParams<
+  T extends (options: OPTIONS) => _KnownAny,
+  OPTIONS extends { params: P; [key: string]: _KnownAny } = Parameters<T>[0],
+  P = _KnownAny,
+> = Parameters<T>[0]['params'];
+
 // TODO Implement for streams
 export type _VovkReturnType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<T>>;
+
+export type _VovkClientReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
 
 export type _StreamAbortMessage = {
   isError: true;
