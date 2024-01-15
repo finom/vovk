@@ -46,12 +46,6 @@ const builder = {
     default: process.cwd(),
     describe: 'Path to Next.js project',
   },
-
-  output: {
-    type: 'string',
-    default: path.join(__dirname, '../.vovk/index.d.ts'),
-    describe: 'Path to the wildcard route file',
-  },
 };
 
 const options = {
@@ -59,7 +53,7 @@ const options = {
   raw: true,
   killOthers: ['failure', 'success'],
 };
-/** @type {{ rc: string, project: string, output: string }} */
+/** @type {{ rc: string, project: string }} */
 const argv = yargs(hideBin(process.argv))
   .command('dev', 'Run development server', builder)
   .command('build', 'Build the app', builder)
@@ -75,7 +69,7 @@ if (argv._.includes('dev')) {
       const { result } = concurrently(
         [
           {
-            command: `VOVK_PORT=${PORT} node ${__dirname}/server.js --rc ${argv.rc} --output ${argv.output}`,
+            command: `VOVK_PORT=${PORT} node ${__dirname}/server.js --rc ${argv.rc}`,
             name: 'Vovk',
           },
           { command: `cd ${argv.project} && VOVK_PORT=${PORT} npx next dev ${nextArgs}`, name: 'Next' },
@@ -84,11 +78,11 @@ if (argv._.includes('dev')) {
       );
 
       void result.then(() => {
-        console.info(' 🐺 All processes have completed.');
+        console.info(' 🐺 All processes have completed');
       });
     })
     .catch(() => {
-      console.error(' 🐺 Failed to find available port.');
+      console.error(' 🐺 Failed to find available port');
     });
 }
 
@@ -98,7 +92,7 @@ if (argv._.includes('build')) {
       const { result } = concurrently(
         [
           {
-            command: `VOVK_PORT=${PORT} node ${__dirname}/server.js --once --rc ${argv.rc} --output ${argv.output}`,
+            command: `VOVK_PORT=${PORT} node ${__dirname}/server.js --once --rc ${argv.rc}`,
             name: 'Vovk',
           },
           { command: `cd ${argv.project} && VOVK_PORT=${PORT} npx next build ${nextArgs}`, name: 'Next' },
@@ -109,12 +103,12 @@ if (argv._.includes('build')) {
       void result.catch((e) => console.error(e));
     })
     .catch(() => {
-      console.error(' 🐺 Failed to find available port.');
+      console.error(' 🐺 Failed to find available port');
     });
 }
 
 if (argv._.includes('generate')) {
-  void generateClient(argv.rc, argv.output).then(() => {
-    console.info(' 🐺 Client generated.');
+  void generateClient(argv.rc).then(() => {
+    console.info(' 🐺 Client generated');
   });
 }

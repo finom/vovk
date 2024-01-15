@@ -17,7 +17,7 @@ function getVovkrc(rcPath) {
   if (fs.existsSync(rcPath)) {
     Object.assign(vovkRc, require(rcPath));
   } else {
-    console.info(` 🐺 No .vovkrc.js file found in ${process.cwd()}.`);
+    console.info(` 🐺 No .vovkrc.js file found in ${process.cwd()}`);
   }
 
   vovkRcRef = vovkRc;

@@ -1,6 +1,16 @@
 const fs = require('fs/promises');
 const path = require('path');
 const getVovkrc = require('./getVovkrc');
+
+function canRequire(moduleName) {
+  try {
+    require.resolve(moduleName);
+    return true; // The module exists and can be required
+  } catch (e) {
+    return false; // The module does not exist
+  }
+}
+
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
  * TODO: Check modules for existence before compiling, use vovk-zod by default
@@ -8,11 +18,35 @@ const getVovkrc = require('./getVovkrc');
  */
 async function generateClient(rcPath) {
   const vovkrc = getVovkrc(rcPath);
-
+  const jsonPath = '../../.vovk.json';
   const fetcherPath = vovkrc.fetcher.startsWith('.') ? path.join(process.cwd(), vovkrc.fetcher) : vovkrc.fetcher;
   const streamFetcherPath = vovkrc.streamFetcher.startsWith('.')
     ? path.join(process.cwd(), vovkrc.streamFetcher)
     : vovkrc.streamFetcher;
+
+  if (typeof vovkrc.validateOnClient === 'undefined') {
+    vovkrc.validateOnClient = canRequire('vovk-zod/validateOnClient') ? 'vovk-zod/validateOnClient' : null;
+  } else if (!canRequire(vovkrc.validateOnClient)) {
+    throw new Error(
+      `Unble to generate Vovk Client: cannot find "validateOnClient" module '${vovkrc.validateOnClient}'. Check your .vovkrc.js file`
+    );
+  }
+
+  if (!canRequire(fetcherPath)) {
+    throw new Error(
+      `Unble to generate Vovk Client: cannot find "fetcher" module '${fetcherPath}'. Check your .vovkrc.js file`
+    );
+  }
+
+  if (!canRequire(streamFetcherPath)) {
+    throw new Error(
+      `Unble to generate Vovk Client: cannot find "streamFetcher" module '${streamFetcherPath}'. Check your .vovkrc.js file`
+    );
+  }
+
+  if (!canRequire(jsonPath)) {
+    throw new Error(`Unble to generate Vovk Client: cannot find ".vovk.json" file '${jsonPath}'.`);
+  }
 
   const controllersPath = path.join('../..', vovkrc.route).replace(/\.ts$/, '');
   let ts = `import type { Controllers, Workers } from "${controllersPath}";
@@ -25,7 +59,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
   let js = `const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
-const metadata = require('../../.vovk.json');
+const metadata = require('${jsonPath}');
 const { default: fetcher } = require('${fetcherPath}');
 const { default: streamFetcher } = require('${streamFetcherPath}');
 const prefix = '${vovkrc.prefix ?? '/api'}';
