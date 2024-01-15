@@ -2,6 +2,14 @@ import type { NextRequest } from 'next/server';
 
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+export type _VovkRc = {
+  route?: string;
+  fetcher?: string;
+  streamFetcher?: string;
+  prefix?: string;
+  validateOnClient?: boolean;
+};
+
 export type _VovkMetadata = Record<string, _VovkControllerMetadata> & { workers?: Record<string, _VovkWorkerMetadata> };
 
 export type _VovkErrorResponse = {

@@ -64,13 +64,13 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "concurrently": "^8.2.2"
   },
   "peerDependencies": {
     "next": ">=13.0.0"
   },
   "dependencies": {
-    "yargs": "^17.7.2",
-    "concurrently": "^8.2.2"
+    "yargs": "^17.7.2"
   }
 }

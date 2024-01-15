@@ -7,6 +7,7 @@ function getVovkrc(rcPath) {
     return vovkRcRef;
   }
 
+  /** @type {import('../src').VovkRc} */
   const vovkRc = {
     route: 'src/app/api/[[...]]/route.ts',
     fetcher: 'vovk/client/defaultFetcher',
