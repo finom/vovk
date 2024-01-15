@@ -3,6 +3,7 @@ const path = require('path');
 const getVovkrc = require('./getVovkrc');
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
+ * TODO: Check modules for existence before compiling, use vovk-zod by default
  * @type {(rcPath: string) => Promise<void>}
  */
 async function generateClient(rcPath) {
@@ -24,7 +25,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
   let js = `const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
-const metadata = require('./vovk-metadata.json');
+const metadata = require('../.vovk.json');
 const { default: fetcher } = require('${fetcherPath}');
 const { default: streamFetcher } = require('${streamFetcherPath}');
 const prefix = '${vovkrc.prefix ?? '/api'}';
@@ -33,9 +34,7 @@ const { default: validateOnClient = null } = ${
   };
 
 `;
-  const metadataJson = await fs
-    .readFile(path.join(__dirname, '../../.vovk/vovk-metadata.json'), 'utf-8')
-    .catch(() => null);
+  const metadataJson = await fs.readFile(path.join(__dirname, '../../../.vovk.json'), 'utf-8').catch(() => null);
   const metadata = JSON.parse(metadataJson || '{}');
 
   for (const key of Object.keys(metadata)) {
