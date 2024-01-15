@@ -4,6 +4,25 @@ import Layout from '@theme/Layout';
 import styles from './index.module.css';
 import { useRef, useEffect } from 'react';
 
+/*
+New sections:
+- Intro
+- Controller
+  - Request
+  - Streaming
+  - Validation with vovk-zod
+- Worker
+  - Request
+  - Streaming
+- Custom decorators
+  - Introduction
+  - Validation
+- Recommended file structure
+- API
+- Roadmap
+- Sponsor
+ */
+
 function Content() {
   // https://github.com/facebook/docusaurus/issues/9629
   const { colorMode } = useColorMode();

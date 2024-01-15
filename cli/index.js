@@ -4,6 +4,35 @@ const { hideBin } = require('yargs/helpers');
 const { concurrently } = require('concurrently');
 const generateClient = require('./generateClient');
 const path = require('path');
+const net = require('net');
+
+function checkPort(port, callback) {
+  const server = net.createServer();
+
+  server.listen(port, () => {
+    server.close(() => {
+      callback(true); // Port is available
+    });
+  });
+
+  server.on('error', () => {
+    callback(false);
+  });
+}
+
+function getAvailablePort(startPort, maxAttempts, attempt = 1) {
+  return new Promise((resolve, reject) => {
+    checkPort(startPort, (isAvailable) => {
+      if (isAvailable) {
+        resolve(startPort); // Found an available port
+      } else if (attempt < maxAttempts) {
+        resolve(getAvailablePort(startPort + 1, maxAttempts, attempt + 1));
+      } else {
+        reject(null);
+      }
+    });
+  });
+}
 
 const builder = {
   rc: {
@@ -38,35 +67,54 @@ const argv = yargs(hideBin(process.argv))
 
 const nextArgs = process.argv.join(' ').split(' -- ')[1] ?? '';
 
-if (argv._.includes('dev')) {
-  const { result } = concurrently(
-    [
-      { command: `node ${__dirname}/server.js`, name: 'Vovk' },
-      { command: `node ${__dirname}/watchMetadata.js --rc ${argv.rc} --output ${argv.output}`, name: 'Watch metadata' },
-      { command: `cd ${argv.project} && npx next dev ${nextArgs}`, name: 'Next' },
-    ],
-    options
-  );
+let VOVK_PORT = process.env.VOVK_PORT ? parseInt(process.env.VOVK_PORT) : 3420;
 
-  void result.then(() => {
-    console.info(' 🐺 All processes have completed.');
-  });
+if (argv._.includes('dev')) {
+  void getAvailablePort(VOVK_PORT, 20)
+    .then((PORT) => {
+      const { result } = concurrently(
+        [
+          {
+            command: `VOVK_PORT=${PORT} node ${__dirname}/server.js --rc ${argv.rc} --output ${argv.output}`,
+            name: 'Vovk',
+          },
+          { command: `cd ${argv.project} && VOVK_PORT=${PORT} npx next dev ${nextArgs}`, name: 'Next' },
+        ],
+        options
+      );
+
+      void result.then(() => {
+        console.info(' 🐺 All processes have completed.');
+      });
+    })
+    .catch(() => {
+      console.error(' 🐺 Failed to find available port.');
+    });
 }
 
 if (argv._.includes('build')) {
-  const { result } = concurrently(
-    [
-      { command: `node ${__dirname}/server.js --once`, name: 'Vovk' },
-      { command: `cd ${argv.project} && npx next build ${nextArgs}`, name: 'Next' },
-    ],
-    options
-  );
+  void getAvailablePort(VOVK_PORT, 20)
+    .then((PORT) => {
+      const { result } = concurrently(
+        [
+          {
+            command: `VOVK_PORT=${PORT} node ${__dirname}/server.js --once --rc ${argv.rc} --output ${argv.output}`,
+            name: 'Vovk',
+          },
+          { command: `cd ${argv.project} && VOVK_PORT=${PORT} npx next build ${nextArgs}`, name: 'Next' },
+        ],
+        options
+      );
 
-  void result
-    .catch((e) => console.error(e))
-    .then(async () => {
-      await generateClient(argv.rc, argv.output);
-      console.info(' 🐺 Both processes have completed and the client is generated.');
+      void result
+        .catch((e) => console.error(e))
+        .then(async () => {
+          await generateClient(argv.rc, argv.output);
+          console.info(' 🐺 Both processes have completed and the client is generated.');
+        });
+    })
+    .catch(() => {
+      console.error(' 🐺 Failed to find available port.');
     });
 }
 

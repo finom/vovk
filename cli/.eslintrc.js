@@ -7,6 +7,6 @@ module.exports = {
         '@typescript-eslint/no-unsafe-call': 'off',
         '@typescript-eslint/no-unsafe-member-access': 'off',
         '@typescript-eslint/no-unsafe-return': 'off',
-        'no-console': ['error', { allow: ['info', 'error'] }]
+        'no-console': ['error', { allow: ['info', 'error', 'warn'] }]
     }
 }

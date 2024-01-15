@@ -3,6 +3,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
+const generateClient = require('./generateClient');
 
 const argv = yargs(hideBin(process.argv)).argv;
 
@@ -55,6 +56,7 @@ const server = http.createServer((req, res) => {
         const metadata = JSON.parse(body); // Parse the JSON data
         const filePath = path.join(__dirname, '../../.vovk/vovk-metadata.json');
         await writeMetadata(filePath, metadata);
+        await generateClient(argv.rc, argv.output);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
       } catch (err) {
@@ -70,7 +72,11 @@ const server = http.createServer((req, res) => {
   }
 });
 
-const PORT = process.env.VOVK_PORT || 3420;
-server.listen(PORT, () => {
-  console.info(` 🐺 Vovk Server running on port ${PORT}`);
+const VOVK_PORT = process.env.VOVK_PORT;
+if (!VOVK_PORT) {
+  console.error(' 🐺 Unable to run Vovk Metadata server: no port specified');
+  process.exit(1);
+}
+server.listen(VOVK_PORT, () => {
+  console.info(` 🐺 Vovk Server running on port ${VOVK_PORT}`);
 });
