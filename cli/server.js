@@ -53,7 +53,16 @@ const startPinging = (port) => {
   pingInterval = setInterval(() => {
     let prefix = getVovkrc(argv.rc).prefix;
     prefix = prefix.startsWith('http://') ? prefix : `http://localhost:${port}/${prefix}`;
-    http.get(`${prefix}/__ping`);
+    const endpoint = `${prefix}/__ping`;
+    // Create the HTTP GET request
+    const req = http.get(endpoint, () => {
+      // noop
+    });
+
+    // Error handling for the request
+    req.on('error', (err) => {
+      console.error(`🐺 Error during HTTP request made to ${endpoint}:`, err.message);
+    });
   }, 1000 * 3);
 };
 
