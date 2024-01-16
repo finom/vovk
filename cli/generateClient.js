@@ -78,7 +78,7 @@ const { default: validateOnClient = null } = ${
   }
 
   js += `
-if(typeof navigator.sendBeacon === 'function') {
+if(typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
   navigator.sendBeacon(prefix + '/__ping', null);
 }
   `;
