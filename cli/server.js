@@ -51,11 +51,8 @@ let pingInterval;
 const startPinging = (port) => {
   clearInterval(pingInterval);
   pingInterval = setInterval(() => {
-    // eslint-disable-next-line no-console
     let prefix = getVovkrc(argv.rc).prefix;
     prefix = prefix.startsWith('http://') ? prefix : `http://localhost:${port}/${prefix}`;
-    // eslint-disable-next-line no-console
-    console.log(`${prefix}/__ping`);
     http.get(`${prefix}/__ping`);
   }, 1000 * 3);
 };
