@@ -27,7 +27,7 @@ function concurrent(commands) {
       processes = processes.filter((p) => p.name !== name);
 
       if (code !== 0) {
-        processes.forEach((p) => p.name !== name && p.process.kill());
+        processes.forEach((p) => p.name !== name && p.process.kill(2));
         processes = [];
         return reject(new Error(`Process ${name} exited with code ${code}`));
       }
