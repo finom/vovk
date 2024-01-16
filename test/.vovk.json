@@ -7,9 +7,9 @@
         "httpMethod": "GET",
         "path": "get-hello-world"
       },
-      "getHelloWorldArrayXXXXxss": {
+      "getHelloWorldArrayXXXXxssDDD": {
         "httpMethod": "GET",
-        "path": "get-hello-world-array-x-x-x-xxss"
+        "path": "get-hello-world-array-x-x-x-xxss-d-d-d"
       },
       "getHelloWorldArray": {
         "httpMethod": "GET",
