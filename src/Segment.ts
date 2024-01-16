@@ -65,8 +65,7 @@ export class _Segment {
     const controllers = this._routes[httpMethod];
     const methodParams: Record<string, string> = {};
 
-    if (params[Object.keys(params)[0]][0] === '__ping') {
-      console.log('PONG');
+    if (params[Object.keys(params)[0]]?.[0] === '__ping') {
       return this.#respond(200, { message: 'pong' });
     }
 
