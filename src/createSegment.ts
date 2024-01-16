@@ -220,7 +220,7 @@ export function _createSegment() {
           void fetch(`http://localhost:${process.env.VOVK_PORT}/__metadata`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(metadata),
+            body: JSON.stringify({ metadata, PORT: process.env.PORT }),
           })
             .then((resp) => {
               if (!resp.ok) {

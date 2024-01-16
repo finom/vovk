@@ -14,7 +14,7 @@ function canRequire(moduleName) {
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
  * TODO: Check fetcher and streamFetcher for existence
- * @type {(rcPath: string) => Promise<void>}
+ * @type {(rcPath: string) => Promise<boolean>}
  */
 async function generateClient(rcPath) {
   const vovkrc = getVovkrc(rcPath);

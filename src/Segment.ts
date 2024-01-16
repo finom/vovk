@@ -65,6 +65,10 @@ export class _Segment {
     const controllers = this._routes[httpMethod];
     const methodParams: Record<string, string> = {};
 
+    if (params[Object.keys(params)[0]][0] === '__ping') {
+      return this.#respond(200, { message: 'pong' });
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = Object.fromEntries(
       [...controllers.entries()]

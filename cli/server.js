@@ -1,10 +1,14 @@
+// @ts-check
 const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const generateClient = require('./generateClient');
+const getVovkrc = require('./getVovkrc');
 
+/** @type {{ once?: boolean; rc: string }} */
+// @ts-expect-error yargs
 const argv = yargs(hideBin(process.argv)).argv;
 
 const once = argv.once ?? false;
@@ -42,18 +46,27 @@ const writeMetadata = async (metadataPath, metadata) => {
   return true;
 };
 
+let pingInterval;
+
+const startPinging = (port) => {
+  clearInterval(pingInterval);
+  pingInterval = setInterval(() => {
+    http.get(`http://localhost:${port}/${getVovkrc(argv.rc).prefix}/__ping}`);
+  }, 1000 * 3);
+};
+
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/__metadata') {
     let body = '';
 
     req.on('data', (chunk) => {
-      body += chunk.toString(); // Convert Buffer to string
+      body += chunk.toString();
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     req.on('end', async () => {
       try {
-        const metadata = JSON.parse(body); // Parse the JSON data
+        const { metadata, PORT } = JSON.parse(body); // Parse the JSON data
         const filePath = path.join(__dirname, '../../../.vovk.json');
         const metadataWritten = await writeMetadata(filePath, metadata);
         const codeWritten = await generateClient(argv.rc);
@@ -63,6 +76,10 @@ const server = http.createServer((req, res) => {
           console.info(' 🐺 JSON metadata received and the client is generated');
         } else if (once) {
           console.info(' 🐺 JSON metadata received and the client is not changed');
+        }
+
+        if (PORT && !once) {
+          startPinging(PORT);
         }
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'text/plain' });

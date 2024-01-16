@@ -4,36 +4,8 @@ const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const generateClient = require('./generateClient');
 const path = require('path');
-const net = require('net');
-const concurrent = require('./concurrent');
-
-function checkPort(port, callback) {
-  const server = net.createServer();
-
-  server.listen(port, () => {
-    server.close(() => {
-      callback(true); // Port is available
-    });
-  });
-
-  server.on('error', () => {
-    callback(false);
-  });
-}
-
-function getAvailablePort(startPort, maxAttempts, attempt = 1) {
-  return new Promise((resolve, reject) => {
-    checkPort(startPort, (isAvailable) => {
-      if (isAvailable) {
-        resolve(startPort); // Found an available port
-      } else if (attempt < maxAttempts) {
-        getAvailablePort(startPort + 1, maxAttempts, attempt + 1).then(resolve, reject);
-      } else {
-        reject(null);
-      }
-    });
-  });
-}
+const concurrent = require('./lib/concurrent');
+const getAvailablePort = require('./lib/getAvailablePort');
 
 const builder = {
   rc: {
