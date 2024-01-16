@@ -52,8 +52,10 @@ const startPinging = (port) => {
   clearInterval(pingInterval);
   pingInterval = setInterval(() => {
     let prefix = getVovkrc(argv.rc).prefix;
-    prefix = prefix.startsWith('http://') ? prefix : `http://localhost:${port}/${prefix}`;
-    const endpoint = `${prefix}/__ping`;
+    prefix = prefix.startsWith('http://')
+      ? prefix
+      : `http://localhost:${port}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
+    const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
     // Create the HTTP GET request
     const req = http.get(endpoint, () => {
       // noop
