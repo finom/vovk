@@ -217,6 +217,7 @@ export function _createSegment() {
         if (!process.env.VOVK_PORT) {
           console.error(` 🐺 Failed to send metadata to Vovk Server: process.env.VOVK_PORT is not set.`);
         } else {
+          console.log('process.env.PORT', process.env.PORT);
           void fetch(`http://localhost:${process.env.VOVK_PORT}/__metadata`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
