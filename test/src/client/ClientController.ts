@@ -25,7 +25,7 @@ export default class ClientController {
   }
 
   @get.auto()
-  static getHelloWorldArrayXXXXxss() {
+  static getHelloWorldArrayXXXXxssDDD() {
     return [this.service.getHello('world')];
   }
 

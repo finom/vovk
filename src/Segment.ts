@@ -66,6 +66,7 @@ export class _Segment {
     const methodParams: Record<string, string> = {};
 
     if (params[Object.keys(params)[0]][0] === '__ping') {
+      console.log('PONG');
       return this.#respond(200, { message: 'pong' });
     }
 

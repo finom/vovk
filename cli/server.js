@@ -52,7 +52,7 @@ const startPinging = (port) => {
   clearInterval(pingInterval);
   pingInterval = setInterval(() => {
     // eslint-disable-next-line no-console
-    console.log('PING');
+    console.log('PING', `http://localhost:${port}/${getVovkrc(argv.rc).prefix}/__ping}`);
     http.get(`http://localhost:${port}/${getVovkrc(argv.rc).prefix}/__ping}`);
   }, 1000 * 3);
 };
