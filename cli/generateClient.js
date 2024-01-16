@@ -77,6 +77,12 @@ const { default: validateOnClient = null } = ${
     js += `exports.${key} = promisifyWorker(null, metadata.workers.${key});\n`;
   }
 
+  js += `
+if(typeof navigator.sendBeacon === 'function') {
+  navigator.sendBeacon(prefix + '/__ping', null);
+}
+  `;
+
   const jsPath = path.join(__dirname, '../../.vovk/index.js');
   const tsPath = path.join(__dirname, '../../.vovk/index.d.ts');
   await fs.mkdir('../../.vovk', { recursive: true });
