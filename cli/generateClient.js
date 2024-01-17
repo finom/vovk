@@ -43,7 +43,8 @@ async function generateClient(rcPath) {
   }
 
   const controllersPath = path.join('../..', vovkrc.route).replace(/\.ts$/, '');
-  let ts = `import type { Controllers, Workers } from "${controllersPath}";
+  let ts = `/* auto-generated */
+import type { Controllers, Workers } from "${controllersPath}";
 import type { clientizeController } from 'vovk/client';
 import type { promisifyWorker } from 'vovk/worker';
 import type { VovkClientFetcher } from 'vovk/client';
@@ -51,7 +52,7 @@ import type fetcher from '${fetcherPath}';
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
-  let js = `require('vovk/config');
+  let js = `/* auto-generated */
 const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
 const metadata = require('${jsonPath}');
@@ -77,6 +78,10 @@ const { default: validateOnClient = null } = ${
     ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>;\n`;
     js += `exports.${key} = promisifyWorker(null, metadata.workers.${key});\n`;
   }
+
+  js += `
+fetch(prefix + '/__ping', { method: 'POST' });
+  `;
 
   const jsPath = path.join(__dirname, '../../.vovk/index.js');
   const tsPath = path.join(__dirname, '../../.vovk/index.d.ts');
