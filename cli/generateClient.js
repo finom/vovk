@@ -80,7 +80,7 @@ const { default: validateOnClient = null } = ${
   }
 
   js += `
-fetch(prefix + '/__ping', { method: 'POST' });
+if(typeof window !== 'undefined') fetch(prefix + '/__ping', { method: 'POST' });
   `;
 
   const jsPath = path.join(__dirname, '../../.vovk/index.js');
