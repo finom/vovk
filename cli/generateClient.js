@@ -51,7 +51,8 @@ import type fetcher from '${fetcherPath}';
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
-  let js = `const { clientizeController } = require('vovk/client');
+  let js = `require('vovk/config');
+const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
 const metadata = require('${jsonPath}');
 const { default: fetcher } = require('${fetcherPath}');
@@ -76,12 +77,6 @@ const { default: validateOnClient = null } = ${
     ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>;\n`;
     js += `exports.${key} = promisifyWorker(null, metadata.workers.${key});\n`;
   }
-
-  js += `
-if(typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
-  navigator.sendBeacon(prefix + '/__ping', null);
-}
-  `;
 
   const jsPath = path.join(__dirname, '../../.vovk/index.js');
   const tsPath = path.join(__dirname, '../../.vovk/index.d.ts');
