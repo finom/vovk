@@ -13,6 +13,8 @@ const argv = yargs(hideBin(process.argv)).argv;
 
 const once = argv.once ?? false;
 
+const metadataPath = path.join(__dirname, '../../../.vovk.json');
+
 const isEqual = (obj1, obj2) => {
   if (obj1 === obj2) {
     return true;
@@ -38,13 +40,21 @@ const isEqual = (obj1, obj2) => {
   return true;
 };
 
-const writeMetadata = async (metadataPath, metadata) => {
+const writeMetadata = async (metadata) => {
   await fs.mkdir(path.dirname(metadataPath), { recursive: true });
-  const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => '{}');
+  const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => 'null');
   if (isEqual(JSON.parse(existingMetadata), metadata)) return false;
   await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
   return true;
 };
+
+const writeEmptyMetadata = async () => {
+  await fs.mkdir(path.dirname(metadataPath), { recursive: true });
+  const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => null);
+  if (!existingMetadata) await fs.writeFile(metadataPath, '{}');
+};
+
+void writeEmptyMetadata();
 
 let pingInterval;
 
@@ -82,8 +92,7 @@ const server = http.createServer((req, res) => {
     req.on('end', async () => {
       try {
         const { metadata, PORT } = JSON.parse(body); // Parse the JSON data
-        const filePath = path.join(__dirname, '../../../.vovk.json');
-        const metadataWritten = await writeMetadata(filePath, metadata);
+        const metadataWritten = await writeMetadata(metadata);
 
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
