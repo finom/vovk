@@ -7,7 +7,16 @@ export type _VovkRc = {
   fetcher?: string;
   streamFetcher?: string;
   prefix?: string;
-  validateOnClient?: boolean;
+  validateOnClient?: string;
+};
+
+export type _VovkEnv = {
+  VOVK_ROUTE: string;
+  VOVK_FETCHER: string;
+  VOVK_STREAM_FETCHER: string;
+  VOVK_PREFIX: string;
+  VOVK_VALIDATE_ON_CLIENT: string;
+  VOVK_PORT: string;
 };
 
 export type _VovkMetadata = Record<string, _VovkControllerMetadata> & { workers?: Record<string, _VovkWorkerMetadata> };

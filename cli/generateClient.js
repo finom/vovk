@@ -1,6 +1,6 @@
+// @ts-check
 const fs = require('fs/promises');
 const path = require('path');
-const getVovkrc = require('./getVovkrc');
 
 function canRequire(moduleName) {
   try {
@@ -14,27 +14,26 @@ function canRequire(moduleName) {
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
  * TODO: Check fetcher and streamFetcher for existence
- * @type {(rcPath: string) => Promise<boolean>}
+ * @type {(rcPath: import('../src').VovkEnv) => Promise<boolean>}
  */
-async function generateClient(rcPath) {
-  const vovkrc = getVovkrc(rcPath);
+async function generateClient({ ...env }) {
   const jsonPath = '../../.vovk.json';
   const localJsonPath = path.join('..', jsonPath);
-  const fetcherPath = vovkrc.fetcher.startsWith('.') ? path.join('../..', vovkrc.fetcher) : vovkrc.fetcher;
+  const fetcherPath = env.VOVK_FETCHER.startsWith('.') ? path.join('../..', env.VOVK_FETCHER) : env.VOVK_FETCHER;
 
-  const streamFetcherPath = vovkrc.streamFetcher.startsWith('.')
-    ? path.join('../..', vovkrc.streamFetcher)
-    : vovkrc.streamFetcher;
-  const validatePath = vovkrc.validateOnClient?.startsWith('.')
-    ? path.join(__dirname, '../..', vovkrc.validateOnClient)
-    : vovkrc.validateOnClient;
-  const localValidatePath = vovkrc.validateOnClient?.startsWith('.') ? path.join('..', validatePath) : validatePath;
+  const streamFetcherPath = env.VOVK_STREAM_FETCHER.startsWith('.')
+    ? path.join('../..', env.VOVK_STREAM_FETCHER)
+    : env.VOVK_STREAM_FETCHER;
+  const validatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.')
+    ? path.join(__dirname, '../..', env.VOVK_VALIDATE_ON_CLIENT)
+    : env.VOVK_VALIDATE_ON_CLIENT;
+  const localValidatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.') ? path.join('..', validatePath) : validatePath;
 
-  if (typeof vovkrc.validateOnClient === 'undefined') {
-    vovkrc.validateOnClient = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : null;
-  } else if (vovkrc.validateOnClient && !canRequire(localValidatePath)) {
+  if (!env.VOVK_VALIDATE_ON_CLIENT) {
+    env.VOVK_VALIDATE_ON_CLIENT = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : '';
+  } else if (env.VOVK_VALIDATE_ON_CLIENT && !canRequire(localValidatePath)) {
     throw new Error(
-      `Unble to generate Vovk Client: cannot find "validateOnClient" module '${vovkrc.validateOnClient}'. Check your .vovkrc.js file`
+      `Unble to generate Vovk Client: cannot find "validateOnClient" module '${env.VOVK_VALIDATE_ON_CLIENT}'. Check your .vovkrc.js file`
     );
   }
 
@@ -42,7 +41,7 @@ async function generateClient(rcPath) {
     throw new Error(`Unble to generate Vovk Client: cannot find ".vovk.json" file '${jsonPath}'.`);
   }
 
-  const controllersPath = path.join('../..', vovkrc.route).replace(/\.ts$/, '');
+  const controllersPath = path.join('../..', env.VOVK_ROUTE).replace(/\.ts$/, '');
   let ts = `/* auto-generated */
 import type { Controllers, Workers } from "${controllersPath}";
 import type { clientizeController } from 'vovk/client';
@@ -58,9 +57,9 @@ const { promisifyWorker } = require('vovk/worker');
 const metadata = require('${jsonPath}');
 const { default: fetcher } = require('${fetcherPath}');
 const { default: streamFetcher } = require('${streamFetcherPath}');
-const prefix = '${vovkrc.prefix ?? '/api'}';
+const prefix = '${env.VOVK_PREFIX ?? '/api'}';
 const { default: validateOnClient = null } = ${
-    vovkrc.validateOnClient ? `require('${vovkrc.validateOnClient}')` : '{}'
+    env.VOVK_VALIDATE_ON_CLIENT ? `require('${env.VOVK_VALIDATE_ON_CLIENT}')` : '{}'
   };
 
 `;

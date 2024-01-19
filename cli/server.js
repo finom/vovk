@@ -5,9 +5,9 @@ const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const generateClient = require('./generateClient');
-const getVovkrc = require('./getVovkrc');
+const getVars = require('./getVars');
 
-/** @type {{ once?: boolean; rc: string }} */
+/** @type {{ once?: boolean; vovkrc: string }} */
 // @ts-expect-error yargs
 const argv = yargs(hideBin(process.argv)).argv;
 
@@ -48,10 +48,12 @@ const writeMetadata = async (metadataPath, metadata) => {
 
 let pingInterval;
 
+const vars = getVars(argv.vovkrc);
+
 const startPinging = (port) => {
   clearInterval(pingInterval);
   pingInterval = setInterval(() => {
-    let prefix = getVovkrc(argv.rc).prefix;
+    let prefix = vars.VOVK_PREFIX;
     prefix = prefix.startsWith('http://')
       ? prefix
       : `http://localhost:${port}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
@@ -82,7 +84,8 @@ const server = http.createServer((req, res) => {
         const { metadata, PORT } = JSON.parse(body); // Parse the JSON data
         const filePath = path.join(__dirname, '../../../.vovk.json');
         const metadataWritten = await writeMetadata(filePath, metadata);
-        const codeWritten = await generateClient(argv.rc);
+
+        const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
         if (metadataWritten || codeWritten) {
@@ -94,12 +97,15 @@ const server = http.createServer((req, res) => {
         if (PORT && !once) {
           startPinging(PORT);
         }
+
+        if (once && metadata) server.close();
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'text/plain' });
         res.end('Invalid JSON');
         console.error(' ❌ ' + err.message);
+
+        if (once) server.close();
       }
-      if (once) server.close();
     });
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });

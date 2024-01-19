@@ -1,8 +1,8 @@
 // @ts-check
 const { spawn } = require('child_process');
 
-/** @type {(commands: { command: string; name: string; }[]) => Promise<void>} */
-function concurrent(commands) {
+/** @type {(commands: { command: string; name: string; }[], env: import('../../src').VovkEnv) => Promise<void>} */
+function concurrent(commands, env) {
   return new Promise((resolve, reject) => {
     /** @type {{ name: string; process: import('child_process').ChildProcess; }[]} */
     let processes = [];
@@ -16,7 +16,7 @@ function concurrent(commands) {
     });
 
     function runCommand(command, name, onExit) {
-      const proc = spawn(command, { shell: true, env: process.env, stdio: 'inherit' });
+      const proc = spawn(command, { shell: true, env: { ...env, ...process.env }, stdio: 'inherit' });
 
       proc.on('exit', onExit);
 

@@ -6,6 +6,7 @@ const generateClient = require('./generateClient');
 const path = require('path');
 const concurrent = require('./lib/concurrent');
 const getAvailablePort = require('./lib/getAvailablePort');
+const getVars = require('./getVars');
 
 const builder = {
   rc: {
@@ -30,21 +31,26 @@ const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
 
 const nextArgs = process.argv.join(' ').split(' -- ')[1] ?? '';
 
-let VOVK_PORT = process.env.VOVK_PORT ? parseInt(process.env.VOVK_PORT) : 3420;
+const env = getVars(argv.rc);
+
+let VOVK_PORT = parseInt(env.VOVK_PORT);
 
 // @ts-expect-error yargs
 if (argv._.includes('dev')) {
   void (async () => {
-    const PORT = await getAvailablePort(VOVK_PORT, 20).catch(() => {
+    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 20).catch(() => {
       throw new Error(' 🐺 Failed to find available port');
     });
-    await concurrent([
-      {
-        command: `VOVK_PORT=${PORT} node ${__dirname}/server.js --rc ${argv.rc}`,
-        name: 'Vovk',
-      },
-      { command: `cd ${argv.project} && VOVK_PORT=${PORT} npx next dev ${nextArgs}`, name: 'Next' },
-    ]).catch((e) => console.error(e));
+    await concurrent(
+      [
+        {
+          command: `node ${__dirname}/server.js`,
+          name: 'Vovk',
+        },
+        { command: `cd ${argv.project} && npx next dev ${nextArgs}`, name: 'Next' },
+      ],
+      env
+    ).catch((e) => console.error(e));
     console.info(' 🐺 All processes have completed');
   })();
 }
@@ -52,23 +58,25 @@ if (argv._.includes('dev')) {
 // @ts-expect-error yargs
 if (argv._.includes('build')) {
   void (async () => {
-    const PORT = await getAvailablePort(VOVK_PORT, 20).catch(() => {
+    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 20).catch(() => {
       throw new Error(' 🐺 Failed to find available port');
     });
-
-    await concurrent([
-      {
-        command: `VOVK_PORT=${PORT} node ${__dirname}/server.js --once --rc ${argv.rc}`,
-        name: 'Vovk',
-      },
-      { command: `cd ${argv.project} && VOVK_PORT=${PORT} npx next build ${nextArgs}`, name: 'Next' },
-    ]).catch((e) => console.error(e));
+    await concurrent(
+      [
+        {
+          command: `node ${__dirname}/server.js --once`,
+          name: 'Vovk',
+        },
+        { command: `cd ${argv.project} && npx next build ${nextArgs}`, name: 'Next' },
+      ],
+      env
+    ).catch((e) => console.error(e));
   })();
 }
 
 // @ts-expect-error yargs
 if (argv._.includes('generate')) {
-  void generateClient(argv.rc).then(() => {
+  void generateClient(env).then(() => {
     console.info(' 🐺 Client generated');
   });
 }

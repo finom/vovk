@@ -1,6 +1,7 @@
 import { _createSegment as createSegment } from './createSegment';
 import {
   type _VovkRc as VovkRc,
+  type _VovkEnv as VovkEnv,
   type _VovkErrorResponse as VovkErrorResponse,
   type _VovkRequest as VovkRequest,
   type _VovkBody as VovkBody,
@@ -20,6 +21,7 @@ import { _createDecorator as createDecorator } from './createDecorator';
 
 export {
   type VovkRc,
+  type VovkEnv,
   type VovkMetadata,
   type VovkErrorResponse,
   type VovkRequest,
