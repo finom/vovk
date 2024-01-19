@@ -91,9 +91,12 @@ const server = http.createServer((req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     req.on('end', async () => {
       try {
+        // eslint-disable-next-line no-console
+        console.log(body);
         const { metadata, PORT } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = await writeMetadata(metadata);
-
+        // eslint-disable-next-line no-console
+        console.log({ metadata, PORT });
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');

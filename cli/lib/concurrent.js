@@ -29,6 +29,7 @@ function concurrent(commands, env) {
       if (code !== 0) {
         processes.forEach((p) => p.name !== name && p.process.kill('SIGINT'));
         processes = [];
+        process.stdout.write('\n');
         return reject(new Error(`Process ${name} exited with code ${code}`));
       }
 
