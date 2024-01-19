@@ -84,7 +84,7 @@ if(typeof window !== 'undefined') fetch(prefix + '/__ping', { method: 'POST' });
 
   const jsPath = path.join(__dirname, '../../.vovk/index.js');
   const tsPath = path.join(__dirname, '../../.vovk/index.d.ts');
-  await fs.mkdir('../../.vovk', { recursive: true });
+  await fs.mkdir(path.join(__dirname, '../../.vovk'), { recursive: true });
   const existingJs = await fs.readFile(jsPath, 'utf-8').catch(() => '');
   const existingTs = await fs.readFile(tsPath, 'utf-8').catch(() => '');
   if (existingJs === js && existingTs === ts) return false;

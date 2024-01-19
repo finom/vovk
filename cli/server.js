@@ -97,7 +97,7 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
         if (metadataWritten) {
-          console.info(' 🐺 JSON metadata received');
+          console.info(' 🐺 JSON metadata updated');
         }
 
         if (codeWritten) {
