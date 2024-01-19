@@ -22,7 +22,7 @@ const builder = {
   },
 };
 
-/** @type {{ rc: string, project: string }} */
+/** @type {{ vovkrc: string, project: string }} */
 // @ts-expect-error yargs
 const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
   .command('dev', 'Run development server', builder) // @ts-expect-error yargs
@@ -31,7 +31,7 @@ const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
 
 const nextArgs = process.argv.join(' ').split(' -- ')[1] ?? '';
 
-const env = getVars(argv.rc);
+const env = getVars(argv.vovkrc);
 
 let VOVK_PORT = parseInt(env.VOVK_PORT);
 
