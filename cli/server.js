@@ -96,10 +96,12 @@ const server = http.createServer((req, res) => {
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
-        if (metadataWritten || codeWritten) {
-          console.info(' 🐺 JSON metadata received and the client is generated');
-        } else if (once) {
-          console.info(' 🐺 JSON metadata received and the client is not changed');
+        if (metadataWritten) {
+          console.info(' 🐺 JSON metadata received');
+        }
+
+        if (codeWritten) {
+          console.info(' 🐺 Client generated');
         }
 
         if (PORT && !once) {
@@ -109,7 +111,7 @@ const server = http.createServer((req, res) => {
         if (once && metadata) server.close();
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'text/plain' });
-        res.end('Invalid JSON');
+        res.end(err.message ?? 'Error');
         console.error(' ❌ ' + err.message);
 
         if (once) server.close();
