@@ -9,7 +9,7 @@ const getAvailablePort = require('./lib/getAvailablePort');
 const getVars = require('./getVars');
 
 const builder = {
-  rc: {
+  vovkrc: {
     type: 'string',
     default: path.join(process.cwd(), '.vovkrc.js'),
     describe: 'Path to .vovkrc.js',

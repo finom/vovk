@@ -48,7 +48,7 @@ const writeMetadata = async (metadataPath, metadata) => {
 
 let pingInterval;
 
-const vars = getVars(argv.vovkrc);
+const vars = getVars(argv.vovkrc, false);
 
 const startPinging = (port) => {
   clearInterval(pingInterval);

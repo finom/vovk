@@ -1,8 +1,8 @@
 // @ts-check
 
 let vars;
-/** @type {(rcPath: string) => import('../src').VovkEnv} */
-function getVars(rcPath) {
+/** @type {(rcPath: string, warn?: boolean) => import('../src').VovkEnv} */
+function getVars(rcPath, warn = true) {
   if (vars) return vars;
   /** @type {Required<import('../src').VovkRc>} */
   const vovkRc = {
@@ -16,7 +16,7 @@ function getVars(rcPath) {
   try {
     Object.assign(vovkRc, require(rcPath));
   } catch {
-    console.info(` 🐺 No .vovkrc.js file found in ${rcPath}`);
+    if (warn) console.info(` 🐺 No .vovkrc.js file found in ${rcPath}`);
   }
 
   vars = {
