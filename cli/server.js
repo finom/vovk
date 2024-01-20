@@ -91,8 +91,8 @@ const server = http.createServer((req, res) => {
       } catch (e) {
         const err = /** @type {Error} */ (e);
         res.writeHead(400, { 'Content-Type': 'text/plain' });
-        res.end(err.message ?? 'Error');
-        console.error(' ❌ ' + err.message);
+        res.end(err?.message ?? 'Error');
+        console.error(' ❌ ' + err?.message);
 
         if (once) server.close();
       }
