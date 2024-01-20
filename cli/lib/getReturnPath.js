@@ -1,4 +1,5 @@
 // @ts-check
+/** @type {(fromPath: string, toPath: string) => string} */
 function getReturnPath(fromPath, toPath) {
   // Split the paths into components
   const fromParts = fromPath.replace(/^\.?\/|\/$/g, '').split('/');

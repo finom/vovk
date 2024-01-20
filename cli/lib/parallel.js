@@ -10,11 +10,17 @@ function parallel(commands, env) {
     commands.forEach((cmd) => {
       const processObj = {
         name: cmd.name,
-        process: runCommand(cmd.command, cmd.name, (code) => handleProcessExit(code, cmd.name)),
+        process: runCommand(
+          cmd.command,
+          cmd.name,
+          /** @type {(code: number) => void} */
+          (code) => handleProcessExit(code, cmd.name)
+        ),
       };
       processes.push(processObj);
     });
 
+    /** @type {(command: string, name: string, onExit: (code: number) => void) => import('child_process').ChildProcess} */
     function runCommand(command, name, onExit) {
       const proc = spawn(command, { shell: true, env: { ...env, ...process.env }, stdio: 'inherit' });
 
@@ -23,6 +29,7 @@ function parallel(commands, env) {
       return proc;
     }
 
+    /** @type {(code: number, name: string) => void} */
     function handleProcessExit(code, name) {
       processes = processes.filter((p) => p.name !== name);
 

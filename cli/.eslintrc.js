@@ -8,5 +8,13 @@ module.exports = {
         '@typescript-eslint/no-unsafe-member-access': 'off',
         '@typescript-eslint/no-unsafe-return': 'off',
         'no-console': ['error', { allow: ['info', 'error', 'warn'] }]
-    }
+    },
+    parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        project: '../tsconfig.cli.json',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        tsconfigRootDir: __dirname,
+        createDefaultProgram: true,
+      },
 }

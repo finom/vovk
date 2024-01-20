@@ -20,7 +20,7 @@ New sections:
 - Project structure
 - API
 - How it works
-- Roadmap
+- Changelog & Roadmap
 - Sponsor
  */
 

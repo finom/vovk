@@ -33,10 +33,12 @@ const writeEmptyMetadata = async () => {
 
 void writeEmptyMetadata();
 
+/** @type {NodeJS.Timeout} */
 let pingInterval;
 
 const vars = getVars(argv.vovkrc, { warn: false });
 
+/** @type {(port: string) => void} */
 const startPinging = (port) => {
   clearInterval(pingInterval);
   pingInterval = setInterval(() => {
@@ -86,7 +88,8 @@ const server = http.createServer((req, res) => {
         }
 
         if (once && metadata) server.close();
-      } catch (err) {
+      } catch (e) {
+        const err = /** @type {Error} */ (e);
         res.writeHead(400, { 'Content-Type': 'text/plain' });
         res.end(err.message ?? 'Error');
         console.error(' ❌ ' + err.message);

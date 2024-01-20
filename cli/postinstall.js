@@ -2,6 +2,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 
+/** @type {(path: string) => Promise<boolean>} */
 const fileExists = async (path) => !!(await fs.stat(path).catch(() => false));
 
 async function postinstall() {

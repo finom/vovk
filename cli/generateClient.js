@@ -3,6 +3,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const getReturnPath = require('./lib/getReturnPath');
 
+/** @type {(moduleName: string) => boolean} */
 function canRequire(moduleName) {
   try {
     require.resolve(moduleName);
@@ -23,9 +24,6 @@ async function generateClient({ ...env }) {
   const jsonPath = path.join(returnDir, '.vovk.json');
   const localJsonPath = path.join(process.cwd(), '.vovk.json');
   const fetcherPath = env.VOVK_FETCHER.startsWith('.') ? path.join(returnDir, env.VOVK_FETCHER) : env.VOVK_FETCHER;
-  const streamFetcherPath = env.VOVK_STREAM_FETCHER.startsWith('.')
-    ? path.join(returnDir, env.VOVK_STREAM_FETCHER)
-    : env.VOVK_STREAM_FETCHER;
   const validatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.')
     ? path.join(returnDir, env.VOVK_VALIDATE_ON_CLIENT)
     : env.VOVK_VALIDATE_ON_CLIENT;
@@ -60,7 +58,6 @@ const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
 const metadata = require('${jsonPath}');
 const { default: fetcher } = require('${fetcherPath}');
-const { default: streamFetcher } = require('${streamFetcherPath}');
 const prefix = '${env.VOVK_PREFIX ?? '/api'}';
 const { default: validateOnClient = null } = ${
     env.VOVK_VALIDATE_ON_CLIENT ? `require('${env.VOVK_VALIDATE_ON_CLIENT}')` : '{}'
@@ -76,7 +73,7 @@ const { default: validateOnClient = null } = ${
   for (const key of Object.keys(metadata)) {
     if (key !== 'workers') {
       ts += `export const ${key}: ReturnType<typeof clientizeController<Controllers["${key}"], Options>>;\n`;
-      js += `exports.${key} = clientizeController(metadata.${key}, { fetcher, streamFetcher, validateOnClient, defaultOptions: { prefix } });\n`;
+      js += `exports.${key} = clientizeController(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
     }
   }
 
