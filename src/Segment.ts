@@ -187,7 +187,12 @@ export class _Segment {
             typeof (result as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
 
       if (isIterator && !(result instanceof Array)) {
-        const streamResponse = new StreamResponse();
+        const streamResponse = new StreamResponse({
+          headers: {
+            ...StreamResponse.defaultHeaders,
+            ..._Segment.getHeadersFromOptions(staticMethod._options),
+          },
+        });
 
         void (async () => {
           try {
