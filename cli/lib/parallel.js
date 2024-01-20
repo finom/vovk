@@ -2,7 +2,7 @@
 const { spawn } = require('child_process');
 
 /** @type {(commands: { command: string; name: string; }[], env: import('../../src').VovkEnv) => Promise<void>} */
-function concurrent(commands, env) {
+function parallel(commands, env) {
   return new Promise((resolve, reject) => {
     /** @type {{ name: string; process: import('child_process').ChildProcess; }[]} */
     let processes = [];
@@ -40,4 +40,4 @@ function concurrent(commands, env) {
   });
 }
 
-module.exports = concurrent;
+module.exports = parallel;

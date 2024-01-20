@@ -4,7 +4,7 @@ const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const generateClient = require('./generateClient');
 const path = require('path');
-const concurrent = require('./lib/concurrent');
+const parallel = require('./lib/parallel');
 const getAvailablePort = require('./lib/getAvailablePort');
 const getVars = require('./getVars');
 
@@ -47,7 +47,7 @@ if (argv._.includes('dev')) {
     env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 20).catch(() => {
       throw new Error(' 🐺 Failed to find available port');
     });
-    await concurrent(
+    await parallel(
       [
         {
           command: `node ${__dirname}/server.js`,
@@ -67,7 +67,7 @@ if (argv._.includes('build')) {
     env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 20).catch(() => {
       throw new Error(' 🐺 Failed to find available port');
     });
-    await concurrent(
+    await parallel(
       [
         {
           command: `node ${__dirname}/server.js --once`,
