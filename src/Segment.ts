@@ -38,9 +38,10 @@ export class _Segment {
     OPTIONS: new Map(),
   };
 
-  GET = (req: NextRequest, data: { params: Record<string, string[]> }) =>
-    this.#callMethod(HttpMethod.GET, req, data.params);
-
+  GET = (req: NextRequest, data: { params: Record<string, string[]> }) => {
+    console.log('data', data);
+    return this.#callMethod(HttpMethod.GET, req, data.params);
+  };
   POST = (req: NextRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.POST, req, data.params);
 
