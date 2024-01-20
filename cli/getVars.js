@@ -1,5 +1,7 @@
 // @ts-check
 
+const path = require('path');
+
 let vars;
 /** @type {(rcPath: string, options?: { warn?: boolean; VOVK_CLIENT_OUT?: string; }) => import('../src').VovkEnv} */
 function getVars(rcPath, options = {}) {
@@ -21,7 +23,14 @@ function getVars(rcPath, options = {}) {
   }
 
   vars = {
-    VOVK_CLIENT_OUT: process.env.VOVK_OUT || options.VOVK_CLIENT_OUT || vovkRc.out,
+    VOVK_CLIENT_OUT:
+      process.env.VOVK_OUT ||
+      (options.VOVK_CLIENT_OUT?.startsWith('/')
+        ? options.VOVK_CLIENT_OUT
+        : options.VOVK_CLIENT_OUT
+          ? path.join(process.cwd(), options.VOVK_CLIENT_OUT)
+          : null) ||
+      vovkRc.out,
     VOVK_PORT: process.env.VOVK_PORT || '3420',
     VOVK_ROUTE: process.env.VOVK_ROUTE || vovkRc.route,
     VOVK_FETCHER: process.env.VOVK_FETCHER || vovkRc.fetcher,

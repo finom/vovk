@@ -1,8 +1,16 @@
 // @ts-check
 const fs = require('fs/promises');
 const path = require('path');
-const canRequire = require('./lib/canRequire');
 const getReturnPath = require('./lib/getReturnPath');
+
+function canRequire(moduleName) {
+  try {
+    require.resolve(moduleName);
+    return true; // The module exists and can be required
+  } catch (e) {
+    return false; // The module does not exist
+  }
+}
 
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
@@ -10,12 +18,11 @@ const getReturnPath = require('./lib/getReturnPath');
  * @type {(rcPath: import('../src').VovkEnv) => Promise<boolean>}
  */
 async function generateClient({ ...env }) {
-  const outDir = path.join(__dirname, '../..', env.VOVK_CLIENT_OUT);
-  const returnDir = getReturnPath(outDir, path.join(__dirname, '../..'));
+  const outDir = env.VOVK_CLIENT_OUT;
+  const returnDir = getReturnPath(outDir, process.cwd());
   const jsonPath = path.join(returnDir, '.vovk.json');
-  const localJsonPath = path.join('..', jsonPath);
+  const localJsonPath = path.join(process.cwd(), '.vovk.json');
   const fetcherPath = env.VOVK_FETCHER.startsWith('.') ? path.join(returnDir, env.VOVK_FETCHER) : env.VOVK_FETCHER;
-
   const streamFetcherPath = env.VOVK_STREAM_FETCHER.startsWith('.')
     ? path.join(returnDir, env.VOVK_STREAM_FETCHER)
     : env.VOVK_STREAM_FETCHER;
@@ -37,7 +44,8 @@ async function generateClient({ ...env }) {
   }
 
   const controllersPath = path.join(returnDir, env.VOVK_ROUTE).replace(/\.ts$/, '');
-  let ts = `/* auto-generated */
+  let ts = `// auto-generated
+/* eslint-disable */
 import type { Controllers, Workers } from "${controllersPath}";
 import type { clientizeController } from 'vovk/client';
 import type { promisifyWorker } from 'vovk/worker';
@@ -46,7 +54,8 @@ import type fetcher from '${fetcherPath}';
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
-  let js = `/* auto-generated */
+  let js = `// auto-generated
+/* eslint-disable */
 const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
 const metadata = require('${jsonPath}');
@@ -77,14 +86,15 @@ const { default: validateOnClient = null } = ${
     if(typeof window !== 'undefined') fetch(prefix + '/__ping', { method: 'POST' });
   `; */
 
-  const jsPath = path.join(__dirname, returnDir, env.VOVK_CLIENT_OUT, 'index.js');
-  const tsPath = path.join(__dirname, returnDir, env.VOVK_CLIENT_OUT, 'index.d.ts');
-  const existingJs = await fs.readFile(jsPath, 'utf-8').catch(() => '');
-  const existingTs = await fs.readFile(tsPath, 'utf-8').catch(() => '');
+  const localJsPath = path.join(outDir, 'index.js');
+  const localTsPath = path.join(outDir, 'index.d.ts');
+  const existingJs = await fs.readFile(localJsPath, 'utf-8').catch(() => '');
+  const existingTs = await fs.readFile(localTsPath, 'utf-8').catch(() => '');
   if (existingJs === js && existingTs === ts) return false;
-  await fs.mkdir(path.join(__dirname, returnDir, env.VOVK_CLIENT_OUT), { recursive: true });
-  await fs.writeFile(tsPath, ts);
-  await fs.writeFile(jsPath, js);
+
+  await fs.mkdir(outDir, { recursive: true });
+  await fs.writeFile(localJsPath, js);
+  await fs.writeFile(localTsPath, ts);
 
   return true;
 }
