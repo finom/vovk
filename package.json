@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "0.2.3-beta.69",
+  "version": "0.2.3-beta.70",
   "description": "Structural add-on for Next.js",
   "bin": "./cli/index.js",
   "scripts": {
