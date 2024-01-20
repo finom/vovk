@@ -6,7 +6,8 @@
     "dev": "vovk dev",
     "build": "vovk build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate": "vovk generate"
   },
   "dependencies": {
     "@vovkts/client": "latest",

@@ -11,6 +11,7 @@ module.exports = {
     'import/resolver': {
       typescript: {},
     },
+    cache: false
   },
   rules: {
     'no-unused-vars': 0, // we use typescript

@@ -69,7 +69,7 @@ const { default: validateOnClient = null } = ${
 `;
   const metadataJson = await fs.readFile(localJsonPath, 'utf-8').catch(() => null);
 
-  if(!metadataJson) console.warn(` 🐺 No .vovk.json file found in ${localJsonPath}`);
+  if (!metadataJson) console.warn(` 🐺 No .vovk.json file found in ${localJsonPath}`);
 
   const metadata = JSON.parse(metadataJson || '{}');
 
