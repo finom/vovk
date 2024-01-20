@@ -15,7 +15,7 @@ function canRequire(moduleName) {
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
  * TODO: Check fetcher and streamFetcher for existence
- * @type {(rcPath: import('../src').VovkEnv) => Promise<boolean>}
+ * @type {(rcPath: import('../src').VovkEnv) => Promise<{ written: boolean; path: string }>}
  */
 async function generateClient({ ...env }) {
   const outDir = env.VOVK_CLIENT_OUT;
@@ -90,13 +90,13 @@ const { default: validateOnClient = null } = ${
   const localTsPath = path.join(outDir, 'index.d.ts');
   const existingJs = await fs.readFile(localJsPath, 'utf-8').catch(() => '');
   const existingTs = await fs.readFile(localTsPath, 'utf-8').catch(() => '');
-  if (existingJs === js && existingTs === ts) return false;
+  if (existingJs === js && existingTs === ts) return { written: false, path: outDir };
 
   await fs.mkdir(outDir, { recursive: true });
   await fs.writeFile(localJsPath, js);
   await fs.writeFile(localTsPath, ts);
 
-  return true;
+  return { written: true, path: outDir };
 }
 
 module.exports = generateClient;

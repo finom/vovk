@@ -16,12 +16,13 @@ const once = argv.once ?? false;
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
+/** @type {(metadata: object) => Promise<{ written: boolean; path: string }>} */
 const writeMetadata = async (metadata) => {
   await fs.mkdir(path.dirname(metadataPath), { recursive: true });
   const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => 'null');
-  if (isEqual(JSON.parse(existingMetadata), metadata)) return false;
+  if (isEqual(JSON.parse(existingMetadata), metadata)) return { written: false, path: metadataPath };
   await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
-  return true;
+  return { written: true, path: metadataPath };
 };
 
 const writeEmptyMetadata = async () => {
@@ -68,16 +69,16 @@ const server = http.createServer((req, res) => {
     req.on('end', async () => {
       try {
         const { metadata, PORT } = JSON.parse(body); // Parse the JSON data
-        const metadataWritten = metadata ? await writeMetadata(metadata) : false;
+        const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
-        if (metadataWritten) {
-          console.info(' 🐺 JSON metadata updated');
+        if (metadataWritten.written) {
+          console.info(` 🐺 JSON metadata updated in ${metadataWritten.path}`);
         }
 
-        if (codeWritten) {
-          console.info(' 🐺 Client generated');
+        if (codeWritten.written) {
+          console.info(` 🐺 Client generated in ${codeWritten.path}`);
         }
 
         if (PORT && !once) {
