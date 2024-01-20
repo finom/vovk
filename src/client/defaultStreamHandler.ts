@@ -1,49 +1,11 @@
-import type { _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultFetcher';
 import { _HttpStatus as HttpStatus, type _VovkErrorResponse as VovkErrorResponse } from '../types';
-import type { _StreamAsyncIterator as StreamAsyncIterator, _VovkClientFetcher as VovkClientFetcher } from './types';
+import type { _StreamAsyncIterator as StreamAsyncIterator } from './types';
 import { _HttpException as HttpException } from '../HttpException';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
 
-export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamFetcher';
+export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
 
-const defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = async (
-  { httpMethod, getPath, validate },
-  { params, query, body, prefix = '/api', ...options }
-): Promise<StreamAsyncIterator<unknown>> => {
-  const endpoint =
-    (prefix.startsWith('http://') || prefix.startsWith('https://') || prefix.startsWith('/') ? '' : '/') +
-    (prefix.endsWith('/') ? prefix : `${prefix}/`) +
-    getPath(params, query);
-
-  try {
-    await validate({ body, query });
-  } catch (e) {
-    // if HttpException is thrown, rethrow it
-    if (e instanceof HttpException) throw e;
-    // otherwise, throw HttpException with status 0
-    throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE);
-  }
-
-  const init: RequestInit = {
-    method: httpMethod,
-    ...options,
-  };
-
-  if (body instanceof FormData) {
-    init.body = body as BodyInit;
-  } else if (body) {
-    init.body = JSON.stringify(body);
-  }
-
-  let response: Response;
-
-  try {
-    response = await fetch(endpoint, init);
-  } catch (e) {
-    // handle network errors
-    throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE);
-  }
-
+export const _defaultStreamHandler = async (response: Response): Promise<StreamAsyncIterator<unknown>> => {
   if (!response.ok) {
     let result: unknown;
     try {
@@ -110,15 +72,33 @@ const defaultStreamFetcher: VovkClientFetcher<DefaultFetcherOptions> = async (
     }
   }
 
+  if (typeof Symbol.dispose !== 'symbol') {
+    Object.defineProperty(Symbol, 'dispose', {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: Symbol.for('dispose'),
+    });
+  }
+
+  if (typeof Symbol.asyncDispose !== 'symbol') {
+    Object.defineProperty(Symbol, 'asyncDispose', {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: Symbol.for('asyncDispose'),
+    });
+  }
+
   return {
     // @ts-expect-error xxx
     status: response.status,
     [Symbol.asyncIterator]: asyncIterator,
+    [Symbol.dispose]: () => reader.cancel(),
+    [Symbol.asyncDispose]: () => reader.cancel(),
     cancel: () => {
       canceled = true;
       return reader.cancel();
     },
   };
 };
-
-export default defaultStreamFetcher;

@@ -20,7 +20,6 @@ describe('Streaming generator', () => {
     const resp = await defaultController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
-      isStream: true,
     });
 
     for await (const message of resp) {
@@ -38,7 +37,6 @@ describe('Streaming generator', () => {
     const resp = await defaultController.postWithAsyncStreaming({
       body: tokens,
       query: { query: 'queryValue' },
-      isStream: true,
     });
 
     for await (const message of resp) {
@@ -56,7 +54,6 @@ describe('Streaming generator', () => {
     const resp = await defaultController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
-      isStream: true,
     });
 
     let count = 0;
@@ -75,7 +72,6 @@ describe('Streaming generator', () => {
     const resp = await defaultController.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
-      isStream: true,
     });
 
     await expect(async () => {
@@ -93,7 +89,6 @@ describe('Streaming generator', () => {
     const resp = await defaultController.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
-      isStream: true,
     });
 
     await expect(async () => {
@@ -113,7 +108,6 @@ describe('Streaming generator', () => {
     const resp = await defaultController.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
-      isStream: true,
     });
 
     // TODO I don't know why rejects.toThrowError doesn't work here
@@ -141,7 +135,6 @@ describe('Streaming generator', () => {
     const resp = await defaultController.postWithStreamingAndDelayedUnhandledError({
       body: tokens,
       query: { query: 'queryValue' },
-      isStream: true,
     });
 
     await expect(async () => {

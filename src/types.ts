@@ -6,7 +6,6 @@ export type _VovkRc = {
   out?: string;
   route?: string;
   fetcher?: string;
-  streamFetcher?: string;
   prefix?: string;
   validateOnClient?: string;
 };
@@ -14,7 +13,6 @@ export type _VovkRc = {
 export type _VovkEnv = {
   VOVK_ROUTE: string;
   VOVK_FETCHER: string;
-  VOVK_STREAM_FETCHER: string;
   VOVK_PREFIX: string;
   VOVK_VALIDATE_ON_CLIENT: string;
   VOVK_PORT: string;

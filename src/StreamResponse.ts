@@ -1,7 +1,7 @@
 import { _KnownAny as KnownAny, _StreamAbortMessage as StreamAbortMessage } from './types';
 
 export class _StreamResponse<T> extends Response {
-  public static readonly JSON_DIVIDER = '__##DIV123##__'; // protects collisions with JSON data
+  public static readonly JSON_DIVIDER = '__##DIV123##__'; // protects collisions of JSON data
 
   public static defaultHeaders = {
     'Content-Type': 'text/event-stream',

@@ -6,14 +6,11 @@ import {
   type _VovkQuery as VovkQuery,
   type _KnownAny as KnownAny,
 } from '../types';
-import {
-  type _VovkClientOptions as VovkClientOptions,
-  type _VovkClient as VovkClient,
-  type _StreamAsyncIterator as StreamAsyncIterator,
-} from './types';
+import { type _VovkClientOptions as VovkClientOptions, type _VovkClient as VovkClient } from './types';
 
-import defaultStreamFetcher from './defaultStreamFetcher';
 import { default as defaultFetcher, type _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultFetcher';
+import { _defaultHandler as defaultHandler } from './defaultHandler';
+import { _defaultStreamHandler as defaultStreamHandler } from './defaultStreamHandler';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -48,7 +45,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
   if (!metadata)
     throw new Error(`Unable to clientize. No metadata for controller ${String(controller?._controllerName)}`);
   const prefix = trimPath(controller._prefix ?? '');
-  const { fetcher = defaultFetcher, streamFetcher = defaultStreamFetcher } = options ?? {};
+  const { fetcher = defaultFetcher } = options ?? {};
 
   for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(metadata)) {
     const getPath = (params: { [key: string]: string }, query: { [key: string]: string }) =>
@@ -63,7 +60,6 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         body?: unknown;
         query?: { [key: string]: string };
         params?: { [key: string]: string };
-        isStream?: boolean;
       } & OPTS = {} as OPTS
     ) => {
       const internalOptions: Parameters<typeof fetcher>[0] = {
@@ -71,6 +67,8 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         httpMethod,
         getPath,
         validate,
+        defaultHandler,
+        defaultStreamHandler,
       };
       const internalInput = {
         ...input,
@@ -79,14 +77,6 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         params: input.params ?? {},
         ...options?.defaultOptions,
       };
-
-      if (input.isStream) {
-        if (!streamFetcher) throw new Error('Stream fetcher is not provided');
-
-        const fetcherPromise = streamFetcher(internalOptions, internalInput) as StreamAsyncIterator<unknown>;
-
-        return fetcherPromise;
-      }
 
       if (!fetcher) throw new Error('Fetcher is not provided');
 

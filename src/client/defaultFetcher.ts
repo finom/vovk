@@ -1,11 +1,10 @@
 import { type _VovkClientFetcher as VovkClientFetcher } from './types';
-import { type _VovkErrorResponse as VovkErrorResponse, _HttpStatus as HttpStatus } from '../types';
+import { _HttpStatus as HttpStatus } from '../types';
 import { _HttpException as HttpException } from '../HttpException';
 
 // `RequestInit` is the type of options passed to fetch function
 export interface _DefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
   prefix?: string;
-  isStream?: boolean;
   disableClientValidation?: true;
 }
 
@@ -14,7 +13,7 @@ export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultFetcher';
 // defaultFetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
 // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
 const defaultFetcher: VovkClientFetcher<_DefaultFetcherOptions> = async (
-  { httpMethod, getPath, validate },
+  { httpMethod, getPath, validate, defaultHandler, defaultStreamHandler },
   { params, query, body, prefix = '/api', ...options }
 ) => {
   const endpoint =
@@ -44,7 +43,6 @@ const defaultFetcher: VovkClientFetcher<_DefaultFetcherOptions> = async (
     init.body = JSON.stringify(body);
   }
 
-  let result: unknown;
   let response: Response;
 
   try {
@@ -54,19 +52,15 @@ const defaultFetcher: VovkClientFetcher<_DefaultFetcherOptions> = async (
     throw new HttpException(HttpStatus.NULL, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);
   }
 
-  try {
-    result = await response.json();
-  } catch (e) {
-    // handle parsing errors
-    throw new HttpException(response.status, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);
+  if (response.headers.get('content-type')?.includes('application/json')) {
+    return defaultHandler(response);
   }
 
-  if (!response.ok) {
-    // handle server errors
-    throw new HttpException(response.status, (result as VovkErrorResponse)?.message ?? DEFAULT_ERROR_MESSAGE);
+  if (response.headers.get('content-type')?.includes('text/event-stream')) {
+    return defaultStreamHandler(response);
   }
 
-  return result;
+  return response;
 };
 
 export default defaultFetcher;
