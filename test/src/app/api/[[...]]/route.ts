@@ -54,9 +54,4 @@ export type Workers = typeof workers;
 initVovk({
   controllers,
   workers,
-  onMetadata: async (metadata, write) => {
-    const [fs, path] = await Promise.all([import('fs/promises'), import('path')]);
-    const metadataPath = path.join(__dirname.replace('.next/server/app', 'src'), '../../vovk-metadata.json');
-    await write(metadataPath, metadata, { fs, path });
-  },
 });

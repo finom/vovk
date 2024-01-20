@@ -78,10 +78,17 @@ export type _VovkWorker = Function &
     [key: string]: unknown;
   };
 
-export type _RouteHandler = (
+export type _DecoratorOptions = {
+  cors?: boolean;
+  headers?: Record<string, string>;
+};
+
+export type _RouteHandler = ((
   req: NextRequest,
   params: Record<string, string>
-) => Response | Promise<Response> | Iterable<unknown> | AsyncIterable<unknown>;
+) => Response | Promise<Response> | Iterable<unknown> | AsyncIterable<unknown>) & {
+  _options?: _DecoratorOptions;
+};
 
 export interface _VovkRequest<BODY = undefined, QUERY extends Record<string, string> | undefined = undefined>
   extends Omit<NextRequest, 'json' | 'nextUrl'> {

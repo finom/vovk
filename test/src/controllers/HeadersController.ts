@@ -10,4 +10,9 @@ export default class HeadersController {
 
     return { hello };
   }
+
+  @get('decorator-header', { headers: { 'x-decorator-header': 'hello' } })
+  static getWithHeader() {
+    return {};
+  }
 }

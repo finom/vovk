@@ -9,58 +9,22 @@ import {
   type _VovkControllerMetadata as VovkControllerMetadata,
   type _VovkWorker as VovkWorker,
   type _VovkMetadata as VovkMetadata,
+  type _DecoratorOptions as DecoratorOptions,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
-const isEqual = (o1: KnownAny, o2: KnownAny): boolean => {
-  const obj1 = o1 as Record<string, KnownAny>;
-  const obj2 = o2 as Record<string, KnownAny>;
-  if (obj1 === obj2) {
-    return true;
-  }
-
-  if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 == null || obj2 == null) {
-    return false;
-  }
-
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-
-  if (keys1.length !== keys2.length) {
-    return false;
-  }
-
-  for (const key of keys1) {
-    if (!keys2.includes(key) || !isEqual(obj1[key], obj2[key])) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
-const writeMetadata = async (
-  metadataPath: string,
-  metadata: VovkMetadata,
-  lib: {
-    fs: typeof import('fs/promises');
-    path: typeof import('path');
-  }
-) => {
-  const { fs, path } = lib;
-  await fs.mkdir(path.dirname(metadataPath), { recursive: true });
-  const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => '{}');
-  if (isEqual(JSON.parse(existingMetadata), metadata)) return;
-  await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
-};
-
 export function _createSegment() {
   const r = new Segment();
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {
-    const assignMetadata = (controller: VovkController, propertyKey: string, path: string) => {
+    const assignMetadata = (
+      controller: VovkController,
+      propertyKey: string,
+      path: string,
+      options?: DecoratorOptions
+    ) => {
       if (typeof window !== 'undefined') {
         throw new Error(
           'Decorators are intended for server-side use only. You have probably imported a controller on the client-side.'
@@ -89,14 +53,15 @@ export function _createSegment() {
       (controller[propertyKey] as { _controller: VovkController })._controller = controller;
 
       methods[path] = controller[propertyKey] as RouteHandler;
+      methods[path]._options = options;
     };
 
-    function decoratorCreator(givenPath = '') {
+    function decoratorCreator(givenPath = '', options?: DecoratorOptions) {
       const path = trimPath(givenPath);
 
       function decorator(givenTarget: KnownAny, propertyKey: string) {
         const target = givenTarget as VovkController;
-        assignMetadata(target, propertyKey, path);
+        assignMetadata(target, propertyKey, path, options);
       }
 
       return decorator;
@@ -113,7 +78,7 @@ export function _createSegment() {
       );
     };
 
-    const auto = () => {
+    const auto = (options?: DecoratorOptions) => {
       function decorator(givenTarget: KnownAny, propertyKey: string) {
         const controller = givenTarget as VovkController;
         const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(controller) ?? {};
@@ -127,7 +92,7 @@ export function _createSegment() {
           },
         };
 
-        assignMetadata(controller, propertyKey, toKebabCase(propertyKey));
+        assignMetadata(controller, propertyKey, toKebabCase(propertyKey), options);
       }
 
       return decorator;
@@ -202,7 +167,7 @@ export function _createSegment() {
     exposeValidation?: boolean;
     emitMetadata?: boolean;
     onError?: (err: Error) => void | Promise<void>;
-    onMetadata?: (metadata: VovkMetadata, writeInDevelopment: typeof writeMetadata) => void | Promise<void>;
+    onMetadata?: (metadata: VovkMetadata) => void | Promise<void>;
   }) => {
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
       controller._controllerName = controllerName;
@@ -236,7 +201,7 @@ export function _createSegment() {
       }
 
       if (options?.onMetadata) {
-        void options.onMetadata(metadata, writeMetadata);
+        void options.onMetadata(metadata);
       }
     }
 

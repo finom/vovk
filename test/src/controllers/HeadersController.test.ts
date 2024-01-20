@@ -10,4 +10,11 @@ describe('Headers controller', () => {
 
     expect(response.body).toStrictEqual({ hello: world });
   });
+
+  it('should handle decorator header', async () => {
+    const response = await request.get(`/headers/decorator-header`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers['x-decorator-header']).toBe('hello');
+  });
 });

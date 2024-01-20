@@ -36,4 +36,9 @@ export default class AutoDecoratorsController {
   static optionsMethod() {
     return {};
   }
+
+  @get.auto({ headers: { 'x-decorator-header': 'hello' } })
+  static getWithHeader() {
+    return {};
+  }
 }

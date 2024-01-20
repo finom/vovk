@@ -5,11 +5,26 @@ import {
   type _RouteHandler as RouteHandler,
   type _VovkErrorResponse as VovkErrorResponse,
   type _VovkController as VovkController,
+  type _DecoratorOptions as DecoratorOptions,
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
 import { _StreamResponse as StreamResponse } from './StreamResponse';
 
 export class _Segment {
+  private static getHeadersFromOptions(options?: DecoratorOptions) {
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    };
+
+    const headers = {
+      ...(options?.cors ? corsHeaders : {}),
+      ...(options?.headers ?? {}),
+    };
+
+    return headers;
+  }
   _routes: Record<
     HttpMethod,
     Map<{ name?: string; _prefix?: string; _activated?: true }, Record<string, RouteHandler>>
@@ -44,11 +59,12 @@ export class _Segment {
   OPTIONS = (req: NextRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.OPTIONS, req, data.params);
 
-  #respond = (status: HttpStatus, body: unknown) => {
+  #respond = (status: HttpStatus, body: unknown, options?: DecoratorOptions) => {
     return new Response(JSON.stringify(body), {
       status,
       headers: {
         'Content-Type': 'application/json',
+        ..._Segment.getHeadersFromOptions(options),
       },
     });
   };
@@ -189,7 +205,7 @@ export class _Segment {
         return result;
       }
 
-      return this.#respond(200, result ?? null);
+      return this.#respond(200, result ?? null, staticMethod._options);
     } catch (e) {
       const err = e as HttpException;
       try {
