@@ -1,8 +1,8 @@
 // @ts-check
 function getReturnPath(fromPath, toPath) {
   // Split the paths into components
-  const fromParts = fromPath.split('/');
-  const toParts = toPath.split('/');
+  const fromParts = fromPath.replace(/^\.?\/|\/$/g, '').split('/');
+  const toParts = toPath.replace(/^\.?\/|\/$/g, '').split('/');
 
   // Find the common base path length
   const length = Math.min(fromParts.length, toParts.length);
@@ -19,7 +19,9 @@ function getReturnPath(fromPath, toPath) {
   const stepsDown = toParts.slice(commonBaseLength).join('/');
 
   // Combine steps up and steps down
-  return stepsUp + stepsDown;
+  const result = stepsUp + stepsDown;
+
+  return result;
 }
 
 module.exports = getReturnPath;

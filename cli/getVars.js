@@ -24,7 +24,7 @@ function getVars(rcPath, options = {}) {
 
   vars = {
     VOVK_CLIENT_OUT:
-      process.env.VOVK_OUT ||
+      process.env.VOVK_CLIENT_OUT ||
       (options.VOVK_CLIENT_OUT?.startsWith('/')
         ? options.VOVK_CLIENT_OUT
         : options.VOVK_CLIENT_OUT
