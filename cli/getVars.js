@@ -10,7 +10,7 @@ function getVars(rcPath, options = {}) {
   /** @type {Required<import('../src').VovkRc>} */
   const vovkRc = {
     out: './node_modules/.vovk',
-    route: './src/app/api/[[...]]/route.ts',
+    route: './src/app/api/[[...slug]]/route.ts',
     fetcher: 'vovk/client/defaultFetcher',
     prefix: '/api',
     validateOnClient: '',
