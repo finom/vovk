@@ -82,7 +82,7 @@ if (argv._.includes('build')) {
 
 // @ts-expect-error yargs
 if (argv._.includes('generate')) {
-  void generateClient(env).then(() => {
-    console.info(' 🐺 Client generated');
+  void generateClient(env).then(({ path }) => {
+    console.info(` 🐺 Client generated in ${path}`);
   });
 }
