@@ -85,6 +85,8 @@ export class _Segment {
       return this.#respond(200, { message: 'pong' });
     }
 
+    console.log('params', params);
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = Object.fromEntries(
       [...controllers.entries()]

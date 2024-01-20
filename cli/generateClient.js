@@ -15,7 +15,7 @@ function canRequire(moduleName) {
 
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
- * TODO: Check fetcher and streamFetcher for existence
+ * TODO: Check fetcher for existence
  * @type {(rcPath: import('../src').VovkEnv) => Promise<{ written: boolean; path: string }>}
  */
 async function generateClient({ ...env }) {
