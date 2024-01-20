@@ -1,12 +1,13 @@
 // @ts-check
 
 let vars;
-/** @type {(rcPath: string, warn?: boolean) => import('../src').VovkEnv} */
-function getVars(rcPath, warn = true) {
+/** @type {(rcPath: string, options?: { warn?: boolean; VOVK_CLIENT_OUT?: string; }) => import('../src').VovkEnv} */
+function getVars(rcPath, options = {}) {
   if (vars) return vars;
   /** @type {Required<import('../src').VovkRc>} */
   const vovkRc = {
-    route: 'src/app/api/[[...]]/route.ts',
+    out: './node_modules/.vovk',
+    route: './src/app/api/[[...]]/route.ts',
     fetcher: 'vovk/client/defaultFetcher',
     streamFetcher: 'vovk/client/defaultStreamFetcher',
     prefix: '/api',
@@ -16,10 +17,11 @@ function getVars(rcPath, warn = true) {
   try {
     Object.assign(vovkRc, require(rcPath));
   } catch {
-    if (warn) console.info(` 🐺 No .vovkrc.js file found in ${rcPath}`);
+    if (options.warn) console.info(` 🐺 No .vovkrc.js file found in ${rcPath}`);
   }
 
   vars = {
+    VOVK_CLIENT_OUT: process.env.VOVK_OUT || options.VOVK_CLIENT_OUT || vovkRc.out,
     VOVK_PORT: process.env.VOVK_PORT || '3420',
     VOVK_ROUTE: process.env.VOVK_ROUTE || vovkRc.route,
     VOVK_FETCHER: process.env.VOVK_FETCHER || vovkRc.fetcher,

@@ -20,9 +20,15 @@ const builder = {
     default: process.cwd(),
     describe: 'Path to Next.js project',
   },
+
+  clientOut: {
+    type: 'string',
+    default: path.join(process.cwd(), './node_modules/.vovk'),
+    describe: 'Path to output directory',
+  },
 };
 
-/** @type {{ vovkrc: string, project: string }} */
+/** @type {{ vovkrc: string, project: string, clientOut: string }} */
 // @ts-expect-error yargs
 const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
   .command('dev', 'Run development server', builder) // @ts-expect-error yargs
@@ -31,7 +37,7 @@ const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
 
 const nextArgs = process.argv.join(' ').split(' -- ')[1] ?? '';
 
-const env = getVars(argv.vovkrc);
+const env = getVars(argv.vovkrc, { VOVK_CLIENT_OUT: argv.clientOut });
 
 let VOVK_PORT = parseInt(env.VOVK_PORT);
 

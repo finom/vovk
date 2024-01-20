@@ -17,8 +17,9 @@ New sections:
 - Custom decorators
   - Introduction
   - Validation
-- Recommended file structure
+- Project structure
 - API
+- How it works
 - Roadmap
 - Sponsor
  */

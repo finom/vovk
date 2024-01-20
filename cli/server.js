@@ -6,6 +6,7 @@ const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const generateClient = require('./generateClient');
 const getVars = require('./getVars');
+const isEqual = require('./lib/isEqual');
 
 /** @type {{ once?: boolean; vovkrc: string }} */
 // @ts-expect-error yargs
@@ -14,31 +15,6 @@ const argv = yargs(hideBin(process.argv)).argv;
 const once = argv.once ?? false;
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
-
-const isEqual = (obj1, obj2) => {
-  if (obj1 === obj2) {
-    return true;
-  }
-
-  if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 == null || obj2 == null) {
-    return false;
-  }
-
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-
-  if (keys1.length !== keys2.length) {
-    return false;
-  }
-
-  for (const key of keys1) {
-    if (!keys2.includes(key) || !isEqual(obj1[key], obj2[key])) {
-      return false;
-    }
-  }
-
-  return true;
-};
 
 const writeMetadata = async (metadata) => {
   await fs.mkdir(path.dirname(metadataPath), { recursive: true });
@@ -58,7 +34,7 @@ void writeEmptyMetadata();
 
 let pingInterval;
 
-const vars = getVars(argv.vovkrc, false);
+const vars = getVars(argv.vovkrc, { warn: false });
 
 const startPinging = (port) => {
   clearInterval(pingInterval);

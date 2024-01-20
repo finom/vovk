@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type _VovkRc = {
+  out?: string;
   route?: string;
   fetcher?: string;
   streamFetcher?: string;
@@ -17,6 +18,7 @@ export type _VovkEnv = {
   VOVK_PREFIX: string;
   VOVK_VALIDATE_ON_CLIENT: string;
   VOVK_PORT: string;
+  VOVK_CLIENT_OUT: string;
 };
 
 export type _VovkMetadata = Record<string, _VovkControllerMetadata> & { workers?: Record<string, _VovkWorkerMetadata> };
