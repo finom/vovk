@@ -70,10 +70,9 @@ import { promisifyWorker } from 'vovk/worker';
 import type { VovkClientFetcher } from 'vovk/client';
 import fetcher from '${fetcherPath}';
 import metadata from '${jsonPath}';
-import type { Options } from '${fetcherPath}';
-import type { ValidateOnClient } from '${validatePath}';
 ${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = null;'}
 const prefix = '${env.VOVK_PREFIX ?? '/api'}';
+type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   `;
   const metadataJson = await fs.readFile(localJsonPath, 'utf-8').catch(() => null);
 
