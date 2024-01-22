@@ -39,7 +39,6 @@ export class _Segment {
   };
 
   GET = (req: NextRequest, data: { params: Record<string, string[]> }) => {
-    console.log('data', data);
     return this.#callMethod(HttpMethod.GET, req, data.params);
   };
   POST = (req: NextRequest, data: { params: Record<string, string[]> }) =>
@@ -85,8 +84,6 @@ export class _Segment {
     if (params[Object.keys(params)[0]]?.[0] === '__ping') {
       return this.#respond(200, { message: 'pong' });
     }
-
-    console.log('params', params);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = Object.fromEntries(
