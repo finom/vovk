@@ -88,7 +88,6 @@ const { default: validateOnClient = null } = ${
 
   const localJsPath = path.join(outDir, 'index.js');
   const localTsPath = path.join(outDir, 'index.d.ts');
-  const localEntryPath = path.join(outDir, 'entry.ts');
   const existingJs = await fs.readFile(localJsPath, 'utf-8').catch(() => '');
   const existingTs = await fs.readFile(localTsPath, 'utf-8').catch(() => '');
   if (existingJs === js && existingTs === ts) return { written: false, path: outDir };
@@ -96,7 +95,6 @@ const { default: validateOnClient = null } = ${
   await fs.mkdir(outDir, { recursive: true });
   await fs.writeFile(localJsPath, js);
   await fs.writeFile(localTsPath, ts);
-  await fs.writeFile(localEntryPath, `export * from '.';`);
 
   return { written: true, path: outDir };
 }
