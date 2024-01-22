@@ -73,7 +73,7 @@ import metadata from '${jsonPath}';
 ${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = null;'}
 const prefix = '${env.VOVK_PREFIX ?? '/api'}';
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-  `;
+`;
   const metadataJson = await fs.readFile(localJsonPath, 'utf-8').catch(() => null);
 
   if (!metadataJson) console.warn(` 🐺 No .vovk.json file found in ${localJsonPath}`);
@@ -84,14 +84,14 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
     if (key !== 'workers') {
       dts += `export const ${key}: ReturnType<typeof clientizeController<Controllers["${key}"], Options>>;\n`;
       js += `exports.${key} = clientizeController(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
-      ts += `export const ${key}: ReturnType<typeof clientizeController<Controllers["${key}"], Options>> = clientizeController(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
+      ts += `export const ${key} = clientizeController<Controllers["${key}"], Oprions>(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
     }
   }
 
   for (const key of Object.keys(metadata.workers ?? {})) {
     dts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>;\n`;
     js += `exports.${key} = promisifyWorker(null, metadata.workers.${key});\n`;
-    ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>> = promisifyWorker(null, metadata.workers.${key});\n`;
+    ts += `export const ${key} = promisifyWorker<Workers["${key}"]>(null, metadata.workers.${key});\n`;
   }
 
   /* js += `
