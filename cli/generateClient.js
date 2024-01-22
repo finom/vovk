@@ -84,7 +84,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
     if (key !== 'workers') {
       dts += `export const ${key}: ReturnType<typeof clientizeController<Controllers["${key}"], Options>>;\n`;
       js += `exports.${key} = clientizeController(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
-      ts += `export const ${key} = clientizeController<Controllers["${key}"], Oprions>(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
+      ts += `export const ${key} = clientizeController<Controllers["${key}"], Options>(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
     }
   }
 
