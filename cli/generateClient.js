@@ -91,7 +91,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   for (const key of Object.keys(metadata.workers ?? {})) {
     dts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>;\n`;
     js += `exports.${key} = promisifyWorker(null, metadata.workers.${key});\n`;
-    ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>; = promisifyWorker(null, metadata.workers.${key});\n`;
+    ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>> = promisifyWorker(null, metadata.workers.${key});\n`;
   }
 
   /* js += `
