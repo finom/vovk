@@ -70,7 +70,7 @@ import { promisifyWorker } from 'vovk/worker';
 import type { VovkClientFetcher } from 'vovk/client';
 import fetcher from '${fetcherPath}';
 import metadata from '${jsonPath}';
-${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = null;'}
+${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = undefined;'}
 const prefix = '${env.VOVK_PREFIX ?? '/api'}';
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
