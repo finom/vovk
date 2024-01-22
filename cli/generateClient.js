@@ -42,7 +42,7 @@ async function generateClient({ ...env }) {
   }
 
   const controllersPath = path.join(returnDir, env.VOVK_ROUTE).replace(/\.ts$/, '');
-  let ts = `// auto-generated
+  let dts = `// auto-generated
 /* eslint-disable */
 import type { Controllers, Workers } from "${controllersPath}";
 import type { clientizeController } from 'vovk/client';
@@ -59,11 +59,22 @@ const { promisifyWorker } = require('vovk/worker');
 const metadata = require('${jsonPath}');
 const { default: fetcher } = require('${fetcherPath}');
 const prefix = '${env.VOVK_PREFIX ?? '/api'}';
-const { default: validateOnClient = null } = ${
-    env.VOVK_VALIDATE_ON_CLIENT ? `require('${env.VOVK_VALIDATE_ON_CLIENT}')` : '{}'
-  };
+const { default: validateOnClient = null } = ${validatePath ? `require('${validatePath}')` : '{}'};
 
 `;
+  let ts = `// auto-generated
+/* eslint-disable */
+import type { Controllers, Workers } from "${controllersPath}";
+import { clientizeController } from 'vovk/client';
+import { promisifyWorker } from 'vovk/worker';
+import type { VovkClientFetcher } from 'vovk/client';
+import fetcher from '${fetcherPath}';
+import metadata from '${jsonPath}';
+import type { Options } from '${fetcherPath}';
+import type { ValidateOnClient } from '${validatePath}';
+${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = null;'}
+const prefix = '${env.VOVK_PREFIX ?? '/api'}';
+  `;
   const metadataJson = await fs.readFile(localJsonPath, 'utf-8').catch(() => null);
 
   if (!metadataJson) console.warn(` 🐺 No .vovk.json file found in ${localJsonPath}`);
@@ -72,14 +83,16 @@ const { default: validateOnClient = null } = ${
 
   for (const key of Object.keys(metadata)) {
     if (key !== 'workers') {
-      ts += `export const ${key}: ReturnType<typeof clientizeController<Controllers["${key}"], Options>>;\n`;
+      dts += `export const ${key}: ReturnType<typeof clientizeController<Controllers["${key}"], Options>>;\n`;
       js += `exports.${key} = clientizeController(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
+      ts += `export const ${key}: ReturnType<typeof clientizeController<Controllers["${key}"], Options>> = clientizeController(metadata.${key}, { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
     }
   }
 
   for (const key of Object.keys(metadata.workers ?? {})) {
-    ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>;\n`;
+    dts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>;\n`;
     js += `exports.${key} = promisifyWorker(null, metadata.workers.${key});\n`;
+    ts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers["${key}"]>>; = promisifyWorker(null, metadata.workers.${key});\n`;
   }
 
   /* js += `
@@ -87,13 +100,17 @@ const { default: validateOnClient = null } = ${
   `; */
 
   const localJsPath = path.join(outDir, 'index.js');
-  const localTsPath = path.join(outDir, 'index.d.ts');
+  const localDtsPath = path.join(outDir, 'index.d.ts');
+  const localTsPath = path.join(outDir, 'entry.ts');
   const existingJs = await fs.readFile(localJsPath, 'utf-8').catch(() => '');
+  const existingDts = await fs.readFile(localDtsPath, 'utf-8').catch(() => '');
   const existingTs = await fs.readFile(localTsPath, 'utf-8').catch(() => '');
-  if (existingJs === js && existingTs === ts) return { written: false, path: outDir };
+
+  if (existingJs === js && existingDts === dts && existingTs === ts) return { written: false, path: outDir };
 
   await fs.mkdir(outDir, { recursive: true });
   await fs.writeFile(localJsPath, js);
+  await fs.writeFile(localDtsPath, dts);
   await fs.writeFile(localTsPath, ts);
 
   return { written: true, path: outDir };
