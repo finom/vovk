@@ -98,9 +98,9 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
     if(typeof window !== 'undefined') fetch(prefix + '/__ping', { method: 'POST' });
   `; */
 
-  const localJsPath = path.join(outDir, 'index.js');
-  const localDtsPath = path.join(outDir, 'index.d.ts');
-  const localTsPath = path.join(outDir, 'entry.ts');
+  const localJsPath = path.join(outDir, 'client.js');
+  const localDtsPath = path.join(outDir, 'client.d.ts');
+  const localTsPath = path.join(outDir, 'index.ts');
   const existingJs = await fs.readFile(localJsPath, 'utf-8').catch(() => '');
   const existingDts = await fs.readFile(localDtsPath, 'utf-8').catch(() => '');
   const existingTs = await fs.readFile(localTsPath, 'utf-8').catch(() => '');
