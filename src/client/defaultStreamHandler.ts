@@ -91,7 +91,6 @@ export const _defaultStreamHandler = async (response: Response): Promise<StreamA
   }
 
   return {
-    // @ts-expect-error xxx
     status: response.status,
     [Symbol.asyncIterator]: asyncIterator,
     [Symbol.dispose]: () => reader.cancel(),

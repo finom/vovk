@@ -19,6 +19,9 @@ export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_VovkBody<T
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
 export type _StreamAsyncIterator<T> = {
+  status: number;
+  [Symbol.dispose](): Promise<void> | void;
+  [Symbol.asyncDispose](): Promise<void> | void;
   [Symbol.asyncIterator](): AsyncIterator<T>;
   cancel: () => Promise<void> | void;
 };

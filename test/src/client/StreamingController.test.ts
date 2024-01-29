@@ -43,7 +43,69 @@ describe('Streaming', () => {
     let count = 0;
 
     for await (const message of resp) {
+      expectedCollected.push(message);
       if (++count === 2) await resp.cancel();
+    }
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    expect(expected).toEqual(expectedCollected);
+  });
+
+  it('Should be able to continue if disposable is not used', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
+    const expectedCollected: typeof expected = [];
+    let r;
+
+    {
+      const resp = await defaultController.postWithStreaming({
+        body: tokens,
+        query: { query: 'queryValue' },
+      });
+
+      r = resp;
+
+      let count = 0;
+
+      for await (const message of resp) {
+        expectedCollected.push(message);
+        if (++count === 2) break;
+      }
+    }
+
+    for await (const message of r) {
+      expectedCollected.push(message);
+    }
+
+    expect(expected).toEqual(expectedCollected);
+  });
+
+  it('Should be able to dispose', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
+    const expectedCollected: typeof expected = [];
+    let r;
+
+    {
+      using resp = await defaultController.postWithStreaming({
+        body: tokens,
+        query: { query: 'queryValue' },
+      });
+
+      r = resp;
+
+      let count = 0;
+
+      for await (const message of resp) {
+        expectedCollected.push(message);
+        if (++count === 2) break;
+      }
+    }
+
+    for await (const message of r) {
       expectedCollected.push(message);
     }
 
