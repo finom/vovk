@@ -35,7 +35,9 @@ export const _defaultStreamHandler = async (response: Response): Promise<StreamA
         ({ value, done } = await reader.read());
       } catch (error) {
         await reader.cancel();
-        throw new Error('Stream error. ' + String(error));
+        const err = new Error('Stream error. ' + String(error));
+        err.cause = error;
+        throw err;
       }
 
       if (done) {
