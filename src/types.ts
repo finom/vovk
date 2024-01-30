@@ -144,14 +144,24 @@ export type _VovkClientParams<
   P = _KnownAny,
 > = Parameters<T>[0]['params'];
 
-// TODO Implement for streams
 export type _VovkReturnType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<T>>;
 
+export type _VovkYieldType<
+  T extends _ControllerStaticMethod<REQ, PARAMS>,
+  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
+  PARAMS extends { [key: string]: string } = _KnownAny
+> = T extends (...args: _KnownAny[]) => AsyncGenerator<infer Y, _KnownAny, _KnownAny> ? Y :
+    T extends (...args: _KnownAny[]) => Generator<infer Y, _KnownAny, _KnownAny> ? Y : never;
+
 export type _VovkClientReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
+
+export type _VovkClientYieldType<T extends (...args: _KnownAny[]) => unknown> = 
+    T extends (...args: _KnownAny[]) => AsyncGenerator<infer Y, _KnownAny, _KnownAny> ? Y :
+    T extends (...args: _KnownAny[]) => Generator<infer Y, _KnownAny, _KnownAny> ? Y : never;
 
 export type _StreamAbortMessage = {
   isError: true;
