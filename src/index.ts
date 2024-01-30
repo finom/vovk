@@ -18,6 +18,7 @@ import {
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
+import { _StreamResponse as StreamResponse } from './StreamResponse';
 
 export {
   type VovkRc,
@@ -33,6 +34,7 @@ export {
   type VovkClientQuery,
   type VovkClientParams,
   type VovkClientReturnType,
+  StreamResponse,
   HttpException,
   HttpStatus,
   HttpMethod,
