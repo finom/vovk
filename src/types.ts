@@ -4,7 +4,7 @@ import { _StreamAsyncIterator as StreamAsyncIterator } from './client/types';
 
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type _VovkRc = {
+export type _VovkConfig = {
   out?: string;
   route?: string;
   fetcher?: string;

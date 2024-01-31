@@ -1,4 +1,4 @@
-function config() {
+export function config() {
   if (process.env.NODE_ENV === 'development' || process.env.NEXT_PHASE === 'phase-production-build') {
     const PORT = process.env.PORT;
     const VOVK_PORT = process.env.VOVK_PORT;
@@ -22,5 +22,3 @@ function config() {
       });
   }
 }
-
-config();

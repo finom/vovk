@@ -9,10 +9,10 @@ const getAvailablePort = require('./lib/getAvailablePort');
 const getVars = require('./getVars');
 
 const builder = {
-  vovkrc: {
+  config: {
     type: 'string',
-    default: path.join(process.cwd(), '.vovkrc.js'),
-    describe: 'Path to .vovkrc.js',
+    default: path.join(process.cwd(), 'vovk.config.js'),
+    describe: 'Path to vovk.config.js',
   },
 
   project: {
@@ -28,7 +28,7 @@ const builder = {
   },
 };
 
-/** @type {{ vovkrc: string, project: string, clientOut: string }} */
+/** @type {{ config: string, project: string, clientOut: string }} */
 // @ts-expect-error yargs
 const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
   .command('dev', 'Run development server', builder) // @ts-expect-error yargs
@@ -37,7 +37,7 @@ const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
 
 const nextArgs = process.argv.join(' ').split(' -- ')[1] ?? '';
 
-const env = getVars(argv.vovkrc, { VOVK_CLIENT_OUT: argv.clientOut });
+const env = getVars(argv.config, { VOVK_CLIENT_OUT: argv.clientOut });
 
 let VOVK_PORT = parseInt(env.VOVK_PORT);
 

@@ -8,7 +8,7 @@ const generateClient = require('./generateClient');
 const getVars = require('./getVars');
 const isEqual = require('./lib/isEqual');
 
-/** @type {{ once?: boolean; vovkrc: string }} */
+/** @type {{ once?: boolean; config: string }} */
 // @ts-expect-error yargs
 const argv = yargs(hideBin(process.argv)).argv;
 
@@ -36,7 +36,7 @@ void writeEmptyMetadata();
 /** @type {NodeJS.Timeout} */
 let pingInterval;
 
-const vars = getVars(argv.vovkrc, { warn: false });
+const vars = getVars(argv.config, { warn: false });
 
 /** @type {(port: string) => void} */
 const startPinging = (port) => {

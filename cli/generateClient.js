@@ -33,7 +33,7 @@ async function generateClient({ ...env }) {
     env.VOVK_VALIDATE_ON_CLIENT = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : '';
   } else if (env.VOVK_VALIDATE_ON_CLIENT && !canRequire(localValidatePath)) {
     throw new Error(
-      `Unble to generate Vovk Client: cannot find "validateOnClient" module '${env.VOVK_VALIDATE_ON_CLIENT}'. Check your .vovkrc.js file`
+      `Unble to generate Vovk Client: cannot find "validateOnClient" module '${env.VOVK_VALIDATE_ON_CLIENT}'. Check your vovk.config.js file`
     );
   }
 

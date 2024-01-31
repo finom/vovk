@@ -1,6 +1,6 @@
 import { _createSegment as createSegment } from './createSegment';
 import {
-  type _VovkRc as VovkRc,
+  type _VovkConfig as VovkConfig,
   type _VovkEnv as VovkEnv,
   type _VovkErrorResponse as VovkErrorResponse,
   type _VovkRequest as VovkRequest,
@@ -24,7 +24,7 @@ import { _StreamResponse as StreamResponse } from './StreamResponse';
 import { worker } from './worker';
 
 export {
-  type VovkRc,
+  type VovkConfig,
   type VovkEnv,
   type VovkMetadata,
   type VovkErrorResponse,
