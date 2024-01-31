@@ -1,7 +1,7 @@
 import { VovkRequest, post, prefix } from '../../../src';
 import { _StreamResponse as StreamResponse } from '../../../src/StreamResponse';
 
-type Token = { token: string; query: 'queryValue' };
+export type Token = { token: string; query: 'queryValue' };
 
 @prefix('streaming')
 export default class StreamingController {

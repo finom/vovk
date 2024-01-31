@@ -1,6 +1,6 @@
 import { VovkRequest, post, prefix } from '../../../src';
 
-type Token = { token: string; query: 'queryValue' };
+export type Token = { token: string; query: 'queryValue' };
 
 @prefix('streaming-generator')
 export default class StreamingGeneratorController {

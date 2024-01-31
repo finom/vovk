@@ -1,4 +1,6 @@
 import type { NextRequest } from 'next/server';
+import type { _StreamResponse as StreamResponse } from './StreamResponse';
+import { _StreamAsyncIterator as StreamAsyncIterator } from './client/types';
 
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -158,17 +160,17 @@ export type _VovkYieldType<
   ? Y
   : T extends (...args: _KnownAny[]) => Generator<infer Y, _KnownAny, _KnownAny>
     ? Y
-    : never;
+    : T extends (...args: _KnownAny[]) => Promise<StreamResponse<infer Y>> | StreamResponse<infer Y>
+      ? Y
+      : never;
 
 export type _VovkClientReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
 
 export type _VovkClientYieldType<T extends (...args: _KnownAny[]) => unknown> = T extends (
   ...args: _KnownAny[]
-) => AsyncGenerator<infer Y, _KnownAny, _KnownAny>
+) => Promise<StreamAsyncIterator<infer Y>>
   ? Y
-  : T extends (...args: _KnownAny[]) => Generator<infer Y, _KnownAny, _KnownAny>
-    ? Y
-    : never;
+  : never;
 
 export type _StreamAbortMessage = {
   isError: true;

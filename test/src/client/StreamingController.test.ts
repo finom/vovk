@@ -1,8 +1,8 @@
 import metadata from '../vovk-metadata.json';
-import type StreamingController from './StreamingController';
+import type { default as StreamingController, Token } from './StreamingController';
 import { clientizeController } from '../../../src/client';
 import { it, expect, describe, xit } from '@jest/globals';
-import { HttpException } from '../../../src';
+import { HttpException, VovkClientYieldType, VovkYieldType } from '../../../src';
 
 type StreamingControllerType = typeof StreamingController;
 
@@ -26,6 +26,9 @@ describe('Streaming', () => {
     for await (const message of resp) {
       expectedCollected.push(message);
     }
+
+    null as unknown as VovkYieldType<StreamingControllerType['postWithStreaming']> satisfies Token;
+    null as unknown as VovkClientYieldType<typeof defaultController.postWithStreaming> satisfies Token;
 
     expect(expected).toEqual(expectedCollected);
   });
