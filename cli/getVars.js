@@ -31,7 +31,7 @@ function getVars(rcPath, options = {}) {
           ? path.join(process.cwd(), options.VOVK_CLIENT_OUT)
           : null) ||
       vovkRc.out,
-    VOVK_PORT: process.env.VOVK_PORT || '3420',
+    VOVK_PORT: process.env.VOVK_PORT || '3690',
     VOVK_ROUTE: process.env.VOVK_ROUTE || vovkRc.route,
     VOVK_FETCHER: process.env.VOVK_FETCHER || vovkRc.fetcher,
     VOVK_PREFIX: process.env.VOVK_PREFIX || vovkRc.prefix,
