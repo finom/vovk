@@ -71,11 +71,11 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         defaultStreamHandler,
       };
       const internalInput = {
+        ...options?.defaultOptions,
         ...input,
         body: input.body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
-        ...options?.defaultOptions,
       };
 
       if (!fetcher) throw new Error('Fetcher is not provided');
