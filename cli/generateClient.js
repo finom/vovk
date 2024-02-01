@@ -24,14 +24,16 @@ async function generateClient({ ...env }) {
   const jsonPath = path.join(returnDir, '.vovk.json');
   const localJsonPath = path.join(process.cwd(), '.vovk.json');
   const fetcherPath = env.VOVK_FETCHER.startsWith('.') ? path.join(returnDir, env.VOVK_FETCHER) : env.VOVK_FETCHER;
+
+  if (!env.VOVK_VALIDATE_ON_CLIENT) {
+    env.VOVK_VALIDATE_ON_CLIENT = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : '';
+  }
   const validatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.')
     ? path.join(returnDir, env.VOVK_VALIDATE_ON_CLIENT)
     : env.VOVK_VALIDATE_ON_CLIENT;
   const localValidatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.') ? path.join('..', validatePath) : validatePath;
 
-  if (!env.VOVK_VALIDATE_ON_CLIENT) {
-    env.VOVK_VALIDATE_ON_CLIENT = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : '';
-  } else if (env.VOVK_VALIDATE_ON_CLIENT && !canRequire(localValidatePath)) {
+  if (env.VOVK_VALIDATE_ON_CLIENT && !canRequire(localValidatePath)) {
     throw new Error(
       `Unble to generate Vovk Client: cannot find "validateOnClient" module '${env.VOVK_VALIDATE_ON_CLIENT}'. Check your vovk.config.js file`
     );
