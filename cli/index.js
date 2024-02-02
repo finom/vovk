@@ -1,44 +1,20 @@
 #!/usr/bin/env node
 // @ts-check
-const yargs = require('yargs/yargs');
-const { hideBin } = require('yargs/helpers');
 const generateClient = require('./generateClient');
 const path = require('path');
 const parallel = require('./lib/parallel');
 const getAvailablePort = require('./lib/getAvailablePort');
 const getVars = require('./getVars');
+const parseCommandLineArgs = require('./lib/parseCommandLineArgs');
 
-const builder = {
-  config: {
-    type: 'string',
-    default: path.join(process.cwd(), 'vovk.config.js'),
-    describe: 'Path to vovk.config.js',
-  },
+const { command, flags, nextArgs } = parseCommandLineArgs();
+const {
+  config = path.join(process.cwd(), 'vovk.config.js'), // Path to vovk.config.js
+  project = process.cwd(), // Path to Next.js project
+  clientOut = path.join(process.cwd(), './node_modules/.vovk'), // Path to output directory
+} = flags;
 
-  project: {
-    type: 'string',
-    default: process.cwd(),
-    describe: 'Path to Next.js project',
-  },
-
-  clientOut: {
-    type: 'string',
-    default: path.join(process.cwd(), './node_modules/.vovk'),
-    describe: 'Path to output directory',
-  },
-};
-
-/** @type {{ config: string, project: string, clientOut: string }} */
-// @ts-expect-error yargs
-const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
-  .command('dev', 'Run development server', builder) // @ts-expect-error yargs
-  .command('build', 'Build the app', builder) // @ts-expect-error yargs
-  .command('generate', 'Generate client', builder).argv;
-
-const nextArgs = process.argv.join(' ').split(' -- ')[1] ?? '';
-
-// @ts-expect-error yargs
-if (argv._.includes('dev')) {
+if (command === 'dev') {
   void (async () => {
     let PORT =
       process.env.PORT ||
@@ -46,7 +22,7 @@ if (argv._.includes('dev')) {
         throw new Error(' 🐺 Failed to find available Next port');
       }));
 
-    const env = getVars(argv.config, { VOVK_CLIENT_OUT: argv.clientOut, PORT });
+    const env = getVars(config, { VOVK_CLIENT_OUT: clientOut, PORT });
 
     let VOVK_PORT = parseInt(env.VOVK_PORT);
 
@@ -60,18 +36,15 @@ if (argv._.includes('dev')) {
           command: `node ${__dirname}/server.js`,
           name: 'Vovk',
         },
-        { command: `cd ${argv.project} && npx next dev ${nextArgs}`, name: 'Next' },
+        { command: `cd ${project} && npx next dev ${nextArgs}`, name: 'Next' },
       ],
       env
     ).catch((e) => console.error(e));
     console.info(' 🐺 All processes have ended');
   })();
-}
-
-// @ts-expect-error yargs
-if (argv._.includes('build')) {
+} else if (command === 'build') {
   void (async () => {
-    const env = getVars(argv.config, { VOVK_CLIENT_OUT: argv.clientOut });
+    const env = getVars(config, { VOVK_CLIENT_OUT: clientOut });
 
     let VOVK_PORT = parseInt(env.VOVK_PORT);
 
@@ -84,18 +57,24 @@ if (argv._.includes('build')) {
           command: `node ${__dirname}/server.js --once`,
           name: 'Vovk',
         },
-        { command: `cd ${argv.project} && npx next build ${nextArgs}`, name: 'Next' },
+        { command: `cd ${project} && npx next build ${nextArgs}`, name: 'Next' },
       ],
       env
     ).catch((e) => console.error(e));
   })();
-}
-
-// @ts-expect-error yargs
-if (argv._.includes('generate')) {
-  const env = getVars(argv.config, { VOVK_CLIENT_OUT: argv.clientOut });
+} else if (command === 'generate') {
+  const env = getVars(config, { VOVK_CLIENT_OUT: clientOut });
 
   void generateClient(env).then(({ path }) => {
     console.info(` 🐺 Client generated in ${path}`);
   });
+} else if (command === 'help') {
+  console.info(` 🐺 Vovk CLI
+  dev - Start development server
+  build - Build Next.js project
+  generate - Generate client
+  help - Show this help message`);
+} else {
+  console.error(' 🐺 ❌ Invalid command');
+  process.exit(1);
 }

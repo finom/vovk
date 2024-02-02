@@ -19,6 +19,11 @@ New sections:
   - Validation
 - Project structure
 - API
+- Customizing
+  - Flags
+  - Env
+  - Config
+  - Fetcher
 - How it works
 - Changelog & Roadmap
 - Sponsor
