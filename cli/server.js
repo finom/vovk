@@ -74,7 +74,9 @@ const server = http.createServer((req, res) => {
         /** @type {{ metadata?: import('../src').VovkMetadata; PORT?: string }} */
         const { metadata, PORT } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
-        process.env.PORT = PORT;
+        if (PORT) {
+          process.env.PORT = PORT;
+        }
         const vars = getVars(argv.config);
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
