@@ -1,11 +1,12 @@
 import type { _KnownAny as KnownAny } from '../types';
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
-type ToAsyncGenerator<T> = T extends AsyncGenerator<unknown, unknown, unknown>
-  ? T
-  : T extends Generator<infer U, unknown, unknown>
-    ? AsyncGenerator<U, unknown, unknown>
-    : AsyncGenerator<T, unknown, unknown>;
+type ToAsyncGenerator<T> =
+  T extends AsyncGenerator<unknown, unknown, unknown>
+    ? T
+    : T extends Generator<infer U, unknown, unknown>
+      ? AsyncGenerator<U, unknown, unknown>
+      : AsyncGenerator<T, unknown, unknown>;
 type ToProperReturnType<T> = T extends Generator<unknown, unknown, unknown> | AsyncGenerator<unknown, unknown, unknown>
   ? ToAsyncGenerator<T>
   : ToPromise<T>;
