@@ -36,6 +36,7 @@ void writeEmptyMetadata();
 /** @type {NodeJS.Timeout} */
 let pingInterval;
 
+/** @type {import('../src').VovkEnv} */
 let vars;
 
 /** @type {(port: string) => void} */
