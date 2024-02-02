@@ -37,16 +37,23 @@ const argv = yargs(hideBin(process.argv)) // @ts-expect-error yargs
 
 const nextArgs = process.argv.join(' ').split(' -- ')[1] ?? '';
 
-const env = getVars(argv.config, { VOVK_CLIENT_OUT: argv.clientOut });
-
-let VOVK_PORT = parseInt(env.VOVK_PORT);
-
 // @ts-expect-error yargs
 if (argv._.includes('dev')) {
   void (async () => {
-    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 20).catch(() => {
-      throw new Error(' 🐺 Failed to find available port');
+    let PORT =
+      process.env.PORT ||
+      (await getAvailablePort(3000, 30).catch(() => {
+        throw new Error(' 🐺 Failed to find available Next port');
+      }));
+
+    const env = getVars(argv.config, { VOVK_CLIENT_OUT: argv.clientOut, PORT });
+
+    let VOVK_PORT = parseInt(env.VOVK_PORT);
+
+    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 30).catch(() => {
+      throw new Error(' 🐺 Failed to find available Vovk port');
     });
+
     await parallel(
       [
         {
@@ -57,14 +64,18 @@ if (argv._.includes('dev')) {
       ],
       env
     ).catch((e) => console.error(e));
-    console.info(' 🐺 All processes have completed');
+    console.info(' 🐺 All processes have ended');
   })();
 }
 
 // @ts-expect-error yargs
 if (argv._.includes('build')) {
   void (async () => {
-    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 20).catch(() => {
+    const env = getVars(argv.config, { VOVK_CLIENT_OUT: argv.clientOut });
+
+    let VOVK_PORT = parseInt(env.VOVK_PORT);
+
+    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 30).catch(() => {
       throw new Error(' 🐺 Failed to find available port');
     });
     await parallel(
@@ -82,6 +93,8 @@ if (argv._.includes('build')) {
 
 // @ts-expect-error yargs
 if (argv._.includes('generate')) {
+  const env = getVars(argv.config, { VOVK_CLIENT_OUT: argv.clientOut });
+
   void generateClient(env).then(({ path }) => {
     console.info(` 🐺 Client generated in ${path}`);
   });

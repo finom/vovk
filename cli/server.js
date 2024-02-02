@@ -36,17 +36,18 @@ void writeEmptyMetadata();
 /** @type {NodeJS.Timeout} */
 let pingInterval;
 
-/** @type {(port: string) => void} */
-const startPinging = (PORT) => {
+/** @type {import('../src').VovkEnv} */
+let vars;
+
+/** @type {() => void} */
+const startPinging = () => {
   clearInterval(pingInterval);
   pingInterval = setInterval(() => {
-    process.env.PORT = PORT;
-    const vars = getVars(argv.config);
+    vars = vars ?? getVars(argv.config);
     let prefix = vars.VOVK_PREFIX;
-    prefix =
-      prefix.startsWith('http://') || prefix.startsWith('https://')
-        ? prefix
-        : `http://localhost:${PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
+    prefix = prefix.startsWith('http://')
+      ? prefix
+      : `http://localhost:${process.env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
     const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
     // Create the HTTP GET request
     const req = http.get(endpoint, () => {
@@ -71,13 +72,10 @@ const server = http.createServer((req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     req.on('end', async () => {
       try {
-        /** @type {{ metadata?: import('../src').VovkMetadata; PORT?: string }} */
-        const { metadata, PORT } = JSON.parse(body); // Parse the JSON data
+        /** @type {{ metadata?: import('../src') }} */
+        const { metadata } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
-        if (PORT) {
-          process.env.PORT = PORT;
-        }
-        const vars = getVars(argv.config);
+        vars = vars ?? getVars(argv.config);
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
@@ -89,8 +87,8 @@ const server = http.createServer((req, res) => {
           console.info(` 🐺 Client generated in ${codeWritten.path}`);
         }
 
-        if (PORT && !once) {
-          startPinging(PORT);
+        if (!once) {
+          startPinging();
         }
 
         if (once && metadata) server.close();

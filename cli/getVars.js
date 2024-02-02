@@ -1,15 +1,12 @@
 // @ts-check
+
 const path = require('path');
 
-/** @type {(modulePath: string) => any} */
-function requireFresh(modulePath) {
-  delete require.cache[require.resolve(modulePath)];
-  return require(modulePath);
-}
-
 /** @type {import('../src').VovkEnv} */
-/** @type {(rcPath: string, options?: { VOVK_CLIENT_OUT?: string; }) => import('../src').VovkEnv} */
+let vars;
+/** @type {(rcPath: string, options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => import('../src').VovkEnv} */
 function getVars(configPath, options = {}) {
+  if (vars) return vars;
   /** @type {Required<import('../src').VovkConfig>} */
   const vovkConfig = {
     out: './node_modules/.vovk',
@@ -20,13 +17,13 @@ function getVars(configPath, options = {}) {
   };
 
   try {
-    Object.assign(vovkConfig, requireFresh(configPath));
+    Object.assign(vovkConfig, require(configPath));
   } catch {
     // noop
   }
 
-  const vars = {
-    PORT: process.env.PORT || '3000',
+  vars = {
+    PORT: options.PORT || process.env.PORT || '3000',
     VOVK_CLIENT_OUT:
       process.env.VOVK_CLIENT_OUT ||
       (options.VOVK_CLIENT_OUT?.startsWith('/')

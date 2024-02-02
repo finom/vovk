@@ -13,6 +13,7 @@ export type _VovkConfig = {
 };
 
 export type _VovkEnv = {
+  PORT: string;
   VOVK_ROUTE: string;
   VOVK_FETCHER: string;
   VOVK_PREFIX: string;
