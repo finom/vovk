@@ -4,8 +4,9 @@ import { _HttpException as HttpException } from '../HttpException';
 
 // `RequestInit` is the type of options passed to fetch function
 export interface _DefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
+  reactNative?: { textStreaming: boolean };
   prefix?: string;
-  disableClientValidation?: true;
+  disableClientValidation?: boolean;
 }
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultFetcher';
