@@ -17,6 +17,8 @@ function getVars(configPath, options = {}) {
   };
 
   try {
+    // make PORT available to the config file
+    process.env.PORT = options.PORT || process.env.PORT || '3000';
     Object.assign(vovkConfig, require(configPath));
   } catch {
     // noop

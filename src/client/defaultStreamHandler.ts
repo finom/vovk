@@ -44,15 +44,16 @@ export const _defaultStreamHandler = async (response: Response): Promise<StreamA
         return;
       }
 
-      const string = new TextDecoder().decode(value);
-      const lines = (prepend + string).split(StreamResponse.JSON_DIVIDER).filter(Boolean);
+      // typeof value === 'number' is a workaround for React Native
+      const string = typeof value === 'number' ? String.fromCharCode(value) : new TextDecoder().decode(value);
+      prepend += string;
+      const lines = prepend.split(StreamResponse.JSON_DIVIDER).filter(Boolean);
       for (const line of lines) {
         let data;
         try {
           data = JSON.parse(line) as object;
           prepend = '';
-        } catch (error) {
-          prepend += string;
+        } catch {
           break;
         }
 
