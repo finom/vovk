@@ -1,6 +1,12 @@
 // @ts-check
 const path = require('path');
 
+/** @type {(modulePath: string) => any} */
+function requireFresh(modulePath) {
+  delete require.cache[require.resolve(modulePath)];
+  return require(modulePath);
+}
+
 /** @type {import('../src').VovkEnv} */
 /** @type {(rcPath: string, options?: { VOVK_CLIENT_OUT?: string; }) => import('../src').VovkEnv} */
 function getVars(configPath, options = {}) {
@@ -14,7 +20,7 @@ function getVars(configPath, options = {}) {
   };
 
   try {
-    Object.assign(vovkConfig, require(configPath));
+    Object.assign(vovkConfig, requireFresh(configPath));
   } catch {
     // noop
   }
