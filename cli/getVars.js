@@ -1,12 +1,9 @@
 // @ts-check
-
 const path = require('path');
 
 /** @type {import('../src').VovkEnv} */
-let vars;
-/** @type {(rcPath: string, options?: { warn?: boolean; VOVK_CLIENT_OUT?: string; }) => import('../src').VovkEnv} */
+/** @type {(rcPath: string, options?: { VOVK_CLIENT_OUT?: string; }) => import('../src').VovkEnv} */
 function getVars(configPath, options = {}) {
-  if (vars) return vars;
   /** @type {Required<import('../src').VovkConfig>} */
   const vovkConfig = {
     out: './node_modules/.vovk',
@@ -19,10 +16,10 @@ function getVars(configPath, options = {}) {
   try {
     Object.assign(vovkConfig, require(configPath));
   } catch {
-    if (options.warn) console.info(` 🐺 No vovk.config.js file found in ${configPath}`);
+    // noop
   }
 
-  vars = {
+  const vars = {
     VOVK_CLIENT_OUT:
       process.env.VOVK_CLIENT_OUT ||
       (options.VOVK_CLIENT_OUT?.startsWith('/')

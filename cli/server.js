@@ -36,16 +36,18 @@ void writeEmptyMetadata();
 /** @type {NodeJS.Timeout} */
 let pingInterval;
 
-const vars = getVars(argv.config, { warn: false });
+let vars;
 
 /** @type {(port: string) => void} */
-const startPinging = (port) => {
+const startPinging = (PORT) => {
   clearInterval(pingInterval);
   pingInterval = setInterval(() => {
+    process.env.PORT = PORT;
+    vars = vars ?? getVars(argv.config);
     let prefix = vars.VOVK_PREFIX;
     prefix = prefix.startsWith('http://')
       ? prefix
-      : `http://localhost:${port}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
+      : `http://localhost:${PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
     const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
     // Create the HTTP GET request
     const req = http.get(endpoint, () => {
@@ -54,7 +56,7 @@ const startPinging = (port) => {
 
     // Error handling for the request
     req.on('error', (err) => {
-      console.error(`🐺 Error during HTTP request made to ${endpoint}:`, err.message);
+      console.error(`🐺 ❌ Error during HTTP request made to ${endpoint}:`, err.message);
     });
   }, 1000 * 3);
 };
@@ -70,8 +72,11 @@ const server = http.createServer((req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     req.on('end', async () => {
       try {
+        /** @type {{ metadata: object; PORT: string }} */
         const { metadata, PORT } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
+        process.env.PORT = PORT;
+        vars = vars ?? getVars(argv.config);
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
@@ -92,7 +97,7 @@ const server = http.createServer((req, res) => {
         const err = /** @type {Error} */ (e);
         res.writeHead(400, { 'Content-Type': 'text/plain' });
         res.end(err?.message ?? 'Error');
-        console.error(' ❌ ' + err?.message);
+        console.error(' 🐺 ❌ ' + err?.message);
 
         if (once) server.close();
       }
