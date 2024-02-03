@@ -73,7 +73,7 @@ function Content() {
         <a href="https://nextjs.org/docs/app" target="_blank">
           App&nbsp;Router
         </a>{' '}
-        and then come back here.Enjoy!
+        and then come back here. Enjoy!
       </p>
       <p className={styles.buttons}>
         <a className={styles.button} href="/docs/intro">
