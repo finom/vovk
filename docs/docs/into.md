@@ -4,6 +4,8 @@ sidebar_position: 0
 
 # Getting Started
 
+Vovk.ts is a TypeScript project that allows to define well-structured REST API library for a Next.js application. It compiles a client-side TypeScript library that can be imported from **@vovkts/client**. As a reference it uses auto-generated **.vovk.json** file from the root of the project. The file needs to be committed to re-generate the client library later.
+
 ## Quick install
 
 Setup Vovk.ts with [create-next-app](https://www.npmjs.com/package/create-next-app).
@@ -32,6 +34,10 @@ At the newly created folder run:
 ```
 npm i vovk @vovkts/client
 ```
+or
+```
+yarn add vovk @vovkts/client
+```
 
 
 ### 2. Enable decorators
@@ -49,7 +55,7 @@ In your **tsconfig.json** set `"experimentalDecorators"` to `true`.
 
 ### 3. Set up Next.js wildcard route handler and export types
 
-Create file **/src/app/api/[[...vovk]]/route.ts** where **[[...vovk]]** is a folder name insicating what Next.js documentation calls ["Optional Catch-all Segment"](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#optional-catch-all-segments). This is the core entry point for all **Vovk.ts** routes.
+Create file **/src/app/api/[[...vovk]]/route.ts** where **[[...vovk]]** is a folder name insicating what Next.js documentation calls ["Optional Catch-all Segment"](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#optional-catch-all-segments) that [can be customized](./customization). This is the core entry point for all **Vovk.ts** routes.
 
 ```ts
 // /src/app/api/[[...vovk]]/route.ts

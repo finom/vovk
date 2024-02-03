@@ -18,7 +18,7 @@ New sections:
   - Introduction
   - Validation
 - Project structure
-- API
+- API & CLI
 - Customizing
   - Flags
   - Env

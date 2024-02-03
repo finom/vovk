@@ -40,8 +40,7 @@ export class _StreamResponse<T> extends Response {
 
   public async throw(e: KnownAny) {
     const { writer } = this;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    await this.send({ isError: true, reason: e instanceof Error ? e.message : e });
+    await this.send({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
     await new Promise((resolve) => setTimeout(resolve, 0));
     return writer.abort(e);
   }

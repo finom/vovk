@@ -82,11 +82,6 @@ const config = {
             position: 'left',
           },
           {
-            href: '/docs/vovk-architecture',
-            label: 'Vovk Architecture',
-            position: 'left',
-          },
-          {
             href: 'https://github.com/finom/vovk',
             label: 'GitHub',
             position: 'right',

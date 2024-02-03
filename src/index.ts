@@ -18,6 +18,7 @@ import {
   _HttpStatus as HttpStatus,
   _HttpMethod as HttpMethod,
 } from './types';
+import { _VovkClientOptions as VovkClientOptions } from './client/types';
 import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
 import { _StreamResponse as StreamResponse } from './StreamResponse';
@@ -39,6 +40,7 @@ export {
   type VovkClientParams,
   type VovkClientReturnType,
   type VovkClientYieldType,
+  type VovkClientOptions,
   StreamResponse,
   HttpException,
   HttpStatus,

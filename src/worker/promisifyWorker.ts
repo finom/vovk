@@ -30,8 +30,7 @@ export function _promisifyWorker<T extends object>(
 
   instance.fork = (worker: Worker) => {
     const forked = _promisifyWorker<T>(worker, givenWorkerService);
-    forked.use(worker);
-    return forked;
+    return forked.use(worker);
   };
 
   if (typeof Symbol.dispose !== 'symbol') {
