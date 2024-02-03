@@ -9,7 +9,7 @@ function toCamelCase(str) {
 /** @typedef {'dev' | 'build' | 'generate' | 'help'} Command */
 function parseCommandLineArgs() {
   const args = process.argv.slice(2); // Slice off node and script path
-  let command = /** @type {Command} */ 'EMPTY';
+  let command = /** @type {Command} */ null;
   /** @type {Flags} */
   const flags = {};
   /** @type {string[]} */
