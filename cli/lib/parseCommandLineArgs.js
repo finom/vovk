@@ -33,9 +33,9 @@ function parseCommandLineArgs() {
     }
   }
 
-  const nextArgs = unparsedArgs.join(' ');
+  const restArgs = unparsedArgs.join(' ');
 
-  return { command, flags, nextArgs };
+  return { command, flags, restArgs };
 }
 
 module.exports = parseCommandLineArgs;

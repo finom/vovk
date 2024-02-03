@@ -2,17 +2,14 @@
 const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
-const yargs = require('yargs/yargs');
-const { hideBin } = require('yargs/helpers');
+const parseCommandLineArgs = require('./lib/parseCommandLineArgs');
 const generateClient = require('./generateClient');
 const getVars = require('./getVars');
 const isEqual = require('./lib/isEqual');
 
-/** @type {{ once?: boolean; config: string }} */
-// @ts-expect-error yargs
-const argv = yargs(hideBin(process.argv)).argv;
+const { flags } = parseCommandLineArgs();
 
-const once = argv.once ?? false;
+const { once, config } = /** @type {{ once?: boolean; config: string }} */ (flags);
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
@@ -43,7 +40,7 @@ let vars;
 const startPinging = () => {
   clearInterval(pingInterval);
   pingInterval = setInterval(() => {
-    vars = vars ?? getVars(argv.config);
+    vars = vars ?? getVars(config);
     let prefix = vars.VOVK_PREFIX;
     prefix = prefix.startsWith('http://')
       ? prefix
@@ -75,7 +72,7 @@ const server = http.createServer((req, res) => {
         /** @type {{ metadata?: import('../src') }} */
         const { metadata } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
-        vars = vars ?? getVars(argv.config);
+        vars = vars ?? getVars(config);
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');

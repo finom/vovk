@@ -7,7 +7,7 @@ const getAvailablePort = require('./lib/getAvailablePort');
 const getVars = require('./getVars');
 const parseCommandLineArgs = require('./lib/parseCommandLineArgs');
 
-const { command, flags, nextArgs } = parseCommandLineArgs();
+const { command, flags, restArgs } = parseCommandLineArgs();
 const {
   config = path.join(process.cwd(), 'vovk.config.js'), // Path to vovk.config.js
   project = process.cwd(), // Path to Next.js project
@@ -36,7 +36,7 @@ if (command === 'dev') {
           command: `node ${__dirname}/server.js`,
           name: 'Vovk',
         },
-        { command: `cd ${project} && npx next dev ${nextArgs}`, name: 'Next' },
+        { command: `cd ${project} && npx next dev ${restArgs}`, name: 'Next' },
       ],
       env
     ).catch((e) => console.error(e));
@@ -57,7 +57,7 @@ if (command === 'dev') {
           command: `node ${__dirname}/server.js --once`,
           name: 'Vovk',
         },
-        { command: `cd ${project} && npx next build ${nextArgs}`, name: 'Next' },
+        { command: `cd ${project} && npx next build ${restArgs}`, name: 'Next' },
       ],
       env
     ).catch((e) => console.error(e));
