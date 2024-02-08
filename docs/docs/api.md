@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# API Reference
+# API
 
 Full list of available exports for quick reference: 
 

@@ -117,7 +117,7 @@ export default class HelloWorkerService {
 }
 ```
 
-Vovk turns them both into an async generator.
+Vovk.ts turns them both into an async generator.
 
 ```ts
 import { HelloWorker } from '@vovkts/client';

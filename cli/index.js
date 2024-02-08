@@ -10,6 +10,7 @@ const parseCommandLineArgs = require('./lib/parseCommandLineArgs');
 const { command, flags, restArgs } = parseCommandLineArgs();
 const {
   config = path.join(process.cwd(), 'vovk.config.js'), // Path to vovk.config.js
+  // TODO not documented
   project = process.cwd(), // Path to Next.js project
   clientOut = path.join(process.cwd(), './node_modules/.vovk'), // Path to output directory
 } = flags;
@@ -43,6 +44,7 @@ if (command === 'dev') {
     console.info(' 🐺 All processes have ended');
   })();
 } else if (command === 'build') {
+  // TODO not documented
   void (async () => {
     const env = getVars(config, { VOVK_CLIENT_OUT: clientOut });
 
@@ -71,7 +73,6 @@ if (command === 'dev') {
 } else if (command === 'help') {
   console.info(` 🐺 Vovk CLI
   dev - Start development server
-  build - Build Next.js project
   generate - Generate client
   help - Show this help message`);
 } else {
