@@ -39,7 +39,7 @@ if (command === 'dev') {
     await parallel(
       [
         {
-          command: `node ${__dirname}/server.js`,
+          command: `node ${__dirname}/server.mjs`,
           name: 'Vovk',
         },
         { command: `cd ${project} && npx next dev ${restArgs}`, name: 'Next' },
