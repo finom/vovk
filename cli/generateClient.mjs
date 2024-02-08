@@ -4,18 +4,12 @@ import path from 'path';
 import getReturnPath from './lib/getReturnPath.mjs';
 
 /** @type {(moduleName: string) => Promise<boolean>} */
-async function canImport(moduleName) {
+async function fileExists(filePath) {
   try {
-    if (moduleName.endsWith('.json')) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore Ignore dynamic imports errors
-      await import(moduleName, { assert: { type: 'json' } });
-    } else {
-      await import(moduleName);
-    }
-    return true; // The module exists and can be imported
+    await fs.stat(filePath);
+    return true; // The file exists
   } catch (e) {
-    return false; // The module does not exist or cannot be imported
+    return false; // The file does not exist
   }
 }
 
@@ -32,7 +26,7 @@ export default async function generateClient({ ...env }) {
   const fetcherPath = env.VOVK_FETCHER.startsWith('.') ? path.join(returnDir, env.VOVK_FETCHER) : env.VOVK_FETCHER;
 
   if (!env.VOVK_VALIDATE_ON_CLIENT) {
-    env.VOVK_VALIDATE_ON_CLIENT = (await canImport('vovk-zod/zodValidateOnClient'))
+    env.VOVK_VALIDATE_ON_CLIENT = (await fileExists('vovk-zod/zodValidateOnClient'))
       ? 'vovk-zod/zodValidateOnClient'
       : '';
   }
@@ -41,13 +35,13 @@ export default async function generateClient({ ...env }) {
     : env.VOVK_VALIDATE_ON_CLIENT;
   const localValidatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.') ? path.join('..', validatePath) : validatePath;
 
-  if (env.VOVK_VALIDATE_ON_CLIENT && !(await canImport(localValidatePath))) {
+  if (env.VOVK_VALIDATE_ON_CLIENT && !(await fileExists(localValidatePath))) {
     throw new Error(
       `Unble to generate Vovk Client: cannot find "validateOnClient" module '${env.VOVK_VALIDATE_ON_CLIENT}'. Check your vovk.config.js file`
     );
   }
 
-  if (!(await canImport(localJsonPath))) {
+  if (!(await fileExists(localJsonPath))) {
     throw new Error(
       `Unble to generate Vovk Client: cannot find ".vovk.json" file '${localJsonPath}' (original value '${jsonPath}').`
     );
