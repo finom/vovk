@@ -6,8 +6,7 @@ import getReturnPath from './lib/getReturnPath.mjs';
 /** @type {(moduleName: string) => Promise<boolean>} */
 async function canImport(moduleName) {
   try {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
-    await import.meta.resolve(moduleName);
+    await import(moduleName);
     return true; // The module exists and can be imported
   } catch (e) {
     return false; // The module does not exist or cannot be imported
