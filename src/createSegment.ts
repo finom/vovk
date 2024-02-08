@@ -180,7 +180,7 @@ export function _createSegment() {
     if (options.emitMetadata !== false) {
       if (process.env.NODE_ENV === 'development' || process.env.NEXT_PHASE === 'phase-production-build') {
         if (!process.env.VOVK_PORT) {
-          console.error(` 🐺 Failed to send metadata to Vovk Server: process.env.VOVK_PORT is not set`);
+          console.error(` 🐺 ❌ Failed to send metadata to Vovk Server: process.env.VOVK_PORT is not set`);
         } else {
           void fetch(`http://localhost:${process.env.VOVK_PORT}/__metadata`, {
             method: 'POST',
@@ -190,12 +190,12 @@ export function _createSegment() {
             .then((resp) => {
               if (!resp.ok) {
                 // eslint-disable-next-line no-console
-                console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
+                console.error(` 🐺 ❌ Failed to send metadata to Vovk Server: ${resp.statusText}`);
               }
             })
             .catch((err) => {
               // eslint-disable-next-line no-console
-              console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
+              console.error(` 🐺 ❌ Failed to send metadata to Vovk Server: ${err}`);
             });
         }
       }

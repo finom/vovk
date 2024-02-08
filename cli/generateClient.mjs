@@ -42,7 +42,7 @@ export default async function generateClient({ ...env }) {
   }
 
   if (!(await canImport(localJsonPath))) {
-    throw new Error(`Unble to generate Vovk Client: cannot find ".vovk.json" file '${jsonPath}'.`);
+    throw new Error(`Unble to generate Vovk Client: cannot find ".vovk.json" file '${localJsonPath}'.`);
   }
 
   const controllersPath = path.join(returnDir, env.VOVK_ROUTE).replace(/\.ts$/, '');
