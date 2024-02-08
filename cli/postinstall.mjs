@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck Ignore meta-property error
+// @ts-ignore Ignore meta-property error
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {(path: string) => Promise<boolean>} */
