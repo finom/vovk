@@ -6,7 +6,7 @@ import type { MyWorker } from '@vovkts/client';
 describe('Worker', () => {
   let page: Page;
   beforeAll(async () => {
-    const browser = await puppeteer.launch({ headless: 'new' });
+    const browser = await puppeteer.launch({ headless: true });
     page = await browser.newPage();
     await page.goto('http://localhost:' + process.env.PORT);
     // eslint-disable-next-line no-console, @typescript-eslint/no-misused-promises
