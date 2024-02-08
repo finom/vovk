@@ -5,8 +5,7 @@ import { fileURLToPath } from 'url';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck Ignore meta-property error
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {(path: string) => Promise<boolean>} */
 const fileExists = async (path) => !!(await fs.stat(path).catch(() => false));
