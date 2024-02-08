@@ -20,8 +20,9 @@ export default async function getVars(configPath, options = {}) {
     // make PORT available to the config file
     process.env.PORT = options.PORT || process.env.PORT || '3000';
     Object.assign(vovkConfig, await import(configPath));
+    console.info('🐺 Vovk config loaded from', configPath);
   } catch {
-    // noop
+    console.info(`🐺 No vovk.config.js found at path '${configPath}', using defaults`);
   }
 
   vars = {

@@ -2,16 +2,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import getReturnPath from './lib/getReturnPath.mjs';
-
-/** @type {(moduleName: string) => Promise<boolean>} */
-async function fileExists(filePath) {
-  try {
-    await fs.stat(filePath);
-    return true; // The file exists
-  } catch (e) {
-    return false; // The file does not exist
-  }
-}
+import fileExists from './lib/fileExists.mjs';
 
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
