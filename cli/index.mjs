@@ -6,6 +6,11 @@ import parallel from './lib/parallel.mjs';
 import getAvailablePort from './lib/getAvailablePort.mjs';
 import getVars from './getVars.mjs';
 import parseCommandLineArgs from './lib/parseCommandLineArgs.mjs';
+import { fileURLToPath } from 'url';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore Ignore meta-property error
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const { command, flags, restArgs } = parseCommandLineArgs();
 const {

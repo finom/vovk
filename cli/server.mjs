@@ -6,11 +6,15 @@ import parseCommandLineArgs from './lib/parseCommandLineArgs.mjs';
 import generateClient from './generateClient.mjs';
 import getVars from './getVars.mjs';
 import isEqual from './lib/isEqual.mjs';
+import { fileURLToPath } from 'url';
 
 const { flags } = parseCommandLineArgs();
 
 const { config } = /** @type {{ config: string }} */ (flags);
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore Ignore meta-property error
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
 /** @type {(metadata: object) => Promise<{ written: boolean; path: string }>} */
