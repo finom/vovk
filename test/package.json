@@ -4,17 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "vovk dev",
-    "build": "vovk build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "generate": "vovk generate"
   },
   "dependencies": {
-    "@vovkts/client": "latest",
+    "@vovkts/client": "^0.0.1",
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18",
-    "vovk": "^0.2.3-beta.72",
+    "vovk": "^0.2.3-beta.123",
     "vovk-zod": "^0.0.14"
   },
   "devDependencies": {
