@@ -9,7 +9,7 @@ const isEqual = require('./lib/isEqual');
 
 const { flags } = parseCommandLineArgs();
 
-const { once, config } = /** @type {{ once?: boolean; config: string }} */ (flags);
+const { config } = /** @type {{ config: string }} */ (flags);
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
@@ -37,25 +37,31 @@ let pingInterval;
 let vars;
 
 /** @type {() => void} */
-const startPinging = () => {
-  clearInterval(pingInterval);
-  pingInterval = setInterval(() => {
-    vars = vars ?? getVars(config);
-    let prefix = vars.VOVK_PREFIX;
-    prefix = prefix.startsWith('http://')
-      ? prefix
-      : `http://localhost:${process.env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
-    const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
-    // Create the HTTP GET request
-    const req = http.get(endpoint, () => {
-      // noop
-    });
+const ping = () => {
+  vars = vars ?? getVars(config);
+  let prefix = vars.VOVK_PREFIX;
+  prefix = prefix.startsWith('http://')
+    ? prefix
+    : `http://localhost:${process.env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
+  const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
+  // Create the HTTP GET request
+  const req = http.get(endpoint, () => {
+    // noop
+  });
 
-    // Error handling for the request
-    req.on('error', (err) => {
-      console.error(`🐺 ❌ Error during HTTP request made to ${endpoint}:`, err.message);
-    });
-  }, 1000 * 3);
+  // Error handling for the request
+  req.on('error', (err) => {
+    console.error(`🐺 ❌ Error during HTTP request made to ${endpoint}:`, err.message);
+  });
+};
+
+// make initial ping
+setTimeout(ping, 1000 * 3);
+
+/** @type {() => void} */
+const constantlyPing = () => {
+  clearInterval(pingInterval);
+  pingInterval = setInterval(ping, 1000 * 3);
 };
 
 const server = http.createServer((req, res) => {
@@ -84,18 +90,12 @@ const server = http.createServer((req, res) => {
           console.info(` 🐺 Client generated in ${codeWritten.path}`);
         }
 
-        if (!once) {
-          startPinging();
-        }
-
-        if (once && metadata) server.close();
+        constantlyPing();
       } catch (e) {
         const err = /** @type {Error} */ (e);
         res.writeHead(400, { 'Content-Type': 'text/plain' });
         res.end(err?.message ?? 'Error');
         console.error(' 🐺 ❌ ' + err?.message);
-
-        if (once) server.close();
       }
     });
   } else {

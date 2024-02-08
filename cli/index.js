@@ -43,27 +43,6 @@ if (command === 'dev') {
     ).catch((e) => console.error(e));
     console.info(' 🐺 All processes have ended');
   })();
-} else if (command === 'build') {
-  // TODO not documented
-  void (async () => {
-    const env = getVars(config, { VOVK_CLIENT_OUT: clientOut });
-
-    let VOVK_PORT = parseInt(env.VOVK_PORT);
-
-    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, 30).catch(() => {
-      throw new Error(' 🐺 Failed to find available port');
-    });
-    await parallel(
-      [
-        {
-          command: `node ${__dirname}/server.js --once`,
-          name: 'Vovk',
-        },
-        { command: `cd ${project} && npx next build ${restArgs}`, name: 'Next' },
-      ],
-      env
-    ).catch((e) => console.error(e));
-  })();
 } else if (command === 'generate') {
   const env = getVars(config, { VOVK_CLIENT_OUT: clientOut });
 
