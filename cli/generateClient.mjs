@@ -6,7 +6,11 @@ import getReturnPath from './lib/getReturnPath.mjs';
 /** @type {(moduleName: string) => Promise<boolean>} */
 async function canImport(moduleName) {
   try {
-    await import(moduleName);
+    if (moduleName.endsWith('.json')) {
+      await import(moduleName, { assert: { type: 'json' } });
+    } else {
+      await import(moduleName);
+    }
     return true; // The module exists and can be imported
   } catch (e) {
     return false; // The module does not exist or cannot be imported
@@ -42,7 +46,9 @@ export default async function generateClient({ ...env }) {
   }
 
   if (!(await canImport(localJsonPath))) {
-    throw new Error(`Unble to generate Vovk Client: cannot find ".vovk.json" file '${localJsonPath}'.`);
+    throw new Error(
+      `Unble to generate Vovk Client: cannot find ".vovk.json" file '${localJsonPath}' (original value '${jsonPath}').`
+    );
   }
 
   const controllersPath = path.join(returnDir, env.VOVK_ROUTE).replace(/\.ts$/, '');
