@@ -44,11 +44,13 @@ if (command === 'dev') {
     console.info(' 🐺 All processes have ended');
   })();
 } else if (command === 'generate') {
-  const env = await getVars(config, { VOVK_CLIENT_OUT: clientOut });
+  void (async () => {
+    const env = await getVars(config, { VOVK_CLIENT_OUT: clientOut });
 
-  void generateClient(env).then(({ path }) => {
-    console.info(` 🐺 Client generated in ${path}`);
-  });
+    void generateClient(env).then(({ path }) => {
+      console.info(` 🐺 Client generated in ${path}`);
+    });
+  })();
 } else if (command === 'help') {
   console.info(` 🐺 Vovk CLI
   dev - Start development server
