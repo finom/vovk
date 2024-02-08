@@ -7,6 +7,8 @@ import getReturnPath from './lib/getReturnPath.mjs';
 async function canImport(moduleName) {
   try {
     if (moduleName.endsWith('.json')) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore Ignore dynamic imports errors
       await import(moduleName, { assert: { type: 'json' } });
     } else {
       await import(moduleName);
