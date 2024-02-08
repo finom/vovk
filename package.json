@@ -13,7 +13,7 @@
     "test:unit:watch": "jest --watch",
     "deploy-docs": "npm run --prefix docs deploy",
     "postpublish": "node ../post-publish-test/post-publish.js",
-    "serve:unit": "npm --prefix test run build && npm --prefix test run start",
+    "serve:unit": "npm --prefix test run generate && npm --prefix test run build && npm --prefix test run start",
     "build": "rm -rf dist && npm run toc && tsc && cp package.json dist && cp README.md dist && cp package-lock.json dist && cp -r cli dist",
     "lint-nofix": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-nofix -- --fix",
