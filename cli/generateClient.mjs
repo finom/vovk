@@ -1,15 +1,16 @@
 // @ts-check
-const fs = require('fs/promises');
-const path = require('path');
-const getReturnPath = require('./lib/getReturnPath');
+import fs from 'fs/promises';
+import path from 'path';
+import getReturnPath from './lib/getReturnPath.mjs';
 
-/** @type {(moduleName: string) => boolean} */
-function canRequire(moduleName) {
+/** @type {(moduleName: string) => Promise<boolean>} */
+async function canImport(moduleName) {
   try {
-    require.resolve(moduleName);
-    return true; // The module exists and can be required
+    // eslint-disable-next-line @typescript-eslint/await-thenable
+    await import.meta.resolve(moduleName);
+    return true; // The module exists and can be imported
   } catch (e) {
-    return false; // The module does not exist
+    return false; // The module does not exist or cannot be imported
   }
 }
 
@@ -18,7 +19,7 @@ function canRequire(moduleName) {
  * TODO: Check fetcher for existence
  * @type {(rcPath: import('../src').VovkEnv) => Promise<{ written: boolean; path: string }>}
  */
-async function generateClient({ ...env }) {
+export default async function generateClient({ ...env }) {
   const outDir = env.VOVK_CLIENT_OUT;
   const returnDir = getReturnPath(outDir, process.cwd());
   const jsonPath = path.join(returnDir, '.vovk.json');
@@ -26,20 +27,22 @@ async function generateClient({ ...env }) {
   const fetcherPath = env.VOVK_FETCHER.startsWith('.') ? path.join(returnDir, env.VOVK_FETCHER) : env.VOVK_FETCHER;
 
   if (!env.VOVK_VALIDATE_ON_CLIENT) {
-    env.VOVK_VALIDATE_ON_CLIENT = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : '';
+    env.VOVK_VALIDATE_ON_CLIENT = (await canImport('vovk-zod/zodValidateOnClient'))
+      ? 'vovk-zod/zodValidateOnClient'
+      : '';
   }
   const validatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.')
     ? path.join(returnDir, env.VOVK_VALIDATE_ON_CLIENT)
     : env.VOVK_VALIDATE_ON_CLIENT;
   const localValidatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.') ? path.join('..', validatePath) : validatePath;
 
-  if (env.VOVK_VALIDATE_ON_CLIENT && !canRequire(localValidatePath)) {
+  if (env.VOVK_VALIDATE_ON_CLIENT && !(await canImport(localValidatePath))) {
     throw new Error(
       `Unble to generate Vovk Client: cannot find "validateOnClient" module '${env.VOVK_VALIDATE_ON_CLIENT}'. Check your vovk.config.js file`
     );
   }
 
-  if (!canRequire(localJsonPath)) {
+  if (!(await canImport(localJsonPath))) {
     throw new Error(`Unble to generate Vovk Client: cannot find ".vovk.json" file '${jsonPath}'.`);
   }
 
@@ -116,5 +119,3 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 
   return { written: true, path: outDir };
 }
-
-module.exports = generateClient;

@@ -1,4 +1,4 @@
-const net = require('net');
+import net from 'net';
 
 function checkPort(port, callback) {
   const server = net.createServer();
@@ -15,7 +15,7 @@ function checkPort(port, callback) {
 }
 
 /** @type {(startPort: number, maxAttempts: number, attempt?: number) => Promise<string>} */
-function getAvailablePort(startPort, maxAttempts, attempt = 1) {
+export default function getAvailablePort(startPort, maxAttempts, attempt = 1) {
   return new Promise((resolve, reject) => {
     checkPort(startPort, (isAvailable) => {
       if (isAvailable) {
@@ -28,5 +28,3 @@ function getAvailablePort(startPort, maxAttempts, attempt = 1) {
     });
   });
 }
-
-module.exports = getAvailablePort;

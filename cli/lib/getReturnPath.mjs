@@ -1,6 +1,6 @@
 // @ts-check
 /** @type {(fromPath: string, toPath: string) => string} */
-function getReturnPath(fromPath, toPath) {
+export default function getReturnPath(fromPath, toPath) {
   // Split the paths into components
   const fromParts = fromPath.replace(/^\.?\/|\/$/g, '').split('/');
   const toParts = toPath.replace(/^\.?\/|\/$/g, '').split('/');
@@ -24,5 +24,3 @@ function getReturnPath(fromPath, toPath) {
 
   return result;
 }
-
-module.exports = getReturnPath;

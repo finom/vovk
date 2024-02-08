@@ -1,11 +1,11 @@
 // @ts-check
 
-const path = require('path');
+import path from 'path';
 
 /** @type {import('../src').VovkEnv} */
 let vars;
-/** @type {(rcPath: string, options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => import('../src').VovkEnv} */
-function getVars(configPath, options = {}) {
+/** @type {(rcPath: string, options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => Promise<import('../src').VovkEnv>} */
+export default async function getVars(configPath, options = {}) {
   if (vars) return vars;
   /** @type {Required<import('../src').VovkConfig>} */
   const vovkConfig = {
@@ -19,7 +19,7 @@ function getVars(configPath, options = {}) {
   try {
     // make PORT available to the config file
     process.env.PORT = options.PORT || process.env.PORT || '3000';
-    Object.assign(vovkConfig, require(configPath));
+    Object.assign(vovkConfig, await import(configPath));
   } catch {
     // noop
   }
@@ -43,5 +43,3 @@ function getVars(configPath, options = {}) {
 
   return vars;
 }
-
-module.exports = getVars;

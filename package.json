@@ -2,7 +2,7 @@
   "name": "vovk",
   "version": "0.2.3-beta.113",
   "description": "Structural add-on for Next.js",
-  "bin": "./cli/index.js",
+  "bin": "./cli/index.mjs",
   "scripts": {
     "postinstall": "node ./cli/postinstall.js",
     "upgrade": "npx npm-check-updates -u && npm i",

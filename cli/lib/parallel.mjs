@@ -1,8 +1,8 @@
 // @ts-check
-const { spawn } = require('child_process');
+import { spawn } from 'child_process';
 
 /** @type {(commands: { command: string; name: string; }[], env: import('../../src').VovkEnv) => Promise<void>} */
-function parallel(commands, env) {
+export default function parallel(commands, env) {
   return new Promise((resolve, reject) => {
     /** @type {{ name: string; process: import('child_process').ChildProcess; }[]} */
     let processes = [];
@@ -46,5 +46,3 @@ function parallel(commands, env) {
     }
   });
 }
-
-module.exports = parallel;

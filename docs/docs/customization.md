@@ -4,4 +4,8 @@ sidebar_position: 7
 
 # Customization
 
-Coming soon...
+## vovk.config.js file
+
+## Fetcher customization
+
+## Cliend validation customization

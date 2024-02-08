@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // @ts-check
-const generateClient = require('./generateClient');
-const path = require('path');
-const parallel = require('./lib/parallel');
-const getAvailablePort = require('./lib/getAvailablePort');
-const getVars = require('./getVars');
-const parseCommandLineArgs = require('./lib/parseCommandLineArgs');
+import path from 'path';
+import generateClient from './generateClient.mjs';
+import parallel from './lib/parallel.mjs';
+import getAvailablePort from './lib/getAvailablePort.mjs';
+import getVars from './getVars.mjs';
+import parseCommandLineArgs from './lib/parseCommandLineArgs.mjs';
 
 const { command, flags, restArgs } = parseCommandLineArgs();
 const {
@@ -23,7 +23,7 @@ if (command === 'dev') {
         throw new Error(' 🐺 Failed to find available Next port');
       }));
 
-    const env = getVars(config, { VOVK_CLIENT_OUT: clientOut, PORT });
+    const env = await getVars(config, { VOVK_CLIENT_OUT: clientOut, PORT });
 
     let VOVK_PORT = parseInt(env.VOVK_PORT);
 
@@ -44,7 +44,7 @@ if (command === 'dev') {
     console.info(' 🐺 All processes have ended');
   })();
 } else if (command === 'generate') {
-  const env = getVars(config, { VOVK_CLIENT_OUT: clientOut });
+  const env = await getVars(config, { VOVK_CLIENT_OUT: clientOut });
 
   void generateClient(env).then(({ path }) => {
     console.info(` 🐺 Client generated in ${path}`);

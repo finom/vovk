@@ -1,11 +1,11 @@
 // @ts-check
-const http = require('http');
-const fs = require('fs/promises');
-const path = require('path');
-const parseCommandLineArgs = require('./lib/parseCommandLineArgs');
-const generateClient = require('./generateClient');
-const getVars = require('./getVars');
-const isEqual = require('./lib/isEqual');
+import http from 'http';
+import fs from 'fs/promises';
+import path from 'path';
+import parseCommandLineArgs from './lib/parseCommandLineArgs.mjs';
+import generateClient from './generateClient.mjs';
+import getVars from './getVars.mjs';
+import isEqual from './lib/isEqual.mjs';
 
 const { flags } = parseCommandLineArgs();
 
@@ -36,9 +36,9 @@ let pingInterval;
 /** @type {import('../src').VovkEnv} */
 let vars;
 
-/** @type {() => void} */
-const ping = () => {
-  vars = vars ?? getVars(config);
+/** @type {() => Promise<void>} */
+const ping = async () => {
+  vars = vars ?? (await getVars(config));
   let prefix = vars.VOVK_PREFIX;
   prefix = prefix.startsWith('http://')
     ? prefix
@@ -56,12 +56,12 @@ const ping = () => {
 };
 
 // make initial ping
-setTimeout(ping, 1000 * 3);
+setTimeout(() => void ping(), 1000 * 3);
 
 /** @type {() => void} */
 const constantlyPing = () => {
   clearInterval(pingInterval);
-  pingInterval = setInterval(ping, 1000 * 3);
+  pingInterval = setInterval(() => void ping(), 1000 * 3);
 };
 
 const server = http.createServer((req, res) => {
@@ -78,7 +78,7 @@ const server = http.createServer((req, res) => {
         /** @type {{ metadata?: import('../src') }} */
         const { metadata } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
-        vars = vars ?? getVars(config);
+        vars = vars ?? (await getVars(config));
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');

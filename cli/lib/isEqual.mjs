@@ -1,6 +1,6 @@
 // @ts-check
 /** @type {(obj1: any, obj2: any) => boolean} */
-const isEqual = (obj1, obj2) => {
+export default function isEqual(obj1, obj2) {
   if (obj1 === obj2) {
     return true;
   }
@@ -23,6 +23,4 @@ const isEqual = (obj1, obj2) => {
   }
 
   return true;
-};
-
-module.exports = isEqual;
+}

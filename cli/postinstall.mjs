@@ -1,6 +1,6 @@
 // @ts-check
-const fs = require('fs/promises');
-const path = require('path');
+import fs from 'fs/promises';
+import path from 'path';
 
 /** @type {(path: string) => Promise<boolean>} */
 const fileExists = async (path) => !!(await fs.stat(path).catch(() => false));

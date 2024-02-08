@@ -7,7 +7,7 @@ function toCamelCase(str) {
 
 /** @typedef {{ config?: string; project?: string; clientOut?: string }} Flags */
 /** @typedef {'dev' | 'build' | 'generate' | 'help'} Command */
-function parseCommandLineArgs() {
+export default function parseCommandLineArgs() {
   const args = process.argv.slice(2); // Slice off node and script path
   let command = /** @type {Command} */ null;
   /** @type {Flags} */
@@ -37,5 +37,3 @@ function parseCommandLineArgs() {
 
   return { command, flags, restArgs };
 }
-
-module.exports = parseCommandLineArgs;
