@@ -4,7 +4,7 @@
   "description": "Structural add-on for Next.js",
   "bin": "./cli/index.mjs",
   "scripts": {
-    "postinstall": "node ./cli/postinstall.js",
+    "postinstall": "node ./cli/postinstall.mjs",
     "upgrade": "npx npm-check-updates -u && npm i",
     "test": "npm run lint-nofix && tsc --noemit && tsc --project tsconfig.cli.json --noemit && npm run unit",
     "unit": "PORT=3210 concurrently \"sleep 20 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
