@@ -26,7 +26,8 @@ function parseCommandLineArgs() {
       unparsedArgs.push(arg);
     } else if (arg.startsWith('--')) {
       const [key, value = true] = arg.slice(2).split('=');
-      const camelKey = toCamelCase(key);
+      const camelKey = /** @type {keyof Flags} */ (toCamelCase(key));
+      // @ts-expect-error Type 'string | true | undefined' is not assignable to type 'undefined'. Why?
       flags[camelKey] = /** @type {Flags[keyof Flags]} */ (value);
     } else if (!command) {
       command = /** @type {Command} */ (arg);
