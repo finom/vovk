@@ -5,7 +5,7 @@ function toCamelCase(str) {
   return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
 }
 
-/** @typedef {{ config?: string; project?: string; clientOut?: string }} Flags */
+/** @typedef {{ config?: string; project?: string; clientOut?: string; standalone?: true }} Flags */
 /** @typedef {'dev' | 'build' | 'generate' | 'help'} Command */
 function parseCommandLineArgs() {
   const args = process.argv.slice(2); // Slice off node and script path
@@ -26,8 +26,8 @@ function parseCommandLineArgs() {
       unparsedArgs.push(arg);
     } else if (arg.startsWith('--')) {
       const [key, value = true] = arg.slice(2).split('=');
-      const camelKey = /** @type {keyof Flags} */ (toCamelCase(key));
-      flags[camelKey] = /** @type {string} */ (value);
+      const camelKey = toCamelCase(key);
+      flags[camelKey] = value;
     } else if (!command) {
       command = /** @type {Command} */ (arg);
     }

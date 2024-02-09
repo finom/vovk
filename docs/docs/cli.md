@@ -8,6 +8,8 @@ sidebar_position: 6
 
 Runs Vovk Metadata Server and `next dev` in parallel. Next.js dev server will send information about controllers and worker services to the Metadata Server to build **.vovk.json** and **node_modules/.vovk** files. Please check [How it Works](./how-it-works) for more info.
 
+`vovk dev` supports `--standalone` flag that indicates that it shouldn't run `next dev`. This is useful in case if you want to take control over `next dev` and run it by yourself with [concurrently](https://www.npmjs.com/package/concurrently) or similar library. At this case it is required to set `PORT` env vriable explicitly.
+
 ## `vovk generate`
 
 Generates the client based on **.vovk.json** and puts **.js** and **.d.ts** files into **node_modules/.vovk** that are re-exported by **@vovkts/client**. **.vovk.json** is generated via `vovk dev`.
