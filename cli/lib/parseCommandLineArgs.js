@@ -27,7 +27,7 @@ function parseCommandLineArgs() {
     } else if (arg.startsWith('--')) {
       const [key, value = true] = arg.slice(2).split('=');
       const camelKey = toCamelCase(key);
-      flags[camelKey] = value;
+      flags[camelKey] = /** @type {Flags[keyof Flags]} */ (value);
     } else if (!command) {
       command = /** @type {Command} */ (arg);
     }
