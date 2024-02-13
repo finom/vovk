@@ -88,6 +88,14 @@
         },
         "httpMethod": "POST",
         "path": "post-with-zod-validation"
+      },
+      "generateStaticAPI": {
+        "path": "generate-static-api",
+        "httpMethod": "POST"
+      },
+      "generateStaticAPIWithCustomSlug": {
+        "path": "generate-static-api-custom-slug",
+        "httpMethod": "POST"
       }
     }
   },

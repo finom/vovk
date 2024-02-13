@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { VovkRequest, get, post, prefix } from '../../../src';
+import { VovkRequest, generateStaticAPI, get, post, prefix } from '../../../src';
 import validateEquality from './validateEquality';
 import vovkZod from 'vovk-zod';
 import * as z from 'zod';
@@ -71,5 +71,15 @@ export default class ClientController {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
     return { body, query: { hey } };
+  }
+
+  @post('generate-static-api')
+  static generateStaticAPI() {
+    return generateStaticAPI({ ClientController });
+  }
+
+  @post('generate-static-api-custom-slug')
+  static generateStaticAPIWithCustomSlug() {
+    return generateStaticAPI({ ClientController }, 'custom');
   }
 }

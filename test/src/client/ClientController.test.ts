@@ -1,9 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import type ClientController from './ClientController';
 import { ClientController as ClientControllerClientized } from '@vovkts/client';
 import { HttpException } from 'vovk'; // it's used by @vovkts/client
 import { VovkClientBody, VovkClientParams, VovkClientQuery, VovkClientReturnType } from '../../../src';
 import { it, xit, expect, describe } from '@jest/globals';
+import type ClientController from './ClientController';
 
 type ClientControllerType = typeof ClientController;
 
@@ -277,5 +277,36 @@ describe('Client with @vovkts/client', () => {
     });
   });
 
-  // zod validation
+  it('Generates static API', async () => {
+    const staticAPI = await ClientControllerClientized.generateStaticAPI();
+    const staticAPIWithCustomSlug = await ClientControllerClientized.generateStaticAPIWithCustomSlug();
+
+    expect(staticAPI).toEqual([
+      { vovk: ['__ping'] },
+      { vovk: ['client', 'get-hello-world'] },
+      { vovk: ['client', 'get-hello-world-array'] },
+      { vovk: ['client', 'get-hello-world-and-empty-generic'] },
+      { vovk: ['client', 'with-params', ':hello'] },
+      { vovk: ['client', 'with-params', ':hello'] },
+      { vovk: ['client', 'post-with-equality-validation'] },
+      { vovk: ['client', 'post-form-data'] },
+      { vovk: ['client', 'post-with-zod-validation'] },
+      { vovk: ['client', 'generate-static-api'] },
+      { vovk: ['client', 'generate-static-api-custom-slug'] },
+    ]);
+
+    expect(staticAPIWithCustomSlug).toEqual([
+      { custom: ['__ping'] },
+      { custom: ['client', 'get-hello-world'] },
+      { custom: ['client', 'get-hello-world-array'] },
+      { custom: ['client', 'get-hello-world-and-empty-generic'] },
+      { custom: ['client', 'with-params', ':hello'] },
+      { custom: ['client', 'with-params', ':hello'] },
+      { custom: ['client', 'post-with-equality-validation'] },
+      { custom: ['client', 'post-form-data'] },
+      { custom: ['client', 'post-with-zod-validation'] },
+      { custom: ['client', 'generate-static-api'] },
+      { custom: ['client', 'generate-static-api-custom-slug'] },
+    ]);
+  });
 });

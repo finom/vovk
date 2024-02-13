@@ -48,6 +48,8 @@ export {
   // enums
   HttpStatus,
   HttpMethod,
+  // misc
+  generateStaticAPI,
 };
 ```
 
@@ -485,3 +487,29 @@ type GeneratorYieldtype = VovkClientYieldType<typeof HelloController.generator>;
 ### `VovkClientOptions` type
 
 (Advanced) Type that used internally and exposed to customize the client. Please see [decorators documentation](./decorators) and [customization page](./customization).
+
+## Misc
+
+### `generateStaticAPI(controllers: Record<string, Function>, slug?: string)`
+
+`generateStaticAPI` is used to generate static endpoints with [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params) at build time instead of on-demand at request time.
+
+```ts
+// ...
+export type Controllers = typeof controllers;
+export type Workers = typeof workers;
+
+export function generateStaticParams() {
+  return generateStaticAPI(controllers);
+}
+
+export const { GET, POST, PUT, DELETE } = initVovk({ controllers, workers });
+```
+
+In case if you use custom slug you can provide it as second argument.
+
+```ts
+export function generateStaticParams() {
+  return generateStaticAPI(controllers, 'custom');
+}
+```
