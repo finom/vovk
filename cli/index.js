@@ -13,13 +13,13 @@ const {
   // TODO not documented
   project = process.cwd(), // Path to Next.js project
   clientOut = path.join(process.cwd(), './node_modules/.vovk'), // Path to output directory
-  standalone = false, // Start Vovk Server without Next.js
+  noNextDev = false, // Start Vovk Server without Next.js
 } = flags;
 
 if (command === 'dev') {
   const portAttempts = 30;
   void (async () => {
-    let PORT = standalone
+    let PORT = noNextDev
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts).catch(() => {
@@ -27,7 +27,7 @@ if (command === 'dev') {
         }));
 
     if (!PORT) {
-      throw new Error(' 🐺 ❌ PORT env variable is required in standalone mode');
+      throw new Error(' 🐺 ❌ PORT env variable is required in --no-next-dev mode');
     }
 
     const env = getVars(config, { VOVK_CLIENT_OUT: clientOut, PORT });
@@ -45,7 +45,7 @@ if (command === 'dev') {
       },
     ];
 
-    if (!standalone) {
+    if (!noNextDev) {
       commands.push({
         command: `cd ${project} && npx next dev ${restArgs}`,
         name: 'Next',
