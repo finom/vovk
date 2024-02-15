@@ -25,6 +25,7 @@ The library also provides [seamless Web Worker interface](./worker) utilising th
 - Easy to learn, no new vocabulary and only a few pages of documentation.
 - Easily integrated with React Native.
 - Streaming for LLM apps with disposable async generators.
+- Static API generation with [generateStaticAPI](api#generateStaticAPI)
 - Web Worker interface for multi-threading in browser.
 - Customizable.
 - Well-tested.

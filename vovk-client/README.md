@@ -1,5 +1,5 @@
 # Vovk Client
 
 ```
-npm i @vovkts/client
+npm i vovk-client
 ```

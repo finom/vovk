@@ -1,5 +1,5 @@
 {
-  "name": "@vovkts/client",
+  "name": "vovk-client",
   "version": "0.0.1",
   "description": "Vovk.ts Client",
   "main": "index.js",
