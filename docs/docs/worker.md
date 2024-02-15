@@ -48,10 +48,10 @@ export const { GET, POST, PUT, DELETE } = initVovk({ controllers, workers });
 ```
 
 
-Once this is done, **@vovkts/client** exports the main-thread Worker Service library that provides interface to invoke heavy calculations but doesn't initialise Web Worker itself. To plug-in the worker to the main-thread worker interface it needs to be initialised and passed as an argument of `use` static method.
+Once this is done, **vovk-client** exports the main-thread Worker Service library that provides interface to invoke heavy calculations but doesn't initialise Web Worker itself. To plug-in the worker to the main-thread worker interface it needs to be initialised and passed as an argument of `use` static method.
 
 ```ts
-import { HelloWorker } from '@vovkts/client';
+import { HelloWorker } from 'vovk-client';
 
 HelloWorker.use(new Worker(new URL('./path/to/HelloWorker.ts', import.meta.url)));
 ```
@@ -65,7 +65,7 @@ const result = await HelloWorker.heavyCalculation(1e9);
 Note that `Worker` class does not exist in Next.js SSR environment and in case if the code is exposed to non-client-side environment (for example outside of `useEffect`) it's recommended to check `Worker` for existence.
 
 ```ts
-import { HelloWorker } from '@vovkts/client';
+import { HelloWorker } from 'vovk-client';
 
 if(typeof Worker !== 'undefined') {
     HelloWorker.use(new Worker(new URL('./path/to/HelloWorker.ts', import.meta.url)));
@@ -75,7 +75,7 @@ if(typeof Worker !== 'undefined') {
 `use` method returns the worker interface itself so as a nicer solution you can use ternary operator to make the Worker library nullish.
 
 ```ts
-import { HelloWorker } from '@vovkts/client';
+import { HelloWorker } from 'vovk-client';
 
 const MyWorker = typeof Worker === 'undefined' 
     ? null 
@@ -120,7 +120,7 @@ export default class HelloWorkerService {
 Vovk.ts turns them both into an async generator.
 
 ```ts
-import { HelloWorker } from '@vovkts/client';
+import { HelloWorker } from 'vovk-client';
 
 // ... plug in the Web Worker with "use" method ...
 
@@ -151,7 +151,7 @@ export class HelloController {
 
 ```ts
 // /src/modules/hello/HelloWorker.ts
-import { HelloController } from '@vovkts/client';
+import { HelloController } from 'vovk-client';
 
 @worker()
 export default class HelloWorker {
@@ -173,7 +173,7 @@ export default class HelloWorker {
 Workers can use other workers. The syntax remains the same and you don't need to check `Worker` existence.
 
 ```ts
-import { AnotherWorker } from '@vovkts/client';
+import { AnotherWorker } from 'vovk-client';
 
 export default class WorkerService {
     private static anotherWorker = AnotherWorker;
@@ -190,7 +190,7 @@ export default class WorkerService {
 To fork the worker and create as many parallel processes as needed you can use `fork` method instead of `use`.
 
 ```ts
-import { HelloWorker } from '@vovkts/client';
+import { HelloWorker } from 'vovk-client';
 
 function getFork() {
     return HelloWorker.fork(new Worker(new URL('./path/to/HelloWorker.ts', import.meta.url)));

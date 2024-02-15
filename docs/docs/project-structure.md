@@ -180,7 +180,7 @@ The worker can be promisified on the client-side.
 
 ```ts
 // /src/app/page.tsx
-import { HelloWorkerService } from '@vovkts/client';
+import { HelloWorkerService } from 'vovk-client';
 
 // ...
 const onClick = useCallback(async () => {
@@ -192,17 +192,17 @@ const onClick = useCallback(async () => {
 }, []);
 ```
 
-Workers can use other Isomorphic Services, Worker Services and Back-end controllers imported from **@vovkts/client**. Please check documentation of [Worker Serices](./worker).
+Workers can use other Isomorphic Services, Worker Services and Back-end controllers imported from **vovk-client**. Please check documentation of [Worker Serices](./worker).
 
 ## State
 
-State file contains application state code. It can use Isomorphic Services, Worker Services and Controllers imported from **@vovkts/client**. State can be implemented with any application state library: Recoil, Redux, Redux Toolkit, MobX, custom context, or anything else since the framework does not cover state management topic.
+State file contains application state code. It can use Isomorphic Services, Worker Services and Controllers imported from **vovk-client**. State can be implemented with any application state library: Recoil, Redux, Redux Toolkit, MobX, custom context, or anything else since the framework does not cover state management topic.
 
 If a worker is initialised outside of `useEffect` or `useCallback` it's recommended to check if `Worker` exists in the current context and make the variable to equal `null` in SSR environment.
 
 ```ts
 // /src/modules/post/PostState.ts
-import { PostController, PostWorkerService } from '@vovkts/client';
+import { PostController, PostWorkerService } from 'vovk-client';
 
 const PostWorker = typeof Worker === 'undefined' ? null : PostWorkerService.use(
     new Worker(new URL('./HelloWorkerService.ts', import.meta.url))

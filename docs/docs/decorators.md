@@ -259,7 +259,7 @@ module.exports = vovkConfig;
 For more info about Vovk.ts configuration check !!!!!! configuration page.
 
 ```ts
-import { HelloController } from '@vovkts/client';
+import { HelloController } from 'vovk-client';
 
 const result = await HelloController.validatedRequest({
     body: { foo: 42 },

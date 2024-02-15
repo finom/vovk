@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from 'react';
-import { MyWorker as MyWorkerPromisified } from '@vovkts/client';
+import { MyWorker as MyWorkerPromisified } from 'vovk-client';
 import { promisifyWorker } from '../../../src/worker';
 import metadata from '../vovk-metadata.json' assert { type: 'json' };
 import MyWorker from '../worker/MyWorker';

@@ -25,7 +25,7 @@ export default class UserController {
 }
 ```
 
-At the example aboce `data` is casted as `any` and `userRole` is casted as `string | null`. To fix the types Vovk.ts provides a new type `VovkRequest<BODY?, QUERY?>` that is extended from `NextRequest` where the first generic argument represents the type of value returned from `req.json` but also allows to define values returned from `req.nextUrl.searchParams.get`. `VovkRequest` also plays an important role in type inference in generting client library, exported from **@vovkts/client**. 
+At the example aboce `data` is casted as `any` and `userRole` is casted as `string | null`. To fix the types Vovk.ts provides a new type `VovkRequest<BODY?, QUERY?>` that is extended from `NextRequest` where the first generic argument represents the type of value returned from `req.json` but also allows to define values returned from `req.nextUrl.searchParams.get`. `VovkRequest` also plays an important role in type inference in generting client library, exported from **vovk-client**. 
 
 As its mentioned before, `req` object is an original `NextRequest` object that provided by Next.js as is without changing it, but third-party libraries (like **vovk-zod**) as well as your custom code can modify this object when required (for example to add `currentUser` property defined by your auth guard).
 
@@ -74,12 +74,12 @@ export const { GET, POST, PUT, DELETE } = initVovk({ controllers, workers });
 
 `initVovk` performs required actions to generate client-side library and no additional action from your side is required (but you probably would need to restart TS Server to update types if you use VSCode).
 
-The client library implements the same methods (in our case `updateUser`) but changes the method interface so you can pass required input data as options (`body`, `query` and `params`). **@vovkts/client** can be used in client components, server components, application state and even be distributed as a standalone package. For an illustration [vovk-examples](https://github.com/finom/vovk-examples) is published as a [standalone NPM package](https://www.npmjs.com/package/vovk-examples) to be used on [vovk.dev](https://vovk.dev) that by itself is a static website powered by gh-pages.
+The client library implements the same methods (in our case `updateUser`) but changes the method interface so you can pass required input data as options (`body`, `query` and `params`). **vovk-client** can be used in client components, server components, application state and even be distributed as a standalone package. For an illustration [vovk-examples](https://github.com/finom/vovk-examples) is published as a [standalone NPM package](https://www.npmjs.com/package/vovk-examples) to be used on [vovk.dev](https://vovk.dev) that by itself is a static website powered by gh-pages.
 
-Note that everything exported from **@vovkts/client** is plain old JavaScript with TS typings that calls regular `fetch` function. Vovk.ts does not use `Proxy` object that author of this library considers as cheating.
+Note that everything exported from **vovk-client** is plain old JavaScript with TS typings that calls regular `fetch` function. Vovk.ts does not use `Proxy` object that author of this library considers as cheating.
 
 ```ts
-import { UserController } from '@vovkts/client';
+import { UserController } from 'vovk-client';
 
 // ...
 
@@ -138,7 +138,7 @@ static async updateUser(/* ... */) {
 At this case client library wouldn't be able to properly recognise type of returned value but you can override the type manually by using generic argument that completely overrides the return type without need to cast it to `unknown`.
 
 ```ts
-import { UserController } from '@vovkts/client';
+import { UserController } from 'vovk-client';
 import { User } from '../../types';
 
 // ...
@@ -227,7 +227,7 @@ static async updateUser(/* ... */) {
 The errors are re-thrown at the client library with the same interface.
 
 ```ts
-import { UserController } from '@vovkts/client';
+import { UserController } from 'vovk-client';
 import { HttpException } from 'vovk';
 
 // ...
@@ -529,7 +529,7 @@ await resp.throw(new Error('Stream error'));
 Both ways of response streaming generate client method that returns a disposable async generator. 
 
 ```ts
-import { StreamController } from '@vovkts/client';
+import { StreamController } from 'vovk-client';
 
 {
     using stream = await StreamController.streamTokens();
@@ -545,7 +545,7 @@ import { StreamController } from '@vovkts/client';
 To make sure that the stream is closed before moving to the next code block you can use `await using` syntax that disposes the stream asynchronous way.
 
 ```ts
-import { StreamController } from '@vovkts/client';
+import { StreamController } from 'vovk-client';
 
 {
     await using stream = await StreamController.streamTokens();
@@ -579,7 +579,7 @@ export default class UserController {
 To disable client-side validation you can pass `disableClientValidation: true` to the client method.
 
 ```ts
-import { UserController } from '@vovkts/client';
+import { UserController } from 'vovk-client';
 
 // ...
 UserController.updateUser({
@@ -606,7 +606,7 @@ export const { GET, POST, PUT, DELETE } = initVovk({
 Vovk.ts provides a collection of useful types that described in more details at API documentation !!!!!. It's worthy to mention the most often used types shortly here. 
 
 ```ts
-import { UserController, StreamController } from '@vovkts/client';
+import { UserController, StreamController } from 'vovk-client';
 
 // infer body
 type Body = VovkClientBody<typeof UserController.updateUser>;
@@ -623,7 +623,7 @@ type Yield = VovkClientYield<typeof StreamController.streamTokens>;
 For example if you want to create a custom client-side function that makes request to the server, you can borrow types from the client to build arguments.
 
 ```ts
-import { UserController } from '@vovkts/client';
+import { UserController } from 'vovk-client';
 
 export function updateUser(
     id: VovkClientQuery<typeof UserController.updateUser>['id'],

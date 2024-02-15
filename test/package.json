@@ -10,7 +10,7 @@
     "generate": "vovk generate"
   },
   "dependencies": {
-    "@vovkts/client": "^0.0.1",
+    "vovk-client": "^0.0.2",
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18",

@@ -278,7 +278,7 @@ Client-side:
 
 ```ts
 // /src/modules/hello/HelloState.ts
-import { HelloController } from '@vovkts/client';
+import { HelloController } from 'vovk-client';
 
 export async function getHello() {
     try {
@@ -475,7 +475,7 @@ Extracts yield type from a clientized generator controller method.
 
 
 ```ts
-import { HelloController } from '@vovkts/client';
+import { HelloController } from 'vovk-client';
 
 type DoSomethingBody = VovkClientBody<typeof HelloController.doSomething>;
 type DoSomethingQuery = VovkClientQuery<typeof HelloController.doSomething>;

@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import { ClientController as ClientControllerClientized } from '@vovkts/client';
-import { HttpException } from 'vovk'; // it's used by @vovkts/client
+import { ClientController as ClientControllerClientized } from 'vovk-client';
+import { HttpException } from 'vovk'; // it's used by vovk-client
 import { VovkClientBody, VovkClientParams, VovkClientQuery, VovkClientReturnType } from '../../../src';
 import { it, xit, expect, describe } from '@jest/globals';
 import type ClientController from './ClientController';
@@ -11,7 +11,7 @@ type ClientizedType = typeof ClientControllerClientized;
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
-describe('Client with @vovkts/client', () => {
+describe('Client with vovk-client', () => {
   it(`Should handle simple requests + headers`, async () => {
     const result = await ClientControllerClientized.getHelloWorld({
       prefix,

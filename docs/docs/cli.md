@@ -16,7 +16,7 @@ PORT=4000 VOVK_PORT=6969 concurrently 'vovk dev --standalone' 'next dev'
 
 ## `vovk generate`
 
-Generates the client based on **.vovk.json** and puts **.js** and **.d.ts** files into **node_modules/.vovk** that are re-exported by **@vovkts/client**. **.vovk.json** is generated via `vovk dev`.
+Generates the client based on **.vovk.json** and puts **.js** and **.d.ts** files into **node_modules/.vovk** that are re-exported by **vovk-client**. **.vovk.json** is generated via `vovk dev`.
 
 Both commands accept the following flags:
 

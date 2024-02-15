@@ -30,11 +30,11 @@ npx create-next-app
 At the newly created folder run:
 
 ```
-npm i vovk @vovkts/client
+npm i vovk vovk-client
 ```
 or
 ```
-yarn add vovk @vovkts/client
+yarn add vovk vovk-client
 ```
 
 
@@ -108,14 +108,14 @@ You can freely use named export for the controller if needed.
 
 Once you run `npx vovk dev` that replaces the original `npx next dev` you're going to notice the new file **.vovk.json** created in the root of your project. This file contains required information to build the client and needs to be committed. It's going to be updated automatically when your project structure is changed.
 
-Besides **.vovk.json** the command also generates client **.js** and **.ts** files inside **node_modules/.vovk** that are re-exported by **@vovkts/client** module to produce no errors if **@vovkts/client** is not installed. This approach is borrowed from Prisma ORM.
+Besides **.vovk.json** the command also generates client **.js** and **.ts** files inside **node_modules/.vovk** that are re-exported by **vovk-client** module to produce no errors if **vovk-client** is not installed. This approach is borrowed from Prisma ORM.
 
-Now the client is generated you can safaly import your client library from **@vovkts/client**.
+Now the client is generated you can safaly import your client library from **vovk-client**.
 
 ```tsx
 'use client';
 import { useState } from 'react';
-import { HelloController } from '@vovkts/client';
+import { HelloController } from 'vovk-client';
 import type { VovkClientReturnType } from 'vovk';
 
 export default function MyComponent() {
@@ -143,7 +143,7 @@ Note that Next.js Server Components are also supported but require to define abs
 
 ## Build and deploy
 
-Use the regular `npx next build` to build the project. If the client wasn't generated in **node_modules/.vovk** before you going to get compilation errors if **@vovkts/client** was imported somewhere in the app. To re-generate client with existing **.vovk.json** without re-builing the project itself you need to run `npx vovk generate` that updates **node_modules/.vovk** folder on deployment or after you've reinstalled your **node_modules**. 
+Use the regular `npx next build` to build the project. If the client wasn't generated in **node_modules/.vovk** before you going to get compilation errors if **vovk-client** was imported somewhere in the app. To re-generate client with existing **.vovk.json** without re-builing the project itself you need to run `npx vovk generate` that updates **node_modules/.vovk** folder on deployment or after you've reinstalled your **node_modules**. 
 
 To easily build the project on Vercel you can create `"vercel-build"` npm script at **package.json** that is going to generate client before build.
 
