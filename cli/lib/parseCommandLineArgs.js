@@ -21,14 +21,19 @@ function parseCommandLineArgs() {
   for (let i = 0; i < commandArgs.length; i++) {
     const arg = commandArgs[i];
     if (arg.startsWith('--')) {
-      const key = arg.slice(2);
+      /** @type {string} */
+      let key = arg.slice(2);
       /** @type {string | true} */
-      let value = true; // Assume flag is boolean unless a value is found
+      let value; // Assume flag is boolean unless a value is found
 
-      // Look ahead to next arg if it exists and is not a flag
-      if (i + 1 < commandArgs.length && !commandArgs[i + 1].startsWith('--')) {
+      if (arg.includes('=')) {
+        [key, value] = arg.slice(2).split('=');
+      } else if (i + 1 < commandArgs.length && !commandArgs[i + 1].startsWith('--')) {
+        // Look ahead to next arg if it exists and is not a flag
         value = commandArgs[i + 1];
         i++; // Skip next arg since it's consumed as a value here
+      } else {
+        value = true;
       }
 
       const camelKey = /** @type {keyof Flags} */ (toCamelCase(key));
