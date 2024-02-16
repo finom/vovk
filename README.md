@@ -20,7 +20,7 @@ Examples:
   - Vovk + React Native
   - Bundling
   - Static API
-- Global heading and link to main page
+- Global heading, link to main page, link to examples github
 - OG image and description
 - README
 - Use https://www.npmjs.com/package/react-to-string for titles
@@ -28,6 +28,9 @@ Examples:
 
 vovk-client
 - README
+
+Misc
+- Update personal README
 
 General:
 - Merge and remove v1 branches
@@ -45,7 +48,7 @@ General:
 </p>
 
 <p align="center">
-  <strong>The cheapest way to do build and deploy a full-stack Node.js + React app</strong>
+  <strong>REST for Next</strong>
   <br />
   Built on top of Next.js App Router
 </p>
@@ -53,6 +56,7 @@ General:
 <p align="center">
   <a href="https://vovk.dev/">Website</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://docs.vovk.dev/">Documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://vovk-examples.vercel.app/">Examples</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-zod">vovk-zod</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-hello-world">vovk-hello-world</a>
 </p>
@@ -63,21 +67,3 @@ General:
   <a href="https://github.com/finom/vovk/actions/workflows/main.yml"><img src="https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg" alt="Build status" /></a>
 </p>
 
-
-## Vovk.ts: A Structural add-on for Next.js
-
-1. **Unified Back-End and Front-End Operation on a Single Port**: 
-   - Next.js integrates settings for Server-Side Rendering (SSR), Hot Module Replacement (HMR), Web Worker Webpack loader, and router structure and a lot more. These are typically manual setups for developers, streamlined for efficiency.
-   - Built atop the public Next.js App router API, Vovk.ts enriches this foundation with clear, well-structured, decorator-based routes, inspired by NestJS, bridging a crucial gap in web development.
-
-2. **Advanced TypeScript Library with `clientizeController`**:
-   - This feature innovatively fetches controller methods using their types and metadata. Types are directly extracted from controllers via `VovkRequest<BODY, QUERY>`, extending `NextRequest`, for enhanced functionality and integration.
-
-3. **Facilitating Web Worker Utilization with `promisifyWorker`**:
-   - Vovk.ts introduces a user-friendly interface for Web Workers through `promisifyWorker`. This tool is designed to popularize Web Worker usage and contribute to a faster web experience.
-
-4. **Structure Recommendation for Code Centralization**:
-   - Eliminates the need to switch between different repositories or folders in a monorepository at most fo cases. Developers can now directly navigate to the controller implementation with Ctrl+Click in VSCode.
-   - Addresses the longstanding challenge of sharing TypeScript code between back-end and front-end.
-
-![jump-to-controller](https://github.com/finom/vovk/assets/1082083/6d73e28d-2634-4c52-b895-4fdf55240307)

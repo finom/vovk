@@ -22,7 +22,7 @@ The library also provides [seamless Web Worker interface](./worker) utilising th
 - Generated client code is compact, it's just a wrapper over `fetch` function.
 - Bundle and distribute production-ready client API with Webpack, Rollup or another bundler.
 - Use standard Next.js API such as Response, headers or redirect, nothing is changed.
-- Easy to learn, no new vocabulary and only a few pages of documentation.
+- Easy to learn, only a few pages of documentation.
 - Easily integrated with React Native.
 - Streaming for LLM apps with disposable async generators.
 - Static API generation with [generateStaticAPI](api#generateStaticAPI)
