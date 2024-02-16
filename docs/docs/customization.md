@@ -21,4 +21,8 @@ module.exports = vovkConfig;
 
 ## Customize fetcher and default options
 
+Soon...
+
 ## Customize client validation library
+
+Soon...

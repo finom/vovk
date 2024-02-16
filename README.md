@@ -33,7 +33,7 @@ Misc
 - Update personal README
 
 General:
-- Merge and remove v1 branches
+- Remove v1 branches
 */
 
 -->
