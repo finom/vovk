@@ -492,9 +492,23 @@ type GeneratorYieldtype = VovkClientYieldType<typeof HelloController.generator>;
 
 ### `generateStaticAPI(controllers: Record<string, Function>, slug?: string)`
 
-`generateStaticAPI` is used to generate static endpoints with [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params) at build time instead of on-demand at request time.
+`generateStaticAPI` is used to generate static endpoints with [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params) at build time instead of on-demand at request time. It can be used in a [Static Export mode](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports) with the `output: 'export'` Next config setting:
+
 
 ```ts
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+};
+
+module.exports = nextConfig;
+```
+
+To utilise this feature return `generateStaticAPI` results from `generateStaticParams` function.
+
+```ts
+// /src/app/api/[[...vovk]]/route.ts
 // ...
 export type Controllers = typeof controllers;
 export type Workers = typeof workers;
@@ -503,10 +517,26 @@ export function generateStaticParams() {
   return generateStaticAPI(controllers);
 }
 
-export const { GET, POST, PUT, DELETE } = initVovk({ controllers, workers });
+export const { GET } = initVovk({ controllers, workers });
 ```
 
-In case if you use custom slug you can provide it as second argument.
+In order to make it work on a static website hosting like Github Pages, you may need to define `.json` extension in your endpoint definition to make it return proper HTTP headers.
+
+```ts
+import { get, prefix } from 'vovk';
+
+@prefix('hello')
+export default class HelloController {
+  @get('greeting.json')
+  static async getHello() {
+    return { greeting: 'Hello world!' };
+  }
+}
+```
+
+As result you're going to get an endpoint that looks like that: [https://vovk.dev/api/hello/greeting.json](https://vovk.dev/api/hello/greeting.json). [vovk.dev](https://vovk.dev) website is served from Github Pages and uses this endpoint for one of the examples.
+
+In case if you use custom slug (e.g. `/src/app/api/[[...custom]]/route.ts`) instead of **vovk** you can provide it as second argument.
 
 ```ts
 export function generateStaticParams() {
