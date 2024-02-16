@@ -1,3 +1,40 @@
+<!--
+TODO
+
+Main: 
+- README
+- Check process close code
+
+Docs
+- Customization page
+- Review all
+
+vovk.dev
+- Finish the website sections
+- Adjust the design by borrowing styles from Examples
+- Add "jump to controller" vodeo
+- README
+
+Examples:
+- Other examples:
+  - Vovk + React Native
+  - Bundling
+  - Static API
+- Global heading and link to main page
+- OG image and description
+- README
+- Use https://www.npmjs.com/package/react-to-string for titles
+- Light mode
+
+vovk-client
+- README
+
+General:
+- Merge and remove v1 branches
+*/
+
+-->
+
 <p align="center">
   <img width="250" alt="vovk" src="https://github.com/finom/vovk/assets/1082083/86bfbbbb-3600-435b-a74c-c07bd0c4af4b"> <br>
   <picture>

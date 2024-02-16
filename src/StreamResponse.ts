@@ -42,6 +42,6 @@ export class _StreamResponse<T> extends Response {
     const { writer } = this;
     await this.send({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
     await new Promise((resolve) => setTimeout(resolve, 0));
-    return writer.abort(e);
+    return writer.close();
   }
 }
