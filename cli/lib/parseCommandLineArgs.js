@@ -7,29 +7,28 @@ function toCamelCase(str) {
 
 /** @typedef {{ config?: string; project?: string; clientOut?: string; noNextDev?: true }} Flags */
 /** @typedef {'dev' | 'build' | 'generate' | 'help'} Command */
-/** @type {() => { command: Command; flags: Flags; restArgs: string }} */
+/** @type {() => { command: Command | null; flags: Flags; restArgs: string }} */
 function parseCommandLineArgs() {
-  let args = process.argv.slice(2); // Slice off node and script path
-  const [argsStr, restArgs] = args.join(' ').split('--');
-  args = argsStr.split(' ');
+  const args = process.argv.slice(2); // Slice off node and script path
+  const unparsedIndex = args.indexOf('--');
+  const commandArgs = unparsedIndex !== -1 ? args.slice(0, unparsedIndex) : args;
+  const restArgs = unparsedIndex !== -1 ? args.slice(unparsedIndex + 1).join(' ') : '';
+
   let command = /** @type {Command | null} */ (null);
   /** @type {Flags} */
   const flags = {};
-  /** @type {string[]} */
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-
+  for (let i = 0; i < commandArgs.length; i++) {
+    const arg = commandArgs[i];
     if (arg.startsWith('--')) {
       const key = arg.slice(2);
-      let value;
+      /** @type {string | true} */
+      let value = true; // Assume flag is boolean unless a value is found
 
-      // Look ahead to next arg if it exists and is not a flag or '--'
-      if (i + 1 < args.length && !args[i + 1].startsWith('--')) {
-        value = args[i + 1];
+      // Look ahead to next arg if it exists and is not a flag
+      if (i + 1 < commandArgs.length && !commandArgs[i + 1].startsWith('--')) {
+        value = commandArgs[i + 1];
         i++; // Skip next arg since it's consumed as a value here
-      } else {
-        value = true; // No value means boolean flag
       }
 
       const camelKey = /** @type {keyof Flags} */ (toCamelCase(key));
