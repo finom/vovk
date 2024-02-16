@@ -4,10 +4,10 @@ sidebar_position: 5
 
 # API
 
-Full list of available exports for quick reference: 
+Full list of available imports for quick reference: 
 
 ```ts
-export {
+import {
   // core
   initVovk,
   createDecorator,
@@ -50,7 +50,7 @@ export {
   HttpMethod,
   // misc
   generateStaticAPI,
-};
+} from 'vovk';
 ```
 
 ## Core
