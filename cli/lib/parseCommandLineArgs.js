@@ -44,8 +44,6 @@ function parseCommandLineArgs() {
     }
   }
 
-  if (!command) throw new Error('No command provided');
-
   return { command, flags, restArgs };
 }
 
