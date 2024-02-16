@@ -6,6 +6,7 @@ sidebar_position: 9
 
 ## Roadmap
 
+- Automatically update client on **vovk.config.js** change.
 - Support OpenAPI export.
 - An option to obfuscate endpoint names when `.auto()` decorators are used.
 - Support [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects) at workers.

@@ -7,25 +7,31 @@ function toCamelCase(str) {
 
 /** @typedef {{ config?: string; project?: string; clientOut?: string; noNextDev?: true }} Flags */
 /** @typedef {'dev' | 'build' | 'generate' | 'help'} Command */
+/** @type {() => { command: Command; flags: Flags; restArgs: string }} */
 function parseCommandLineArgs() {
-  const args = process.argv.slice(2); // Slice off node and script path
-  let command = /** @type {Command} */ null;
+  let args = process.argv.slice(2); // Slice off node and script path
+  const [argsStr, restArgs] = args.join(' ').split('--');
+  args = argsStr.split(' ');
+  let command = /** @type {Command | null} */ (null);
   /** @type {Flags} */
   const flags = {};
   /** @type {string[]} */
-  const unparsedArgs = [];
 
-  let isUnparsed = false;
-  for (const arg of args) {
-    if (arg === '--') {
-      isUnparsed = true;
-      continue;
-    }
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
 
-    if (isUnparsed) {
-      unparsedArgs.push(arg);
-    } else if (arg.startsWith('--')) {
-      const [key, value = true] = arg.slice(2).split('=');
+    if (arg.startsWith('--')) {
+      const key = arg.slice(2);
+      let value;
+
+      // Look ahead to next arg if it exists and is not a flag or '--'
+      if (i + 1 < args.length && !args[i + 1].startsWith('--')) {
+        value = args[i + 1];
+        i++; // Skip next arg since it's consumed as a value here
+      } else {
+        value = true; // No value means boolean flag
+      }
+
       const camelKey = /** @type {keyof Flags} */ (toCamelCase(key));
       // @ts-expect-error Type 'string | true | undefined' is not assignable to type 'undefined'. Why?
       flags[camelKey] = /** @type {Flags[keyof Flags]} */ (value);
@@ -34,7 +40,7 @@ function parseCommandLineArgs() {
     }
   }
 
-  const restArgs = unparsedArgs.join(' ');
+  if (!command) throw new Error('No command provided');
 
   return { command, flags, restArgs };
 }

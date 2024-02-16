@@ -34,6 +34,7 @@ Misc
 
 General:
 - Remove v1 branches
+- Update deps of all projects to v1
 */
 
 -->

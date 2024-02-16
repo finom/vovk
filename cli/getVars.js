@@ -4,7 +4,7 @@ const path = require('path');
 
 /** @type {import('../src').VovkEnv} */
 let vars;
-/** @type {(rcPath: string, options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => import('../src').VovkEnv} */
+/** @type {(configPath: string, options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => import('../src').VovkEnv} */
 function getVars(configPath, options = {}) {
   if (vars) return vars;
   /** @type {Required<import('../src').VovkConfig>} */
