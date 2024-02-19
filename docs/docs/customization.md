@@ -9,7 +9,7 @@ sidebar_position: 7
 ```ts
 /** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
-    out: './node_modules/.vovk',
+    clientOut: './node_modules/.vovk',
     route: './src/app/api/[[...vovk]]/route.ts',
     fetcher: 'vovk/client/defaultFetcher',
     prefix: '/api',

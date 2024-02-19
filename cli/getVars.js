@@ -9,7 +9,7 @@ function getVars(configPath, options = {}) {
   if (vars) return vars;
   /** @type {Required<import('../src').VovkConfig>} */
   const vovkConfig = {
-    out: './node_modules/.vovk',
+    clientOut: './node_modules/.vovk',
     route: './src/app/api/[[...vovk]]/route.ts',
     fetcher: 'vovk/client/defaultFetcher',
     prefix: '/api',
@@ -33,7 +33,7 @@ function getVars(configPath, options = {}) {
         : options.VOVK_CLIENT_OUT
           ? path.join(process.cwd(), options.VOVK_CLIENT_OUT)
           : null) ||
-      vovkConfig.out,
+      vovkConfig.clientOut,
     VOVK_PORT: process.env.VOVK_PORT || '3690',
     VOVK_ROUTE: process.env.VOVK_ROUTE || vovkConfig.route,
     VOVK_FETCHER: process.env.VOVK_FETCHER || vovkConfig.fetcher,
