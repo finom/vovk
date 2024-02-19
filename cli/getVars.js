@@ -27,7 +27,7 @@ function getVars(configPath, options = {}) {
   vars = {
     PORT: options.PORT || process.env.PORT || '3000',
     VOVK_CLIENT_OUT:
-      process.env.VOVK_CLIENT_OUT ||
+      (process.env.VOVK_CLIENT_OUT ? path.join(process.cwd(), process.env.VOVK_CLIENT_OUT) : null) ||
       (options.VOVK_CLIENT_OUT?.startsWith('/')
         ? options.VOVK_CLIENT_OUT
         : options.VOVK_CLIENT_OUT

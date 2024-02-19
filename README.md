@@ -10,9 +10,12 @@ Docs
 - Review all
 
 vovk.dev
-- Finish the website sections
+- Make static
+- Review
+- Use bright
+- A note from the author
+- Videos for jump to controller and jump to worker
 - Adjust the design by borrowing styles from Examples
-- Add "jump to controller" vodeo
 - README
 
 Examples:
@@ -20,7 +23,6 @@ Examples:
   - Vovk + React Native
   - Bundling
   - Static API
-- Global heading, link to main page, link to examples github
 - OG image and description
 - README
 - Use https://www.npmjs.com/package/react-to-string for titles
