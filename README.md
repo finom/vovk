@@ -4,18 +4,16 @@ TODO
 Main: 
 - README
 - Check process close code
+- Fix test on gh
 
 Docs
 - Customization page
 - Review all
 
 vovk.dev
-- Make static
 - Review
-- Use bright
-- A note from the author
+- A note from the author?
 - Videos for jump to controller and jump to worker
-- Adjust the design by borrowing styles from Examples
 - README
 
 Examples:
@@ -25,6 +23,7 @@ Examples:
   - Static API
 - Review README, page OG description
 - Use https://www.npmjs.com/package/react-to-string for titles
+- Fix cors for openai example
 
 vovk-client
 - README
