@@ -24,16 +24,11 @@ function getVars(configPath, options = {}) {
     // noop
   }
 
+  const OUT = process.env.VOVK_CLIENT_OUT || options.VOVK_CLIENT_OUT || vovkConfig.clientOut;
+
   vars = {
     PORT: options.PORT || process.env.PORT || '3000',
-    VOVK_CLIENT_OUT:
-      (process.env.VOVK_CLIENT_OUT ? path.join(process.cwd(), process.env.VOVK_CLIENT_OUT) : null) ||
-      (options.VOVK_CLIENT_OUT?.startsWith('/')
-        ? options.VOVK_CLIENT_OUT
-        : options.VOVK_CLIENT_OUT
-          ? path.join(process.cwd(), options.VOVK_CLIENT_OUT)
-          : null) ||
-      vovkConfig.clientOut,
+    VOVK_CLIENT_OUT: OUT.startsWith('/') ? OUT : path.join(process.cwd(), OUT),
     VOVK_PORT: process.env.VOVK_PORT || '3690',
     VOVK_ROUTE: process.env.VOVK_ROUTE || vovkConfig.route,
     VOVK_FETCHER: process.env.VOVK_FETCHER || vovkConfig.fetcher,

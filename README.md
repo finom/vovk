@@ -23,22 +23,14 @@ Examples:
   - Vovk + React Native
   - Bundling
   - Static API
-- OG image and description
-- README
+- Review README, page OG description
 - Use https://www.npmjs.com/package/react-to-string for titles
-- Light mode
 
 vovk-client
 - README
 
 Misc
 - Update personal README
-
-General:
-- Remove v1 branches
-- Update deps of all projects to v1
-*/
-
 -->
 
 <p align="center">
