@@ -37,11 +37,12 @@ All other commands such as `next build` and `next start` remain the same since t
 
 ## Available env variables
 
-Environment variables allow to customize Vovk.ts behaviour by overriding configuration optionally defined at **vovk.config.js**. You can find more detailed information about customization at [Customization](./customization) article of this documentation. Here is a quick ref:
+Environment variables allow to customize Vovk.ts behaviour by overriding configuration optionally defined at **vovk.config.js**. You can find more information about customization at [Customization](./customization) article of this documentation. Here is a quick ref:
 
 - `PORT=3000` - defines port for Next.js server that is also used by the Metadata Server to ping Next.js server (relevant only with `vovk dev`).
+- `VOVK_CLIENT_OUT=./node_modules/.vovk` - where the client needs to be compiled to.
 - `VOVK_PORT=3690` - Vovk Metadata Server port (relevant only with `vovk dev`).
-- `VOVK_ROUTE=./src/app/api/[[...vovk]]/route.ts` - allows to redefine path to the wildcard route (the slug can be any non-empty string, it's name is not utilised by Vovk.ts).
+- `VOVK_ROUTE=./src/app/api/[[...vovk]]/route.ts` - allows to redefine path to the wildcard route.
 - `VOVK_FETCHER=vovk/client/defaultFetcher` - allows to customize the fetching function that used internally by the client.
 - `VOVK_PREFIX=/api` - defines the root endpoint used by `fetch` function at the client.
-- `VOVK_VALIDATE_ON_CLIENT` - defines client-side validation library. If [vovk-zod](https://github.com/finom/vovk-zod) is installed but `VOVK_VALIDATE_ON_CLIENT` is not redefined it's value going to get value `vovk-zod/zodValidateOnClient`. See [Customization](./customization) for more info.
+- `VOVK_VALIDATE_ON_CLIENT` - defines client-side validation library. If [vovk-zod](https://github.com/finom/vovk-zod) is installed but `VOVK_VALIDATE_ON_CLIENT` is not redefined it's value going to get value `vovk-zod/zodValidateOnClient`.

@@ -6,12 +6,11 @@ Main:
 - Check process close code
 
 Docs
-- Customization page
 - Review all
 
 vovk.dev
 - Review & fix doc links
-- A note from the author?
+- What is that - short explanation
 - README
 
 Examples:
