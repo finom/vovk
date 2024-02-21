@@ -34,7 +34,7 @@ function parallel(commands, env) {
       processes = processes.filter((p) => p.name !== name);
 
       if (code !== 0) {
-        processes.forEach((p) => p.name !== name && p.process.kill('SIGINT'));
+        processes.forEach((p) => p.name !== name && p.process.kill('SIGTERM'));
         processes = [];
         process.stdout.write('\n');
         return reject(new Error(`Process ${name} exited with code ${code}`));

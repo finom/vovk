@@ -1,7 +1,7 @@
 {
   "name": "vovk",
   "version": "1.0.8",
-  "description": "Structural add-on for Next.js",
+  "description": "REST for Next",
   "bin": "./cli/index.js",
   "scripts": {
     "postinstall": "node ./cli/postinstall.js",

@@ -10,14 +10,10 @@ Docs
 
 vovk.dev
 - Review & fix doc links
-- What is that - short explanation
 - README
 
 Examples:
 - Review README, page OG description
-
-vovk-client
-- README
 
 Misc
 - Update personal README
