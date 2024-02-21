@@ -63,7 +63,11 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
   options: {
     name: keyof T;
     httpMethod: HttpMethod;
-    getPath: (params: { [key: string]: string }, query: { [key: string]: string }) => string;
+    getEndpoint: (data: {
+      prefix: string;
+      params: { [key: string]: string };
+      query: { [key: string]: string };
+    }) => string;
     validate: (input: { body?: unknown; query?: unknown }) => void | Promise<void>;
     defaultStreamHandler: (response: Response) => Promise<_StreamAsyncIterator<unknown>>;
     defaultHandler: (response: Response) => Promise<unknown>;
@@ -74,6 +78,13 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
     params: { [key: string]: string };
   } & OPTS
 ) => KnownAny;
+
+// `RequestInit` is the type of options passed to fetch function
+export interface _VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
+  reactNative?: { textStreaming: boolean };
+  prefix?: string;
+  disableClientValidation?: boolean;
+}
 
 export type _VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
   fetcher?: _VovkClientFetcher<OPTS>;

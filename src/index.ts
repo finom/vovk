@@ -18,7 +18,11 @@ import {
   _HttpStatus as HttpStatus,
   _HttpMethod as HttpMethod,
 } from './types';
-import { _VovkClientOptions as VovkClientOptions } from './client/types';
+import type {
+  _VovkClientOptions as VovkClientOptions,
+  _VovkClientFetcher as VovkClientFetcher,
+  _VovkDefaultFetcherOptions as VovkDefaultFetcherOptions,
+} from './client/types';
 import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
 import { _StreamResponse as StreamResponse } from './StreamResponse';
@@ -26,6 +30,8 @@ import { worker } from './worker';
 import { _generateStaticAPI as generateStaticAPI } from './generateStaticAPI';
 
 export {
+  type VovkClientFetcher,
+  type VovkDefaultFetcherOptions,
   type VovkConfig,
   type VovkEnv,
   type VovkMetadata,

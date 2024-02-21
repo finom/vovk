@@ -10,16 +10,12 @@ Docs
 - Review all
 
 vovk.dev
-- Review
+- Review & fix doc links
 - A note from the author?
 - README
-- Disable validation on client ---
-- Review mobile version ---
 
 Examples:
 - Review README, page OG description
-- Use https://www.npmjs.com/package/react-to-string for titles
-- Link to docs for every example
 
 vovk-client
 - README

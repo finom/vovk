@@ -6,9 +6,13 @@ import {
   type _VovkQuery as VovkQuery,
   type _KnownAny as KnownAny,
 } from '../types';
-import { type _VovkClientOptions as VovkClientOptions, type _VovkClient as VovkClient } from './types';
+import {
+  type _VovkClientOptions as VovkClientOptions,
+  type _VovkClient as VovkClient,
+  type _VovkDefaultFetcherOptions as VovkDefaultFetcherOptions,
+} from './types';
 
-import { default as defaultFetcher, type _DefaultFetcherOptions as DefaultFetcherOptions } from './defaultFetcher';
+import defaultFetcher from './defaultFetcher';
 import { _defaultHandler as defaultHandler } from './defaultHandler';
 import { _defaultStreamHandler as defaultStreamHandler } from './defaultStreamHandler';
 
@@ -34,7 +38,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
 };
 
-export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = DefaultFetcherOptions>(
+export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   givenController: VovkControllerMetadataJson,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
@@ -44,13 +48,24 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
   const metadata = controller._handlers;
   if (!metadata)
     throw new Error(`Unable to clientize. No metadata for controller ${String(controller?._controllerName)}`);
-  const prefix = trimPath(controller._prefix ?? '');
+  const controllerPrefix = trimPath(controller._prefix ?? '');
   const { fetcher = defaultFetcher } = options ?? {};
 
   for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(metadata)) {
-    const getPath = (params: { [key: string]: string }, query: { [key: string]: string }) =>
-      getHandlerPath([prefix, path].filter(Boolean).join('/'), params, query);
-
+    const getEndpoint = ({
+      prefix,
+      params,
+      query,
+    }: {
+      prefix: string;
+      params: { [key: string]: string };
+      query: { [key: string]: string };
+    }) => {
+      const mainPrefix =
+        (prefix.startsWith('http://') || prefix.startsWith('https://') || prefix.startsWith('/') ? '' : '/') +
+        (prefix.endsWith('/') ? prefix : `${prefix}/`);
+      return mainPrefix + getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query);
+    };
     const validate = async ({ body, query }: { body?: unknown; query?: unknown }) => {
       await options?.validateOnClient?.({ body, query }, clientValidators ?? {});
     };
@@ -65,7 +80,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
       const internalOptions: Parameters<typeof fetcher>[0] = {
         name: staticMethodName as keyof T,
         httpMethod,
-        getPath,
+        getEndpoint,
         validate,
         defaultHandler,
         defaultStreamHandler,

@@ -23,7 +23,9 @@ import {
   prefix, 
   // worker service class decorator 
   worker,
-  // common types
+  // core types
+  type VovkClientFetcher,
+  type VovkDefaultFetcherOptions,
   type VovkConfig,
   type VovkEnv,
   type VovkMetadata,
@@ -346,7 +348,11 @@ const resp = new StreamResponse<Token>({
 });
 ```
 
-## Common types
+## Core types
+
+### `VovkClientFetcher` and `VovkDefaultFetcherOptions` types
+
+Used to redefine the default fetcher. See [customization docs](./customization).
 
 ### `VovkConfig` type
 

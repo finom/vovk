@@ -1,26 +1,19 @@
-import { type _VovkClientFetcher as VovkClientFetcher } from './types';
+import type {
+  _VovkDefaultFetcherOptions as VovkDefaultFetcherOptions,
+  _VovkClientFetcher as VovkClientFetcher,
+} from './types';
 import { _HttpStatus as HttpStatus } from '../types';
 import { _HttpException as HttpException } from '../HttpException';
-
-// `RequestInit` is the type of options passed to fetch function
-export interface _DefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
-  reactNative?: { textStreaming: boolean };
-  prefix?: string;
-  disableClientValidation?: boolean;
-}
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultFetcher';
 
 // defaultFetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
 // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
-const defaultFetcher: VovkClientFetcher<_DefaultFetcherOptions> = async (
-  { httpMethod, getPath, validate, defaultHandler, defaultStreamHandler },
+const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
+  { httpMethod, getEndpoint, validate, defaultHandler, defaultStreamHandler },
   { params, query, body, prefix = '/api', ...options }
 ) => {
-  const endpoint =
-    (prefix.startsWith('http://') || prefix.startsWith('https://') || prefix.startsWith('/') ? '' : '/') +
-    (prefix.endsWith('/') ? prefix : `${prefix}/`) +
-    getPath(params, query);
+  const endpoint = getEndpoint({ prefix, params, query });
 
   if (!options.disableClientValidation) {
     try {
