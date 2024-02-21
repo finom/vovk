@@ -13,15 +13,13 @@ vovk.dev
 - Review
 - A note from the author?
 - README
+- Disable validation on client ---
+- Review mobile version ---
 
 Examples:
-- Other examples: < ---
-  - Vovk + React Native
-  - Bundling
-  - Static API
 - Review README, page OG description
 - Use https://www.npmjs.com/package/react-to-string for titles
-- Fix cors for openai example < ---
+- Link to docs for every example
 
 vovk-client
 - README

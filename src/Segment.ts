@@ -71,12 +71,16 @@ export class _Segment {
     });
   };
 
-  #respondWithError = (statusCode: HttpStatus, message: string) => {
-    return this.#respond(statusCode, {
+  #respondWithError = (statusCode: HttpStatus, message: string, options?: DecoratorOptions) => {
+    return this.#respond(
       statusCode,
-      message,
-      isError: true,
-    } satisfies VovkErrorResponse);
+      {
+        statusCode,
+        message,
+        isError: true,
+      } satisfies VovkErrorResponse,
+      options
+    );
   };
 
   #callMethod = async (httpMethod: HttpMethod, req: NextRequest, params: Record<string, string[]>) => {
@@ -224,7 +228,7 @@ export class _Segment {
 
       if (err.message !== 'NEXT_REDIRECT') {
         const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
-        return this.#respondWithError(statusCode, err.message);
+        return this.#respondWithError(statusCode, err.message, staticMethod._options);
       }
 
       throw e; // if NEXT_REDIRECT rethrow it
