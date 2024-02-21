@@ -4,7 +4,6 @@ TODO
 Main: 
 - README
 - Check process close code
-- Fix test on gh
 
 Docs
 - Customization page
@@ -13,17 +12,16 @@ Docs
 vovk.dev
 - Review
 - A note from the author?
-- Videos for jump to controller and jump to worker
 - README
 
 Examples:
-- Other examples:
+- Other examples: < ---
   - Vovk + React Native
   - Bundling
   - Static API
 - Review README, page OG description
 - Use https://www.npmjs.com/package/react-to-string for titles
-- Fix cors for openai example
+- Fix cors for openai example < ---
 
 vovk-client
 - README

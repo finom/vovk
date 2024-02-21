@@ -12,6 +12,8 @@ import { _StreamResponse as StreamResponse } from './StreamResponse';
 
 export class _Segment {
   private static getHeadersFromOptions(options?: DecoratorOptions) {
+    if (!options) return {};
+
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
@@ -19,8 +21,8 @@ export class _Segment {
     };
 
     const headers = {
-      ...(options?.cors ? corsHeaders : {}),
-      ...(options?.headers ?? {}),
+      ...(options.cors ? corsHeaders : {}),
+      ...(options.headers ?? {}),
     };
 
     return headers;
