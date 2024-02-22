@@ -1,7 +1,7 @@
 // @ts-check
 const fs = require('fs/promises');
 const path = require('path');
-const getReturnPath = require('./lib/getReturnPath');
+const getReturnPath = require('./lib/getReturnPath.cjs');
 
 /** @type {(moduleName: string) => boolean} */
 function canRequire(moduleName) {
