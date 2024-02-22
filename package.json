@@ -11,7 +11,6 @@
     "unit:watch": "PORT=3210 concurrently \"sleep 30 && npm run test:unit:watch\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
-    "deploy-docs": "npm run --prefix docs deploy",
     "postpublish": "node ../post-publish-test/post-publish.js",
     "serve:unit": "npm --prefix test run generate && npm --prefix test run build && npm --prefix test run start",
     "build": "rm -rf dist && npm run toc && tsc && cp package.json dist && cp README.md dist && cp package-lock.json dist && cp -r cli dist",

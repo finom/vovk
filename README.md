@@ -1,22 +1,10 @@
 <!--
 TODO
 
-Main: 
-- README
-- Check process close code
-
-Docs
-- Review all
-
-vovk.dev
-- Review & fix doc links
-- README
-
-Examples:
-- Review README, page OG description
-
-Misc
-- Update personal README
+Main: README
+Docs: Review all, Repo readme, Algolia
+vovk.dev: Review & fix doc links, README
+Misc: update personal README, update pinned repos, add project to opensource.gubanov
 -->
 
 <p align="center">
@@ -31,7 +19,7 @@ Misc
 <p align="center">
   <strong>REST for Next</strong>
   <br />
-  Built on top of Next.js App Router
+  Vovk.ts is an extension over documented Next.js App API routes that enables you to create a REST API as easy as you can imagine.
 </p>
 
 <p align="center">
