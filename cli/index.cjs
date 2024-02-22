@@ -40,7 +40,7 @@ if (command === 'dev') {
 
     const commands = [
       {
-        command: `node ${__dirname}/server.js`,
+        command: `node ${__dirname}/server.cjs`,
         name: 'Vovk',
       },
     ];
