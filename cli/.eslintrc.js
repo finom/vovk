@@ -16,5 +16,5 @@ module.exports = {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         tsconfigRootDir: __dirname,
         createDefaultProgram: true,
-      },
+    },
 }

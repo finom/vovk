@@ -2,7 +2,7 @@
   "name": "vovk",
   "version": "1.0.9-beta.0",
   "description": "REST for Next",
-  "bin": "./cli/index.js",
+  "bin": "./cli/index.cjs",
   "scripts": {
     "postinstall": "node ./cli/postinstall.js",
     "upgrade": "npx npm-check-updates -u && npm i",

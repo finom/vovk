@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // @ts-check
-const generateClient = require('./generateClient');
+const generateClient = require('./generateClient.cjs');
 const path = require('path');
-const parallel = require('./lib/parallel');
-const getAvailablePort = require('./lib/getAvailablePort');
-const getVars = require('./getVars');
-const parseCommandLineArgs = require('./lib/parseCommandLineArgs');
+const parallel = require('./lib/parallel.cjs');
+const getAvailablePort = require('./lib/getAvailablePort.cjs');
+const getVars = require('./getVars.cjs');
+const parseCommandLineArgs = require('./lib/parseCommandLineArgs.cjs');
 
 const { command, flags, restArgs } = parseCommandLineArgs();
 const {

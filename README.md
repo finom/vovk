@@ -4,7 +4,7 @@ TODO
 Main: README
 Docs: Review all, Repo readme, Algolia
 vovk.dev: Review & fix doc links, README
-Misc: update personal README, update pinned repos, add project to opensource.gubanov
+Misc: update personal README, add project to opensource.gubanov
 -->
 
 <p align="center">

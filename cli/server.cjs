@@ -2,10 +2,10 @@
 const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
-const parseCommandLineArgs = require('./lib/parseCommandLineArgs');
-const generateClient = require('./generateClient');
-const getVars = require('./getVars');
-const isEqual = require('./lib/isEqual');
+const parseCommandLineArgs = require('./lib/parseCommandLineArgs.cjs');
+const generateClient = require('./generateClient.cjs');
+const getVars = require('./getVars.cjs');
+const isEqual = require('./lib/isEqual.cjs');
 
 const { flags } = parseCommandLineArgs();
 
