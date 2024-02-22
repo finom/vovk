@@ -19,18 +19,21 @@ Misc: update personal README, add project to opensource.gubanov
 <p align="center">
   <strong>REST for Next</strong>
   <br />
+  <br />
   Vovk.ts is an extension over documented Next.js App API routes that enables you to create a REST API as easy as you can imagine.
 </p>
 
 <p align="center">
   <a href="https://vovk.dev/">Website</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://docs.vovk.dev/">Documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://vovk-examples.vercel.app/">Examples</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://vovk-examples.vercel.app/">Examples</a>
+  <br />
+  <br />
   <a href="https://github.com/finom/vovk-zod">vovk-zod</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-hello-world">vovk-hello-world</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-react-native-example">vovk-react-native-example</a>
-  
-<br>
+</p>
+ <br />
 <p align="center">
   <a href="https://www.npmjs.com/package/vovk"><img src="https://badge.fury.io/js/vovk.svg" alt="npm version" /></a>&nbsp;
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /></a>&nbsp;
