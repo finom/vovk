@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "1.0.9-beta.4",
+  "version": "1.0.9-beta.5",
   "description": "REST for Next",
   "bin": "./cli/index.cjs",
   "scripts": {
