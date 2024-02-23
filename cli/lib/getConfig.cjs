@@ -29,16 +29,20 @@ async function getConfig() {
     return config;
   }
 
-  if (configPath.endsWith('.cjs') || configPath.endsWith('.js')) {
-    try {
-      delete require.cache[require.resolve(configPath)];
-    } catch {
-      // noop
+  try {
+    if (configPath.endsWith('.cjs') || configPath.endsWith('.js')) {
+      try {
+        delete require.cache[require.resolve(configPath)];
+      } catch {
+        // noop
+      }
+      config = require(configPath);
+    } else if (configPath.endsWith('.mjs')) {
+      const cacheBuster = Date.now();
+      ({ default: config } = await import(`${configPath}?cache=${cacheBuster}`));
     }
-    config = require(configPath);
-  } else if (configPath.endsWith('.mjs')) {
-    const cacheBuster = Date.now();
-    ({ default: config } = await import(`${configPath}?cache=${cacheBuster}`));
+  } catch (e) {
+    console.error(' 🐺 ❌ Error loading config file:', e.message);
   }
 
   return config;
