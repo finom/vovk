@@ -9,7 +9,6 @@ const parseCommandLineArgs = require('./lib/parseCommandLineArgs.cjs');
 
 const { command, flags, restArgs } = parseCommandLineArgs();
 const {
-  config = path.join(process.cwd(), 'vovk.config.js'), // Path to vovk.config.js
   // TODO not documented
   project = process.cwd(), // Path to Next.js project
   clientOut = path.join(process.cwd(), './node_modules/.vovk'), // Path to output directory
@@ -30,7 +29,7 @@ if (command === 'dev') {
       throw new Error(' 🐺 ❌ PORT env variable is required in --no-next-dev mode');
     }
 
-    const env = getVars(config, { VOVK_CLIENT_OUT: clientOut, PORT });
+    const env = await getVars({ VOVK_CLIENT_OUT: clientOut, PORT });
 
     let VOVK_PORT = parseInt(env.VOVK_PORT);
 
@@ -56,11 +55,13 @@ if (command === 'dev') {
     console.info(' 🐺 All processes have ended');
   })();
 } else if (command === 'generate') {
-  const env = getVars(config, { VOVK_CLIENT_OUT: clientOut });
+  void (async () => {
+    const env = await getVars({ VOVK_CLIENT_OUT: clientOut });
 
-  void generateClient(env).then(({ path }) => {
-    console.info(` 🐺 Client generated in ${path}`);
-  });
+    await generateClient(env).then(({ path }) => {
+      console.info(` 🐺 Client generated in ${path}`);
+    });
+  })();
 } else if (command === 'help') {
   console.info(` 🐺 Vovk CLI
   dev - Start development server

@@ -1,12 +1,10 @@
 // @ts-check
 
+const getConfig = require('./lib/getConfig.cjs');
 const path = require('path');
 
-/** @type {import('../src').VovkEnv} */
-let vars;
-/** @type {(configPath: string, options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => import('../src').VovkEnv} */
-function getVars(configPath, options = {}) {
-  if (vars) return vars;
+/** @type {(options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => Promise<import('../src').VovkEnv>} */
+async function getVars(options = {}) {
   /** @type {Required<import('../src').VovkConfig>} */
   const vovkConfig = {
     clientOut: './node_modules/.vovk',
@@ -16,17 +14,14 @@ function getVars(configPath, options = {}) {
     validateOnClient: '',
   };
 
-  try {
-    // make PORT available to the config file
-    process.env.PORT = options.PORT || process.env.PORT || '3000';
-    Object.assign(vovkConfig, require(configPath));
-  } catch {
-    // noop
-  }
+  // make PORT available to the config file
+  process.env.PORT = options.PORT || process.env.PORT || '3000';
+  Object.assign(vovkConfig, await getConfig());
 
   const OUT = process.env.VOVK_CLIENT_OUT || options.VOVK_CLIENT_OUT || vovkConfig.clientOut;
 
-  vars = {
+  /** @type {import('../src').VovkEnv} */
+  const vars = {
     PORT: options.PORT || process.env.PORT || '3000',
     VOVK_CLIENT_OUT: OUT.startsWith('/') ? OUT : path.join(process.cwd(), OUT),
     VOVK_PORT: process.env.VOVK_PORT || '3690',

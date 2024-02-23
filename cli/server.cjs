@@ -2,14 +2,9 @@
 const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
-const parseCommandLineArgs = require('./lib/parseCommandLineArgs.cjs');
 const generateClient = require('./generateClient.cjs');
 const getVars = require('./getVars.cjs');
 const isEqual = require('./lib/isEqual.cjs');
-
-const { flags } = parseCommandLineArgs();
-
-const { config } = /** @type {{ config: string }} */ (flags);
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
@@ -33,12 +28,9 @@ void writeEmptyMetadata();
 /** @type {NodeJS.Timeout} */
 let pingInterval;
 
-/** @type {import('../src').VovkEnv} */
-let vars;
-
-/** @type {() => void} */
-const ping = () => {
-  vars = vars ?? getVars(config);
+/** @type {() => Promise<void>} */
+const ping = async () => {
+  const vars = await getVars();
   let prefix = vars.VOVK_PREFIX;
   prefix = prefix.startsWith('http://')
     ? prefix
@@ -56,12 +48,12 @@ const ping = () => {
 };
 
 // make initial ping
-setTimeout(ping, 1000 * 3);
+setTimeout(() => void ping(), 1000 * 3);
 
 /** @type {() => void} */
 const constantlyPing = () => {
   clearInterval(pingInterval);
-  pingInterval = setInterval(ping, 1000 * 3);
+  pingInterval = setInterval(() => void ping(), 1000 * 3);
 };
 
 const server = http.createServer((req, res) => {
@@ -78,7 +70,7 @@ const server = http.createServer((req, res) => {
         /** @type {{ metadata?: import('../src') }} */
         const { metadata } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
-        vars = vars ?? getVars(config);
+        const vars = await getVars();
         const codeWritten = await generateClient(vars);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');

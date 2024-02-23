@@ -5,7 +5,7 @@ function toCamelCase(str) {
   return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
 }
 
-/** @typedef {{ config?: string; project?: string; clientOut?: string; noNextDev?: true }} Flags */
+/** @typedef {{ project?: string; clientOut?: string; noNextDev?: true }} Flags */
 /** @typedef {'dev' | 'build' | 'generate' | 'help'} Command */
 /** @type {() => { command: Command | null; flags: Flags; restArgs: string }} */
 function parseCommandLineArgs() {
