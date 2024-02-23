@@ -3,7 +3,7 @@
 const getConfig = require('./lib/getConfig.cjs');
 const path = require('path');
 
-/** @type {(options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => Promise<import('../src').VovkEnv>} */
+/** @type {(options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => Promise<Required<import('../src').VovkEnv>>} */
 async function getVars(options = {}) {
   /** @type {Required<import('../src').VovkConfig>} */
   const vovkConfig = {
@@ -20,7 +20,7 @@ async function getVars(options = {}) {
 
   const OUT = process.env.VOVK_CLIENT_OUT || options.VOVK_CLIENT_OUT || vovkConfig.clientOut;
 
-  /** @type {import('../src').VovkEnv} */
+  /** @type {Required<import('../src').VovkEnv>} */
   const vars = {
     PORT: options.PORT || process.env.PORT || '3000',
     VOVK_CLIENT_OUT: OUT.startsWith('/') ? OUT : path.join(process.cwd(), OUT),

@@ -29,7 +29,9 @@ if (command === 'dev') {
       throw new Error(' 🐺 ❌ PORT env variable is required in --no-next-dev mode');
     }
 
-    const env = await getVars({ VOVK_CLIENT_OUT: clientOut, PORT });
+    const portsEnv = { VOVK_CLIENT_OUT: clientOut, PORT };
+
+    const env = await getVars(portsEnv);
 
     let VOVK_PORT = parseInt(env.VOVK_PORT);
 
@@ -41,6 +43,7 @@ if (command === 'dev') {
       {
         command: `node ${__dirname}/server.cjs`,
         name: 'Vovk',
+        env: portsEnv, // getVars is invoked synamically to receive rest of the env
       },
     ];
 
@@ -48,10 +51,11 @@ if (command === 'dev') {
       commands.push({
         command: `cd ${project} && npx next dev ${restArgs}`,
         name: 'Next',
+        env,
       });
     }
 
-    await parallel(commands, env).catch((e) => console.error(e));
+    await parallel(commands).catch((e) => console.error(e));
     console.info(' 🐺 All processes have ended');
   })();
 } else if (command === 'generate') {

@@ -1,8 +1,8 @@
 // @ts-check
 const { spawn } = require('child_process');
 
-/** @type {(commands: { command: string; name: string; }[], env: import('../../src').VovkEnv) => Promise<void>} */
-function parallel(commands, env) {
+/** @type {(commands: { command: string; name: string; env: import('../../src').VovkEnv }[]) => Promise<void>} */
+function parallel(commands) {
   return new Promise((resolve, reject) => {
     /** @type {{ name: string; process: import('child_process').ChildProcess; }[]} */
     let processes = [];
@@ -12,7 +12,7 @@ function parallel(commands, env) {
         name: cmd.name,
         process: runCommand(
           cmd.command,
-          cmd.name,
+          cmd.env,
           /** @type {(code: number) => void} */
           (code) => handleProcessExit(code, cmd.name)
         ),
@@ -20,8 +20,8 @@ function parallel(commands, env) {
       processes.push(processObj);
     });
 
-    /** @type {(command: string, name: string, onExit: (code: number) => void) => import('child_process').ChildProcess} */
-    function runCommand(command, name, onExit) {
+    /** @type {(command: string, env: import('../../src').VovkEnv, onExit: (code: number) => void) => import('child_process').ChildProcess} */
+    function runCommand(command, env, onExit) {
       const proc = spawn(command, { shell: true, env: { ...env, ...process.env }, stdio: 'inherit' });
 
       proc.on('exit', onExit);
