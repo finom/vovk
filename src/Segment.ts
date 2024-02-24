@@ -226,12 +226,12 @@ export class _Segment {
         console.error(onErrorError);
       }
 
-      if (err.message !== 'NEXT_REDIRECT') {
+      if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
         const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
         return this.#respondWithError(statusCode, err.message, staticMethod._options);
       }
 
-      throw e; // if NEXT_REDIRECT rethrow it
+      throw e; // if NEXT_REDIRECT or NEXT_NOT_FOUND, rethrow it
     }
   };
 }

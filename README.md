@@ -2,9 +2,10 @@
 TODO
 
 Main: README
-Docs: Review all, Repo readme, Algolia
-vovk.dev: Review & fix doc links, README
-Misc: update personal README, add project to opensource.gubanov
+Docs: Review all, Repo readme, Algolia, External link icons
+vovk.dev: Review & fix doc links, README, Add rest for next to the OG image
+Examples: Add rest for next to the OG image
+Misc: update personal README, add project to opensource.gubanov, Discord
 -->
 
 <p align="center">
