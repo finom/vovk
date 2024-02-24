@@ -1,11 +1,13 @@
 <!--
 TODO
+Common: renew deps
+vovk.dev: Review & fix doc links, README, use inline script to change theme on load
+Misc: update personal README, add project to opensource.gubanov
 
-Main: README
-Docs: Review all, Repo readme, Algolia, External link icons
-vovk.dev: Review & fix doc links, README, Add rest for next to the OG image
+Minor
+vovk.dev: Add rest for next to the OG image, improve video
 Examples: Add rest for next to the OG image
-Misc: update personal README, add project to opensource.gubanov, Discord
+Docs: Algolia, External link icons
 -->
 
 <p align="center">
@@ -40,4 +42,3 @@ Misc: update personal README, add project to opensource.gubanov, Discord
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /></a>&nbsp;
   <a href="https://github.com/finom/vovk/actions/workflows/main.yml"><img src="https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg" alt="Build status" /></a>
 </p>
-

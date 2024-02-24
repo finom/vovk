@@ -22,7 +22,7 @@ function parallel(commands) {
 
     /** @type {(command: string, env: import('../../src').VovkEnv, onExit: (code: number) => void) => import('child_process').ChildProcess} */
     function runCommand(command, env, onExit) {
-      const proc = spawn(command, { shell: true, env: { ...env, ...process.env }, stdio: 'inherit' });
+      const proc = spawn(command, { shell: true, detached: true, env: { ...env, ...process.env }, stdio: 'inherit' });
 
       proc.on('exit', onExit);
 
@@ -33,15 +33,18 @@ function parallel(commands) {
     function handleProcessExit(code, name) {
       processes = processes.filter((p) => p.name !== name);
 
+      processes.forEach((p) => {
+        if (p.name !== name) {
+          // TS fix
+          if (p.process.pid) {
+            process.kill(-p.process.pid, 'SIGTERM');
+          }
+        }
+      });
+      processes = [];
+      process.stdout.write('\n');
       if (code !== 0) {
-        processes.forEach((p) => p.name !== name && p.process.kill('SIGTERM'));
-        processes = [];
-        process.stdout.write('\n');
         return reject(new Error(`Process ${name} exited with code ${code}`));
-      }
-
-      if (!processes.length) {
-        resolve();
       }
     }
   });

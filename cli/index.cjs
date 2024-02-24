@@ -29,9 +29,9 @@ if (command === 'dev') {
       throw new Error(' 🐺 ❌ PORT env variable is required in --no-next-dev mode');
     }
 
-    const portsEnv = { VOVK_CLIENT_OUT: clientOut, PORT };
+    const serverEnv = { VOVK_CLIENT_OUT: clientOut, PORT };
 
-    const env = await getVars(portsEnv);
+    const env = await getVars(serverEnv);
 
     let VOVK_PORT = parseInt(env.VOVK_PORT);
 
@@ -43,7 +43,7 @@ if (command === 'dev') {
       {
         command: `node ${__dirname}/server.cjs`,
         name: 'Vovk',
-        env: portsEnv, // getVars is invoked synamically to receive rest of the env
+        env: { ...serverEnv, VOVK_PORT: env.VOVK_PORT }, // getVars is invoked synamically to receive rest of the env
       },
     ];
 
