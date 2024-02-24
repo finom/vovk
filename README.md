@@ -44,6 +44,8 @@ Misc: update personal README, add project to opensource.gubanov, Discord
   <a href="https://github.com/finom/vovk/actions/workflows/main.yml"><img src="https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg" alt="Build status" /></a>
 </p>
 
+ <br />
+
 ```ts
 // /src/modules/hello/HelloController.ts
 import { get, prefix } from 'vovk';
