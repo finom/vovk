@@ -27,10 +27,7 @@ export class _Segment {
 
     return headers;
   }
-  _routes: Record<
-    HttpMethod,
-    Map<{ name?: string; _prefix?: string; _activated?: true }, Record<string, RouteHandler>>
-  > = {
+  _routes: Record<HttpMethod, Map<VovkController, Record<string, RouteHandler>>> = {
     GET: new Map(),
     POST: new Map(),
     PUT: new Map(),
@@ -92,26 +89,22 @@ export class _Segment {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = Object.fromEntries(
-      [...controllers.entries()]
-        .map(([controller, staticMethods]) => {
-          const prefix = controller._prefix ?? '';
+    const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
+    controllers.forEach((staticMethods, controller) => {
+      const prefix = controller._prefix ?? '';
 
-          if (!controller._activated) {
-            throw new HttpException(
-              HttpStatus.INTERNAL_SERVER_ERROR,
-              `Controller "${controller.name}" found but not activated`
-            );
-          }
+      if (!controller._activated) {
+        throw new HttpException(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          `Controller "${controller.name}" found but not activated`
+        );
+      }
 
-          return Object.entries(staticMethods).map(([path, staticMethod]) => {
-            const fullPath = [prefix, path].filter(Boolean).join('/');
-
-            return [fullPath, { staticMethod, controller }];
-          });
-        })
-        .flat()
-    );
+      Object.entries(staticMethods).forEach(([path, staticMethod]) => {
+        const fullPath = [prefix, path].filter(Boolean).join('/');
+        handlers[fullPath] = { staticMethod, controller };
+      });
+    });
 
     const getHandler = () => {
       if (Object.keys(params).length === 0) {
