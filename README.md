@@ -26,10 +26,13 @@ Docs: Algolia, External link icons
   Vovk.ts is an extension over documented Next.js App API routes that enables you to create a REST API as easy as you can imagine.
 </p>
 
+
+
+
 <p align="center">
   <a href="https://vovk.dev/">Website</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://docs.vovk.dev/">Documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://vovk-examples.vercel.app/">Examples</a>
+  <a href="https://vovk-examples.vercel.app/">Interactive Examples</a>
   <br />
   <br />
   <a href="https://github.com/finom/vovk-zod">vovk-zod</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -42,3 +45,24 @@ Docs: Algolia, External link icons
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /></a>&nbsp;
   <a href="https://github.com/finom/vovk/actions/workflows/main.yml"><img src="https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg" alt="Build status" /></a>
 </p>
+
+
+ <br />
+
+```ts
+// /src/modules/hello/HelloController.ts
+import { get, prefix } from 'vovk';
+
+@prefix('hello')
+export default class HelloController {
+  /**
+   * Return a greeting from 
+   * GET /api/hello/greeting
+   */
+  @get('greeting')
+  static getHello() {
+    return { greeting: 'Hello world!' };
+  }
+}
+```
+
