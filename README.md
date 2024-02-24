@@ -30,7 +30,7 @@ Misc: update personal README, add project to opensource.gubanov, Discord
 <p align="center">
   <a href="https://vovk.dev/">Website</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://docs.vovk.dev/">Documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://vovk-examples.vercel.app/">Examples</a>
+  <a href="https://vovk-examples.vercel.app/">Interactive Examples</a>
   <br />
   <br />
   <a href="https://github.com/finom/vovk-zod">vovk-zod</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
