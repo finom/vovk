@@ -12,10 +12,16 @@ function parallel(commands) {
     let children = [];
     let results = [];
 
-    // Helper function to handle closure of a child process
+    /**
+     * Helper function to handle closure of a child process
+     * @type {(index: number, resolve: (value: unknown) => void, reject: (reason?: any) => void) => (code: number) => void}
+     */
     function childClose(index, resolve, reject) {
+      /**
+       * @type {(code: number | { code: number }) => void}
+       */
       return (code) => {
-        code = code ? code.code || code : code;
+        code = typeof code === 'object' && 'code' in code ? code.code : code;
         if (code > 0) {
           reject(new Error('`' + commands[index].name + '` failed with exit code ' + code));
         } else {
