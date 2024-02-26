@@ -8,6 +8,9 @@ const { spawn } = require('child_process');
 function parallel(commands) {
   return new Promise((resolve, reject) => {
     let children = [];
+    /**
+     * @type {Promise<void>[]}
+     */
     let results = [];
 
     /**
