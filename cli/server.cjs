@@ -28,6 +28,8 @@ void writeEmptyMetadata();
 /** @type {NodeJS.Timeout} */
 let pingInterval;
 
+let is404Reported = false;
+
 /** @type {() => Promise<void>} */
 const ping = async () => {
   const vars = await getVars();
@@ -37,8 +39,13 @@ const ping = async () => {
     : `http://localhost:${process.env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
   const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
   // Create the HTTP GET request
-  const req = http.get(endpoint, () => {
-    // noop
+  const req = http.get(endpoint, (resp) => {
+    if (!is404Reported && resp.statusCode === 404) {
+      console.info(
+        ` 🐺 🟡 Vovk Metadata Server is running fine but it seems like the wildcard route file is not created yet. See https://docs.vovk.dev/docs/intro for more information.`
+      );
+      is404Reported = true;
+    }
   });
 
   // Error handling for the request

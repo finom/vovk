@@ -45,7 +45,6 @@ function parallel(commands) {
       results.push(childPromise);
     });
 
-    // Use Promise.all to wait for all child processes to complete
     Promise.all(results)
       .then(() => resolve('All processes have ended successfully'))
       .catch((error) => reject(error));
