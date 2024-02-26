@@ -25,7 +25,7 @@ function parallel(commands) {
 
     // Start each command as a child process
     commands.forEach((command, index) => {
-      let cmd = process.platform !== 'win32' ? 'exec ' + command.command : command.command;
+      let cmd = command.command;
       let sh = process.platform === 'win32' ? 'cmd' : 'sh';
       let shFlag = process.platform === 'win32' ? '/c' : '-c';
 
