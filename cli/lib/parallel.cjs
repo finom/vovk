@@ -3,9 +3,7 @@ const { spawn } = require('child_process');
 
 /**
  * Execute multiple commands in parallel and return a promise.
- * @param {Array} commands - An array of command objects { command: string, name: string, env: Object }
- * @returns {Promise} - A promise that resolves when all commands have completed.
- * @type {(commands: { command: string; name: string; env: import('../../src').VovkEnv }[]) => Promise<void>}
+ * @type {(commands: { command: string; name: string; env: import('../../src').VovkEnv }[]) => Promise<string>}
  */
 function parallel(commands) {
   return new Promise((resolve, reject) => {
