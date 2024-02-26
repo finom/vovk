@@ -23,7 +23,7 @@ Docs: Algolia, External link icons
   <strong>REST for Next</strong>
   <br />
   <br />
-  Vovk.ts is an extension over documented Next.js App API routes that enables you to create a REST API as easy as you can imagine.
+  Transforms Next.js App Router into a powerful and extensible REST API platform
 </p>
 
 
