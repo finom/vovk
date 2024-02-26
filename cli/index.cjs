@@ -21,7 +21,9 @@ if (command === 'dev') {
     let PORT = noNextDev
       ? process.env.PORT
       : process.env.PORT ||
-        (await getAvailablePort(3000, portAttempts).catch(() => {
+        (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
+          console.warn(` 🐺 🟡 Next.js Port ${failedPort} is in use, trying ${tryingPort} instead.`)
+        ).catch(() => {
           throw new Error(` 🐺 ❌ Failed to find available Next port after ${portAttempts} attempts`);
         }));
 
@@ -35,7 +37,9 @@ if (command === 'dev') {
 
     let VOVK_PORT = parseInt(env.VOVK_PORT);
 
-    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, portAttempts).catch(() => {
+    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, portAttempts, 0, (failedPort, tryingPort) =>
+      console.warn(` 🐺 🟡 Vovk.ts Metadata Server Port ${failedPort} is in use, trying ${tryingPort} instead.`)
+    ).catch(() => {
       throw new Error(` 🐺 ❌ Failed to find available Vovk port after ${portAttempts} attempts`);
     });
 
