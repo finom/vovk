@@ -1,6 +1,9 @@
 // @ts-check
 const net = require('net');
 
+/**
+ * @type {(port: number, callback: (isAvailable: boolean) => void) => void}
+ */
 function checkPort(port, callback) {
   const server = net.createServer();
 
