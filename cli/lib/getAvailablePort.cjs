@@ -1,3 +1,4 @@
+// @ts-check
 const net = require('net');
 
 function checkPort(port, callback) {
@@ -22,7 +23,7 @@ function getAvailablePort(startPort, maxAttempts, attempt, onWarning) {
         resolve(startPort.toString()); // Found an available port
       } else if (attempt < maxAttempts) {
         onWarning(startPort, startPort + 1);
-        getAvailablePort(startPort + 1, maxAttempts, attempt + 1).then(resolve, reject);
+        getAvailablePort(startPort + 1, maxAttempts, attempt + 1, onWarning).then(resolve, reject);
       } else {
         reject(null);
       }
