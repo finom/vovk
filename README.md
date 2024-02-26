@@ -33,13 +33,12 @@ Docs: Algolia, External link icons
   <a href="https://vovk.dev/">Website</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://docs.vovk.dev/">Documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://vovk-examples.vercel.app/">Interactive Examples</a>
-  <br />
-  <br />
+</p>
+<p align="center">
   <a href="https://github.com/finom/vovk-zod">vovk-zod</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-hello-world">vovk-hello-world</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-react-native-example">vovk-react-native-example</a>
 </p>
- <br />
 <p align="center">
   <a href="https://www.npmjs.com/package/vovk"><img src="https://badge.fury.io/js/vovk.svg" alt="npm version" /></a>&nbsp;
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" alt="TypeScript" /></a>&nbsp;
@@ -48,6 +47,8 @@ Docs: Algolia, External link icons
 
 
  <br />
+
+Example Controller:
 
 ```ts
 // /src/modules/hello/HelloController.ts
@@ -66,3 +67,32 @@ export default class HelloController {
 }
 ```
 
+Example Component:
+
+```ts
+'use client';
+import { useState } from 'react';
+import { HelloController } from 'vovk-client';
+import type { VovkClientReturnType } from 'vovk';
+
+export default function Example() {
+  const [
+    serverResponse, setServerResponse,
+  ] = useState<VovkClientReturnType<typeof HelloController.getHello>>();
+
+  return (
+    <>
+      <button
+        onClick={async () => {
+          setServerResponse(
+            await HelloController.getHello()
+          );
+        }}
+      >
+        Get Greeting from Server
+      </button>
+      <div>{serverResponse?.greeting}</div>
+    </>
+  );
+}
+```
