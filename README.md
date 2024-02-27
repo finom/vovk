@@ -23,18 +23,15 @@ Docs: Algolia, External link icons
   <strong>REST for Next</strong>
   <br />
   <br />
-  Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful and extensible REST API platform. Made with TypeScript and Inspired by <a href="https://nestjs.com/">NestJS</a>.
+  Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful and extensible REST API platform. 
+  <br/>
+  Made with <a href="https://www.typescriptlang.org/">TypeScript</a>, inspired by <a href="https://nestjs.com/">NestJS</a>.
 </p>
-
-
-
 
 <p align="center">
   <a href="https://vovk.dev/">Website</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://docs.vovk.dev/">Documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://vovk-examples.vercel.app/">Interactive Examples</a>
-</p>
-<p align="center">
+  <a href="https://vovk-examples.vercel.app/">Interactive Examples</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-zod">vovk-zod</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-hello-world">vovk-hello-world</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-react-native-example">vovk-react-native-example</a>
