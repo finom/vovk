@@ -45,7 +45,7 @@ Docs: Algolia, External link icons
 
  <br />
 
-Example Controller:
+Example back-end Controller Class:
 
 ```ts
 import { get, prefix } from 'vovk';
@@ -63,7 +63,7 @@ export default class HelloController {
 }
 ```
 
-Example Component:
+Example component that uses the auto-generated client library:
 
 ```ts
 'use client';
