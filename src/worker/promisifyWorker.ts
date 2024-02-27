@@ -32,17 +32,6 @@ export function _promisifyWorker<T extends object>(
     return _promisifyWorker<T>(worker, givenWorkerService);
   };
 
-  if (typeof Symbol.dispose !== 'symbol') {
-    Object.defineProperty(Symbol, 'dispose', {
-      configurable: false,
-      enumerable: false,
-      writable: false,
-      value: Symbol.for('dispose'),
-    });
-  }
-
-  instance[Symbol.dispose] = () => instance.terminate();
-
   for (const method of Object.keys(workerService._handlers) as (keyof T & string)[]) {
     const { isGenerator } = workerService._handlers[method];
     const value = workerService[method];
