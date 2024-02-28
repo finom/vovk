@@ -7,6 +7,9 @@ const { spawn } = require('child_process');
  */
 function parallel(commands) {
   return new Promise((resolve, reject) => {
+    /**
+     * @type {import('child_process').ChildProcess[]}
+     */
     let children = [];
     /**
      * @type {Promise<void>[]}
@@ -25,10 +28,12 @@ function parallel(commands) {
         code = code && typeof code === 'object' && 'code' in code ? code.code : code;
 
         children.forEach((child, i) => {
-          try {
-            if (i !== index) process.kill(child.pid, 'SIGTERM');
-          } catch (err) {
-            if (err.code !== 'ESRCH') throw err;
+          if (i !== index && child.pid) {
+            try {
+              process.kill(child.pid, 'SIGTERM');
+            } catch (err) {
+              if (err.code !== 'ESRCH') throw err;
+            }
           }
         });
 
