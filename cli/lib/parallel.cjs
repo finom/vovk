@@ -32,7 +32,8 @@ function parallel(commands) {
             try {
               process.kill(child.pid, 'SIGTERM');
             } catch (err) {
-              if (err.code !== 'ESRCH') throw err;
+              const error = /** @type {Error} */ (err);
+              if (!('code' in error) || error.code !== 'ESRCH') throw error;
             }
           }
         });

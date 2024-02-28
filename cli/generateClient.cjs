@@ -96,10 +96,6 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
     ts += `export const ${key} = promisifyWorker<Workers["${key}"]>(null, metadata.workers.${key});\n`;
   }
 
-  /* js += `
-    if(typeof window !== 'undefined') fetch(prefix + '/__ping', { method: 'POST' });
-  `; */
-
   const localJsPath = path.join(outDir, 'client.js');
   const localDtsPath = path.join(outDir, 'client.d.ts');
   const localTsPath = path.join(outDir, 'index.ts');
