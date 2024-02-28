@@ -1,13 +1,10 @@
 <!--
 TODO
 Common: renew deps
-vovk.dev: Review & fix doc links, README, use inline script to change theme on load, OG image
-Examples: OG image for each example, workers on mobile, favicon
-Misc: update personal README, add project to opensource.gubanov
-Docs: local search
+vovk.dev: Review, OG image
 
 Minor
-vovk.dev: improve video
+vovk.dev: improve video, change theme on load (how?)
 Docs: Algolia, External link icons
 Examples: ugly Other Examples
 -->

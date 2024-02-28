@@ -22,7 +22,16 @@ function parallel(commands) {
        * @type {(code: number | { code: number }) => void}
        */
       return (code) => {
-        code = typeof code === 'object' && 'code' in code ? code.code : code;
+        code = code && typeof code === 'object' && 'code' in code ? code.code : code;
+
+        children.forEach((child, i) => {
+          try {
+            if (i !== index) process.kill(child.pid, 'SIGTERM');
+          } catch (err) {
+            if (err.code !== 'ESRCH') throw err;
+          }
+        });
+
         if (code > 0) {
           reject(new Error('`' + commands[index].name + '` failed with exit code ' + code));
         } else {

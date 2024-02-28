@@ -46,7 +46,7 @@ if (command === 'dev') {
     const commands = [
       {
         command: `node ${__dirname}/server.cjs`,
-        name: 'Vovk',
+        name: 'Vovk.ts Metadata Server',
         env: { ...serverEnv, VOVK_PORT: env.VOVK_PORT }, // getVars is invoked synamically to receive rest of the env
       },
     ];
@@ -54,7 +54,7 @@ if (command === 'dev') {
     if (!noNextDev) {
       commands.push({
         command: `cd ${project} && npx next dev ${restArgs}`,
-        name: 'Next',
+        name: 'Next.js Development Server',
         env,
       });
     }
