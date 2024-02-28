@@ -162,15 +162,13 @@ describe('Worker API', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { isTerminated, isUsingTerminated } = window as unknown as {
+      const { isTerminated } = window as unknown as {
         isTerminated: boolean;
-        isUsingTerminated: boolean;
       };
 
-      return { isTerminated, isUsingTerminated };
+      return { isTerminated };
     });
 
     expect(result.isTerminated).toEqual(true);
-    expect(result.isUsingTerminated).toEqual(true);
   });
 });

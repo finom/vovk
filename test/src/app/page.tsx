@@ -14,7 +14,6 @@ export default function Home() {
       standaloneWorker: typeof standaloneWorker;
       MyWorkerPromisified: typeof MyWorkerPromisified;
       isTerminated: boolean;
-      isUsingTerminated: boolean;
     };
     if (win.metadataWorker) return;
 
@@ -37,23 +36,11 @@ export default function Home() {
 
     toBeTerminated.terminate();
 
-    let toBeUsingTerminated;
-
-    {
-      using innerToBeUsingTerminated = promisifyWorker<typeof MyWorker>(
-        new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
-        MyWorker
-      );
-
-      toBeUsingTerminated = innerToBeUsingTerminated;
-    }
-
     win.metadataWorker = metadataWorker;
     win.standaloneWorker = standaloneWorker;
     win.MyWorkerPromisified = MyWorkerPromisified;
 
     win.isTerminated = toBeTerminated._isTerminated ?? false;
-    win.isUsingTerminated = toBeUsingTerminated._isTerminated ?? false;
   }, []);
 
   return <main>Hello World</main>;

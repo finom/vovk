@@ -18,7 +18,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreaming({
+    using resp = await defaultController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
     });
@@ -38,7 +38,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreaming({
+    using resp = await defaultController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
     });
@@ -56,7 +56,7 @@ describe('Streaming generator', () => {
   it('Should handle immediate errors', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
 
-    const resp = await defaultController.postWithStreamingAndImmediateError({
+    using resp = await defaultController.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
     });
@@ -73,7 +73,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreamingAndDelayedError({
+    using resp = await defaultController.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
     });
@@ -92,7 +92,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreamingAndDelayedCustomError({
+    using resp = await defaultController.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
     });
@@ -119,7 +119,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreamingAndDelayedUnhandledError({
+    using resp = await defaultController.postWithStreamingAndDelayedUnhandledError({
       body: tokens,
       query: { query: 'queryValue' },
     });

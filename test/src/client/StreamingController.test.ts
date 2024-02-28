@@ -18,7 +18,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreaming({
+    using resp = await defaultController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
     });
@@ -38,7 +38,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreaming({
+    using resp = await defaultController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
     });
@@ -62,9 +62,10 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
     let r;
+    let resp;
 
     {
-      const resp = await defaultController.postWithStreaming({
+      resp = await defaultController.postWithStreaming({
         body: tokens,
         query: { query: 'queryValue' },
       });
@@ -82,6 +83,8 @@ describe('Streaming', () => {
     for await (const message of r) {
       expectedCollected.push(message);
     }
+
+    await resp.cancel();
 
     expect(expected).toEqual(expectedCollected);
   });
@@ -131,7 +134,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreamingAndDelayedError({
+    using resp = await defaultController.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
     });
@@ -150,7 +153,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreamingAndDelayedCustomError({
+    using resp = await defaultController.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
     });
