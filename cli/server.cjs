@@ -9,10 +9,11 @@ const { default: compareKeys } = require('./lib/compareKeys.cjs');
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
-/** @type {(metadata: object) => Promise<{ written: boolean; path: string; diff?:  { controllers: { addedKeys: string[]; removedKeys: string[]; }; workers: { addedKeys: string[]; removedKeys: string[]; }; }; }>} */
+/** @type {(metadata: import('../src').VovkMetadata) => Promise<{ written: boolean; path: string; diff?:  { controllers: { addedKeys: string[]; removedKeys: string[]; }; workers: { addedKeys: string[]; removedKeys: string[]; }; }; }>} */
 const writeMetadata = async (metadata) => {
   await fs.mkdir(path.dirname(metadataPath), { recursive: true });
   const existingMetadataStr = await fs.readFile(metadataPath, 'utf-8').catch(() => 'null');
+  /** @type {import('../src').VovkMetadata} */
   const existingMetadata = JSON.parse(existingMetadataStr);
   if (isEqual(existingMetadata, metadata)) {
     return { written: false, path: metadataPath };
@@ -110,6 +111,7 @@ const server = http.createServer((req, res) => {
     req.on('end', async () => {
       try {
         /** @type {{ metadata?: import('../src') }} */
+        /** @type {{ metadata: import('../src').VovkMetadata }} */
         const { metadata } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
         const vars = await getVars();
