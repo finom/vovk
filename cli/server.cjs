@@ -46,14 +46,15 @@ const showDiff = ({ addedKeys, removedKeys, constantName }) => {
   };
 
   console.info(` const ${constantName} = {`);
+  console.info('   // ...');
   // Print added keys in green
   addedKeys.forEach((key) => {
-    console.info(`   ${colors.green}+${key},${colors.reset}`);
+    console.info(`   ${colors.green}+ ${key},${colors.reset}`);
   });
 
   // Print removed keys in red
   removedKeys.forEach((key) => {
-    console.info(`   ${colors.red}-${key},${colors.reset}`);
+    console.info(`   ${colors.red}- ${key},${colors.reset}`);
   });
 
   console.info(' };');
