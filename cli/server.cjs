@@ -5,7 +5,7 @@ const path = require('path');
 const generateClient = require('./generateClient.cjs');
 const getVars = require('./getVars.cjs');
 const isEqual = require('./lib/isEqual.cjs');
-const { default: compareKeys } = require('./lib/compareKeys.cjs');
+const compareKeys = require('./lib/compareKeys.cjs');
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
