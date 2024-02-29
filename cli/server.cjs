@@ -5,22 +5,57 @@ const path = require('path');
 const generateClient = require('./generateClient.cjs');
 const getVars = require('./getVars.cjs');
 const isEqual = require('./lib/isEqual.cjs');
+const { default: compareKeys } = require('./lib/compareKeys.cjs');
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
-/** @type {(metadata: object) => Promise<{ written: boolean; path: string }>} */
+/** @type {(metadata: object) => Promise<{ written: boolean; path: string; diff?:  { controllers: { addedKeys: string[]; removedKeys: string[]; }; workers: { addedKeys: string[]; removedKeys: string[]; }; }; }>} */
 const writeMetadata = async (metadata) => {
   await fs.mkdir(path.dirname(metadataPath), { recursive: true });
-  const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => 'null');
-  if (isEqual(JSON.parse(existingMetadata), metadata)) return { written: false, path: metadataPath };
+  const existingMetadataStr = await fs.readFile(metadataPath, 'utf-8').catch(() => 'null');
+  const existingMetadata = JSON.parse(existingMetadataStr);
+  if (isEqual(existingMetadata, metadata)) {
+    return { written: false, path: metadataPath };
+  }
   await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
-  return { written: true, path: metadataPath };
+
+  return {
+    written: true,
+    path: metadataPath,
+    diff: {
+      controllers: compareKeys(existingMetadata, metadata),
+      workers: compareKeys(existingMetadata.workers ?? {}, metadata.workers ?? {}),
+    },
+  };
 };
 
 const writeEmptyMetadata = async () => {
   await fs.mkdir(path.dirname(metadataPath), { recursive: true });
   const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => null);
   if (!existingMetadata) await fs.writeFile(metadataPath, '{}');
+};
+
+/** @type {(diff: { addedKeys: string[]; removedKeys: string[]; constantName: string; }) => void} */
+const showDiff = ({ addedKeys, removedKeys, constantName }) => {
+  if (!addedKeys.length && !removedKeys.length) return;
+  const colors = {
+    green: '\x1b[32m',
+    red: '\x1b[31m',
+    reset: '\x1b[0m',
+  };
+
+  console.info(` const ${constantName} = {`);
+  // Print added keys in green
+  addedKeys.forEach((key) => {
+    console.info(`   ${colors.green}+${key},${colors.reset}`);
+  });
+
+  // Print removed keys in red
+  removedKeys.forEach((key) => {
+    console.info(`   ${colors.red}-${key},${colors.reset}`);
+  });
+
+  console.info(' };');
 };
 
 void writeEmptyMetadata();
@@ -86,7 +121,25 @@ const server = http.createServer((req, res) => {
         }
 
         if (codeWritten.written) {
-          console.info(` 🐺 Client generated in ${codeWritten.path}`);
+          const { diff } = metadataWritten;
+
+          if (diff) {
+            showDiff({
+              addedKeys: diff.controllers.addedKeys,
+              removedKeys: diff.controllers.removedKeys,
+              constantName: 'controllers',
+            });
+            showDiff({
+              addedKeys: diff.workers.addedKeys,
+              removedKeys: diff.workers.removedKeys,
+              constantName: 'workers',
+            });
+            console.info(
+              ` 🐺 Client generated in ${codeWritten.path}. Don't forget to restart TypeScript server in your code editor if needed.`
+            );
+          } else {
+            console.info(` 🐺 Client generated in ${codeWritten.path}.`);
+          }
         }
 
         constantlyPing();

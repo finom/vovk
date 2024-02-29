@@ -1,6 +1,6 @@
 <!--
 TODO
-Common: renew deps
+Common: patch version, renew deps
 vovk.dev: Review, OG image
 
 Minor
