@@ -110,7 +110,6 @@ const server = http.createServer((req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     req.on('end', async () => {
       try {
-        /** @type {{ metadata?: import('../src') }} */
         /** @type {{ metadata: import('../src').VovkMetadata }} */
         const { metadata } = JSON.parse(body); // Parse the JSON data
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
