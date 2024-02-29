@@ -1,7 +1,6 @@
 <!--
 TODO
-Common: patch version, renew deps
-vovk.dev: Review, OG image
+Common: patch version, renew deps in all repos
 
 Minor
 vovk.dev: improve video, change theme on load (how?)

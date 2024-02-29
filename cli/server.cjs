@@ -103,7 +103,7 @@ const server = http.createServer((req, res) => {
     req.on('end', async () => {
       try {
         /** @type {{ metadata: import('../src').VovkMetadata }} */
-        const { metadata } = JSON.parse(body); // Parse the JSON data
+        const { metadata } = JSON.parse(body);
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
         const vars = await getVars();
         const codeWritten = await generateClient(vars);
