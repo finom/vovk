@@ -62,9 +62,6 @@ const showDiff = ({ addedKeys, removedKeys, constantName }) => {
 
 void writeEmptyMetadata();
 
-/** @type {NodeJS.Timeout} */
-let pingInterval;
-
 let is404Reported = false;
 
 /** @type {() => Promise<void>} */
@@ -91,14 +88,8 @@ const ping = async () => {
   });
 };
 
-// make initial ping
-setTimeout(() => void ping(), 1000 * 3);
-
-/** @type {() => void} */
-const constantlyPing = () => {
-  clearInterval(pingInterval);
-  pingInterval = setInterval(() => void ping(), 1000 * 3);
-};
+// start pinging immediately
+setInterval(() => void ping(), 1000 * 3);
 
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/__metadata') {
@@ -143,8 +134,6 @@ const server = http.createServer((req, res) => {
             console.info(` 🐺 Client generated in ${codeWritten.path}.`);
           }
         }
-
-        constantlyPing();
       } catch (e) {
         const err = /** @type {Error} */ (e);
         res.writeHead(400, { 'Content-Type': 'text/plain' });
