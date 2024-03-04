@@ -213,7 +213,7 @@ export class _Segment {
     } catch (e) {
       const err = e as HttpException;
       try {
-        controller._onError?.(err);
+        await controller._onError?.(err);
       } catch (onErrorError) {
         // eslint-disable-next-line no-console
         console.error(onErrorError);

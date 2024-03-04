@@ -66,7 +66,7 @@ export type _VovkWorkerMetadata = {
 
 export type _VovkControllerInternal = _VovkControllerMetadata & {
   _activated?: true;
-  _onError?: (err: Error) => void;
+  _onError?: (err: Error) => void | Promise<void>;
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
