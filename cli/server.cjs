@@ -72,7 +72,6 @@ const ping = async () => {
     ? prefix
     : `http://localhost:${process.env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
   const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
-  // Create the HTTP GET request
   const req = http.get(endpoint, (resp) => {
     if (!is404Reported && resp.statusCode === 404) {
       console.info(
@@ -82,7 +81,6 @@ const ping = async () => {
     }
   });
 
-  // Error handling for the request
   req.on('error', (err) => {
     console.error(`🐺 ❌ Error during HTTP request made to ${endpoint}:`, err.message);
   });

@@ -19,12 +19,13 @@ async function getVars(options = {}) {
   Object.assign(vovkConfig, await getConfig());
 
   const OUT = process.env.VOVK_CLIENT_OUT || options.VOVK_CLIENT_OUT || vovkConfig.clientOut;
+  const PORT = options.PORT || process.env.PORT || '3000';
 
   /** @type {Required<import('../src').VovkEnv>} */
   const vars = {
-    PORT: options.PORT || process.env.PORT || '3000',
+    PORT,
     VOVK_CLIENT_OUT: OUT.startsWith('/') ? OUT : path.join(process.cwd(), OUT),
-    VOVK_PORT: process.env.VOVK_PORT || '3690',
+    VOVK_PORT: process.env.VOVK_PORT || (parseInt(PORT) + 6969).toString(),
     VOVK_ROUTE: process.env.VOVK_ROUTE || vovkConfig.route,
     VOVK_FETCHER: process.env.VOVK_FETCHER || vovkConfig.fetcher,
     VOVK_PREFIX: process.env.VOVK_PREFIX || vovkConfig.prefix,

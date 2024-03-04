@@ -35,14 +35,6 @@ if (command === 'dev') {
 
     const env = await getVars(serverEnv);
 
-    let VOVK_PORT = parseInt(env.VOVK_PORT);
-
-    env.VOVK_PORT = await getAvailablePort(VOVK_PORT, portAttempts, 0, (failedPort, tryingPort) =>
-      console.warn(` 🐺 🟡 Vovk.ts Metadata Server Port ${failedPort} is in use, trying ${tryingPort} instead.`)
-    ).catch(() => {
-      throw new Error(` 🐺 ❌ Failed to find available Vovk port after ${portAttempts} attempts`);
-    });
-
     const commands = [
       {
         command: `node ${__dirname}/server.cjs`,

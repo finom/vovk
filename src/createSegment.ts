@@ -179,25 +179,23 @@ export function _createSegment() {
 
     if (options.emitMetadata !== false) {
       if (process.env.NODE_ENV === 'development') {
-        if (!process.env.VOVK_PORT) {
-          console.error(` 🐺 ❌ Failed to send metadata to Vovk Server: process.env.VOVK_PORT is not set`);
-        } else {
-          void fetch(`http://localhost:${process.env.VOVK_PORT}/__metadata`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ metadata }),
-          })
-            .then((resp) => {
-              if (!resp.ok) {
-                // eslint-disable-next-line no-console
-                console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
-              }
-            })
-            .catch((err) => {
+        const VOVK_PORT = process.env.VOVK_PORT || (parseInt(process.env.PORT || '3000') + 6969).toString();
+
+        void fetch(`http://localhost:${VOVK_PORT}/__metadata`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ metadata }),
+        })
+          .then((resp) => {
+            if (!resp.ok) {
               // eslint-disable-next-line no-console
-              console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
-            });
-        }
+              console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
+            }
+          })
+          .catch((err) => {
+            // eslint-disable-next-line no-console
+            console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
+          });
       }
 
       if (options?.onMetadata) {
