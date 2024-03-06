@@ -13,13 +13,11 @@ Examples: ugly Other Examples
     <source width="200" media="(prefers-color-scheme: dark)" srcset="https://github.com/finom/vovk/assets/1082083/35887c40-ad37-42ca-b0b3-1d3ec359b090">
     <source width="200" media="(prefers-color-scheme: light)" srcset="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513">
     <img width="200" alt="vovk" src="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513">
-  </picture>
+  </picture><br>
+  <strong>REST for Next</strong>
 </p>
 
 <p align="center">
-  <strong>REST for Next</strong>
-  <br />
-  <br />
   Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful and extensible REST API platform. 
   <br/>
   Made with <a href="https://www.typescriptlang.org/">TypeScript</a>, inspired by <a href="https://nestjs.com/">NestJS</a>.
