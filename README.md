@@ -8,11 +8,10 @@ Examples: ugly Other Examples
 -->
 
 <p align="center">
-  <img width="120" alt="vovk" src="https://github.com/finom/vovk/assets/1082083/86bfbbbb-3600-435b-a74c-c07bd0c4af4b"> <br>
   <picture>
-    <source width="200" media="(prefers-color-scheme: dark)" srcset="https://github.com/finom/vovk/assets/1082083/35887c40-ad37-42ca-b0b3-1d3ec359b090">
-    <source width="200" media="(prefers-color-scheme: light)" srcset="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513">
-    <img width="200" alt="vovk" src="https://github.com/finom/vovk/assets/1082083/e8e4b68d-b713-4562-a55b-407c68215513">
+    <source width="200" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
+    <source width="200" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
+    <img width="200" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
   </picture><br>
   <strong>REST for Next</strong>
 </p>
