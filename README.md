@@ -9,9 +9,9 @@ Examples: ugly Other Examples
 
 <p align="center">
   <picture>
-    <source width="200" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
-    <source width="200" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
-    <img width="200" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
+    <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
+    <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
+    <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
   </picture><br>
   <strong>REST for Next</strong>
 </p>
