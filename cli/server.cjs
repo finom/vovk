@@ -60,8 +60,6 @@ const showDiff = ({ addedKeys, removedKeys, constantName }) => {
   console.info(' };');
 };
 
-void writeEmptyMetadata();
-
 let is404Reported = false;
 
 /** @type {() => Promise<void>} */
@@ -85,9 +83,6 @@ const ping = async () => {
     console.error(`🐺 ❌ Error during HTTP request made to ${endpoint}:`, err.message);
   });
 };
-
-// start pinging immediately
-setInterval(() => void ping(), 1000 * 3);
 
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/__metadata') {
@@ -145,11 +140,22 @@ const server = http.createServer((req, res) => {
   }
 });
 
-const VOVK_PORT = process.env.VOVK_PORT;
-if (!VOVK_PORT) {
-  console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
-  process.exit(1);
+function startVovkServer() {
+  const VOVK_PORT = process.env.VOVK_PORT;
+  if (!VOVK_PORT) {
+    console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
+    process.exit(1);
+  }
+  server.listen(VOVK_PORT, () => {
+    console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}`);
+  });
+
+  void writeEmptyMetadata();
+  setInterval(() => void ping(), 1000 * 3);
 }
-server.listen(VOVK_PORT, () => {
-  console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}`);
-});
+
+if (process.env.__VOVK_START_SERVER__) {
+  startVovkServer();
+}
+
+module.exports = { startVovkServer };

@@ -6,19 +6,20 @@ const parallel = require('./lib/parallel.cjs');
 const getAvailablePort = require('./lib/getAvailablePort.cjs');
 const getVars = require('./getVars.cjs');
 const parseCommandLineArgs = require('./lib/parseCommandLineArgs.cjs');
+const { startVovkServer } = require('./server.cjs');
 
 const { command, flags, restArgs } = parseCommandLineArgs();
 const {
   // TODO not documented
   project = process.cwd(), // Path to Next.js project
   clientOut = path.join(process.cwd(), './node_modules/.vovk'), // Path to output directory
-  noNextDev = false, // Start Vovk Server without Next.js
+  nextDev = false, // Start Vovk Server without Next.js
 } = flags;
 
 if (command === 'dev') {
   const portAttempts = 30;
   void (async () => {
-    let PORT = noNextDev
+    let PORT = !nextDev
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
@@ -28,30 +29,35 @@ if (command === 'dev') {
         }));
 
     if (!PORT) {
-      throw new Error(' 🐺 ❌ PORT env variable is required in --no-next-dev mode');
+      throw new Error(' 🐺 ❌ PORT env variable is required in --next-dev mode');
     }
 
     const serverEnv = { VOVK_CLIENT_OUT: clientOut, PORT };
 
     const env = await getVars(serverEnv);
 
-    const commands = [
-      {
-        command: `node ${__dirname}/server.cjs`,
-        name: 'Vovk.ts Metadata Server',
-        env: { ...serverEnv, VOVK_PORT: env.VOVK_PORT }, // getVars is invoked synamically to receive rest of the env
-      },
-    ];
+    if (nextDev) {
+      env.__VOVK_START_SERVER__ = 'true';
 
-    if (!noNextDev) {
+      const commands = [
+        {
+          command: `node ${__dirname}/server.cjs`,
+          name: 'Vovk.ts Metadata Server',
+          env: { ...serverEnv, VOVK_PORT: env.VOVK_PORT }, // getVars is invoked synamically to receive rest of the env
+        },
+      ];
+
       commands.push({
         command: `cd ${project} && npx next dev ${restArgs}`,
         name: 'Next.js Development Server',
         env,
       });
+
+      await parallel(commands).catch((e) => console.error(e));
+    } else {
+      startVovkServer();
     }
 
-    await parallel(commands).catch((e) => console.error(e));
     console.info(' 🐺 All processes have ended');
   })();
 } else if (command === 'generate') {
@@ -64,7 +70,7 @@ if (command === 'dev') {
   })();
 } else if (command === 'help') {
   console.info(` 🐺 Vovk CLI
-  dev - Start development server
+  dev - Start development server (optional flag --next-dev to start Vovk Server with Next.js)
   generate - Generate client
   help - Show this help message`);
 } else {

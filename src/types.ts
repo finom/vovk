@@ -20,6 +20,7 @@ export type _VovkEnv = Partial<{
   VOVK_VALIDATE_ON_CLIENT: string;
   VOVK_PORT: string;
   VOVK_CLIENT_OUT: string;
+  __VOVK_START_SERVER__: string;
 }>;
 
 export type _VovkMetadata = Record<string, _VovkControllerMetadata> & { workers?: Record<string, _VovkWorkerMetadata> };
