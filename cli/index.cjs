@@ -32,7 +32,7 @@ if (command === 'dev') {
       throw new Error(' 🐺 ❌ PORT env variable is required in --next-dev mode');
     }
 
-    const serverEnv = { VOVK_CLIENT_OUT: clientOut, PORT };
+    const serverEnv = { VOVK_CLIENT_OUT: clientOut, PORT, __VOVK_START_SERVER__: '' };
 
     const env = await getVars(serverEnv);
 
@@ -56,7 +56,7 @@ if (command === 'dev') {
       await parallel(commands).catch((e) => console.error(e));
       console.info(' 🐺 All processes have ended');
     } else {
-      startVovkServer(env);
+      startVovkServer({ ...serverEnv, VOVK_PORT: env.VOVK_PORT });
     }
   })();
 } else if (command === 'generate') {
