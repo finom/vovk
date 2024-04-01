@@ -64,11 +64,11 @@ let is404Reported = false;
 
 /** @type {() => Promise<void>} */
 const ping = async () => {
-  const vars = await getVars();
-  let prefix = vars.VOVK_PREFIX;
+  const env = await getVars();
+  let prefix = env.VOVK_PREFIX;
   prefix = prefix.startsWith('http://')
     ? prefix
-    : `http://localhost:${process.env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
+    : `http://localhost:${env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
   const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
   const req = http.get(endpoint, (resp) => {
     if (!is404Reported && resp.statusCode === 404) {
@@ -98,8 +98,8 @@ const server = http.createServer((req, res) => {
         /** @type {{ metadata: import('../src').VovkMetadata }} */
         const { metadata } = JSON.parse(body);
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
-        const vars = await getVars();
-        const codeWritten = await generateClient(vars);
+        const env = await getVars();
+        const codeWritten = await generateClient(env);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
         if (metadataWritten.written) {
@@ -140,8 +140,9 @@ const server = http.createServer((req, res) => {
   }
 });
 
-function startVovkServer() {
-  const VOVK_PORT = process.env.VOVK_PORT;
+/** @type {(env: import('../src').VovkEnv) => void} */
+function startVovkServer(env) {
+  const VOVK_PORT = env.VOVK_PORT;
   if (!VOVK_PORT) {
     console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
     process.exit(1);
@@ -155,7 +156,7 @@ function startVovkServer() {
 }
 
 if (process.env.__VOVK_START_SERVER__) {
-  startVovkServer();
+  void getVars().then((env) => startVovkServer(env));
 }
 
 module.exports = { startVovkServer };

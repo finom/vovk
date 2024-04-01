@@ -55,7 +55,7 @@ if (command === 'dev') {
 
       await parallel(commands).catch((e) => console.error(e));
     } else {
-      startVovkServer();
+      startVovkServer(env);
     }
 
     console.info(' 🐺 All processes have ended');
