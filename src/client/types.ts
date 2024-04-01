@@ -2,19 +2,19 @@ import type {
   _KnownAny as KnownAny,
   _HttpMethod as HttpMethod,
   _ControllerStaticMethod,
-  _VovkBody,
-  _VovkQuery,
-  _VovkParams,
+  _VovkControllerBody,
+  _VovkControllerQuery,
+  _VovkControllerParams,
 } from '../types';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
 
-export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_VovkBody<T> extends undefined | void
+export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_VovkControllerBody<T> extends undefined | void
   ? { body?: undefined }
-  : _VovkBody<T> extends null
+  : _VovkControllerBody<T> extends null
     ? { body?: null }
-    : { body: _VovkBody<T> }) &
-  (_VovkQuery<T> extends undefined | void ? { query?: undefined } : { query: _VovkQuery<T> }) &
-  (_VovkParams<T> extends undefined | void ? { params?: undefined } : { params: _VovkParams<T> });
+    : { body: _VovkControllerBody<T> }) &
+  (_VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: _VovkControllerQuery<T> }) &
+  (_VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: _VovkControllerParams<T> });
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 

@@ -2,8 +2,8 @@ import {
   type _VovkControllerMetadata as VovkControllerMetadata,
   type _VovkControllerMetadataJson as VovkControllerMetadataJson,
   type _ControllerStaticMethod as ControllerStaticMethod,
-  type _VovkParams as VovkParams,
-  type _VovkQuery as VovkQuery,
+  type _VovkControllerParams as VovkControllerParams,
+  type _VovkControllerQuery as VovkControllerQuery,
   type _KnownAny as KnownAny,
 } from '../types';
 import {
@@ -20,8 +20,8 @@ const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
 const getHandlerPath = <T extends ControllerStaticMethod>(
   endpoint: string,
-  params?: VovkParams<T>,
-  query?: VovkQuery<T>
+  params?: VovkControllerParams<T>,
+  query?: VovkControllerQuery<T>
 ) => {
   let result = endpoint;
   for (const [key, value] of Object.entries(params ?? {})) {

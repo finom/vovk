@@ -63,12 +63,12 @@ Example component that uses the auto-generated client library:
 'use client';
 import { useState } from 'react';
 import { HelloController } from 'vovk-client';
-import type { VovkClientReturnType } from 'vovk';
+import type { VovkReturnType } from 'vovk';
 
 export default function Example() {
   const [
     serverResponse, setServerResponse,
-  ] = useState<VovkClientReturnType<typeof HelloController.getHello>>();
+  ] = useState<VovkReturnType<typeof HelloController.getHello>>();
 
   return (
     <>

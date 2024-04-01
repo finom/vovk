@@ -2,7 +2,13 @@
 import metadata from '../vovk-metadata.json';
 import type ClientController from './ClientController';
 import { clientizeController } from '../../../src/client';
-import { HttpException, VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
+import {
+  HttpException,
+  VovkControllerBody,
+  VovkControllerParams,
+  VovkControllerQuery,
+  VovkControllerReturnType,
+} from '../../../src';
 import { it, expect, describe } from '@jest/globals';
 
 import { validateEqualityOnClient } from './validateEquality';
@@ -52,16 +58,16 @@ describe('Client API', () => {
       params: { hello: 'world' },
     });
 
-    type Params = VovkParams<ClientControllerType['getWithParams']>;
+    type Params = VovkControllerParams<ClientControllerType['getWithParams']>;
 
-    null as unknown as VovkParams<ClientControllerType['getWithParams']> satisfies Params;
+    null as unknown as VovkControllerParams<ClientControllerType['getWithParams']> satisfies Params;
     // @ts-expect-error Expect error
-    null as unknown as VovkBody<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
-    null as unknown as VovkBody<ClientControllerType['getWithParams']> satisfies undefined;
+    null as unknown as VovkControllerBody<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
+    null as unknown as VovkControllerBody<ClientControllerType['getWithParams']> satisfies undefined;
 
     // @ts-expect-error Expect error
-    null as unknown as VovkQuery<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
-    null as unknown as VovkQuery<ClientControllerType['getWithParams']> satisfies undefined;
+    null as unknown as VovkControllerQuery<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
+    null as unknown as VovkControllerQuery<ClientControllerType['getWithParams']> satisfies undefined;
 
     expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
   });
@@ -73,25 +79,25 @@ describe('Client API', () => {
       query: { query: 'queryValue' },
     });
 
-    type Body = VovkBody<ClientControllerType['postWithParams']>;
+    type Body = VovkControllerBody<ClientControllerType['postWithParams']>;
 
-    type Query = VovkQuery<ClientControllerType['postWithParams']>;
+    type Query = VovkControllerQuery<ClientControllerType['postWithParams']>;
 
-    type Params = VovkParams<ClientControllerType['postWithParams']>;
+    type Params = VovkControllerParams<ClientControllerType['postWithParams']>;
 
-    null as unknown as VovkBody<ClientControllerType['postWithParams']> satisfies Body;
+    null as unknown as VovkControllerBody<ClientControllerType['postWithParams']> satisfies Body;
     // @ts-expect-error Expect error
-    null as unknown as VovkBody<ClientControllerType['postWithParams']> satisfies { hello: 'foo' };
+    null as unknown as VovkControllerBody<ClientControllerType['postWithParams']> satisfies { hello: 'foo' };
 
-    null as unknown as VovkQuery<ClientControllerType['postWithParams']> satisfies Query;
+    null as unknown as VovkControllerQuery<ClientControllerType['postWithParams']> satisfies Query;
     // @ts-expect-error Expect error
-    null as unknown as VovkQuery<ClientControllerType['postWithParams']> satisfies { query: 'bar' };
+    null as unknown as VovkControllerQuery<ClientControllerType['postWithParams']> satisfies { query: 'bar' };
 
-    null as unknown as VovkParams<ClientControllerType['postWithParams']> satisfies Params;
+    null as unknown as VovkControllerParams<ClientControllerType['postWithParams']> satisfies Params;
     // @ts-expect-error Expect error
-    null as unknown as VovkBody<ClientControllerType['postWithParams']> satisfies { hello: 'baz' };
+    null as unknown as VovkControllerBody<ClientControllerType['postWithParams']> satisfies { hello: 'baz' };
 
-    expect(result satisfies VovkReturnType<ClientControllerType['postWithParams']>).toEqual({
+    expect(result satisfies VovkControllerReturnType<ClientControllerType['postWithParams']>).toEqual({
       params: { hello: 'world' },
       body: { isBody: true },
       query: { query: 'queryValue' },

@@ -112,43 +112,43 @@ export type _ControllerStaticMethod<
   _controller?: _VovkController;
 };
 
-export type _VovkBody<
+export type _VovkControllerBody<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<Parameters<T>[0]['json']>>;
 
-export type _VovkQuery<
+export type _VovkControllerQuery<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'];
 
-export type _VovkParams<
+export type _VovkControllerParams<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[1];
 
-export type _VovkClientBody<
+export type _VovkBody<
   T extends (options: OPTIONS) => _KnownAny,
   OPTIONS extends { body: B; [key: string]: _KnownAny } = Parameters<T>[0],
   B = _KnownAny,
 > = Parameters<T>[0]['body'];
 
-export type _VovkClientQuery<
+export type _VovkQuery<
   T extends (options: OPTIONS) => _KnownAny,
   OPTIONS extends { query: Q; [key: string]: _KnownAny } = Parameters<T>[0],
   Q = _KnownAny,
 > = Parameters<T>[0]['query'];
 
-export type _VovkClientParams<
+export type _VovkParams<
   T extends (options: OPTIONS) => _KnownAny,
   OPTIONS extends { params: P; [key: string]: _KnownAny } = Parameters<T>[0],
   P = _KnownAny,
 > = Parameters<T>[0]['params'];
 
-export type _VovkReturnType<
+export type _VovkControllerReturnType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
@@ -166,7 +166,7 @@ export type _VovkYieldType<
       ? Y
       : never;
 
-export type _VovkClientReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
+export type _VovkReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
 
 export type _VovkClientYieldType<T extends (...args: _KnownAny[]) => unknown> = T extends (
   ...args: _KnownAny[]
