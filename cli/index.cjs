@@ -54,11 +54,10 @@ if (command === 'dev') {
       });
 
       await parallel(commands).catch((e) => console.error(e));
+      console.info(' 🐺 All processes have ended');
     } else {
       startVovkServer(env);
     }
-
-    console.info(' 🐺 All processes have ended');
   })();
 } else if (command === 'generate') {
   void (async () => {
