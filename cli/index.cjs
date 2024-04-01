@@ -37,7 +37,7 @@ if (command === 'dev') {
     const env = await getVars(serverEnv);
 
     if (nextDev) {
-      env.__VOVK_START_SERVER__ = 'true';
+      serverEnv.__VOVK_START_SERVER__ = 'true';
 
       const commands = [
         {

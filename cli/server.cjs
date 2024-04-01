@@ -156,7 +156,7 @@ function startVovkServer(env) {
 }
 
 if (process.env.__VOVK_START_SERVER__) {
-  void getVars().then((env) => startVovkServer(env));
+  void getVars().then(startVovkServer);
 }
 
 module.exports = { startVovkServer };
