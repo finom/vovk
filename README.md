@@ -2,7 +2,7 @@
   <a target="_blank" class="font-semibold" href="https://supportukrainenow.org/">🌻 Support Ukraine Now! 🇺🇦</a>
 </p>
 
- <hr />
+<hr />
 
 <p align="center"> 
   <picture>
