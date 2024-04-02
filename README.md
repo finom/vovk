@@ -1,13 +1,10 @@
-<!--
-TODO
-
-Minor
-vovk.dev: improve video, change theme on load (how?)
-Docs: Algolia, External link icons
-Examples: ugly Other Examples
--->
-
 <p align="center">
+  <a target="_blank" class="font-semibold" href="https://supportukrainenow.org/">🌻 Support Ukraine Now! 🇺🇦</a>
+</p>
+
+ <hr />
+
+<p align="center"> 
   <picture>
     <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
     <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
