@@ -63,7 +63,7 @@ const showDiff = ({ addedKeys, removedKeys, constantName }) => {
 let is404Reported = false;
 
 /** @type {() => Promise<void>} */
-const ping = async () => {
+const pingNoDebounce = async () => {
   const env = await getVars();
   let prefix = env.VOVK_PREFIX;
   prefix = prefix.startsWith('http://')
@@ -82,6 +82,13 @@ const ping = async () => {
   req.on('error', (err) => {
     console.error(`🐺 ❌ Error during HTTP request made to ${endpoint}:`, err.message);
   });
+};
+
+let timer;
+/** @type {() => void} */
+const ping = () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => void pingNoDebounce(), 1000);
 };
 
 const server = http.createServer((req, res) => {
@@ -163,7 +170,7 @@ async function startVovkServer(env) {
       const filename = path.join(srcRoot, info.filename);
       const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
       const fileContent = await fs.readFile(filename, 'utf-8');
-      if (importRegex.test(fileContent)) await ping(); // TODO: Debounce this
+      if (importRegex.test(fileContent)) void ping();
     }
   }
 }
