@@ -12,6 +12,7 @@ async function getVars(options = {}) {
     fetcher: 'vovk/client/defaultFetcher',
     prefix: '/api',
     validateOnClient: '',
+    watchDir: './src',
   };
 
   // make PORT available to the config file
@@ -30,6 +31,7 @@ async function getVars(options = {}) {
     VOVK_FETCHER: process.env.VOVK_FETCHER || vovkConfig.fetcher,
     VOVK_PREFIX: process.env.VOVK_PREFIX || vovkConfig.prefix,
     VOVK_VALIDATE_ON_CLIENT: process.env.VOVK_VALIDATE_ON_CLIENT || vovkConfig.validateOnClient,
+    VOVK_WATCH_DIR: process.env.VOVK_WATCH_DIR || vovkConfig.watchDir,
     __VOVK_START_SERVER__: process.env.__VOVK_START_SERVER__ || '',
   };
 

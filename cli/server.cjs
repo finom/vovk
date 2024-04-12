@@ -149,14 +149,13 @@ const server = http.createServer((req, res) => {
 });
 
 /** @type {(env: import('../src').VovkEnv) => Promise<void>} */
-async function startVovkServer(env) {
-  const VOVK_PORT = env.VOVK_PORT;
+async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
   if (!VOVK_PORT) {
     console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
     process.exit(1);
   }
   server.listen(VOVK_PORT, () => {
-    console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}`);
+    console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT} watching directory ${VOVK_WATCH_DIR}`);
   });
 
   void writeEmptyMetadata();
@@ -164,7 +163,7 @@ async function startVovkServer(env) {
   // due to changes at Next.js 14.2.0 we get too many logs, therefore the interval should be changed to fs.watch
   // Old approach: setInterval(() => void ping(), 1000 * 3);
 
-  const srcRoot = path.join(__dirname, '../../..', 'src');
+  const srcRoot = path.join(__dirname, '../../..', VOVK_WATCH_DIR ?? './src');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for await (const info of fs.watch(srcRoot, { recursive: true })) {
     if (info.filename) {
