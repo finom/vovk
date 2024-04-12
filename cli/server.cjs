@@ -155,11 +155,14 @@ async function startVovkServer(env) {
 
   // due to changes at Next.js 14.2.0 we get too many logs, therefore the interval should be changed to fs.watch
   // Old approach: setInterval(() => void ping(), 1000 * 3);
+
+  const srcRoot = path.join(__dirname, '../../..', 'src');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  for await (const info of fs.watch(path.join(__dirname, '../../..', 'src'), { recursive: true })) {
+  for await (const info of fs.watch(srcRoot, { recursive: true })) {
     if (info.filename) {
+      const filename = path.join(srcRoot, info.filename);
       const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
-      const fileContent = await fs.readFile(info.filename, 'utf-8');
+      const fileContent = await fs.readFile(filename, 'utf-8');
       if (importRegex.test(fileContent)) await ping(); // TODO: Debounce this
     }
   }
