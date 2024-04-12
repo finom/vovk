@@ -282,7 +282,7 @@ describe('Client with vovk-client', () => {
     const staticAPIWithCustomSlug = await ClientControllerClientized.generateStaticAPIWithCustomSlug();
 
     expect(staticAPI).toEqual([
-      { vovk: ['__ping'] },
+      { vovk: ['_vovk-ping_'] },
       { vovk: ['client', 'get-hello-world'] },
       { vovk: ['client', 'get-hello-world-array'] },
       { vovk: ['client', 'get-hello-world-and-empty-generic'] },
@@ -296,7 +296,7 @@ describe('Client with vovk-client', () => {
     ]);
 
     expect(staticAPIWithCustomSlug).toEqual([
-      { custom: ['__ping'] },
+      { custom: ['_vovk-ping_'] },
       { custom: ['client', 'get-hello-world'] },
       { custom: ['client', 'get-hello-world-array'] },
       { custom: ['client', 'get-hello-world-and-empty-generic'] },

@@ -4,7 +4,7 @@ import { _VovkController as VovkController } from './types';
 export function _generateStaticAPI(c: Record<string, Function>, slug = 'vovk') {
   const controllers = c as Record<string, VovkController>;
   return [
-    { [slug]: ['__ping'] },
+    { [slug]: ['_vovk-ping_'] },
     ...Object.values(controllers)
       .map((controller) => {
         const handlers = controller._handlers;

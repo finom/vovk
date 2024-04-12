@@ -84,7 +84,7 @@ export class _Segment {
     const controllers = this._routes[httpMethod];
     const methodParams: Record<string, string> = {};
 
-    if (params[Object.keys(params)[0]]?.[0] === '__ping') {
+    if (params[Object.keys(params)[0]]?.[0] === '_vovk-ping_') {
       return this.#respond(200, { message: 'pong' });
     }
 

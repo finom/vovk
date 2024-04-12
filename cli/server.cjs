@@ -69,7 +69,7 @@ const pingNoDebounce = async () => {
   prefix = prefix.startsWith('http://')
     ? prefix
     : `http://localhost:${env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
-  const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
+  const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/_vovk-ping_`;
   const req = http.get(endpoint, (resp) => {
     if (!is404Reported && resp.statusCode === 404) {
       console.info(
