@@ -84,6 +84,7 @@ const pingNoDebounce = async () => {
   });
 };
 
+/** @type {NodeJS.Timeout} */
 let timer;
 /** @type {() => void} */
 const ping = () => {
