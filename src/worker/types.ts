@@ -23,7 +23,7 @@ export type _WorkerPromiseInstanceWithNever<T> = {
 
 export type _WorkerPromiseInstance<T> = OmitNever<_WorkerPromiseInstanceWithNever<T>> & {
   terminate: () => void;
-  use: (w: Worker) => _WorkerPromiseInstance<T>;
+  employ: (w: Worker) => _WorkerPromiseInstance<T>;
   fork: (w: Worker) => _WorkerPromiseInstance<T>;
   _isTerminated?: true;
   [Symbol.dispose]: () => void;
