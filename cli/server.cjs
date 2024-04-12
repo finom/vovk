@@ -156,7 +156,7 @@ async function startVovkServer(env) {
   // due to changes at Next.js 14.2.0 we get too many logs, therefore the interval should be changed to fs.watch
   // Old approach: setInterval(() => void ping(), 1000 * 3);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  for await (const _info of fs.watch(path.join(__dirname, '../..', 'src'), { recursive: true })) {
+  for await (const _info of fs.watch(path.join(__dirname, '../../..', 'src'), { recursive: true })) {
     void ping();
   }
 }
