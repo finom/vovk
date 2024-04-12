@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "2.0.0-beta.6",
+  "version": "2.0.0-beta.7",
   "description": "REST for Next - Transforms Next.js into a powerful and extensible REST API platform",
   "bin": "./cli/index.cjs",
   "scripts": {
