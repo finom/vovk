@@ -140,8 +140,8 @@ const server = http.createServer((req, res) => {
   }
 });
 
-/** @type {(env: import('../src').VovkEnv) => void} */
-function startVovkServer(env) {
+/** @type {(env: import('../src').VovkEnv) => Promise<void>} */
+async function startVovkServer(env) {
   const VOVK_PORT = env.VOVK_PORT;
   if (!VOVK_PORT) {
     console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
@@ -152,7 +152,13 @@ function startVovkServer(env) {
   });
 
   void writeEmptyMetadata();
-  setInterval(() => void ping(), 1000 * 3);
+
+  // due to changes at Next.js 14.2.0 we get too many logs, therefore the interval should be changed to fs.watch
+  // Old approach: setInterval(() => void ping(), 1000 * 3);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  for await (const _info of fs.watch(path.join(__dirname, '../..', 'src'), { recursive: true })) {
+    void ping();
+  }
 }
 
 if (process.env.__VOVK_START_SERVER__) {

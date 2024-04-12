@@ -56,7 +56,7 @@ if (command === 'dev') {
       await parallel(commands).catch((e) => console.error(e));
       console.info(' 🐺 All processes have ended');
     } else {
-      startVovkServer({ ...serverEnv, VOVK_PORT: env.VOVK_PORT });
+      void startVovkServer({ ...serverEnv, VOVK_PORT: env.VOVK_PORT });
     }
   })();
 } else if (command === 'generate') {
