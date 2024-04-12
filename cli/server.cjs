@@ -169,9 +169,16 @@ async function startVovkServer(env) {
   for await (const info of fs.watch(srcRoot, { recursive: true })) {
     if (info.filename) {
       const filename = path.join(srcRoot, info.filename);
-      const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
-      const fileContent = await fs.readFile(filename, 'utf-8');
-      if (importRegex.test(fileContent)) void ping();
+      try {
+        const stats = await fs.lstat(filename);
+        if (stats.isFile()) {
+          const fileContent = await fs.readFile(filename, 'utf-8');
+          const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
+          if (importRegex.test(fileContent)) void ping();
+        }
+      } catch (error) {
+        console.error(' 🐺 Error reading file:', error);
+      }
     }
   }
 }
