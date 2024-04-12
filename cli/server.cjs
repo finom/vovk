@@ -155,7 +155,7 @@ async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
     process.exit(1);
   }
   server.listen(VOVK_PORT, () => {
-    console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT} watching directory ${VOVK_WATCH_DIR}`);
+    console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}. Watching directory ${VOVK_WATCH_DIR}`);
   });
 
   void writeEmptyMetadata();
@@ -163,6 +163,8 @@ async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
   // due to changes at Next.js 14.2.0 we get too many logs, therefore the interval should be changed to fs.watch
   // Old approach: setInterval(() => void ping(), 1000 * 3);
 
+  // initial ping
+  ping();
   const srcRoot = path.join(__dirname, '../../..', VOVK_WATCH_DIR ?? './src');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for await (const info of fs.watch(srcRoot, { recursive: true })) {
@@ -173,10 +175,10 @@ async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
         if (stats.isFile()) {
           const fileContent = await fs.readFile(filename, 'utf-8');
           const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
-          if (importRegex.test(fileContent)) void ping();
+          if (importRegex.test(fileContent)) ping();
         }
-      } catch (error) {
-        console.error(' 🐺 Error reading file:', error);
+      } catch {
+        // ignore
       }
     }
   }
