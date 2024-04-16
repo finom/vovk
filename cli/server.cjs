@@ -168,7 +168,13 @@ async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
   const srcRoot = path.join(__dirname, '../../..', VOVK_WATCH_DIR ?? './src');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for await (const info of fs.watch(srcRoot, { recursive: true })) {
-    if (info.filename) {
+    if (
+      info.filename &&
+      (info.filename.endsWith('.ts') ||
+        info.filename.endsWith('.tsx') ||
+        info.filename.endsWith('.js') ||
+        info.filename.endsWith('.jsx'))
+    ) {
       const filename = path.join(srcRoot, info.filename);
       try {
         const stats = await fs.lstat(filename);
