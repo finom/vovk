@@ -10,11 +10,11 @@
     <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
     <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
   </picture><br>
-  <strong>REST for Next</strong>
+  <strong>RESTful RPC for Next.js</strong>
 </p>
 
 <p align="center">
-  Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful and extensible REST API platform. 
+  Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful and extensible REST API platform with RPC capabilities. 
   <br/>
   Made with <a href="https://www.typescriptlang.org/">TypeScript</a>, inspired by <a href="https://nestjs.com/">NestJS</a>.
 </p>
