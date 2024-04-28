@@ -164,7 +164,7 @@ async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
   // Old approach: setInterval(() => void ping(), 1000 * 3);
 
   // initial ping
-  ping();
+  setTimeout(ping, 3000);
   const srcRoot = path.join(__dirname, '../../..', VOVK_WATCH_DIR ?? './src');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for await (const info of fs.watch(srcRoot, { recursive: true })) {
