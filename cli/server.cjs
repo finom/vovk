@@ -180,7 +180,7 @@ async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
         const stats = await fs.lstat(filename);
         if (stats.isFile()) {
           const fileContent = await fs.readFile(filename, 'utf-8');
-          const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
+          const importRegex = /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
           if (importRegex.test(fileContent)) ping();
         }
       } catch {
