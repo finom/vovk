@@ -71,7 +71,7 @@ export type _VovkWorkerMetadata = {
 
 export type _VovkControllerInternal = _VovkControllerMetadata & {
   _activated?: true;
-  _onError?: (err: Error, req: NextRequest) => void | Promise<void>;
+  _onError?: (err: Error, req: _VovkRequest) => void | Promise<void>;
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -92,7 +92,7 @@ export type _DecoratorOptions = {
 };
 
 export type _RouteHandler = ((
-  req: NextRequest,
+  req: _VovkRequest,
   params: Record<string, string>
 ) => Response | Promise<Response> | Iterable<unknown> | AsyncIterable<unknown>) & {
   _options?: _DecoratorOptions;
