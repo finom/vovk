@@ -158,7 +158,7 @@ export type _VovkControllerReturnType<
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<T>>;
 
-export type _VovkYieldType<
+export type _VovkControlerYieldType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
@@ -172,7 +172,7 @@ export type _VovkYieldType<
 
 export type _VovkReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
 
-export type _VovkClientYieldType<T extends (...args: _KnownAny[]) => unknown> = T extends (
+export type _VovkYieldType<T extends (...args: _KnownAny[]) => unknown> = T extends (
   ...args: _KnownAny[]
 ) => Promise<StreamAsyncIterator<infer Y>>
   ? Y
