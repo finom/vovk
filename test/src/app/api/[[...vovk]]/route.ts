@@ -38,9 +38,9 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
     StreamingController,
     StreamingGeneratorController,
   },
-  onError: (err) => {
+  onError: (err, req) => {
     // eslint-disable-next-line no-console
-    console.log('onError', err.message);
+    console.log('onError', err.message, req);
   },
 });
 

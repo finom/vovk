@@ -148,8 +148,47 @@ const server = http.createServer((req, res) => {
   }
 });
 
-/** @type {(env: import('../src').VovkEnv) => Promise<void>} */
-async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
+/** @type {(filename: string) => Promise<void>} */
+async function handleFileChange(filename) {
+  try {
+    const stats = await fs.lstat(filename);
+    if (stats.isFile()) {
+      const fileContent = await fs.readFile(filename, 'utf-8');
+      const importRegex = /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
+      if (importRegex.test(fileContent)) ping();
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/** @type {(srcRoot: string) => Promise<void>} */
+async function watchControllers(srcRoot) {
+  for await (const info of fs.watch(srcRoot, { recursive: true })) {
+    if (
+      info.filename &&
+      (info.filename.endsWith('.ts') ||
+        info.filename.endsWith('.tsx') ||
+        info.filename.endsWith('.js') ||
+        info.filename.endsWith('.jsx'))
+    ) {
+      const filename = path.join(srcRoot, info.filename);
+      await handleFileChange(filename);
+    }
+  }
+}
+
+/** @type {(routePath: string) => Promise<void>} */
+async function watchRouteFile(routePath) {
+  for await (const info of fs.watch(routePath)) {
+    if (info.filename) {
+      await handleFileChange(routePath);
+    }
+  }
+}
+
+/** @type {(env: import('../src').VovkEnv) => void} */
+function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR, VOVK_ROUTE_FILE }) {
   if (!VOVK_PORT) {
     console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
     process.exit(1);
@@ -166,28 +205,10 @@ async function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR }) {
   // initial ping
   setTimeout(ping, 3000);
   const srcRoot = path.join(__dirname, '../../..', VOVK_WATCH_DIR ?? './src');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  for await (const info of fs.watch(srcRoot, { recursive: true })) {
-    if (
-      info.filename &&
-      (info.filename.endsWith('.ts') ||
-        info.filename.endsWith('.tsx') ||
-        info.filename.endsWith('.js') ||
-        info.filename.endsWith('.jsx'))
-    ) {
-      const filename = path.join(srcRoot, info.filename);
-      try {
-        const stats = await fs.lstat(filename);
-        if (stats.isFile()) {
-          const fileContent = await fs.readFile(filename, 'utf-8');
-          const importRegex = /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
-          if (importRegex.test(fileContent)) ping();
-        }
-      } catch {
-        // ignore
-      }
-    }
-  }
+  const routePath = path.join(__dirname, '../../..', VOVK_ROUTE_FILE ?? './src/app/api/[[...vovk]]/route.ts');
+
+  void watchControllers(srcRoot);
+  void watchRouteFile(routePath);
 }
 
 if (process.env.__VOVK_START_SERVER__) {

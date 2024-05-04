@@ -11,6 +11,7 @@ export type _VovkConfig = {
   prefix?: string;
   validateOnClient?: string;
   watchDir?: string;
+  routeFile?: string;
 };
 
 export type _VovkEnv = Partial<{
@@ -22,6 +23,7 @@ export type _VovkEnv = Partial<{
   VOVK_PORT: string;
   VOVK_CLIENT_OUT: string;
   VOVK_WATCH_DIR: string;
+  VOVK_ROUTE_FILE: string;
   __VOVK_START_SERVER__: string;
 }>;
 
@@ -69,7 +71,7 @@ export type _VovkWorkerMetadata = {
 
 export type _VovkControllerInternal = _VovkControllerMetadata & {
   _activated?: true;
-  _onError?: (err: Error) => void | Promise<void>;
+  _onError?: (err: Error, req: NextRequest) => void | Promise<void>;
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types

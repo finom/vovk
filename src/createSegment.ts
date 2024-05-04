@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { NextRequest } from 'next/server';
 import { _Segment as Segment } from './Segment';
 import {
   _HttpMethod as HttpMethod,
@@ -166,7 +167,7 @@ export function _createSegment() {
     workers?: Record<string, Function>;
     exposeValidation?: boolean;
     emitMetadata?: boolean;
-    onError?: (err: Error) => void | Promise<void>;
+    onError?: (err: Error, req: NextRequest) => void | Promise<void>;
     onMetadata?: (metadata: VovkMetadata) => void | Promise<void>;
   }) => {
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
