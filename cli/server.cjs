@@ -194,7 +194,9 @@ function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR, VOVK_ROUTE_FILE }) {
     process.exit(1);
   }
   server.listen(VOVK_PORT, () => {
-    console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}. Watching directory ${VOVK_WATCH_DIR}`);
+    console.info(
+      ` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}. Watching controllers directory at ${VOVK_WATCH_DIR} and route file at ${VOVK_ROUTE_FILE}. Happy coding!`
+    );
   });
 
   void writeEmptyMetadata();
