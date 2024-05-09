@@ -11,7 +11,6 @@ export type _VovkConfig = {
   prefix?: string;
   validateOnClient?: string;
   watchDir?: string;
-  routeFile?: string;
 };
 
 export type _VovkEnv = Partial<{
@@ -23,7 +22,6 @@ export type _VovkEnv = Partial<{
   VOVK_PORT: string;
   VOVK_CLIENT_OUT: string;
   VOVK_WATCH_DIR: string;
-  VOVK_ROUTE_FILE: string;
   __VOVK_START_SERVER__: string;
 }>;
 

@@ -12,7 +12,6 @@ async function getVars(options = {}) {
     fetcher: 'vovk/client/defaultFetcher',
     prefix: '/api',
     validateOnClient: '',
-    routeFile: './src/app/api/[[...vovk]]/route.ts',
     watchDir: './src',
   };
 
@@ -32,7 +31,6 @@ async function getVars(options = {}) {
     VOVK_FETCHER: process.env.VOVK_FETCHER || vovkConfig.fetcher,
     VOVK_PREFIX: process.env.VOVK_PREFIX || vovkConfig.prefix,
     VOVK_VALIDATE_ON_CLIENT: process.env.VOVK_VALIDATE_ON_CLIENT || vovkConfig.validateOnClient,
-    VOVK_ROUTE_FILE: process.env.VOVK_ROUTE_FILE || vovkConfig.routeFile,
     VOVK_WATCH_DIR: process.env.VOVK_WATCH_DIR || vovkConfig.watchDir,
     __VOVK_START_SERVER__: process.env.__VOVK_START_SERVER__ || '',
   };

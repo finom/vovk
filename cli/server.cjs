@@ -188,14 +188,14 @@ async function watchRouteFile(routePath) {
 }
 
 /** @type {(env: import('../src').VovkEnv) => void} */
-function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR, VOVK_ROUTE_FILE }) {
+function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR, VOVK_ROUTE }) {
   if (!VOVK_PORT) {
     console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
     process.exit(1);
   }
   server.listen(VOVK_PORT, () => {
     console.info(
-      ` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}. Watching controllers directory at ${VOVK_WATCH_DIR} and route file at ${VOVK_ROUTE_FILE}. Happy coding!`
+      ` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}. Watching controllers directory at ${VOVK_WATCH_DIR} and route file at ${VOVK_ROUTE}. Happy coding!`
     );
   });
 
@@ -207,7 +207,7 @@ function startVovkServer({ VOVK_PORT, VOVK_WATCH_DIR, VOVK_ROUTE_FILE }) {
   // initial ping
   setTimeout(ping, 3000);
   const srcRoot = path.join(__dirname, '../../..', VOVK_WATCH_DIR ?? './src');
-  const routePath = path.join(__dirname, '../../..', VOVK_ROUTE_FILE ?? './src/app/api/[[...vovk]]/route.ts');
+  const routePath = path.join(__dirname, '../../..', VOVK_ROUTE ?? './src/app/api/[[...vovk]]/route.ts');
 
   void watchControllers(srcRoot);
   void watchRouteFile(routePath);
