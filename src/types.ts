@@ -10,7 +10,7 @@ export type _VovkConfig = {
   fetcher?: string;
   prefix?: string;
   validateOnClient?: string;
-  watchDir?: string;
+  modulesDir?: string;
 };
 
 export type _VovkEnv = Partial<{
@@ -21,7 +21,7 @@ export type _VovkEnv = Partial<{
   VOVK_VALIDATE_ON_CLIENT: string;
   VOVK_PORT: string;
   VOVK_CLIENT_OUT: string;
-  VOVK_WATCH_DIR: string;
+  VOVK_MODULES_DIR: string;
   __VOVK_START_SERVER__: string;
 }>;
 
