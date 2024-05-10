@@ -154,7 +154,8 @@ async function handleFileChange(filename) {
     const stats = await fs.lstat(filename);
     if (stats.isFile()) {
       const fileContent = await fs.readFile(filename, 'utf-8');
-      const importRegex = /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
+      const importRegex =
+        /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options|worker)\b[^}]*}\s*from\s*['"]vovk['"]/;
       if (importRegex.test(fileContent)) ping();
     }
   } catch {
@@ -165,13 +166,7 @@ async function handleFileChange(filename) {
 /** @type {(srcRoot: string) => Promise<void>} */
 async function watchControllers(srcRoot) {
   for await (const info of fs.watch(srcRoot, { recursive: true })) {
-    if (
-      info.filename &&
-      (info.filename.endsWith('.ts') ||
-        info.filename.endsWith('.tsx') ||
-        info.filename.endsWith('.js') ||
-        info.filename.endsWith('.jsx'))
-    ) {
+    if (info.filename && (info.filename.endsWith('.ts') || info.filename.endsWith('.tsx'))) {
       const filename = path.join(srcRoot, info.filename);
       await handleFileChange(filename);
     }
@@ -195,7 +190,7 @@ function startVovkServer({ VOVK_PORT, VOVK_MODULES_DIR, VOVK_ROUTE }) {
   }
   server.listen(VOVK_PORT, () => {
     console.info(
-      ` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}. Watching controllers directory at ${VOVK_MODULES_DIR} and route file at ${VOVK_ROUTE}. Happy coding!`
+      ` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}. Watching modules directory at ${VOVK_MODULES_DIR} and route file at ${VOVK_ROUTE}. Happy coding!`
     );
   });
 
