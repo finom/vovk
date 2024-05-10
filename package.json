@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "bin": "./cli/index.cjs",
   "scripts": {
