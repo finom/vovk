@@ -11,6 +11,7 @@
     <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
   </picture><br>
   <strong>RESTful RPC for Next.js</strong>
+  <a href="https://vovk.dev/blog/vovk-2-0">🎉 Vovk 2.0 is released. Read more →</a>
 </p>
 
 <p align="center">
