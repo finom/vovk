@@ -11,11 +11,13 @@
     <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
   </picture><br>
   <strong>RESTful RPC for Next.js</strong>
-  <a href="https://vovk.dev/blog/vovk-2-0">🎉 Vovk 2.0 is released. Read more →</a>
+  
 </p>
 
 <p align="center">
   Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful and extensible REST API platform with RPC capabilities. 
+  <br><br>
+  <a href="https://vovk.dev/blog/vovk-2-0">🎉 Vovk 2.0 is released. Read more →</a>
 </p>
 
 <p align="center">
