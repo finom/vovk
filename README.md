@@ -15,8 +15,6 @@
 
 <p align="center">
   Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful and extensible REST API platform with RPC capabilities. 
-  <br/>
-  Made with <a href="https://www.typescriptlang.org/">TypeScript</a>, inspired by <a href="https://nestjs.com/">NestJS</a>.
 </p>
 
 <p align="center">
