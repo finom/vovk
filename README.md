@@ -70,7 +70,7 @@ export default class PostController {
 
 Example component that uses the auto-generated client library:
 
-```ts
+```tsx
 'use client';
 import { useState } from 'react';
 import { PostController } from 'vovk-client';
@@ -88,7 +88,7 @@ export default function Example() {
               content: 'Hello, World!', 
               userId: '1', 
             },
-            params: { postId: '1' },
+            params: { postId: '69' },
             query: { notificationType: 'push' }
           })
         )}
@@ -99,4 +99,16 @@ export default function Example() {
     </>
   );
 }
+```
+
+Alternatively, the resource can be fetched wit the regular `fetch` function:
+
+```ts
+fetch('/api/posts/69?notificationType=push', {
+  method: 'POST',
+  body: JSON.stringify({ 
+    content: 'Hello, World!', 
+    userId: '1', 
+  }),
+})
 ```
