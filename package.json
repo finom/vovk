@@ -25,7 +25,7 @@
     "beta-patch": "npm t && npm version prepatch --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "beta-minor": "npm t && npm version preminor --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "BREAKING-beta-major": "npm t && npm version premajor --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
-    "release-explicit-version": "npm t && npm version 2.0.0 && npm run build && npm publish ./dist --tag beta && git push && git push --tags"
+    "release-explicit-version": "npm t && npm version 2.0.0 && npm run build && npm publish ./dist && git push && git push --tags"
   },
   "prettier": {
     "trailingComma": "es5",
