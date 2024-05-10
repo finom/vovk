@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { ClientController as ClientControllerClientized } from 'vovk-client';
 import { HttpException } from 'vovk'; // it's used by vovk-client
-import { VovkClientBody, VovkClientParams, VovkClientQuery, VovkClientReturnType } from '../../../src';
+import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
 import { it, xit, expect, describe } from '@jest/globals';
 import type ClientController from './ClientController';
 
@@ -45,16 +45,16 @@ describe('Client with vovk-client', () => {
       params: { hello: 'world' },
     });
 
-    type Params = VovkClientParams<ClientizedType['getWithParams']>;
+    type Params = VovkParams<ClientizedType['getWithParams']>;
 
-    null as unknown as VovkClientParams<ClientizedType['getWithParams']> satisfies Params;
+    null as unknown as VovkParams<ClientizedType['getWithParams']> satisfies Params;
     // @ts-expect-error Expect error
-    null as unknown as VovkClientBody<ClientizedType['getWithParams']> satisfies { hello: 'world' };
-    null as unknown as VovkClientBody<ClientizedType['getWithParams']> satisfies undefined;
+    null as unknown as VovkBody<ClientizedType['getWithParams']> satisfies { hello: 'world' };
+    null as unknown as VovkBody<ClientizedType['getWithParams']> satisfies undefined;
 
     // @ts-expect-error Expect error
-    null as unknown as VovkClientQuery<ClientizedType['getWithParams']> satisfies { hello: 'world' };
-    null as unknown as VovkClientQuery<ClientizedType['getWithParams']> satisfies undefined;
+    null as unknown as VovkQuery<ClientizedType['getWithParams']> satisfies { hello: 'world' };
+    null as unknown as VovkQuery<ClientizedType['getWithParams']> satisfies undefined;
 
     expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
   });
@@ -66,25 +66,25 @@ describe('Client with vovk-client', () => {
       query: { query: 'queryValue' },
     });
 
-    type Body = VovkClientBody<ClientizedType['postWithParams']>;
+    type Body = VovkBody<ClientizedType['postWithParams']>;
 
-    type Query = VovkClientQuery<ClientizedType['postWithParams']>;
+    type Query = VovkQuery<ClientizedType['postWithParams']>;
 
-    type Params = VovkClientParams<ClientizedType['postWithParams']>;
+    type Params = VovkParams<ClientizedType['postWithParams']>;
 
-    null as unknown as VovkClientBody<ClientizedType['postWithParams']> satisfies Body;
+    null as unknown as VovkBody<ClientizedType['postWithParams']> satisfies Body;
     // @ts-expect-error Expect error
-    null as unknown as VovkClientBody<ClientControllerType['postWithParams']> satisfies { hello: 'foo' };
+    null as unknown as VovkBody<ClientControllerType['postWithParams']> satisfies { hello: 'foo' };
 
-    null as unknown as VovkClientQuery<ClientizedType['postWithParams']> satisfies Query;
+    null as unknown as VovkQuery<ClientizedType['postWithParams']> satisfies Query;
     // @ts-expect-error Expect error
-    null as unknown as VovkClientQuery<ClientizedType['postWithParams']> satisfies { query: 'bar' };
+    null as unknown as VovkQuery<ClientizedType['postWithParams']> satisfies { query: 'bar' };
 
-    null as unknown as VovkClientParams<ClientizedType['postWithParams']> satisfies Params;
+    null as unknown as VovkParams<ClientizedType['postWithParams']> satisfies Params;
     // @ts-expect-error Expect error
-    null as unknown as VovkClientBody<ClientizedType['postWithParams']> satisfies { hello: 'baz' };
+    null as unknown as VovkBody<ClientizedType['postWithParams']> satisfies { hello: 'baz' };
 
-    expect(result satisfies VovkClientReturnType<ClientizedType['postWithParams']>).toEqual({
+    expect(result satisfies VovkReturnType<ClientizedType['postWithParams']>).toEqual({
       params: { hello: 'world' },
       body: { isBody: true },
       query: { query: 'queryValue' },
@@ -282,7 +282,7 @@ describe('Client with vovk-client', () => {
     const staticAPIWithCustomSlug = await ClientControllerClientized.generateStaticAPIWithCustomSlug();
 
     expect(staticAPI).toEqual([
-      { vovk: ['__ping'] },
+      { vovk: ['_vovk-ping_'] },
       { vovk: ['client', 'get-hello-world'] },
       { vovk: ['client', 'get-hello-world-array'] },
       { vovk: ['client', 'get-hello-world-and-empty-generic'] },
@@ -296,7 +296,7 @@ describe('Client with vovk-client', () => {
     ]);
 
     expect(staticAPIWithCustomSlug).toEqual([
-      { custom: ['__ping'] },
+      { custom: ['_vovk-ping_'] },
       { custom: ['client', 'get-hello-world'] },
       { custom: ['client', 'get-hello-world-array'] },
       { custom: ['client', 'get-hello-world-and-empty-generic'] },

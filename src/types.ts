@@ -10,6 +10,7 @@ export type _VovkConfig = {
   fetcher?: string;
   prefix?: string;
   validateOnClient?: string;
+  modulesDir?: string;
 };
 
 export type _VovkEnv = Partial<{
@@ -20,6 +21,8 @@ export type _VovkEnv = Partial<{
   VOVK_VALIDATE_ON_CLIENT: string;
   VOVK_PORT: string;
   VOVK_CLIENT_OUT: string;
+  VOVK_MODULES_DIR: string;
+  __VOVK_START_SERVER__: string;
 }>;
 
 export type _VovkMetadata = Record<string, _VovkControllerMetadata> & { workers?: Record<string, _VovkWorkerMetadata> };
@@ -66,7 +69,7 @@ export type _VovkWorkerMetadata = {
 
 export type _VovkControllerInternal = _VovkControllerMetadata & {
   _activated?: true;
-  _onError?: (err: Error) => void | Promise<void>;
+  _onError?: (err: Error, req: _VovkRequest) => void | Promise<void>;
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -87,7 +90,7 @@ export type _DecoratorOptions = {
 };
 
 export type _RouteHandler = ((
-  req: NextRequest,
+  req: _VovkRequest,
   params: Record<string, string>
 ) => Response | Promise<Response> | Iterable<unknown> | AsyncIterable<unknown>) & {
   _options?: _DecoratorOptions;
@@ -111,49 +114,49 @@ export type _ControllerStaticMethod<
   _controller?: _VovkController;
 };
 
-export type _VovkBody<
+export type _VovkControllerBody<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<Parameters<T>[0]['json']>>;
 
-export type _VovkQuery<
+export type _VovkControllerQuery<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'];
 
-export type _VovkParams<
+export type _VovkControllerParams<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Parameters<T>[1];
 
-export type _VovkClientBody<
+export type _VovkBody<
   T extends (options: OPTIONS) => _KnownAny,
   OPTIONS extends { body: B; [key: string]: _KnownAny } = Parameters<T>[0],
   B = _KnownAny,
 > = Parameters<T>[0]['body'];
 
-export type _VovkClientQuery<
+export type _VovkQuery<
   T extends (options: OPTIONS) => _KnownAny,
   OPTIONS extends { query: Q; [key: string]: _KnownAny } = Parameters<T>[0],
   Q = _KnownAny,
 > = Parameters<T>[0]['query'];
 
-export type _VovkClientParams<
+export type _VovkParams<
   T extends (options: OPTIONS) => _KnownAny,
   OPTIONS extends { params: P; [key: string]: _KnownAny } = Parameters<T>[0],
   P = _KnownAny,
 > = Parameters<T>[0]['params'];
 
-export type _VovkReturnType<
+export type _VovkControllerReturnType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<T>>;
 
-export type _VovkYieldType<
+export type _VovkControlerYieldType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
@@ -165,9 +168,9 @@ export type _VovkYieldType<
       ? Y
       : never;
 
-export type _VovkClientReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
+export type _VovkReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
 
-export type _VovkClientYieldType<T extends (...args: _KnownAny[]) => unknown> = T extends (
+export type _VovkYieldType<T extends (...args: _KnownAny[]) => unknown> = T extends (
   ...args: _KnownAny[]
 ) => Promise<StreamAsyncIterator<infer Y>>
   ? Y

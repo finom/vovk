@@ -21,7 +21,7 @@ export function _promisifyWorker<T extends object>(
     currentWorker = null;
   };
 
-  instance.use = (worker: Worker) => {
+  instance.employ = (worker: Worker) => {
     if (instance._isTerminated) return instance;
     instance._isTerminated = true;
     currentWorker = worker;

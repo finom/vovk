@@ -10,6 +10,7 @@ import {
   type _VovkWorker as VovkWorker,
   type _VovkMetadata as VovkMetadata,
   type _DecoratorOptions as DecoratorOptions,
+  type _VovkRequest as VovkRequest,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -166,7 +167,7 @@ export function _createSegment() {
     workers?: Record<string, Function>;
     exposeValidation?: boolean;
     emitMetadata?: boolean;
-    onError?: (err: Error) => void | Promise<void>;
+    onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
     onMetadata?: (metadata: VovkMetadata) => void | Promise<void>;
   }) => {
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {

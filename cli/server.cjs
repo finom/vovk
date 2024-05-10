@@ -60,18 +60,16 @@ const showDiff = ({ addedKeys, removedKeys, constantName }) => {
   console.info(' };');
 };
 
-void writeEmptyMetadata();
-
 let is404Reported = false;
 
 /** @type {() => Promise<void>} */
-const ping = async () => {
-  const vars = await getVars();
-  let prefix = vars.VOVK_PREFIX;
+const pingNoDebounce = async () => {
+  const env = await getVars();
+  let prefix = env.VOVK_PREFIX;
   prefix = prefix.startsWith('http://')
     ? prefix
-    : `http://localhost:${process.env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
-  const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/__ping`;
+    : `http://localhost:${env.PORT}/${prefix.startsWith('/') ? prefix.slice(1) : prefix}`;
+  const endpoint = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}/_vovk-ping_`;
   const req = http.get(endpoint, (resp) => {
     if (!is404Reported && resp.statusCode === 404) {
       console.info(
@@ -86,8 +84,13 @@ const ping = async () => {
   });
 };
 
-// start pinging immediately
-setInterval(() => void ping(), 1000 * 3);
+/** @type {NodeJS.Timeout} */
+let timer;
+/** @type {() => void} */
+const ping = () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => void pingNoDebounce(), 1000);
+};
 
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/__metadata') {
@@ -103,8 +106,8 @@ const server = http.createServer((req, res) => {
         /** @type {{ metadata: import('../src').VovkMetadata }} */
         const { metadata } = JSON.parse(body);
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
-        const vars = await getVars();
-        const codeWritten = await generateClient(vars);
+        const env = await getVars();
+        const codeWritten = await generateClient(env);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
         if (metadataWritten.written) {
@@ -145,11 +148,68 @@ const server = http.createServer((req, res) => {
   }
 });
 
-const VOVK_PORT = process.env.VOVK_PORT;
-if (!VOVK_PORT) {
-  console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
-  process.exit(1);
+/** @type {(filename: string) => Promise<void>} */
+async function handleFileChange(filename) {
+  try {
+    const stats = await fs.lstat(filename);
+    if (stats.isFile()) {
+      const fileContent = await fs.readFile(filename, 'utf-8');
+      const importRegex =
+        /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options|worker)\b[^}]*}\s*from\s*['"]vovk['"]/;
+      if (importRegex.test(fileContent)) ping();
+    }
+  } catch {
+    // ignore
+  }
 }
-server.listen(VOVK_PORT, () => {
-  console.info(` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}`);
-});
+
+/** @type {(srcRoot: string) => Promise<void>} */
+async function watchControllers(srcRoot) {
+  for await (const info of fs.watch(srcRoot, { recursive: true })) {
+    if (info.filename && (info.filename.endsWith('.ts') || info.filename.endsWith('.tsx'))) {
+      const filename = path.join(srcRoot, info.filename);
+      await handleFileChange(filename);
+    }
+  }
+}
+
+/** @type {(routePath: string) => Promise<void>} */
+async function watchRouteFile(routePath) {
+  for await (const info of fs.watch(routePath)) {
+    if (info.filename) {
+      await handleFileChange(routePath);
+    }
+  }
+}
+
+/** @type {(env: import('../src').VovkEnv) => void} */
+function startVovkServer({ VOVK_PORT, VOVK_MODULES_DIR, VOVK_ROUTE }) {
+  if (!VOVK_PORT) {
+    console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
+    process.exit(1);
+  }
+  server.listen(VOVK_PORT, () => {
+    console.info(
+      ` 🐺 Vovk Metadata Server is running on port ${VOVK_PORT}. Watching modules directory at ${VOVK_MODULES_DIR} and route file at ${VOVK_ROUTE}. Happy coding!`
+    );
+  });
+
+  void writeEmptyMetadata();
+
+  // due to changes at Next.js 14.2.0 we get too many logs, therefore the interval should be changed to fs.watch
+  // Old approach: setInterval(() => void ping(), 1000 * 3);
+
+  // initial ping
+  setTimeout(ping, 3000);
+  const srcRoot = path.join(__dirname, '../../..', VOVK_MODULES_DIR ?? './src/modules');
+  const routePath = path.join(__dirname, '../../..', VOVK_ROUTE ?? './src/app/api/[[...vovk]]/route.ts');
+
+  void watchControllers(srcRoot);
+  void watchRouteFile(routePath);
+}
+
+if (process.env.__VOVK_START_SERVER__) {
+  void getVars().then(startVovkServer);
+}
+
+module.exports = { startVovkServer };

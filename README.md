@@ -15,9 +15,9 @@
 </p>
 
 <p align="center">
-  Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful and extensible REST API platform with RPC capabilities. 
+  Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful REST API platform with RPC capabilities. 
   <br><br>
-  <!-- <a href="https://vovk.dev/blog/vovk-2-0">🎉 Vovk 2.0 is released. Read more →</a> -->
+  <a href="https://vovk.dev/blog/vovk-2-0">🎉 Vovk 2.0 is released. Read more →</a>
 </p>
 
 <p align="center">
@@ -80,7 +80,7 @@ import { PostController } from 'vovk-client';
 import type { VovkReturnType } from 'vovk';
  
 export default function Example() {
-  const [response, setResponse] = useState<VovkReturnType<typeof HelloController.getHello>>();
+  const [response, setResponse] = useState<VovkReturnType<typeof PostController.createComment>>();
  
   return (
     <>

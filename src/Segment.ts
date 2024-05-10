@@ -1,4 +1,3 @@
-import type { NextRequest } from 'next/server';
 import {
   _HttpMethod as HttpMethod,
   _HttpStatus as HttpStatus,
@@ -6,6 +5,7 @@ import {
   type _VovkErrorResponse as VovkErrorResponse,
   type _VovkController as VovkController,
   type _DecoratorOptions as DecoratorOptions,
+  type _VovkRequest as VovkRequest,
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
 import { _StreamResponse as StreamResponse } from './StreamResponse';
@@ -37,25 +37,25 @@ export class _Segment {
     OPTIONS: new Map(),
   };
 
-  GET = (req: NextRequest, data: { params: Record<string, string[]> }) => {
+  GET = (req: VovkRequest, data: { params: Record<string, string[]> }) => {
     return this.#callMethod(HttpMethod.GET, req, data.params);
   };
-  POST = (req: NextRequest, data: { params: Record<string, string[]> }) =>
+  POST = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.POST, req, data.params);
 
-  PUT = (req: NextRequest, data: { params: Record<string, string[]> }) =>
+  PUT = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.PUT, req, data.params);
 
-  PATCH = (req: NextRequest, data: { params: Record<string, string[]> }) =>
+  PATCH = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.PATCH, req, data.params);
 
-  DELETE = (req: NextRequest, data: { params: Record<string, string[]> }) =>
+  DELETE = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.DELETE, req, data.params);
 
-  HEAD = (req: NextRequest, data: { params: Record<string, string[]> }) =>
+  HEAD = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.HEAD, req, data.params);
 
-  OPTIONS = (req: NextRequest, data: { params: Record<string, string[]> }) =>
+  OPTIONS = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.OPTIONS, req, data.params);
 
   #respond = (status: HttpStatus, body: unknown, options?: DecoratorOptions) => {
@@ -80,11 +80,11 @@ export class _Segment {
     );
   };
 
-  #callMethod = async (httpMethod: HttpMethod, req: NextRequest, params: Record<string, string[]>) => {
+  #callMethod = async (httpMethod: HttpMethod, req: VovkRequest, params: Record<string, string[]>) => {
     const controllers = this._routes[httpMethod];
     const methodParams: Record<string, string> = {};
 
-    if (params[Object.keys(params)[0]]?.[0] === '__ping') {
+    if (params[Object.keys(params)[0]]?.[0] === '_vovk-ping_') {
       return this.#respond(200, { message: 'pong' });
     }
 
@@ -213,7 +213,7 @@ export class _Segment {
     } catch (e) {
       const err = e as HttpException;
       try {
-        await controller._onError?.(err);
+        await controller._onError?.(err, req);
       } catch (onErrorError) {
         // eslint-disable-next-line no-console
         console.error(onErrorError);

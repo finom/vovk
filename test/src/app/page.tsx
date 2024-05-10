@@ -17,7 +17,7 @@ export default function Home() {
     };
     if (win.metadataWorker) return;
 
-    MyWorkerPromisified.use(new Worker(new URL('../worker/MyWorker.ts', import.meta.url)));
+    MyWorkerPromisified.employ(new Worker(new URL('../worker/MyWorker.ts', import.meta.url)));
 
     const metadataWorker = promisifyWorker<typeof MyWorker>(
       new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
