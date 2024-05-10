@@ -29,7 +29,7 @@ if (command === 'dev') {
         }));
 
     if (!PORT) {
-      throw new Error(' 🐺 ❌ PORT env variable is required in --next-dev mode');
+      throw new Error(' 🐺 ❌ PORT env variable is required');
     }
 
     const serverEnv = { VOVK_CLIENT_OUT: clientOut, PORT, __VOVK_START_SERVER__: '' };
