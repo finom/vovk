@@ -36,17 +36,34 @@
 Example back-end Controller Class:
 
 ```ts
-import { get, prefix } from 'vovk';
-
-@prefix('hello')
-export default class HelloController {
+// /src/modules/post/PostController.ts
+import { get, prefix, type VovkRequest } from 'vovk';
+import PostService from './PostService';
+ 
+@prefix('posts')
+export default class PostController {
   /**
-   * Return a greeting from 
-   * GET /api/hello/greeting
+   * Create a comment on a post
+   * POST /api/posts/:postId/comments
    */
-  @get('greeting')
-  static getHello() {
-    return { greeting: 'Hello world!' };
+  @post(':postId/comments')
+  static async createComment(
+    // decorate NextRequest type with body and query types
+    req: VovkRequest<
+      { content: string; userId: string }, 
+      { notificationType: 'push' | 'email' }
+    >,
+    { postId }: { postId: string } // params
+  ) {
+    // use standard Next.js API to get body and query
+    const { content, userId } = await req.json();
+    const notificationType = req.nextUrl.searchParams
+      .get('notificationType');
+ 
+    // perform the request to the database in a custom service
+    return PostService.createComment({ 
+      postId, content, userId, notificationType,
+    });
   }
 }
 ```
@@ -56,26 +73,29 @@ Example component that uses the auto-generated client library:
 ```ts
 'use client';
 import { useState } from 'react';
-import { HelloController } from 'vovk-client';
-import type { VovkClientReturnType } from 'vovk';
-
+import { PostController } from 'vovk-client';
+import type { VovkReturnType } from 'vovk';
+ 
 export default function Example() {
-  const [
-    serverResponse, setServerResponse,
-  ] = useState<VovkClientReturnType<typeof HelloController.getHello>>();
-
+  const [response, setResponse] = useState<VovkReturnType<typeof HelloController.getHello>>();
+ 
   return (
     <>
       <button
-        onClick={async () => {
-          setServerResponse(
-            await HelloController.getHello()
-          );
-        }}
+        onClick={async () => setResponse(
+          await PostController.createComment({
+            body: { 
+              content: 'Hello, World!', 
+              userId: '1', 
+            },
+            params: { postId: '1' },
+            query: { notificationType: 'push' }
+          })
+        )}
       >
-        Get Greeting from Server
+        Post a comment
       </button>
-      <div>{serverResponse?.greeting}</div>
+      <div>{JSON.stringify(response)}</div>
     </>
   );
 }
