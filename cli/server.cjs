@@ -73,7 +73,7 @@ const pingNoDebounce = async () => {
   const req = http.get(endpoint, (resp) => {
     if (!is404Reported && resp.statusCode === 404) {
       console.info(
-        ` 🐺 🟡 Vovk Metadata Server is running fine but it seems like the wildcard route file is not created yet. See https://docs.vovk.dev/docs/intro for more information.`
+        ` 🐺 🟡 Vovk Metadata Server is running fine but it seems like the wildcard route file is not created yet. See https://vovk.dev/getting-started for more information.`
       );
       is404Reported = true;
     }
