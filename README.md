@@ -60,8 +60,7 @@ export default class PostController {
   ) {
     // use standard Next.js API to get body and query
     const { content, userId } = await req.json();
-    const notificationType = req.nextUrl.searchParams
-      .get('notificationType');
+    const notificationType = req.nextUrl.searchParams.get('notificationType');
  
     // perform the request to the database in a custom service
     return PostService.createComment({ 
