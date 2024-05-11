@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://vovk.dev/">Documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/finom/examples">Code Examples</a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/finom/vovk-examples">Code Examples</a>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-zod">vovk-zod</a>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-hello-world">vovk-hello-world</a>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/finom/vovk-react-native-example">vovk-react-native-example</a>
