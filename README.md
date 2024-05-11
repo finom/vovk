@@ -1,9 +1,3 @@
-<p align="center">
-  <a target="_blank" class="font-semibold" href="https://supportukrainenow.org/">🌻 Support Ukraine Now! 🇺🇦</a>
-</p>
-
-<hr />
-
 <p align="center"> 
   <picture>
     <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
