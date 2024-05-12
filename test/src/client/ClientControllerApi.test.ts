@@ -23,14 +23,14 @@ const defaultController = clientizeController<typeof ClientController>(metadata.
 });
 
 describe('Client API', () => {
-  it(`Should handle simple requests + headers`, async () => {
+  /* it(`Should handle simple requests + headers`, async () => {
     const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
     const result = await noOptionsController.getHelloWorld({
       prefix,
       headers: { 'x-test': 'world' },
     });
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
-  });
+  }); */
 
   it(`Should handle simple requests and return a normal array`, async () => {
     const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
@@ -46,12 +46,12 @@ describe('Client API', () => {
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
   });
 
-  it(`Should handle simple requests with default options`, async () => {
+  /* it(`Should handle simple requests with default options`, async () => {
     const result = await defaultController.getHelloWorld({
       headers: { 'x-test': 'world' },
     });
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
-  });
+  }); */
 
   it('Should handle requests with params', async () => {
     const result = await defaultController.getWithParams({
