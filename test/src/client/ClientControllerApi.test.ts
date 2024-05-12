@@ -20,9 +20,11 @@ describe('Client API', () => {
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });
 
-  it('Should handle no options', async () => {
+  it('Should handle custom options', async () => {
     const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
-    const result = await noOptionsController.getHelloWorldObjectLiteral();
+    const result = await noOptionsController.getHelloWorldObjectLiteral({
+      prefix,
+    });
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });
 

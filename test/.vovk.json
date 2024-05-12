@@ -175,7 +175,7 @@
     "MyWorker": {
       "_workerName": "MyWorker",
       "_handlers": {
-        "getHetClientizeHelloWorld": {},
+        "getClientizeHelloWorld": {},
         "calculateFibonacci": {},
         "findLargestPrimeBelow": {},
         "asyncGenerator": {

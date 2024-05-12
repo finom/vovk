@@ -70,7 +70,7 @@ describe('Worker API', () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
       const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
-      return metadataWorker.getHetClientizeHelloWorld();
+      return metadataWorker.getClientizeHelloWorld();
     });
 
     expect(result).toEqual({ hello: 'world' });

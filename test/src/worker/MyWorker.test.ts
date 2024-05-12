@@ -58,7 +58,7 @@ describe('Worker', () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
       const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
-      return MyWorkerPromisified.getHetClientizeHelloWorld();
+      return MyWorkerPromisified.getClientizeHelloWorld();
     });
 
     expect(result).toEqual({ hello: 'world' });

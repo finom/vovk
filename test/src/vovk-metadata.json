@@ -3,9 +3,25 @@
     "_controllerName": "ClientController",
     "_prefix": "client",
     "_handlers": {
-      "getHelloWorld": {
+      "getHelloWorldResponseObject": {
         "httpMethod": "GET",
-        "path": "get-hello-world"
+        "path": "get-hello-world-response-object"
+      },
+      "getHelloWorldObjectLiteral": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-object-literal"
+      },
+      "getHelloWorldResponseObjectPromise": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-response-object-promise"
+      },
+      "getHelloWorldObjectLiteralPromise": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-object-literal-promise"
+      },
+      "getHelloWorldHeaders": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-headers"
       },
       "getHelloWorldArray": {
         "httpMethod": "GET",
@@ -88,6 +104,14 @@
         },
         "httpMethod": "POST",
         "path": "post-with-zod-validation"
+      },
+      "generateStaticAPI": {
+        "path": "generate-static-api",
+        "httpMethod": "POST"
+      },
+      "generateStaticAPIWithCustomSlug": {
+        "path": "generate-static-api-custom-slug",
+        "httpMethod": "POST"
       }
     }
   },
@@ -151,7 +175,7 @@
     "MyWorker": {
       "_workerName": "MyWorker",
       "_handlers": {
-        "getHetClientizeHelloWorld": {},
+        "getClientizeHelloWorld": {},
         "calculateFibonacci": {},
         "findLargestPrimeBelow": {},
         "asyncGenerator": {

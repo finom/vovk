@@ -303,7 +303,11 @@ describe('Client with vovk-client', () => {
 
     expect(staticAPI).toEqual([
       { vovk: ['_vovk-ping_'] },
-      { vovk: ['client', 'get-hello-world'] },
+      { vovk: ['client', 'get-hello-world-response-object'] },
+      { vovk: ['client', 'get-hello-world-object-literal'] },
+      { vovk: ['client', 'get-hello-world-response-object-promise'] },
+      { vovk: ['client', 'get-hello-world-object-literal-promise'] },
+      { vovk: ['client', 'get-hello-world-headers'] },
       { vovk: ['client', 'get-hello-world-array'] },
       { vovk: ['client', 'get-hello-world-and-empty-generic'] },
       { vovk: ['client', 'with-params', ':hello'] },
@@ -317,7 +321,11 @@ describe('Client with vovk-client', () => {
 
     expect(staticAPIWithCustomSlug).toEqual([
       { custom: ['_vovk-ping_'] },
-      { custom: ['client', 'get-hello-world'] },
+      { custom: ['client', 'get-hello-world-response-object'] },
+      { custom: ['client', 'get-hello-world-object-literal'] },
+      { custom: ['client', 'get-hello-world-response-object-promise'] },
+      { custom: ['client', 'get-hello-world-object-literal-promise'] },
+      { custom: ['client', 'get-hello-world-headers'] },
       { custom: ['client', 'get-hello-world-array'] },
       { custom: ['client', 'get-hello-world-and-empty-generic'] },
       { custom: ['client', 'with-params', ':hello'] },
