@@ -18,7 +18,7 @@ export default class MyWorker {
   );
 
   static getHetClientizeHelloWorld(prefix?: string) {
-    return this.defaultController.getHelloWorld({
+    return this.defaultController.getHelloWorldHeaders({
       prefix,
       headers: { 'x-test': 'world' },
     });
