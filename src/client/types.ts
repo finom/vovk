@@ -7,6 +7,7 @@ import type {
   _VovkControllerParams,
 } from '../types';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
+import type { NextResponse } from 'next/server';
 
 export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_VovkControllerBody<T> extends undefined | void
   ? { body?: undefined }
@@ -45,9 +46,11 @@ type ClientMethod<
   | Iterator<infer U>
   | AsyncIterator<infer U>
   ? Promise<_StreamAsyncIterator<U>>
-  : R extends object
-    ? Promise<R>
-    : ToPromise<ReturnType<T>>;
+  : R extends NextResponse<infer U>
+    ? U
+    : R extends object
+      ? Promise<R>
+      : ToPromise<ReturnType<T>>;
 
 type OmitNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];

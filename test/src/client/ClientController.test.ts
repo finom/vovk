@@ -12,8 +12,30 @@ type ClientizedType = typeof ClientControllerClientized;
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Client with vovk-client', () => {
-  it(`Should handle simple requests + headers`, async () => {
-    const result = await ClientControllerClientized.getHelloWorld({
+  /* it(`Should handle requests that return NextResponse.json`, async () => {
+    const result = await ClientControllerClientized.getHelloWorldResponseObject();
+    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+  });
+
+  it(`Should handle object literals`, async () => {
+    const result = await ClientControllerClientized.getHelloWorldObjectLiteral({
+      prefix,
+    });
+    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+  });
+
+  it(`Should handle requests that return NextResponse.json and are async`, async () => {
+    const result = await ClientControllerClientized.getHelloWorldResponseObjectPromise();
+    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+  }); */
+
+  it(`Should handle object literals and are async`, async () => {
+    const result = await ClientControllerClientized.getHelloWorldObjectLiteralPromise();
+    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+  });
+
+  it(`Should handle headers`, async () => {
+    const result = await ClientControllerClientized.getHelloWorldHeaders({
       prefix,
       headers: { 'x-test': 'world' },
     });
@@ -34,10 +56,8 @@ describe('Client with vovk-client', () => {
   });
 
   it(`Should handle simple requests with default options`, async () => {
-    const result = await ClientControllerClientized.getHelloWorld({
-      headers: { 'x-test': 'world' },
-    });
-    expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
+    const result = await ClientControllerClientized.getHelloWorldObjectLiteralPromise();
+    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });
 
   it('Should handle requests with params', async () => {

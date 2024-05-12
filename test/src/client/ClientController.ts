@@ -3,6 +3,7 @@ import { VovkRequest, generateStaticAPI, get, post, prefix } from '../../../src'
 import validateEquality from './validateEquality';
 import vovkZod from 'vovk-zod';
 import * as z from 'zod';
+import { NextResponse } from 'next/server';
 
 class Service {
   static getHello(hello: string) {
@@ -17,7 +18,29 @@ export default class ClientController {
   static service = Service;
 
   @get.auto()
-  static getHelloWorld() {
+  static getHelloWorldResponseObject() {
+    return NextResponse.json({ hello: 'world' });
+  }
+
+  @get.auto()
+  static getHelloWorldObjectLiteral() {
+    return { hello: 'world' };
+  }
+
+  @get.auto()
+  static async getHelloWorldResponseObjectPromise() {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    return NextResponse.json({ hello: 'world' });
+  }
+
+  @get.auto()
+  static async getHelloWorldObjectLiteralPromise() {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    return { hello: 'world' };
+  }
+
+  @get.auto()
+  static getHelloWorldHeaders() {
     const hello = headers().get('x-test');
     // additional check for the context
     if (this.service !== Service) throw new Error('Service is not the same');

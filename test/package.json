@@ -3,18 +3,18 @@
   "version": "0.1.1-beta.0",
   "private": true,
   "scripts": {
-    "dev": "vovk dev",
+    "dev": "vovk dev --next-dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "generate": "vovk generate"
   },
   "dependencies": {
-    "vovk-client": "^0.0.2",
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18",
-    "vovk": "^2.0.0-beta.13",
+    "vovk": "^2.0.1",
+    "vovk-client": "^0.0.2",
     "vovk-zod": "^0.1.2"
   },
   "devDependencies": {

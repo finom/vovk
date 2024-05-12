@@ -3,9 +3,25 @@
     "_controllerName": "ClientController",
     "_prefix": "client",
     "_handlers": {
-      "getHelloWorld": {
+      "getHelloWorldResponseObject": {
         "httpMethod": "GET",
-        "path": "get-hello-world"
+        "path": "get-hello-world-response-object"
+      },
+      "getHelloWorldObjectLiteral": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-object-literal"
+      },
+      "getHelloWorldResponseObjectPromise": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-response-object-promise"
+      },
+      "getHelloWorldObjectLiteralPromise": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-object-literal-promise"
+      },
+      "getHelloWorldHeaders": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-headers"
       },
       "getHelloWorldArray": {
         "httpMethod": "GET",
