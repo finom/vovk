@@ -12,7 +12,7 @@ type ClientizedType = typeof ClientControllerClientized;
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Client with vovk-client', () => {
-  /* it(`Should handle requests that return NextResponse.json`, async () => {
+  it(`Should handle requests that return NextResponse.json`, async () => {
     const result = await ClientControllerClientized.getHelloWorldResponseObject();
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });
@@ -27,7 +27,7 @@ describe('Client with vovk-client', () => {
   it(`Should handle requests that return NextResponse.json and are async`, async () => {
     const result = await ClientControllerClientized.getHelloWorldResponseObjectPromise();
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
-  }); */
+  });
 
   it(`Should handle object literals and are async`, async () => {
     const result = await ClientControllerClientized.getHelloWorldObjectLiteralPromise();

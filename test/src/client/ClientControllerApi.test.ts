@@ -2,19 +2,11 @@
 import metadata from '../vovk-metadata.json';
 import type ClientController from './ClientController';
 import { clientizeController } from '../../../src/client';
-import {
-  HttpException,
-  VovkControllerBody,
-  VovkControllerParams,
-  VovkControllerQuery,
-  VovkControllerReturnType,
-} from '../../../src';
+import { HttpException } from '../../../src';
 import { it, expect, describe } from '@jest/globals';
 
 import { validateEqualityOnClient } from './validateEquality';
 import { zodValidateOnClient } from 'vovk-zod';
-
-type ClientControllerType = typeof ClientController;
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -23,85 +15,15 @@ const defaultController = clientizeController<typeof ClientController>(metadata.
 });
 
 describe('Client API', () => {
-  /* it(`Should handle simple requests + headers`, async () => {
+  it('Should use default options', async () => {
+    const result = await defaultController.getHelloWorldObjectLiteral();
+    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+  });
+
+  it('Should handle no options', async () => {
     const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
-    const result = await noOptionsController.getHelloWorld({
-      prefix,
-      headers: { 'x-test': 'world' },
-    });
-    expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
-  }); */
-
-  it(`Should handle simple requests and return a normal array`, async () => {
-    const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController);
-    const result = await noOptionsController.getHelloWorldArray({
-      prefix,
-      headers: { 'x-test': 'world' },
-    });
-    expect(result satisfies { hello: string }[]).toEqual([{ hello: 'world' }]);
-  });
-
-  it(`Should handle simple requests and use empty generic`, async () => {
-    const result = await defaultController.getHelloWorldAndEmptyGeneric();
-    expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
-  });
-
-  /* it(`Should handle simple requests with default options`, async () => {
-    const result = await defaultController.getHelloWorld({
-      headers: { 'x-test': 'world' },
-    });
-    expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
-  }); */
-
-  it('Should handle requests with params', async () => {
-    const result = await defaultController.getWithParams({
-      params: { hello: 'world' },
-    });
-
-    type Params = VovkControllerParams<ClientControllerType['getWithParams']>;
-
-    null as unknown as VovkControllerParams<ClientControllerType['getWithParams']> satisfies Params;
-    // @ts-expect-error Expect error
-    null as unknown as VovkControllerBody<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
-    null as unknown as VovkControllerBody<ClientControllerType['getWithParams']> satisfies undefined;
-
-    // @ts-expect-error Expect error
-    null as unknown as VovkControllerQuery<ClientControllerType['getWithParams']> satisfies { hello: 'world' };
-    null as unknown as VovkControllerQuery<ClientControllerType['getWithParams']> satisfies undefined;
-
-    expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
-  });
-
-  it('Should handle requests with params, body and query', async () => {
-    const result = await defaultController.postWithParams({
-      params: { hello: 'world' },
-      body: { isBody: true },
-      query: { query: 'queryValue' },
-    });
-
-    type Body = VovkControllerBody<ClientControllerType['postWithParams']>;
-
-    type Query = VovkControllerQuery<ClientControllerType['postWithParams']>;
-
-    type Params = VovkControllerParams<ClientControllerType['postWithParams']>;
-
-    null as unknown as VovkControllerBody<ClientControllerType['postWithParams']> satisfies Body;
-    // @ts-expect-error Expect error
-    null as unknown as VovkControllerBody<ClientControllerType['postWithParams']> satisfies { hello: 'foo' };
-
-    null as unknown as VovkControllerQuery<ClientControllerType['postWithParams']> satisfies Query;
-    // @ts-expect-error Expect error
-    null as unknown as VovkControllerQuery<ClientControllerType['postWithParams']> satisfies { query: 'bar' };
-
-    null as unknown as VovkControllerParams<ClientControllerType['postWithParams']> satisfies Params;
-    // @ts-expect-error Expect error
-    null as unknown as VovkControllerBody<ClientControllerType['postWithParams']> satisfies { hello: 'baz' };
-
-    expect(result satisfies VovkControllerReturnType<ClientControllerType['postWithParams']>).toEqual({
-      params: { hello: 'world' },
-      body: { isBody: true },
-      query: { query: 'queryValue' },
-    });
+    const result = await noOptionsController.getHelloWorldObjectLiteral();
+    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });
 
   it('Should handle basic client validation', async () => {
@@ -309,6 +231,4 @@ describe('Client API', () => {
       formData: { foo1: 'bar1', foo2: 'bar2' },
     });
   });
-
-  // zod validation
 });

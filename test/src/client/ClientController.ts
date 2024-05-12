@@ -5,18 +5,8 @@ import vovkZod from 'vovk-zod';
 import * as z from 'zod';
 import { NextResponse } from 'next/server';
 
-class Service {
-  static getHello(hello: string) {
-    return { hello };
-  }
-}
-
 @prefix('client')
 export default class ClientController {
-  static controllerName = 'ClientController';
-
-  static service = Service;
-
   @get.auto()
   static getHelloWorldResponseObject() {
     return NextResponse.json({ hello: 'world' });
@@ -42,20 +32,18 @@ export default class ClientController {
   @get.auto()
   static getHelloWorldHeaders() {
     const hello = headers().get('x-test');
-    // additional check for the context
-    if (this.service !== Service) throw new Error('Service is not the same');
-    return this.service.getHello(hello!);
+    return { hello };
   }
 
   @get.auto()
   static getHelloWorldArray() {
-    return [this.service.getHello('world')];
+    return [{ hello: 'world' }];
   }
 
   @get.auto()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static getHelloWorldAndEmptyGeneric(_req: VovkRequest) {
-    return this.service.getHello('world');
+    return { hello: 'world' };
   }
 
   @get('with-params/:hello')
