@@ -2,7 +2,7 @@
 // @ts-nocheck
 import { VovkDefaultFetcherOptions, clientizeController } from '../../../src/client';
 import { promisifyWorker, worker } from '../../../src/worker';
-import metadata from '../vovk-metadata.json' assert { type: 'json' };
+import metadata from '../../.vovk.json' assert { type: 'json' };
 import type MyInnerWorker from './MyInnerWorker';
 import type ClientController from '../client/ClientController';
 

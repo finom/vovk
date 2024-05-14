@@ -4,6 +4,7 @@ import validateEquality from './validateEquality';
 import vovkZod from 'vovk-zod';
 import * as z from 'zod';
 import { NextResponse } from 'next/server';
+import customMetadata from './customMetadata';
 
 @prefix('client')
 export default class ClientController {
@@ -82,6 +83,13 @@ export default class ClientController {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
     return { body, query: { hey } };
+  }
+
+  // The endpoint itself is not tested, but modifies .vovk.json that in its turn is tested
+  @get.auto()
+  @customMetadata('world')
+  static getWithCustomMetadata() {
+    return null;
   }
 
   @post('generate-static-api')

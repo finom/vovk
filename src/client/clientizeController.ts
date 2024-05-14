@@ -1,6 +1,5 @@
 import {
   type _VovkControllerMetadata as VovkControllerMetadata,
-  type _VovkControllerMetadataJson as VovkControllerMetadataJson,
   type _ControllerStaticMethod as ControllerStaticMethod,
   type _VovkControllerParams as VovkControllerParams,
   type _VovkControllerQuery as VovkControllerQuery,
@@ -39,7 +38,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 };
 
 export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
-  givenController: VovkControllerMetadataJson,
+  givenController: VovkControllerMetadata,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
   const controller = givenController as T & VovkControllerMetadata;

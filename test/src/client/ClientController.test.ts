@@ -4,6 +4,7 @@ import { HttpException } from 'vovk'; // it's used by vovk-client
 import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
 import { it, xit, expect, describe } from '@jest/globals';
 import type ClientController from './ClientController';
+import vovkJson from '../../.vovk.json';
 
 type ClientControllerType = typeof ClientController;
 
@@ -315,6 +316,7 @@ describe('Client with vovk-client', () => {
       { vovk: ['client', 'post-with-equality-validation'] },
       { vovk: ['client', 'post-form-data'] },
       { vovk: ['client', 'post-with-zod-validation'] },
+      { vovk: ['client', 'get-with-custom-metadata'] },
       { vovk: ['client', 'generate-static-api'] },
       { vovk: ['client', 'generate-static-api-custom-slug'] },
     ]);
@@ -333,8 +335,13 @@ describe('Client with vovk-client', () => {
       { custom: ['client', 'post-with-equality-validation'] },
       { custom: ['client', 'post-form-data'] },
       { custom: ['client', 'post-with-zod-validation'] },
+      { custom: ['client', 'get-with-custom-metadata'] },
       { custom: ['client', 'generate-static-api'] },
       { custom: ['client', 'generate-static-api-custom-slug'] },
     ]);
+  });
+
+  it('Should write custom metadata', () => {
+    expect(vovkJson.ClientController._handlers.getWithCustomMetadata.customMetadata.hello).toEqual('world');
   });
 });

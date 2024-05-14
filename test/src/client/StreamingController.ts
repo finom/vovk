@@ -5,8 +5,6 @@ export type Token = { token: string; query: 'queryValue' };
 
 @prefix('streaming')
 export default class StreamingController {
-  static controllerName = 'StreamingController';
-
   @post.auto()
   static async postWithStreaming(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
     const body = await req.json();

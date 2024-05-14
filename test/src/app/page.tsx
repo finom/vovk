@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { MyWorker as MyWorkerPromisified } from 'vovk-client';
 import { promisifyWorker } from '../../../src/worker';
-import metadata from '../vovk-metadata.json' assert { type: 'json' };
+import metadata from '../../.vovk.json' assert { type: 'json' };
 import MyWorker from '../worker/MyWorker';
 
 export default function Home() {

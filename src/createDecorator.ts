@@ -1,4 +1,9 @@
-import type { _KnownAny as KnownAny, _VovkController as VovkController, _VovkRequest as VovkRequest } from './types';
+import type {
+  _HandlerMetadata as HandlerMetadata,
+  _KnownAny as KnownAny,
+  _VovkController as VovkController,
+  _VovkRequest as VovkRequest,
+} from './types';
 
 type Next = () => Promise<unknown>;
 
@@ -8,12 +13,8 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<u
     this: VovkController,
     ...args: ARGS
   ) =>
-    | {
-        clientValidators?: {
-          body?: KnownAny;
-          query?: KnownAny;
-        };
-      }
+    | Omit<HandlerMetadata, 'path' | 'httpMethod'>
+    | ((handlerMetadata: HandlerMetadata | null) => Omit<HandlerMetadata, 'path' | 'httpMethod'>)
     | null
     | undefined
 ) {
@@ -25,18 +26,20 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<u
       if (typeof originalMethod !== 'function') {
         throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
       }
-      const initResult = initHandler?.call(controller, ...args);
 
-      if (initResult?.clientValidators) {
-        controller._handlers = {
-          ...controller._handlers,
-          [propertyKey]: {
-            ...controller._handlers?.[propertyKey],
-            clientValidators: initResult.clientValidators,
-          },
-        };
-        initResult.clientValidators;
-      }
+      const handlerMetadata: HandlerMetadata | null = controller._handlers?.[propertyKey] ?? null;
+      const initResultReturn = initHandler?.call(controller, ...args);
+      const initResult = typeof initResultReturn === 'function' ? initResultReturn(handlerMetadata) : initResultReturn;
+
+      controller._handlers = {
+        ...controller._handlers,
+        [propertyKey]: {
+          ...handlerMetadata,
+          // avoid override of path and httpMethod
+          ...(initResult?.clientValidators ? { clientValidators: initResult.clientValidators } : {}),
+          ...(initResult?.customMetadata ? { customMetadata: initResult.customMetadata } : {}),
+        },
+      };
 
       const method = function method(req: REQUEST, params?: unknown) {
         const next: Next = async () => {

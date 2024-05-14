@@ -37,24 +37,13 @@ export type _HandlerMetadata = {
   path: string;
   httpMethod: _HttpMethod;
   clientValidators?: { query?: _KnownAny; body?: _KnownAny };
+  customMetadata?: Record<string, _KnownAny>;
 };
 
 export type _VovkControllerMetadata = {
   _controllerName: string;
   _prefix?: string;
   _handlers: Record<string, _HandlerMetadata>;
-};
-
-export type _HandlerMetadataJson = {
-  path: string;
-  httpMethod: string;
-  clientValidators?: { query?: _KnownAny; body?: _KnownAny };
-};
-
-export type _VovkControllerMetadataJson = {
-  _controllerName: string;
-  _prefix?: string;
-  _handlers: Record<string, _HandlerMetadataJson>;
 };
 
 export type _VovkWorkerMetadata = {

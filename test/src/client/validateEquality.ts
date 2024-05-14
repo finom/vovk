@@ -28,12 +28,14 @@ const validateEquality = createDecorator(
 
     return next();
   },
-  (bodyValidate?: BodyValidate, queryValidate?: QueryValidate) => ({
-    clientValidators: {
-      body: bodyValidate,
-      query: queryValidate,
-    },
-  })
+  (bodyValidate?: BodyValidate, queryValidate?: QueryValidate) => {
+    return {
+      clientValidators: {
+        body: bodyValidate,
+        query: queryValidate,
+      },
+    };
+  }
 );
 
 export const validateEqualityOnClient: VovkClientOptions['validateOnClient'] = (input, validators) => {

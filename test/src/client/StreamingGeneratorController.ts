@@ -4,8 +4,6 @@ export type Token = { token: string; query: 'queryValue' };
 
 @prefix('streaming-generator')
 export default class StreamingGeneratorController {
-  static controllerName = 'StreamingGeneratorController';
-
   @post.auto()
   static async *postWithAsyncStreaming(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
     const body = await req.json();

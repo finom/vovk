@@ -1,16 +1,20 @@
-import metadata from '../vovk-metadata.json';
+import metadata from '../../.vovk.json';
 import type { default as StreamingController, Token } from './StreamingController';
 import { clientizeController } from '../../../src/client';
 import { it, expect, describe, xit } from '@jest/globals';
 import { HttpException, VovkYieldType, VovkControlerYieldType } from '../../../src';
+import { _VovkControllerMetadata } from '../../../src/types';
 
 type StreamingControllerType = typeof StreamingController;
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
-const defaultController = clientizeController<StreamingControllerType>(metadata.StreamingController, {
-  defaultOptions: { prefix },
-});
+const defaultController = clientizeController<StreamingControllerType>(
+  metadata.StreamingController as _VovkControllerMetadata,
+  {
+    defaultOptions: { prefix },
+  }
+);
 
 describe('Streaming', () => {
   it('Should work', async () => {

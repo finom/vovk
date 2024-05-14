@@ -105,6 +105,13 @@
         "httpMethod": "POST",
         "path": "post-with-zod-validation"
       },
+      "getWithCustomMetadata": {
+        "customMetadata": {
+          "hello": "world"
+        },
+        "httpMethod": "GET",
+        "path": "get-with-custom-metadata"
+      },
       "generateStaticAPI": {
         "path": "generate-static-api",
         "httpMethod": "POST"
