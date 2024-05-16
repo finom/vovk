@@ -80,7 +80,7 @@ const pingNoDebounce = async () => {
   });
 
   req.on('error', (err) => {
-    console.error(`🐺 ❌ Error during HTTP request made to ${endpoint}:`, err.message);
+    console.error(` 🐺 ❌ Error during HTTP request made to ${endpoint}:`, err.message);
   });
 };
 
