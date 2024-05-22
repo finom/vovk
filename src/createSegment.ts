@@ -11,6 +11,7 @@ import {
   type _VovkMetadata as VovkMetadata,
   type _DecoratorOptions as DecoratorOptions,
   type _VovkRequest as VovkRequest,
+  _ControllerStaticMethod,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -52,8 +53,9 @@ export function _createSegment() {
       };
 
       (controller[propertyKey] as { _controller: VovkController })._controller = controller;
+      const staticMethod = controller[propertyKey] as _ControllerStaticMethod;
 
-      methods[path] = controller[propertyKey] as RouteHandler;
+      methods[path] = ('handler' in staticMethod ? staticMethod.handler : staticMethod) as unknown as RouteHandler;
       methods[path]._options = options;
     };
 

@@ -303,6 +303,7 @@ describe('Client with vovk-client', () => {
     });
   });
 
+  // TODO move to a separate controller since it's too hard to test
   it('Generates static API', async () => {
     const staticAPI = await ClientControllerClientized.generateStaticAPI();
     const staticAPIWithCustomSlug = await ClientControllerClientized.generateStaticAPIWithCustomSlug();
@@ -311,6 +312,7 @@ describe('Client with vovk-client', () => {
       { vovk: ['_vovk-ping_'] },
       { vovk: ['client', 'get-hello-world-response-object'] },
       { vovk: ['client', 'get-hello-world-object-literal'] },
+      { vovk: ['client', 'get-hello-world-with-handler-object'] },
       { vovk: ['client', 'get-hello-world-response-object-promise'] },
       { vovk: ['client', 'get-hello-world-object-literal-promise'] },
       { vovk: ['client', 'get-hello-world-headers'] },
@@ -330,6 +332,7 @@ describe('Client with vovk-client', () => {
       { custom: ['_vovk-ping_'] },
       { custom: ['client', 'get-hello-world-response-object'] },
       { custom: ['client', 'get-hello-world-object-literal'] },
+      { custom: ['client', 'get-hello-world-with-handler-object'] },
       { custom: ['client', 'get-hello-world-response-object-promise'] },
       { custom: ['client', 'get-hello-world-object-literal-promise'] },
       { custom: ['client', 'get-hello-world-headers'] },
