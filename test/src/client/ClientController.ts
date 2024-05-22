@@ -19,6 +19,13 @@ export default class ClientController {
   }
 
   @get.auto()
+  static getHelloWorldWithHandlerObject = {
+    handler() {
+      return { hello: 'world' };
+    },
+  };
+
+  @get.auto()
   static async getHelloWorldResponseObjectPromise() {
     await new Promise((resolve) => setTimeout(resolve, 100));
     return NextResponse.json({ hello: 'world' });

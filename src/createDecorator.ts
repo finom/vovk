@@ -1,4 +1,5 @@
 import type {
+  _ControllerStaticMethod,
   _HandlerMetadata as HandlerMetadata,
   _KnownAny as KnownAny,
   _VovkController as VovkController,
@@ -7,7 +8,7 @@ import type {
 
 type Next = () => Promise<unknown>;
 
-export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<unknown>>(
+export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
   handler: null | ((this: VovkController, req: REQUEST, next: Next, ...args: ARGS) => unknown),
   initHandler?: (
     this: VovkController,
@@ -22,7 +23,8 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<u
     return function decorator(target: KnownAny, propertyKey: string) {
       const controller = target as VovkController;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const originalMethod: unknown = controller[propertyKey];
+      const originalProperty = controller[propertyKey] as _ControllerStaticMethod;
+      const originalMethod = 'handler' in originalProperty ? originalProperty.handler : originalProperty;
       if (typeof originalMethod !== 'function') {
         throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
       }
@@ -43,7 +45,7 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<u
 
       const method = function method(req: REQUEST, params?: unknown) {
         const next: Next = async () => {
-          return (await originalMethod.call(controller, req, params)) as unknown;
+          return await originalMethod.call(controller, req as VovkRequest<undefined, Record<string, string>>, params);
         };
 
         return handler ? handler.call(controller, req, next, ...args) : next();

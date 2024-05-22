@@ -11,6 +11,10 @@
         "httpMethod": "GET",
         "path": "get-hello-world-object-literal"
       },
+      "getHelloWorldWithHandlerObject": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-with-handler-object"
+      },
       "getHelloWorldResponseObjectPromise": {
         "httpMethod": "GET",
         "path": "get-hello-world-response-object-promise"
@@ -68,6 +72,7 @@
             "$schema": "http://json-schema.org/draft-07/schema#"
           }
         },
+        "customMetadata": {},
         "httpMethod": "POST",
         "path": "post-form-data"
       },
@@ -102,6 +107,7 @@
             "$schema": "http://json-schema.org/draft-07/schema#"
           }
         },
+        "customMetadata": {},
         "httpMethod": "POST",
         "path": "post-with-zod-validation"
       },

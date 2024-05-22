@@ -30,7 +30,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   const searchParams = new URLSearchParams();
   let hasQuery = false;
   for (const [key, value] of Object.entries(query ?? {})) {
-    searchParams.set(key, value);
+    searchParams.set(key, value as string);
     hasQuery = true;
   }
 

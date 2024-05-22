@@ -25,6 +25,11 @@ describe('Client with vovk-client', () => {
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });
 
+  it(`Should be able to use object handlers`, async () => {
+    const result = await ClientControllerClientized.getHelloWorldWithHandlerObject();
+    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+  });
+
   it(`Should handle requests that return NextResponse.json and are async`, async () => {
     const result = await ClientControllerClientized.getHelloWorldResponseObjectPromise();
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
