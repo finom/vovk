@@ -85,19 +85,33 @@ export type _RouteHandler = ((
   _options?: _DecoratorOptions;
 };
 
-export interface _VovkRequest<BODY = undefined, QUERY extends Record<string, string> | undefined = undefined>
+export interface _VovkRequest<BODY = undefined, QUERY extends Record<string, string | string[]> | undefined = undefined>
   extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<BODY>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
-    searchParams: Omit<NextRequest['nextUrl']['searchParams'], 'get'> & {
-      get: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY];
+    searchParams: Omit<
+      NextRequest['nextUrl']['searchParams'],
+      'get' | 'getAll' | 'entries' | 'forEach' | 'keys' | 'values'
+    > & {
+      get: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY] extends readonly (infer ITEM)[] ? ITEM : QUERY[KEY];
+      getAll: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY] extends _KnownAny[] ? QUERY[KEY] : QUERY[KEY][];
+      entries: () => IterableIterator<[keyof QUERY, QUERY[keyof QUERY]]>;
+      forEach: (
+        callbackfn: (
+          value: QUERY[keyof QUERY],
+          key: keyof QUERY,
+          parent: NextRequest['nextUrl']['searchParams']
+        ) => void
+      ) => void;
+      keys: () => IterableIterator<keyof QUERY>;
+      values: () => IterableIterator<QUERY[keyof QUERY]>;
       readonly __queryType: QUERY;
     };
   };
 }
 
 export type _ControllerStaticMethod<
-  REQ extends _VovkRequest<undefined, _KnownAny> = _VovkRequest<undefined, Record<string, string>>,
+  REQ extends _VovkRequest<undefined, _KnownAny> = _VovkRequest<undefined, Record<string, string | string[]>>,
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = ((req: REQ, params: PARAMS) => unknown) & {
   _controller?: _VovkController;

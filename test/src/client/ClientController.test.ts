@@ -84,7 +84,7 @@ describe('Client with vovk-client', () => {
     const result = await ClientControllerClientized.postWithParams({
       params: { hello: 'world' },
       body: { isBody: true },
-      query: { query: 'queryValue' },
+      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
     });
 
     type Body = VovkBody<ClientizedType['postWithParams']>;
@@ -108,7 +108,7 @@ describe('Client with vovk-client', () => {
     expect(result satisfies VovkReturnType<ClientizedType['postWithParams']>).toEqual({
       params: { hello: 'world' },
       body: { isBody: true },
-      query: { query: 'queryValue' },
+      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
     });
   });
 

@@ -53,10 +53,33 @@ export default class ClientController {
   }
 
   @post('with-params/:hello')
-  static async postWithParams(req: VovkRequest<{ isBody: true }, { query: 'queryValue' }>, params: { hello: 'world' }) {
+  static async postWithParams(
+    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; arrayQueryParam: ('foo' | 'bar')[] }>,
+    params: { hello: 'world' }
+  ) {
     const body = await req.json();
-    const query = req.nextUrl.searchParams.get('query');
-    return { params, body, query: { query } };
+    const simpleQueryParam = req.nextUrl.searchParams.get('simpleQueryParam');
+    // check if get always inferred as a single item
+    req.nextUrl.searchParams.get('arrayQueryParam') satisfies 'foo' | 'bar';
+    // check if getAll always inferred as an array
+    req.nextUrl.searchParams.getAll('simpleQueryParam') satisfies 'queryValue'[];
+    // check if entries inferred properly
+    req.nextUrl.searchParams.entries() satisfies IterableIterator<
+      ['simpleQueryParam' | 'arrayQueryParam', 'queryValue' | ('foo' | 'bar')[]]
+    >;
+    // check if forEach inferred properly
+    req.nextUrl.searchParams.forEach((value, key) => {
+      key satisfies 'simpleQueryParam' | 'arrayQueryParam';
+      value satisfies 'queryValue' | ('foo' | 'bar')[];
+    });
+
+    // check if keys inferred properly
+    req.nextUrl.searchParams.keys() satisfies IterableIterator<'simpleQueryParam' | 'arrayQueryParam'>;
+    // check if values inferred properly
+    req.nextUrl.searchParams.values() satisfies IterableIterator<'queryValue' | ('foo' | 'bar')[]>;
+
+    const arrayQueryParam = req.nextUrl.searchParams.getAll('arrayQueryParam');
+    return { params, body, query: { simpleQueryParam, arrayQueryParam } };
   }
 
   @post.auto()
