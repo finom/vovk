@@ -100,11 +100,12 @@ export interface _VovkRequest<BODY = undefined, QUERY extends Record<string, str
         callbackfn: (
           value: QUERY[keyof QUERY],
           key: keyof QUERY,
-          parent: NextRequest['nextUrl']['searchParams']
+          searchParams: NextRequest['nextUrl']['searchParams'] // original searchParams
         ) => void
       ) => void;
       keys: () => IterableIterator<keyof QUERY>;
       values: () => IterableIterator<QUERY[keyof QUERY]>;
+      // TODO (?) append, delete, set
       readonly __queryType: QUERY;
     };
   };
