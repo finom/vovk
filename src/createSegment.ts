@@ -182,33 +182,36 @@ export function _createSegment() {
       controller._onError = options?.onError;
     }
 
-    const metadata = getMetadata(options);
+    // Wait for metadata to be set (it can be set after decorators are called with another setTimeout)
+    setTimeout(() => {
+      const metadata = getMetadata(options);
 
-    if (options.emitMetadata !== false) {
-      if (process.env.NODE_ENV === 'development') {
-        const VOVK_PORT = process.env.VOVK_PORT || (parseInt(process.env.PORT || '3000') + 6969).toString();
+      if (options.emitMetadata !== false) {
+        if (process.env.NODE_ENV === 'development') {
+          const VOVK_PORT = process.env.VOVK_PORT || (parseInt(process.env.PORT || '3000') + 6969).toString();
 
-        void fetch(`http://localhost:${VOVK_PORT}/__metadata`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ metadata }),
-        })
-          .then((resp) => {
-            if (!resp.ok) {
-              // eslint-disable-next-line no-console
-              console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
-            }
+          void fetch(`http://localhost:${VOVK_PORT}/__metadata`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ metadata }),
           })
-          .catch((err) => {
-            // eslint-disable-next-line no-console
-            console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
-          });
-      }
+            .then((resp) => {
+              if (!resp.ok) {
+                // eslint-disable-next-line no-console
+                console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
+              }
+            })
+            .catch((err) => {
+              // eslint-disable-next-line no-console
+              console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
+            });
+        }
 
-      if (options?.onMetadata) {
-        void options.onMetadata(metadata);
+        if (options?.onMetadata) {
+          void options.onMetadata(metadata);
+        }
       }
-    }
+    }, 10);
 
     return {
       GET: r.GET,
