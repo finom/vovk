@@ -51,7 +51,13 @@ export function _createSegment() {
         },
       };
 
-      (controller[propertyKey] as { _controller: VovkController })._controller = controller;
+      const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
+        _controller: VovkController;
+        _sourceMethod?: (...args: KnownAny) => KnownAny;
+      };
+
+      originalMethod._controller = controller;
+      originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
 
       methods[path] = controller[propertyKey] as RouteHandler;
       methods[path]._options = options;

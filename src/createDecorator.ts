@@ -22,10 +22,13 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<u
     return function decorator(target: KnownAny, propertyKey: string) {
       const controller = target as VovkController;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const originalMethod: unknown = controller[propertyKey];
+      const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
+        _sourceMethod?: (...args: KnownAny) => KnownAny;
+      };
       if (typeof originalMethod !== 'function') {
         throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
       }
+      const sourceMethod = originalMethod._sourceMethod ?? originalMethod;
 
       const handlerMetadata: HandlerMetadata | null = controller._handlers?.[propertyKey] ?? null;
       const initResultReturn = initHandler?.call(controller, ...args);
@@ -57,6 +60,8 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<u
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       controller[propertyKey] = method;
+
+      method._sourceMethod = sourceMethod;
     };
   };
 }
