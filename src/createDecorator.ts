@@ -7,7 +7,7 @@ import type {
 
 type Next = () => Promise<unknown>;
 
-export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<unknown>>(
+export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
   handler: null | ((this: VovkController, req: REQUEST, next: Next, ...args: ARGS) => unknown),
   initHandler?: (
     this: VovkController,
@@ -52,7 +52,6 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest<u
         return handler ? handler.call(controller, req, next, ...args) : next();
       };
 
-      // method._name = (originalMethod as { _name?: string })._name ?? originalMethod.name;
       method._controller = controller;
 
       // TODO define internal method type
