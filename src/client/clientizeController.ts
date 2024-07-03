@@ -71,8 +71,8 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         (prefix.endsWith('/') ? prefix : `${prefix}/`);
       return mainPrefix + getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query);
     };
-    const validate = async ({ body, query }: { body?: unknown; query?: unknown }) => {
-      await options?.validateOnClient?.({ body, query }, clientValidators ?? {});
+    const validate = async ({ body, query, endpoint }: { body?: unknown; query?: unknown; endpoint: string }) => {
+      await options?.validateOnClient?.({ body, query, endpoint }, clientValidators ?? {});
     };
 
     const handler = (

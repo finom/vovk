@@ -22,6 +22,7 @@ import type {
   _VovkClientOptions as VovkClientOptions,
   _VovkClientFetcher as VovkClientFetcher,
   _VovkDefaultFetcherOptions as VovkDefaultFetcherOptions,
+  _VovkValidateOnClient as VovkValidateOnClient,
 } from './client/types';
 import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
@@ -32,6 +33,7 @@ import { _generateStaticAPI as generateStaticAPI } from './generateStaticAPI';
 export {
   type VovkClientFetcher,
   type VovkDefaultFetcherOptions,
+  type VovkValidateOnClient,
   type VovkConfig,
   type VovkEnv,
   type VovkMetadata,

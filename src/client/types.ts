@@ -71,7 +71,7 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => string;
-    validate: (input: { body?: unknown; query?: unknown }) => void | Promise<void>;
+    validate: (input: { body?: unknown; query?: unknown; endpoint: string }) => void | Promise<void>;
     defaultStreamHandler: (response: Response) => Promise<_StreamAsyncIterator<unknown>>;
     defaultHandler: (response: Response) => Promise<unknown>;
   },
@@ -89,11 +89,13 @@ export interface _VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | '
   disableClientValidation?: boolean;
 }
 
+export type _VovkValidateOnClient = (
+  input: { body?: unknown; query?: unknown; endpoint: string },
+  validators: { body?: unknown; query?: unknown }
+) => unknown;
+
 export type _VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
   fetcher?: _VovkClientFetcher<OPTS>;
-  validateOnClient?: (
-    input: { body?: unknown; query?: unknown },
-    validators: { body?: unknown; query?: unknown }
-  ) => unknown;
+  validateOnClient?: _VovkValidateOnClient;
   defaultOptions?: Partial<OPTS>;
 };
