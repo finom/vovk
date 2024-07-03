@@ -17,7 +17,7 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
 
   if (!options.disableClientValidation) {
     try {
-      await validate({ body, query });
+      await validate({ body, query, endpoint });
     } catch (e) {
       // if HttpException is thrown, rethrow it
       if (e instanceof HttpException) throw e;
