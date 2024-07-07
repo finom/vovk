@@ -1,4 +1,4 @@
-import { createSegment } from '../../../../../../src';
+import { createSegment } from '../../../../../../packages/vovk';
 
 const { get, initVovk } = createSegment();
 

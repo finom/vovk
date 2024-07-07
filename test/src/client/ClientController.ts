@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { VovkRequest, generateStaticAPI, get, post, prefix } from '../../../src';
+import { VovkRequest, generateStaticAPI, get, post, prefix } from '../../../packages/vovk';
 import validateEquality from './validateEquality';
 import vovkZod from 'vovk-zod';
 import * as z from 'zod';

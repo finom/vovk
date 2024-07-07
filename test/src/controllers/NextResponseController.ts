@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { get, prefix } from '../../../src';
+import { get, prefix } from '../../../packages/vovk';
 
 @prefix('next-response')
 export default class NextResponseController {

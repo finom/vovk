@@ -1,9 +1,8 @@
 import puppeteer, { type Page } from 'puppeteer';
 import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
-import type { _WorkerPromiseInstance as WorkerPromiseInstance } from '../../../src/worker/types';
+import type { _WorkerPromiseInstance as WorkerPromiseInstance } from '../../../packages/vovk/worker/types';
 import type MyWorker from './MyWorker';
 
-// const worker = promisifyWorker(MyWorker);
 describe('Worker API', () => {
   let page: Page;
   beforeAll(async () => {

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prefix, post } from '../../../src';
+import { prefix, post } from '../../../packages/vovk';
 
 @prefix('input')
 export default class InputController {

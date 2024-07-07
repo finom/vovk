@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prefix, get, createDecorator } from '../../../src';
+import { prefix, get, createDecorator } from '../../../packages/vovk';
 
 type EnhancedNextRequest = NextRequest & {
   hello: string;

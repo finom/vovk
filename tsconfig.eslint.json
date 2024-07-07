@@ -1,6 +1,6 @@
 {
     "extends": "./tsconfig.json",
     "exclude": ["node_modules", "dist"],
-    "include": ["src/**/*", "test/**/*", "test/src/**/*", "post-publish-test/**/*", "docs/**/*", "vovk-client/**/*", "cli/**/*"]
+    "include": ["test/**/*", "test/src/**/*", "post-publish-test/**/*", "packages/**/*"]
   }
   

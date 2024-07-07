@@ -1,4 +1,4 @@
-import { VovkRequest, createDecorator } from '../../../src';
+import { VovkRequest, createDecorator } from '../../../packages/vovk';
 
 const customMetadata = createDecorator(
   // TODO Minor issue: init function still requires the arg to be defined in the handler

@@ -1,9 +1,9 @@
 import metadata from '../../.vovk.json';
 import type { default as StreamingController, Token } from './StreamingController';
-import { clientizeController } from '../../../src/client';
+import { clientizeController } from '../../../packages/vovk/client';
 import { it, expect, describe, xit } from '@jest/globals';
-import { HttpException, VovkYieldType, VovkControlerYieldType } from '../../../src';
-import { _VovkControllerMetadata } from '../../../src/types';
+import { HttpException, VovkYieldType, VovkControlerYieldType } from '../../../packages/vovk';
+import { _VovkControllerMetadata } from '../../../packages/vovk/types';
 
 type StreamingControllerType = typeof StreamingController;
 

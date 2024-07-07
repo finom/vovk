@@ -1,8 +1,8 @@
 import { it, expect, describe } from '@jest/globals';
 import MiscController from './MiscController';
-import { type _VovkController as VovkController } from '../../../src/types';
+import { type _VovkController as VovkController } from '../../../packages/vovk/types';
 import { NextRequest } from 'next/server';
-import { createDecorator, get } from '../../../src';
+import { createDecorator, get } from '../../../packages/vovk';
 
 describe('Hidden features', () => {
   it(`Metadata`, () => {

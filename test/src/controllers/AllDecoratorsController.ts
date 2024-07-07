@@ -1,4 +1,4 @@
-import { prefix, get, post, put, del, patch, head, options } from '../../../src';
+import { prefix, get, post, put, del, patch, head, options } from '../../../packages/vovk';
 
 @prefix('all-decorators')
 export default class AllDecoratorsController {

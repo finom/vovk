@@ -1,4 +1,4 @@
-import { prefix, get } from '../../../src';
+import { prefix, get } from '../../../packages/vovk';
 
 @prefix('conflicting-routes')
 export default class ConflictingRoutesController {

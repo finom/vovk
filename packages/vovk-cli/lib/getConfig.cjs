@@ -19,10 +19,10 @@ async function findConfigPath() {
   return null; // Return null if no config file was found
 }
 
-/** @type {Promise<import('../../src').VovkConfig>} */
+/** @type {Promise<import('../../vovk').VovkConfig>} */
 async function getConfig() {
   const configPath = await findConfigPath();
-  /** @type {import('../../src').VovkConfig} */
+  /** @type {import('../../vovk').VovkConfig} */
   let config = {};
 
   if (!configPath) {

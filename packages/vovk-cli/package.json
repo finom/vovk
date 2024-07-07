@@ -1,0 +1,26 @@
+{
+    "name": "vovk-cli",
+    "version": "1.0.0",
+    "bin": {
+      "vovk": "."
+    },
+    "scripts": {
+      "postinstall": "node ./postinstall.cjs"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/finom/vovk.git"
+    },
+    "keywords": [
+      "nextjs",
+      "router",
+      "cli",
+      "vovk"
+    ],
+    "author": "Andrii Gubanov",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/finom/vovk/issues"
+    },
+    "homepage": "https://vovk.dev"
+  }

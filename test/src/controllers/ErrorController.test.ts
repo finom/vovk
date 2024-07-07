@@ -1,4 +1,4 @@
-import { VovkErrorResponse } from '../../../src';
+import { VovkErrorResponse } from '../../../packages/vovk';
 import { request } from '../lib';
 import { it, expect, describe } from '@jest/globals';
 

@@ -1,8 +1,8 @@
 import metadata from '../../.vovk.json';
 import type { default as StreamingGeneratorController, Token } from './StreamingGeneratorController';
-import { clientizeController } from '../../../src/client';
+import { clientizeController } from '../../../packages/vovk/client';
 import { it, expect, describe } from '@jest/globals';
-import { VovkYieldType, VovkControlerYieldType } from '../../../src';
+import { VovkYieldType, VovkControlerYieldType } from '../../../packages/vovk';
 import { _VovkControllerMetadata } from 'vovk/types';
 
 type StreamingGeneratorControllerType = typeof StreamingGeneratorController;

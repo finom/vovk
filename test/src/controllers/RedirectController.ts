@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { prefix, get } from '../../../src';
+import { prefix, get } from '../../../packages/vovk';
 
 @prefix('redirect')
 export default class RedirectController {

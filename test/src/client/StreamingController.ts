@@ -1,5 +1,5 @@
-import { VovkRequest, post, prefix } from '../../../src';
-import { _StreamResponse as StreamResponse } from '../../../src/StreamResponse';
+import { VovkRequest, post, prefix } from '../../../packages/vovk';
+import { _StreamResponse as StreamResponse } from '../../../packages/vovk/StreamResponse';
 
 export type Token = { token: string; query: 'queryValue' };
 

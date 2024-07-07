@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { get, prefix } from '../../../src';
+import { get, prefix } from '../../../packages/vovk';
 
 @prefix('headers')
 export default class HeadersController {

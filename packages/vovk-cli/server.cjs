@@ -9,11 +9,11 @@ const compareKeys = require('./lib/compareKeys.cjs');
 
 const metadataPath = path.join(__dirname, '../../../.vovk.json');
 
-/** @type {(metadata: import('../src').VovkMetadata) => Promise<{ written: boolean; path: string; diff?:  { controllers: { addedKeys: string[]; removedKeys: string[]; }; workers: { addedKeys: string[]; removedKeys: string[]; }; }; }>} */
+/** @type {(metadata: import('../vovk').VovkMetadata) => Promise<{ written: boolean; path: string; diff?:  { controllers: { addedKeys: string[]; removedKeys: string[]; }; workers: { addedKeys: string[]; removedKeys: string[]; }; }; }>} */
 const writeMetadata = async (metadata) => {
   await fs.mkdir(path.dirname(metadataPath), { recursive: true });
   const existingMetadataStr = await fs.readFile(metadataPath, 'utf-8').catch(() => 'null');
-  /** @type {import('../src').VovkMetadata} */
+  /** @type {import('../vovk').VovkMetadata} */
   const existingMetadata = JSON.parse(existingMetadataStr);
   if (isEqual(existingMetadata, metadata)) {
     return { written: false, path: metadataPath };
@@ -103,7 +103,7 @@ const server = http.createServer((req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     req.on('end', async () => {
       try {
-        /** @type {{ metadata: import('../src').VovkMetadata }} */
+        /** @type {{ metadata: import('../vovk').VovkMetadata }} */
         const { metadata } = JSON.parse(body);
         const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
         const env = await getVars();
@@ -182,7 +182,7 @@ async function watchRouteFile(routePath) {
   }
 }
 
-/** @type {(env: import('../src').VovkEnv) => void} */
+/** @type {(env: import('./types').VovkEnv) => void} */
 function startVovkServer({ VOVK_PORT, VOVK_MODULES_DIR, VOVK_ROUTE }) {
   if (!VOVK_PORT) {
     console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');

@@ -1,7 +1,6 @@
 import { _createSegment as createSegment } from './createSegment';
 import {
   type _VovkConfig as VovkConfig,
-  type _VovkEnv as VovkEnv,
   type _VovkErrorResponse as VovkErrorResponse,
   type _VovkRequest as VovkRequest,
   type _VovkControllerBody as VovkControllerBody,
@@ -35,7 +34,6 @@ export {
   type VovkDefaultFetcherOptions,
   type VovkValidateOnClient,
   type VovkConfig,
-  type VovkEnv,
   type VovkMetadata,
   type VovkErrorResponse,
   type VovkRequest,

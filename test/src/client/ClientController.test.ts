@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { ClientController as ClientControllerClientized } from 'vovk-client';
 import { HttpException } from 'vovk'; // it's used by vovk-client
-import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../src';
+import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../packages/vovk';
 import { it, xit, expect, describe } from '@jest/globals';
 import type ClientController from './ClientController';
 import vovkJson from '../../.vovk.json';

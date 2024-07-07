@@ -1,4 +1,4 @@
-import { prefix, get, post } from '../../../src';
+import { prefix, get, post } from '../../../packages/vovk';
 
 @prefix('misc')
 export default class MiscController {

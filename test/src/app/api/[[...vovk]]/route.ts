@@ -1,4 +1,4 @@
-import { initVovk } from '../../../../../src';
+import { initVovk } from '../../../../../packages/vovk';
 import trimControllers from '../../../controllers/TrimControllers';
 import InputController from '../../../controllers/InputController';
 import CustomDecoratorController from '../../../controllers/CustomDecoratorController';

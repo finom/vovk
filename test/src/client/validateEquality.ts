@@ -1,6 +1,6 @@
 import { isEqual } from 'lodash';
-import { HttpException, HttpStatus, VovkRequest, createDecorator } from '../../../src';
-import { VovkClientOptions } from '../../../src/client';
+import { HttpException, HttpStatus, VovkRequest, createDecorator } from '../../../packages/vovk';
+import { VovkClientOptions } from '../../../packages/vovk/client';
 
 type BodyValidate = Record<string, unknown> | null;
 type QueryValidate = Record<string, string> | null;

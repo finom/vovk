@@ -1,5 +1,5 @@
 module.exports = {
-    extends: '../.eslintrc.js',
+    extends: '../../.eslintrc.js',
     rules: {
         '@typescript-eslint/no-unsafe-argument': 'off',
         '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -12,7 +12,7 @@ module.exports = {
     parserOptions: {
         ecmaVersion: 2022,
         sourceType: 'module',
-        project: '../tsconfig.cli.json',
+        project: './tsconfig.json',
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         tsconfigRootDir: __dirname,
         createDefaultProgram: true,

@@ -1,4 +1,4 @@
-import { worker } from '../../../src/worker';
+import { worker } from '../../../packages/vovk';
 
 @worker()
 export default class MyInnerWorker {

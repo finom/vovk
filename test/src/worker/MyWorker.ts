@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import { VovkDefaultFetcherOptions, clientizeController } from '../../../src/client';
-import { promisifyWorker, worker } from '../../../src/worker';
+import { VovkDefaultFetcherOptions, clientizeController } from '../../../packages/vovk/client';
+import { promisifyWorker, worker } from '../../../packages/vovk/worker';
 import metadata from '../../.vovk.json' assert { type: 'json' };
 import type MyInnerWorker from './MyInnerWorker';
 import type ClientController from '../client/ClientController';
