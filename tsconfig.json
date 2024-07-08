@@ -12,9 +12,12 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "outDir": "dist",
-    "declaration": true
+    "declaration": true,
+    "noEmit": true,
+    "paths": {
+       "next/*": ["./test/node_modules/next/*"]
+     }
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["packages/vovk/**/*"],
+  "include": ["packages/**/*.ts"],
 }

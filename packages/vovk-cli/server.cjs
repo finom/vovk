@@ -7,22 +7,21 @@ const getVars = require('./getVars.cjs');
 const isEqual = require('./lib/isEqual.cjs');
 const compareKeys = require('./lib/compareKeys.cjs');
 
-const metadataPath = path.join(__dirname, '../../../.vovk.json');
-
 /** @type {(metadata: import('../vovk').VovkMetadata) => Promise<{ written: boolean; path: string; diff?:  { controllers: { addedKeys: string[]; removedKeys: string[]; }; workers: { addedKeys: string[]; removedKeys: string[]; }; }; }>} */
 const writeMetadata = async (metadata) => {
-  await fs.mkdir(path.dirname(metadataPath), { recursive: true });
-  const existingMetadataStr = await fs.readFile(metadataPath, 'utf-8').catch(() => 'null');
+  const { VOVK_METADATA_OUT } = await getVars();
+  await fs.mkdir(path.dirname(VOVK_METADATA_OUT), { recursive: true });
+  const existingMetadataStr = await fs.readFile(VOVK_METADATA_OUT, 'utf-8').catch(() => 'null');
   /** @type {import('../vovk').VovkMetadata} */
   const existingMetadata = JSON.parse(existingMetadataStr);
   if (isEqual(existingMetadata, metadata)) {
-    return { written: false, path: metadataPath };
+    return { written: false, path: VOVK_METADATA_OUT };
   }
-  await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+  await fs.writeFile(VOVK_METADATA_OUT, JSON.stringify(metadata, null, 2));
 
   return {
     written: true,
-    path: metadataPath,
+    path: VOVK_METADATA_OUT,
     diff: {
       controllers: compareKeys(existingMetadata, metadata),
       workers: compareKeys(existingMetadata.workers ?? {}, metadata.workers ?? {}),
@@ -31,9 +30,10 @@ const writeMetadata = async (metadata) => {
 };
 
 const writeEmptyMetadata = async () => {
-  await fs.mkdir(path.dirname(metadataPath), { recursive: true });
-  const existingMetadata = await fs.readFile(metadataPath, 'utf-8').catch(() => null);
-  if (!existingMetadata) await fs.writeFile(metadataPath, '{}');
+  const { VOVK_METADATA_OUT } = await getVars();
+  await fs.mkdir(path.dirname(VOVK_METADATA_OUT), { recursive: true });
+  const existingMetadata = await fs.readFile(VOVK_METADATA_OUT, 'utf-8').catch(() => null);
+  if (!existingMetadata) await fs.writeFile(VOVK_METADATA_OUT, '{}');
 };
 
 /** @type {(diff: { addedKeys: string[]; removedKeys: string[]; constantName: string; }) => void} */
@@ -105,8 +105,10 @@ const server = http.createServer((req, res) => {
       try {
         /** @type {{ metadata: import('../vovk').VovkMetadata }} */
         const { metadata } = JSON.parse(body);
-        const metadataWritten = metadata ? await writeMetadata(metadata) : { written: false, path: metadataPath };
         const env = await getVars();
+        const metadataWritten = metadata
+          ? await writeMetadata(metadata)
+          : { written: false, path: env.VOVK_METADATA_OUT };
         const codeWritten = await generateClient(env);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('JSON data received and file created');
@@ -182,7 +184,7 @@ async function watchRouteFile(routePath) {
   }
 }
 
-/** @type {(env: import('./types').VovkEnv) => void} */
+/** @type {(env: Required<import('.').VovkEnv>) => void} */
 function startVovkServer({ VOVK_PORT, VOVK_MODULES_DIR, VOVK_ROUTE }) {
   if (!VOVK_PORT) {
     console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
@@ -201,11 +203,8 @@ function startVovkServer({ VOVK_PORT, VOVK_MODULES_DIR, VOVK_ROUTE }) {
 
   // initial ping
   setTimeout(ping, 3000);
-  const srcRoot = path.join(__dirname, '../../..', VOVK_MODULES_DIR ?? './src/modules');
-  const routePath = path.join(__dirname, '../../..', VOVK_ROUTE ?? './src/app/api/[[...vovk]]/route.ts');
-
-  void watchControllers(srcRoot);
-  void watchRouteFile(routePath);
+  void watchControllers(VOVK_MODULES_DIR);
+  void watchRouteFile(VOVK_ROUTE);
 }
 
 if (process.env.__VOVK_START_SERVER__) {

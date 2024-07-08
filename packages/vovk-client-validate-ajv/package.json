@@ -1,0 +1,33 @@
+{
+  "name": "vovk-client-validate-ajv",
+  "version": "0.0.0",
+  "description": "Local validation for JSON schemas for vovk-zod and other validation libraries for Vovk.ts",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finom/vovk.git"
+  },
+  "keywords": [
+    "vovk",
+    "json",
+    "ajv",
+    "validation",
+    "zod"
+  ],
+  "author": "Andrii Gubanov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/finom/vovk/issues"
+  },
+  "homepage": "https://github.com/finom/vovk#readme",
+  "dependencies": {
+    "ajv-formats": "^3.0.1",
+    "ajv": "^8.6.0"
+  },
+  "peerDependencies": {
+    "vovk": "*"
+  }
+}

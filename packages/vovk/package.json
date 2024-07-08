@@ -7,7 +7,7 @@
     "url": "git+https://github.com/finom/vovk.git"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc && cp package.json dist && cp ../../README.md dist && cp package-lock.json dist",
     "lint": "eslint . --fix"
   },
   "keywords": [
@@ -21,9 +21,5 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "next": ">=13.0.0"
-  },
-  "dependencies": {
-    "@types/node": "^20.12.11"
   }
 }

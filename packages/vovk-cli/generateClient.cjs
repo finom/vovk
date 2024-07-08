@@ -16,22 +16,26 @@ function canRequire(moduleName) {
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
  * TODO: Check fetcher for existence
- * @type {(env: Required<import('./types').VovkEnv>) => Promise<{ written: boolean; path: string }>}
+ * @type {(env: Required<import('.').VovkEnv>) => Promise<{ written: boolean; path: string }>}
  */
 async function generateClient({ ...env }) {
+  const cwd = process.cwd() + path.sep;
   const outDir = env.VOVK_CLIENT_OUT;
-  const returnDir = getReturnPath(outDir, process.cwd());
-  const jsonPath = path.join(returnDir, '.vovk.json');
-  const localJsonPath = path.join(process.cwd(), '.vovk.json');
+  const returnDir = getReturnPath(outDir, cwd);
+  const jsonPath = env.VOVK_METADATA_OUT;
+  const localJsonPath = path.join(returnDir, jsonPath.replace(cwd, ''));
   const fetcherPath = env.VOVK_FETCHER.startsWith('.') ? path.join(returnDir, env.VOVK_FETCHER) : env.VOVK_FETCHER;
+  const routFile = env.VOVK_ROUTE.replace(cwd, '');
+  const controllersPath = path.join(returnDir, routFile).replace(/\.ts$/, '');
 
   if (!env.VOVK_VALIDATE_ON_CLIENT) {
-    env.VOVK_VALIDATE_ON_CLIENT = canRequire('vovk-zod/zodValidateOnClient') ? 'vovk-zod/zodValidateOnClient' : '';
+    env.VOVK_VALIDATE_ON_CLIENT = canRequire('vovk-client-validate-ajv') ? 'vovk-client-validate-ajv' : '';
   }
   const validatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.')
     ? path.join(returnDir, env.VOVK_VALIDATE_ON_CLIENT)
     : env.VOVK_VALIDATE_ON_CLIENT;
-  const localValidatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.') ? path.join('..', validatePath) : validatePath;
+
+  const localValidatePath = validatePath;
 
   if (env.VOVK_VALIDATE_ON_CLIENT && !canRequire(localValidatePath)) {
     throw new Error(
@@ -39,11 +43,12 @@ async function generateClient({ ...env }) {
     );
   }
 
-  if (!canRequire(localJsonPath)) {
-    throw new Error(`Unble to generate Vovk Client: cannot find ".vovk.json" file '${jsonPath}'.`);
+  if (!canRequire(path.join(outDir, localJsonPath))) {
+    throw new Error(
+      `Unble to generate Vovk Client: cannot find metadata file '${jsonPath}'. Local path: ${localJsonPath}.`
+    );
   }
 
-  const controllersPath = path.join(returnDir, env.VOVK_ROUTE).replace(/\.ts$/, '');
   let dts = `// auto-generated
 /* eslint-disable */
 import type { Controllers, Workers } from "${controllersPath}";
@@ -76,7 +81,7 @@ ${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst 
 const prefix = '${env.VOVK_PREFIX ?? '/api'}';
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 `;
-  const metadataJson = await fs.readFile(localJsonPath, 'utf-8').catch(() => null);
+  const metadataJson = await fs.readFile(path.join(outDir, localJsonPath), 'utf-8').catch(() => null);
 
   if (!metadataJson) console.warn(` 🐺 No .vovk.json file found in ${localJsonPath}`);
 

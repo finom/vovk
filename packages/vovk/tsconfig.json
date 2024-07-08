@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+   "compilerOptions": {
+     "outDir": "dist",
+     // "paths": {
+        // "next/*": ["../../test/node_modules/next/*"]
+     // }
+   },
+   "include": ["**/*.ts"],
+   "exclude": ["dist"],
+   
+}

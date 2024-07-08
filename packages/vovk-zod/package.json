@@ -1,0 +1,30 @@
+{
+  "name": "vovk-zod",
+  "version": "0.1.5-beta.2",
+  "description": "Isomorphic Zod validation for Vovk.js controllers",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 120
+  },
+  "keywords": [
+    "vovk",
+    "zod",
+    "ajv"
+  ],
+  "author": "Andrii Gubanov",
+  "license": "MIT",
+  "peerDependencies": {
+    "vovk": "*",
+    "zod": "*"
+  },
+  "dependencies": {
+    "zod-to-json-schema": "^3.23.1"
+  }
+}

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // @ts-check
 const generateClient = require('./generateClient.cjs');
-const path = require('path');
 const parallel = require('./lib/parallel.cjs');
 const getAvailablePort = require('./lib/getAvailablePort.cjs');
 const getVars = require('./getVars.cjs');
@@ -12,7 +11,7 @@ const { command, flags, restArgs } = parseCommandLineArgs();
 const {
   // TODO not documented
   project = process.cwd(), // Path to Next.js project
-  clientOut = path.join(process.cwd(), './node_modules/.vovk'), // Path to output directory
+  clientOut, // Path to output directory
   nextDev = false, // Start Vovk Server without Next.js
 } = flags;
 
@@ -32,7 +31,8 @@ if (command === 'dev') {
       throw new Error(' 🐺 ❌ PORT env variable is required');
     }
 
-    const serverEnv = { VOVK_CLIENT_OUT: clientOut, PORT, __VOVK_START_SERVER__: '' };
+    /** @type {import('.').VovkEnv} */
+    const serverEnv = clientOut ? { VOVK_CLIENT_OUT: clientOut, PORT } : { PORT };
 
     const env = await getVars(serverEnv);
 
@@ -56,7 +56,7 @@ if (command === 'dev') {
       await parallel(commands).catch((e) => console.error(e));
       console.info(' 🐺 All processes have ended');
     } else {
-      void startVovkServer({ ...serverEnv, VOVK_PORT: env.VOVK_PORT });
+      void startVovkServer({ ...env, ...serverEnv });
     }
   })();
 } else if (command === 'generate') {

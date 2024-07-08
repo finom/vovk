@@ -1,6 +1,6 @@
 import puppeteer, { type Page } from 'puppeteer';
 import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
-import type { MyWorker } from 'vovk-client';
+import type { MyWorker } from '../../.vovk/client';
 
 // const worker = promisifyWorker(MyWorker);
 describe('Worker', () => {

@@ -7,7 +7,7 @@ import type {
   _VovkControllerParams,
 } from '../types';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
-import { NextResponse } from 'next/server';
+import type { NextResponse } from 'next/server';
 
 export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_VovkControllerBody<T> extends undefined | void
   ? { body?: undefined }

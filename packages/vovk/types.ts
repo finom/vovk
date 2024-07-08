@@ -4,15 +4,6 @@ import { _StreamAsyncIterator as StreamAsyncIterator } from './client/types';
 
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type _VovkConfig = {
-  clientOut?: string;
-  route?: string;
-  fetcher?: string;
-  prefix?: string;
-  validateOnClient?: string;
-  modulesDir?: string;
-};
-
 export type _VovkMetadata = Record<string, _VovkControllerMetadata> & { workers?: Record<string, _VovkWorkerMetadata> };
 
 export type _VovkErrorResponse = {

@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import { ClientController as ClientControllerClientized } from 'vovk-client';
-import { HttpException } from 'vovk'; // it's used by vovk-client
+import { ClientController as ClientControllerClientized } from '../../.vovk/client';
+import { HttpException } from '../../../packages/vovk';
 import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../packages/vovk';
 import { it, xit, expect, describe } from '@jest/globals';
 import type ClientController from './ClientController';
@@ -213,7 +213,7 @@ describe('Client with vovk-client', () => {
         body: { hello: 'wrong' },
         query: { hey: 'query' },
       });
-    }).rejects.toThrow(/Invalid body on client/);
+    }).rejects.toThrow(/Invalid request body on client for/);
 
     await expect(async () => {
       await ClientControllerClientized.postWithZodValidation({
@@ -227,7 +227,7 @@ describe('Client with vovk-client', () => {
         body: { hello: 'body' },
         query: { hey: 'wrong' },
       });
-    }).rejects.toThrow(/Invalid query on client/);
+    }).rejects.toThrow(/Invalid request query on client for/);
 
     await expect(async () => {
       await ClientControllerClientized.postWithZodValidation({

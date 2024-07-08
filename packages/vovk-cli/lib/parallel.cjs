@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 
 /**
  * Execute multiple commands in parallel and return a promise.
- * @type {(commands: { command: string; name: string; env: import('../types').VovkEnv }[]) => Promise<string>}
+ * @type {(commands: { command: string; name: string; env: import('..').VovkEnv }[]) => Promise<string>}
  */
 function parallel(commands) {
   return new Promise((resolve, reject) => {
@@ -28,14 +28,16 @@ function parallel(commands) {
         code = code && typeof code === 'object' && 'code' in code ? code.code : code;
 
         children.forEach((child, i) => {
-          if (i !== index && child.pid) {
-            try {
-              process.kill(child.pid, 'SIGTERM');
-            } catch (err) {
-              const error = /** @type {Error} */ (err);
-              if (!('code' in error) || error.code !== 'ESRCH') throw error;
+          setTimeout(() => {
+            if (i !== index && child.pid) {
+              try {
+                process.kill(child.pid, 'SIGKILL');
+              } catch (err) {
+                const error = /** @type {Error} */ (err);
+                if (!('code' in error) || error.code !== 'ESRCH') throw error;
+              }
             }
-          }
+          }, 1000);
         });
 
         if (code > 0) {

@@ -6,7 +6,7 @@ import { HttpException } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
 
 import { validateEqualityOnClient } from './validateEquality';
-import { zodValidateOnClient } from 'vovk-zod';
+import validateOnClientAjv from 'vovk-client-validate-ajv';
 import { _VovkControllerMetadata } from 'vovk/types';
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
@@ -140,7 +140,7 @@ describe('Client API', () => {
       metadata.ClientController as _VovkControllerMetadata,
       {
         defaultOptions: { prefix },
-        validateOnClient: zodValidateOnClient,
+        validateOnClient: validateOnClientAjv,
       }
     );
 
@@ -159,7 +159,7 @@ describe('Client API', () => {
         body: { hello: 'wrong' },
         query: { hey: 'query' },
       });
-    }).rejects.toThrow(/Invalid body on client/);
+    }).rejects.toThrow(/Invalid request body on client for/);
 
     await expect(async () => {
       await clientZodController.postWithZodValidation({
@@ -173,7 +173,7 @@ describe('Client API', () => {
         body: { hello: 'body' },
         query: { hey: 'wrong' },
       });
-    }).rejects.toThrow(/Invalid query on client/);
+    }).rejects.toThrow(/Invalid request query on client for/);
 
     await expect(async () => {
       await clientZodController.postWithZodValidation({
@@ -188,7 +188,7 @@ describe('Client API', () => {
       metadata.ClientController as _VovkControllerMetadata,
       {
         defaultOptions: { prefix },
-        validateOnClient: zodValidateOnClient,
+        validateOnClient: validateOnClientAjv,
       }
     );
 
