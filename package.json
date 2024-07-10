@@ -52,6 +52,7 @@
   },
   "homepage": "https://github.com/finom/vovk#readme",
   "devDependencies": {
+    "@changesets/cli": "^2.27.7",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.6",
     "@types/node": "^20.14.10",
