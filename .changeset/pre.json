@@ -1,0 +1,14 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "vovk": "2.1.1-beta.13",
+    "vovk-cli": "1.0.0",
+    "vovk-client": "0.0.3",
+    "vovk-client-validate-ajv": "0.0.0",
+    "vovk-zod": "0.1.5-beta.2"
+  },
+  "changesets": [
+    "early-squids-turn"
+  ]
+}
