@@ -28,6 +28,6 @@
     "ajv": "^8.6.0"
   },
   "peerDependencies": {
-    "vovk": "*"
+    "vovk": "2.1.1-beta.13"
   }
 }
