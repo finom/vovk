@@ -1,5 +1,5 @@
 import { request } from '../lib';
-import { it, xit, expect, describe } from '@jest/globals';
+import { it, expect, describe } from '@jest/globals';
 
 describe('Auto decorators', () => {
   const names = ['get', 'post', 'put', 'patch', 'del', 'head', 'options'] as const;
@@ -12,5 +12,10 @@ describe('Auto decorators', () => {
     });
   }
 
-  xit('Should handle decorator header', async () => {});
+  it('Should handle decorator header', async () => {
+    const response = await request.get(`/auto-decorators/get-with-header`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers['x-decorator-header']).toBe('hello');
+  });
 });

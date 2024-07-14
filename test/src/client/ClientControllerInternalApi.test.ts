@@ -1,8 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import metadata from '../../.vovk.json';
 import type ClientController from './ClientController';
-import { clientizeController } from '../../../packages/vovk/client';
-import { HttpException } from '../../../packages/vovk';
+import { clientizeController } from 'vovk/client';
+import { HttpException } from 'vovk';
 import { it, expect, describe } from '@jest/globals';
 
 import { validateEqualityOnClient } from './validateEquality';

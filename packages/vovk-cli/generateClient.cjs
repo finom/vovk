@@ -63,7 +63,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 /* eslint-disable */
 const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
-const metadata = require('${jsonPath}');
+const metadata = require('${localJsonPath}');
 const { default: fetcher } = require('${fetcherPath}');
 const prefix = '${env.VOVK_PREFIX ?? '/api'}';
 const { default: validateOnClient = null } = ${validatePath ? `require('${validatePath}')` : '{}'};
@@ -76,7 +76,7 @@ import { clientizeController } from 'vovk/client';
 import { promisifyWorker } from 'vovk/worker';
 import type { VovkClientFetcher } from 'vovk/client';
 import fetcher from '${fetcherPath}';
-import metadata from '${jsonPath}';
+import metadata from '${localJsonPath}';
 ${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = undefined;'}
 const prefix = '${env.VOVK_PREFIX ?? '/api'}';
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;

@@ -26,4 +26,6 @@ Cases covered by the unit tests:
 - Worker
 - Client
 - Stream Response
+- Static API
+- Custom metadata for .vovk.json
 

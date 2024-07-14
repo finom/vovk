@@ -1,20 +1,11 @@
-import metadata from '../../.vovk.json';
-import type { default as StreamingController, Token } from './StreamingController';
-import { clientizeController } from '../../../packages/vovk/client';
-import { it, expect, describe, xit } from '@jest/globals';
-import { HttpException, VovkYieldType, VovkControlerYieldType } from '../../../packages/vovk';
-import { _VovkControllerMetadata } from '../../../packages/vovk/types';
+import type { Token } from './StreamingController';
+import { expect, describe, it, xit } from '@jest/globals';
+import { HttpException, VovkYieldType, VovkControlerYieldType } from 'vovk';
+import { StreamingController } from '../../.vovk/client';
 
 type StreamingControllerType = typeof StreamingController;
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
-
-const defaultController = clientizeController<StreamingControllerType>(
-  metadata.StreamingController as _VovkControllerMetadata,
-  {
-    defaultOptions: { prefix },
-  }
-);
 
 describe('Streaming', () => {
   it('Should work', async () => {
@@ -22,9 +13,10 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
 
-    using resp = await defaultController.postWithStreaming({
+    using resp = await StreamingController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
+      prefix,
     });
 
     for await (const message of resp) {
@@ -32,7 +24,7 @@ describe('Streaming', () => {
     }
 
     null as unknown as VovkControlerYieldType<StreamingControllerType['postWithStreaming']> satisfies Token;
-    null as unknown as VovkYieldType<typeof defaultController.postWithStreaming> satisfies Token;
+    null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
 
     expect(expected).toEqual(expectedCollected);
   });
@@ -42,9 +34,10 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await defaultController.postWithStreaming({
+    using resp = await StreamingController.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
+      prefix,
     });
 
     let count = 0;
@@ -69,9 +62,10 @@ describe('Streaming', () => {
     let resp;
 
     {
-      resp = await defaultController.postWithStreaming({
+      resp = await StreamingController.postWithStreaming({
         body: tokens,
         query: { query: 'queryValue' },
+        prefix,
       });
 
       r = resp;
@@ -100,9 +94,10 @@ describe('Streaming', () => {
     let r;
 
     {
-      using resp = await defaultController.postWithStreaming({
+      using resp = await StreamingController.postWithStreaming({
         body: tokens,
         query: { query: 'queryValue' },
+        prefix,
       });
 
       r = resp;
@@ -125,9 +120,10 @@ describe('Streaming', () => {
   it('Should handle immediate errors', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
 
-    const respPromise = defaultController.postWithStreamingAndImmediateError({
+    const respPromise = StreamingController.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
+      prefix,
     });
 
     await expect(() => respPromise).rejects.toThrowError(HttpException);
@@ -138,9 +134,10 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await defaultController.postWithStreamingAndDelayedError({
+    using resp = await StreamingController.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
+      prefix,
     });
 
     await expect(async () => {
@@ -157,9 +154,10 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await defaultController.postWithStreamingAndDelayedCustomError({
+    using resp = await StreamingController.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
+      prefix,
     });
 
     // TODO I don't know why rejects.toThrowError doesn't work here
@@ -178,15 +176,16 @@ describe('Streaming', () => {
     expect(expected).toEqual(expectedCollected);
   });
 
-  // TODO thrown: "Exceeded timeout of 5000 ms for a test". How to end the stream properly?
+  // TODO: Stream never ends if not using dispose. No error when using dispose. Need help here.
   xit('Should handle unhandled errors in the middle of stream', async () => {
     const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await defaultController.postWithStreamingAndDelayedUnhandledError({
+    const resp = await StreamingController.postWithStreamingAndDelayedUnhandledError({
       body: tokens,
       query: { query: 'queryValue' },
+      prefix,
     });
 
     await expect(async () => {

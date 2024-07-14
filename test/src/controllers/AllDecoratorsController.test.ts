@@ -11,4 +11,11 @@ describe('All decorators', () => {
       expect(response.status).toBe(200);
     });
   }
+
+  it('Should handle decorator header', async () => {
+    const response = await request.get(`/all-decorators/get-with-header`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers['x-decorator-header']).toBe('hello');
+  });
 });

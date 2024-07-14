@@ -1,5 +1,5 @@
-import { VovkRequest, post, prefix } from '../../../packages/vovk';
-import { _StreamResponse as StreamResponse } from '../../../packages/vovk/StreamResponse';
+import { VovkRequest, post, prefix } from 'vovk';
+import { _StreamResponse as StreamResponse } from 'vovk/StreamResponse';
 
 export type Token = { token: string; query: 'queryValue' };
 
@@ -15,10 +15,10 @@ export default class StreamingController {
     void (async () => {
       for (const token of body) {
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await response.send({ ...token, query });
+        response.send({ ...token, query });
       }
 
-      await response.close();
+      response.close();
     })();
 
     return response;
@@ -49,7 +49,7 @@ export default class StreamingController {
           return response.throw('velyka dupa');
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await response.send({ ...token, query });
+        response.send({ ...token, query });
       }
     })();
 
@@ -72,7 +72,7 @@ export default class StreamingController {
           return response.throw({ customError: 'custom error' });
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await response.send({ ...token, query });
+        response.send({ ...token, query });
       }
     })();
 
@@ -86,7 +86,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new StreamResponse<Token>();
+    using response = new StreamResponse<Token>();
 
     let count = 0;
     void (async () => {
@@ -95,7 +95,7 @@ export default class StreamingController {
           throw new Error('Unhandled error');
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await response.send({ ...token, query });
+        response.send({ ...token, query });
       }
     })();
 

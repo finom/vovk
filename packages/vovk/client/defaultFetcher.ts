@@ -50,7 +50,7 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
     return defaultHandler(response);
   }
 
-  if (response.headers.get('content-type')?.includes('text/event-stream')) {
+  if (response.headers.get('content-type')?.includes('text/plain; charset=utf-8')) {
     return defaultStreamHandler(response);
   }
 

@@ -17,6 +17,8 @@ import StreamingController from '../../../client/StreamingController';
 import MyWorker from '../../../worker/MyWorker';
 import MyInnerWorker from '../../../worker/MyInnerWorker';
 import StreamingGeneratorController from '../../../client/StreamingGeneratorController';
+import StaticApiController from 'src/controllers/StaticApiController';
+import CostomMetadataController from 'src/client/CostomMetadataController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
   emitMetadata: false,
@@ -37,6 +39,8 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
     ClientController,
     StreamingController,
     StreamingGeneratorController,
+    StaticApiController,
+    CostomMetadataController,
   },
   onError: (err, req) => {
     // eslint-disable-next-line no-console
@@ -44,7 +48,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
   },
 });
 
-const controllers = { ClientController, StreamingController, StreamingGeneratorController };
+const controllers = { ClientController, StreamingController, StreamingGeneratorController, CostomMetadataController };
 const workers = { MyWorker, MyInnerWorker };
 
 export type Controllers = typeof controllers;

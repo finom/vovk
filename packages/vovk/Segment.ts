@@ -193,7 +193,7 @@ export class _Segment {
         void (async () => {
           try {
             for await (const chunk of result as AsyncGenerator<unknown>) {
-              await streamResponse.send(chunk);
+              streamResponse.send(chunk);
             }
           } catch (e) {
             return streamResponse.throw(e);

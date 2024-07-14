@@ -1,47 +1,63 @@
 import { _KnownAny as KnownAny, _StreamAbortMessage as StreamAbortMessage } from './types';
+import './utils/shim';
 
 export class _StreamResponse<T> extends Response {
   public static readonly JSON_DIVIDER = '__##DIV123##__'; // protects collisions of JSON data
 
   public static defaultHeaders = {
-    'Content-Type': 'text/event-stream',
-    Connection: 'keep-alive',
-    'Content-Encoding': 'none',
-    'Cache-Control': 'no-cache, no-transform',
+    'Content-Type': 'text/plain; charset=utf-8',
   };
 
-  public readonly writer: WritableStreamDefaultWriter;
+  public isClosed = false;
+
+  public controller?: ReadableStreamDefaultController;
 
   public readonly encoder: TextEncoder;
 
-  constructor(init?: ResponseInit) {
-    const responseStream = new TransformStream();
-    const writer = responseStream.writable.getWriter();
-    const encoder = new TextEncoder();
+  public readonly readableStream: ReadableStream;
 
-    super(responseStream.readable, {
+  constructor(init?: ResponseInit) {
+    const encoder = new TextEncoder();
+    let readableController: ReadableStreamDefaultController;
+
+    const readableStream = new ReadableStream({
+      cancel: () => {
+        this.isClosed = true;
+      },
+      start: (controller) => {
+        readableController = controller;
+      },
+    });
+
+    super(readableStream, {
       ...init,
       headers: init?.headers ?? _StreamResponse.defaultHeaders,
     });
 
-    this.writer = writer;
+    this.readableStream = readableStream;
     this.encoder = encoder;
+    this.controller = readableController!;
   }
 
   public send(data: T | StreamAbortMessage) {
-    const { writer, encoder } = this;
-    return writer.write(encoder.encode(JSON.stringify(data) + _StreamResponse.JSON_DIVIDER));
+    const { controller, encoder } = this;
+    if (this.isClosed) return;
+    return controller?.enqueue(encoder.encode(JSON.stringify(data) + _StreamResponse.JSON_DIVIDER));
   }
 
   public close() {
-    const { writer } = this;
-    return writer.close();
+    const { controller } = this;
+    if (this.isClosed) return;
+    this.isClosed = true;
+    controller?.close();
   }
 
-  public async throw(e: KnownAny) {
-    const { writer } = this;
-    await this.send({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    return writer.close();
+  public throw(e: KnownAny) {
+    this.send({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
+    return this.close();
+  }
+
+  public [Symbol.dispose]() {
+    this.close();
   }
 }

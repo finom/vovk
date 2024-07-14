@@ -1,10 +1,9 @@
 import { headers } from 'next/headers';
-import { VovkRequest, generateStaticAPI, get, post, prefix } from '../../../packages/vovk';
+import { VovkRequest, get, post, prefix } from 'vovk';
 import validateEquality from './validateEquality';
 import vovkZod from 'vovk-zod';
 import * as z from 'zod';
 import { NextResponse } from 'next/server';
-import customMetadata from './customMetadata';
 
 @prefix('client')
 export default class ClientController {
@@ -106,22 +105,5 @@ export default class ClientController {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
     return { body, query: { hey } };
-  }
-
-  // The endpoint itself is not tested, but modifies .vovk.json that in its turn is tested
-  @get.auto()
-  @customMetadata('world')
-  static getWithCustomMetadata() {
-    return null;
-  }
-
-  @post('generate-static-api')
-  static generateStaticAPI() {
-    return generateStaticAPI({ ClientController });
-  }
-
-  @post('generate-static-api-custom-slug')
-  static generateStaticAPIWithCustomSlug() {
-    return generateStaticAPI({ ClientController }, 'custom');
   }
 }

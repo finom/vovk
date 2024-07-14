@@ -1,10 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { ClientController as ClientControllerClientized } from '../../.vovk/client';
-import { HttpException } from '../../../packages/vovk';
-import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../packages/vovk';
+import { HttpException } from 'vovk';
+import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from 'vovk';
 import { it, xit, expect, describe } from '@jest/globals';
 import type ClientController from './ClientController';
-import vovkJson from '../../.vovk.json';
 
 type ClientControllerType = typeof ClientController;
 
@@ -296,52 +295,5 @@ describe('Client with vovk-client', () => {
       query: { hello: 'world' },
       formData: { foo1: 'bar1', foo2: 'bar2' },
     });
-  });
-
-  it('Generates static API', async () => {
-    const staticAPI = await ClientControllerClientized.generateStaticAPI();
-    const staticAPIWithCustomSlug = await ClientControllerClientized.generateStaticAPIWithCustomSlug();
-
-    expect(staticAPI).toEqual([
-      { vovk: ['_vovk-ping_'] },
-      { vovk: ['client', 'get-hello-world-response-object'] },
-      { vovk: ['client', 'get-hello-world-object-literal'] },
-      { vovk: ['client', 'get-hello-world-response-object-promise'] },
-      { vovk: ['client', 'get-hello-world-object-literal-promise'] },
-      { vovk: ['client', 'get-hello-world-headers'] },
-      { vovk: ['client', 'get-hello-world-array'] },
-      { vovk: ['client', 'get-hello-world-and-empty-generic'] },
-      { vovk: ['client', 'with-params', ':hello'] },
-      { vovk: ['client', 'with-params', ':hello'] },
-      { vovk: ['client', 'post-with-equality-validation'] },
-      { vovk: ['client', 'post-form-data'] },
-      { vovk: ['client', 'post-with-zod-validation'] },
-      { vovk: ['client', 'get-with-custom-metadata'] },
-      { vovk: ['client', 'generate-static-api'] },
-      { vovk: ['client', 'generate-static-api-custom-slug'] },
-    ]);
-
-    expect(staticAPIWithCustomSlug).toEqual([
-      { custom: ['_vovk-ping_'] },
-      { custom: ['client', 'get-hello-world-response-object'] },
-      { custom: ['client', 'get-hello-world-object-literal'] },
-      { custom: ['client', 'get-hello-world-response-object-promise'] },
-      { custom: ['client', 'get-hello-world-object-literal-promise'] },
-      { custom: ['client', 'get-hello-world-headers'] },
-      { custom: ['client', 'get-hello-world-array'] },
-      { custom: ['client', 'get-hello-world-and-empty-generic'] },
-      { custom: ['client', 'with-params', ':hello'] },
-      { custom: ['client', 'with-params', ':hello'] },
-      { custom: ['client', 'post-with-equality-validation'] },
-      { custom: ['client', 'post-form-data'] },
-      { custom: ['client', 'post-with-zod-validation'] },
-      { custom: ['client', 'get-with-custom-metadata'] },
-      { custom: ['client', 'generate-static-api'] },
-      { custom: ['client', 'generate-static-api-custom-slug'] },
-    ]);
-  });
-
-  it('Should write custom metadata', () => {
-    expect(vovkJson.ClientController._handlers.getWithCustomMetadata.customMetadata.hello).toEqual('world');
   });
 });

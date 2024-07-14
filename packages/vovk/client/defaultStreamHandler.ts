@@ -2,6 +2,7 @@ import { _HttpStatus as HttpStatus, type _VovkErrorResponse as VovkErrorResponse
 import type { _StreamAsyncIterator as StreamAsyncIterator } from './types';
 import { _HttpException as HttpException } from '../HttpException';
 import { _StreamResponse as StreamResponse } from '../StreamResponse';
+import '../utils/shim';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
 
@@ -73,24 +74,6 @@ export const _defaultStreamHandler = async (response: Response): Promise<StreamA
         }
       }
     }
-  }
-
-  if (typeof Symbol.dispose !== 'symbol') {
-    Object.defineProperty(Symbol, 'dispose', {
-      configurable: false,
-      enumerable: false,
-      writable: false,
-      value: Symbol.for('dispose'),
-    });
-  }
-
-  if (typeof Symbol.asyncDispose !== 'symbol') {
-    Object.defineProperty(Symbol, 'asyncDispose', {
-      configurable: false,
-      enumerable: false,
-      writable: false,
-      value: Symbol.for('asyncDispose'),
-    });
   }
 
   return {

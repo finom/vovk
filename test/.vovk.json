@@ -106,21 +106,6 @@
         "customMetadata": {},
         "httpMethod": "POST",
         "path": "post-with-zod-validation"
-      },
-      "getWithCustomMetadata": {
-        "customMetadata": {
-          "hello": "world"
-        },
-        "httpMethod": "GET",
-        "path": "get-with-custom-metadata"
-      },
-      "generateStaticAPI": {
-        "path": "generate-static-api",
-        "httpMethod": "POST"
-      },
-      "generateStaticAPIWithCustomSlug": {
-        "path": "generate-static-api-custom-slug",
-        "httpMethod": "POST"
       }
     }
   },
@@ -177,6 +162,19 @@
       "postWithStreamingAndDelayedUnhandledError": {
         "httpMethod": "POST",
         "path": "post-with-streaming-and-delayed-unhandled-error"
+      }
+    }
+  },
+  "CostomMetadataController": {
+    "_controllerName": "CostomMetadataController",
+    "_prefix": "",
+    "_handlers": {
+      "getWithCustomMetadata": {
+        "customMetadata": {
+          "hello": "world"
+        },
+        "httpMethod": "GET",
+        "path": "get-with-custom-metadata"
       }
     }
   },

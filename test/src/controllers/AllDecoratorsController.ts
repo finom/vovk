@@ -36,4 +36,9 @@ export default class AllDecoratorsController {
   static optionsMethod() {
     return {};
   }
+
+  @get('get-with-header', { headers: { 'x-decorator-header': 'hello' } })
+  static getWithHeader() {
+    return {};
+  }
 }

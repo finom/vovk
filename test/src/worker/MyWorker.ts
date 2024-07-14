@@ -8,8 +8,6 @@ import type ClientController from '../client/ClientController';
 
 @worker()
 export default class MyWorker {
-  static workerName = 'MyWorker';
-
   private static defaultController = clientizeController<typeof ClientController, VovkDefaultFetcherOptions>(
     metadata.ClientController,
     {

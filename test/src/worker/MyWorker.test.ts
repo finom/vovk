@@ -2,14 +2,13 @@ import puppeteer, { type Page } from 'puppeteer';
 import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
 import type { MyWorker } from '../../.vovk/client';
 
-// const worker = promisifyWorker(MyWorker);
 describe('Worker', () => {
   let page: Page;
   beforeAll(async () => {
     const browser = await puppeteer.launch({ headless: true });
     page = await browser.newPage();
     await page.goto('http://localhost:' + process.env.PORT);
-    // eslint-disable-next-line no-console, @typescript-eslint/no-misused-promises
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     page.on('console', async (message) => {
       if (message.text() != 'JSHandle@error') {
         // eslint-disable-next-line no-console
