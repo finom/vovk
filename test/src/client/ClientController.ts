@@ -49,7 +49,7 @@ export default class ClientController {
   }
 
   @post('with-params/:hello')
-  static async postWithParams(
+  static async postWithAll(
     req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; arrayQueryParam: ('foo' | 'bar')[] }>,
     params: { hello: 'world' }
   ) {
@@ -76,5 +76,20 @@ export default class ClientController {
 
     const arrayQueryParam = req.nextUrl.searchParams.getAll('arrayQueryParam');
     return { params, body, query: { simpleQueryParam, arrayQueryParam } };
+  }
+
+  @post.auto()
+  static postWithAllUsingReqVovk(
+    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; arrayQueryParam: ('foo' | 'bar')[] }>
+  ) {
+    req.vovk.meta({ isMeta1: true });
+    req.vovk.meta({ isMeta2: true });
+
+    const body = req.vovk.body();
+    const query = req.vovk.query();
+    const params = req.vovk.params<{ hello: 'world' }>();
+    const meta = req.vovk.meta<{ isMeta1: true; isMeta2: true }>();
+
+    return { params, body, query, meta };
   }
 }

@@ -88,6 +88,12 @@ export interface _VovkRequest<BODY = undefined, QUERY extends Record<string, str
       readonly __queryType: QUERY;
     };
   };
+  vovk: {
+    body: () => Promise<BODY>;
+    query: () => QUERY;
+    params: <T = Record<string, string>>() => T;
+    meta: <T = Record<_KnownAny, _KnownAny>>(metadata?: T | null) => T;
+  };
 }
 
 export type _ControllerStaticMethod<

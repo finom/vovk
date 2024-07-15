@@ -6,9 +6,12 @@ import {
   type _VovkController as VovkController,
   type _DecoratorOptions as DecoratorOptions,
   type _VovkRequest as VovkRequest,
+  type _KnownAny as _KnownAny,
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
 import { _StreamResponse as StreamResponse } from './StreamResponse';
+import reqQuery from './utils/reqQuery';
+import reqMeta from './utils/reqMeta';
 
 export class _Segment {
   private static getHeadersFromOptions(options?: DecoratorOptions) {
@@ -170,6 +173,13 @@ export class _Segment {
     }
 
     const { staticMethod, controller } = handler;
+
+    req.vovk = {
+      body: async () => await req.json(),
+      query: () => reqQuery(req),
+      params: <T = Record<string, string>>() => methodParams as T,
+      meta: <T = _KnownAny>(metadata?: T | null) => reqMeta<T>(req, metadata),
+    };
 
     try {
       const result = await staticMethod.call(controller, req, methodParams);

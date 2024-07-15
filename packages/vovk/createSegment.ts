@@ -15,6 +15,16 @@ import {
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
+const toKebabCase = (str: string) => {
+  return (
+    str
+      // Insert a hyphen before each uppercase letter, then convert to lowercase
+      .replace(/([A-Z])/g, '-$1')
+      .toLowerCase()
+      // Remove any leading hyphen if the original string started with an uppercase letter
+      .replace(/^-/, '')
+  );
+};
 
 export function _createSegment() {
   const r = new Segment();
@@ -73,17 +83,6 @@ export function _createSegment() {
 
       return decorator;
     }
-
-    const toKebabCase = (str: string) => {
-      return (
-        str
-          // Insert a hyphen before each uppercase letter, then convert to lowercase
-          .replace(/([A-Z])/g, '-$1')
-          .toLowerCase()
-          // Remove any leading hyphen if the original string started with an uppercase letter
-          .replace(/^-/, '')
-      );
-    };
 
     const auto = (options?: DecoratorOptions) => {
       function decorator(givenTarget: KnownAny, propertyKey: string) {

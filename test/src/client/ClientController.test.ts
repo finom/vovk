@@ -76,7 +76,7 @@ describe('Client with vovk-client', () => {
   });
 
   it('Should handle requests with params, body and query', async () => {
-    const result = await ClientController.postWithParams({
+    const result = await ClientController.postWithAll({
       params: { hello: 'world' },
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
@@ -104,6 +104,33 @@ describe('Client with vovk-client', () => {
       params: { hello: 'world' },
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+    });
+  });
+
+  it('Should handle requests with params, body and query with req.vovk object', async () => {
+    const result = await ClientController.postWithAllUsingReqVovk({
+      params: { hello: 'world' },
+      body: { isBody: true },
+      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+    });
+
+    type Body = VovkBody<ClientizedType['postWithAllUsingReqVovk']>;
+
+    type Query = VovkQuery<ClientizedType['postWithAllUsingReqVovk']>;
+
+    type Params = VovkParams<ClientizedType['postWithAllUsingReqVovk']>;
+
+    null as unknown as VovkBody<ClientizedType['postWithAllUsingReqVovk']> satisfies Body;
+
+    null as unknown as VovkQuery<ClientizedType['postWithAllUsingReqVovk']> satisfies Query;
+
+    null as unknown as VovkParams<ClientizedType['postWithAllUsingReqVovk']> satisfies Params;
+
+    expect(result satisfies VovkReturnType<ClientizedType['postWithAllUsingReqVovk']>).toEqual({
+      params: { hello: 'world' },
+      body: { isBody: true },
+      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      meta: { isMeta1: true, isMeta2: true },
     });
   });
 });
