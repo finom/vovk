@@ -1,8 +1,5 @@
 import { headers } from 'next/headers';
 import { VovkRequest, get, post, prefix } from 'vovk';
-import validateEquality from './validateEquality';
-import vovkZod from 'vovk-zod';
-import * as z from 'zod';
 import { NextResponse } from 'next/server';
 
 @prefix('client')
@@ -79,31 +76,5 @@ export default class ClientController {
 
     const arrayQueryParam = req.nextUrl.searchParams.getAll('arrayQueryParam');
     return { params, body, query: { simpleQueryParam, arrayQueryParam } };
-  }
-
-  @post.auto()
-  @validateEquality({ hello: 'body' }, { hey: 'query' })
-  static async postWithEqualityValidation(req: VovkRequest<{ hello: string }, { hey: string }>) {
-    const body = await req.json();
-    const hey = req.nextUrl.searchParams.get('hey');
-    return { body, query: { hey } };
-  }
-
-  @post.auto()
-  @vovkZod(null, z.object({ hello: z.string() }))
-  static async postFormData(req: VovkRequest<FormData, { hello: string }>) {
-    const hello = req.nextUrl.searchParams.get('hello');
-    const data = await req.formData();
-    const formData = Object.fromEntries(data.entries());
-
-    return { query: { hello }, formData };
-  }
-
-  @post.auto()
-  @vovkZod(z.object({ hello: z.literal('body') }), z.object({ hey: z.literal('query') }))
-  static async postWithZodValidation(req: VovkRequest<{ hello: string }, { hey: string }>) {
-    const body = await req.json();
-    const hey = req.nextUrl.searchParams.get('hey');
-    return { body, query: { hey } };
   }
 }

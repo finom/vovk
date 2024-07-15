@@ -1,27 +1,62 @@
-import { HttpException, HttpStatus, createDecorator } from 'vovk';
+/* eslint-disable no-redeclare */
 import { z } from 'zod';
+import { HttpException, HttpStatus, type VovkRequest } from 'vovk';
+import setClientValidatorsForHandler from 'vovk/utils/setClientValidatorsForHandler';
 import { default as zodToJsonSchema } from 'zod-to-json-schema';
+import reqQuery from 'vovk/utils/reqQuery';
 
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type KnownAny = any;
 
-type ZodAny = z.ZodObject<KnownAny> | z.ZodRecord<KnownAny> | z.ZodUnion<KnownAny>;
+type VovkRequestWithOptionalZod<
+  ZOD_BODY extends z.ZodSchema | null = null,
+  ZOD_QUERY extends z.ZodSchema | null = null,
+> = VovkRequest<
+  ZOD_BODY extends z.ZodSchema ? z.infer<ZOD_BODY> : never,
+  ZOD_QUERY extends z.ZodSchema ? z.infer<ZOD_QUERY> : undefined
+>;
+function withZod<
+  T extends (req: REQ, params: KnownAny) => KnownAny,
+  ZOD_BODY extends z.ZodSchema<unknown> | null,
+  ZOD_QUERY extends z.ZodSchema<Record<string, string | string[]> | undefined> | null = z.ZodSchema<undefined>,
+  REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
+>(
+  bodyModel: ZOD_BODY,
+  queryModel: ZOD_QUERY | null,
+  givenHandler: T
+): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+function withZod<
+  T extends (req: REQ, params: KnownAny) => KnownAny,
+  ZOD_BODY extends z.ZodSchema<unknown> | null,
+  ZOD_QUERY extends z.ZodSchema<Record<string, string | string[]> | undefined> | null = z.ZodSchema<undefined>,
+  REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
+>(bodyModel: ZOD_BODY, givenHandler: T): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+function withZod<
+  T extends (req: REQ, params: KnownAny) => KnownAny,
+  ZOD_BODY extends z.ZodSchema<unknown> | null,
+  ZOD_QUERY extends z.ZodSchema<Record<string, string | string[]> | undefined> | null = z.ZodSchema<undefined>,
+  REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
+>(bodyModel: ZOD_BODY, queryModel: ZOD_QUERY | null | T, givenHandler?: T) {
+  if (typeof queryModel === 'function') {
+    return withZod<T, ZOD_BODY, ZOD_QUERY, REQ>(bodyModel, null, queryModel);
+  }
 
-const vovkZod = createDecorator(
-  async (req, next, bodyModel?: ZodAny | null, queryModel?: ZodAny | null) => {
+  const h = async (req: REQ, params: Parameters<T>[1]) => {
     if (bodyModel) {
-      const body = await req.json();
+      const body: unknown = await req.json();
       try {
         bodyModel.parse(body);
       } catch (e) {
         const err = (e as z.ZodError).errors.map((er) => `${er.message} (${er.path.join('/')})`).join(', ');
         throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid body on server. ${err}`);
       }
-      req.json = () => Promise.resolve(body);
+      // redeclare to add ability to call req.json() again
+      req.json = () => Promise.resolve(body as ZOD_BODY extends z.ZodSchema ? z.infer<ZOD_BODY> : never);
     }
 
     if (queryModel) {
-      const query = Object.fromEntries(req.nextUrl.searchParams.entries());
-      delete query.nxtP;
+      const query = reqQuery(req);
+
       try {
         queryModel.parse(query);
       } catch (e) {
@@ -30,22 +65,15 @@ const vovkZod = createDecorator(
       }
     }
 
-    return next();
-  },
-  (bodyModel?: ZodAny | null, queryModel?: ZodAny | null) => {
-    return (handlerMetadata) => ({
-      ...handlerMetadata,
-      customMetadata: {
-        ...handlerMetadata?.customMetadata,
-        [Symbol.for('zodBodyModel')]: bodyModel,
-        [Symbol.for('zodQueryModel')]: queryModel,
-      },
-      clientValidators: {
-        body: bodyModel ? zodToJsonSchema(bodyModel) : null,
-        query: queryModel ? zodToJsonSchema(queryModel) : null,
-      },
-    });
-  }
-);
+    return givenHandler!(req, params) as unknown;
+  };
 
-export default vovkZod;
+  void setClientValidatorsForHandler(h, {
+    body: bodyModel ? zodToJsonSchema(bodyModel) : undefined,
+    query: queryModel ? zodToJsonSchema(queryModel) : undefined,
+  });
+
+  return h as (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+}
+
+export default withZod;

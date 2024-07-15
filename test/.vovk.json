@@ -38,74 +38,6 @@
       "postWithParams": {
         "path": "with-params/:hello",
         "httpMethod": "POST"
-      },
-      "postWithEqualityValidation": {
-        "clientValidators": {
-          "body": {
-            "hello": "body"
-          },
-          "query": {
-            "hey": "query"
-          }
-        },
-        "httpMethod": "POST",
-        "path": "post-with-equality-validation"
-      },
-      "postFormData": {
-        "clientValidators": {
-          "body": null,
-          "query": {
-            "type": "object",
-            "properties": {
-              "hello": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "hello"
-            ],
-            "additionalProperties": false,
-            "$schema": "http://json-schema.org/draft-07/schema#"
-          }
-        },
-        "customMetadata": {},
-        "httpMethod": "POST",
-        "path": "post-form-data"
-      },
-      "postWithZodValidation": {
-        "clientValidators": {
-          "body": {
-            "type": "object",
-            "properties": {
-              "hello": {
-                "type": "string",
-                "const": "body"
-              }
-            },
-            "required": [
-              "hello"
-            ],
-            "additionalProperties": false,
-            "$schema": "http://json-schema.org/draft-07/schema#"
-          },
-          "query": {
-            "type": "object",
-            "properties": {
-              "hey": {
-                "type": "string",
-                "const": "query"
-              }
-            },
-            "required": [
-              "hey"
-            ],
-            "additionalProperties": false,
-            "$schema": "http://json-schema.org/draft-07/schema#"
-          }
-        },
-        "customMetadata": {},
-        "httpMethod": "POST",
-        "path": "post-with-zod-validation"
       }
     }
   },
@@ -175,6 +107,68 @@
         },
         "httpMethod": "GET",
         "path": "get-with-custom-metadata"
+      }
+    }
+  },
+  "WithZodClientController": {
+    "_controllerName": "WithZodClientController",
+    "_prefix": "",
+    "_handlers": {
+      "postFormData": {
+        "clientValidators": {
+          "body": null,
+          "query": {
+            "type": "object",
+            "properties": {
+              "hello": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "hello"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        "customMetadata": {},
+        "httpMethod": "POST",
+        "path": "post-form-data"
+      },
+      "postWithZodValidation": {
+        "clientValidators": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "hello": {
+                "type": "string",
+                "const": "body"
+              }
+            },
+            "required": [
+              "hello"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          },
+          "query": {
+            "type": "object",
+            "properties": {
+              "hey": {
+                "type": "string",
+                "const": "query"
+              }
+            },
+            "required": [
+              "hey"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        "customMetadata": {},
+        "httpMethod": "POST",
+        "path": "post-with-zod-validation"
       }
     }
   },

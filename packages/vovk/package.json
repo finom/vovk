@@ -19,7 +19,5 @@
   "bugs": {
     "url": "https://github.com/finom/vovk/issues"
   },
-  "homepage": "https://vovk.dev",
-  "peerDependencies": {
-  }
+  "homepage": "https://vovk.dev"
 }
