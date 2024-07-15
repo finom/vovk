@@ -1,19 +1,10 @@
-import { post } from 'vovk';
+import { post, put, get, del } from 'vovk';
 import withZod from 'vovk-zod';
 import * as z from 'zod';
 
 export default class WithZodClientController {
   @post.auto()
-  static postFormData = withZod(null, z.object({ hello: z.string() }), async (req) => {
-    const hello = req.nextUrl.searchParams.get('hello');
-    const data = await req.formData();
-    const formData = Object.fromEntries(data.entries());
-
-    return { query: { hello }, formData };
-  });
-
-  @post.auto()
-  static postWithZodValidation = withZod(
+  static postWithBodyAndQuery = withZod(
     z.object({ hello: z.literal('body') }),
     z.object({ hey: z.literal('query') }),
     async (req) => {
@@ -22,4 +13,22 @@ export default class WithZodClientController {
       return { body, query: { hey } };
     }
   );
+
+  @put.auto()
+  static putWithBodyAndNullQuery = withZod(z.object({ hello: z.literal('body') }), null, async (req) => {
+    const body = await req.json();
+    return { body };
+  });
+
+  @del.auto()
+  static putWithBodyOnly = withZod(z.object({ hello: z.literal('body') }), async (req) => {
+    const body = await req.json();
+    return { body };
+  });
+
+  @get.auto()
+  static getWithQueryAndNullBody = withZod(null, z.object({ hey: z.literal('query') }), (req) => {
+    const hey = req.nextUrl.searchParams.get('hey');
+    return { query: { hey } };
+  });
 }

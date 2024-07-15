@@ -114,28 +114,9 @@
     "_controllerName": "WithZodClientController",
     "_prefix": "",
     "_handlers": {
-      "postFormData": {
-        "clientValidators": {
-          "body": null,
-          "query": {
-            "type": "object",
-            "properties": {
-              "hello": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "hello"
-            ],
-            "additionalProperties": false,
-            "$schema": "http://json-schema.org/draft-07/schema#"
-          }
-        },
-        "customMetadata": {},
+      "postWithBodyAndQuery": {
         "httpMethod": "POST",
-        "path": "post-form-data"
-      },
-      "postWithZodValidation": {
+        "path": "post-with-body-and-query",
         "clientValidators": {
           "body": {
             "type": "object",
@@ -165,10 +146,67 @@
             "additionalProperties": false,
             "$schema": "http://json-schema.org/draft-07/schema#"
           }
-        },
-        "customMetadata": {},
-        "httpMethod": "POST",
-        "path": "post-with-zod-validation"
+        }
+      },
+      "putWithBodyAndNullQuery": {
+        "httpMethod": "PUT",
+        "path": "put-with-body-and-null-query",
+        "clientValidators": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "hello": {
+                "type": "string",
+                "const": "body"
+              }
+            },
+            "required": [
+              "hello"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      "putWithBodyOnly": {
+        "httpMethod": "DELETE",
+        "path": "put-with-body-only",
+        "clientValidators": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "hello": {
+                "type": "string",
+                "const": "body"
+              }
+            },
+            "required": [
+              "hello"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      "getWithQueryAndNullBody": {
+        "httpMethod": "GET",
+        "path": "get-with-query-and-null-body",
+        "clientValidators": {
+          "query": {
+            "type": "object",
+            "properties": {
+              "hey": {
+                "type": "string",
+                "const": "query"
+              }
+            },
+            "required": [
+              "hey"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
       }
     }
   },

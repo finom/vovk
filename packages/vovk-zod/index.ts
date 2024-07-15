@@ -48,7 +48,7 @@ function withZod<
         bodyModel.parse(body);
       } catch (e) {
         const err = (e as z.ZodError).errors.map((er) => `${er.message} (${er.path.join('/')})`).join(', ');
-        throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid body on server. ${err}`);
+        throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid request body on server for ${req.url}. ${err}`);
       }
       // redeclare to add ability to call req.json() again
       req.json = () => Promise.resolve(body as ZOD_BODY extends z.ZodSchema ? z.infer<ZOD_BODY> : never);
@@ -61,7 +61,7 @@ function withZod<
         queryModel.parse(query);
       } catch (e) {
         const err = (e as z.ZodError).errors.map((er) => `${er.message} (${er.path.join('/')})`).join(', ');
-        throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid query on server. ${err}`);
+        throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid request query on server for ${req.url}. ${err}`);
       }
     }
 
