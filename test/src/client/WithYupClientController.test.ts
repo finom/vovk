@@ -1,10 +1,10 @@
 import { it, expect, describe } from '@jest/globals';
-import { WithZodClientController } from '../../.vovk/client';
+import { WithYupClientController } from '../../.vovk/client';
 import { HttpException } from 'vovk';
 
 describe('Validation with with vovk-zod', () => {
   it('Should handle zod client validation', async () => {
-    const result = await WithZodClientController.postWithBodyAndQuery({
+    const result = await WithYupClientController.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
     });
@@ -15,7 +15,7 @@ describe('Validation with with vovk-zod', () => {
     });
 
     let { rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
+      await WithYupClientController.postWithBodyAndQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -27,7 +27,7 @@ describe('Validation with with vovk-zod', () => {
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
+      await WithYupClientController.postWithBodyAndQuery({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
@@ -40,7 +40,7 @@ describe('Validation with with vovk-zod', () => {
   });
 
   it('Should handle zod server validation', async () => {
-    const result = await WithZodClientController.postWithBodyAndQuery({
+    const result = await WithYupClientController.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
       disableClientValidation: true,
@@ -52,7 +52,7 @@ describe('Validation with with vovk-zod', () => {
     });
 
     let { rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
+      await WithYupClientController.postWithBodyAndQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -65,7 +65,7 @@ describe('Validation with with vovk-zod', () => {
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
+      await WithYupClientController.postWithBodyAndQuery({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
@@ -79,7 +79,7 @@ describe('Validation with with vovk-zod', () => {
   });
 
   it('Handles requests with body and null query', async () => {
-    const result = await WithZodClientController.putWithBodyAndNullQuery({
+    const result = await WithYupClientController.putWithBodyAndNullQuery({
       body: { hello: 'body' },
     });
 
@@ -88,7 +88,7 @@ describe('Validation with with vovk-zod', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithZodClientController.putWithBodyAndNullQuery({
+      await WithYupClientController.putWithBodyAndNullQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -100,7 +100,7 @@ describe('Validation with with vovk-zod', () => {
   });
 
   it('Handles requests with body only', async () => {
-    const result = await WithZodClientController.putWithBodyOnly({
+    const result = await WithYupClientController.putWithBodyOnly({
       body: { hello: 'body' },
     });
 
@@ -109,7 +109,7 @@ describe('Validation with with vovk-zod', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithZodClientController.putWithBodyOnly({
+      await WithYupClientController.putWithBodyOnly({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -121,7 +121,7 @@ describe('Validation with with vovk-zod', () => {
   });
 
   it('Handles with query only', async () => {
-    const result = await WithZodClientController.getWithQueryAndNullBody({
+    const result = await WithYupClientController.getWithQueryAndNullBody({
       query: { hey: 'query' },
     });
 
@@ -130,7 +130,7 @@ describe('Validation with with vovk-zod', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithZodClientController.getWithQueryAndNullBody({
+      await WithYupClientController.getWithQueryAndNullBody({
         query: {
           hey: 'wrong' as 'query',
         },

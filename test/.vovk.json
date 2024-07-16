@@ -35,8 +35,12 @@
         "path": "with-params/:hello",
         "httpMethod": "GET"
       },
-      "postWithParams": {
-        "path": "with-params/:hello",
+      "postWithAll": {
+        "path": "with-all/:hello",
+        "httpMethod": "POST"
+      },
+      "postWithBodyAndQueryUsingReqVovk": {
+        "path": "with-all-using-req-vovk",
         "httpMethod": "POST"
       }
     }
@@ -112,7 +116,7 @@
   },
   "WithZodClientController": {
     "_controllerName": "WithZodClientController",
-    "_prefix": "",
+    "_prefix": "with-zod",
     "_handlers": {
       "postWithBodyAndQuery": {
         "httpMethod": "POST",
@@ -205,6 +209,111 @@
             ],
             "additionalProperties": false,
             "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      }
+    }
+  },
+  "WithYupClientController": {
+    "_controllerName": "WithYupClientController",
+    "_prefix": "with-yup",
+    "_handlers": {
+      "postWithBodyAndQuery": {
+        "httpMethod": "POST",
+        "path": "post-with-body-and-query",
+        "clientValidators": {
+          "body": {
+            "type": "object",
+            "default": {},
+            "properties": {
+              "hello": {
+                "type": "string",
+                "enum": [
+                  "body"
+                ]
+              }
+            },
+            "required": [
+              "hello"
+            ]
+          },
+          "query": {
+            "type": "object",
+            "default": {},
+            "properties": {
+              "hey": {
+                "type": "string",
+                "enum": [
+                  "query"
+                ]
+              }
+            },
+            "required": [
+              "hey"
+            ]
+          }
+        }
+      },
+      "putWithBodyAndNullQuery": {
+        "httpMethod": "PUT",
+        "path": "put-with-body-and-null-query",
+        "clientValidators": {
+          "body": {
+            "type": "object",
+            "default": {},
+            "properties": {
+              "hello": {
+                "type": "string",
+                "enum": [
+                  "body"
+                ]
+              }
+            },
+            "required": [
+              "hello"
+            ]
+          }
+        }
+      },
+      "putWithBodyOnly": {
+        "httpMethod": "DELETE",
+        "path": "put-with-body-only",
+        "clientValidators": {
+          "body": {
+            "type": "object",
+            "default": {},
+            "properties": {
+              "hello": {
+                "type": "string",
+                "enum": [
+                  "body"
+                ]
+              }
+            },
+            "required": [
+              "hello"
+            ]
+          }
+        }
+      },
+      "getWithQueryAndNullBody": {
+        "httpMethod": "GET",
+        "path": "get-with-query-and-null-body",
+        "clientValidators": {
+          "query": {
+            "type": "object",
+            "default": {},
+            "properties": {
+              "hey": {
+                "type": "string",
+                "enum": [
+                  "query"
+                ]
+              }
+            },
+            "required": [
+              "hey"
+            ]
           }
         }
       }

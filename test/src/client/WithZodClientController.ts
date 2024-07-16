@@ -1,7 +1,8 @@
-import { post, put, get, del } from 'vovk';
+import { post, put, get, del, prefix } from 'vovk';
 import withZod from 'vovk-zod';
 import * as z from 'zod';
 
+@prefix('with-zod')
 export default class WithZodClientController {
   @post.auto()
   static postWithBodyAndQuery = withZod(

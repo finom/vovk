@@ -1,7 +1,7 @@
 {
-  "name": "vovk-zod",
-  "version": "0.1.5-beta.2",
-  "description": "Zod validation for Vovk.js",
+  "name": "vovk-yup",
+  "version": "0.0.0",
+  "description": "Yup validation for Vovk.js",
   "main": "index.js",
   "scripts": {
     "build": "tsc"
@@ -15,17 +15,17 @@
   },
   "keywords": [
     "vovk",
-    "zod",
+    "yup",
     "ajv"
   ],
   "author": "Andrii Gubanov",
   "license": "MIT",
   "peerDependencies": {
     "vovk": "2.1.1-beta.13",
-    "vovk-client-validate-ajv": "^0.0.1-beta.0",
-    "zod": "*"
+    "yup": "*"
   },
   "dependencies": {
-    "zod-to-json-schema": "^3.23.1"
+    "@sodaru/yup-to-json-schema": "^2.0.1",
+    "schema-to-yup": "^1.12.18"
   }
 }

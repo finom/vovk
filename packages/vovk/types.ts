@@ -91,7 +91,6 @@ export interface _VovkRequest<BODY = undefined, QUERY extends Record<string, str
   vovk: {
     body: () => Promise<BODY>;
     query: () => QUERY;
-    params: <T = Record<string, string>>() => T;
     meta: <T = Record<_KnownAny, _KnownAny>>(metadata?: T | null) => T;
   };
 }

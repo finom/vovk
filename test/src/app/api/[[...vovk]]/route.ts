@@ -20,6 +20,7 @@ import StreamingGeneratorController from '../../../client/StreamingGeneratorCont
 import StaticApiController from 'src/controllers/StaticApiController';
 import CostomMetadataController from 'src/client/CostomMetadataController';
 import WithZodClientController from 'src/client/WithZodClientController';
+import WithYupClientController from 'src/client/WithYupClientController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
   emitMetadata: false,
@@ -43,6 +44,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
     StaticApiController,
     CostomMetadataController,
     WithZodClientController,
+    WithYupClientController,
   },
   onError: (err, req) => {
     // eslint-disable-next-line no-console
@@ -56,6 +58,7 @@ const controllers = {
   StreamingGeneratorController,
   CostomMetadataController,
   WithZodClientController,
+  WithYupClientController,
 };
 const workers = { MyWorker, MyInnerWorker };
 
