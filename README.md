@@ -11,7 +11,7 @@
 <p align="center">
   Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful REST API platform with RPC capabilities. 
   <br><br>
-  ℹ️ Improved syntax for Zod and DTO validation is coming soon. Stay tuned!
+  ℹ️ An ultimate version of Vovk.ts is coming soon. Stay tuned!
 </p>
 
 <p align="center">
