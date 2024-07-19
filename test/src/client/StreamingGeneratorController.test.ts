@@ -9,7 +9,7 @@ const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Streaming generator', () => {
   it('Should work with generator', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
 
@@ -30,7 +30,7 @@ describe('Streaming generator', () => {
   });
 
   it('Should be able to cancel', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
@@ -51,7 +51,7 @@ describe('Streaming generator', () => {
   });
 
   it('Should handle immediate errors', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
 
     using resp = await StreamingGeneratorController.postWithStreamingAndImmediateError({
       body: tokens,
@@ -67,7 +67,7 @@ describe('Streaming generator', () => {
   });
 
   it('Should handle errors in the middle of stream', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
@@ -87,7 +87,7 @@ describe('Streaming generator', () => {
   });
 
   it('Should handle custom errors in the middle of stream', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
@@ -115,7 +115,7 @@ describe('Streaming generator', () => {
 
   // TODO: Stream never ends if not using dispose. No error when using dispose. Need help here.
   xit('Should handle unhandled errors in the middle of stream', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 

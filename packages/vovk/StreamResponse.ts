@@ -2,8 +2,6 @@ import { _KnownAny as KnownAny, _StreamAbortMessage as StreamAbortMessage } from
 import './utils/shim';
 
 export class _StreamResponse<T> extends Response {
-  public static readonly JSON_DIVIDER = '__##DIV123##__'; // protects collisions of JSON data
-
   public static defaultHeaders = {
     'Content-Type': 'text/plain; charset=utf-8',
   };
@@ -42,7 +40,7 @@ export class _StreamResponse<T> extends Response {
   public send(data: T | StreamAbortMessage) {
     const { controller, encoder } = this;
     if (this.isClosed) return;
-    return controller?.enqueue(encoder.encode(JSON.stringify(data) + _StreamResponse.JSON_DIVIDER));
+    return controller?.enqueue(encoder.encode(JSON.stringify(data) + '\n'));
   }
 
   public close() {

@@ -9,7 +9,7 @@ const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Streaming', () => {
   it('Should work', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
 
@@ -30,7 +30,7 @@ describe('Streaming', () => {
   });
 
   it('Should be able to cancel', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
@@ -55,7 +55,7 @@ describe('Streaming', () => {
   });
 
   it('Should be able to continue if disposable is not used', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
     let r;
@@ -88,7 +88,7 @@ describe('Streaming', () => {
   });
 
   it('Should be able to dispose', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
     let r;
@@ -118,7 +118,7 @@ describe('Streaming', () => {
   });
 
   it('Should handle immediate errors', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
 
     const respPromise = StreamingController.postWithStreamingAndImmediateError({
       body: tokens,
@@ -150,7 +150,7 @@ describe('Streaming', () => {
   });
 
   it('Should handle custom errors in the middle of stream', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
@@ -178,7 +178,7 @@ describe('Streaming', () => {
 
   // TODO: Stream never ends if not using dispose. No error when using dispose. Need help here.
   xit('Should handle unhandled errors in the middle of stream', async () => {
-    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 

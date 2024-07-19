@@ -1,7 +1,6 @@
 import { _HttpStatus as HttpStatus, type _VovkErrorResponse as VovkErrorResponse } from '../types';
 import type { _StreamAsyncIterator as StreamAsyncIterator } from './types';
 import { _HttpException as HttpException } from '../HttpException';
-import { _StreamResponse as StreamResponse } from '../StreamResponse';
 import '../utils/shim';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
@@ -48,13 +47,14 @@ export const _defaultStreamHandler = async (response: Response): Promise<StreamA
       // typeof value === 'number' is a workaround for React Native
       const string = typeof value === 'number' ? String.fromCharCode(value) : new TextDecoder().decode(value);
       prepend += string;
-      const lines = prepend.split(StreamResponse.JSON_DIVIDER).filter(Boolean);
+      const lines = prepend.split('\n').filter(Boolean);
       for (const line of lines) {
         let data;
         try {
           data = JSON.parse(line) as object;
           prepend = '';
         } catch {
+          console.log('Error parsing JSON:', line);
           break;
         }
 

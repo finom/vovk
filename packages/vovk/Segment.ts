@@ -175,7 +175,7 @@ export class _Segment {
     const { staticMethod, controller } = handler;
 
     req.vovk = {
-      body: async () => await req.json(),
+      body: () => req.json(),
       query: () => reqQuery(req),
       meta: <T = _KnownAny>(metadata?: T | null) => reqMeta<T>(req, metadata),
     };
