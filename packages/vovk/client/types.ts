@@ -87,6 +87,8 @@ export interface _VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | '
   reactNative?: { textStreaming: boolean };
   prefix?: string;
   disableClientValidation?: boolean;
+  validateOnClient?: _VovkValidateOnClient;
+  fetcher?: _VovkClientFetcher;
 }
 
 export type _VovkValidateOnClient = (

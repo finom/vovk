@@ -8,9 +8,13 @@ const validateOnClientYup: VovkValidateOnClient = (input, validators) => {
       buildYup(validators.body).validateSync(input.body);
     } catch (e) {
       const err = (e as Yup.ValidationError).errors.join(', ');
-      throw new HttpException(HttpStatus.NULL, `Invalid request body on client for ${input.endpoint}. ${err}`, {
-        body: input.body,
-      });
+      throw new HttpException(
+        HttpStatus.NULL,
+        `Yup validation failed. Invalid request body on client for ${input.endpoint}. ${err}`,
+        {
+          body: input.body,
+        }
+      );
     }
   }
 
@@ -19,9 +23,13 @@ const validateOnClientYup: VovkValidateOnClient = (input, validators) => {
       buildYup(validators.query).validateSync(input.query);
     } catch (e) {
       const err = (e as Yup.ValidationError).errors.join(', ');
-      throw new HttpException(HttpStatus.NULL, `Invalid request query on client for ${input.endpoint}. ${err}`, {
-        query: input.query,
-      });
+      throw new HttpException(
+        HttpStatus.NULL,
+        `Yup validation failed. Invalid request query on client for ${input.endpoint}. ${err}`,
+        {
+          query: input.query,
+        }
+      );
     }
   }
 };

@@ -54,7 +54,6 @@ export const _defaultStreamHandler = async (response: Response): Promise<StreamA
           data = JSON.parse(line) as object;
           prepend = '';
         } catch {
-          console.log('Error parsing JSON:', line);
           break;
         }
 

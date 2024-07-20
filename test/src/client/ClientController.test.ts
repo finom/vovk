@@ -125,4 +125,19 @@ describe('Client with vovk-client', () => {
       metaNulled: {},
     });
   });
+
+  it('Should accept custom fetcher as an option', async () => {
+    const result = await ClientController.postWithBodyAndQueryUsingReqVovk({
+      body: { isBody: true },
+      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      fetcher: ({ name }, { query, body }) => ({ customFetcher: true, name, query, body }),
+    });
+
+    expect(result).toEqual({
+      customFetcher: true,
+      name: 'postWithBodyAndQueryUsingReqVovk',
+      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      body: { isBody: true },
+    });
+  });
 });

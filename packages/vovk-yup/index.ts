@@ -49,7 +49,10 @@ function withYup<
         await bodyModel.validate(body);
       } catch (e) {
         const err = (e as Yup.ValidationError).errors.join(', ');
-        throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid request body on server for ${req.url}. ${err}`);
+        throw new HttpException(
+          HttpStatus.BAD_REQUEST,
+          `Yup validation failed. Invalid request body on server for ${req.url}. ${err}`
+        );
       }
       // redeclare to add ability to call req.json() again
       req.json = () => Promise.resolve(body as YUP_BODY extends Yup.Schema<KnownAny> ? Yup.InferType<YUP_BODY> : never);
@@ -62,7 +65,10 @@ function withYup<
         await queryModel.validate(query);
       } catch (e) {
         const err = (e as Yup.ValidationError).errors.join(', ');
-        throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid request query on server for ${req.url}. ${err}`);
+        throw new HttpException(
+          HttpStatus.BAD_REQUEST,
+          `Yup validation failed. Invalid request query on server for ${req.url}. ${err}`
+        );
       }
     }
 

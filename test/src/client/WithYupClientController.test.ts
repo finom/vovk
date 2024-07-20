@@ -1,12 +1,14 @@
 import { it, expect, describe } from '@jest/globals';
 import { WithYupClientController } from '../../.vovk/client';
 import { HttpException } from 'vovk';
+import validateOnClient from 'vovk-yup/validateOnClient';
 
 describe('Validation with with vovk-zod', () => {
   it('Should handle zod client validation', async () => {
     const result = await WithYupClientController.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
+      validateOnClient,
     });
 
     expect(result satisfies { body: { hello: 'body' }; query: { hey: 'query' } }).toEqual({
@@ -20,10 +22,11 @@ describe('Validation with with vovk-zod', () => {
           hello: 'wrong' as 'body',
         },
         query: { hey: 'query' },
+        validateOnClient,
       });
     });
 
-    await rejects.toThrow(/Invalid request body on client for/);
+    await rejects.toThrow(/Yup validation failed. Invalid request body on client for/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
@@ -32,10 +35,11 @@ describe('Validation with with vovk-zod', () => {
         query: {
           hey: 'wrong' as 'query',
         },
+        validateOnClient,
       });
     }));
 
-    await rejects.toThrow(/Invalid request query on client for/);
+    await rejects.toThrow(/Yup validation failed. Invalid request query on client for/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -44,6 +48,7 @@ describe('Validation with with vovk-zod', () => {
       body: { hello: 'body' },
       query: { hey: 'query' },
       disableClientValidation: true,
+      validateOnClient,
     });
 
     expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
@@ -58,10 +63,11 @@ describe('Validation with with vovk-zod', () => {
         },
         query: { hey: 'query' },
         disableClientValidation: true,
+        validateOnClient,
       });
     });
 
-    await rejects.toThrow(/Invalid request body on server for /);
+    await rejects.toThrow(/Yup validation failed. Invalid request body on server for /);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
@@ -71,16 +77,18 @@ describe('Validation with with vovk-zod', () => {
           hey: 'wrong' as 'query',
         },
         disableClientValidation: true,
+        validateOnClient,
       });
     }));
 
-    await rejects.toThrow(/Invalid request query on server for /);
+    await rejects.toThrow(/Yup validation failed. Invalid request query on server for /);
     await rejects.toThrowError(HttpException);
   });
 
   it('Handles requests with body and null query', async () => {
     const result = await WithYupClientController.putWithBodyAndNullQuery({
       body: { hello: 'body' },
+      validateOnClient,
     });
 
     expect(result satisfies { body: { hello: 'body' } }).toEqual({
@@ -92,16 +100,18 @@ describe('Validation with with vovk-zod', () => {
         body: {
           hello: 'wrong' as 'body',
         },
+        validateOnClient,
       });
     });
 
-    await rejects.toThrow(/Invalid request body on client for/);
+    await rejects.toThrow(/Yup validation failed. Invalid request body on client for/);
     await rejects.toThrowError(HttpException);
   });
 
   it('Handles requests with body only', async () => {
     const result = await WithYupClientController.putWithBodyOnly({
       body: { hello: 'body' },
+      validateOnClient,
     });
 
     expect(result satisfies { body: { hello: 'body' } }).toEqual({
@@ -113,16 +123,18 @@ describe('Validation with with vovk-zod', () => {
         body: {
           hello: 'wrong' as 'body',
         },
+        validateOnClient,
       });
     });
 
-    await rejects.toThrow(/Invalid request body on client for/);
+    await rejects.toThrow(/Yup validation failed. Invalid request body on client for/);
     await rejects.toThrowError(HttpException);
   });
 
   it('Handles with query only', async () => {
     const result = await WithYupClientController.getWithQueryAndNullBody({
       query: { hey: 'query' },
+      validateOnClient,
     });
 
     expect(result satisfies { query: { hey: 'query' } }).toEqual({
@@ -134,10 +146,11 @@ describe('Validation with with vovk-zod', () => {
         query: {
           hey: 'wrong' as 'query',
         },
+        validateOnClient,
       });
     });
 
-    await rejects.toThrow(/Invalid request query on client for/);
+    await rejects.toThrow(/Yup validation failed. Invalid request query on client for/);
     await rejects.toThrowError(HttpException);
   });
 });

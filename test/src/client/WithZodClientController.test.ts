@@ -2,7 +2,7 @@ import { it, expect, describe } from '@jest/globals';
 import { WithZodClientController } from '../../.vovk/client';
 import { HttpException } from 'vovk';
 
-describe('Validation with with vovk-zod', () => {
+describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
   it('Should handle zod client validation', async () => {
     const result = await WithZodClientController.postWithBodyAndQuery({
       body: { hello: 'body' },
@@ -23,7 +23,7 @@ describe('Validation with with vovk-zod', () => {
       });
     });
 
-    await rejects.toThrow(/Invalid request body on client for/);
+    await rejects.toThrow(/Ajv validation failed. Invalid request body on client for/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
@@ -35,7 +35,7 @@ describe('Validation with with vovk-zod', () => {
       });
     }));
 
-    await rejects.toThrow(/Invalid request query on client for/);
+    await rejects.toThrow(/Ajv validation failed. Invalid request query on client for/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -61,7 +61,7 @@ describe('Validation with with vovk-zod', () => {
       });
     });
 
-    await rejects.toThrow(/Invalid request body on server for /);
+    await rejects.toThrow(/Zod validation failed. Invalid request body on server for /);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
@@ -74,7 +74,7 @@ describe('Validation with with vovk-zod', () => {
       });
     }));
 
-    await rejects.toThrow(/Invalid request query on server for /);
+    await rejects.toThrow(/Zod validation failed. Invalid request query on server for /);
     await rejects.toThrowError(HttpException);
   });
 
@@ -95,7 +95,7 @@ describe('Validation with with vovk-zod', () => {
       });
     });
 
-    await rejects.toThrow(/Invalid request body on client for/);
+    await rejects.toThrow(/Ajv validation failed. Invalid request body on client for/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -116,7 +116,7 @@ describe('Validation with with vovk-zod', () => {
       });
     });
 
-    await rejects.toThrow(/Invalid request body on client for/);
+    await rejects.toThrow(/Ajv validation failed. Invalid request body on client for/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -137,7 +137,7 @@ describe('Validation with with vovk-zod', () => {
       });
     });
 
-    await rejects.toThrow(/Invalid request query on client for/);
+    await rejects.toThrow(/Ajv validation failed. Invalid request query on client for/);
     await rejects.toThrowError(HttpException);
   });
 });

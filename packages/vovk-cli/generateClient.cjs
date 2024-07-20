@@ -28,9 +28,6 @@ async function generateClient({ ...env }) {
   const routFile = env.VOVK_ROUTE.replace(cwd, '');
   const controllersPath = path.join(returnDir, routFile).replace(/\.ts$/, '');
 
-  if (!env.VOVK_VALIDATE_ON_CLIENT) {
-    env.VOVK_VALIDATE_ON_CLIENT = canRequire('vovk-client-validate-ajv') ? 'vovk-client-validate-ajv' : '';
-  }
   const validatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.')
     ? path.join(returnDir, env.VOVK_VALIDATE_ON_CLIENT)
     : env.VOVK_VALIDATE_ON_CLIENT;

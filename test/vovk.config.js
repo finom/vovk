@@ -5,7 +5,7 @@ const vovkConfig = {
   route: './src/app/api/[[...vovk]]/route.ts',
   clientOut: './.vovk',
   metadataOut: './.vovk.json',
-  // validateOnClient: 'vovk-zod/zodValidateOnClient',
+  validateOnClient: 'vovk-zod/validateOnClient',
 };
 
 module.exports = vovkConfig;
