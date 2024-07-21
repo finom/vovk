@@ -319,6 +319,54 @@
       }
     }
   },
+  "WithDtoClientController": {
+    "_controllerName": "WithDtoClientController",
+    "_prefix": "with-dto",
+    "_handlers": {
+      "postWithBodyAndQuery": {
+        "httpMethod": "POST",
+        "path": "post-with-body-and-query",
+        "clientValidators": {
+          "body": {
+            "isDTO": true
+          },
+          "query": {
+            "isDTO": true
+          }
+        }
+      },
+      "putWithBodyAndNullQuery": {
+        "httpMethod": "PUT",
+        "path": "put-with-body-and-null-query",
+        "clientValidators": {
+          "body": {
+            "isDTO": true
+          },
+          "query": null
+        }
+      },
+      "putWithBodyOnly": {
+        "httpMethod": "DELETE",
+        "path": "put-with-body-only",
+        "clientValidators": {
+          "body": {
+            "isDTO": true
+          },
+          "query": null
+        }
+      },
+      "getWithQueryAndNullBody": {
+        "httpMethod": "GET",
+        "path": "get-with-query-and-null-body",
+        "clientValidators": {
+          "body": null,
+          "query": {
+            "isDTO": true
+          }
+        }
+      }
+    }
+  },
   "workers": {
     "MyWorker": {
       "_workerName": "MyWorker",

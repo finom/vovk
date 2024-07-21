@@ -3,43 +3,7 @@ import { WithZodClientController } from '../../.vovk/client';
 import { HttpException } from 'vovk';
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
-  it('Should handle zod client validation', async () => {
-    const result = await WithZodClientController.postWithBodyAndQuery({
-      body: { hello: 'body' },
-      query: { hey: 'query' },
-    });
-
-    expect(result satisfies { body: { hello: 'body' }; query: { hey: 'query' } }).toEqual({
-      body: { hello: 'body' },
-      query: { hey: 'query' },
-    });
-
-    let { rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
-        body: {
-          hello: 'wrong' as 'body',
-        },
-        query: { hey: 'query' },
-      });
-    });
-
-    await rejects.toThrow(/Ajv validation failed. Invalid request body on client for/);
-    await rejects.toThrowError(HttpException);
-
-    ({ rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
-        body: { hello: 'body' },
-        query: {
-          hey: 'wrong' as 'query',
-        },
-      });
-    }));
-
-    await rejects.toThrow(/Ajv validation failed. Invalid request query on client for/);
-    await rejects.toThrowError(HttpException);
-  });
-
-  it('Should handle zod server validation', async () => {
+  it('Should handle Zod server validation', async () => {
     const result = await WithZodClientController.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
@@ -75,6 +39,42 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(/Zod validation failed. Invalid request query on server for /);
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle Zod client validation', async () => {
+    const result = await WithZodClientController.postWithBodyAndQuery({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+    });
+
+    expect(result satisfies { body: { hello: 'body' }; query: { hey: 'query' } }).toEqual({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+    });
+
+    let { rejects } = expect(async () => {
+      await WithZodClientController.postWithBodyAndQuery({
+        body: {
+          hello: 'wrong' as 'body',
+        },
+        query: { hey: 'query' },
+      });
+    });
+
+    await rejects.toThrow(/Ajv validation failed. Invalid request body on client for/);
+    await rejects.toThrowError(HttpException);
+
+    ({ rejects } = expect(async () => {
+      await WithZodClientController.postWithBodyAndQuery({
+        body: { hello: 'body' },
+        query: {
+          hey: 'wrong' as 'query',
+        },
+      });
+    }));
+
+    await rejects.toThrow(/Ajv validation failed. Invalid request query on client for/);
     await rejects.toThrowError(HttpException);
   });
 

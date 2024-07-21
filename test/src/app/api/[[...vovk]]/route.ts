@@ -21,6 +21,7 @@ import StaticApiController from 'src/controllers/StaticApiController';
 import CostomMetadataController from 'src/client/CostomMetadataController';
 import WithZodClientController from 'src/client/WithZodClientController';
 import WithYupClientController from 'src/client/WithYupClientController';
+import WithDtoClientController from 'src/client/WithDtoClientController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
   emitMetadata: false,
@@ -45,6 +46,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
     CostomMetadataController,
     WithZodClientController,
     WithYupClientController,
+    WithDtoClientController,
   },
   onError: (err, req) => {
     // eslint-disable-next-line no-console
@@ -59,6 +61,7 @@ const controllers = {
   CostomMetadataController,
   WithZodClientController,
   WithYupClientController,
+  WithDtoClientController,
 };
 const workers = { MyWorker, MyInnerWorker };
 

@@ -3,47 +3,8 @@ import { WithYupClientController } from '../../.vovk/client';
 import { HttpException } from 'vovk';
 import validateOnClient from 'vovk-yup/validateOnClient';
 
-describe('Validation with with vovk-zod', () => {
-  it('Should handle zod client validation', async () => {
-    const result = await WithYupClientController.postWithBodyAndQuery({
-      body: { hello: 'body' },
-      query: { hey: 'query' },
-      validateOnClient,
-    });
-
-    expect(result satisfies { body: { hello: 'body' }; query: { hey: 'query' } }).toEqual({
-      body: { hello: 'body' },
-      query: { hey: 'query' },
-    });
-
-    let { rejects } = expect(async () => {
-      await WithYupClientController.postWithBodyAndQuery({
-        body: {
-          hello: 'wrong' as 'body',
-        },
-        query: { hey: 'query' },
-        validateOnClient,
-      });
-    });
-
-    await rejects.toThrow(/Yup validation failed. Invalid request body on client for/);
-    await rejects.toThrowError(HttpException);
-
-    ({ rejects } = expect(async () => {
-      await WithYupClientController.postWithBodyAndQuery({
-        body: { hello: 'body' },
-        query: {
-          hey: 'wrong' as 'query',
-        },
-        validateOnClient,
-      });
-    }));
-
-    await rejects.toThrow(/Yup validation failed. Invalid request query on client for/);
-    await rejects.toThrowError(HttpException);
-  });
-
-  it('Should handle zod server validation', async () => {
+describe('Validation with with vovk-yup', () => {
+  it('Should handle Yup server validation', async () => {
     const result = await WithYupClientController.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
@@ -82,6 +43,45 @@ describe('Validation with with vovk-zod', () => {
     }));
 
     await rejects.toThrow(/Yup validation failed. Invalid request query on server for /);
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle Yup client validation', async () => {
+    const result = await WithYupClientController.postWithBodyAndQuery({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+      validateOnClient,
+    });
+
+    expect(result satisfies { body: { hello: 'body' }; query: { hey: 'query' } }).toEqual({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+    });
+
+    let { rejects } = expect(async () => {
+      await WithYupClientController.postWithBodyAndQuery({
+        body: {
+          hello: 'wrong' as 'body',
+        },
+        query: { hey: 'query' },
+        validateOnClient,
+      });
+    });
+
+    await rejects.toThrow(/Yup validation failed. Invalid request body on client for/);
+    await rejects.toThrowError(HttpException);
+
+    ({ rejects } = expect(async () => {
+      await WithYupClientController.postWithBodyAndQuery({
+        body: { hello: 'body' },
+        query: {
+          hey: 'wrong' as 'query',
+        },
+        validateOnClient,
+      });
+    }));
+
+    await rejects.toThrow(/Yup validation failed. Invalid request query on client for/);
     await rejects.toThrowError(HttpException);
   });
 
