@@ -21,8 +21,13 @@ describe('Client with vovk-client', () => {
   });
 
   it(`Should handle requests that return NextResponse.json and are async`, async () => {
-    const result = await ClientController.getHelloWorldResponseObjectPromise();
+    const result = await ClientController.getHelloWorldNextResponseObjectPromise();
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+  });
+
+  it(`Should handle requests that return raw Response.json and response is recognised as unknown`, async () => {
+    const result = await ClientController.getHelloWorldRawResponseObjectPromise();
+    expect(result satisfies unknown).toEqual({ hello: 'world' });
   });
 
   it(`Should handle object literals and are async`, async () => {

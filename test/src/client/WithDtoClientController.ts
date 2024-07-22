@@ -1,6 +1,6 @@
 import { post, prefix, put, del, get } from 'vovk';
 import withDto from 'vovk-dto';
-import { Contains } from 'class-validator';
+import { Contains, IsArray, IsString, ArrayNotEmpty, ArrayMinSize } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 
 export class BodyDto {
@@ -13,6 +13,16 @@ export class QueryDto {
   hey: 'query';
 }
 
+export class QueryWithArrayDto {
+  @Contains('query')
+  hey: 'query';
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMinSize(2)
+  @IsString({ each: true })
+  array: ('foo' | 'bar')[];
+}
+
 export class ReturnDto {
   @Contains('body')
   hello: 'body';
@@ -22,11 +32,11 @@ export class ReturnDto {
 
 @prefix('with-dto')
 export default class WithDtoClientController {
-  @post.auto()
-  static postWithBodyAndQuery = withDto(BodyDto, QueryDto, async (req) => {
+  @post('with-params/:param')
+  static postWithBodyQueryAndParams = withDto(BodyDto, QueryDto, async (req, params: { param: 'foo' }) => {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
-    return { body, query: { hey } };
+    return { body, query: { hey }, params };
   });
 
   @post.auto()
@@ -52,5 +62,19 @@ export default class WithDtoClientController {
   static getWithQueryAndNullBody = withDto(null, QueryDto, (req) => {
     const hey = req.nextUrl.searchParams.get('hey');
     return { query: { hey } };
+  });
+
+  @post.auto()
+  static postWithBodyAndQueryWithReqVovk = withDto(BodyDto, QueryDto, async (req) => {
+    const body = await req.vovk.body();
+    const query = req.vovk.query();
+    const bodyInstanceOfDto = body instanceof BodyDto;
+    const queryInstanceOfDto = query instanceof QueryDto;
+    return { body, query, bodyInstanceOfDto, queryInstanceOfDto };
+  });
+
+  @get.auto()
+  static getWithQueryArrayAndNullBody = withDto(null, QueryWithArrayDto, (req) => {
+    return { query: req.vovk.query() };
   });
 }

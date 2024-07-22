@@ -28,7 +28,11 @@ export type _StreamAsyncIterator<T> = {
 };
 
 type StaticMethodReturn<T extends _ControllerStaticMethod> =
-  ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>> ? U : ReturnType<T>;
+  ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
+    ? U
+    : ReturnType<T> extends Response | Promise<Response>
+      ? unknown
+      : ReturnType<T>;
 
 type StaticMethodReturnPromise<T extends _ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 

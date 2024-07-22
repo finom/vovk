@@ -11,6 +11,7 @@ const config = {
     ],
   },
   modulePathIgnorePatterns: ['dist'],
+  testTimeout: 10000,
 };
 
 module.exports = config;

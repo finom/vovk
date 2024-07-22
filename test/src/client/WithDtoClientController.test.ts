@@ -1,15 +1,16 @@
-import { it, xit, expect, describe } from '@jest/globals';
+import { it, expect, describe } from '@jest/globals';
 import { WithDtoClientController } from '../../.vovk/client';
 import { HttpException } from 'vovk';
 import validateOnClient from 'vovk-dto/validateOnClient';
 import { plainToInstance } from 'class-transformer';
-import { BodyDto, QueryDto, ReturnDto } from './WithDtoClientController';
+import { BodyDto, QueryDto, QueryWithArrayDto, ReturnDto } from './WithDtoClientController';
 
 describe('Validation with with vovk-dto', () => {
   it('Should handle DTO server validation', async () => {
-    const result = await WithDtoClientController.postWithBodyAndQuery({
+    const result = await WithDtoClientController.postWithBodyQueryAndParams({
       body: { hello: 'body' },
       query: { hey: 'query' },
+      params: { param: 'foo' },
       disableClientValidation: true,
       validateOnClient,
     });
@@ -17,14 +18,16 @@ describe('Validation with with vovk-dto', () => {
     expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
       body: { hello: 'body' },
       query: { hey: 'query' },
+      params: { param: 'foo' },
     });
 
     let { rejects } = expect(async () => {
-      await WithDtoClientController.postWithBodyAndQuery({
+      await WithDtoClientController.postWithBodyQueryAndParams({
         body: {
           hello: 'wrong' as 'body',
         },
         query: { hey: 'query' },
+        params: { param: 'foo' },
         disableClientValidation: true,
         validateOnClient,
       });
@@ -36,11 +39,12 @@ describe('Validation with with vovk-dto', () => {
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithDtoClientController.postWithBodyAndQuery({
+      await WithDtoClientController.postWithBodyQueryAndParams({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
         },
+        params: { param: 'foo' },
         disableClientValidation: true,
         validateOnClient,
       });
@@ -53,23 +57,26 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Should handle DTO client validation', async () => {
-    const result = await WithDtoClientController.postWithBodyAndQuery({
+    const result = await WithDtoClientController.postWithBodyQueryAndParams({
       body: plainToInstance(BodyDto, { hello: 'body' }),
       query: plainToInstance(QueryDto, { hey: 'query' }),
+      params: { param: 'foo' },
       validateOnClient,
     });
 
     expect(result satisfies { body: { hello: 'body' }; query: { hey: 'query' } }).toEqual({
       body: { hello: 'body' },
       query: { hey: 'query' },
+      params: { param: 'foo' },
     });
 
     let { rejects } = expect(async () => {
-      await WithDtoClientController.postWithBodyAndQuery({
+      await WithDtoClientController.postWithBodyQueryAndParams({
         body: plainToInstance(BodyDto, {
           hello: 'wrong' as 'body',
         }),
         query: plainToInstance(QueryDto, { hey: 'query' }),
+        params: { param: 'foo' },
         validateOnClient,
       });
     });
@@ -80,11 +87,12 @@ describe('Validation with with vovk-dto', () => {
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithDtoClientController.postWithBodyAndQuery({
+      await WithDtoClientController.postWithBodyQueryAndParams({
         body: plainToInstance(BodyDto, { hello: 'body' }),
         query: plainToInstance(QueryDto, {
           hey: 'wrong' as 'query',
         }),
+        params: { param: 'foo' },
         validateOnClient,
       });
     }));
@@ -170,9 +178,84 @@ describe('Validation with with vovk-dto', () => {
     await rejects.toThrowError(HttpException);
   });
 
-  // TODO
-  xit('Handles query as an array', () => {});
-  xit('req.vovk.body and req.vovk.query should return an instance of a DTO', () => {});
+  it('Handles query as an array client validation', async () => {
+    const result = await WithDtoClientController.getWithQueryArrayAndNullBody({
+      query: plainToInstance(QueryWithArrayDto, { array: ['foo', 'bar'], hey: 'query' }),
+      validateOnClient,
+    });
+
+    expect(result satisfies { query: { array: ('foo' | 'bar')[]; hey: 'query' } }).toEqual({
+      query: { array: ['foo', 'bar'], hey: 'query' },
+    });
+
+    const { rejects } = expect(async () => {
+      await WithDtoClientController.getWithQueryArrayAndNullBody({
+        query: plainToInstance(QueryWithArrayDto, {
+          array: [1, 2],
+          hey: 'query',
+        }),
+        validateOnClient,
+      });
+    });
+
+    await rejects.toThrow(
+      /Validation failed. Invalid request query on client for http:.*. each value in array must be a string/
+    );
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Handles query as an array server validation', async () => {
+    const result = await WithDtoClientController.getWithQueryArrayAndNullBody({
+      query: {
+        array: ['foo', 'bar'],
+        hey: 'query',
+      },
+      disableClientValidation: true,
+      validateOnClient,
+    });
+
+    expect(result satisfies { query: { array: ('foo' | 'bar')[]; hey: 'query' } }).toEqual({
+      query: { array: ['foo', 'bar'], hey: 'query' },
+    });
+
+    const { rejects } = expect(async () => {
+      await WithDtoClientController.getWithQueryArrayAndNullBody({
+        query: plainToInstance(QueryWithArrayDto, {
+          array: ['bar'], // single item is transformed to an string on the server
+          hey: 'query',
+        }),
+        disableClientValidation: true,
+        validateOnClient,
+      });
+    });
+
+    await rejects.toThrow(
+      /Validation failed. Invalid request query on server for http:.*. array must contain at least 2 elements, array should not be empty, array must be an array/
+    );
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('req.vovk.body and req.vovk.query should return an instance of a DTO', async () => {
+    const result = await WithDtoClientController.postWithBodyAndQueryWithReqVovk({
+      body: plainToInstance(BodyDto, { hello: 'body' }),
+      query: plainToInstance(QueryDto, { hey: 'query' }),
+      validateOnClient,
+    });
+
+    expect(
+      result satisfies {
+        body: { hello: 'body' };
+        query: { hey: 'query' };
+        bodyInstanceOfDto: boolean;
+        queryInstanceOfDto: boolean;
+      }
+    ).toEqual({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+      bodyInstanceOfDto: true,
+      queryInstanceOfDto: true,
+    });
+  });
 
   it('Should transform response on client-side to a DTO class', async () => {
     const result = await WithDtoClientController.postWithBodyAndQueryTransformed({

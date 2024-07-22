@@ -11,9 +11,13 @@
         "httpMethod": "GET",
         "path": "get-hello-world-object-literal"
       },
-      "getHelloWorldResponseObjectPromise": {
+      "getHelloWorldNextResponseObjectPromise": {
         "httpMethod": "GET",
-        "path": "get-hello-world-response-object-promise"
+        "path": "get-hello-world-next-response-object-promise"
+      },
+      "getHelloWorldRawResponseObjectPromise": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-raw-response-object-promise"
       },
       "getHelloWorldObjectLiteralPromise": {
         "httpMethod": "GET",
@@ -323,9 +327,9 @@
     "_controllerName": "WithDtoClientController",
     "_prefix": "with-dto",
     "_handlers": {
-      "postWithBodyAndQuery": {
+      "postWithBodyQueryAndParams": {
+        "path": "with-params/:param",
         "httpMethod": "POST",
-        "path": "post-with-body-and-query",
         "clientValidators": {
           "body": {
             "isDTO": true
@@ -334,10 +338,6 @@
             "isDTO": true
           }
         }
-      },
-      "getHelloWorldObjectLiteral": {
-        "httpMethod": "GET",
-        "path": "get-hello-world-object-literal"
       },
       "postWithBodyAndQueryTransformed": {
         "httpMethod": "POST",
@@ -374,6 +374,28 @@
       "getWithQueryAndNullBody": {
         "httpMethod": "GET",
         "path": "get-with-query-and-null-body",
+        "clientValidators": {
+          "body": null,
+          "query": {
+            "isDTO": true
+          }
+        }
+      },
+      "postWithBodyAndQueryWithReqVovk": {
+        "httpMethod": "POST",
+        "path": "post-with-body-and-query-with-req-vovk",
+        "clientValidators": {
+          "body": {
+            "isDTO": true
+          },
+          "query": {
+            "isDTO": true
+          }
+        }
+      },
+      "getWithQueryArrayAndNullBody": {
+        "httpMethod": "GET",
+        "path": "get-with-query-array-and-null-body",
         "clientValidators": {
           "body": null,
           "query": {
