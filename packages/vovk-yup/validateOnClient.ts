@@ -14,6 +14,7 @@ const validateOnClientDto: VovkValidateOnClient = async (input, validators) => {
         {
           body: input.body,
           originalCause: e,
+          endpoint: input.endpoint,
         }
       );
     }
@@ -30,6 +31,7 @@ const validateOnClientDto: VovkValidateOnClient = async (input, validators) => {
         {
           query: input.query,
           originalCause: e,
+          endpoint: input.endpoint,
         }
       );
     }
