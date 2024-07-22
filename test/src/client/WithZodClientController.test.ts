@@ -25,7 +25,9 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid request body on server for /);
+    await rejects.toThrow(
+      /Zod validation failed. Invalid request body on server for http:.*. Invalid literal value, expected "body" \(hello\)/
+    );
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
@@ -38,7 +40,9 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Zod validation failed. Invalid request query on server for /);
+    await rejects.toThrow(
+      /Zod validation failed. Invalid request query on server for http:.*\. Invalid literal value, expected "query" \(hey\)/
+    );
     await rejects.toThrowError(HttpException);
   });
 
@@ -62,7 +66,9 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Ajv validation failed. Invalid request body on client for/);
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+    );
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
@@ -74,7 +80,9 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid request query on client for/);
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request query on client for http:.*\. data\/hey must be equal to constant/
+    );
     await rejects.toThrowError(HttpException);
   });
 
@@ -95,7 +103,9 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Ajv validation failed. Invalid request body on client for/);
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+    );
     await rejects.toThrowError(HttpException);
   });
 
@@ -116,7 +126,9 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Ajv validation failed. Invalid request body on client for/);
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+    );
     await rejects.toThrowError(HttpException);
   });
 
@@ -137,7 +149,9 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Ajv validation failed. Invalid request query on client for/);
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request query on client for http:.*\. data\/hey must be equal to constant/
+    );
     await rejects.toThrowError(HttpException);
   });
 });

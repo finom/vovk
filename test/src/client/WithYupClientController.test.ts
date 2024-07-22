@@ -28,7 +28,9 @@ describe('Validation with with vovk-yup', () => {
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid request body on server for /);
+    await rejects.toThrow(
+      /Yup validation failed. Invalid request body on server for http:.*. hello must be one of the following values: body/
+    );
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
@@ -42,7 +44,9 @@ describe('Validation with with vovk-yup', () => {
       });
     }));
 
-    await rejects.toThrow(/Yup validation failed. Invalid request query on server for /);
+    await rejects.toThrow(
+      /Yup validation failed. Invalid request query on server for http:.*. hey must be one of the following values: query/
+    );
     await rejects.toThrowError(HttpException);
   });
 
@@ -68,7 +72,9 @@ describe('Validation with with vovk-yup', () => {
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid request body on client for/);
+    await rejects.toThrow(
+      /Yup validation failed. Invalid request body on client for http:.*. hello must be one of the following values: body/
+    );
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
@@ -81,7 +87,9 @@ describe('Validation with with vovk-yup', () => {
       });
     }));
 
-    await rejects.toThrow(/Yup validation failed. Invalid request query on client for/);
+    await rejects.toThrow(
+      /Yup validation failed. Invalid request query on client for http:.*. hey must be one of the following values: query/
+    );
     await rejects.toThrowError(HttpException);
   });
 
@@ -104,7 +112,9 @@ describe('Validation with with vovk-yup', () => {
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid request body on client for/);
+    await rejects.toThrow(
+      /Yup validation failed. Invalid request body on client for http:.*. hello must be one of the following values: body/
+    );
     await rejects.toThrowError(HttpException);
   });
 
@@ -127,7 +137,9 @@ describe('Validation with with vovk-yup', () => {
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid request body on client for/);
+    await rejects.toThrow(
+      /Yup validation failed. Invalid request body on client for http:.*. hello must be one of the following values: body/
+    );
     await rejects.toThrowError(HttpException);
   });
 
@@ -150,7 +162,9 @@ describe('Validation with with vovk-yup', () => {
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid request query on client for/);
+    await rejects.toThrow(
+      /Yup validation failed. Invalid request query on client for http:.*. hey must be one of the following values: query/
+    );
     await rejects.toThrowError(HttpException);
   });
 });
