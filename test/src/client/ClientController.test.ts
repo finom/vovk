@@ -30,6 +30,32 @@ describe('Client with vovk-client', () => {
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });
 
+  it('Should transform response using "transform" option with requests that return NextResponse.json', async () => {
+    const result = await ClientController.getHelloWorldResponseObject({
+      transform: (response) => ({ ...response, transform: true }),
+    });
+    expect(result satisfies { hello: string; transform: boolean }).toEqual({ hello: 'world', transform: true });
+  });
+
+  it('Should transform response using "transform" option with requests that return object literals', async () => {
+    const result = await ClientController.getHelloWorldObjectLiteral({
+      transform: (response) => ({ ...response, transform: true }),
+    });
+    expect(result satisfies { hello: string; transform: boolean }).toEqual({ hello: 'world', transform: true });
+  });
+
+  it('Should override type with client method generic', async () => {
+    const result = await ClientController.getHelloWorldResponseObject<{ override: true }>();
+    expect(result satisfies { override: true }).toEqual({ hello: 'world' });
+  });
+
+  it('Should transform response using "transform" option and override type with client method generic', async () => {
+    const result = await ClientController.getHelloWorldResponseObject<{ hello: string; transform: boolean }>({
+      transform: (response) => ({ ...response, transform: true }),
+    });
+    expect(result satisfies { hello: string; transform: boolean }).toEqual({ hello: 'world', transform: true });
+  });
+
   it(`Should handle headers`, async () => {
     const result = await ClientController.getHelloWorldHeaders({
       prefix,

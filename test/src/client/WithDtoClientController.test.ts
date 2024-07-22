@@ -1,9 +1,9 @@
-import { it, expect, describe } from '@jest/globals';
+import { it, xit, expect, describe } from '@jest/globals';
 import { WithDtoClientController } from '../../.vovk/client';
 import { HttpException } from 'vovk';
 import validateOnClient from 'vovk-dto/validateOnClient';
 import { plainToInstance } from 'class-transformer';
-import { BodyDto, QueryDto } from './WithDtoClientController';
+import { BodyDto, QueryDto, ReturnDto } from './WithDtoClientController';
 
 describe('Validation with with vovk-dto', () => {
   it('Should handle DTO server validation', async () => {
@@ -168,5 +168,25 @@ describe('Validation with with vovk-dto', () => {
       /Validation failed. Invalid request query on client for http:.*. hey must contain a query string/
     );
     await rejects.toThrowError(HttpException);
+  });
+
+  // TODO
+  xit('Handles query as an array', () => {});
+  xit('req.vovk.body and req.vovk.query should return an instance of a DTO', () => {});
+
+  it('Should transform response on client-side to a DTO class', async () => {
+    const result = await WithDtoClientController.postWithBodyAndQueryTransformed({
+      body: { hello: 'body' },
+      query: { hey: 'query' },
+      transform: (resp) => plainToInstance(ReturnDto, resp),
+      validateOnClient,
+    });
+
+    expect(result satisfies ReturnDto).toEqual({
+      hello: 'body',
+      hey: 'query',
+    });
+
+    expect(result instanceof ReturnDto).toBe(true);
   });
 });

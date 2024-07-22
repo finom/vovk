@@ -1,6 +1,7 @@
 import { post, prefix, put, del, get } from 'vovk';
 import withDto from 'vovk-dto';
 import { Contains } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 
 export class BodyDto {
   @Contains('body')
@@ -12,6 +13,13 @@ export class QueryDto {
   hey: 'query';
 }
 
+export class ReturnDto {
+  @Contains('body')
+  hello: 'body';
+  @Contains('query')
+  hey: 'query';
+}
+
 @prefix('with-dto')
 export default class WithDtoClientController {
   @post.auto()
@@ -19,6 +27,13 @@ export default class WithDtoClientController {
     const body = await req.json();
     const hey = req.nextUrl.searchParams.get('hey');
     return { body, query: { hey } };
+  });
+
+  @post.auto()
+  static postWithBodyAndQueryTransformed = withDto(BodyDto, QueryDto, async (req) => {
+    const { hello } = await req.json();
+    const hey = req.nextUrl.searchParams.get('hey');
+    return plainToInstance(ReturnDto, { hello, hey });
   });
 
   @put.auto()

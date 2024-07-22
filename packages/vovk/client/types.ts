@@ -27,6 +27,11 @@ export type _StreamAsyncIterator<T> = {
   cancel: () => Promise<void> | void;
 };
 
+type StaticMethodReturn<T extends _ControllerStaticMethod> =
+  ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>> ? U : ReturnType<T>;
+
+type StaticMethodReturnPromise<T extends _ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
+
 type ClientMethod<
   T extends (...args: KnownAny[]) => void | object | StreamResponse<STREAM> | Promise<StreamResponse<STREAM>>,
   OPTS extends Record<string, KnownAny>,
@@ -39,7 +44,11 @@ type ClientMethod<
         ? { params: _StaticMethodInput<T>['params'] }
         : unknown
       : _StaticMethodInput<T>) &
-    (Partial<OPTS> | void)
+    (Partial<
+      OPTS & {
+        transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
+      }
+    > | void)
 ) => ReturnType<T> extends
   | Promise<StreamResponse<infer U>>
   | StreamResponse<infer U>
@@ -48,9 +57,7 @@ type ClientMethod<
   ? Promise<_StreamAsyncIterator<U>>
   : R extends object
     ? Promise<R>
-    : ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
-      ? ToPromise<U>
-      : ToPromise<ReturnType<T>>;
+    : StaticMethodReturnPromise<T>;
 
 type OmitNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];

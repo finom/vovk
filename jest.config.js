@@ -1,10 +1,15 @@
-module.exports = {
-  roots: ['<rootDir>/packages/vovk', '<rootDir>/test'],
+/** @type {import('jest').Config} */
+const config = {
+  roots: ['<rootDir>/test'],
   testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsConfig: 'test/tsconfig.json'
+    }],
   },
   modulePathIgnorePatterns: [
     "dist"
   ],
 };
+
+module.exports = config;

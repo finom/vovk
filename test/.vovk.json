@@ -335,6 +335,22 @@
           }
         }
       },
+      "getHelloWorldObjectLiteral": {
+        "httpMethod": "GET",
+        "path": "get-hello-world-object-literal"
+      },
+      "postWithBodyAndQueryTransformed": {
+        "httpMethod": "POST",
+        "path": "post-with-body-and-query-transformed",
+        "clientValidators": {
+          "body": {
+            "isDTO": true
+          },
+          "query": {
+            "isDTO": true
+          }
+        }
+      },
       "putWithBodyAndNullQuery": {
         "httpMethod": "PUT",
         "path": "put-with-body-and-null-query",

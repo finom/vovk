@@ -80,6 +80,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         params?: { [key: string]: string };
         validateOnClient?: _VovkValidateOnClient;
         fetcher?: VovkClientOptions<OPTS>['fetcher'];
+        transform?: (response: unknown) => unknown;
       } & OPTS = {} as OPTS
     ) => {
       const fetcher = input.fetcher ?? settingsFetcher;
@@ -118,7 +119,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
 
       if (!(fetcherPromise instanceof Promise)) return Promise.resolve(fetcherPromise);
 
-      return fetcherPromise;
+      return input.transform ? fetcherPromise.then(input.transform) : fetcherPromise;
     };
 
     // @ts-expect-error TODO: Fix this
