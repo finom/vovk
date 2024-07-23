@@ -1,1 +1,1 @@
-export { default } from 'vovk-client-validate-ajv';
+export { default } from 'vovk-validate-client-ajv';

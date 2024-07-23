@@ -22,7 +22,7 @@
   "license": "MIT",
   "peerDependencies": {
     "vovk": "2.1.1-beta.13",
-    "vovk-client-validate-ajv": "^0.0.1-beta.0",
+    "vovk-validate-client-ajv": "^0.0.1-beta.0",
     "zod": "*"
   },
   "dependencies": {

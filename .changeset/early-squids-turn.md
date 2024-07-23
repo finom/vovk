@@ -1,5 +1,5 @@
 ---
-'vovk-client-validate-ajv': patch
+'vovk-validate-client-ajv': patch
 ---
 
 Checking how changeset works

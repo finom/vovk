@@ -28,8 +28,8 @@
       "vovk-cli/*": [
         "../packages/vovk-cli/*"
       ],
-      "vovk-client-validate-ajv/*": [
-        "../packages/vovk-client-validate-ajv/*"
+      "vovk-validate-client-ajv/*": [
+        "../packages/vovk-validate-client-ajv/*"
       ],
       "next/*": [
         "./node_modules/next/*"
