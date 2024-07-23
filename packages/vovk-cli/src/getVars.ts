@@ -1,12 +1,14 @@
-// @ts-check
+import getConfig from './lib/getConfig';
+import path from 'path';
+import { VovkEnv, VovkConfig } from './types';
 
-const getConfig = require('./lib/getConfig.cjs');
-const path = require('path');
-
-/** @type {(options?: { VOVK_CLIENT_OUT?: string; PORT?: string; }) => Promise<Required<import('.').VovkEnv>>} */
-async function getVars(options = {}) {
-  /** @type {Required<import('.').VovkConfig>} */
-  const vovkConfig = {
+/**
+ * Get environment variables for Vovk
+ * @param { { VOVK_CLIENT_OUT?: string; PORT?: string; } } options
+ * @returns { Promise<Required<VovkEnv>> }
+ */
+async function getVars(options: { VOVK_CLIENT_OUT?: string; PORT?: string } = {}): Promise<Required<VovkEnv>> {
+  const vovkConfig: Required<VovkConfig> = {
     clientOut: './node_modules/.vovk',
     metadataOut: './.vovk.json',
     route: './src/app/api/[[...vovk]]/route.ts',
@@ -16,7 +18,7 @@ async function getVars(options = {}) {
     modulesDir: './src/modules',
   };
 
-  // make PORT available to the config file
+  // Make PORT available to the config file
   process.env.PORT = options.PORT || process.env.PORT || '3000';
   Object.assign(vovkConfig, await getConfig());
 
@@ -27,8 +29,7 @@ async function getVars(options = {}) {
   const VOVK_MODULES_DIR = process.env.VOVK_MODULES_DIR || vovkConfig.modulesDir;
   const VALIDATE_ON_CLIENT = process.env.VOVK_VALIDATE_ON_CLIENT || vovkConfig.validateOnClient;
 
-  /** @type {Required<import('.').VovkEnv>} */
-  const vars = {
+  const vars: Required<VovkEnv> = {
     PORT,
     VOVK_CLIENT_OUT: OUT.startsWith('/') ? OUT : path.join(process.cwd(), OUT),
     VOVK_METADATA_OUT: METADATA_OUT.startsWith('/') ? METADATA_OUT : path.join(process.cwd(), METADATA_OUT),
@@ -48,4 +49,4 @@ async function getVars(options = {}) {
   return vars;
 }
 
-module.exports = getVars;
+export default getVars;

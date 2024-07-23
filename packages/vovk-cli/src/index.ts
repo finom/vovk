@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// @ts-check
-const generateClient = require('./generateClient.cjs');
-const parallel = require('./lib/parallel.cjs');
-const getAvailablePort = require('./lib/getAvailablePort.cjs');
-const getVars = require('./getVars.cjs');
-const parseCommandLineArgs = require('./lib/parseCommandLineArgs.cjs');
-const { startVovkServer } = require('./server.cjs');
+
+import generateClient from './generateClient';
+import parallel from './lib/parallel';
+import getAvailablePort from './lib/getAvailablePort';
+import getVars from './getVars';
+import parseCommandLineArgs from './lib/parseCommandLineArgs';
+import { startVovkServer } from './server';
+import { VovkEnv } from './types';
 
 const { command, flags, restArgs } = parseCommandLineArgs();
 const {
-  // TODO not documented
   project = process.cwd(), // Path to Next.js project
   clientOut, // Path to output directory
   nextDev = false, // Start Vovk Server without Next.js
@@ -18,7 +18,7 @@ const {
 if (command === 'dev') {
   const portAttempts = 30;
   void (async () => {
-    let PORT = !nextDev
+    const PORT = !nextDev
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
@@ -31,8 +31,7 @@ if (command === 'dev') {
       throw new Error(' 🐺 ❌ PORT env variable is required');
     }
 
-    /** @type {import('.').VovkEnv} */
-    const serverEnv = clientOut ? { VOVK_CLIENT_OUT: clientOut, PORT } : { PORT };
+    const serverEnv: VovkEnv = clientOut ? { VOVK_CLIENT_OUT: clientOut, PORT } : { PORT };
 
     const env = await getVars(serverEnv);
 
@@ -43,7 +42,7 @@ if (command === 'dev') {
         {
           command: `node ${__dirname}/server.cjs`,
           name: 'Vovk.ts Metadata Server',
-          env: { ...serverEnv, VOVK_PORT: env.VOVK_PORT }, // getVars is invoked synamically to receive rest of the env
+          env: { ...serverEnv, VOVK_PORT: env.VOVK_PORT },
         },
       ];
 
@@ -56,7 +55,7 @@ if (command === 'dev') {
       await parallel(commands).catch((e) => console.error(e));
       console.info(' 🐺 All processes have ended');
     } else {
-      void startVovkServer({ ...env, ...serverEnv });
+      startVovkServer({ ...env, ...serverEnv });
     }
   })();
 } else if (command === 'generate') {

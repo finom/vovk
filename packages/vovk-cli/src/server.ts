@@ -1,22 +1,35 @@
-// @ts-check
-const http = require('http');
-const fs = require('fs/promises');
-const path = require('path');
-const generateClient = require('./generateClient.cjs');
-const getVars = require('./getVars.cjs');
-const isEqual = require('./lib/isEqual.cjs');
-const compareKeys = require('./lib/compareKeys.cjs');
+import http from 'http';
+import { promises as fs } from 'fs';
+import path from 'path';
+import generateClient from './generateClient';
+import getVars from './getVars';
+import isEqual from './lib/isEqual';
+import compareKeys from './lib/compareKeys';
+import type { VovkMetadata } from 'vovk';
+import { VovkEnv } from './types';
 
-/** @type {(metadata: import('../vovk').VovkMetadata) => Promise<{ written: boolean; path: string; diff?:  { controllers: { addedKeys: string[]; removedKeys: string[]; }; workers: { addedKeys: string[]; removedKeys: string[]; }; }; }>} */
-const writeMetadata = async (metadata) => {
+type MetadataDiff = {
+  controllers: { addedKeys: string[]; removedKeys: string[] };
+  workers: { addedKeys: string[]; removedKeys: string[] };
+};
+
+/**
+ * Write metadata to a file
+ * @param {VovkMetadata} metadata
+ * @returns {Promise<{ written: boolean; path: string; diff?: MetadataDiff; }>}
+ */
+const writeMetadata = async (
+  metadata: VovkMetadata
+): Promise<{ written: boolean; path: string; diff?: MetadataDiff }> => {
   const { VOVK_METADATA_OUT } = await getVars();
   await fs.mkdir(path.dirname(VOVK_METADATA_OUT), { recursive: true });
   const existingMetadataStr = await fs.readFile(VOVK_METADATA_OUT, 'utf-8').catch(() => 'null');
-  /** @type {import('../vovk').VovkMetadata} */
-  const existingMetadata = JSON.parse(existingMetadataStr);
+  const existingMetadata = JSON.parse(existingMetadataStr) as VovkMetadata;
+
   if (isEqual(existingMetadata, metadata)) {
     return { written: false, path: VOVK_METADATA_OUT };
   }
+
   await fs.writeFile(VOVK_METADATA_OUT, JSON.stringify(metadata, null, 2));
 
   return {
@@ -29,15 +42,26 @@ const writeMetadata = async (metadata) => {
   };
 };
 
-const writeEmptyMetadata = async () => {
+const writeEmptyMetadata = async (): Promise<void> => {
   const { VOVK_METADATA_OUT } = await getVars();
   await fs.mkdir(path.dirname(VOVK_METADATA_OUT), { recursive: true });
   const existingMetadata = await fs.readFile(VOVK_METADATA_OUT, 'utf-8').catch(() => null);
   if (!existingMetadata) await fs.writeFile(VOVK_METADATA_OUT, '{}');
 };
 
-/** @type {(diff: { addedKeys: string[]; removedKeys: string[]; constantName: string; }) => void} */
-const showDiff = ({ addedKeys, removedKeys, constantName }) => {
+/**
+ * Show the difference between added and removed keys
+ * @param {{ addedKeys: string[]; removedKeys: string[]; constantName: string; }} param0
+ */
+const showDiff = ({
+  addedKeys,
+  removedKeys,
+  constantName,
+}: {
+  addedKeys: string[];
+  removedKeys: string[];
+  constantName: string;
+}): void => {
   if (!addedKeys.length && !removedKeys.length) return;
   const colors = {
     green: '\x1b[32m',
@@ -47,23 +71,18 @@ const showDiff = ({ addedKeys, removedKeys, constantName }) => {
 
   console.info(` const ${constantName} = {`);
   console.info('   // ...');
-  // Print added keys in green
   addedKeys.forEach((key) => {
     console.info(`   ${colors.green}+ ${key},${colors.reset}`);
   });
-
-  // Print removed keys in red
   removedKeys.forEach((key) => {
     console.info(`   ${colors.red}- ${key},${colors.reset}`);
   });
-
   console.info(' };');
 };
 
 let is404Reported = false;
 
-/** @type {() => Promise<void>} */
-const pingNoDebounce = async () => {
+const pingNoDebounce = async (): Promise<void> => {
   const env = await getVars();
   let prefix = env.VOVK_PREFIX;
   prefix = prefix.startsWith('http://')
@@ -84,10 +103,10 @@ const pingNoDebounce = async () => {
   });
 };
 
-/** @type {NodeJS.Timeout} */
-let timer;
-/** @type {() => void} */
-const ping = () => {
+// eslint-disable-next-line no-undef
+let timer: NodeJS.Timeout;
+
+const ping = (): void => {
   clearTimeout(timer);
   timer = setTimeout(() => void pingNoDebounce(), 1000);
 };
@@ -103,8 +122,7 @@ const server = http.createServer((req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     req.on('end', async () => {
       try {
-        /** @type {{ metadata: import('../vovk').VovkMetadata }} */
-        const { metadata } = JSON.parse(body);
+        const { metadata }: { metadata: VovkMetadata } = JSON.parse(body);
         const env = await getVars();
         const metadataWritten = metadata
           ? await writeMetadata(metadata)
@@ -138,7 +156,7 @@ const server = http.createServer((req, res) => {
           }
         }
       } catch (e) {
-        const err = /** @type {Error} */ (e);
+        const err = e as Error;
         res.writeHead(400, { 'Content-Type': 'text/plain' });
         res.end(err?.message ?? 'Error');
         console.error(' 🐺 ❌ ' + err?.message);
@@ -150,8 +168,7 @@ const server = http.createServer((req, res) => {
   }
 });
 
-/** @type {(filename: string) => Promise<void>} */
-async function handleFileChange(filename) {
+const handleFileChange = async (filename: string): Promise<void> => {
   try {
     const stats = await fs.lstat(filename);
     if (stats.isFile()) {
@@ -163,29 +180,26 @@ async function handleFileChange(filename) {
   } catch {
     // ignore
   }
-}
+};
 
-/** @type {(srcRoot: string) => Promise<void>} */
-async function watchControllers(srcRoot) {
+const watchControllers = async (srcRoot: string): Promise<void> => {
   for await (const info of fs.watch(srcRoot, { recursive: true })) {
     if (info.filename && (info.filename.endsWith('.ts') || info.filename.endsWith('.tsx'))) {
       const filename = path.join(srcRoot, info.filename);
       await handleFileChange(filename);
     }
   }
-}
+};
 
-/** @type {(routePath: string) => Promise<void>} */
-async function watchRouteFile(routePath) {
+const watchRouteFile = async (routePath: string): Promise<void> => {
   for await (const info of fs.watch(routePath)) {
     if (info.filename) {
       await handleFileChange(routePath);
     }
   }
-}
+};
 
-/** @type {(env: Required<import('.').VovkEnv>) => void} */
-function startVovkServer({ VOVK_PORT, VOVK_MODULES_DIR, VOVK_ROUTE }) {
+const startVovkServer = ({ VOVK_PORT, VOVK_MODULES_DIR, VOVK_ROUTE }: Required<VovkEnv>): void => {
   if (!VOVK_PORT) {
     console.error(' 🐺 Unable to run Vovk Metadata Server: no port specified');
     process.exit(1);
@@ -198,17 +212,13 @@ function startVovkServer({ VOVK_PORT, VOVK_MODULES_DIR, VOVK_ROUTE }) {
 
   void writeEmptyMetadata();
 
-  // due to changes at Next.js 14.2.0 we get too many logs, therefore the interval should be changed to fs.watch
-  // Old approach: setInterval(() => void ping(), 1000 * 3);
-
-  // initial ping
   setTimeout(ping, 3000);
   void watchControllers(VOVK_MODULES_DIR);
   void watchRouteFile(VOVK_ROUTE);
-}
+};
 
 if (process.env.__VOVK_START_SERVER__) {
   void getVars().then(startVovkServer);
 }
 
-module.exports = { startVovkServer };
+export { startVovkServer };

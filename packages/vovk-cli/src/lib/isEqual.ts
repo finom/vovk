@@ -1,6 +1,12 @@
-// @ts-check
-/** @type {(obj1: any, obj2: any) => boolean} */
-const isEqual = (obj1, obj2) => {
+import { KnownAny } from '../types';
+
+/**
+ * Compares two objects for deep equality.
+ * @param {any} obj1 - The first object to compare.
+ * @param {any} obj2 - The second object to compare.
+ * @returns {boolean} True if the objects are equal, otherwise false.
+ */
+const isEqual = (obj1: KnownAny, obj2: KnownAny): boolean => {
   if (obj1 === obj2) {
     return true;
   }
@@ -25,4 +31,4 @@ const isEqual = (obj1, obj2) => {
   return true;
 };
 
-module.exports = isEqual;
+export default isEqual;

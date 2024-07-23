@@ -1,12 +1,13 @@
-const fs = require('fs/promises');
-const path = require('path');
+import { promises as fs } from 'fs';
+import path from 'path';
+import type { VovkConfig } from '../types';
 
-async function findConfigPath() {
+async function findConfigPath(): Promise<string | null> {
   const rootDir = process.cwd();
   const baseName = 'vovk.config';
   const extensions = ['cjs', 'mjs', 'js'];
 
-  for (let ext of extensions) {
+  for (const ext of extensions) {
     const filePath = path.join(rootDir, `${baseName}.${ext}`);
     try {
       await fs.stat(filePath);
@@ -19,11 +20,9 @@ async function findConfigPath() {
   return null; // Return null if no config file was found
 }
 
-/** @type {Promise<import('../../vovk').VovkConfig>} */
-async function getConfig() {
+async function getConfig(): Promise<VovkConfig> {
   const configPath = await findConfigPath();
-  /** @type {import('../../vovk').VovkConfig} */
-  let config = {};
+  let config: VovkConfig = {};
 
   if (!configPath) {
     return config;
@@ -36,16 +35,16 @@ async function getConfig() {
       } catch {
         // noop
       }
-      config = require(configPath);
+      config = require(configPath) as VovkConfig;
     } else if (configPath.endsWith('.mjs')) {
       const cacheBuster = Date.now();
       ({ default: config } = await import(`${configPath}?cache=${cacheBuster}`));
     }
   } catch (e) {
-    console.error(' 🐺 ❌ Error loading config file:', e.message);
+    console.error(' 🐺 ❌ Error loading config file:', (e as Error).message);
   }
 
   return config;
 }
 
-module.exports = getConfig;
+export default getConfig;

@@ -1,10 +1,14 @@
-// @ts-check
-const fs = require('fs/promises');
-const path = require('path');
-const getReturnPath = require('./lib/getReturnPath.cjs');
+import { promises as fs } from 'fs';
+import path from 'path';
+import getReturnPath from './lib/getReturnPath';
+import { VovkEnv } from './types';
 
-/** @type {(moduleName: string) => boolean} */
-function canRequire(moduleName) {
+/**
+ * Checks if a module can be required
+ * @param {string} moduleName
+ * @returns {boolean}
+ */
+function canRequire(moduleName: string): boolean {
   try {
     require.resolve(moduleName);
     return true; // The module exists and can be required
@@ -15,18 +19,18 @@ function canRequire(moduleName) {
 
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
- * TODO: Check fetcher for existence
- * @type {(env: Required<import('.').VovkEnv>) => Promise<{ written: boolean; path: string }>}
+ * @param {Required<VovkEnv>} env
+ * @returns {Promise<{ written: boolean; path: string }>}
  */
-async function generateClient({ ...env }) {
+async function generateClient(env: Required<VovkEnv>): Promise<{ written: boolean; path: string }> {
   const cwd = process.cwd() + path.sep;
   const outDir = env.VOVK_CLIENT_OUT;
   const returnDir = getReturnPath(outDir, cwd);
   const jsonPath = env.VOVK_METADATA_OUT;
   const localJsonPath = path.join(returnDir, jsonPath.replace(cwd, ''));
   const fetcherPath = env.VOVK_FETCHER.startsWith('.') ? path.join(returnDir, env.VOVK_FETCHER) : env.VOVK_FETCHER;
-  const routFile = env.VOVK_ROUTE.replace(cwd, '');
-  const controllersPath = path.join(returnDir, routFile).replace(/\.ts$/, '');
+  const routeFile = env.VOVK_ROUTE.replace(cwd, '');
+  const controllersPath = path.join(returnDir, routeFile).replace(/\.ts$/, '');
 
   const validatePath = env.VOVK_VALIDATE_ON_CLIENT.startsWith('.')
     ? path.join(returnDir, env.VOVK_VALIDATE_ON_CLIENT)
@@ -36,13 +40,13 @@ async function generateClient({ ...env }) {
 
   if (env.VOVK_VALIDATE_ON_CLIENT && !canRequire(localValidatePath)) {
     throw new Error(
-      `Unble to generate Vovk Client: cannot find "validateOnClient" module '${env.VOVK_VALIDATE_ON_CLIENT}'. Check your vovk.config.js file`
+      `Unable to generate Vovk Client: cannot find "validateOnClient" module '${env.VOVK_VALIDATE_ON_CLIENT}'. Check your vovk.config.js file`
     );
   }
 
   if (!canRequire(path.join(outDir, localJsonPath))) {
     throw new Error(
-      `Unble to generate Vovk Client: cannot find metadata file '${jsonPath}'. Local path: ${localJsonPath}.`
+      `Unable to generate Vovk Client: cannot find metadata file '${jsonPath}'. Local path: ${localJsonPath}.`
     );
   }
 
@@ -115,4 +119,4 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   return { written: true, path: outDir };
 }
 
-module.exports = generateClient;
+export default generateClient;

@@ -2,10 +2,11 @@
     "name": "vovk-cli",
     "version": "1.0.0",
     "bin": {
-      "vovk": "."
+      "vovk": "./dist/index.js"
     },
     "scripts": {
-      "postinstall": "node ./postinstall.cjs"
+      "postinstall": "node ./dist/postinstall.js",
+      "build": "tsc"
     },
     "repository": {
       "type": "git",

@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type KnownAny = any;
+
 export type VovkEnv = {
   PORT?: string;
   VOVK_ROUTE?: string;

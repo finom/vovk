@@ -1,6 +1,10 @@
-// @ts-check
-/** @type {(fromPath: string, toPath: string) => string} */
-function getReturnPath(fromPath, toPath) {
+/**
+ * Calculates the relative path from one path to another.
+ * @param {string} fromPath - The starting path.
+ * @param {string} toPath - The target path.
+ * @returns {string} The relative path from `fromPath` to `toPath`.
+ */
+function getReturnPath(fromPath: string, toPath: string): string {
   // Split the paths into components
   const fromParts = fromPath.replace(/^\.?\/|\/$/g, '').split('/');
   const toParts = toPath.replace(/^\.?\/|\/$/g, '').split('/');
@@ -25,4 +29,4 @@ function getReturnPath(fromPath, toPath) {
   return result;
 }
 
-module.exports = getReturnPath;
+export default getReturnPath;
