@@ -3,14 +3,12 @@ import { _Segment as Segment } from './Segment';
 import {
   _HttpMethod as HttpMethod,
   type _KnownAny as KnownAny,
-  type _VovkWorkerMetadata as VovkWorkerMetadata,
   type _RouteHandler as RouteHandler,
   type _VovkController as VovkController,
-  type _VovkControllerMetadata as VovkControllerMetadata,
   type _VovkWorker as VovkWorker,
-  type _VovkMetadata as VovkMetadata,
   type _DecoratorOptions as DecoratorOptions,
   type _VovkRequest as VovkRequest,
+  type _VovkMetadata as VovkMetadata,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -126,6 +124,7 @@ export function _createSegment() {
   };
 
   const getMetadata = (options: {
+    segmentName?: string;
     // eslint-disable-next-line @typescript-eslint/ban-types
     controllers: Record<string, Function>;
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -133,12 +132,14 @@ export function _createSegment() {
     exposeValidation?: boolean;
   }) => {
     const exposeValidation = options?.exposeValidation ?? true;
-    const metadata: Record<string, VovkControllerMetadata> & {
-      workers?: Record<string, VovkWorkerMetadata>;
-    } = {};
+    const metadata: VovkMetadata = {
+      segmentName: options.segmentName ?? '',
+      controllers: {},
+      workers: {},
+    };
 
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
-      metadata[controllerName] = {
+      metadata.controllers[controllerName] = {
         _controllerName: controllerName,
         _prefix: controller._prefix ?? '',
         _handlers: {
@@ -155,7 +156,6 @@ export function _createSegment() {
     }
 
     for (const [workerName, worker] of Object.entries(options.workers ?? {}) as [string, VovkWorker][]) {
-      metadata.workers = metadata.workers ?? {};
       metadata.workers[workerName] = {
         _workerName: workerName,
         _handlers: { ...worker._handlers },
@@ -166,6 +166,7 @@ export function _createSegment() {
   };
 
   const initVovk = (options: {
+    segmentName?: string;
     // eslint-disable-next-line @typescript-eslint/ban-types
     controllers: Record<string, Function>;
     // eslint-disable-next-line @typescript-eslint/ban-types

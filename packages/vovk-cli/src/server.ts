@@ -222,3 +222,29 @@ if (process.env.__VOVK_START_SERVER__) {
 }
 
 export { startVovkServer };
+
+/*
+- Look for files [[...vovk]]/route.ts
+- Identify file path and route prefix
+- --Extract imports with TS AST
+- --Watch the imported files for changes and check from "vovk" import to make another ping using https://github.com/paulmillr/chokidar
+- --Also allow watching with watchModulesDir option
+- Server should identify segment name by segmentName provided at initVovk
+- Impmement logger and custom error class
+
+-----
+- Parse CLI args via library like yargs (replace current)
+- Replace parallel with something more robust
+- --Use chokidar to watch for file changes
+- --Use typescript to parse imports
+- Use ts-morph to update files
+- Watch modules and API root file for changes
+
+------
+- Add segmentName to initVovk and send it with metadata
+
+
+------
+- Vovk create segment <segmentName>
+- Vovk create module <segmentName>/module.ts
+*/

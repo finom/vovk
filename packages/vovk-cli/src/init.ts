@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
 npx vovk-cli init
 - Check if the project is already initialized
@@ -6,7 +7,7 @@ npx vovk-cli init
     - No (exit)
 - Check for package.json, if not found, show error and exit
 - Check for tsconfig.json, if not found, show error and exit
-- Check Next.js installed with app router, if not found, show error and exit
+- Check Next.js installed
 - Choose validation library: add to the installation list
     - vovk-zod
         - Further installation notes: install zod
@@ -20,7 +21,7 @@ npx vovk-cli init
         - Yes 
             - Add client validation to the config
         - No
-- Do you want to use concurrently?
+- Do you want to use concurrently? (NO NEED, USE CONCURRENTLY BY DEFAULT)
     - Yes (recommended)
         - Add concurrently to the installation list
     - No
@@ -33,7 +34,7 @@ npx vovk-cli init
         - Yes
             - Add experimentalDecorators to tsconfig.json
         - No
-- Do you want to create route file with example service and controller?
+- Do you want to create route file with example service and controller? (NO NEED)
     - Yes
         - Create route file with example controller
     - No, I will create it myself
@@ -56,6 +57,13 @@ npx vovk-cli init
     - Show success message
 */
 
+import { confirm } from '@inquirer/prompts';
+// Or
+// import confirm from '@inquirer/confirm';
+
+void confirm({ message: 'Continue?' }).then(console.info);
+
+/*
 const wizard = [
   {
     description: 'Check if the project is already initialized',
@@ -161,4 +169,5 @@ const wizard = [
   },
 ];
 
-export default console.info(wizard);
+// export default console.info(wizard);
+*/

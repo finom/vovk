@@ -1,5 +1,6 @@
 /**
  * Calculates the relative path from one path to another.
+ * @deprecated
  * @param {string} fromPath - The starting path.
  * @param {string} toPath - The target path.
  * @returns {string} The relative path from `fromPath` to `toPath`.

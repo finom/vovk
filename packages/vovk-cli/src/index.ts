@@ -1,24 +1,36 @@
 #!/usr/bin/env node
-
+import { Command } from 'commander';
 import generateClient from './generateClient';
 import parallel from './lib/parallel';
 import getAvailablePort from './lib/getAvailablePort';
 import getVars from './getVars';
-import parseCommandLineArgs from './lib/parseCommandLineArgs';
 import { startVovkServer } from './server';
 import { VovkEnv } from './types';
 
-const { command, flags, restArgs } = parseCommandLineArgs();
-const {
-  project = process.cwd(), // Path to Next.js project
-  clientOut, // Path to output directory
-  nextDev = false, // Start Vovk Server without Next.js
-} = flags;
+interface DevOptions {
+  project: string;
+  clientOut?: string;
+  nextDev: boolean;
+}
 
-if (command === 'dev') {
-  const portAttempts = 30;
-  void (async () => {
-    const PORT = !nextDev
+interface GenerateOptions {
+  clientOut?: string;
+}
+
+const program = new Command();
+
+program.name('vovk').description('Vovk CLI tool').version('1.0.0');
+
+program
+  .command('dev')
+  .description('Start development server (optional flag --next-dev to start Vovk Server with Next.js)')
+  .option('--project <path>', 'Path to Next.js project', process.cwd())
+  .option('--client-out <path>', 'Path to client output directory')
+  .option('--next-dev', 'Start Vovk Server and Next.js with automatic port allocation', false)
+  .allowUnknownOption(true)
+  .action(async (options: DevOptions, command: Command) => {
+    const portAttempts = 30;
+    const PORT = !options.nextDev
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
@@ -31,23 +43,23 @@ if (command === 'dev') {
       throw new Error(' 🐺 ❌ PORT env variable is required');
     }
 
-    const serverEnv: VovkEnv = clientOut ? { VOVK_CLIENT_OUT: clientOut, PORT } : { PORT };
+    const serverEnv: VovkEnv = options.clientOut ? { VOVK_CLIENT_OUT: options.clientOut, PORT } : { PORT };
 
     const env = await getVars(serverEnv);
 
-    if (nextDev) {
+    if (options.nextDev) {
       serverEnv.__VOVK_START_SERVER__ = 'true';
 
       const commands = [
         {
-          command: `node ${__dirname}/server.cjs`,
+          command: `node ${__dirname}/server.js`,
           name: 'Vovk.ts Metadata Server',
           env: { ...serverEnv, VOVK_PORT: env.VOVK_PORT },
         },
       ];
 
       commands.push({
-        command: `cd ${project} && npx next dev ${restArgs}`,
+        command: `cd ${options.project} && npx next dev ${command.args.join(' ')}`,
         name: 'Next.js Development Server',
         env,
       });
@@ -57,21 +69,29 @@ if (command === 'dev') {
     } else {
       startVovkServer({ ...env, ...serverEnv });
     }
-  })();
-} else if (command === 'generate') {
-  void (async () => {
-    const env = await getVars({ VOVK_CLIENT_OUT: clientOut });
+  });
+
+program
+  .command('generate')
+  .description('Generate client')
+  .option('--client-out <path>', 'Path to output directory')
+  .action(async (options: GenerateOptions) => {
+    const env = await getVars({ VOVK_CLIENT_OUT: options.clientOut });
 
     await generateClient(env).then(({ path }) => {
       console.info(` 🐺 Client generated in ${path}`);
     });
-  })();
-} else if (command === 'help') {
-  console.info(` 🐺 Vovk CLI
-  dev - Start development server (optional flag --next-dev to start Vovk Server with Next.js)
-  generate - Generate client
-  help - Show this help message`);
-} else {
-  console.error(' 🐺 ❌ Invalid command');
-  process.exit(1);
+  });
+
+program
+  .command('help')
+  .description('Show help message')
+  .action(() => {
+    program.help();
+  });
+
+program.parse(process.argv);
+
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
 }

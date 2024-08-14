@@ -4,6 +4,7 @@ import { VovkEnv, VovkConfig } from './types';
 
 /**
  * Get environment variables for Vovk
+ * @deprecated
  * @param { { VOVK_CLIENT_OUT?: string; PORT?: string; } } options
  * @returns { Promise<Required<VovkEnv>> }
  */
@@ -27,7 +28,7 @@ async function getVars(options: { VOVK_CLIENT_OUT?: string; PORT?: string } = {}
   const PORT = options.PORT || process.env.PORT || '3000';
   const VOVK_ROUTE = process.env.VOVK_ROUTE || vovkConfig.route;
   const VOVK_MODULES_DIR = process.env.VOVK_MODULES_DIR || vovkConfig.modulesDir;
-  const VALIDATE_ON_CLIENT = process.env.VOVK_VALIDATE_ON_CLIENT || vovkConfig.validateOnClient;
+  const VALIDATE_ON_CLIENT = process.env.VOVK_VALIDATE_ON_CLIENT || vovkConfig.validateOnClient || '';
 
   const vars: Required<VovkEnv> = {
     PORT,

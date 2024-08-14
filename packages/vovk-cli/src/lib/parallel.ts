@@ -26,7 +26,7 @@ function parallel(commands: Command[]): Promise<string> {
      */
     function childClose(index: number, resolve: (value: unknown) => void, reject: (reason?: KnownAny) => void) {
       return (code: number | { code: number }) => {
-        const exitCode = typeof code === 'object' && 'code' in code ? code.code : code;
+        const exitCode = code && typeof code === 'object' && 'code' in code ? code.code : code;
 
         children.forEach((child, i) => {
           setTimeout(() => {

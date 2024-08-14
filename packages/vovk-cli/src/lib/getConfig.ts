@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { VovkConfig } from '../types';
+import type { VovkConfig, VovkConfigNew } from '../types';
 
 async function findConfigPath(): Promise<string | null> {
   const rootDir = process.cwd();
@@ -20,7 +20,7 @@ async function findConfigPath(): Promise<string | null> {
   return null; // Return null if no config file was found
 }
 
-async function getConfig(): Promise<VovkConfig> {
+async function getConfig(): Promise<VovkConfigNew> {
   const configPath = await findConfigPath();
   let config: VovkConfig = {};
 
@@ -32,10 +32,9 @@ async function getConfig(): Promise<VovkConfig> {
     if (configPath.endsWith('.cjs') || configPath.endsWith('.js')) {
       try {
         delete require.cache[require.resolve(configPath)];
-      } catch {
-        // noop
+      } finally {
+        config = require(configPath) as VovkConfig;
       }
-      config = require(configPath) as VovkConfig;
     } else if (configPath.endsWith('.mjs')) {
       const cacheBuster = Date.now();
       ({ default: config } = await import(`${configPath}?cache=${cacheBuster}`));
