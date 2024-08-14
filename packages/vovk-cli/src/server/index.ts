@@ -23,24 +23,13 @@ import { debouncedEnsureMetadataFiles } from './ensureMetadataFiles';
 import createMetadataServer from './createMetadataServer';
 import writeOneMetadataFile from './writeOneMetadataFile';
 import logDiffResult from './logDiffResult';
-import { debounce } from 'lodash';
-import { KnownAny } from '../types';
 import generateClient from './generateClient';
 import locateSegments from '../locateSegments';
+import debounceWithArgs from '../utils/debounceWithArgs';
 
-export async function sererMain() {
+export async function serverMain() {
   const projectInfo = await getProjectInfo();
-  const {
-    // port,
-    vovkPort,
-    apiEntryPoint,
-    apiDir,
-    // nextProjectInfo,
-    srcRoot,
-    config,
-    log,
-    metadataOutFullPath,
-  } = projectInfo;
+  const { vovkPort, apiEntryPoint, apiDir, srcRoot, config, log, metadataOutFullPath } = projectInfo;
   let segments = await locateSegments(srcRoot);
 
   const segmentWatcher = chokidar.watch(apiDir, {
@@ -63,26 +52,6 @@ export async function sererMain() {
       log.error(`Error during HTTP request made to ${endpoint}: ${err.message}`);
     });
   };
-
-  function debounceWithArgs<T extends (...args: KnownAny[]) => KnownAny>(
-    fn: T,
-    wait: number
-  ): (...args: Parameters<T>) => void {
-    const debouncedFunctions = new Map<string, ReturnType<typeof debounce>>();
-
-    return (...args: Parameters<T>) => {
-      const key = JSON.stringify(args);
-
-      if (!debouncedFunctions.has(key)) {
-        debouncedFunctions.set(key, debounce(fn, wait));
-      }
-
-      const debouncedFn = debouncedFunctions.get(key);
-      if (debouncedFn) {
-        debouncedFn(...args);
-      }
-    };
-  }
 
   const ping = debounceWithArgs(pingNoDebounce, 500);
 

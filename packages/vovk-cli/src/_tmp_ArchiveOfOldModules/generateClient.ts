@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import getReturnPath from './lib/getReturnPath';
-import { VovkEnv } from './types';
+import getReturnPath from './getReturnPath';
+import { VovkEnv } from '../types';
 
 /**
  * Checks if a module can be required
@@ -19,6 +19,7 @@ function canRequire(moduleName: string): boolean {
 
 /**
  * Generates client code with string concatenation so it should be much faster than using AST
+ * @deprecated
  * @param {Required<VovkEnv>} env
  * @returns {Promise<{ written: boolean; path: string }>}
  */

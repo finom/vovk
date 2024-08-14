@@ -23,7 +23,7 @@ export default async function ensureMetadataFiles(
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested) : {} (empty object)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
-      const isCreated = await writeOneMetadataFile({
+      const { isCreated } = await writeOneMetadataFile({
         metadataOutFullPath,
         segmentName,
         metadata: {

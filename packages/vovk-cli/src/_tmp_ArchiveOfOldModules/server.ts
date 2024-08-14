@@ -2,7 +2,7 @@ import http from 'http';
 import { promises as fs } from 'fs';
 import path from 'path';
 import generateClient from './generateClient';
-import getVars from './getVars';
+import getVars from './_tmp_ArchiveOfOldModules/getVars';
 import isEqual from './lib/isEqual';
 import compareKeys from './lib/compareKeys';
 import type { VovkMetadata } from 'vovk';

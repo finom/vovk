@@ -20,8 +20,7 @@ const { promisifyWorker } = require('vovk/worker');
 const { default: fetcher } = require('${projectInfo.fetcherClientImportPath}');
 const metadata = require('${projectInfo.metadataOutImportPath}');
 `;
-  let ts = `
-  // auto-generated
+  let ts = `// auto-generated
 /* eslint-disable */
 import { clientizeController } from 'vovk/client';
 import { promisifyWorker } from 'vovk/worker';
@@ -39,7 +38,7 @@ import metadata from '${projectInfo.metadataOutImportPath}';
   }
 
   dts += `
-  type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
+type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   `;
   ts += `
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;

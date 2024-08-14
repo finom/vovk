@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import generateClient from './generateClient';
-import parallel from './lib/parallel';
-import getAvailablePort from './lib/getAvailablePort';
-import getVars from './getVars';
+import generateClient from './_tmp_ArchiveOfOldModules/generateClient';
+import parallel from './utils/parallel';
+import getAvailablePort from './utils/getAvailablePort';
+import getVars from './_tmp_ArchiveOfOldModules/getVars';
 import { startVovkServer } from './server';
 import { VovkEnv } from './types';
 

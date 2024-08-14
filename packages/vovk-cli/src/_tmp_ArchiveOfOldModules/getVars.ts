@@ -1,6 +1,6 @@
-import getConfig from './lib/readConfig';
+import getConfig from '../getProjectInfo/readConfig';
 import path from 'path';
-import { VovkEnv, VovkConfig } from './types';
+import { VovkEnv, VovkConfig } from '../types';
 
 /**
  * Get environment variables for Vovk

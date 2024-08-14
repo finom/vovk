@@ -7,6 +7,11 @@ import getConfig from './getConfig';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
+// TODO: Convert server function to class
+// TODO: Rename all occurrences of metadata to schema
+// TODO: Rename default API option "prefix" to "apiRoot" or just "root" (?)
+// TODO: Load config dynamically to generate client and write schema
+// TODO: Create VovkCLIError class
 export default async function getProjectInfo({
   port: givenPort,
   clientOutDir,
@@ -19,8 +24,8 @@ export default async function getProjectInfo({
 
   const { config, srcRoot } = await getConfig({ clientOutDir });
   const vovkPort = env.VOVK_PORT || (parseInt(port) + 6969).toString();
-  const apiEntryPoint = `${config.origin}/${config.rootEntry}`;
-  const apiPrefix = `${config.origin}/${config.rootEntry}`;
+  const apiEntryPoint = `${config.origin}/${config.rootEntry}`; // ???
+  const apiPrefix = `${config.origin}/${config.rootEntry}`; // ???
   const apiDir = path.join(srcRoot, config.rootEntry);
 
   const metadataOutFullPath = path.join(srcRoot, config.metadataOutDir);
