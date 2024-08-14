@@ -27,6 +27,7 @@ export type VovkEnvNew = {
   VOVK_VALIDATION_LIBRARY?: string;
   VOVK_ORIGIN?: string;
   VOVK_ROOT_ENTRY?: string;
+  VOVK_API_ENTRY_POINT?: string;
   VOVK_ROOT_SEGMENT_MODULES_DIR_NAME?: string;
   VOVK_LOG_LEVEL?: LogLevelNames;
 };
@@ -52,8 +53,8 @@ export type VovkConfigNew = {
   validateOnClient?: string | null;
   modulesDir?: string;
   validationLibrary?: string | null;
-  origin?: string;
   rootEntry?: string;
+  origin?: string;
   rootSegmentModulesDirName?: string;
   logLevel?: LogLevelNames;
 };

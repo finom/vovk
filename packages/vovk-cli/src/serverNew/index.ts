@@ -36,12 +36,12 @@ export async function sererMain() {
     apiEntryPoint,
     apiDir,
     // nextProjectInfo,
-    projectRoot,
+    srcRoot,
     config,
     log,
     metadataOutFullPath,
   } = projectInfo;
-  let segments = await locateSegments(projectRoot);
+  let segments = await locateSegments(srcRoot);
 
   const segmentWatcher = chokidar.watch(apiDir, {
     persistent: true,
