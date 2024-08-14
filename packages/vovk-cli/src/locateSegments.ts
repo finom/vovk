@@ -1,9 +1,9 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import fileExists from './fileExists';
+import fileExists from './getProjectInfo/fileExists'; // TODO move to lib
 import type { VovkMetadata } from 'vovk';
 
-type Segment = {
+export type Segment = {
   routeFilePath: string;
   segmentName: string;
   metadata?: VovkMetadata;

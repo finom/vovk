@@ -1,8 +1,9 @@
 import path from 'path';
 import fs from 'fs/promises';
 import type { ProjectInfo } from '../getProjectInfo';
+import type { Segment } from '../locateSegments';
 
-export default async function generateClient(projectInfo: ProjectInfo) {
+export default async function generateClient(projectInfo: ProjectInfo, segments: Segment[]) {
   const outDir = projectInfo.clientOutFullPath;
   let dts = `// auto-generated
 /* eslint-disable */
@@ -29,8 +30,8 @@ import fetcher from '${projectInfo.fetcherClientImportPath}';
 import metadata from '${projectInfo.metadataOutImportPath}';
 
 `;
-  for (let i = 0; i < projectInfo.segments.length; i++) {
-    const { routeFilePath } = projectInfo.segments[i];
+  for (let i = 0; i < segments.length; i++) {
+    const { routeFilePath } = segments[i];
     const importRouteFilePath = path.relative(projectInfo.config.clientOutDir, routeFilePath);
 
     dts += `import type { Controllers as Controllers${i}, Workers as Workers${i} } from "${importRouteFilePath}";\n`;
@@ -48,8 +49,8 @@ const prefix = '${projectInfo.apiPrefix}';
 const prefix = '${projectInfo.apiPrefix}';
 `;
 
-  for (let i = 0; i < projectInfo.segments.length; i++) {
-    const { segmentName, metadata } = projectInfo.segments[i];
+  for (let i = 0; i < segments.length; i++) {
+    const { segmentName, metadata } = segments[i];
 
     if (!metadata) {
       throw new Error(`No metadata found for segment ${segmentName}`);

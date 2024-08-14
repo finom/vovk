@@ -26,6 +26,7 @@ import logDiffResult from './logDiffResult';
 import { debounce } from 'lodash';
 import { KnownAny } from '../types';
 import generateClient from './generateClient';
+import locateSegments from '../locateSegments';
 
 export async function sererMain() {
   const projectInfo = await getProjectInfo();
@@ -35,12 +36,12 @@ export async function sererMain() {
     apiEntryPoint,
     apiDir,
     // nextProjectInfo,
-    segments: initialSegments,
+    projectRoot,
     config,
     log,
     metadataOutFullPath,
   } = projectInfo;
-  let segments = [...initialSegments];
+  let segments = await locateSegments(projectRoot);
 
   const segmentWatcher = chokidar.watch(apiDir, {
     persistent: true,
@@ -192,10 +193,7 @@ export async function sererMain() {
       if (segments.every((s) => s.metadata)) {
         log.debug(`All segments have metadata. Generating client...`);
         const now = Date.now();
-        await generateClient({
-          ...projectInfo,
-          segments,
-        });
+        await generateClient(projectInfo, segments);
         log.info(`Client generated in ${Date.now() - now}ms`);
       }
     },

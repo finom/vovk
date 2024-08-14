@@ -20,7 +20,7 @@ async function findConfigPath(): Promise<string | null> {
   return null; // Return null if no config file was found
 }
 
-async function getConfig(): Promise<VovkConfigNew> {
+async function readConfig(): Promise<VovkConfigNew> {
   const configPath = await findConfigPath();
   let config: VovkConfig = {};
 
@@ -46,4 +46,4 @@ async function getConfig(): Promise<VovkConfigNew> {
   return config;
 }
 
-export default getConfig;
+export default readConfig;

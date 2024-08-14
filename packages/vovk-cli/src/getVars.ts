@@ -1,4 +1,4 @@
-import getConfig from './lib/getConfig';
+import getConfig from './lib/readConfig';
 import path from 'path';
 import { VovkEnv, VovkConfig } from './types';
 
