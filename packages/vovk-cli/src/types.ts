@@ -3,6 +3,7 @@ import { LogLevelNames } from 'loglevel';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type KnownAny = any;
 
+/*
 export type VovkEnv = {
   PORT?: string;
   VOVK_ROUTE?: string;
@@ -15,8 +16,8 @@ export type VovkEnv = {
   VOVK_MODULES_DIR?: string;
   __VOVK_START_SERVER__?: string;
 };
-
-export type VovkEnvNew = {
+*/
+export type VovkEnv = {
   PORT?: string;
   VOVK_CLIENT_OUT_DIR?: string;
   VOVK_METADATA_OUT_DIR?: string;
@@ -30,23 +31,20 @@ export type VovkEnvNew = {
   VOVK_API_ENTRY_POINT?: string;
   VOVK_ROOT_SEGMENT_MODULES_DIR_NAME?: string;
   VOVK_LOG_LEVEL?: LogLevelNames;
+  __VOVK_START_SERVER_IN_STANDALONE_MODE__?: 'true';
 };
-
+/*
 export type VovkConfig = {
-  /** @deprecated */
   clientOut?: string;
-  /** @deprecated */
   metadataOut?: string;
-  /** @deprecated */
   route?: string;
   fetcher?: string;
-  /** @deprecated */
   prefix?: string;
   validateOnClient?: string | null;
   modulesDir?: string;
 };
-
-export type VovkConfigNew = {
+*/
+export type VovkConfig = {
   clientOutDir?: string;
   metadataOutDir?: string;
   fetcher?: string;

@@ -1,11 +1,18 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import generateClient from './_tmp_ArchiveOfOldModules/generateClient';
 import parallel from './utils/parallel';
 import getAvailablePort from './utils/getAvailablePort';
-import getVars from './_tmp_ArchiveOfOldModules/getVars';
-import { startVovkServer } from './server';
-import { VovkEnv } from './types';
+import { VovkCLIServer } from './server';
+import getProjectInfo from './getProjectInfo';
+import generateClient from './server/generateClient';
+import locateSegments from './locateSegments';
+
+/*
+TODO:
+- Use ts-morph to update files
+- Vovk create segment <segmentName>
+- Vovk create module <segmentName>/module.ts
+*/
 
 interface DevOptions {
   project: string;
@@ -34,40 +41,36 @@ program
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
-          console.warn(` 🐺 🟡 Next.js Port ${failedPort} is in use, trying ${tryingPort} instead.`)
+          // eslint-disable-next-line no-console
+          console.warn(`🐺 Next.js Port ${failedPort} is in use, trying ${tryingPort} instead.`)
         ).catch(() => {
-          throw new Error(` 🐺 ❌ Failed to find available Next port after ${portAttempts} attempts`);
+          throw new Error(`🐺 ❌ Failed to find available Next port after ${portAttempts} attempts`);
         }));
 
     if (!PORT) {
-      throw new Error(' 🐺 ❌ PORT env variable is required');
+      throw new Error('🐺 ❌ PORT env variable is required');
     }
 
-    const serverEnv: VovkEnv = options.clientOut ? { VOVK_CLIENT_OUT: options.clientOut, PORT } : { PORT };
-
-    const env = await getVars(serverEnv);
-
     if (options.nextDev) {
-      serverEnv.__VOVK_START_SERVER__ = 'true';
-
       const commands = [
         {
           command: `node ${__dirname}/server.js`,
           name: 'Vovk.ts Metadata Server',
-          env: { ...serverEnv, VOVK_PORT: env.VOVK_PORT },
+          env: options.clientOut ? { PORT, VOVK_CLIENT_OUT_DIR: options.clientOut } : { PORT },
+        },
+        {
+          command: `cd ${options.project} && npx next dev ${command.args.join(' ')}`,
+          name: 'Next.js Development Server',
+          env: { __VOVK_START_SERVER_IN_STANDALONE_MODE__: 'true' as const, PORT },
         },
       ];
 
-      commands.push({
-        command: `cd ${options.project} && npx next dev ${command.args.join(' ')}`,
-        name: 'Next.js Development Server',
-        env,
-      });
-
+      // eslint-disable-next-line no-console
       await parallel(commands).catch((e) => console.error(e));
-      console.info(' 🐺 All processes have ended');
+      // eslint-disable-next-line no-console
+      console.log('🐺 Exiting...');
     } else {
-      startVovkServer({ ...env, ...serverEnv });
+      void new VovkCLIServer().startServer({ clientOutDir: options.clientOut });
     }
   });
 
@@ -76,19 +79,16 @@ program
   .description('Generate client')
   .option('--client-out <path>', 'Path to output directory')
   .action(async (options: GenerateOptions) => {
-    const env = await getVars({ VOVK_CLIENT_OUT: options.clientOut });
+    const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
+    const segments = await locateSegments(projectInfo.srcRoot);
 
-    await generateClient(env).then(({ path }) => {
-      console.info(` 🐺 Client generated in ${path}`);
-    });
+    await generateClient(projectInfo, segments);
   });
 
 program
   .command('help')
   .description('Show help message')
-  .action(() => {
-    program.help();
-  });
+  .action(() => program.help());
 
 program.parse(process.argv);
 

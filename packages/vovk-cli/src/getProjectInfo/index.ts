@@ -1,4 +1,4 @@
-import type { VovkEnvNew } from '../types';
+import type { VovkEnv } from '../types';
 import getCwdPath from './getCwdPath';
 import path from 'path';
 import * as loglevel from 'loglevel';
@@ -7,7 +7,6 @@ import getConfig from './getConfig';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
-// TODO: Convert server function to class
 // TODO: Rename all occurrences of metadata to schema
 // TODO: Rename default API option "prefix" to "apiRoot" or just "root" (?)
 // TODO: Load config dynamically to generate client and write schema
@@ -16,16 +15,16 @@ export default async function getProjectInfo({
   port: givenPort,
   clientOutDir,
 }: { port?: number; clientOutDir?: string } = {}) {
-  const env = process.env as VovkEnvNew;
+  const env = process.env as VovkEnv;
   const port = givenPort?.toString() ?? process.env.PORT ?? '3000';
 
-  // Make PORT available to the config file
+  // Make PORT available to the config file at getConfig
   process.env.PORT = port;
 
   const { config, srcRoot } = await getConfig({ clientOutDir });
   const vovkPort = env.VOVK_PORT || (parseInt(port) + 6969).toString();
-  const apiEntryPoint = `${config.origin}/${config.rootEntry}`; // ???
-  const apiPrefix = `${config.origin}/${config.rootEntry}`; // ???
+  const apiEntryPoint = `${config.origin}/${config.rootEntry}`; // ??? TODO
+  const apiPrefix = `${config.origin}/${config.rootEntry}`; // ??? TODO
   const apiDir = path.join(srcRoot, config.rootEntry);
 
   const metadataOutFullPath = path.join(srcRoot, config.metadataOutDir);

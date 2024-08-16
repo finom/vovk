@@ -7,7 +7,7 @@ module.exports = {
     '@typescript-eslint/no-unsafe-call': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
     '@typescript-eslint/no-unsafe-return': 'off',
-    'no-console': ['error', { allow: ['info', 'error', 'warn'] }],
+    'no-console': 'error',
   },
   parserOptions: {
     ecmaVersion: 2022,

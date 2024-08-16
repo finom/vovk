@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { VovkConfig, VovkConfigNew } from '../types';
+import type { VovkConfig } from '../types';
 
 async function findConfigPath(): Promise<string | null> {
   const rootDir = process.cwd();
@@ -20,7 +20,7 @@ async function findConfigPath(): Promise<string | null> {
   return null; // Return null if no config file was found
 }
 
-async function readConfig(): Promise<VovkConfigNew> {
+async function readConfig(): Promise<VovkConfig> {
   const configPath = await findConfigPath();
   let config: VovkConfig = {};
 
@@ -40,7 +40,8 @@ async function readConfig(): Promise<VovkConfigNew> {
       ({ default: config } = await import(`${configPath}?cache=${cacheBuster}`));
     }
   } catch (e) {
-    console.error(' 🐺 ❌ Error loading config file:', (e as Error).message);
+    // eslint-disable-next-line no-console
+    console.error('🐺 ❌ Error reading config file:', (e as Error).message);
   }
 
   return config;

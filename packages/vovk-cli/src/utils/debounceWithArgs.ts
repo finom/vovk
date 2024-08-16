@@ -4,7 +4,7 @@ import { KnownAny } from '../types';
 export default function debounceWithArgs<T extends (...args: KnownAny[]) => KnownAny>(
   fn: T,
   wait: number
-): (...args: Parameters<T>) => void {
+): (...args: Parameters<T>) => void | Promise<void> {
   const debouncedFunctions = new Map<string, ReturnType<typeof debounce>>();
 
   return (...args: Parameters<T>) => {

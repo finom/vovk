@@ -4,6 +4,7 @@ import type { ProjectInfo } from '../getProjectInfo';
 import type { Segment } from '../locateSegments';
 
 export default async function generateClient(projectInfo: ProjectInfo, segments: Segment[]) {
+  const now = Date.now();
   const outDir = projectInfo.clientOutFullPath;
   let dts = `// auto-generated
 /* eslint-disable */
@@ -81,6 +82,8 @@ const prefix = '${projectInfo.apiPrefix}';
   await fs.writeFile(localJsPath, js);
   await fs.writeFile(localDtsPath, dts);
   await fs.writeFile(localTsPath, ts);
+
+  projectInfo.log.info(`Client generated in ${Date.now() - now}ms`);
 
   return { written: true, path: outDir };
 }
