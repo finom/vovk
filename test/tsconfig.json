@@ -6,7 +6,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/**/*.ts",
-    "packages/**/*.ts"
+    "packages/**/*.ts",
+    "vovk.config.js"
   ],
   "exclude": [
     "node_modules"
@@ -14,6 +15,7 @@
   "compilerOptions": {
     "noEmit": true,
     "module": "esnext",
+    "target": "esnext",
     "moduleResolution": "node",
     "plugins": [
       {

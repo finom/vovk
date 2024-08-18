@@ -31,7 +31,9 @@ import metadata from '${projectInfo.metadataOutImportPath}';
 
 `;
   for (let i = 0; i < segments.length; i++) {
-    const { routeFilePath } = segments[i];
+    const { routeFilePath, emitMetadata } = segments[i];
+    if (!emitMetadata) continue;
+
     const importRouteFilePath = path.relative(projectInfo.config.clientOutDir, routeFilePath);
 
     dts += `import type { Controllers as Controllers${i}, Workers as Workers${i} } from "${importRouteFilePath}";\n`;
@@ -50,7 +52,8 @@ const prefix = '${projectInfo.apiPrefix}';
 `;
 
   for (let i = 0; i < segments.length; i++) {
-    const { segmentName, metadata } = segments[i];
+    const { segmentName, metadata, emitMetadata } = segments[i];
+    if (!emitMetadata) continue;
 
     if (!metadata) {
       throw new Error(`No metadata found for segment ${segmentName}`);

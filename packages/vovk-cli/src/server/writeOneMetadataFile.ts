@@ -3,6 +3,8 @@ import fs from 'fs/promises';
 import { VovkMetadata } from 'vovk';
 import diffMetadata, { DiffResult } from './diffMetadata';
 
+export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
+
 export default async function writeOneMetadataFile({
   metadataOutFullPath,
   segmentName,
@@ -17,8 +19,7 @@ export default async function writeOneMetadataFile({
   isCreated: boolean;
   diffResult: DiffResult | null;
 }> {
-  const segmentPath = path.join(metadataOutFullPath, `${segmentName}.json`);
-  const segmentDir = path.dirname(segmentPath);
+  const segmentPath = path.join(metadataOutFullPath, `${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
 
   if (skipIfExists) {
     try {
@@ -29,7 +30,7 @@ export default async function writeOneMetadataFile({
     }
   }
 
-  await fs.mkdir(segmentDir, { recursive: true });
+  await fs.mkdir(metadataOutFullPath, { recursive: true });
   const metadataStr = JSON.stringify(metadata, null, 2);
   const existing = await fs.readFile(segmentPath, 'utf-8').catch(() => null);
   if (existing === metadataStr) {

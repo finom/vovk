@@ -4,10 +4,12 @@
     "bin": {
         "vovk": "./dist/index.js"
     },
+    "types": "./dist/index.d.ts",
     "scripts": {
         "postinstall": "node ./dist/postinstall.js",
         "build": "tsc",
-        "test": "ts-node test/index.ts"
+        "test": "ts-node test/index.ts",
+        "ncu": "npm-check-updates -u -x chalk"
     },
     "repository": {
         "type": "git",
@@ -30,9 +32,10 @@
     },
     "dependencies": {
         "@inquirer/prompts": "^5.3.2",
-        "chalk": "^5.3.0",
+        "chalk": "^4.1.2",
         "chokidar": "^3.6.0",
         "commander": "^12.1.0",
+        "concurrently": "^8.2.2",
         "lodash": "^4.17.21",
         "loglevel": "^1.9.1"
     }

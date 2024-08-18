@@ -6,7 +6,6 @@
     "packages/*"
   ],
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
-  "bin": "./cli/index.cjs",
   "packageManager": "npm@10.8.1",
   "scripts": {
     "upgrade": "npx npm-check-updates -u -x eslint && npm i",

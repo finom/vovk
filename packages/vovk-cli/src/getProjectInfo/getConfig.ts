@@ -1,13 +1,13 @@
 import readConfig from './readConfig';
-import type { VovkConfigNew, VovkEnvNew } from '../types';
+import type { VovkConfig, VovkEnv } from '../types';
 import getCwdPath from './getCwdPath';
 import getSrcRoot from './getSrcRoot';
 
 export default async function getConfig({ clientOutDir }: { clientOutDir?: string }) {
-  const env = process.env as VovkEnvNew;
+  const env = process.env as VovkEnv;
   const userConfig = await readConfig();
   const srcRoot = await getSrcRoot();
-  const config: Required<VovkConfigNew> = {
+  const config: Required<VovkConfig> = {
     modulesDir: getCwdPath(
       env.VOVK_MODULES_DIR ?? userConfig.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/')
     ),

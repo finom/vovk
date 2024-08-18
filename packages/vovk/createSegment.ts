@@ -176,6 +176,8 @@ export function _createSegment() {
     onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
     onMetadata?: (metadata: VovkMetadata) => void | Promise<void>;
   }) => {
+    const emitMetadata = options.emitMetadata ?? true;
+    const segmentName = options.segmentName ?? '';
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
       controller._controllerName = controllerName;
       controller._activated = true;
@@ -186,30 +188,31 @@ export function _createSegment() {
     setTimeout(() => {
       const metadata = getMetadata(options);
 
-      if (options.emitMetadata !== false) {
-        if (process.env.NODE_ENV === 'development') {
-          const VOVK_PORT = process.env.VOVK_PORT || (parseInt(process.env.PORT || '3000') + 6969).toString();
-
-          void fetch(`http://localhost:${VOVK_PORT}/__metadata`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ metadata }),
-          })
-            .then((resp) => {
-              if (!resp.ok) {
-                // eslint-disable-next-line no-console
-                console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
-              }
-            })
-            .catch((err) => {
+      if (process.env.NODE_ENV === 'development') {
+        const VOVK_PORT = process.env.VOVK_PORT || (parseInt(process.env.PORT || '3000') + 6969).toString();
+        void fetch(`http://localhost:${VOVK_PORT}/__metadata`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            metadata: emitMetadata ? metadata : undefined,
+            emitMetadata,
+            segmentName,
+          }),
+        })
+          .then((resp) => {
+            if (!resp.ok) {
               // eslint-disable-next-line no-console
-              console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
-            });
-        }
+              console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
+            }
+          })
+          .catch((err) => {
+            // eslint-disable-next-line no-console
+            console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
+          });
+      }
 
-        if (options?.onMetadata) {
-          void options.onMetadata(metadata);
-        }
+      if (options?.onMetadata) {
+        void options.onMetadata(metadata);
       }
     }, 10);
 

@@ -25,8 +25,9 @@ export class VovkCLIServer {
   #segmentWatcher: chokidar.FSWatcher | null = null;
 
   #watchSegments = () => {
-    const segmentReg = /\/\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
+    const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
     const { apiDir, log, metadataOutFullPath } = this.#projectInfo;
+    const getSegmentName = (filePath: string) => path.relative(apiDir, filePath).replace(segmentReg, '');
     log.debug(`Watching segments in ${apiDir}`);
     this.#segmentWatcher = chokidar
       .watch(apiDir, {
@@ -34,7 +35,8 @@ export class VovkCLIServer {
       })
       .on('add', (filePath) => {
         if (segmentReg.test(filePath)) {
-          const segmentName = path.relative(apiDir, filePath).replace(segmentReg, '');
+          const segmentName = getSegmentName(filePath);
+
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
             ? this.#segments
             : [...this.#segments, { routeFilePath: filePath, segmentName }];
@@ -48,9 +50,14 @@ export class VovkCLIServer {
           );
         }
       })
+      .on('change', (filePath) => {
+        if (segmentReg.test(filePath)) {
+          void this.#ping(getSegmentName(filePath));
+        }
+      })
       .on('unlink', (filePath) => {
         if (segmentReg.test(filePath)) {
-          const segmentName = path.relative(apiDir, filePath).replace(segmentReg, '');
+          const segmentName = getSegmentName(filePath);
           this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
           log.info(`Segment "${segmentName}" has been removed`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
@@ -93,9 +100,14 @@ export class VovkCLIServer {
   #watchConfig = () => {
     const { log } = this.#projectInfo;
     log.debug(`Watching config files`);
+    let isInitial = true;
     const handle = debounce(async () => {
       this.#projectInfo = await getProjectInfo();
-      log.info('Config file has been updated');
+      if (!isInitial) {
+        log.info('Config file has been updated');
+
+        isInitial = false;
+      }
       await this.#modulesWatcher?.close();
       await this.#segmentWatcher?.close();
     }, 1000);
@@ -120,7 +132,7 @@ export class VovkCLIServer {
     const { apiDir, log, config } = this.#projectInfo;
 
     log.info(
-      `Watching segments in ${apiDir} and modules in ${config.modulesDir}. Detected initial segments: ${this.#segments.map((s) => s.segmentName).join(', ')}.`
+      `Watching segments in ${apiDir} and modules in ${config.modulesDir}. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
 
     this.#watchSegments();
@@ -156,7 +168,7 @@ export class VovkCLIServer {
 
   #ping = debounceWithArgs((segmentName: string) => {
     const { apiEntryPoint, log } = this.#projectInfo;
-    const endpoint = `${apiEntryPoint}/${segmentName}/_vovk-ping_`;
+    const endpoint = `${apiEntryPoint}/${segmentName ? `${segmentName}/` : ''}_vovk-ping_`;
     const req = http.get(endpoint, (resp) => {
       if (resp.statusCode !== 200) {
         log.warn(`Ping to segment "${segmentName}" failed with status code ${resp.statusCode}. Expected 200.`);
@@ -171,33 +183,41 @@ export class VovkCLIServer {
   #createMetadataServer() {
     const { metadataOutFullPath, log } = this.#projectInfo;
     return createMetadataServer(
-      async (metadata) => {
-        const segment = this.#segments.find((s) => s.segmentName === metadata.segmentName);
+      async ({ metadata, emitMetadata, segmentName }) => {
+        const segment = this.#segments.find((s) => s.segmentName === segmentName);
 
         if (!segment) {
-          log.error(`Segment "${metadata.segmentName}" not found`);
+          log.error(`Segment "${segmentName}" not found`);
           return;
         }
 
         segment.metadata = metadata;
+        segment.emitMetadata = emitMetadata;
+        if (emitMetadata) {
+          if (!metadata) {
+            log.error(`Metadata is empty for segment "${segmentName}" with emitMetadata=true`);
+            return;
+          }
+          const now = Date.now();
+          const { diffResult } = await writeOneMetadataFile({
+            metadataOutFullPath,
+            segmentName,
+            metadata,
+            skipIfExists: false,
+          });
 
-        const now = Date.now();
-        const { diffResult } = await writeOneMetadataFile({
-          metadataOutFullPath,
-          segmentName: metadata.segmentName,
-          metadata,
-          skipIfExists: false,
-        });
+          const timeTook = Date.now() - now;
 
-        const timeTook = Date.now() - now;
-
-        if (diffResult) {
-          logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
-          log.info(`Metadata for segment "${metadata.segmentName}" has been updated in ${timeTook}ms`);
+          if (diffResult) {
+            logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
+            log.info(`Metadata for segment "${segmentName}" has been updated in ${timeTook}ms`);
+          }
+        } else if (metadata) {
+          log.error(`Metadata provided for segment "${segmentName}" with emitMetadata=false`);
         }
 
-        if (this.#segments.every((s) => s.metadata)) {
-          log.debug(`All segments have metadata.`);
+        if (this.#segments.every((s) => s.metadata || !s.emitMetadata)) {
+          log.debug(`All segments with emitMetadata=true have metadata.`);
           await generateClient(this.#projectInfo, this.#segments);
         }
       },
@@ -209,7 +229,7 @@ export class VovkCLIServer {
 
   async startServer({ clientOutDir }: { clientOutDir?: string } = {}) {
     this.#projectInfo = await getProjectInfo({ clientOutDir });
-    this.#segments = await locateSegments(this.#projectInfo.srcRoot);
+    this.#segments = await locateSegments(this.#projectInfo.apiDir);
     const { vovkPort, log, metadataOutFullPath } = this.#projectInfo;
     const server = this.#createMetadataServer();
 

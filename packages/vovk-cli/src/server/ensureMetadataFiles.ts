@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import debounce from 'lodash/debounce';
-import writeOneMetadataFile from './writeOneMetadataFile';
+import writeOneMetadataFile, { ROOT_SEGMENT_SCHEMA_NAME } from './writeOneMetadataFile';
 import { ProjectInfo } from '../getProjectInfo';
 
 export default async function ensureMetadataFiles(
@@ -14,10 +14,11 @@ export default async function ensureMetadataFiles(
   // Create index.js file
   const indexContent = segmentNames
     .map((segmentName) => {
-      return `module.exports['${segmentName}'] = require('./${segmentName}');`;
+      return `module.exports['${segmentName || ROOT_SEGMENT_SCHEMA_NAME}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
     })
     .join('\n');
 
+  await fs.mkdir(metadataOutFullPath, { recursive: true });
   await fs.writeFile(path.join(metadataOutFullPath, 'index.js'), indexContent);
 
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested) : {} (empty object)
@@ -64,7 +65,10 @@ export default async function ensureMetadataFiles(
           const relativePath = path.relative(metadataOutFullPath, fullPath);
           const segmentName = relativePath.replace(/\\/g, '/').slice(0, -5); // Remove '.json' extension
 
-          if (!segmentNames.includes(segmentName)) {
+          if (
+            !segmentNames.includes(segmentName) &&
+            !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_SCHEMA_NAME, ''))
+          ) {
             await fs.unlink(fullPath);
             projectInfo?.log.debug(`Deleted unnecessary metadata file for segment "${segmentName}"`);
             hasChanged = true;

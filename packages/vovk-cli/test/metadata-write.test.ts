@@ -2,8 +2,8 @@ import assert from 'node:assert';
 import { test, describe, beforeEach, afterEach } from 'node:test';
 import fs from 'fs/promises';
 import path from 'path';
-import * as glob from 'glob'; // Ensure glob is imported correctly
-import ensureMetadataFiles from '../src/serverNew/ensureMetadataFiles';
+import * as glob from 'glob';
+import ensureMetadataFiles from '../src/server/ensureMetadataFiles';
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 
@@ -22,7 +22,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  // await cleanupTmpDir();
+  await cleanupTmpDir();
 });
 
 void describe('Check if metadata files are created and removed correctly', async () => {

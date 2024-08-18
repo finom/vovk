@@ -1,0 +1,32 @@
+{
+  "segmentName": "workers",
+  "controllers": {},
+  "workers": {
+    "MyWorker": {
+      "_workerName": "MyWorker",
+      "_handlers": {
+        "getClientizeHelloWorld": {},
+        "calculateFibonacci": {},
+        "findLargestPrimeBelow": {},
+        "asyncGenerator": {
+          "isGenerator": true
+        },
+        "asyncGeneratorWithError": {
+          "isGenerator": true
+        },
+        "generator": {
+          "isGenerator": true
+        },
+        "generatorWithError": {
+          "isGenerator": true
+        }
+      }
+    },
+    "MyInnerWorkerX": {
+      "_workerName": "MyInnerWorkerX",
+      "_handlers": {
+        "calculateFibonacci": {}
+      }
+    }
+  }
+}
