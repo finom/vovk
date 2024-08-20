@@ -30,7 +30,7 @@ export default async function writeOneMetadataFile({
     }
   }
 
-  await fs.mkdir(metadataOutFullPath, { recursive: true });
+  await fs.mkdir(path.dirname(segmentPath), { recursive: true });
   const metadataStr = JSON.stringify(metadata, null, 2);
   const existing = await fs.readFile(segmentPath, 'utf-8').catch(() => null);
   if (existing === metadataStr) {

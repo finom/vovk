@@ -10,6 +10,7 @@ import WithDtoClientController from 'src/client/WithDtoClientController';
 
 const controllers = {
   ClientController,
+  ClientController5x: ClientController,
   StreamingController,
   StreamingGeneratorController,
   CostomMetadataController,
@@ -21,7 +22,7 @@ const controllers = {
 export type Controllers = typeof controllers;
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
-  segmentName: 'client',
+  segmentName: 'foo/client',
   controllers,
   onError: (err, req) => {
     // eslint-disable-next-line no-console

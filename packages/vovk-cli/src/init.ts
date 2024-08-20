@@ -61,6 +61,7 @@ import { confirm } from '@inquirer/prompts';
 // Or
 // import confirm from '@inquirer/confirm';
 
+// eslint-disable-next-line no-console
 void confirm({ message: 'Continue?' }).then(console.info);
 
 /*

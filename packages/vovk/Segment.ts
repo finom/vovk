@@ -86,12 +86,12 @@ export class _Segment {
   #callMethod = async (httpMethod: HttpMethod, req: VovkRequest, params: Record<string, string[]>) => {
     const controllers = this._routes[httpMethod];
     const methodParams: Record<string, string> = {};
+    const path = params[Object.keys(params)[0]];
 
     if (params[Object.keys(params)[0]]?.[0] === '_vovk-ping_') {
       return this.#respond(200, { message: 'pong' });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
     controllers.forEach((staticMethods, controller) => {
       const prefix = controller._prefix ?? '';
@@ -114,7 +114,6 @@ export class _Segment {
         return handlers[''];
       }
 
-      const path = params[Object.keys(params)[0]];
       const allMethodKeys = Object.keys(handlers);
 
       let methodKeys: string[] = [];
@@ -169,7 +168,7 @@ export class _Segment {
     const handler = getHandler();
 
     if (!handler) {
-      return this.#respondWithError(HttpStatus.NOT_FOUND, 'Route is not found');
+      return this.#respondWithError(HttpStatus.NOT_FOUND, `Route ${path.join('/')} is not found`);
     }
 
     const { staticMethod, controller } = handler;

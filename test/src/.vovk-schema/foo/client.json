@@ -1,8 +1,58 @@
 {
-  "segmentName": "client",
+  "segmentName": "foo/client",
   "controllers": {
     "ClientController": {
       "_controllerName": "ClientController",
+      "_prefix": "client",
+      "_handlers": {
+        "getHelloWorldResponseObject": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-response-object"
+        },
+        "getHelloWorldObjectLiteral": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-object-literal"
+        },
+        "getHelloWorldNextResponseObjectPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-next-response-object-promise"
+        },
+        "getHelloWorldRawResponseObjectPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-raw-response-object-promise"
+        },
+        "getHelloWorldObjectLiteralPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-object-literal-promise"
+        },
+        "getHelloWorldHeaders": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-headers"
+        },
+        "getHelloWorldArray": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-array"
+        },
+        "getHelloWorldAndEmptyGeneric": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-and-empty-generic"
+        },
+        "getWithParams": {
+          "path": "with-params/:hello",
+          "httpMethod": "GET"
+        },
+        "postWithAll": {
+          "path": "with-all/:hello",
+          "httpMethod": "POST"
+        },
+        "postWithBodyAndQueryUsingReqVovk": {
+          "path": "with-all-using-req-vovk",
+          "httpMethod": "POST"
+        }
+      }
+    },
+    "ClientController5x": {
+      "_controllerName": "ClientController5x",
       "_prefix": "client",
       "_handlers": {
         "getHelloWorldResponseObject": {

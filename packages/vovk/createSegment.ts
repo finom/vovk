@@ -190,7 +190,8 @@ export function _createSegment() {
 
       if (process.env.NODE_ENV === 'development') {
         const VOVK_PORT = process.env.VOVK_PORT || (parseInt(process.env.PORT || '3000') + 6969).toString();
-        void fetch(`http://localhost:${VOVK_PORT}/__metadata`, {
+        const url = `http://localhost:${VOVK_PORT}/__metadata`;
+        void fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -202,12 +203,12 @@ export function _createSegment() {
           .then((resp) => {
             if (!resp.ok) {
               // eslint-disable-next-line no-console
-              console.error(` 🐺 Failed to send metadata to Vovk Server: ${resp.statusText}`);
+              console.error(`🐺 Failed to send metadata to ${url}. Response is not OK. ${resp.statusText}`);
             }
           })
           .catch((err) => {
             // eslint-disable-next-line no-console
-            console.error(` 🐺 Failed to send metadata to Vovk Server: ${err}`);
+            console.error(`🐺 Failed to send metadata to ${url}. ${err}`);
           });
       }
 

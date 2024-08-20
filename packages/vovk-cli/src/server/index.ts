@@ -34,6 +34,7 @@ export class VovkCLIServer {
         persistent: true,
       })
       .on('add', (filePath) => {
+        log.debug(`File ${filePath} has been added to segments folder`);
         if (segmentReg.test(filePath)) {
           const segmentName = getSegmentName(filePath);
 
@@ -51,11 +52,29 @@ export class VovkCLIServer {
         }
       })
       .on('change', (filePath) => {
+        log.debug(`File ${filePath} has been changed at segments folder`);
         if (segmentReg.test(filePath)) {
           void this.#ping(getSegmentName(filePath));
         }
       })
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      .on('addDir', async (dirPath) => {
+        log.debug(`Directory ${dirPath} has been added to segments folder`);
+        this.#segments = await locateSegments(this.#projectInfo.apiDir);
+        for (const { segmentName } of this.#segments) {
+          void this.#ping(segmentName);
+        }
+      })
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      .on('unlinkDir', async (dirPath) => {
+        log.debug(`Directory ${dirPath} has been removed from segments folder`);
+        this.#segments = await locateSegments(this.#projectInfo.apiDir);
+        for (const { segmentName } of this.#segments) {
+          void this.#ping(segmentName);
+        }
+      })
       .on('unlink', (filePath) => {
+        log.debug(`File ${filePath} has been removed from segments folder`);
         if (segmentReg.test(filePath)) {
           const segmentName = getSegmentName(filePath);
           this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
@@ -68,6 +87,9 @@ export class VovkCLIServer {
             this.#projectInfo // TODO refactor
           );
         }
+      })
+      .on('ready', () => {
+        log.debug('Segments watcher is ready');
       })
       .on('error', (error) => {
         log.error(`Error watching segments folder: ${error.message}`);
@@ -92,6 +114,19 @@ export class VovkCLIServer {
       .on('unlink', (filePath) => {
         log.debug(`File ${filePath} has been removed from modules folder`);
       })
+      .on('addDir', () => {
+        for (const { segmentName } of this.#segments) {
+          void this.#ping(segmentName);
+        }
+      })
+      .on('unlinkDir', () => {
+        for (const { segmentName } of this.#segments) {
+          void this.#ping(segmentName);
+        }
+      })
+      .on('ready', () => {
+        log.debug('Modules watcher is ready');
+      })
       .on('error', (error) => {
         log.error(`Error watching modules folder: ${error.message}`);
       });
@@ -110,6 +145,8 @@ export class VovkCLIServer {
       }
       await this.#modulesWatcher?.close();
       await this.#segmentWatcher?.close();
+      this.#watchModules();
+      this.#watchSegments();
     }, 1000);
 
     chokidar
@@ -122,6 +159,9 @@ export class VovkCLIServer {
       .on('add', () => void handle())
       .on('change', () => void handle())
       .on('unlink', () => void handle())
+      .on('ready', () => {
+        log.debug('Config files watcher is ready');
+      })
       .on('error', (error) => {
         log.error(`Error watching config files: ${error.message}`);
       });
@@ -169,6 +209,8 @@ export class VovkCLIServer {
   #ping = debounceWithArgs((segmentName: string) => {
     const { apiEntryPoint, log } = this.#projectInfo;
     const endpoint = `${apiEntryPoint}/${segmentName ? `${segmentName}/` : ''}_vovk-ping_`;
+
+    log.debug(`Pinging segment "${segmentName}" at ${endpoint}`);
     const req = http.get(endpoint, (resp) => {
       if (resp.statusCode !== 200) {
         log.warn(`Ping to segment "${segmentName}" failed with status code ${resp.statusCode}. Expected 200.`);
@@ -187,7 +229,7 @@ export class VovkCLIServer {
         const segment = this.#segments.find((s) => s.segmentName === segmentName);
 
         if (!segment) {
-          log.error(`Segment "${segmentName}" not found`);
+          log.debug(`Segment "${segmentName}" not found`);
           return;
         }
 
