@@ -95,8 +95,9 @@ program
   .action(async (options: GenerateOptions) => {
     const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
     const segments = await locateSegments(projectInfo.apiDir);
+    const metadata = await import(projectInfo.metadataOutFullPath);
 
-    await generateClient(projectInfo, segments);
+    await generateClient(projectInfo, segments, metadata.default);
   });
 
 program

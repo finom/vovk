@@ -1,8 +1,8 @@
 'use client';
 import { useEffect } from 'react';
-import { MyWorker as MyWorkerPromisified } from '../../.vovk/client';
+import { MyWorker as MyWorkerPromisified } from '../../.vovk-client/client';
 import { promisifyWorker } from '../../../packages/vovk/worker';
-import metadata from '../../.vovk.json';
+import segmentMetadata from '.vovk-schema';
 import MyWorker from '../worker/MyWorker';
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
 
     const metadataWorker = promisifyWorker<typeof MyWorker>(
       new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
-      metadata.workers.MyWorker
+      segmentMetadata.workers.workers.MyWorker
     );
 
     const standaloneWorker = promisifyWorker<typeof MyWorker>(

@@ -46,6 +46,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 
 export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   givenController: VovkControllerMetadata,
+  segmentName: string,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
   const controller = givenController as T & VovkControllerMetadata;
@@ -69,7 +70,8 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
     }) => {
       const mainPrefix =
         (prefix.startsWith('http://') || prefix.startsWith('https://') || prefix.startsWith('/') ? '' : '/') +
-        (prefix.endsWith('/') ? prefix : `${prefix}/`);
+        (prefix.endsWith('/') ? prefix : `${prefix}/`) +
+        (segmentName ? `${segmentName}/` : '');
       return mainPrefix + getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query);
     };
 
@@ -105,6 +107,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         body: input.body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
+        segmentName,
         // TS workaround
         fetcher: undefined,
         validateOnClient: undefined,

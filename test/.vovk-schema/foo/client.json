@@ -1,4 +1,5 @@
 {
+  "emitMetadata": true,
   "segmentName": "foo/client",
   "controllers": {
     "ClientController": {

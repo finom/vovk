@@ -5,6 +5,7 @@ import { _StreamAsyncIterator as StreamAsyncIterator } from './client/types';
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type _VovkMetadata = {
+  emitMetadata: boolean;
   segmentName: string;
   workers: Record<string, _VovkWorkerMetadata>;
   controllers: Record<string, _VovkControllerMetadata>;

@@ -14,20 +14,25 @@ export default async function ensureMetadataFiles(
   // Create index.js file
   const indexContent = segmentNames
     .map((segmentName) => {
-      return `module.exports['${segmentName || ROOT_SEGMENT_SCHEMA_NAME}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
+      return `module.exports['${segmentName}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
     })
     .join('\n');
 
+  const dTsContent = `import type { VovkMetadata } from 'vovk';
+declare const segmentMetadata: Record<string, VovkMetadata>;
+export default segmentMetadata;`;
+
   await fs.mkdir(metadataOutFullPath, { recursive: true });
   await fs.writeFile(path.join(metadataOutFullPath, 'index.js'), indexContent);
+  await fs.writeFile(path.join(metadataOutFullPath, 'index.d.ts'), dTsContent);
 
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested) : {} (empty object)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
       const { isCreated } = await writeOneMetadataFile({
         metadataOutFullPath,
-        segmentName,
         metadata: {
+          emitMetadata: false,
           segmentName,
           controllers: {},
           workers: {},

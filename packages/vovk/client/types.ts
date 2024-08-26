@@ -79,6 +79,7 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
     httpMethod: HttpMethod;
     getEndpoint: (data: {
       prefix: string;
+      segmentName: string;
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => string;
@@ -97,6 +98,7 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
 export interface _VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
   reactNative?: { textStreaming: boolean };
   prefix?: string;
+  segmentName: string;
   disableClientValidation?: boolean;
   validateOnClient?: _VovkValidateOnClient;
   fetcher?: _VovkClientFetcher;

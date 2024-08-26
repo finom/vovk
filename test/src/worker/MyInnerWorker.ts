@@ -2,7 +2,6 @@ import { worker } from '../../../packages/vovk';
 
 @worker()
 export default class MyInnerWorker {
-  static workerName = 'MyInnerWorker';
   static calculateFibonacci(n: number): number {
     if (n <= 1) {
       return n;

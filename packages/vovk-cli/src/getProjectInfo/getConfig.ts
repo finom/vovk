@@ -2,13 +2,16 @@ import readConfig from './readConfig';
 import type { VovkConfig, VovkEnv } from '../types';
 import getCwdPath from './getCwdPath';
 import getSrcRoot from './getSrcRoot';
+import path from 'path';
 
 export default async function getConfig({ clientOutDir }: { clientOutDir?: string }) {
   const env = process.env as VovkEnv;
   const userConfig = await readConfig();
   const srcRoot = await getSrcRoot();
+  const cwd = process.cwd();
   const config: Required<VovkConfig> = {
-    modulesDir: getCwdPath(
+    modulesDir: path.join(
+      cwd,
       env.VOVK_MODULES_DIR ?? userConfig.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/')
     ),
     validateOnClient: getCwdPath(env.VOVK_VALIDATE_ON_CLIENT ?? userConfig.validateOnClient ?? null),

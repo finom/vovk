@@ -124,6 +124,7 @@ export function _createSegment() {
   };
 
   const getMetadata = (options: {
+    emitMetadata?: boolean;
     segmentName?: string;
     // eslint-disable-next-line @typescript-eslint/ban-types
     controllers: Record<string, Function>;
@@ -132,11 +133,15 @@ export function _createSegment() {
     exposeValidation?: boolean;
   }) => {
     const exposeValidation = options?.exposeValidation ?? true;
+    const emitMetadata = options.emitMetadata ?? true;
     const metadata: VovkMetadata = {
+      emitMetadata,
       segmentName: options.segmentName ?? '',
       controllers: {},
       workers: {},
     };
+
+    if (!emitMetadata) return metadata;
 
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
       metadata.controllers[controllerName] = {
@@ -176,8 +181,6 @@ export function _createSegment() {
     onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
     onMetadata?: (metadata: VovkMetadata) => void | Promise<void>;
   }) => {
-    const emitMetadata = options.emitMetadata ?? true;
-    const segmentName = options.segmentName ?? '';
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
       controller._controllerName = controllerName;
       controller._activated = true;
@@ -194,11 +197,7 @@ export function _createSegment() {
         void fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            metadata: emitMetadata ? metadata : undefined,
-            emitMetadata,
-            segmentName,
-          }),
+          body: JSON.stringify({ metadata }),
         })
           .then((resp) => {
             if (!resp.ok) {

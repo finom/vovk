@@ -1,4 +1,5 @@
 {
+  "emitMetadata": true,
   "segmentName": "workers",
   "controllers": {},
   "workers": {
@@ -20,6 +21,12 @@
         "generatorWithError": {
           "isGenerator": true
         }
+      }
+    },
+    "MyInnerWorker": {
+      "_workerName": "MyInnerWorker",
+      "_handlers": {
+        "calculateFibonacci": {}
       }
     },
     "MyInnerWorkerX": {

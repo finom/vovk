@@ -7,19 +7,17 @@ export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
 
 export default async function writeOneMetadataFile({
   metadataOutFullPath,
-  segmentName,
   metadata,
   skipIfExists = false,
 }: {
   metadataOutFullPath: string;
-  segmentName: string;
   metadata: VovkMetadata;
   skipIfExists?: boolean;
 }): Promise<{
   isCreated: boolean;
   diffResult: DiffResult | null;
 }> {
-  const segmentPath = path.join(metadataOutFullPath, `${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
+  const segmentPath = path.join(metadataOutFullPath, `${metadata.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
 
   if (skipIfExists) {
     try {

@@ -1,6 +1,6 @@
 import puppeteer, { type Page } from 'puppeteer';
 import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
-import type { MyWorker } from '../../.vovk/client';
+import type { MyWorker } from '../../.vovk-client/client';
 
 describe('Worker', () => {
   let page: Page;

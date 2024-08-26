@@ -2,8 +2,13 @@ import path from 'path';
 import fs from 'fs/promises';
 import type { ProjectInfo } from '../getProjectInfo';
 import type { Segment } from '../locateSegments';
+import { VovkMetadata } from 'vovk';
 
-export default async function generateClient(projectInfo: ProjectInfo, segments: Segment[]) {
+export default async function generateClient(
+  projectInfo: ProjectInfo,
+  segments: Segment[],
+  segmentsMetadata: Record<string, VovkMetadata>
+) {
   const now = Date.now();
   const outDir = projectInfo.clientOutFullPath;
   let dts = `// auto-generated
@@ -31,9 +36,12 @@ import metadata from '${projectInfo.metadataOutImportPath}';
 
 `;
   for (let i = 0; i < segments.length; i++) {
-    const { routeFilePath, emitMetadata } = segments[i];
-    if (!emitMetadata) continue;
-
+    const { routeFilePath, segmentName } = segments[i];
+    const metadata = segmentsMetadata[segmentName];
+    if (!metadata) {
+      throw new Error(`Unable to generate client. No metadata found for segment ${segmentName}`);
+    }
+    if (!metadata.emitMetadata) continue;
     const importRouteFilePath = path.relative(projectInfo.config.clientOutDir, routeFilePath);
 
     dts += `import type { Controllers as Controllers${i}, Workers as Workers${i} } from "${importRouteFilePath}";\n`;
@@ -52,17 +60,17 @@ const prefix = '${projectInfo.apiPrefix}';
 `;
 
   for (let i = 0; i < segments.length; i++) {
-    const { segmentName, metadata, emitMetadata } = segments[i];
-    if (!emitMetadata) continue;
-
+    const { segmentName } = segments[i];
+    const metadata = segmentsMetadata[segmentName];
     if (!metadata) {
-      throw new Error(`No metadata found for segment ${segmentName}`);
+      throw new Error(`Unable to generate client. No metadata found for segment ${segmentName}`);
     }
+    if (!metadata.emitMetadata) continue;
 
     for (const key of Object.keys(metadata.controllers)) {
       dts += `export const ${key}: ReturnType<typeof clientizeController<Controllers${i}["${key}"], Options>>;\n`;
-      js += `exports.${key} = clientizeController(metadata['${segmentName}'].controllers.${key}, { fetcher, defaultOptions: { prefix } });\n`;
-      ts += `export const ${key} = clientizeController<Controllers${i}["${key}"], Options>(metadata['${segmentName}'].controllers.${key}, { fetcher, defaultOptions: { prefix } });\n`;
+      js += `exports.${key} = clientizeController(metadata['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, defaultOptions: { prefix } });\n`;
+      ts += `export const ${key} = clientizeController<Controllers${i}["${key}"], Options>(metadata['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, defaultOptions: { prefix } });\n`;
     }
 
     for (const key of Object.keys(metadata.workers)) {
@@ -79,7 +87,10 @@ const prefix = '${projectInfo.apiPrefix}';
   const existingDts = await fs.readFile(localDtsPath, 'utf-8').catch(() => '');
   const existingTs = await fs.readFile(localTsPath, 'utf-8').catch(() => '');
 
-  if (existingJs === js && existingDts === dts && existingTs === ts) return { written: false, path: outDir };
+  if (existingJs === js && existingDts === dts && existingTs === ts) {
+    projectInfo.log.info(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms).`);
+    return { written: false, path: outDir };
+  }
 
   await fs.mkdir(outDir, { recursive: true });
   await fs.writeFile(localJsPath, js);

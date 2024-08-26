@@ -1,7 +1,7 @@
 import type { Token } from './StreamingGeneratorController';
 import { expect, describe, xit, it } from '@jest/globals';
 import { VovkYieldType, VovkControlerYieldType } from 'vovk';
-import { StreamingGeneratorController } from '../../.vovk/client';
+import { StreamingGeneratorController } from '../../.vovk-client/client';
 
 type StreamingGeneratorControllerType = typeof StreamingGeneratorController;
 

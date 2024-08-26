@@ -1,13 +1,10 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import fileExists from './utils/fileExists';
-import type { VovkMetadata } from 'vovk';
 
 export type Segment = {
   routeFilePath: string;
   segmentName: string;
-  emitMetadata?: boolean;
-  metadata?: VovkMetadata;
 };
 
 export default async function locateSegments(dir: string, rootDir = dir): Promise<Segment[]> {

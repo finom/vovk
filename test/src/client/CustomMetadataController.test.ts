@@ -1,9 +1,11 @@
 import { it, expect, describe } from '@jest/globals';
-
-import vovkJson from '../../.vovk.json';
+import segmentsMetadata from '../../.vovk-schema';
 
 describe('Custom .vovk.json metadata', () => {
   it('Should write custom metadata', () => {
-    expect(vovkJson.CostomMetadataController._handlers.getWithCustomMetadata.customMetadata.hello).toEqual('world');
+    expect(
+      segmentsMetadata['foo/client'].controllers.CostomMetadataController._handlers.getWithCustomMetadata.customMetadata
+        ?.hello
+    ).toEqual('world');
   });
 });

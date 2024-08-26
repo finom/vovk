@@ -1,5 +1,4 @@
 import type { VovkEnv } from '../types';
-import getCwdPath from './getCwdPath';
 import path from 'path';
 import * as loglevel from 'loglevel';
 import chalk from 'chalk';
@@ -21,19 +20,20 @@ export default async function getProjectInfo({
   // Make PORT available to the config file at getConfig
   process.env.PORT = port;
 
+  const cwd = process.cwd();
   const { config, srcRoot } = await getConfig({ clientOutDir });
   const vovkPort = env.VOVK_PORT || (parseInt(port) + 6969).toString();
   const apiEntryPoint = `${config.origin}/${config.rootEntry}`; // ??? TODO
   const apiPrefix = `${config.origin}/${config.rootEntry}`; // ??? TODO
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
-  const metadataOutFullPath = path.join(srcRoot, config.metadataOutDir);
+  const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
   const metadataOutImportPath = path.relative(config.clientOutDir, metadataOutFullPath);
   const fetcherClientImportPath = config.fetcher.startsWith('.')
     ? path.relative(config.clientOutDir, config.fetcher)
     : config.fetcher;
 
-  const clientOutFullPath = getCwdPath(config.clientOutDir);
+  const clientOutFullPath = path.join(cwd, config.clientOutDir);
 
   const log = {
     info: (msg: string) => loglevel.info(chalk.blueBright(`🐺 ${msg}`)),

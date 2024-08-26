@@ -1,34 +1,17 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import { VovkDefaultFetcherOptions, clientizeController } from '../../../packages/vovk/client';
-import { promisifyWorker, worker } from '../../../packages/vovk/worker';
-import metadata from '../../.vovk.json';
-import type MyInnerWorker from './MyInnerWorker';
-import type ClientController from '../client/ClientController';
+import { worker } from '../../../packages/vovk/worker';
+import { ClientController, MyInnerWorker } from '.vovk-client/client';
 
 @worker()
 export default class MyWorker {
-  private static defaultController = clientizeController<typeof ClientController, VovkDefaultFetcherOptions>(
-    metadata.ClientController,
-    {
-      defaultOptions: { prefix: '/api' },
-    }
-  );
-
   static getClientizeHelloWorld(prefix?: string) {
-    return this.defaultController.getHelloWorldHeaders({
+    return ClientController.getHelloWorldHeaders({
       prefix,
       headers: { 'x-test': 'world' },
     });
   }
 
   static calculateFibonacci(n: number): Promise<number> {
-    const innerWorker = promisifyWorker<typeof MyInnerWorker>(
-      new Worker(new URL('./MyInnerWorker.ts', import.meta.url)),
-      metadata.workers.MyInnerWorker
-    );
-
-    return innerWorker.calculateFibonacci(n);
+    return MyInnerWorker.calculateFibonacci(n);
   }
 
   static findLargestPrimeBelow(max: number): number {

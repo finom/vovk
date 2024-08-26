@@ -2,7 +2,7 @@ import { initVovk } from 'vovk';
 import MyWorker from 'src/worker/MyWorker';
 import MyInnerWorker from 'src/worker/MyInnerWorker';
 
-const workers = { MyWorker, MyInnerWorkerX: MyInnerWorker };
+const workers = { MyWorker, MyInnerWorker, MyInnerWorkerX: MyInnerWorker };
 const controllers = {};
 
 export type Workers = typeof workers;

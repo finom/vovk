@@ -10,13 +10,16 @@ import logDiffResult from './logDiffResult';
 import generateClient from './generateClient';
 import locateSegments, { type Segment } from '../locateSegments';
 import debounceWithArgs from '../utils/debounceWithArgs';
-import { debounce } from 'lodash';
+import { debounce, isEmpty } from 'lodash';
 import { VovkEnv } from '../types';
+import { VovkMetadata } from 'vovk';
 
 export class VovkCLIServer {
   #projectInfo: ProjectInfo;
 
   #segments: Segment[] = [];
+
+  #metadata: Record<string, VovkMetadata> = {};
 
   #isWatching = false;
 
@@ -32,6 +35,7 @@ export class VovkCLIServer {
     this.#segmentWatcher = chokidar
       .watch(apiDir, {
         persistent: true,
+        ignoreInitial: true,
       })
       .on('add', (filePath) => {
         log.debug(`File ${filePath} has been added to segments folder`);
@@ -102,6 +106,7 @@ export class VovkCLIServer {
     this.#modulesWatcher = chokidar
       .watch(config.modulesDir, {
         persistent: true,
+        ignoreInitial: true,
       })
       .on('add', (filePath) => {
         log.debug(`File ${filePath} has been added to modules folder`);
@@ -190,9 +195,11 @@ export class VovkCLIServer {
     const importRegex =
       /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options|worker)\b[^}]*}\s*from\s*['"]vovk['"]/;
     if (importRegex.test(code) && namesOfClasses.length) {
-      const affectedSegments = this.#segments.filter((s) =>
-        namesOfClasses.some((name) => s.metadata?.controllers[name] || s.metadata?.workers[name])
-      );
+      const affectedSegments = this.#segments.filter((s) => {
+        const metadata = this.#metadata[s.segmentName];
+        if (!metadata) return false;
+        return namesOfClasses.some((name) => metadata.controllers[name] || metadata.workers[name]);
+      });
 
       if (affectedSegments.length) {
         log.debug(
@@ -225,25 +232,19 @@ export class VovkCLIServer {
   #createMetadataServer() {
     const { metadataOutFullPath, log } = this.#projectInfo;
     return createMetadataServer(
-      async ({ metadata, emitMetadata, segmentName }) => {
-        const segment = this.#segments.find((s) => s.segmentName === segmentName);
+      async ({ metadata }) => {
+        const segment = this.#segments.find((s) => s.segmentName === metadata.segmentName);
 
         if (!segment) {
-          log.debug(`Segment "${segmentName}" not found`);
+          log.debug(`Segment "${metadata.segmentName}" not found`);
           return;
         }
 
-        segment.metadata = metadata;
-        segment.emitMetadata = emitMetadata;
-        if (emitMetadata) {
-          if (!metadata) {
-            log.error(`Metadata is empty for segment "${segmentName}" with emitMetadata=true`);
-            return;
-          }
+        this.#metadata[metadata.segmentName] = metadata;
+        if (metadata.emitMetadata) {
           const now = Date.now();
           const { diffResult } = await writeOneMetadataFile({
             metadataOutFullPath,
-            segmentName,
             metadata,
             skipIfExists: false,
           });
@@ -252,15 +253,15 @@ export class VovkCLIServer {
 
           if (diffResult) {
             logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
-            log.info(`Metadata for segment "${segmentName}" has been updated in ${timeTook}ms`);
+            log.info(`Metadata for segment "${metadata.segmentName}" has been updated in ${timeTook}ms`);
           }
-        } else if (metadata) {
-          log.error(`Metadata provided for segment "${segmentName}" with emitMetadata=false`);
+        } else if (metadata && (!isEmpty(metadata.controllers) || !isEmpty(metadata.workers))) {
+          log.error(`Non-empty metadata provided for segment "${metadata.segmentName}" but emitMetadata is false`);
         }
 
-        if (this.#segments.every((s) => s.metadata || !s.emitMetadata)) {
+        if (this.#segments.every((s) => this.#metadata[s.segmentName])) {
           log.debug(`All segments with emitMetadata=true have metadata.`);
-          await generateClient(this.#projectInfo, this.#segments);
+          await generateClient(this.#projectInfo, this.#segments, this.#metadata);
         }
       },
       (error) => {

@@ -1,5 +1,6 @@
 import path from 'path';
 
+// TODO Rename
 export default function getCwdPath<T extends string | null>(inputPath: T, baseDir = process.cwd()): T {
   if (inputPath === null) {
     return null as T;

@@ -1,5 +1,5 @@
 import { it, expect, describe } from '@jest/globals';
-import { WithYupClientController } from '../../.vovk/client';
+import { WithYupClientController } from '../../.vovk-client/client';
 import { HttpException } from 'vovk';
 import validateOnClient from 'vovk-yup/validateOnClient';
 
