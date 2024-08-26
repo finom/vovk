@@ -11,6 +11,9 @@ export default class MyWorker {
   }
 
   static calculateFibonacci(n: number): Promise<number> {
+    if (!MyInnerWorker.worker) {
+      MyInnerWorker.employ(new Worker(new URL('./MyInnerWorker.ts', import.meta.url)));
+    }
     return MyInnerWorker.calculateFibonacci(n);
   }
 

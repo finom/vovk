@@ -9,14 +9,9 @@
     "packages/**/*.ts",
     "vovk.config.js"
   ],
-  "exclude": [
-    "node_modules"
-  ],
   "compilerOptions": {
     "noEmit": true,
     "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "node",
     "plugins": [
       {
         "name": "next"
@@ -36,6 +31,7 @@
       "next/*": [
         "./node_modules/next/*"
       ]
-    }
+    },
+    "moduleResolution": "node"
   }
 }

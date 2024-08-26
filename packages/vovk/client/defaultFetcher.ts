@@ -15,8 +15,6 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
 ) => {
   const endpoint = getEndpoint({ prefix, segmentName, params, query });
 
-  console.log('endpoint', endpoint, prefix, params);
-
   if (!options.disableClientValidation) {
     try {
       await validate({ body, query, endpoint });

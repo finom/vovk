@@ -11,6 +11,9 @@ export default async function generateClient(
 ) {
   const now = Date.now();
   const outDir = projectInfo.clientOutFullPath;
+  const validatePath = projectInfo.config.validateOnClient?.startsWith('.')
+    ? path.join(projectInfo.cwd, projectInfo.config.validateOnClient)
+    : projectInfo.config.validateOnClient;
   let dts = `// auto-generated
 /* eslint-disable */
 import type { clientizeController } from 'vovk/client';
@@ -52,10 +55,12 @@ import metadata from '${projectInfo.metadataOutImportPath}';
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   `;
   ts += `
+${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = undefined;'}
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 const prefix = '${projectInfo.apiPrefix}';
   `;
   js += `
+const { default: validateOnClient = null } = ${validatePath ? `require('${validatePath}')` : '{}'};
 const prefix = '${projectInfo.apiPrefix}';
 `;
 
@@ -69,8 +74,8 @@ const prefix = '${projectInfo.apiPrefix}';
 
     for (const key of Object.keys(metadata.controllers)) {
       dts += `export const ${key}: ReturnType<typeof clientizeController<Controllers${i}["${key}"], Options>>;\n`;
-      js += `exports.${key} = clientizeController(metadata['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, defaultOptions: { prefix } });\n`;
-      ts += `export const ${key} = clientizeController<Controllers${i}["${key}"], Options>(metadata['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, defaultOptions: { prefix } });\n`;
+      js += `exports.${key} = clientizeController(metadata['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
+      ts += `export const ${key} = clientizeController<Controllers${i}["${key}"], Options>(metadata['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
     }
 
     for (const key of Object.keys(metadata.workers)) {

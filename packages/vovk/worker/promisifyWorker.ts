@@ -11,20 +11,22 @@ export function _promisifyWorker<T extends object>(
 ): WorkerPromiseInstance<T> {
   if (!givenWorkerService) throw new Error('Worker metadata is not provided');
   const workerService = givenWorkerService as T & VovkWorkerMetadata;
-  const instance = {} as WorkerPromiseInstance<T>;
+  const instance = {
+    worker: currentWorker,
+  } as WorkerPromiseInstance<T>;
   let callsKey = 0;
 
   instance.terminate = () => {
     if (instance._isTerminated) return;
     instance._isTerminated = true;
-    currentWorker?.terminate();
-    currentWorker = null;
+    instance.worker?.terminate();
+    instance.worker = null;
   };
 
   instance.employ = (worker: Worker) => {
     if (instance._isTerminated) return instance;
     instance._isTerminated = true;
-    currentWorker = worker;
+    instance.worker = worker;
     return instance;
   };
 
@@ -43,10 +45,10 @@ export function _promisifyWorker<T extends object>(
         callsKey += 1;
         return {
           async *[Symbol.asyncIterator]() {
-            if (!currentWorker) {
+            if (!instance.worker) {
               throw new Error('Worker is not provided or terminated');
             }
-            const w = currentWorker;
+            const w = instance.worker;
             const messageQueue: WorkerOutput[] = [];
             let messageResolver: ((message: WorkerOutput) => void) | null = null;
 
@@ -118,10 +120,10 @@ export function _promisifyWorker<T extends object>(
     } else {
       // @ts-expect-error TODO Fix this
       instance[method] = (...args: Parameters<typeof value>) => {
-        if (!currentWorker) {
+        if (!instance.worker) {
           throw new Error('Worker is not provided or terminated');
         }
-        const w = currentWorker;
+        const w = instance.worker;
         return new Promise((resolve, reject) => {
           const key = callsKey;
           callsKey += 1;

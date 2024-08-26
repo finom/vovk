@@ -7,7 +7,7 @@ import getConfig from './getConfig';
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
 // TODO: Rename all occurrences of metadata to schema
-// TODO: Rename default API option "prefix" to "apiRoot" or just "root" (?)
+// TODO: Rename default API option "prefix" to "apiRoot" or just "root" (?). Also think of renaming prefix as an option to origin (?)
 // TODO: Load config dynamically to generate client and write schema
 // TODO: Create VovkCLIError class
 export default async function getProjectInfo({
@@ -46,6 +46,7 @@ export default async function getProjectInfo({
   loglevel.setLevel(config.logLevel);
 
   return {
+    cwd,
     port,
     vovkPort,
     apiEntryPoint,

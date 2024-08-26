@@ -32,6 +32,6 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
   },
   onError: (err, req) => {
     // eslint-disable-next-line no-console
-    console.log('onError', err.message, req.url);
+    console.log('\x1b[42m onError \x1b[0m', err.message, req.url);
   },
 });
