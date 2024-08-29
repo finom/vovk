@@ -110,7 +110,7 @@ describe('Client with vovk-client', () => {
     const result = await ClientController.postWithAll({
       params: { hello: 'world' },
       body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
     });
 
     type Body = VovkBody<ClientizedType['postWithAll']>;
@@ -131,14 +131,14 @@ describe('Client with vovk-client', () => {
     expect(result satisfies VovkReturnType<ClientizedType['postWithAll']>).toEqual({
       params: { hello: 'world' },
       body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
     });
   });
 
   it('Should handle requests body and query with using of req.vovk object', async () => {
     const result = await ClientController.postWithBodyAndQueryUsingReqVovk({
       body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
     });
 
     type Body = VovkBody<ClientizedType['postWithBodyAndQueryUsingReqVovk']>;
@@ -151,7 +151,7 @@ describe('Client with vovk-client', () => {
 
     expect(result satisfies VovkReturnType<ClientizedType['postWithBodyAndQueryUsingReqVovk']>).toEqual({
       body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
       meta: { isMeta1: true, isMeta2: true },
       metaNulled: {},
     });
@@ -160,14 +160,14 @@ describe('Client with vovk-client', () => {
   it('Should accept custom fetcher as an option', async () => {
     const result = await ClientController.postWithBodyAndQueryUsingReqVovk({
       body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
       fetcher: ({ name }, { query, body }) => ({ customFetcher: true, name, query, body }),
     });
 
     expect(result).toEqual({
       customFetcher: true,
       name: 'postWithBodyAndQueryUsingReqVovk',
-      query: { simpleQueryParam: 'queryValue', arrayQueryParam: ['foo', 'bar'] },
+      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
       body: { isBody: true },
     });
   });

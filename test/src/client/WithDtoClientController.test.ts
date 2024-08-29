@@ -179,19 +179,21 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Handles query as an array client validation', async () => {
+    const query = { array1: ['foo'], array2: ['bar', 'baz'], hey: 'query' };
     const result = await WithDtoClientController.getWithQueryArrayAndNullBody({
-      query: plainToInstance(QueryWithArrayDto, { array: ['foo', 'bar'], hey: 'query' }),
+      query: plainToInstance(QueryWithArrayDto, query),
       validateOnClient,
     });
 
-    expect(result satisfies { query: { array: ('foo' | 'bar')[]; hey: 'query' } }).toEqual({
-      query: { array: ['foo', 'bar'], hey: 'query' },
+    expect(result satisfies { query: typeof query }).toEqual({
+      query,
     });
 
     const { rejects } = expect(async () => {
       await WithDtoClientController.getWithQueryArrayAndNullBody({
         query: plainToInstance(QueryWithArrayDto, {
-          array: [1, 2],
+          array1: [1],
+          array2: ['bar', 'baz'],
           hey: 'query',
         }),
         validateOnClient,
@@ -199,38 +201,33 @@ describe('Validation with with vovk-dto', () => {
     });
 
     await rejects.toThrow(
-      /Validation failed. Invalid request query on client for http:.*. each value in array must be a string/
+      /Validation failed. Invalid request query on client for http:.*. each value in array1 must be a string/
     );
     await rejects.toThrowError(HttpException);
   });
 
   it('Handles query as an array server validation', async () => {
+    let query = { array1: ['foo'] as 'foo'[], array2: ['bar', 'baz'] as ('bar' | 'baz')[], hey: 'query' as const };
     const result = await WithDtoClientController.getWithQueryArrayAndNullBody({
-      query: {
-        array: ['foo', 'bar'],
-        hey: 'query',
-      },
+      query,
       disableClientValidation: true,
       validateOnClient,
     });
 
-    expect(result satisfies { query: { array: ('foo' | 'bar')[]; hey: 'query' } }).toEqual({
-      query: { array: ['foo', 'bar'], hey: 'query' },
-    });
+    expect(result satisfies { query: typeof query }).toEqual({ query });
+
+    query = { array1: ['foo'], array2: ['bar'], hey: 'query' };
 
     const { rejects } = expect(async () => {
       await WithDtoClientController.getWithQueryArrayAndNullBody({
-        query: plainToInstance(QueryWithArrayDto, {
-          array: ['bar'], // single item is transformed to an string on the server
-          hey: 'query',
-        }),
+        query: plainToInstance(QueryWithArrayDto, query),
         disableClientValidation: true,
         validateOnClient,
       });
     });
 
     await rejects.toThrow(
-      /Validation failed. Invalid request query on server for http:.*. array must contain at least 2 elements, array should not be empty, array must be an array/
+      /Validation failed. Invalid request query on server for http:.*. array2 must contain at least 2 elements/
     );
     await rejects.toThrowError(HttpException);
   });

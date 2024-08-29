@@ -16,6 +16,8 @@ import defaultFetcher from './defaultFetcher';
 import { _defaultHandler as defaultHandler } from './defaultHandler';
 import { _defaultStreamHandler as defaultStreamHandler } from './defaultStreamHandler';
 
+export const ARRAY_QUERY_KEY = '_vovkarr';
+
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
 const getHandlerPath = <T extends ControllerStaticMethod>(
@@ -30,8 +32,10 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 
   const searchParams = new URLSearchParams();
   let hasQuery = false;
+  const arrayKeys: string[] = [];
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value instanceof Array) {
+      arrayKeys.push(key);
       for (const val of value) {
         searchParams.append(key, val);
       }
@@ -39,6 +43,10 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
       searchParams.set(key, value);
     }
     hasQuery = true;
+  }
+
+  if (arrayKeys.length) {
+    searchParams.set(ARRAY_QUERY_KEY, arrayKeys.join(','));
   }
 
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;

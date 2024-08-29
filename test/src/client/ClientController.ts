@@ -56,37 +56,38 @@ export default class ClientController {
 
   @post('with-all/:hello')
   static async postWithAll(
-    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; arrayQueryParam: ('foo' | 'bar')[] }>,
+    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; array1: 'foo'[]; array2: ('bar' | 'baz')[] }>,
     params: { hello: 'world' }
   ) {
     const body = await req.json();
     const simpleQueryParam = req.nextUrl.searchParams.get('simpleQueryParam');
     // check if get always inferred as a single item
-    req.nextUrl.searchParams.get('arrayQueryParam') satisfies 'foo' | 'bar';
+    req.nextUrl.searchParams.get('array1') satisfies 'foo';
     // check if getAll always inferred as an array
     req.nextUrl.searchParams.getAll('simpleQueryParam') satisfies 'queryValue'[];
     // check if entries inferred properly
     req.nextUrl.searchParams.entries() satisfies IterableIterator<
-      ['simpleQueryParam' | 'arrayQueryParam', 'queryValue' | ('foo' | 'bar')[]]
+      ['simpleQueryParam' | 'array1' | 'array2', 'queryValue' | 'foo'[] | ('bar' | 'baz')[]]
     >;
     // check if forEach inferred properly
     req.nextUrl.searchParams.forEach((value, key) => {
-      key satisfies 'simpleQueryParam' | 'arrayQueryParam';
-      value satisfies 'queryValue' | ('foo' | 'bar')[];
+      key satisfies 'simpleQueryParam' | 'array1' | 'array2';
+      value satisfies 'queryValue' | 'foo'[] | ('bar' | 'baz')[];
     });
 
     // check if keys inferred properly
-    req.nextUrl.searchParams.keys() satisfies IterableIterator<'simpleQueryParam' | 'arrayQueryParam'>;
+    req.nextUrl.searchParams.keys() satisfies IterableIterator<'simpleQueryParam' | 'array1' | 'array2'>;
     // check if values inferred properly
-    req.nextUrl.searchParams.values() satisfies IterableIterator<'queryValue' | ('foo' | 'bar')[]>;
+    req.nextUrl.searchParams.values() satisfies IterableIterator<'queryValue' | 'foo'[] | ('bar' | 'baz')[]>;
 
-    const arrayQueryParam = req.nextUrl.searchParams.getAll('arrayQueryParam');
-    return { params, body, query: { simpleQueryParam, arrayQueryParam } };
+    const array1 = req.nextUrl.searchParams.getAll('array1');
+    const array2 = req.nextUrl.searchParams.getAll('array2');
+    return { params, body, query: { simpleQueryParam, array1, array2 } };
   }
 
   @post('with-all-using-req-vovk')
   static async postWithBodyAndQueryUsingReqVovk(
-    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; arrayQueryParam: ('foo' | 'bar')[] }>
+    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; array1: 'foo'[]; array2: ('bar' | 'baz')[] }>
   ) {
     req.vovk.meta({ isMeta1: true });
     req.vovk.meta({ isMeta2: true });

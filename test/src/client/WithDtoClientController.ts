@@ -18,9 +18,13 @@ export class QueryWithArrayDto {
   hey: 'query';
   @IsArray()
   @ArrayNotEmpty()
-  @ArrayMinSize(2)
   @IsString({ each: true })
-  array: ('foo' | 'bar')[];
+  array1: 'foo'[];
+
+  @ArrayMinSize(2)
+  @IsArray()
+  @IsString({ each: true })
+  array2: ('bar' | 'baz')[];
 }
 
 export class ReturnDto {
