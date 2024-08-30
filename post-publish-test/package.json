@@ -1,9 +1,0 @@
-{
-  "name": "vovk",
-  "dependencies": {
-    "vovk": "*"
-  },
-  "devDependencies": {
-    "expect.js": "*"
-  }
-}

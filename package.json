@@ -8,15 +8,13 @@
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "packageManager": "npm@10.8.2",
   "scripts": {
-    "upgrade": "npx npm-check-updates -u -x eslint && npm i",
+    "ncu": "npx npm-check-updates -u -x eslint && npm i",
     "test": "npm --prefix test run generate && npm run lint-nofix && tsc --noemit && tsc --project ./packages/vovk-cli/tsconfig.json --noemit && npm run unit",
     "unit": "PORT=3210 concurrently \"sleep 30 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "unit:watch": "PORT=3210 concurrently \"sleep 30 && npm run test:unit:watch\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
-    "postpublish": "node ../post-publish-test/post-publish.cjs",
     "serve:unit": "npm --prefix test run generate && npm --prefix test run build && npm --prefix test run start",
-    "__build": "rm -rf dist && tsc && cp package.json dist && cp README.md dist && cp package-lock.json dist && cp -r cli dist",
     "lint-nofix": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-nofix -- --fix",
     
@@ -28,7 +26,15 @@
     "beta-patch": "npm t && npm version prepatch --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "beta-minor": "npm t && npm version preminor --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "BREAKING-beta-major": "npm t && npm version premajor --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
-    "release-explicit-version": "npm t && npm version 2.0.0 && npm run build && npm publish ./dist && git push && git push --tags"
+    "release-explicit-version": "npm t && npm version 2.0.0 && npm run build && npm publish ./dist && git push && git push --tags",
+
+    "build": "turbo build",
+    "version-and-publish": "npm t && npm version $VERSION_TYPE --no-git-tag-version && git tag $PACKAGE_NAME-v$(node -p \"require('./packages/$PACKAGE_NAME/package.json').version\") && npm run build && git push && git push --tags",
+
+    "vovk-main-beta": "VERSION_TYPE=\"prerelease --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
+    "vovk-main-beta-patch": "VERSION_TYPE=\"prepatch --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
+    "vovk-main-beta-minor": "VERSION_TYPE=\"preminor --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
+    "BREAKING-vovk-main-beta-major": "VERSION_TYPE=\"premajor --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish"
   },
   "prettier": {
     "trailingComma": "es5",
