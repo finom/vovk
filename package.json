@@ -27,7 +27,7 @@
     "BREAKING-beta-major": "npm t && npm version premajor --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "release-explicit-version": "npm t && npm version 2.0.0 && npm run build && npm publish ./dist && git push && git push --tags",
     "build": "turbo build",
-    "version-and-publish": "npm version --prefix ./packages/$PACKAGE_NAME $VERSION_TYPE --no-git-tag-version && git tag $PACKAGE_NAME-v$(node -p \"require('./packages/$PACKAGE_NAME/package.json').version\") && npm run build && git push && git push --tags",
+    "version-and-publish": "npm version --prefix ./packages/$PACKAGE_NAME $VERSION_TYPE --no-git-tag-version && git add ./packages/$PACKAGE_NAME/package.json && TAG=$PACKAGE_NAME-v$(node -p \"require('./packages/$PACKAGE_NAME/package.json').version\") && git commit -m \"$TAG\" && git tag $TAG && npm run build && git push && git push --tags",
     "vovk-main-beta": "VERSION_TYPE=\"prerelease --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
     "vovk-main-beta-patch": "VERSION_TYPE=\"prepatch --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
     "vovk-main-beta-minor": "VERSION_TYPE=\"preminor --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
