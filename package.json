@@ -19,6 +19,7 @@
     "__build": "rm -rf dist && tsc && cp package.json dist && cp README.md dist && cp package-lock.json dist && cp -r cli dist",
     "lint-nofix": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-nofix -- --fix",
+    
     "patch": "npm t && npm version patch && npm run build && npm publish ./dist && git push && git push --tags",
     "minor": "npm t && npm version minor && npm run build && npm publish ./dist && git push && git push --tags",
     "BREAKING-major": "npm t && npm version major && npm run build && npm publish ./dist && git push && git push --tags",
@@ -51,7 +52,6 @@
   },
   "homepage": "https://github.com/finom/vovk#readme",
   "devDependencies": {
-    "@changesets/cli": "^2.27.7",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.7",
     "@types/node": "^22.5.0",
