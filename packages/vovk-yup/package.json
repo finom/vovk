@@ -4,7 +4,8 @@
   "description": "Yup validation for Vovk.js",
   "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "publish": "npm publish"
   },
   "prettier": {
     "trailingComma": "es5",

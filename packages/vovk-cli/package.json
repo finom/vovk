@@ -9,7 +9,8 @@
         "postinstall_": "node ./dist/postinstall.js",
         "build": "tsc",
         "test": "ts-node test/index.ts",
-        "ncu": "npm-check-updates -u -x chalk"
+        "ncu": "npm-check-updates -u -x chalk",
+        "publish": "npm publish"
     },
     "repository": {
         "type": "git",

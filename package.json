@@ -1,6 +1,6 @@
 {
   "name": "vovk-monorepo",
-  "version": "0.0.0",
+  "version": "0.0.1-beta.1",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -17,7 +17,6 @@
     "serve:unit": "npm --prefix test run generate && npm --prefix test run build && npm --prefix test run start",
     "lint-nofix": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-nofix -- --fix",
-    
     "patch": "npm t && npm version patch && npm run build && npm publish ./dist && git push && git push --tags",
     "minor": "npm t && npm version minor && npm run build && npm publish ./dist && git push && git push --tags",
     "BREAKING-major": "npm t && npm version major && npm run build && npm publish ./dist && git push && git push --tags",
@@ -27,10 +26,8 @@
     "beta-minor": "npm t && npm version preminor --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "BREAKING-beta-major": "npm t && npm version premajor --preid=beta && npm run build && npm publish ./dist --tag beta && git push && git push --tags",
     "release-explicit-version": "npm t && npm version 2.0.0 && npm run build && npm publish ./dist && git push && git push --tags",
-
     "build": "turbo build",
-    "version-and-publish": "npm t && npm version $VERSION_TYPE --no-git-tag-version && git tag $PACKAGE_NAME-v$(node -p \"require('./packages/$PACKAGE_NAME/package.json').version\") && npm run build && git push && git push --tags",
-
+    "version-and-publish": "npm version $VERSION_TYPE --no-git-tag-version && git tag $PACKAGE_NAME-v$(node -p \"require('./packages/$PACKAGE_NAME/package.json').version\") && npm run build && git push && git push --tags",
     "vovk-main-beta": "VERSION_TYPE=\"prerelease --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
     "vovk-main-beta-patch": "VERSION_TYPE=\"prepatch --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
     "vovk-main-beta-minor": "VERSION_TYPE=\"preminor --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",

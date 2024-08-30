@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "rm -rf dist && tsc && cp package.json dist && cp ../../README.md dist && cp package-lock.json dist",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "publish": "npm publish ./dist"
   },
   "keywords": [
     "nextjs",
