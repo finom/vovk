@@ -4,7 +4,7 @@ import { clientizeController } from 'vovk/client';
 import { promisifyWorker } from 'vovk/worker';
 import type { VovkClientFetcher } from 'vovk/client';
 import fetcher from 'vovk/client/defaultFetcher';
-import metadata from '../.vovk-schema/index.js';
+import metadata from '../.vovk-schema';
 
 import type { Controllers as Controllers1, Workers as Workers1 } from "../src/app/api/foo/client/[[...client]]/route.ts";
 import type { Controllers as Controllers2, Workers as Workers2 } from "../src/app/api/workers/[[...workers]]/route.ts";

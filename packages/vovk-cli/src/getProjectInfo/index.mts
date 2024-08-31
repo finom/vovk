@@ -23,7 +23,7 @@ export default async function getProjectInfo({
   const apiPrefix = `${config.origin}/${config.rootEntry}`; // ??? TODO
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
-  const metadataOutFullPath = path.join(cwd, config.metadataOutDir, 'index.js');
+  const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
   const metadataOutImportPath = path.relative(config.clientOutDir, metadataOutFullPath);
   const fetcherClientImportPath = config.fetcher.startsWith('.')
     ? path.relative(config.clientOutDir, config.fetcher)

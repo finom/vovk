@@ -9,7 +9,7 @@ import path from 'path';
 const fileExists = async (filePath: string): Promise<boolean> => !!(await fs.stat(filePath).catch(() => false));
 
 async function postinstall(): Promise<void> {
-  const vovk = path.join(__dirname, '../../.vovk');
+  const vovk = path.join(import.meta.dirname, '../../.vovk');
   const js = path.join(vovk, 'client.js');
   const ts = path.join(vovk, 'client.d.ts');
   const index = path.join(vovk, 'index.ts');

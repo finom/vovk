@@ -3,7 +3,7 @@
 const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
 const { default: fetcher } = require('vovk/client/defaultFetcher');
-const metadata = require('../.vovk-schema/index.js');
+const metadata = require('../.vovk-schema');
 
 const { default: validateOnClient = null } = require('vovk-zod/validateOnClient');
 const prefix = 'http://localhost:3210/api';

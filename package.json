@@ -8,7 +8,7 @@
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "packageManager": "npm@10.8.3",
   "scripts": {
-    "ncu": "turbo run ncu && npm-check-updates -u -x *eslint* && npm i",
+    "ncu": "turbo run ncu && npm-check-updates -u -x @typescript-eslint/eslint-plugin,@typescript-eslint/parser,eslint && npm i",
     "test": "npm --prefix test run generate && npm run lint-nofix && tsc --noemit && tsc --project ./packages/vovk-cli/tsconfig.json --noemit && npm run unit",
     "unit": "PORT=3210 concurrently \"sleep 30 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "unit:watch": "PORT=3210 concurrently \"sleep 30 && npm run test:unit:watch\" \"npm run serve:unit\" --kill-others --success first",

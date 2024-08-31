@@ -8,14 +8,8 @@ import generateClient from './server/generateClient.mjs';
 import locateSegments from './locateSegments.mjs';
 import { VovkConfig, VovkEnv } from './types.mjs';
 import { VovkMetadata } from 'vovk';
-
-/*
-TODO:
-- Use ts-morph to update files
-- Vovk create segment <segmentName>
-- Vovk create module <segmentName>/module.ts
-- Explicit concurrently, implicit concurrently instead of "standalone" mode
-*/
+import path from 'path';
+import { readFileSync } from 'fs';
 
 export type { VovkConfig, VovkEnv };
 
@@ -31,7 +25,11 @@ interface GenerateOptions {
 
 const program = new Command();
 
-program.name('vovk').description('Vovk CLI tool').version('1.0.0');
+const packageJSON = JSON.parse(readFileSync(path.join(import.meta.dirname, '../package.json'), 'utf-8')) as {
+  version: string;
+};
+
+program.name('vovk').description('Vovk CLI').version(packageJSON.version);
 
 program
   .command('dev')
@@ -60,7 +58,7 @@ program
       const { result } = concurrently(
         [
           {
-            command: `node ${__dirname}/server/index.js`,
+            command: `node ${import.meta.dirname}/server/index.mjs`,
             name: 'Vovk.ts Metadata Server',
             env: Object.assign(
               { PORT, __VOVK_START_SERVER_IN_STANDALONE_MODE__: 'true' as const },
@@ -96,7 +94,9 @@ program
   .action(async (options: GenerateOptions) => {
     const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
     const segments = await locateSegments(projectInfo.apiDir);
-    const metadata = (await import(projectInfo.metadataOutFullPath)) as { default: Record<string, VovkMetadata> };
+    const metadata = (await import(path.join(projectInfo.metadataOutFullPath, 'index.js'))) as {
+      default: Record<string, VovkMetadata>;
+    };
 
     await generateClient(projectInfo, segments, metadata.default);
   });
