@@ -1,1 +1,4 @@
-!dist/*
+**/*.ts
+!dist/**/*.d.ts
+!dist/**/*.js
+tsconfig.*
