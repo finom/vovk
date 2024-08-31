@@ -36,7 +36,7 @@
     "vpub:version": "npm version --prefix ./packages/$PACKAGE $VERSION_TYPE --no-git-tag-version",
     "vpub:bump-deps": "ts-node ./scripts/bump-dependencies.ts",
     "vpub:build": "npm run build",
-    "vpub:commit-and-push": "TAG=$PACKAGE-v$(node -p \"require('./packages/$PACKAGE/package.json').version\") && git commit -am \"$TAG\" && cd ./packages/$PACKAGE && npm publish --tag=$NPM_TAG && cd ../.. && git push && git push --tags",
+    "vpub:commit-and-publish": "TAG=$PACKAGE-v$(node -p \"require('./packages/$PACKAGE/package.json').version\") && git commit -am \"$TAG\" && cd ./packages/$PACKAGE && npm publish --tag=$NPM_TAG && cd ../.. && git push && git push --tags",
     "vpub": "npm t && npm-run-all -s vpub:*",
     "vpub-notest": "npm-run-all -s vpub:*",
     "beta": "NPM_TAG=beta VERSION_TYPE=\"prerelease --preid=beta\" npm run vpub",
