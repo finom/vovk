@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "3.0.0-beta.10",
+  "version": "3.0.0-beta.11",
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "repository": {
     "type": "git",
@@ -9,7 +9,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc && cp {package.json,LICENSE} dist && cp ../../README.md dist",
     "lint": "eslint . --fix",
-    "npm-publish": "cd ./dist && npm publish --dry-run && cd ..",
+    "npm-publish": "cd ./dist && npm publish && cd ..",
     "ncu": "npm-check-updates -u"
   },
   "keywords": [
