@@ -9,7 +9,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc && cp {package.json,LICENSE} dist && cp ../../README.md dist",
     "lint": "eslint . --fix",
-    "npm-publish": "npm --prefix ./dist publish ./dist",
+    "npm-publish": "if [ -z \"$NPM_TAG\" ]; then echo 'Error: NPM_TAG is not set'; exit 1; fi; cd ./dist && npm publish ./dist --tag=$NPM_TAG --dry-run",
     "ncu": "npm-check-updates -u"
   },
   "keywords": [
