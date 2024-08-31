@@ -10,7 +10,7 @@
     "build": "tsc",
     "test": "ts-node test/index.ts",
     "ncu": "npm-check-updates -u -x chalk",
-    "publish": "npm publish"
+    "npm-publish": "npm publish"
   },
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^2.1.1-beta.24"
+    "vovk": "^2.1.1-beta.25"
   },
   "dependencies": {
     "@inquirer/prompts": "^5.3.2",

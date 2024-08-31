@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "publish": "npm publish"
+    "npm-publish": "npm publish"
   },
   "prettier": {
     "trailingComma": "es5",
@@ -22,7 +22,7 @@
   "author": "Andrii Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^2.1.1-beta.24",
+    "vovk": "^2.1.1-beta.25",
     "zod": "*"
   },
   "dependencies": {
