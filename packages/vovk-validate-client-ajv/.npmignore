@@ -1,3 +1,4 @@
 *.ts
-.turbo
+!*.d.ts
 tsconfig.*
+.turbo
