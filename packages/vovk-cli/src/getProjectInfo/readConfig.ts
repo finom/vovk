@@ -36,8 +36,7 @@ async function readConfig(): Promise<VovkConfig> {
         config = require(configPath) as VovkConfig;
       }
     } else if (configPath.endsWith('.mjs')) {
-      const cacheBuster = Date.now();
-      ({ default: config } = await import(`${configPath}?cache=${cacheBuster}`));
+      ({ default: config } = await import(configPath));
     }
   } catch (e) {
     // eslint-disable-next-line no-console
