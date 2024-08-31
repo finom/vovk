@@ -7,9 +7,9 @@
     "url": "git+https://github.com/finom/vovk.git"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc && cp package.json dist && cp package-lock.json dist && cp .npmignore dist && cp ../../README.md dist ",
+    "build": "rm -rf dist && tsc && cp {package.json,LICENSE} && cp ../../README.md dist ",
     "lint": "eslint . --fix",
-    "npm-publish": "npm publish ./dist",
+    "npm-publish": "npm publish ./dist --dry-run",
     "ncu": "npm-check-updates -u"
   },
   "keywords": [

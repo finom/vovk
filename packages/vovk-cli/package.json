@@ -6,6 +6,7 @@
   },
   "type": "module",
   "types": "./dist/index.d.mts",
+  "prefix": ".",
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc",
     "test": "ts-node test/index.mts",
