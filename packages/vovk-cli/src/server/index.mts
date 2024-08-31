@@ -215,8 +215,8 @@ export class VovkCLIServer {
   };
 
   #ping = debounceWithArgs((segmentName: string) => {
-    const { apiEntryPoint, log } = this.#projectInfo;
-    const endpoint = `${apiEntryPoint}/${segmentName ? `${segmentName}/` : ''}_vovk-ping_`;
+    const { apiEntryPoint, log, port } = this.#projectInfo;
+    const endpoint = `${apiEntryPoint.startsWith('http') ? apiEntryPoint : `http://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_vovk-ping_`;
 
     log.debug(`Pinging segment "${segmentName}" at ${endpoint}`);
     const req = http.get(endpoint, (resp) => {

@@ -19,8 +19,7 @@ export default async function getProjectInfo({
   const cwd = process.cwd();
   const { config, srcRoot } = await getConfig({ clientOutDir });
   const vovkPort = env.VOVK_PORT || (parseInt(port) + 6969).toString();
-  const apiEntryPoint = `${config.origin}/${config.rootEntry}`; // ??? TODO
-  const apiPrefix = `${config.origin}/${config.rootEntry}`; // ??? TODO
+  const apiEntryPoint = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
   const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
@@ -46,7 +45,6 @@ export default async function getProjectInfo({
     port,
     vovkPort,
     apiEntryPoint,
-    apiPrefix,
     apiDir,
     srcRoot,
     metadataOutFullPath,

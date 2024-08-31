@@ -57,11 +57,11 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   ts += `
 ${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = undefined;'}
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-const prefix = '${projectInfo.apiPrefix}';
+const prefix = '${projectInfo.apiEntryPoint}';
   `;
   js += `
 const { default: validateOnClient = null } = ${validatePath ? `require('${validatePath}')` : '{}'};
-const prefix = '${projectInfo.apiPrefix}';
+const prefix = '${projectInfo.apiEntryPoint}';
 `;
 
   for (let i = 0; i < segments.length; i++) {
