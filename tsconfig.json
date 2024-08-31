@@ -20,5 +20,5 @@
      }
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["packages/**/*.ts"],
+  "include": ["packages/**/*.ts"]
 }

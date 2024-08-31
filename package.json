@@ -32,13 +32,22 @@
     "_vovk-main-beta-patch": "VERSION_TYPE=\"prepatch --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
     "_vovk-main-beta-minor": "VERSION_TYPE=\"preminor --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
     "_BREAKING-vovk-main-beta-major": "VERSION_TYPE=\"premajor --preid=beta\" PACKAGE_NAME=vovk npm run version-and-publish",
-
-    "vpub:check-vars": "if [ -z \"$VERSION_TYPE\" ] || [ -z \"$PACKAGE\" ] || [ -z \"$NPM_TAG\" ]; then echo 'Error: VERSION_TYPE or PACKAGE_NAME is not set'; exit 1; fi;",
-    "vpub:test": "npm t",
+    "vpub:check-vars": "if [ -z \"$VERSION_TYPE\" ] || [ -z \"$PACKAGE\" ] || [ -z \"$NPM_TAG\" ]; then echo 'Error: some vars are not set'; exit 1; fi;",
+    "vpub:with-test:test": "npm t",
     "vpub:version": "npm version --prefix ./packages/$PACKAGE $VERSION_TYPE --no-git-tag-version",
-    "vpub:commit-and-push": "git add ./packages/$PACKAGE/package.json ./packages/$PACKAGE/package-lock.json && TAG=$PACKAGE-v$(node -p \"require('./packages/$PACKAGE/package.json').version\") && git commit -m \"$TAG\" && git push && git push --tags",
-    "vpub": "npm-run-all -s vpub:*",
-    "beta": "NPM_TAG=beta VERSION_TYPE=\"prerelease --preid=beta\" npm run vpub"
+    "vpub:bump-deps": "ts-node ./scripts/bump-dependencies.ts",
+    "vpub:build": "npm run build",
+    "vpub:commit-and-push": "git add ./packages/$PACKAGE/package.json ./packages/$PACKAGE/package-lock.json && TAG=$PACKAGE-v$(node -p \"require('./packages/$PACKAGE/package.json').version\") && git commit -m \"$TAG\" && npm publish --prefix ./packages/$PACKAGE --tag=$NPM_TAG && git push && git push --tags",
+    "vpub": "npm-run-all -s vpub:**",
+    "vpub-notest": "npm-run-all -s vpub:*",
+    "beta": "NPM_TAG=beta VERSION_TYPE=\"prerelease --preid=beta\" npm run vpub",
+    "beta-notest": "NPM_TAG=beta VERSION_TYPE=\"prerelease --preid=beta\" npm run vpub-notest",
+    "beta-patch": "NPM_TAG=beta VERSION_TYPE=\"prepatch --preid=beta\" npm run vpub",
+    "beta-minor": "NPM_TAG=beta VERSION_TYPE=\"preminor --preid=beta\" npm run vpub",
+    "BREAKING-beta-major": "NPM_TAG=beta VERSION_TYPE=\"premajor --preid=beta\" npm run vpub",
+    "patch": "NPM_TAG=latest VERSION_TYPE=patch npm run vpub",
+    "minor": "NPM_TAG=latest VERSION_TYPE=minor npm run vpub",
+    "BREAKING-major": "NPM_TAG=latest VERSION_TYPE=major npm run vpub"
   },
   "prettier": {
     "trailingComma": "es5",
