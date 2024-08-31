@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "2.1.1-beta.27",
+  "version": "3.0.0-beta.0",
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "repository": {
     "type": "git",
