@@ -1,6 +1,6 @@
 {
   "name": "vovk-zod",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Zod validation for Vovk.js",
   "main": "index.js",
   "scripts": {
