@@ -1,8 +1,7 @@
 {
     "tasks": {
       "build": {
-        "dependsOn": ["^build"],
-        "cache": false
+        "dependsOn": ["^build"]
       },
       "test": {
         "dependsOn": ["build"]
