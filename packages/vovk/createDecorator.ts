@@ -21,7 +21,7 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
   return function decoratorCreator(...args: ARGS) {
     return function decorator(target: KnownAny, propertyKey: string) {
       const controller = target as VovkController;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
       const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
         _sourceMethod?: (...args: KnownAny) => KnownAny;
       };
@@ -57,7 +57,6 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
       // TODO define internal method type
       (originalMethod as unknown as { _controller: VovkController })._controller = controller;
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       controller[propertyKey] = method;
 
       method._sourceMethod = sourceMethod;

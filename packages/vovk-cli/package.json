@@ -32,7 +32,7 @@
     "vovk": "^2.1.1-beta.25"
   },
   "dependencies": {
-    "@inquirer/prompts": "^5.3.2",
+    "@inquirer/prompts": "^5.3.8",
     "chalk": "^4.1.2",
     "chokidar": "^3.6.0",
     "commander": "^12.1.0",

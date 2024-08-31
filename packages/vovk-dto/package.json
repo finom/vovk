@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "npm-publish": "npm publish"
+    "npm-publish": "npm publish",
+    "ncu": "npm-check-updates -u"
   },
   "prettier": {
     "trailingComma": "es5",
@@ -28,6 +29,6 @@
     "class-transformer": "*"
   },
   "dependencies": {
-    "zod-to-json-schema": "^3.23.1"
+    "zod-to-json-schema": "^3.23.2"
   }
 }

@@ -6,6 +6,7 @@
       "test": {
         "dependsOn": ["build"]
       },
-      "lint": {}
+      "lint": {},
+      "ncu": {}
     }
   }

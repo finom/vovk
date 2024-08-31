@@ -28,7 +28,6 @@ export function _worker() {
       }
     }
 
-    // eslint-disable-next-line no-undef
     if (typeof self === 'undefined') return; // no-op in non-worker environment
 
     // eslint-disable-next-line no-undef

@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { ClientController } from '../../.vovk-client/client';
 import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from 'vovk';
 import { it, expect, describe } from '@jest/globals';

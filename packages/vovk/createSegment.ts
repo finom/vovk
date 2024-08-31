@@ -201,12 +201,10 @@ export function _createSegment() {
         })
           .then((resp) => {
             if (!resp.ok) {
-              // eslint-disable-next-line no-console
               console.error(`🐺 Failed to send metadata to ${url}. Response is not OK. ${resp.statusText}`);
             }
           })
           .catch((err) => {
-            // eslint-disable-next-line no-console
             console.error(`🐺 Failed to send metadata to ${url}. ${err}`);
           });
       }

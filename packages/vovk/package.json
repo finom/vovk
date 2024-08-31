@@ -9,7 +9,8 @@
   "scripts": {
     "build": "rm -rf dist && tsc && cp package.json dist && cp ../../README.md dist && cp package-lock.json dist",
     "lint": "eslint . --fix",
-    "npm-publish": "npm publish ./dist"
+    "npm-publish": "npm publish ./dist",
+    "ncu": "npm-check-updates -u"
   },
   "keywords": [
     "nextjs",
