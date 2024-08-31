@@ -27,6 +27,7 @@
     "vpub-notest": "npm run vpub-check-vars && npm-run-all -s vpub:*",
     "beta": "NPM_TAG=beta VERSION_TYPE=\"prerelease --preid=beta\" npm run vpub",
     "beta-notest": "NPM_TAG=beta VERSION_TYPE=\"prerelease --preid=beta\" npm run vpub-notest",
+    "beta-notest-all": "for PACKAGE in vovk vovk-cli vovk-zod vovk-yup vovk-dto vovk-validate-client-ajv; do PACKAGE=$PACKAGE npm run beta-notest; done",
     "beta-patch": "NPM_TAG=beta VERSION_TYPE=\"prepatch --preid=beta\" npm run vpub",
     "beta-minor": "NPM_TAG=beta VERSION_TYPE=\"preminor --preid=beta\" npm run vpub",
     "BREAKING-beta-major": "NPM_TAG=beta VERSION_TYPE=\"premajor --preid=beta\" npm run vpub",
