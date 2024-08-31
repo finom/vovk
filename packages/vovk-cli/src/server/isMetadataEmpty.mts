@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty.js';
 import type { VovkMetadata } from 'vovk';
 
 export default function isMetadataEmpty(metadata: VovkMetadata): boolean {

@@ -1,5 +1,5 @@
 import path from 'path';
-import directoryExists from './directoryExists';
+import directoryExists from './directoryExists.mjs';
 
 export default async function getSrcRoot() {
   const cwd = process.cwd();

@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import fileExists from './utils/fileExists';
+import fileExists from './utils/fileExists.mjs';
 
 export type Segment = {
   routeFilePath: string;

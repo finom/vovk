@@ -1,17 +1,18 @@
 import * as chokidar from 'chokidar';
 import * as http from 'http';
 import fs from 'fs/promises';
-import getProjectInfo, { ProjectInfo } from '../getProjectInfo';
+import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
 import path from 'path';
-import { debouncedEnsureMetadataFiles } from './ensureMetadataFiles';
-import createMetadataServer from './createMetadataServer';
-import writeOneMetadataFile from './writeOneMetadataFile';
-import logDiffResult from './logDiffResult';
-import generateClient from './generateClient';
-import locateSegments, { type Segment } from '../locateSegments';
-import debounceWithArgs from '../utils/debounceWithArgs';
-import { debounce, isEmpty } from 'lodash';
-import { VovkEnv } from '../types';
+import { debouncedEnsureMetadataFiles } from './ensureMetadataFiles.mjs';
+import createMetadataServer from './createMetadataServer.mjs';
+import writeOneMetadataFile from './writeOneMetadataFile.mjs';
+import logDiffResult from './logDiffResult.mjs';
+import generateClient from './generateClient.mjs';
+import locateSegments, { type Segment } from '../locateSegments.mjs';
+import debounceWithArgs from '../utils/debounceWithArgs.mjs';
+import debounce from 'lodash/debounce.js';
+import isEmpty from 'lodash/isEmpty.js';
+import { VovkEnv } from '../types.mjs';
 import { VovkMetadata } from 'vovk';
 
 export class VovkCLIServer {

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   extends: '../../.eslintrc.js',
   rules: {
     '@typescript-eslint/no-unsafe-argument': 'off',

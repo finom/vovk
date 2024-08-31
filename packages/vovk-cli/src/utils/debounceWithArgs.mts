@@ -1,5 +1,5 @@
-import debounce from 'lodash/debounce';
-import { KnownAny } from '../types';
+import debounce from 'lodash/debounce.js';
+import { KnownAny } from '../types.mjs';
 
 export default function debounceWithArgs<T extends (...args: KnownAny[]) => KnownAny>(
   fn: T,

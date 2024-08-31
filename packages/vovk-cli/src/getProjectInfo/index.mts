@@ -1,15 +1,11 @@
-import type { VovkEnv } from '../types';
+import type { VovkEnv } from '../types.mjs';
 import path from 'path';
-import * as loglevel from 'loglevel';
+import loglevel from 'loglevel';
 import chalk from 'chalk';
-import getConfig from './getConfig';
+import getConfig from './getConfig.mjs';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
-// TODO: Rename all occurrences of metadata to schema
-// TODO: Rename default API option "prefix" to "apiRoot" or just "root" (?). Also think of renaming prefix as an option to origin (?)
-// TODO: Load config dynamically to generate client and write schema
-// TODO: Create VovkCLIError class
 export default async function getProjectInfo({
   port: givenPort,
   clientOutDir,
@@ -27,7 +23,7 @@ export default async function getProjectInfo({
   const apiPrefix = `${config.origin}/${config.rootEntry}`; // ??? TODO
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
-  const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
+  const metadataOutFullPath = path.join(cwd, config.metadataOutDir, 'index.js');
   const metadataOutImportPath = path.relative(config.clientOutDir, metadataOutFullPath);
   const fetcherClientImportPath = config.fetcher.startsWith('.')
     ? path.relative(config.clientOutDir, config.fetcher)

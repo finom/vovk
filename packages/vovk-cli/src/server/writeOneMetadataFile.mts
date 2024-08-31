@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { VovkMetadata } from 'vovk';
-import diffMetadata, { DiffResult } from './diffMetadata';
+import diffMetadata, { DiffResult } from './diffMetadata.mjs';
 
 export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
 

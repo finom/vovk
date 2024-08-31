@@ -17,7 +17,7 @@
     "serve:unit": "npm --prefix test run generate && npm --prefix test run build && npm --prefix test run start",
     "lint-nofix": "eslint . --ext .ts,.tsx",
     "lint": "npm run lint-nofix -- --fix",
-    "build": "turbo build",
+    "build": "turbo run build --force",
     "vpub-check-vars": "if [ -z \"$VERSION_TYPE\" ] || [ -z \"$PACKAGE\" ] || [ -z \"$NPM_TAG\" ]; then echo 'Error: some vars are not set'; exit 1; fi;",
     "vpub:version": "npm version --prefix ./packages/$PACKAGE $VERSION_TYPE --no-git-tag-version",
     "vpub:bump-deps": "ts-node ./scripts/bump-dependencies.ts",

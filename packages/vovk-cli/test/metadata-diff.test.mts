@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import diffMetadata from '../src/server/diffMetadata';
+import diffMetadata from '../src/server/diffMetadata.mjs';
 import { HttpMethod, type VovkMetadata } from 'vovk';
 
 void describe('diffJson', async () => {

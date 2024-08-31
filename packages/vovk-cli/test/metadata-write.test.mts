@@ -3,7 +3,7 @@ import { test, describe, beforeEach, afterEach } from 'node:test';
 import fs from 'fs/promises';
 import path from 'path';
 import * as glob from 'glob';
-import ensureMetadataFiles from '../src/server/ensureMetadataFiles';
+import ensureMetadataFiles from '../src/server/ensureMetadataFiles.mts';
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 

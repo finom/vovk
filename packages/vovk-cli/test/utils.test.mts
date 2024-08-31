@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import test, { describe } from 'node:test';
-import locateSegments from '../src/locateSegments';
+import locateSegments from '../src/locateSegments.mjs';
 import path from 'node:path';
 
 void describe('Bug-sensitive utils', async () => {

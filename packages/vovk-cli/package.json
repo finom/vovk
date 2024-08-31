@@ -2,13 +2,13 @@
   "name": "vovk-cli",
   "version": "0.0.1-beta.1",
   "bin": {
-    "vovk": "./dist/index.js"
+    "vovk": "./dist/index.mjs"
   },
-  "types": "./dist/index.d.ts",
+  "type": "module",
+  "types": "./dist/index.d.mts",
   "scripts": {
-    "postinstall_": "node ./dist/postinstall.js",
-    "build": "tsc",
-    "test": "ts-node test/index.ts",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc",
+    "test": "ts-node test/index.mts",
     "ncu": "npm-check-updates -u -x chalk",
     "npm-publish": "npm publish"
   },

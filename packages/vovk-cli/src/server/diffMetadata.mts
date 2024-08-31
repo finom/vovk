@@ -1,6 +1,6 @@
 import { VovkMetadata } from 'vovk';
 import { _VovkControllerMetadata, _VovkWorkerMetadata } from 'vovk/types';
-import { isEqual } from 'lodash';
+import isEqual from 'lodash/isEqual.js';
 
 interface HandlersDiff {
   nameOfClass: string;
@@ -54,7 +54,7 @@ export function diffWorkersOrControllers<T extends VovkMetadata['controllers'] |
   const removed: string[] = [];
   const handlersDiff: HandlersDiff[] = [];
 
-  for (const [item, newItem] of Object.entries(newItems)) {
+  for (const [item, newItem] of Object.entries(newItems) as [string, T[keyof T]][]) {
     if (!(item in oldItems)) {
       added.push(item);
     } else {

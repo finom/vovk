@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { VovkConfig } from '../types';
+import type { VovkConfig } from '../types.mjs';
 
 async function findConfigPath(): Promise<string | null> {
   const rootDir = process.cwd();
@@ -30,13 +30,8 @@ async function readConfig(): Promise<VovkConfig> {
 
   try {
     if (configPath.endsWith('.cjs') || configPath.endsWith('.js')) {
-      try {
-        delete require.cache[require.resolve(configPath)];
-      } finally {
-        config = require(configPath) as VovkConfig;
-      }
-    } else if (configPath.endsWith('.mjs')) {
-      ({ default: config } = await import(configPath));
+      const cacheBuster = Date.now();
+      ({ default: config } = (await import(`${configPath}?cache=${cacheBuster}`)) as { default: VovkConfig });
     }
   } catch (e) {
     // eslint-disable-next-line no-console

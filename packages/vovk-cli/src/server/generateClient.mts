@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
-import type { ProjectInfo } from '../getProjectInfo';
-import type { Segment } from '../locateSegments';
+import type { ProjectInfo } from '../getProjectInfo/index.mjs';
+import type { Segment } from '../locateSegments.mjs';
 import { VovkMetadata } from 'vovk';
 
 export default async function generateClient(

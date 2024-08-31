@@ -1,7 +1,7 @@
-import readConfig from './readConfig';
-import type { VovkConfig, VovkEnv } from '../types';
-import getCwdPath from './getCwdPath';
-import getSrcRoot from './getSrcRoot';
+import readConfig from './readConfig.mjs';
+import type { VovkConfig, VovkEnv } from '../types.mjs';
+import getCwdPath from './getCwdPath.mjs';
+import getSrcRoot from './getSrcRoot.mjs';
 import path from 'path';
 
 export default async function getConfig({ clientOutDir }: { clientOutDir?: string }) {

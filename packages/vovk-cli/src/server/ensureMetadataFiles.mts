@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import debounce from 'lodash/debounce';
-import writeOneMetadataFile, { ROOT_SEGMENT_SCHEMA_NAME } from './writeOneMetadataFile';
-import { ProjectInfo } from '../getProjectInfo';
+import debounce from 'lodash/debounce.js';
+import writeOneMetadataFile, { ROOT_SEGMENT_SCHEMA_NAME } from './writeOneMetadataFile.mjs';
+import { ProjectInfo } from '../getProjectInfo/index.mjs';
 
 export default async function ensureMetadataFiles(
   metadataOutFullPath: string,

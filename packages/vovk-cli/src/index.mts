@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import concurrently from 'concurrently';
-import getAvailablePort from './utils/getAvailablePort';
-import { VovkCLIServer } from './server';
-import getProjectInfo from './getProjectInfo';
-import generateClient from './server/generateClient';
-import locateSegments from './locateSegments';
-import { VovkConfig, VovkEnv } from './types';
+import getAvailablePort from './utils/getAvailablePort.mjs';
+import { VovkCLIServer } from './server/index.mjs';
+import getProjectInfo from './getProjectInfo/index.mjs';
+import generateClient from './server/generateClient.mjs';
+import locateSegments from './locateSegments.mjs';
+import { VovkConfig, VovkEnv } from './types.mjs';
+import { VovkMetadata } from 'vovk';
 
 /*
 TODO:
@@ -95,7 +96,7 @@ program
   .action(async (options: GenerateOptions) => {
     const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
     const segments = await locateSegments(projectInfo.apiDir);
-    const metadata = await import(projectInfo.metadataOutFullPath);
+    const metadata = (await import(projectInfo.metadataOutFullPath)) as { default: Record<string, VovkMetadata> };
 
     await generateClient(projectInfo, segments, metadata.default);
   });
