@@ -1,6 +1,6 @@
 {
   "name": "vovk-dto",
-  "version": "0.0.0",
+  "version": "0.0.1-beta.0",
   "description": "Dto validation for Vovk.js",
   "main": "index.js",
   "scripts": {
