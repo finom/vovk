@@ -29,10 +29,8 @@ async function readConfig(): Promise<VovkConfig> {
   }
 
   try {
-    if (configPath.endsWith('.cjs') || configPath.endsWith('.js')) {
-      const cacheBuster = Date.now();
-      ({ default: config } = (await import(`${configPath}?cache=${cacheBuster}`)) as { default: VovkConfig });
-    }
+    const cacheBuster = Date.now();
+    ({ default: config } = (await import(`${configPath}?cache=${cacheBuster}`)) as { default: VovkConfig });
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error('🐺 ❌ Error reading config file:', (e as Error).message);
