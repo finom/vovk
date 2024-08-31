@@ -1,3 +1,1 @@
-# vovk package 
-
-Description coming soon.
+Description is coming soon.
