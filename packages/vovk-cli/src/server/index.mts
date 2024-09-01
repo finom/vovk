@@ -184,8 +184,7 @@ export class VovkCLIServer {
       `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
 
-    this.#watchSegments();
-    this.#watchModules();
+    // automatically watches segments and modules
     this.#watchConfig();
   }
 
@@ -278,6 +277,14 @@ export class VovkCLIServer {
   async startServer({ clientOutDir }: { clientOutDir?: string } = {}) {
     this.#projectInfo = await getProjectInfo({ clientOutDir });
     const { vovkPort, log, config, cwd, apiDir } = this.#projectInfo;
+
+    process.on('uncaughtException', (err) => {
+      log.error(`Uncaught Exception: ${err.message}`);
+    });
+
+    process.on('unhandledRejection', (reason) => {
+      log.error(`Unhandled Rejection: ${String(reason)}`);
+    });
 
     const apiDirFullPath = path.join(cwd, apiDir);
     const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
