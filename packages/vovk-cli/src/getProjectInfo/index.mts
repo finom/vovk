@@ -1,4 +1,3 @@
-import type { VovkEnv } from '../types.mjs';
 import path from 'path';
 import loglevel from 'loglevel';
 import chalk from 'chalk';
@@ -10,7 +9,6 @@ export default async function getProjectInfo({
   port: givenPort,
   clientOutDir,
 }: { port?: number; clientOutDir?: string } = {}) {
-  const env = process.env as VovkEnv;
   const port = givenPort?.toString() ?? process.env.PORT ?? '3000';
 
   // Make PORT available to the config file at getConfig
@@ -18,7 +16,6 @@ export default async function getProjectInfo({
 
   const cwd = process.cwd();
   const { config, srcRoot } = await getConfig({ clientOutDir });
-  const vovkPort = env.VOVK_PORT || (parseInt(port) + 6969).toString();
   const apiEntryPoint = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
@@ -40,7 +37,6 @@ export default async function getProjectInfo({
   return {
     cwd,
     port,
-    vovkPort,
     apiEntryPoint,
     apiDir,
     srcRoot,
