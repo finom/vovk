@@ -30,11 +30,13 @@ export class VovkCLIServer {
 
   #watchSegments = () => {
     const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
-    const { apiDir, log, metadataOutFullPath } = this.#projectInfo;
-    const getSegmentName = (filePath: string) => path.relative(apiDir, filePath).replace(segmentReg, '');
-    log.debug(`Watching segments in ${apiDir}`);
+    const { cwd, log, config, apiDir } = this.#projectInfo;
+    const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
+    const apiDirFullPath = path.join(cwd, apiDir);
+    const getSegmentName = (filePath: string) => path.relative(apiDirFullPath, filePath).replace(segmentReg, '');
+    log.debug(`Watching segments in ${apiDirFullPath}`);
     this.#segmentWatcher = chokidar
-      .watch(apiDir, {
+      .watch(apiDirFullPath, {
         persistent: true,
         ignoreInitial: true,
       })
@@ -65,7 +67,7 @@ export class VovkCLIServer {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       .on('addDir', async (dirPath) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
-        this.#segments = await locateSegments(this.#projectInfo.apiDir);
+        this.#segments = await locateSegments(apiDirFullPath);
         for (const { segmentName } of this.#segments) {
           void this.#ping(segmentName);
         }
@@ -73,7 +75,7 @@ export class VovkCLIServer {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       .on('unlinkDir', async (dirPath) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
-        this.#segments = await locateSegments(this.#projectInfo.apiDir);
+        this.#segments = await locateSegments(apiDirFullPath);
         for (const { segmentName } of this.#segments) {
           void this.#ping(segmentName);
         }
@@ -102,10 +104,11 @@ export class VovkCLIServer {
   };
 
   #watchModules = () => {
-    const { config, log } = this.#projectInfo;
-    log.debug(`Watching modules in ${config.modulesDir}`);
+    const { config, cwd, log } = this.#projectInfo;
+    const modulesDirFullPath = path.join(cwd, config.modulesDir);
+    log.debug(`Watching modules in ${modulesDirFullPath}`);
     this.#modulesWatcher = chokidar
-      .watch(config.modulesDir, {
+      .watch(modulesDirFullPath, {
         persistent: true,
         ignoreInitial: true,
       })
@@ -139,7 +142,7 @@ export class VovkCLIServer {
   };
 
   #watchConfig = () => {
-    const { log } = this.#projectInfo;
+    const { log, cwd } = this.#projectInfo;
     log.debug(`Watching config files`);
     let isInitial = true;
     const handle = debounce(async () => {
@@ -158,7 +161,7 @@ export class VovkCLIServer {
     chokidar
       .watch('vovk.config.{js,mjs,cjs}', {
         persistent: true,
-        cwd: process.cwd(),
+        cwd,
         ignoreInitial: false,
         depth: 0,
       })
@@ -175,10 +178,10 @@ export class VovkCLIServer {
 
   #watch() {
     if (this.#isWatching) throw new Error('Already watching');
-    const { apiDir, log, config } = this.#projectInfo;
+    const { log } = this.#projectInfo;
 
-    log.info(
-      `Watching segments in ${apiDir} and modules in ${config.modulesDir}. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
+    log.debug(
+      `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
 
     this.#watchSegments();
@@ -231,13 +234,14 @@ export class VovkCLIServer {
   }, 500);
 
   #createMetadataServer() {
-    const { metadataOutFullPath, log } = this.#projectInfo;
+    const { log, config, cwd } = this.#projectInfo;
+    const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
     return createMetadataServer(
       async ({ metadata }) => {
         const segment = this.#segments.find((s) => s.segmentName === metadata.segmentName);
 
         if (!segment) {
-          log.debug(`Segment "${metadata.segmentName}" not found`);
+          log.warn(`Segment "${metadata.segmentName}" not found`);
           return;
         }
 
@@ -273,8 +277,12 @@ export class VovkCLIServer {
 
   async startServer({ clientOutDir }: { clientOutDir?: string } = {}) {
     this.#projectInfo = await getProjectInfo({ clientOutDir });
-    this.#segments = await locateSegments(this.#projectInfo.apiDir);
-    const { vovkPort, log, metadataOutFullPath } = this.#projectInfo;
+    const { vovkPort, log, config, cwd, apiDir } = this.#projectInfo;
+
+    const apiDirFullPath = path.join(cwd, apiDir);
+    const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
+
+    this.#segments = await locateSegments(apiDirFullPath);
     const server = this.#createMetadataServer();
 
     if (!vovkPort) {

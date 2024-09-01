@@ -12,7 +12,7 @@ import type { Controllers as Controllers2, Workers as Workers2 } from "../src/ap
 import validateOnClient from 'vovk-zod/validateOnClient';
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-const prefix = 'http://localhost:3210/api';
+const prefix = 'http://localhost:3000/api';
   export const ClientController = clientizeController<Controllers1["ClientController"], Options>(metadata['foo/client'].controllers.ClientController, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 export const ClientController5x = clientizeController<Controllers1["ClientController5x"], Options>(metadata['foo/client'].controllers.ClientController5x, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 export const StreamingController = clientizeController<Controllers1["StreamingController"], Options>(metadata['foo/client'].controllers.StreamingController, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });

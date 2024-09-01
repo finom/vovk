@@ -22,13 +22,10 @@ export default async function getProjectInfo({
   const apiEntryPoint = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
-  const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
-  const metadataOutImportPath = path.relative(config.clientOutDir, metadataOutFullPath);
+  const metadataOutImportPath = path.relative(config.clientOutDir, config.metadataOutDir);
   const fetcherClientImportPath = config.fetcher.startsWith('.')
     ? path.relative(config.clientOutDir, config.fetcher)
     : config.fetcher;
-
-  const clientOutFullPath = path.join(cwd, config.clientOutDir);
 
   const log = {
     info: (msg: string) => loglevel.info(chalk.blueBright(`🐺 ${msg}`)),
@@ -47,9 +44,7 @@ export default async function getProjectInfo({
     apiEntryPoint,
     apiDir,
     srcRoot,
-    metadataOutFullPath,
     metadataOutImportPath,
-    clientOutFullPath,
     fetcherClientImportPath,
     config,
     log,

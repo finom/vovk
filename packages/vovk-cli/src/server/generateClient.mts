@@ -10,8 +10,8 @@ export default async function generateClient(
   segmentsMetadata: Record<string, VovkMetadata>
 ) {
   const now = Date.now();
-  const outDir = projectInfo.clientOutFullPath;
-  const validatePath = projectInfo.config.validateOnClient?.startsWith('.')
+  const clientoOutDirFullPath = path.join(projectInfo.cwd, projectInfo.config.clientOutDir);
+  const validateFullPath = projectInfo.config.validateOnClient?.startsWith('.')
     ? path.join(projectInfo.cwd, projectInfo.config.validateOnClient)
     : projectInfo.config.validateOnClient;
   let dts = `// auto-generated
@@ -55,12 +55,12 @@ import metadata from '${projectInfo.metadataOutImportPath}';
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   `;
   ts += `
-${validatePath ? `import validateOnClient from '${validatePath}';\n` : '\nconst validateOnClient = undefined;'}
+${validateFullPath ? `import validateOnClient from '${validateFullPath}';\n` : '\nconst validateOnClient = undefined;'}
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 const prefix = '${projectInfo.apiEntryPoint}';
   `;
   js += `
-const { default: validateOnClient = null } = ${validatePath ? `require('${validatePath}')` : '{}'};
+const { default: validateOnClient = null } = ${validateFullPath ? `require('${validateFullPath}')` : '{}'};
 const prefix = '${projectInfo.apiEntryPoint}';
 `;
 
@@ -85,24 +85,24 @@ const prefix = '${projectInfo.apiEntryPoint}';
     }
   }
 
-  const localJsPath = path.join(outDir, 'client.js');
-  const localDtsPath = path.join(outDir, 'client.d.ts');
-  const localTsPath = path.join(outDir, 'index.ts');
+  const localJsPath = path.join(clientoOutDirFullPath, 'client.js');
+  const localDtsPath = path.join(clientoOutDirFullPath, 'client.d.ts');
+  const localTsPath = path.join(clientoOutDirFullPath, 'index.ts');
   const existingJs = await fs.readFile(localJsPath, 'utf-8').catch(() => '');
   const existingDts = await fs.readFile(localDtsPath, 'utf-8').catch(() => '');
   const existingTs = await fs.readFile(localTsPath, 'utf-8').catch(() => '');
 
   if (existingJs === js && existingDts === dts && existingTs === ts) {
     projectInfo.log.info(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms).`);
-    return { written: false, path: outDir };
+    return { written: false, path: clientoOutDirFullPath };
   }
 
-  await fs.mkdir(outDir, { recursive: true });
+  await fs.mkdir(clientoOutDirFullPath, { recursive: true });
   await fs.writeFile(localJsPath, js);
   await fs.writeFile(localDtsPath, dts);
   await fs.writeFile(localTsPath, ts);
 
   projectInfo.log.info(`Client generated in ${Date.now() - now}ms`);
 
-  return { written: true, path: outDir };
+  return { written: true, path: clientoOutDirFullPath };
 }

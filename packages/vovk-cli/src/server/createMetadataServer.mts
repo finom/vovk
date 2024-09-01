@@ -9,13 +9,13 @@ export default function createMetadataServer(
     if (req.method === 'POST' && req.url === '/__metadata') {
       let body = '';
 
-      req.on('data', (chunk) => {
+      req.on('data', (chunk: { toString: () => string }) => {
         body += chunk.toString();
       });
 
       req.on('end', () => {
         try {
-          const result: { metadata: VovkMetadata } = JSON.parse(body);
+          const result = JSON.parse(body) as { metadata: VovkMetadata };
           void then(result);
         } catch (e) {
           void catchFn(e as Error);

@@ -93,8 +93,10 @@ program
   .option('--client-out <path>', 'Path to output directory')
   .action(async (options: GenerateOptions) => {
     const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
-    const segments = await locateSegments(projectInfo.apiDir);
-    const metadata = (await import(path.join(projectInfo.metadataOutFullPath, 'index.js'))) as {
+    const { cwd, config, apiDir } = projectInfo;
+    const segments = await locateSegments(apiDir);
+    const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
+    const metadata = (await import(path.join(metadataOutFullPath, 'index.js'))) as {
       default: Record<string, VovkMetadata>;
     };
 
