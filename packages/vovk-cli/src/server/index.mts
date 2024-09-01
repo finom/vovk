@@ -1,10 +1,8 @@
 import * as chokidar from 'chokidar';
-import * as http from 'http';
 import fs from 'fs/promises';
 import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
 import path from 'path';
 import { debouncedEnsureMetadataFiles } from './ensureMetadataFiles.mjs';
-import createMetadataServer from './createMetadataServer.mjs';
 import writeOneMetadataFile from './writeOneMetadataFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
 import generateClient from './generateClient.mjs';
@@ -216,62 +214,66 @@ export class VovkCLIServer {
     }
   };
 
-  #ping = debounceWithArgs((segmentName: string) => {
+  #ping = debounceWithArgs(async (segmentName: string) => {
     const { apiEntryPoint, log, port } = this.#projectInfo;
-    const endpoint = `${apiEntryPoint.startsWith('http') ? apiEntryPoint : `http://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_vovk-ping_`;
+    const endpoint = `${apiEntryPoint.startsWith('http') ? apiEntryPoint : `http://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 
     log.debug(`Pinging segment "${segmentName}" at ${endpoint}`);
-    const req = http.get(endpoint, (resp) => {
-      if (resp.statusCode !== 200) {
-        log.warn(`Ping to segment "${segmentName}" failed with status code ${resp.statusCode}. Expected 200.`);
-      }
-    });
+    const resp = await fetch(endpoint);
+    if (resp.status !== 200) {
+      log.warn(`Ping to segment "${segmentName}" failed with status code ${resp.status}. Expected 200.`);
+      return;
+    }
 
-    req.on('error', (err) => {
-      log.error(`Error during HTTP request made to ${endpoint}: ${err.message}`);
-    });
+    let metadata: VovkMetadata | null = null;
+    try {
+      ({ metadata } = (await resp.json()) as { metadata: VovkMetadata | null });
+    } catch (error) {
+      log.error(`Error parsing metadata for segment "${segmentName}": ${(error as Error).message}`);
+    }
+
+    await this.#handleMetadata(metadata);
   }, 500);
 
-  #createMetadataServer() {
+  async #handleMetadata(metadata: VovkMetadata | null) {
     const { log, config, cwd } = this.#projectInfo;
+    log.debug(`Handling received metadata`);
+    if (!metadata) {
+      log.warn('Segment metadata is null');
+      return;
+    }
+
     const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
-    return createMetadataServer(
-      async ({ metadata }) => {
-        const segment = this.#segments.find((s) => s.segmentName === metadata.segmentName);
+    const segment = this.#segments.find((s) => s.segmentName === metadata.segmentName);
 
-        if (!segment) {
-          log.warn(`Segment "${metadata.segmentName}" not found`);
-          return;
-        }
+    if (!segment) {
+      log.warn(`Segment "${metadata.segmentName}" not found`);
+      return;
+    }
 
-        this.#metadata[metadata.segmentName] = metadata;
-        if (metadata.emitMetadata) {
-          const now = Date.now();
-          const { diffResult } = await writeOneMetadataFile({
-            metadataOutFullPath,
-            metadata,
-            skipIfExists: false,
-          });
+    this.#metadata[metadata.segmentName] = metadata;
+    if (metadata.emitMetadata) {
+      const now = Date.now();
+      const { diffResult } = await writeOneMetadataFile({
+        metadataOutFullPath,
+        metadata,
+        skipIfExists: false,
+      });
 
-          const timeTook = Date.now() - now;
+      const timeTook = Date.now() - now;
 
-          if (diffResult) {
-            logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
-            log.info(`Metadata for segment "${metadata.segmentName}" has been updated in ${timeTook}ms`);
-          }
-        } else if (metadata && (!isEmpty(metadata.controllers) || !isEmpty(metadata.workers))) {
-          log.error(`Non-empty metadata provided for segment "${metadata.segmentName}" but emitMetadata is false`);
-        }
-
-        if (this.#segments.every((s) => this.#metadata[s.segmentName])) {
-          log.debug(`All segments with emitMetadata=true have metadata.`);
-          await generateClient(this.#projectInfo, this.#segments, this.#metadata);
-        }
-      },
-      (error) => {
-        log.error(String(error));
+      if (diffResult) {
+        logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
+        log.info(`Metadata for segment "${metadata.segmentName}" has been updated in ${timeTook}ms`);
       }
-    );
+    } else if (metadata && (!isEmpty(metadata.controllers) || !isEmpty(metadata.workers))) {
+      log.error(`Non-empty metadata provided for segment "${metadata.segmentName}" but emitMetadata is false`);
+    }
+
+    if (this.#segments.every((s) => this.#metadata[s.segmentName])) {
+      log.debug(`All segments with emitMetadata=true have metadata.`);
+      await generateClient(this.#projectInfo, this.#segments, this.#metadata);
+    }
   }
 
   async startServer({ clientOutDir }: { clientOutDir?: string } = {}) {
@@ -290,7 +292,6 @@ export class VovkCLIServer {
     const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
 
     this.#segments = await locateSegments(apiDirFullPath);
-    const server = this.#createMetadataServer();
 
     if (!vovkPort) {
       log.error('No port provided for Vovk Server. Exiting...');
@@ -302,10 +303,6 @@ export class VovkCLIServer {
       this.#segments.map((s) => s.segmentName),
       this.#projectInfo
     );
-
-    server.listen(vovkPort, () => {
-      log.info(`Vovk Metadata Server is running on port ${vovkPort}. Happy coding!`);
-    });
 
     // Ping every segment in 3 seconds in order to update metadata and start watching
     setTimeout(() => {

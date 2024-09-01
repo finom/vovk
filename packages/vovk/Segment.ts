@@ -30,6 +30,7 @@ export class _Segment {
 
     return headers;
   }
+
   _routes: Record<HttpMethod, Map<VovkController, Record<string, RouteHandler>>> = {
     GET: new Map(),
     POST: new Map(),
@@ -61,7 +62,7 @@ export class _Segment {
   OPTIONS = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
     this.#callMethod(HttpMethod.OPTIONS, req, data.params);
 
-  #respond = (status: HttpStatus, body: unknown, options?: DecoratorOptions) => {
+  respond = (status: HttpStatus, body: unknown, options?: DecoratorOptions) => {
     return new Response(JSON.stringify(body), {
       status,
       headers: {
@@ -72,7 +73,7 @@ export class _Segment {
   };
 
   #respondWithError = (statusCode: HttpStatus, message: string, options?: DecoratorOptions) => {
-    return this.#respond(
+    return this.respond(
       statusCode,
       {
         statusCode,
@@ -87,10 +88,6 @@ export class _Segment {
     const controllers = this._routes[httpMethod];
     const methodParams: Record<string, string> = {};
     const path = params[Object.keys(params)[0]];
-
-    if (params[Object.keys(params)[0]]?.[0] === '_vovk-ping_') {
-      return this.#respond(200, { message: 'pong' });
-    }
 
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
     controllers.forEach((staticMethods, controller) => {
@@ -217,7 +214,7 @@ export class _Segment {
         return result;
       }
 
-      return this.#respond(200, result ?? null, staticMethod._options);
+      return this.respond(200, result ?? null, staticMethod._options);
     } catch (e) {
       const err = e as HttpException;
       try {

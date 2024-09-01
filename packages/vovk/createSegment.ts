@@ -25,7 +25,7 @@ const toKebabCase = (str: string) => {
 };
 
 export function _createSegment() {
-  const r = new Segment();
+  const segment = new Segment();
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {
     const assignMetadata = (
@@ -47,8 +47,8 @@ export function _createSegment() {
         );
       }
 
-      const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(controller) ?? {};
-      r._routes[httpMethod].set(controller, methods);
+      const methods: Record<string, RouteHandler> = segment._routes[httpMethod].get(controller) ?? {};
+      segment._routes[httpMethod].set(controller, methods);
 
       controller._handlers = {
         ...controller._handlers,
@@ -85,8 +85,8 @@ export function _createSegment() {
     const auto = (options?: DecoratorOptions) => {
       function decorator(givenTarget: KnownAny, propertyKey: string) {
         const controller = givenTarget as VovkController;
-        const methods: Record<string, RouteHandler> = r._routes[httpMethod].get(controller) ?? {};
-        r._routes[httpMethod].set(controller, methods);
+        const methods: Record<string, RouteHandler> = segment._routes[httpMethod].get(controller) ?? {};
+        segment._routes[httpMethod].set(controller, methods);
 
         controller._handlers = {
           ...controller._handlers,
@@ -179,7 +179,6 @@ export function _createSegment() {
     exposeValidation?: boolean;
     emitMetadata?: boolean;
     onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
-    onMetadata?: (metadata: VovkMetadata) => void | Promise<void>;
   }) => {
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
       controller._controllerName = controllerName;
@@ -187,41 +186,25 @@ export function _createSegment() {
       controller._onError = options?.onError;
     }
 
-    // Wait for metadata to be set (it can be set after decorators are called with another setTimeout)
-    setTimeout(() => {
-      const metadata = getMetadata(options);
-
-      if (process.env.NODE_ENV === 'development') {
-        const VOVK_PORT = process.env.VOVK_PORT || (parseInt(process.env.PORT || '3000') + 6969).toString();
-        const url = `http://localhost:${VOVK_PORT}/__metadata`;
-        void fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ metadata }),
-        })
-          .then((resp) => {
-            if (!resp.ok) {
-              console.error(`🐺 Failed to send metadata to ${url}. Response is not OK. ${resp.statusText}`);
-            }
-          })
-          .catch((err) => {
-            console.error(`🐺 Failed to send metadata to ${url}. ${err}`);
-          });
+    async function GET_DEV(req: VovkRequest, data: { params: Record<string, string[]> }) {
+      const { params } = data;
+      if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
+        // Wait for metadata to be set (it can be set after decorators are called with another setTimeout)
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        const metadata = getMetadata(options);
+        return segment.respond(200, { metadata });
       }
-
-      if (options?.onMetadata) {
-        void options.onMetadata(metadata);
-      }
-    }, 10);
+      return segment.GET(req, data);
+    }
 
     return {
-      GET: r.GET,
-      POST: r.POST,
-      PUT: r.PUT,
-      PATCH: r.PATCH,
-      DELETE: r.DELETE,
-      HEAD: r.HEAD,
-      OPTIONS: r.OPTIONS,
+      GET: process.env.NODE_ENV === 'development' ? GET_DEV : segment.GET,
+      POST: segment.POST,
+      PUT: segment.PUT,
+      PATCH: segment.PATCH,
+      DELETE: segment.DELETE,
+      HEAD: segment.HEAD,
+      OPTIONS: segment.OPTIONS,
     };
   };
 
