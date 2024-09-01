@@ -9,7 +9,6 @@ export type VovkEnv = {
   VOVK_METADATA_OUT_DIR?: string;
   VOVK_FETCHER?: string;
   VOVK_VALIDATE_ON_CLIENT?: string;
-  VOVK_PORT?: string;
   VOVK_MODULES_DIR?: string;
   VOVK_VALIDATION_LIBRARY?: string;
   VOVK_ORIGIN?: string;
