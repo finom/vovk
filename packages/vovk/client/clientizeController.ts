@@ -54,7 +54,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 
 export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   givenController: VovkControllerMetadata,
-  segmentName: string,
+  segmentName?: string,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
   const controller = givenController as T & VovkControllerMetadata;
