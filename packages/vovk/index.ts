@@ -12,7 +12,7 @@ import {
   type _VovkParams as VovkParams,
   type _VovkReturnType as VovkReturnType,
   type _VovkYieldType as VovkYieldType,
-  type _VovkMetadata as VovkMetadata,
+  type _VovkSchema as VovkSchema,
   _HttpStatus as HttpStatus,
   _HttpMethod as HttpMethod,
 } from './types';
@@ -32,7 +32,7 @@ export {
   type VovkClientFetcher,
   type VovkDefaultFetcherOptions,
   type VovkValidateOnClient,
-  type VovkMetadata,
+  type VovkSchema,
   type VovkErrorResponse,
   type VovkRequest,
   type VovkControllerBody,

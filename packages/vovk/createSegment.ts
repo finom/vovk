@@ -8,7 +8,7 @@ import {
   type _VovkWorker as VovkWorker,
   type _DecoratorOptions as DecoratorOptions,
   type _VovkRequest as VovkRequest,
-  type _VovkMetadata as VovkMetadata,
+  type _VovkSchema as VovkSchema,
 } from './types';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -28,7 +28,7 @@ export function _createSegment() {
   const segment = new Segment();
 
   const getDecoratorCreator = (httpMethod: HttpMethod) => {
-    const assignMetadata = (
+    const assignSchema = (
       controller: VovkController,
       propertyKey: string,
       path: string,
@@ -76,7 +76,7 @@ export function _createSegment() {
 
       function decorator(givenTarget: KnownAny, propertyKey: string) {
         const target = givenTarget as VovkController;
-        assignMetadata(target, propertyKey, path, options);
+        assignSchema(target, propertyKey, path, options);
       }
 
       return decorator;
@@ -96,7 +96,7 @@ export function _createSegment() {
           },
         };
 
-        assignMetadata(controller, propertyKey, toKebabCase(propertyKey), options);
+        assignSchema(controller, propertyKey, toKebabCase(propertyKey), options);
       }
 
       return decorator;
@@ -123,8 +123,8 @@ export function _createSegment() {
     };
   };
 
-  const getMetadata = (options: {
-    emitMetadata?: boolean;
+  const getSchema = (options: {
+    emitSchema?: boolean;
     segmentName?: string;
     // eslint-disable-next-line @typescript-eslint/ban-types
     controllers: Record<string, Function>;
@@ -133,18 +133,18 @@ export function _createSegment() {
     exposeValidation?: boolean;
   }) => {
     const exposeValidation = options?.exposeValidation ?? true;
-    const emitMetadata = options.emitMetadata ?? true;
-    const metadata: VovkMetadata = {
-      emitMetadata,
+    const emitSchema = options.emitSchema ?? true;
+    const schema: VovkSchema = {
+      emitSchema,
       segmentName: options.segmentName ?? '',
       controllers: {},
       workers: {},
     };
 
-    if (!emitMetadata) return metadata;
+    if (!emitSchema) return schema;
 
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
-      metadata.controllers[controllerName] = {
+      schema.controllers[controllerName] = {
         _controllerName: controllerName,
         _prefix: controller._prefix ?? '',
         _handlers: {
@@ -161,13 +161,13 @@ export function _createSegment() {
     }
 
     for (const [workerName, worker] of Object.entries(options.workers ?? {}) as [string, VovkWorker][]) {
-      metadata.workers[workerName] = {
+      schema.workers[workerName] = {
         _workerName: workerName,
         _handlers: { ...worker._handlers },
       };
     }
 
-    return metadata;
+    return schema;
   };
 
   const initVovk = (options: {
@@ -177,7 +177,7 @@ export function _createSegment() {
     // eslint-disable-next-line @typescript-eslint/ban-types
     workers?: Record<string, Function>;
     exposeValidation?: boolean;
-    emitMetadata?: boolean;
+    emitSchema?: boolean;
     onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
   }) => {
     for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
@@ -189,10 +189,10 @@ export function _createSegment() {
     async function GET_DEV(req: VovkRequest, data: { params: Record<string, string[]> }) {
       const { params } = data;
       if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
-        // Wait for metadata to be set (it can be set after decorators are called with another setTimeout)
+        // Wait for schema to be set (it can be set after decorators are called with another setTimeout)
         await new Promise((resolve) => setTimeout(resolve, 10));
-        const metadata = getMetadata(options);
-        return segment.respond(200, { metadata });
+        const schema = getSchema(options);
+        return segment.respond(200, { schema });
       }
       return segment.GET(req, data);
     }

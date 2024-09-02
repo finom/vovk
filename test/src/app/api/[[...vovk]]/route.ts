@@ -14,7 +14,7 @@ import MiscController from '../../../controllers/MiscController';
 import AutoDecoratorsController from '../../../controllers/AutoDecoratorsController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
-  emitMetadata: false,
+  emitSchema: false,
   controllers: {
     ...trimControllers,
     InputController,

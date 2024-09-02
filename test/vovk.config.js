@@ -3,7 +3,7 @@
 const vovkConfig = {
   modulesDir: './src', // for watching and to create new files there
   validateOnClient: 'vovk-zod/validateOnClient',
-  metadataOutDir: './.vovk-schema',
+  schemaOutDir: './.vovk-schema',
   clientOutDir: './.vovk-client',
   validationLibrary: 'vovk-zod',
   origin: `http://localhost:${process.env.PORT}`,

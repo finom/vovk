@@ -13,7 +13,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 export const ClientController5x: ReturnType<typeof clientizeController<Controllers1["ClientController5x"], Options>>;
 export const StreamingController: ReturnType<typeof clientizeController<Controllers1["StreamingController"], Options>>;
 export const StreamingGeneratorController: ReturnType<typeof clientizeController<Controllers1["StreamingGeneratorController"], Options>>;
-export const CostomMetadataController: ReturnType<typeof clientizeController<Controllers1["CostomMetadataController"], Options>>;
+export const CostomSchemaController: ReturnType<typeof clientizeController<Controllers1["CostomSchemaController"], Options>>;
 export const WithZodClientController: ReturnType<typeof clientizeController<Controllers1["WithZodClientController"], Options>>;
 export const WithYupClientController: ReturnType<typeof clientizeController<Controllers1["WithYupClientController"], Options>>;
 export const WithDtoClientController: ReturnType<typeof clientizeController<Controllers1["WithDtoClientController"], Options>>;

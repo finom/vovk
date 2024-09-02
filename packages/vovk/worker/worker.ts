@@ -1,4 +1,4 @@
-import type { _VovkWorkerMetadata as VovkWorkerMetadata } from '../types';
+import type { _VovkWorkerSchema as VovkWorkerSchema } from '../types';
 import type { _WorkerInput as WorkerInput, _WorkerOutput as WorkerOutput } from './types';
 
 export function _worker() {
@@ -9,10 +9,10 @@ export function _worker() {
         ...args: unknown[]
       ) => Iterable<unknown> | AsyncIterable<unknown> | Promise<Iterable<unknown> | AsyncIterable<unknown>>
     > &
-      VovkWorkerMetadata;
+      VovkWorkerSchema;
     target._handlers = {};
 
-    // Experimental: You can pass Worker Service instead of metadata to prommisify worker
+    // TODO: Experimental: You can pass Worker Service instead of schema to prommisify worker
     for (const key of Object.getOwnPropertyNames(target)) {
       const member = target[key];
       if (typeof member === 'function') {

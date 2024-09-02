@@ -173,7 +173,7 @@ export class _Segment {
     req.vovk = {
       body: () => req.json(),
       query: () => reqQuery(req),
-      meta: <T = _KnownAny>(metadata?: T | null) => reqMeta<T>(req, metadata),
+      meta: <T = _KnownAny>(meta?: T | null) => reqMeta<T>(req, meta),
     };
 
     try {

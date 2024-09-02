@@ -1,5 +1,5 @@
 {
-  "emitMetadata": true,
+  "emitSchema": true,
   "segmentName": "foo/client",
   "controllers": {
     "ClientController": {
@@ -158,16 +158,16 @@
         }
       }
     },
-    "CostomMetadataController": {
-      "_controllerName": "CostomMetadataController",
+    "CostomSchemaController": {
+      "_controllerName": "CostomSchemaController",
       "_prefix": "",
       "_handlers": {
-        "getWithCustomMetadata": {
-          "customMetadata": {
+        "getWithCustomSchema": {
+          "customSchema": {
             "hello": "world"
           },
           "httpMethod": "GET",
-          "path": "get-with-custom-metadata"
+          "path": "get-with-custom-schema"
         }
       }
     },

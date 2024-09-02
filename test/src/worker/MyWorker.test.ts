@@ -30,7 +30,7 @@ describe('Worker', () => {
     await page.close();
   });
 
-  it('Should work with metadata', async () => {
+  it('Should work with schema', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef

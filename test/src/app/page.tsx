@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { MyWorker as MyWorkerPromisified } from '../../.vovk-client/client';
 import { promisifyWorker } from '../../../packages/vovk/worker';
-import segmentMetadata from '.vovk-schema';
+import segmentSchema from '.vovk-schema';
 import MyWorker from '../worker/MyWorker';
 
 export default function Home() {
@@ -10,18 +10,18 @@ export default function Home() {
     if (typeof Worker === 'undefined') return;
     // eslint-disable-next-line no-undef
     const win = window as unknown as {
-      metadataWorker: typeof metadataWorker;
+      schemaWorker: typeof schemaWorker;
       standaloneWorker: typeof standaloneWorker;
       MyWorkerPromisified: typeof MyWorkerPromisified;
       isTerminated: boolean;
     };
-    if (win.metadataWorker) return;
+    if (win.schemaWorker) return;
 
     MyWorkerPromisified.employ(new Worker(new URL('../worker/MyWorker.ts', import.meta.url)));
 
-    const metadataWorker = promisifyWorker<typeof MyWorker>(
+    const schemaWorker = promisifyWorker<typeof MyWorker>(
       new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
-      segmentMetadata.workers.workers.MyWorker
+      segmentSchema.workers.workers.MyWorker
     );
 
     const standaloneWorker = promisifyWorker<typeof MyWorker>(
@@ -36,7 +36,7 @@ export default function Home() {
 
     toBeTerminated.terminate();
 
-    win.metadataWorker = metadataWorker;
+    win.schemaWorker = schemaWorker;
     win.standaloneWorker = standaloneWorker;
     win.MyWorkerPromisified = MyWorkerPromisified;
 

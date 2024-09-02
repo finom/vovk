@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
-import { DiffResult } from './diffMetadata.mjs';
+import { DiffResult } from './diffSchema.mjs';
 
 export default function logDiffResult(segmentName: string, diffResult: DiffResult, projectInfo: ProjectInfo) {
   const diffNormalized: {

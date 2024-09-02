@@ -1,5 +1,5 @@
-import { VovkMetadata } from 'vovk';
-import { _VovkControllerMetadata, _VovkWorkerMetadata } from 'vovk/types';
+import type { VovkSchema } from 'vovk';
+import { _VovkControllerSchema, _VovkWorkerSchema } from 'vovk/types';
 import isEqual from 'lodash/isEqual.js';
 
 interface HandlersDiff {
@@ -20,7 +20,7 @@ export interface DiffResult {
   controllers: WorkersOrControllersDiff;
 }
 
-export function diffHandlers<T extends _VovkWorkerMetadata['_handlers'] | _VovkControllerMetadata['_handlers']>(
+export function diffHandlers<T extends _VovkWorkerSchema['_handlers'] | _VovkControllerSchema['_handlers']>(
   oldHandlers: T,
   newHandlers: T,
   nameOfClass: string
@@ -46,7 +46,7 @@ export function diffHandlers<T extends _VovkWorkerMetadata['_handlers'] | _VovkC
   return { nameOfClass, added, removed, changed };
 }
 
-export function diffWorkersOrControllers<T extends VovkMetadata['controllers'] | VovkMetadata['workers']>(
+export function diffWorkersOrControllers<T extends VovkSchema['controllers'] | VovkSchema['workers']>(
   oldItems: T,
   newItems: T
 ): WorkersOrControllersDiff {
@@ -96,9 +96,9 @@ example output:
   }
 }
 */
-export default function diffMetadata(oldJson: VovkMetadata, newJson: VovkMetadata): DiffResult {
-  const workersDiff = diffWorkersOrControllers<VovkMetadata['workers']>(oldJson.workers ?? {}, newJson.workers ?? {});
-  const controllersDiff = diffWorkersOrControllers<VovkMetadata['controllers']>(
+export default function diffSchema(oldJson: VovkSchema, newJson: VovkSchema): DiffResult {
+  const workersDiff = diffWorkersOrControllers<VovkSchema['workers']>(oldJson.workers ?? {}, newJson.workers ?? {});
+  const controllersDiff = diffWorkersOrControllers<VovkSchema['controllers']>(
     oldJson.controllers ?? {},
     newJson.controllers ?? {}
   );

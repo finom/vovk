@@ -7,7 +7,7 @@ import getProjectInfo from './getProjectInfo/index.mjs';
 import generateClient from './server/generateClient.mjs';
 import locateSegments from './locateSegments.mjs';
 import { VovkConfig, VovkEnv } from './types.mjs';
-import { VovkMetadata } from 'vovk';
+import { VovkSchema } from 'vovk';
 import path from 'path';
 import { readFileSync } from 'fs';
 
@@ -59,7 +59,7 @@ program
         [
           {
             command: `node ${import.meta.dirname}/server/index.mjs`,
-            name: 'Vovk.ts Metadata Server',
+            name: 'Vovk.ts Schema Server',
             env: Object.assign(
               { PORT, __VOVK_START_SERVER_IN_STANDALONE_MODE__: 'true' as const },
               options.clientOut ? { VOVK_CLIENT_OUT_DIR: options.clientOut } : {}
@@ -95,12 +95,12 @@ program
     const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments(apiDir);
-    const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
-    const metadata = (await import(path.join(metadataOutFullPath, 'index.js'))) as {
-      default: Record<string, VovkMetadata>;
+    const schemaOutFullPath = path.join(cwd, config.schemaOutDir);
+    const schema = (await import(path.join(schemaOutFullPath, 'index.js'))) as {
+      default: Record<string, VovkSchema>;
     };
 
-    await generateClient(projectInfo, segments, metadata.default);
+    await generateClient(projectInfo, segments, schema.default);
   });
 
 program

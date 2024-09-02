@@ -3,7 +3,7 @@ import { initVovk } from 'vovk';
 import ClientController from 'src/client/ClientController';
 import StreamingController from 'src/client/StreamingController';
 import StreamingGeneratorController from 'src/client/StreamingGeneratorController';
-import CostomMetadataController from 'src/client/CostomMetadataController';
+import CostomSchemaController from 'src/client/CostomSchemaController';
 import WithZodClientController from 'src/client/WithZodClientController';
 import WithYupClientController from 'src/client/WithYupClientController';
 import WithDtoClientController from 'src/client/WithDtoClientController';
@@ -13,7 +13,7 @@ const controllers = {
   ClientController5x: ClientController,
   StreamingController,
   StreamingGeneratorController,
-  CostomMetadataController,
+  CostomSchemaController,
   WithZodClientController,
   WithYupClientController,
   WithDtoClientController,

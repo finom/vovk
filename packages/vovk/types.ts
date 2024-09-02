@@ -4,11 +4,11 @@ import { _StreamAsyncIterator as StreamAsyncIterator } from './client/types';
 
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type _VovkMetadata = {
-  emitMetadata: boolean;
+export type _VovkSchema = {
+  emitSchema: boolean;
   segmentName: string;
-  workers: Record<string, _VovkWorkerMetadata>;
-  controllers: Record<string, _VovkControllerMetadata>;
+  workers: Record<string, _VovkWorkerSchema>;
+  controllers: Record<string, _VovkControllerSchema>;
 };
 
 export type _VovkErrorResponse = {
@@ -17,20 +17,20 @@ export type _VovkErrorResponse = {
   isError: true;
 };
 
-export type _HandlerMetadata = {
+export type _HandlerSchema = {
   path: string;
   httpMethod: _HttpMethod;
   clientValidators?: { query?: _KnownAny; body?: _KnownAny };
-  customMetadata?: Record<string, _KnownAny>;
+  customSchema?: Record<string, _KnownAny>;
 };
 
-export type _VovkControllerMetadata = {
+export type _VovkControllerSchema = {
   _controllerName: string;
   _prefix?: string;
-  _handlers: Record<string, _HandlerMetadata>;
+  _handlers: Record<string, _HandlerSchema>;
 };
 
-export type _VovkWorkerMetadata = {
+export type _VovkWorkerSchema = {
   _workerName: string;
   _handlers: Record<
     string,
@@ -40,7 +40,7 @@ export type _VovkWorkerMetadata = {
   >;
 };
 
-export type _VovkControllerInternal = _VovkControllerMetadata & {
+export type _VovkControllerInternal = _VovkControllerSchema & {
   _activated?: true;
   _onError?: (err: Error, req: _VovkRequest) => void | Promise<void>;
 };
@@ -53,7 +53,7 @@ export type _VovkController = Function &
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type _VovkWorker = Function &
-  _VovkWorkerMetadata & {
+  _VovkWorkerSchema & {
     [key: string]: unknown;
   };
 
@@ -96,7 +96,7 @@ export interface _VovkRequest<BODY = undefined, QUERY extends object | undefined
   vovk: {
     body: () => Promise<BODY>;
     query: () => QUERY;
-    meta: <T = Record<_KnownAny, _KnownAny>>(metadata?: T | null) => T;
+    meta: <T = Record<_KnownAny, _KnownAny>>(meta?: T | null) => T;
   };
 }
 

@@ -97,6 +97,6 @@ export default class HelloController {
 
 The library (as well as Vovk.ts itself) is built thanks to fantastic job made by other people.
 
-- When `@vovkZod` is initialised, it converts [Zod](https://zod.dev/) schemas to JSON Schemas with [zod-to-json-schema](https://www.npmjs.com/package/zod-to-json-schema) and makes metadata handler to receive it as client validation object.
+- When `@vovkZod` is initialised, it converts [Zod](https://zod.dev/) schemas to JSON Schemas with [zod-to-json-schema](https://www.npmjs.com/package/zod-to-json-schema) and makes schema handler to receive it as client validation object.
 - `@vovkZod` performs Zod validation on server-side.
 - When clientized controller method gets called `zodValidateOnClient` performs validation on client-side with [Ajv](https://ajv.js.org/). Since client-side and server-side validation is implemented by different libraries, error messages are going to be different.

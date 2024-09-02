@@ -1,5 +1,5 @@
 import type {
-  _HandlerMetadata as HandlerMetadata,
+  _HandlerSchema as HandlerSchema,
   _KnownAny as KnownAny,
   _VovkController as VovkController,
   _VovkRequest as VovkRequest,
@@ -13,8 +13,8 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
     this: VovkController,
     ...args: ARGS
   ) =>
-    | Omit<HandlerMetadata, 'path' | 'httpMethod'>
-    | ((handlerMetadata: HandlerMetadata | null) => Omit<HandlerMetadata, 'path' | 'httpMethod'>)
+    | Omit<HandlerSchema, 'path' | 'httpMethod'>
+    | ((handlerSchema: HandlerSchema | null) => Omit<HandlerSchema, 'path' | 'httpMethod'>)
     | null
     | undefined
 ) {
@@ -30,17 +30,17 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
       }
       const sourceMethod = originalMethod._sourceMethod ?? originalMethod;
 
-      const handlerMetadata: HandlerMetadata | null = controller._handlers?.[propertyKey] ?? null;
+      const handlerSchema: HandlerSchema | null = controller._handlers?.[propertyKey] ?? null;
       const initResultReturn = initHandler?.call(controller, ...args);
-      const initResult = typeof initResultReturn === 'function' ? initResultReturn(handlerMetadata) : initResultReturn;
+      const initResult = typeof initResultReturn === 'function' ? initResultReturn(handlerSchema) : initResultReturn;
 
       controller._handlers = {
         ...controller._handlers,
         [propertyKey]: {
-          ...handlerMetadata,
+          ...handlerSchema,
           // avoid override of path and httpMethod
           ...(initResult?.clientValidators ? { clientValidators: initResult.clientValidators } : {}),
-          ...(initResult?.customMetadata ? { customMetadata: initResult.customMetadata } : {}),
+          ...(initResult?.customSchema ? { customSchema: initResult.customSchema } : {}),
         },
       };
 

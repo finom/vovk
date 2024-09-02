@@ -1,12 +1,12 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import diffMetadata from '../src/server/diffMetadata.mjs';
-import { HttpMethod, type VovkMetadata } from 'vovk';
+import diffSchema from '../src/server/diffSchema.mjs';
+import { HttpMethod, type VovkSchema } from 'vovk';
 
 void describe('diffJson', async () => {
   await test('Test case 1: No changes', () => {
-    const oldJson: VovkMetadata = {
-      emitMetadata: true,
+    const oldJson: VovkSchema = {
+      emitSchema: true,
       segmentName: '',
       workers: {
         WorkerA: {
@@ -27,9 +27,9 @@ void describe('diffJson', async () => {
       },
     };
 
-    const newJson: VovkMetadata = { ...oldJson };
+    const newJson: VovkSchema = { ...oldJson };
 
-    const diff = diffMetadata(oldJson, newJson);
+    const diff = diffSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
       workers: {
@@ -46,8 +46,8 @@ void describe('diffJson', async () => {
   });
 
   await test('Test case 2: Workers and Controllers added and removed', () => {
-    const oldJson: VovkMetadata = {
-      emitMetadata: true,
+    const oldJson: VovkSchema = {
+      emitSchema: true,
       segmentName: '',
       workers: {
         WorkerA: {
@@ -72,8 +72,8 @@ void describe('diffJson', async () => {
       },
     };
 
-    const newJson: VovkMetadata = {
-      emitMetadata: true,
+    const newJson: VovkSchema = {
+      emitSchema: true,
       segmentName: '',
       workers: {
         WorkerB: {
@@ -95,7 +95,7 @@ void describe('diffJson', async () => {
       },
     };
 
-    const diff = diffMetadata(oldJson, newJson);
+    const diff = diffSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
       workers: {
@@ -112,8 +112,8 @@ void describe('diffJson', async () => {
   });
 
   await test('Test case 3: Handlers added, removed, and changed', () => {
-    const oldJson: VovkMetadata = {
-      emitMetadata: true,
+    const oldJson: VovkSchema = {
+      emitSchema: true,
       segmentName: '',
       workers: {
         WorkerA: {
@@ -138,8 +138,8 @@ void describe('diffJson', async () => {
       },
     };
 
-    const newJson: VovkMetadata = {
-      emitMetadata: true,
+    const newJson: VovkSchema = {
+      emitSchema: true,
       segmentName: '',
       workers: {
         WorkerA: {
@@ -172,7 +172,7 @@ void describe('diffJson', async () => {
       },
     };
 
-    const diff = diffMetadata(oldJson, newJson);
+    const diff = diffSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
       workers: {
@@ -203,8 +203,8 @@ void describe('diffJson', async () => {
   });
 
   await test('Test case 4: Complex changes', () => {
-    const oldJson: VovkMetadata = {
-      emitMetadata: true,
+    const oldJson: VovkSchema = {
+      emitSchema: true,
       segmentName: '',
       workers: {
         WorkerA: {
@@ -229,8 +229,8 @@ void describe('diffJson', async () => {
       },
     };
 
-    const newJson: VovkMetadata = {
-      emitMetadata: true,
+    const newJson: VovkSchema = {
+      emitSchema: true,
       segmentName: '',
       workers: {
         WorkerA: {
@@ -268,7 +268,7 @@ void describe('diffJson', async () => {
       },
     };
 
-    const diff = diffMetadata(oldJson, newJson);
+    const diff = diffSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
       workers: {

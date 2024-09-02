@@ -1,5 +1,5 @@
 import {
-  type _VovkControllerMetadata as VovkControllerMetadata,
+  type _VovkControllerSchema as VovkControllerSchema,
   type _ControllerStaticMethod as ControllerStaticMethod,
   type _VovkControllerParams as VovkControllerParams,
   type _VovkControllerQuery as VovkControllerQuery,
@@ -53,20 +53,19 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 };
 
 export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
-  givenController: VovkControllerMetadata,
+  givenController: VovkControllerSchema,
   segmentName?: string,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
-  const controller = givenController as T & VovkControllerMetadata;
+  const controller = givenController as T & VovkControllerSchema;
   const client = {} as VovkClient<T, OPTS>;
-  if (!controller) throw new Error(`Unable to clientize. Controller metadata is not provided`);
-  const metadata = controller._handlers;
-  if (!metadata)
-    throw new Error(`Unable to clientize. No metadata for controller ${String(controller?._controllerName)}`);
+  if (!controller) throw new Error(`Unable to clientize. Controller schema is not provided`);
+  const schema = controller._handlers;
+  if (!schema) throw new Error(`Unable to clientize. No schema for controller ${String(controller?._controllerName)}`);
   const controllerPrefix = trimPath(controller._prefix ?? '');
   const { fetcher: settingsFetcher = defaultFetcher } = options ?? {};
 
-  for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(metadata)) {
+  for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(schema)) {
     const getEndpoint = ({
       prefix,
       params,
@@ -115,7 +114,6 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         body: input.body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
-        segmentName,
         // TS workaround
         fetcher: undefined,
         validateOnClient: undefined,

@@ -31,12 +31,12 @@ describe('Worker API', () => {
     await page.close();
   });
 
-  it('Should work with metadata', async () => {
+  it('Should work with schema', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
-      return metadataWorker.findLargestPrimeBelow(100000);
+      const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
+      return schemaWorker.findLargestPrimeBelow(100000);
     });
 
     expect(result).toEqual(99991);
@@ -57,8 +57,8 @@ describe('Worker API', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
-      return metadataWorker.calculateFibonacci(10);
+      const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
+      return schemaWorker.calculateFibonacci(10);
     });
 
     expect(result).toEqual(55);
@@ -68,8 +68,8 @@ describe('Worker API', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
-      return metadataWorker.getClientizeHelloWorld();
+      const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
+      return schemaWorker.getClientizeHelloWorld();
     });
 
     expect(result).toEqual({ hello: 'world' });
@@ -79,10 +79,10 @@ describe('Worker API', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       const numbers: number[] = [];
 
-      for await (const number of metadataWorker.generator()) {
+      for await (const number of schemaWorker.generator()) {
         numbers.push(number);
       }
 
@@ -96,10 +96,10 @@ describe('Worker API', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       const numbers: number[] = [];
 
-      for await (const number of metadataWorker.asyncGenerator()) {
+      for await (const number of schemaWorker.asyncGenerator()) {
         numbers.push(number);
       }
 
@@ -113,13 +113,13 @@ describe('Worker API', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       const numbers: number[] = [];
 
       let error: string | undefined;
 
       try {
-        for await (const number of metadataWorker.generatorWithError()) {
+        for await (const number of schemaWorker.generatorWithError()) {
           numbers.push(number);
         }
       } catch (e) {
@@ -137,13 +137,13 @@ describe('Worker API', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       // eslint-disable-next-line no-undef
-      const { metadataWorker } = window as unknown as { metadataWorker: WorkerPromiseInstance<typeof MyWorker> };
+      const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       const numbers: number[] = [];
 
       let error: string | undefined;
 
       try {
-        for await (const number of metadataWorker.asyncGeneratorWithError()) {
+        for await (const number of schemaWorker.asyncGeneratorWithError()) {
           numbers.push(number);
         }
       } catch (e) {

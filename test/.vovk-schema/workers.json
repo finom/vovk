@@ -1,5 +1,5 @@
 {
-  "emitMetadata": true,
+  "emitSchema": true,
   "segmentName": "workers",
   "controllers": {},
   "workers": {

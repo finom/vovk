@@ -1,13 +1,13 @@
-import segmentsMetadata from '../../.vovk-schema';
+import segmentsSchema from '../../.vovk-schema';
 import type ClientController from './ClientController';
 import { clientizeController } from 'vovk/client';
 import { it, expect, describe } from '@jest/globals';
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
-const metadata = segmentsMetadata['foo/client'].controllers;
+const schema = segmentsSchema['foo/client'].controllers;
 
-const defaultController = clientizeController<typeof ClientController>(metadata.ClientController, 'foo/client', {
+const defaultController = clientizeController<typeof ClientController>(schema.ClientController, 'foo/client', {
   defaultOptions: { prefix },
 });
 
@@ -18,7 +18,7 @@ describe('Internal client API', () => {
   });
 
   it('Should handle custom options', async () => {
-    const noOptionsController = clientizeController<typeof ClientController>(metadata.ClientController, 'foo/client');
+    const noOptionsController = clientizeController<typeof ClientController>(schema.ClientController, 'foo/client');
     const result = await noOptionsController.getHelloWorldObjectLiteral({
       prefix,
     });

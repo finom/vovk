@@ -1,3 +1,3 @@
-import type { VovkMetadata } from 'vovk';
-declare const segmentMetadata: Record<string, VovkMetadata>;
-export default segmentMetadata;
+import type { VovkSchema } from 'vovk';
+declare const segmentSchema: Record<string, VovkSchema>;
+export default segmentSchema;

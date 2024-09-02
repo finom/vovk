@@ -79,7 +79,6 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
     httpMethod: HttpMethod;
     getEndpoint: (data: {
       prefix: string;
-      segmentName?: string;
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => string;

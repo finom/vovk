@@ -1,11 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import debounce from 'lodash/debounce.js';
-import writeOneMetadataFile, { ROOT_SEGMENT_SCHEMA_NAME } from './writeOneMetadataFile.mjs';
+import writeOneSchemaFile, { ROOT_SEGMENT_SCHEMA_NAME } from './writeOneSchemaFile.mjs';
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 
-export default async function ensureMetadataFiles(
-  metadataOutFullPath: string,
+export default async function ensureSchemaFiles(
+  schemaOutFullPath: string,
   segmentNames: string[],
   projectInfo: ProjectInfo | null
 ): Promise<void> {
@@ -18,21 +18,21 @@ export default async function ensureMetadataFiles(
     })
     .join('\n');
 
-  const dTsContent = `import type { VovkMetadata } from 'vovk';
-declare const segmentMetadata: Record<string, VovkMetadata>;
-export default segmentMetadata;`;
+  const dTsContent = `import type { VovkSchema } from 'vovk';
+declare const segmentSchema: Record<string, VovkSchema>;
+export default segmentSchema;`;
 
-  await fs.mkdir(metadataOutFullPath, { recursive: true });
-  await fs.writeFile(path.join(metadataOutFullPath, 'index.js'), indexContent);
-  await fs.writeFile(path.join(metadataOutFullPath, 'index.d.ts'), dTsContent);
+  await fs.mkdir(schemaOutFullPath, { recursive: true });
+  await fs.writeFile(path.join(schemaOutFullPath, 'index.js'), indexContent);
+  await fs.writeFile(path.join(schemaOutFullPath, 'index.d.ts'), dTsContent);
 
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested) : {} (empty object)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
-      const { isCreated } = await writeOneMetadataFile({
-        metadataOutFullPath,
-        metadata: {
-          emitMetadata: false,
+      const { isCreated } = await writeOneSchemaFile({
+        schemaOutFullPath,
+        schema: {
+          emitSchema: false,
           segmentName,
           controllers: {},
           workers: {},
@@ -41,7 +41,7 @@ export default segmentMetadata;`;
       });
 
       if (isCreated) {
-        projectInfo?.log.debug(`Created empty metadata file for segment "${segmentName}"`);
+        projectInfo?.log.debug(`Created empty schema file for segment "${segmentName}"`);
         hasChanged = true;
       }
     })
@@ -63,11 +63,11 @@ export default segmentMetadata;`;
           const remainingEntries = await fs.readdir(fullPath);
           if (remainingEntries.length === 0) {
             await fs.rmdir(fullPath);
-            projectInfo?.log.debug(`Deleted unnecessary metadata directory "${fullPath}"`);
+            projectInfo?.log.debug(`Deleted unnecessary schema directory "${fullPath}"`);
             hasChanged = true;
           }
         } else if (entry.isFile() && entry.name.endsWith('.json')) {
-          const relativePath = path.relative(metadataOutFullPath, fullPath);
+          const relativePath = path.relative(schemaOutFullPath, fullPath);
           const segmentName = relativePath.replace(/\\/g, '/').slice(0, -5); // Remove '.json' extension
 
           if (
@@ -75,7 +75,7 @@ export default segmentMetadata;`;
             !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_SCHEMA_NAME, ''))
           ) {
             await fs.unlink(fullPath);
-            projectInfo?.log.debug(`Deleted unnecessary metadata file for segment "${segmentName}"`);
+            projectInfo?.log.debug(`Deleted unnecessary schema file for segment "${segmentName}"`);
             hasChanged = true;
           }
         }
@@ -84,9 +84,9 @@ export default segmentMetadata;`;
   }
 
   // Start the recursive deletion from the root directory
-  await deleteUnnecessaryJsonFiles(metadataOutFullPath);
+  await deleteUnnecessaryJsonFiles(schemaOutFullPath);
 
-  if (hasChanged) projectInfo?.log.info(`Metadata files updated in ${Date.now() - now}ms`);
+  if (hasChanged) projectInfo?.log.info(`Schema files updated in ${Date.now() - now}ms`);
 }
 
-export const debouncedEnsureMetadataFiles = debounce(ensureMetadataFiles, 1000);
+export const debouncedEnsureSchemaFiles = debounce(ensureSchemaFiles, 1000);

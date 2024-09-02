@@ -19,7 +19,7 @@ export default async function getProjectInfo({
   const apiEntryPoint = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
-  const metadataOutImportPath = path.relative(config.clientOutDir, config.metadataOutDir);
+  const schemaOutImportPath = path.relative(config.clientOutDir, config.schemaOutDir);
   const fetcherClientImportPath = config.fetcher.startsWith('.')
     ? path.relative(config.clientOutDir, config.fetcher)
     : config.fetcher;
@@ -40,7 +40,7 @@ export default async function getProjectInfo({
     apiEntryPoint,
     apiDir,
     srcRoot,
-    metadataOutImportPath,
+    schemaOutImportPath,
     fetcherClientImportPath,
     config,
     log,

@@ -3,7 +3,7 @@ import { test, describe, beforeEach, afterEach } from 'node:test';
 import fs from 'fs/promises';
 import path from 'path';
 import * as glob from 'glob';
-import ensureMetadataFiles from '../src/server/ensureMetadataFiles.mts';
+import ensureSchemaFiles from '../src/server/ensureSchemaFiles.mts';
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 
@@ -25,12 +25,12 @@ afterEach(async () => {
   await cleanupTmpDir();
 });
 
-void describe('Check if metadata files are created and removed correctly', async () => {
-  await test('ensureMetadataFiles creates and removes files correctly with nested segments', async () => {
+void describe('Check if schema files are created and removed correctly', async () => {
+  await test('ensureSchemaFiles creates and removes files correctly with nested segments', async () => {
     const initialSegments = ['segment1', 'segment2', 'folder1/segment3', 'folder2/segment4'];
 
     // Run the function with the initial segments
-    await ensureMetadataFiles(tmpDir, initialSegments, null);
+    await ensureSchemaFiles(tmpDir, initialSegments, null);
 
     // Check if files are created
     let files = glob.sync('**/*.json', { cwd: tmpDir });
@@ -53,7 +53,7 @@ module.exports['folder2/segment4'] = require('./folder2/segment4');`;
     const updatedSegments = ['segment2', 'folder1/segment3', 'segment5'];
 
     // Run the function with the updated segments
-    await ensureMetadataFiles(tmpDir, updatedSegments, null);
+    await ensureSchemaFiles(tmpDir, updatedSegments, null);
 
     // Check if files are updated correctly
     files = glob.sync('**/*.json', { cwd: tmpDir });

@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server';
 import { createDecorator, get } from '../../../packages/vovk';
 
 describe('Hidden features', () => {
-  it(`Metadata`, () => {
+  it(`Schema`, () => {
     expect((MiscController as unknown as VovkController)._handlers).toHaveProperty(`getMethod`);
   });
 

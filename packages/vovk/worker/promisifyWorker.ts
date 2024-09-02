@@ -1,4 +1,4 @@
-import type { _VovkWorkerMetadata as VovkWorkerMetadata } from '../types';
+import type { _VovkWorkerSchema as VovkWorkerSchema } from '../types';
 import type {
   _WorkerInput as WorkerInput,
   _WorkerOutput as WorkerOutput,
@@ -9,8 +9,8 @@ export function _promisifyWorker<T extends object>(
   currentWorker: Worker | null,
   givenWorkerService: object
 ): WorkerPromiseInstance<T> {
-  if (!givenWorkerService) throw new Error('Worker metadata is not provided');
-  const workerService = givenWorkerService as T & VovkWorkerMetadata;
+  if (!givenWorkerService) throw new Error('Worker schema is not provided');
+  const workerService = givenWorkerService as T & VovkWorkerSchema;
   const instance = {
     worker: currentWorker,
   } as WorkerPromiseInstance<T>;

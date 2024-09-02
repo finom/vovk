@@ -6,7 +6,7 @@ export type KnownAny = any;
 export type VovkEnv = {
   PORT?: string;
   VOVK_CLIENT_OUT_DIR?: string;
-  VOVK_METADATA_OUT_DIR?: string;
+  VOVK_SCHEMA_OUT_DIR?: string;
   VOVK_FETCHER?: string;
   VOVK_VALIDATE_ON_CLIENT?: string;
   VOVK_MODULES_DIR?: string;
@@ -21,7 +21,7 @@ export type VovkEnv = {
 
 export type VovkConfig = {
   clientOutDir?: string;
-  metadataOutDir?: string;
+  schemaOutDir?: string;
   fetcher?: string;
   validateOnClient?: string | null;
   modulesDir?: string;

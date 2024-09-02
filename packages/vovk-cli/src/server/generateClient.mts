@@ -2,12 +2,12 @@ import path from 'path';
 import fs from 'fs/promises';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { Segment } from '../locateSegments.mjs';
-import { VovkMetadata } from 'vovk';
+import type { VovkSchema } from 'vovk';
 
 export default async function generateClient(
   projectInfo: ProjectInfo,
   segments: Segment[],
-  segmentsMetadata: Record<string, VovkMetadata>
+  segmentsSchema: Record<string, VovkSchema>
 ) {
   const now = Date.now();
   const clientoOutDirFullPath = path.join(projectInfo.cwd, projectInfo.config.clientOutDir);
@@ -27,7 +27,7 @@ import type fetcher from '${projectInfo.fetcherClientImportPath}';
 const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
 const { default: fetcher } = require('${projectInfo.fetcherClientImportPath}');
-const metadata = require('${projectInfo.metadataOutImportPath}');
+const schema = require('${projectInfo.schemaOutImportPath}');
 `;
   let ts = `// auto-generated
 /* eslint-disable */
@@ -35,16 +35,16 @@ import { clientizeController } from 'vovk/client';
 import { promisifyWorker } from 'vovk/worker';
 import type { VovkClientFetcher } from 'vovk/client';
 import fetcher from '${projectInfo.fetcherClientImportPath}';
-import metadata from '${projectInfo.metadataOutImportPath}';
+import schema from '${projectInfo.schemaOutImportPath}';
 
 `;
   for (let i = 0; i < segments.length; i++) {
     const { routeFilePath, segmentName } = segments[i];
-    const metadata = segmentsMetadata[segmentName];
-    if (!metadata) {
-      throw new Error(`Unable to generate client. No metadata found for segment ${segmentName}`);
+    const schema = segmentsSchema[segmentName];
+    if (!schema) {
+      throw new Error(`Unable to generate client. No schema found for segment ${segmentName}`);
     }
-    if (!metadata.emitMetadata) continue;
+    if (!schema.emitSchema) continue;
     const importRouteFilePath = path.relative(projectInfo.config.clientOutDir, routeFilePath);
 
     dts += `import type { Controllers as Controllers${i}, Workers as Workers${i} } from "${importRouteFilePath}";\n`;
@@ -66,22 +66,22 @@ const prefix = '${projectInfo.apiEntryPoint}';
 
   for (let i = 0; i < segments.length; i++) {
     const { segmentName } = segments[i];
-    const metadata = segmentsMetadata[segmentName];
-    if (!metadata) {
-      throw new Error(`Unable to generate client. No metadata found for segment ${segmentName}`);
+    const schema = segmentsSchema[segmentName];
+    if (!schema) {
+      throw new Error(`Unable to generate client. No schema found for segment ${segmentName}`);
     }
-    if (!metadata.emitMetadata) continue;
+    if (!schema.emitSchema) continue;
 
-    for (const key of Object.keys(metadata.controllers)) {
+    for (const key of Object.keys(schema.controllers)) {
       dts += `export const ${key}: ReturnType<typeof clientizeController<Controllers${i}["${key}"], Options>>;\n`;
-      js += `exports.${key} = clientizeController(metadata['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
-      ts += `export const ${key} = clientizeController<Controllers${i}["${key}"], Options>(metadata['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
+      js += `exports.${key} = clientizeController(schema['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
+      ts += `export const ${key} = clientizeController<Controllers${i}["${key}"], Options>(schema['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
     }
 
-    for (const key of Object.keys(metadata.workers)) {
+    for (const key of Object.keys(schema.workers)) {
       dts += `export const ${key}: ReturnType<typeof promisifyWorker<Workers${i}["${key}"]>>;\n`;
-      js += `exports.${key} = promisifyWorker(null, metadata['${segmentName}'].workers.${key});\n`;
-      ts += `export const ${key} = promisifyWorker<Workers${i}["${key}"]>(null, metadata['${segmentName}'].workers.${key});\n`;
+      js += `exports.${key} = promisifyWorker(null, schema['${segmentName}'].workers.${key});\n`;
+      ts += `export const ${key} = promisifyWorker<Workers${i}["${key}"]>(null, schema['${segmentName}'].workers.${key});\n`;
     }
   }
 

@@ -11,7 +11,7 @@ export default async function getConfig({ clientOutDir }: { clientOutDir?: strin
     validateOnClient: env.VOVK_VALIDATE_ON_CLIENT ?? userConfig.validateOnClient ?? null,
     validationLibrary: env.VOVK_VALIDATION_LIBRARY ?? userConfig.validationLibrary ?? null,
     fetcher: env.VOVK_FETCHER ?? userConfig.fetcher ?? 'vovk/client/defaultFetcher',
-    metadataOutDir: env.VOVK_METADATA_OUT_DIR ?? userConfig.metadataOutDir ?? './.vovk-schema',
+    schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? userConfig.schemaOutDir ?? './.vovk-schema',
     clientOutDir: clientOutDir ?? env.VOVK_CLIENT_OUT_DIR ?? userConfig.clientOutDir ?? './node_modules/.vovk',
     origin: (env.VOVK_ORIGIN ?? userConfig.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
     rootEntry: env.VOVK_ROOT_ENTRY ?? userConfig.rootEntry ?? 'api',

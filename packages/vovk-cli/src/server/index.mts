@@ -2,8 +2,8 @@ import * as chokidar from 'chokidar';
 import fs from 'fs/promises';
 import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
 import path from 'path';
-import { debouncedEnsureMetadataFiles } from './ensureMetadataFiles.mjs';
-import writeOneMetadataFile from './writeOneMetadataFile.mjs';
+import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
+import writeOneSchemaFile from './writeOneSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
 import generateClient from './generateClient.mjs';
 import locateSegments, { type Segment } from '../locateSegments.mjs';
@@ -11,14 +11,14 @@ import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import debounce from 'lodash/debounce.js';
 import isEmpty from 'lodash/isEmpty.js';
 import { VovkEnv } from '../types.mjs';
-import { VovkMetadata } from 'vovk';
+import { VovkSchema } from 'vovk';
 
 export class VovkCLIServer {
   #projectInfo: ProjectInfo;
 
   #segments: Segment[] = [];
 
-  #metadata: Record<string, VovkMetadata> = {};
+  #schemas: Record<string, VovkSchema> = {};
 
   #isWatching = false;
 
@@ -29,7 +29,7 @@ export class VovkCLIServer {
   #watchSegments = () => {
     const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
     const { cwd, log, config, apiDir } = this.#projectInfo;
-    const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
+    const schemaOutFullPath = path.join(cwd, config.schemaOutDir);
     const apiDirFullPath = path.join(cwd, apiDir);
     const getSegmentName = (filePath: string) => path.relative(apiDirFullPath, filePath).replace(segmentReg, '');
     log.debug(`Watching segments in ${apiDirFullPath}`);
@@ -49,8 +49,8 @@ export class VovkCLIServer {
           log.info(`Segment "${segmentName}" has been added`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
-          void debouncedEnsureMetadataFiles(
-            metadataOutFullPath,
+          void debouncedEnsureSchemaFiles(
+            schemaOutFullPath,
             this.#segments.map((s) => s.segmentName),
             this.#projectInfo // TODO refactor
           );
@@ -86,8 +86,8 @@ export class VovkCLIServer {
           log.info(`Segment "${segmentName}" has been removed`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
-          void debouncedEnsureMetadataFiles(
-            metadataOutFullPath,
+          void debouncedEnsureSchemaFiles(
+            schemaOutFullPath,
             this.#segments.map((s) => s.segmentName),
             this.#projectInfo // TODO refactor
           );
@@ -197,9 +197,9 @@ export class VovkCLIServer {
       /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options|worker)\b[^}]*}\s*from\s*['"]vovk['"]/;
     if (importRegex.test(code) && namesOfClasses.length) {
       const affectedSegments = this.#segments.filter((s) => {
-        const metadata = this.#metadata[s.segmentName];
-        if (!metadata) return false;
-        return namesOfClasses.some((name) => metadata.controllers[name] || metadata.workers[name]);
+        const schema = this.#schemas[s.segmentName];
+        if (!schema) return false;
+        return namesOfClasses.some((name) => schema.controllers[name] || schema.workers[name]);
       });
 
       if (affectedSegments.length) {
@@ -225,38 +225,38 @@ export class VovkCLIServer {
       return;
     }
 
-    let metadata: VovkMetadata | null = null;
+    let schema: VovkSchema | null = null;
     try {
-      ({ metadata } = (await resp.json()) as { metadata: VovkMetadata | null });
+      ({ schema } = (await resp.json()) as { schema: VovkSchema | null });
     } catch (error) {
-      log.error(`Error parsing metadata for segment "${segmentName}": ${(error as Error).message}`);
+      log.error(`Error parsing schema for segment "${segmentName}": ${(error as Error).message}`);
     }
 
-    await this.#handleMetadata(metadata);
+    await this.#handleSchema(schema);
   }, 500);
 
-  async #handleMetadata(metadata: VovkMetadata | null) {
+  async #handleSchema(schema: VovkSchema | null) {
     const { log, config, cwd } = this.#projectInfo;
-    log.debug(`Handling received metadata`);
-    if (!metadata) {
-      log.warn('Segment metadata is null');
+    log.debug(`Handling received schema`);
+    if (!schema) {
+      log.warn('Segment schema is null');
       return;
     }
 
-    const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
-    const segment = this.#segments.find((s) => s.segmentName === metadata.segmentName);
+    const schemaOutFullPath = path.join(cwd, config.schemaOutDir);
+    const segment = this.#segments.find((s) => s.segmentName === schema.segmentName);
 
     if (!segment) {
-      log.warn(`Segment "${metadata.segmentName}" not found`);
+      log.warn(`Segment "${schema.segmentName}" not found`);
       return;
     }
 
-    this.#metadata[metadata.segmentName] = metadata;
-    if (metadata.emitMetadata) {
+    this.#schemas[schema.segmentName] = schema;
+    if (schema.emitSchema) {
       const now = Date.now();
-      const { diffResult } = await writeOneMetadataFile({
-        metadataOutFullPath,
-        metadata,
+      const { diffResult } = await writeOneSchemaFile({
+        schemaOutFullPath,
+        schema,
         skipIfExists: false,
       });
 
@@ -264,15 +264,15 @@ export class VovkCLIServer {
 
       if (diffResult) {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
-        log.info(`Metadata for segment "${metadata.segmentName}" has been updated in ${timeTook}ms`);
+        log.info(`Schema for segment "${schema.segmentName}" has been updated in ${timeTook}ms`);
       }
-    } else if (metadata && (!isEmpty(metadata.controllers) || !isEmpty(metadata.workers))) {
-      log.error(`Non-empty metadata provided for segment "${metadata.segmentName}" but emitMetadata is false`);
+    } else if (schema && (!isEmpty(schema.controllers) || !isEmpty(schema.workers))) {
+      log.error(`Non-empty schema provided for segment "${schema.segmentName}" but emitSchema is false`);
     }
 
-    if (this.#segments.every((s) => this.#metadata[s.segmentName])) {
-      log.debug(`All segments with emitMetadata=true have metadata.`);
-      await generateClient(this.#projectInfo, this.#segments, this.#metadata);
+    if (this.#segments.every((s) => this.#schemas[s.segmentName])) {
+      log.debug(`All segments with emitSchema=true have schema.`);
+      await generateClient(this.#projectInfo, this.#segments, this.#schemas);
     }
   }
 
@@ -289,17 +289,17 @@ export class VovkCLIServer {
     });
 
     const apiDirFullPath = path.join(cwd, apiDir);
-    const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
+    const schemaOutFullPath = path.join(cwd, config.schemaOutDir);
 
     this.#segments = await locateSegments(apiDirFullPath);
 
-    await debouncedEnsureMetadataFiles(
-      metadataOutFullPath,
+    await debouncedEnsureSchemaFiles(
+      schemaOutFullPath,
       this.#segments.map((s) => s.segmentName),
       this.#projectInfo
     );
 
-    // Ping every segment in 3 seconds in order to update metadata and start watching
+    // Ping every segment in 3 seconds in order to update schema and start watching
     setTimeout(() => {
       for (const { segmentName } of this.#segments) {
         void this.#ping(segmentName);
