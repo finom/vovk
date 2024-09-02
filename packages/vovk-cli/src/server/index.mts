@@ -278,7 +278,7 @@ export class VovkCLIServer {
 
   async startServer({ clientOutDir }: { clientOutDir?: string } = {}) {
     this.#projectInfo = await getProjectInfo({ clientOutDir });
-    const { vovkPort, log, config, cwd, apiDir } = this.#projectInfo;
+    const { log, config, cwd, apiDir } = this.#projectInfo;
 
     process.on('uncaughtException', (err) => {
       log.error(`Uncaught Exception: ${err.message}`);
@@ -292,11 +292,6 @@ export class VovkCLIServer {
     const metadataOutFullPath = path.join(cwd, config.metadataOutDir);
 
     this.#segments = await locateSegments(apiDirFullPath);
-
-    if (!vovkPort) {
-      log.error('No port provided for Vovk Server. Exiting...');
-      return;
-    }
 
     await debouncedEnsureMetadataFiles(
       metadataOutFullPath,
