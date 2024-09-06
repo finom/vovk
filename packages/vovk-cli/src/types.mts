@@ -16,7 +16,7 @@ export type VovkEnv = {
   VOVK_API_ENTRY_POINT?: string;
   VOVK_ROOT_SEGMENT_MODULES_DIR_NAME?: string;
   VOVK_LOG_LEVEL?: LogLevelNames;
-  __VOVK_START_SERVER_IN_STANDALONE_MODE__?: 'true';
+  __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
 };
 
 export type VovkConfig = {

@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { DiffResult } from './diffSchema.mjs';
+import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 
 export default function logDiffResult(segmentName: string, diffResult: DiffResult, projectInfo: ProjectInfo) {
   const diffNormalized: {
@@ -47,12 +48,12 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
         switch (diffNormalizedItem.type) {
           case 'added':
             projectInfo.log.info(
-              `New worker ${chalk.white.bold(diffNormalizedItem.name)} has been added to segment "${chalk.white.bold(segmentName)}"`
+              `Schema for worker ${chalk.white.bold(diffNormalizedItem.name)} has been added at ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
           case 'removed':
             projectInfo.log.info(
-              `Worker ${chalk.white.bold(diffNormalizedItem.name)} has been removed from segment "${chalk.white.bold(segmentName)}"`
+              `Schema for worker ${chalk.white.bold(diffNormalizedItem.name)} has been removed from ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
         }
@@ -61,12 +62,12 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
         switch (diffNormalizedItem.type) {
           case 'added':
             projectInfo.log.info(
-              `New controller ${chalk.white.bold(diffNormalizedItem.name)} has been added to segment "${chalk.white.bold(segmentName)}"`
+              `Schema for controller ${chalk.white.bold(diffNormalizedItem.name)} has been added at ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
           case 'removed':
             projectInfo.log.info(
-              `Controller ${chalk.white.bold(diffNormalizedItem.name)} has been removed from segment "${chalk.white.bold(segmentName)}"`
+              `Schema for controller ${chalk.white.bold(diffNormalizedItem.name)} has been removed from ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
         }
@@ -75,12 +76,12 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
         switch (diffNormalizedItem.type) {
           case 'added':
             projectInfo.log.info(
-              `New worker method ${chalk.white.bold(diffNormalizedItem.name)} has been added in segment "${chalk.white.bold(segmentName)}"`
+              `Schema for worker method ${chalk.white.bold(diffNormalizedItem.name)} has been added at ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
           case 'removed':
             projectInfo.log.info(
-              `Worker method ${chalk.white.bold(diffNormalizedItem.name)} has been removed in segment "${chalk.white.bold(segmentName)}"`
+              `Schema for worker method ${chalk.white.bold(diffNormalizedItem.name)} has been removed from ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
         }
@@ -90,17 +91,17 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
         switch (diffNormalizedItem.type) {
           case 'added':
             projectInfo.log.info(
-              `New controller method ${chalk.white.bold(diffNormalizedItem.name)} has been added in segment "${chalk.white.bold(segmentName)}"`
+              `Schema for controller method ${chalk.white.bold(diffNormalizedItem.name)} has been added at ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
           case 'removed':
             projectInfo.log.info(
-              `Controller method ${chalk.white.bold(diffNormalizedItem.name)} has been removed in segment "${chalk.white.bold(segmentName)}"`
+              `Schema for controller method ${chalk.white.bold(diffNormalizedItem.name)} has been removed from ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
           case 'changed':
             projectInfo.log.info(
-              `Controller method ${chalk.white.bold(diffNormalizedItem.name)} has been changed in segment "${chalk.white.bold(segmentName)}"`
+              `Schema for controller method ${chalk.white.bold(diffNormalizedItem.name)} has been changed at ${formatLoggedSegmentName(segmentName, true)}`
             );
             break;
         }

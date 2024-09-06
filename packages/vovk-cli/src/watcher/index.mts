@@ -5,15 +5,16 @@ import path from 'path';
 import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
 import writeOneSchemaFile from './writeOneSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
-import generateClient from './generateClient.mjs';
+import generateClient from '../generateClient.mjs';
 import locateSegments, { type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import debounce from 'lodash/debounce.js';
 import isEmpty from 'lodash/isEmpty.js';
 import { VovkEnv } from '../types.mjs';
 import { VovkSchema } from 'vovk';
+import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 
-export class VovkCLIServer {
+export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;
 
   #segments: Segment[] = [];
@@ -59,7 +60,7 @@ export class VovkCLIServer {
       .on('change', (filePath) => {
         log.debug(`File ${filePath} has been changed at segments folder`);
         if (segmentReg.test(filePath)) {
-          void this.#ping(getSegmentName(filePath));
+          void this.#requestSchema(getSegmentName(filePath));
         }
       })
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -67,7 +68,7 @@ export class VovkCLIServer {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
         this.#segments = await locateSegments(apiDirFullPath);
         for (const { segmentName } of this.#segments) {
-          void this.#ping(segmentName);
+          void this.#requestSchema(segmentName);
         }
       })
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -75,7 +76,7 @@ export class VovkCLIServer {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
         this.#segments = await locateSegments(apiDirFullPath);
         for (const { segmentName } of this.#segments) {
-          void this.#ping(segmentName);
+          void this.#requestSchema(segmentName);
         }
       })
       .on('unlink', (filePath) => {
@@ -123,12 +124,12 @@ export class VovkCLIServer {
       })
       .on('addDir', () => {
         for (const { segmentName } of this.#segments) {
-          void this.#ping(segmentName);
+          void this.#requestSchema(segmentName);
         }
       })
       .on('unlinkDir', () => {
         for (const { segmentName } of this.#segments) {
-          void this.#ping(segmentName);
+          void this.#requestSchema(segmentName);
         }
       })
       .on('ready', () => {
@@ -208,20 +209,22 @@ export class VovkCLIServer {
         );
 
         for (const segment of affectedSegments) {
-          await this.#ping(segment.segmentName);
+          await this.#requestSchema(segment.segmentName);
         }
       }
     }
   };
 
-  #ping = debounceWithArgs(async (segmentName: string) => {
+  #requestSchema = debounceWithArgs(async (segmentName: string) => {
     const { apiEntryPoint, log, port } = this.#projectInfo;
     const endpoint = `${apiEntryPoint.startsWith('http') ? apiEntryPoint : `http://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 
-    log.debug(`Pinging segment "${segmentName}" at ${endpoint}`);
+    log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName, true)} at ${endpoint}`);
     const resp = await fetch(endpoint);
     if (resp.status !== 200) {
-      log.warn(`Ping to segment "${segmentName}" failed with status code ${resp.status}. Expected 200.`);
+      log.warn(
+        `Schema request to ${formatLoggedSegmentName(segmentName, true)} failed with status code ${resp.status}. Expected 200.`
+      );
       return;
     }
 
@@ -229,7 +232,7 @@ export class VovkCLIServer {
     try {
       ({ schema } = (await resp.json()) as { schema: VovkSchema | null });
     } catch (error) {
-      log.error(`Error parsing schema for segment "${segmentName}": ${(error as Error).message}`);
+      log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName, true)}: ${(error as Error).message}`);
     }
 
     await this.#handleSchema(schema);
@@ -264,10 +267,12 @@ export class VovkCLIServer {
 
       if (diffResult) {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
-        log.info(`Schema for segment "${schema.segmentName}" has been updated in ${timeTook}ms`);
+        log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName, true)} has been updated in ${timeTook}ms`);
       }
     } else if (schema && (!isEmpty(schema.controllers) || !isEmpty(schema.workers))) {
-      log.error(`Non-empty schema provided for segment "${schema.segmentName}" but emitSchema is false`);
+      log.error(
+        `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName, true)} but emitSchema is false`
+      );
     }
 
     if (this.#segments.every((s) => this.#schemas[s.segmentName])) {
@@ -276,7 +281,7 @@ export class VovkCLIServer {
     }
   }
 
-  async startServer({ clientOutDir }: { clientOutDir?: string } = {}) {
+  async start({ clientOutDir }: { clientOutDir?: string } = {}) {
     this.#projectInfo = await getProjectInfo({ clientOutDir });
     const { log, config, cwd, apiDir } = this.#projectInfo;
 
@@ -299,16 +304,16 @@ export class VovkCLIServer {
       this.#projectInfo
     );
 
-    // Ping every segment in 3 seconds in order to update schema and start watching
+    // Request schema every segment in 3 seconds in order to update schema and start watching
     setTimeout(() => {
       for (const { segmentName } of this.#segments) {
-        void this.#ping(segmentName);
+        void this.#requestSchema(segmentName);
       }
       this.#watch();
     }, 3000);
   }
 }
 const env = process.env as VovkEnv;
-if (env.__VOVK_START_SERVER_IN_STANDALONE_MODE__ === 'true') {
-  void new VovkCLIServer().startServer();
+if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
+  void new VovkCLIWatcher().start();
 }

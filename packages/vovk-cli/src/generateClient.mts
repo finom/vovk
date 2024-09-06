@@ -1,8 +1,9 @@
 import path from 'path';
 import fs from 'fs/promises';
-import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import type { Segment } from '../locateSegments.mjs';
+import type { ProjectInfo } from './getProjectInfo/index.mjs';
+import type { Segment } from './locateSegments.mjs';
 import type { VovkSchema } from 'vovk';
+import formatLoggedSegmentName from './utils/formatLoggedSegmentName.mjs';
 
 export default async function generateClient(
   projectInfo: ProjectInfo,
@@ -42,7 +43,7 @@ import schema from '${projectInfo.schemaOutImportPath}';
     const { routeFilePath, segmentName } = segments[i];
     const schema = segmentsSchema[segmentName];
     if (!schema) {
-      throw new Error(`Unable to generate client. No schema found for segment ${segmentName}`);
+      throw new Error(`Unable to generate client. No schema found for ${formatLoggedSegmentName(segmentName)}`);
     }
     if (!schema.emitSchema) continue;
     const importRouteFilePath = path.relative(projectInfo.config.clientOutDir, routeFilePath);
@@ -53,12 +54,12 @@ import schema from '${projectInfo.schemaOutImportPath}';
 
   dts += `
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-  `;
+`;
   ts += `
 ${validateFullPath ? `import validateOnClient from '${validateFullPath}';\n` : '\nconst validateOnClient = undefined;'}
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 const prefix = '${projectInfo.apiEntryPoint}';
-  `;
+`;
   js += `
 const { default: validateOnClient = null } = ${validateFullPath ? `require('${validateFullPath}')` : '{}'};
 const prefix = '${projectInfo.apiEntryPoint}';
@@ -68,7 +69,7 @@ const prefix = '${projectInfo.apiEntryPoint}';
     const { segmentName } = segments[i];
     const schema = segmentsSchema[segmentName];
     if (!schema) {
-      throw new Error(`Unable to generate client. No schema found for segment ${segmentName}`);
+      throw new Error(`Unable to generate client. No schema found for ${formatLoggedSegmentName(segmentName)}`);
     }
     if (!schema.emitSchema) continue;
 

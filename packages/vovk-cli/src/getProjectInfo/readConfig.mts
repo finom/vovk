@@ -1,27 +1,8 @@
-import { promises as fs } from 'fs';
-import path from 'path';
 import type { VovkConfig } from '../types.mjs';
-
-async function findConfigPath(): Promise<string | null> {
-  const rootDir = process.cwd();
-  const baseName = 'vovk.config';
-  const extensions = ['cjs', 'mjs', 'js'];
-
-  for (const ext of extensions) {
-    const filePath = path.join(rootDir, `${baseName}.${ext}`);
-    try {
-      await fs.stat(filePath);
-      return filePath; // Return the path if the file exists
-    } catch {
-      // If the file doesn't exist, an error is thrown. Catch it and continue checking.
-    }
-  }
-
-  return null; // Return null if no config file was found
-}
+import getConfigPath from './getConfigPath.mjs';
 
 async function readConfig(): Promise<VovkConfig> {
-  const configPath = await findConfigPath();
+  const configPath = await getConfigPath();
   let config: VovkConfig = {};
 
   if (!configPath) {

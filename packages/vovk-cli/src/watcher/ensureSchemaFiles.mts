@@ -3,6 +3,7 @@ import path from 'path';
 import debounce from 'lodash/debounce.js';
 import writeOneSchemaFile, { ROOT_SEGMENT_SCHEMA_NAME } from './writeOneSchemaFile.mjs';
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
+import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 
 export default async function ensureSchemaFiles(
   schemaOutFullPath: string,
@@ -41,7 +42,7 @@ export default segmentSchema;`;
       });
 
       if (isCreated) {
-        projectInfo?.log.debug(`Created empty schema file for segment "${segmentName}"`);
+        projectInfo?.log.debug(`Created empty schema file for ${formatLoggedSegmentName(segmentName, true)}`);
         hasChanged = true;
       }
     })
@@ -75,7 +76,7 @@ export default segmentSchema;`;
             !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_SCHEMA_NAME, ''))
           ) {
             await fs.unlink(fullPath);
-            projectInfo?.log.debug(`Deleted unnecessary schema file for segment "${segmentName}"`);
+            projectInfo?.log.debug(`Deleted unnecessary schema file for ${formatLoggedSegmentName(segmentName, true)}`);
             hasChanged = true;
           }
         }

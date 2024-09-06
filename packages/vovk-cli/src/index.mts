@@ -2,14 +2,16 @@
 import { Command } from 'commander';
 import concurrently from 'concurrently';
 import getAvailablePort from './utils/getAvailablePort.mjs';
-import { VovkCLIServer } from './server/index.mjs';
+import { VovkCLIWatcher } from './watcher/index.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
-import generateClient from './server/generateClient.mjs';
+import generateClient from './generateClient.mjs';
 import locateSegments from './locateSegments.mjs';
 import { VovkConfig, VovkEnv } from './types.mjs';
 import { VovkSchema } from 'vovk';
 import path from 'path';
 import { readFileSync } from 'fs';
+import { Init } from './init/index.mjs';
+import type { LogLevelNames } from 'loglevel';
 
 export type { VovkConfig, VovkEnv };
 
@@ -23,6 +25,11 @@ interface GenerateOptions {
   clientOut?: string;
 }
 
+export interface InitOptions {
+  yes: boolean;
+  logLevel: LogLevelNames;
+}
+
 const program = new Command();
 
 const packageJSON = JSON.parse(readFileSync(path.join(import.meta.dirname, '../package.json'), 'utf-8')) as {
@@ -33,10 +40,9 @@ program.name('vovk').description('Vovk CLI').version(packageJSON.version);
 
 program
   .command('dev')
-  .description('Start development server (optional flag --next-dev to start Vovk Server with Next.js)')
-  .option('--project <path>', 'Path to Next.js project', process.cwd())
+  .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
   .option('--client-out <path>', 'Path to client output directory')
-  .option('--next-dev', 'Start Vovk Server and Next.js with automatic port allocation', false)
+  .option('--next-dev', 'Start schema watcher and Next.js with automatic port allocation', false)
   .allowUnknownOption(true)
   .action(async (options: DevOptions, command: Command) => {
     const portAttempts = 30;
@@ -58,10 +64,10 @@ program
       const { result } = concurrently(
         [
           {
-            command: `node ${import.meta.dirname}/server/index.mjs`,
-            name: 'Vovk.ts Schema Server',
+            command: `node ${import.meta.dirname}/watcher/index.mjs`,
+            name: 'Vovk.ts Schema Watcher',
             env: Object.assign(
-              { PORT, __VOVK_START_SERVER_IN_STANDALONE_MODE__: 'true' as const },
+              { PORT, __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const },
               options.clientOut ? { VOVK_CLIENT_OUT_DIR: options.clientOut } : {}
             ),
           },
@@ -83,7 +89,7 @@ program
         console.log('🐺 Exiting...');
       }
     } else {
-      void new VovkCLIServer().startServer({ clientOutDir: options.clientOut });
+      void new VovkCLIWatcher().start({ clientOutDir: options.clientOut });
     }
   });
 
@@ -101,6 +107,15 @@ program
     };
 
     await generateClient(projectInfo, segments, schema.default);
+  });
+
+program
+  .command('init [prefix]')
+  .description('Initialize Vovk project')
+  .option('-Y, --yes', 'Skip all prompts and use default values')
+  .option('--log-level <level>', 'Set log level', 'info')
+  .action(async (prefix: string = '.', options: InitOptions) => {
+    await Init.main(prefix, options);
   });
 
 program

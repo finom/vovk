@@ -1,7 +1,6 @@
 import path from 'path';
-import loglevel from 'loglevel';
-import chalk from 'chalk';
 import getConfig from './getConfig.mjs';
+import getLogger from '../utils/getLogger.mjs';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
@@ -24,15 +23,7 @@ export default async function getProjectInfo({
     ? path.relative(config.clientOutDir, config.fetcher)
     : config.fetcher;
 
-  const log = {
-    info: (msg: string) => loglevel.info(chalk.blueBright(`🐺 ${msg}`)),
-    warn: (msg: string) => loglevel.warn(chalk.yellowBright(`🐺 ${msg}`)),
-    error: (msg: string) => loglevel.error(chalk.redBright(`🐺 ${msg}`)),
-    debug: (msg: string) => loglevel.debug(chalk.gray(`🐺 ${msg}`)),
-    raw: loglevel,
-  };
-
-  loglevel.setLevel(config.logLevel);
+  const log = getLogger(config.logLevel);
 
   return {
     cwd,
