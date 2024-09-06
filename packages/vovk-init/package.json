@@ -1,0 +1,37 @@
+{
+    "name": "vovk-init",
+    "version": "0.0.0",
+    "main": "./index.mjs",
+    "type": "module",
+    "types": "./index.d.mts",
+    "scripts": {
+      "build": "tsc",
+      "ncu": "npm-check-updates -u",
+      "npm-publish": "npm publish"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/finom/vovk.git"
+    },
+    "keywords": [
+      "nextjs",
+      "router",
+      "cli",
+      "vovk",
+      "init"
+    ],
+    "author": "Andrii Gubanov",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/finom/vovk/issues"
+    },
+    "homepage": "https://vovk.dev",
+    "dependencies": {
+      "commander": "^12.1.0",
+      "vovk-cli": "*"
+    },
+    "devDependencies": {
+      "loglevel": "^1.9.1"
+    }
+  }
+  
