@@ -9,7 +9,7 @@ import type { Controllers as Controllers1, Workers as Workers1 } from "../src/ap
 import type { Controllers as Controllers2, Workers as Workers2 } from "../src/app/api/workers/[[...workers]]/route.ts";
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-  export const ClientController: ReturnType<typeof clientizeController<Controllers1["ClientController"], Options>>;
+export const ClientController: ReturnType<typeof clientizeController<Controllers1["ClientController"], Options>>;
 export const ClientController5x: ReturnType<typeof clientizeController<Controllers1["ClientController5x"], Options>>;
 export const StreamingController: ReturnType<typeof clientizeController<Controllers1["StreamingController"], Options>>;
 export const StreamingGeneratorController: ReturnType<typeof clientizeController<Controllers1["StreamingGeneratorController"], Options>>;

@@ -13,7 +13,7 @@ import validateOnClient from 'vovk-zod/validateOnClient';
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 const prefix = 'http://localhost:3210/api';
-  export const ClientController = clientizeController<Controllers1["ClientController"], Options>(schema['foo/client'].controllers.ClientController, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
+export const ClientController = clientizeController<Controllers1["ClientController"], Options>(schema['foo/client'].controllers.ClientController, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 export const ClientController5x = clientizeController<Controllers1["ClientController5x"], Options>(schema['foo/client'].controllers.ClientController5x, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 export const StreamingController = clientizeController<Controllers1["StreamingController"], Options>(schema['foo/client'].controllers.StreamingController, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 export const StreamingGeneratorController = clientizeController<Controllers1["StreamingGeneratorController"], Options>(schema['foo/client'].controllers.StreamingGeneratorController, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
