@@ -72,7 +72,7 @@ program
             ),
           },
           {
-            command: `cd ${options.project} && npx next dev ${command.args.join(' ')}`,
+            command: `npx next dev ${command.args.join(' ')}`,
             name: 'Next.js Development Server',
             env: { PORT },
           },
