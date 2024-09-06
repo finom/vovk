@@ -3,7 +3,7 @@ import { test, describe, beforeEach, afterEach } from 'node:test';
 import fs from 'fs/promises';
 import path from 'path';
 import * as glob from 'glob';
-import ensureSchemaFiles from '../src/server/ensureSchemaFiles.mts';
+import ensureSchemaFiles from '../src/watcher/ensureSchemaFiles.mjs';
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 
@@ -41,10 +41,10 @@ void describe('Check if schema files are created and removed correctly', async (
 
     // Check if index.js is created and has the correct content
     const indexPath = path.join(tmpDir, 'index.js');
-    const expectedIndexContent = `module.exports['segment1'] = require('./segment1');
-module.exports['segment2'] = require('./segment2');
-module.exports['folder1/segment3'] = require('./folder1/segment3');
-module.exports['folder2/segment4'] = require('./folder2/segment4');`;
+    const expectedIndexContent = `module.exports['segment1'] = require('./segment1.json');
+module.exports['segment2'] = require('./segment2.json');
+module.exports['folder1/segment3'] = require('./folder1/segment3.json');
+module.exports['folder2/segment4'] = require('./folder2/segment4.json');`;
 
     const indexContent = await fs.readFile(indexPath, 'utf-8');
     assert.strictEqual(indexContent.trim(), expectedIndexContent.trim());
@@ -72,9 +72,9 @@ module.exports['folder2/segment4'] = require('./folder2/segment4');`;
     }
 
     // Check if the updated index.js file is correct
-    const updatedExpectedIndexContent = `module.exports['segment2'] = require('./segment2');
-module.exports['folder1/segment3'] = require('./folder1/segment3');
-module.exports['segment5'] = require('./segment5');`;
+    const updatedExpectedIndexContent = `module.exports['segment2'] = require('./segment2.json');
+module.exports['folder1/segment3'] = require('./folder1/segment3.json');
+module.exports['segment5'] = require('./segment5.json');`;
 
     const updatedIndexContent = await fs.readFile(indexPath, 'utf-8');
     assert.strictEqual(updatedIndexContent.trim(), updatedExpectedIndexContent.trim());

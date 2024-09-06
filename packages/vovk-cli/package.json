@@ -9,7 +9,7 @@
   "prefix": ".",
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc",
-    "test": "ts-node test/index.mts",
+    "test": "NODE_OPTIONS=\"--loader ts-node/esm\" TS_NODE_PROJECT=./tsconfig.test.json node test/index.mts",
     "ncu": "npm-check-updates -u",
     "npm-publish": "npm publish"
   },
@@ -39,12 +39,15 @@
     "chokidar": "^3.6.0",
     "commander": "^12.1.0",
     "concurrently": "^8.2.2",
+    "inflection": "^3.0.0",
     "jsonc-parser": "^3.3.1",
     "lodash": "^4.17.21",
-    "loglevel": "^1.9.1"
+    "loglevel": "^1.9.1",
+    "pluralize": "^8.0.0"
   },
   "devDependencies": {
     "@types/npmcli__package-json": "^4.0.4",
+    "@types/pluralize": "^0.0.33",
     "type-fest": "^4.26.0"
   }
 }

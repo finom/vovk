@@ -1,7 +1,20 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import diffSchema from '../src/server/diffSchema.mjs';
-import { HttpMethod, type VovkSchema } from 'vovk';
+import diffSchema from '../src/watcher/diffSchema.mjs';
+import type { HttpMethod as VovkHttpMethod, VovkSchema } from 'vovk';
+
+// got some problems importing it from "vovk"
+enum _HttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
+  HEAD = 'HEAD',
+  OPTIONS = 'OPTIONS',
+}
+
+const HttpMethod = _HttpMethod as typeof VovkHttpMethod;
 
 void describe('diffJson', async () => {
   await test('Test case 1: No changes', () => {

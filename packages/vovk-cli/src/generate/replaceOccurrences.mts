@@ -1,47 +1,47 @@
-import { camelCase, kebabCase, snakeCase, upperFirst } from 'lodash';
+import camelCase from 'lodash/camelCase.js';
+import kebabCase from 'lodash/kebabCase.js';
+import snakeCase from 'lodash/snakeCase.js';
+import upperFirst from 'lodash/upperFirst.js';
 import pluralize from 'pluralize';
+import addCommonTerms from './addCommonTerms';
+
+addCommonTerms();
+
+console.log('WoRD', pluralize('entity'));
 
 export default function replaceOccurrences(code: string, replacementSingular: string): string {
   const replacementPlural = pluralize(replacementSingular);
 
   // Different cases of the replacement string
   const replacements = {
-    camel: camelCase(replacementSingular),
     camelPlural: camelCase(replacementPlural),
-    pascal: upperFirst(camelCase(replacementSingular)),
+    camel: camelCase(replacementSingular),
     pascalPlural: upperFirst(camelCase(replacementPlural)),
-    kebab: kebabCase(replacementSingular),
+    pascal: upperFirst(camelCase(replacementSingular)),
     kebabPlural: kebabCase(replacementPlural),
-    snake: snakeCase(replacementSingular),
+    kebab: kebabCase(replacementSingular),
     snakePlural: snakeCase(replacementPlural),
-    screamingSnake: snakeCase(replacementSingular).toUpperCase(),
+    snake: snakeCase(replacementSingular),
     screamingSnakePlural: snakeCase(replacementPlural).toUpperCase(),
-    screamingKebab: kebabCase(replacementSingular).toUpperCase(),
+    screamingSnake: snakeCase(replacementSingular).toUpperCase(),
     screamingKebabPlural: kebabCase(replacementPlural).toUpperCase(),
-    dot: replacementSingular.toLowerCase().replace(/ /g, '.'),
-    dotPlural: replacementPlural.toLowerCase().replace(/ /g, '.'),
-    screamingDot: replacementSingular.toUpperCase().replace(/ /g, '.'),
-    screamingDotPlural: replacementPlural.toUpperCase().replace(/ /g, '.'),
+    screamingKebab: kebabCase(replacementSingular).toUpperCase(),
   };
 
   // Create a map of original patterns to their replacements
   const originalPatterns = {
-    myThingCamel: 'myThing',
-    myThingCamelPlural: 'myThings',
-    myThingPascal: 'MyThing',
-    myThingPascalPlural: 'MyThings',
-    myThingKebab: 'my-thing',
-    myThingKebabPlural: 'my-things',
-    myThingSnake: 'my_thing',
-    myThingSnakePlural: 'my_things',
-    myThingScreamingSnake: 'MY_THING',
-    myThingScreamingSnakePlural: 'MY_THINGS',
-    myThingScreamingKebab: 'MY-THING',
-    myThingScreamingKebabPlural: 'MY-THINGS',
-    myThingDot: 'my.thing',
-    myThingDotPlural: 'my.things',
-    myThingScreamingDot: 'MY.THING',
-    myThingScreamingDotPlural: 'MY.THINGS',
+    camelPlural: 'myThings',
+    camel: 'myThing',
+    pascalPlural: 'MyThings',
+    pascal: 'MyThing',
+    kebabPlural: 'my-things',
+    kebab: 'my-thing',
+    snakePlural: 'my_things',
+    snake: 'my_thing',
+    screamingSnakePlural: 'MY_THINGS',
+    screamingSnake: 'MY_THING',
+    screamingKebabPlural: 'MY-THINGS',
+    screamingKebab: 'MY-THING',
   };
 
   // Replace all occurrences in the code

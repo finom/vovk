@@ -1,4 +1,4 @@
 import './utils.test.mjs';
-import './metadata-write.test.mjs';
-import './metadata-diff.test.mjs';
+import './schema-write.test.mjs';
+import './schema-diff.test.mjs';
 import './generate-replace-occurences.test.mjs';

@@ -3,26 +3,28 @@ import test, { describe } from 'node:test';
 import locateSegments from '../src/locateSegments.mjs';
 import path from 'node:path';
 
+const __dirname = import.meta.dirname;
+
 void describe('Bug-sensitive utils', async () => {
   await test('locateSegment', async () => {
-    const rootDirectory = path.join(__dirname, 'data/segments');
+    const rootDirectory = path.join(__dirname, '../test_data/segments');
     const results = await locateSegments(rootDirectory);
 
     const expectedResults = [
       {
-        routeFilePath: path.join(__dirname, 'data/segments/[[...vovk]]/route.ts'),
+        routeFilePath: path.join(__dirname, '../test_data/segments/[[...vovk]]/route.ts'),
         segmentName: '',
       },
       {
-        routeFilePath: path.join(__dirname, 'data/segments/bar/[[...custom]]/route.ts'),
+        routeFilePath: path.join(__dirname, '../test_data/segments/bar/[[...custom]]/route.ts'),
         segmentName: 'bar',
       },
       {
-        routeFilePath: path.join(__dirname, 'data/segments/foo/[[...vovk]]/route.ts'),
+        routeFilePath: path.join(__dirname, '../test_data/segments/foo/[[...vovk]]/route.ts'),
         segmentName: 'foo',
       },
       {
-        routeFilePath: path.join(__dirname, 'data/segments/quux/corge/[[...vovk]]/route.ts'),
+        routeFilePath: path.join(__dirname, '../test_data/segments/quux/corge/[[...vovk]]/route.ts'),
         segmentName: 'quux/corge',
       },
     ];

@@ -1,7 +1,7 @@
 node_modules
 dist
+test_dist
 *.tsbuildinfo
 .DS_Store
-.vovk
 .turbo
 tmp
