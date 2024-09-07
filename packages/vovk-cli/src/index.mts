@@ -85,8 +85,7 @@ program
       try {
         await result;
       } finally {
-        // eslint-disable-next-line no-console
-        console.log('🐺 Exiting...');
+        // do nothing, all processes are killed
       }
     } else {
       void new VovkCLIWatcher().start({ clientOutDir: options.clientOut });
