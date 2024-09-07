@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["*.ts"],
+  "include": ["*.ts", "templates/**/*"],
   "compilerOptions": {
-    "noEmit": false,
+    "noEmit": true,
   }
 }

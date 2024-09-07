@@ -4,7 +4,7 @@
   "description": "Zod validation for Vovk.js",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -P tsconfig.build.json",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u"
   },

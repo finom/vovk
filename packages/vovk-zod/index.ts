@@ -82,4 +82,4 @@ function withZod<
   return h as (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 }
 
-export default withZod;
+export { withZod };

@@ -4,14 +4,12 @@
     "module": "ESNext",
     "target": "ESNext",
     "moduleResolution": "node",
-    "noEmit": false,
-    "outDir": "./dist",
-    "rootDir": "./src",
     "declaration": true,
     "esModuleInterop": true, 
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
+    "noEmit": true,
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "templates/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]
 }
