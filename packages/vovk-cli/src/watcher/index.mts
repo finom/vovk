@@ -195,8 +195,7 @@ export class VovkCLIWatcher {
     const nameOfClasReg = /\bclass\s+([A-Za-z_]\w*)(?:\s*<[^>]*>)?\s*\{/g;
     const namesOfClasses = [...code.matchAll(nameOfClasReg)].map((match) => match[1]);
 
-    const importRegex =
-      /import\s*{[^}]*\b(initVovk|get|post|put|del|head|options|worker)\b[^}]*}\s*from\s*['"]vovk['"]/;
+    const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options|worker)\b[^}]*}\s*from\s*['"]vovk['"]/;
     if (importRegex.test(code) && namesOfClasses.length) {
       const affectedSegments = this.#segments.filter((s) => {
         const schema = this.#schemas[s.segmentName];
