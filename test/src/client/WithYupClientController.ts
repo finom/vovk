@@ -1,5 +1,5 @@
 import { post, put, get, del, prefix } from 'vovk';
-import withYup from 'vovk-yup';
+import { withYup } from 'vovk-yup';
 import * as Yup from 'yup';
 
 @prefix('with-yup')

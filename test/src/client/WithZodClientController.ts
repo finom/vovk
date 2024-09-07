@@ -1,5 +1,5 @@
 import { post, put, get, del, prefix } from 'vovk';
-import withZod from 'vovk-zod';
+import { withZod } from 'vovk-zod';
 import * as z from 'zod';
 
 @prefix('with-zod')

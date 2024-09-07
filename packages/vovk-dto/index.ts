@@ -91,4 +91,4 @@ function withDto<
   return h as (req: EnhancedReq, params: Parameters<T>[1]) => ReturnType<T>;
 }
 
-export default withDto;
+export { withDto };
