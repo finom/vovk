@@ -9,7 +9,7 @@
   "types": "./dist/index.d.mts",
   "prefix": ".",
   "scripts": {
-    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -P tsconfig.build.json",
+    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
     "test": "NODE_OPTIONS=\"--loader ts-node/esm\" TS_NODE_PROJECT=./tsconfig.test.json node test/index.mts",
     "ncu": "npm-check-updates -u",
     "npm-publish": "npm publish"

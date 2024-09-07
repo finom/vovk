@@ -24,12 +24,14 @@ void describe('diffJson', async () => {
       workers: {
         WorkerA: {
           _workerName: 'WorkerA',
+          _originalWorkerName: 'WorkerA',
           _handlers: { handlerA: {} },
         },
       },
       controllers: {
         ControllerA: {
           _controllerName: 'ControllerA',
+          _originalControllerName: 'ControllerA',
           _handlers: {
             handlerB: {
               path: 'path',
@@ -65,16 +67,19 @@ void describe('diffJson', async () => {
       workers: {
         WorkerA: {
           _workerName: 'WorkerA',
+          _originalWorkerName: 'WorkerA',
           _handlers: { handlerA: {} },
         },
         WorkerB: {
           _workerName: 'WorkerB',
+          _originalWorkerName: 'WorkerB',
           _handlers: { handlerB: {} },
         },
       },
       controllers: {
         ControllerA: {
           _controllerName: 'ControllerA',
+          _originalControllerName: 'ControllerA',
           _handlers: {
             handlerC: {
               path: 'path',
@@ -91,13 +96,19 @@ void describe('diffJson', async () => {
       workers: {
         WorkerB: {
           _workerName: 'WorkerB',
+          _originalWorkerName: 'WorkerB',
           _handlers: { handlerB: {} },
         },
-        WorkerC: { _workerName: 'WorkerC', _handlers: { handlerD: {} } },
+        WorkerC: {
+          _workerName: 'WorkerC',
+          _originalWorkerName: 'WorkerC',
+          _handlers: { handlerD: {} },
+        },
       },
       controllers: {
         ControllerB: {
           _controllerName: 'ControllerB',
+          _originalControllerName: 'ControllerB',
           _handlers: {
             handlerE: {
               path: 'path',
@@ -131,12 +142,14 @@ void describe('diffJson', async () => {
       workers: {
         WorkerA: {
           _workerName: 'WorkerA',
+          _originalWorkerName: 'WorkerA',
           _handlers: { handlerA: {}, handlerB: {} },
         },
       },
       controllers: {
         ControllerA: {
           _controllerName: 'ControllerA',
+          _originalControllerName: 'ControllerA',
           _handlers: {
             handlerC: {
               path: 'path',
@@ -157,6 +170,7 @@ void describe('diffJson', async () => {
       workers: {
         WorkerA: {
           _workerName: 'WorkerA',
+          _originalWorkerName: 'WorkerA',
           _handlers: {
             handlerB: {}, // Unchanged
             handlerE: {}, // Added
@@ -167,6 +181,7 @@ void describe('diffJson', async () => {
       controllers: {
         ControllerA: {
           _controllerName: 'ControllerA',
+          _originalControllerName: 'ControllerA',
           _handlers: {
             handlerD: {
               path: 'path',
@@ -222,16 +237,19 @@ void describe('diffJson', async () => {
       workers: {
         WorkerA: {
           _workerName: 'WorkerA',
+          _originalWorkerName: 'WorkerA',
           _handlers: { handlerA: {}, handlerB: {} },
         },
         WorkerB: {
           _workerName: 'WorkerB',
+          _originalWorkerName: 'WorkerB',
           _handlers: { handlerC: {} },
         },
       },
       controllers: {
         ControllerA: {
           _controllerName: 'ControllerA',
+          _originalControllerName: 'ControllerA',
           _handlers: {
             handlerD: {
               path: 'path',
@@ -248,16 +266,19 @@ void describe('diffJson', async () => {
       workers: {
         WorkerA: {
           _workerName: 'WorkerA',
+          _originalWorkerName: 'WorkerA',
           _handlers: { handlerB: {}, handlerE: {} },
         },
         WorkerC: {
           _workerName: 'WorkerC',
+          _originalWorkerName: 'WorkerC',
           _handlers: { handlerF: {} },
         },
       },
       controllers: {
         ControllerA: {
           _controllerName: 'ControllerA',
+          _originalControllerName: 'ControllerA',
           _handlers: {
             handlerD: {
               path: 'path',
@@ -271,6 +292,7 @@ void describe('diffJson', async () => {
         },
         ControllerB: {
           _controllerName: 'ControllerB',
+          _originalControllerName: 'ControllerB',
           _handlers: {
             handlerH: {
               path: 'path',
