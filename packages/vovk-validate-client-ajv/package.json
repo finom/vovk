@@ -1,6 +1,6 @@
 {
   "name": "vovk-validate-client-ajv",
-  "version": "0.0.0-beta.7",
+  "version": "0.0.0-beta.8",
   "description": "Local validation for JSON schemas for vovk-zod and other validation libraries for Vovk.ts",
   "main": "index.js",
   "scripts": {
