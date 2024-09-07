@@ -1,19 +1,12 @@
 {
   "name": "vovk-zod",
   "version": "1.0.0-beta.5",
-  "description": "Zod validation for Vovk.js",
+  "description": "Zod validation for Vovk.ts",
   "main": "index.js",
   "scripts": {
     "build": "tsc -P tsconfig.build.json",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u"
-  },
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 2,
-    "semi": true,
-    "singleQuote": true,
-    "printWidth": 120
   },
   "keywords": [
     "vovk",
@@ -23,7 +16,7 @@
   "author": "Andrii Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-beta.24",
+    "vovk": "^3.0.0-beta.25",
     "zod": "*"
   },
   "dependencies": {
