@@ -13,6 +13,7 @@ import isEmpty from 'lodash/isEmpty.js';
 import { VovkEnv } from '../types.mjs';
 import { VovkSchema } from 'vovk';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
+import keyBy from 'lodash/keyBy.js';
 
 export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;
@@ -200,7 +201,16 @@ export class VovkCLIWatcher {
       const affectedSegments = this.#segments.filter((s) => {
         const schema = this.#schemas[s.segmentName];
         if (!schema) return false;
-        return namesOfClasses.some((name) => schema.controllers[name] || schema.workers[name]);
+        const controllersByOriginalName = keyBy(schema.controllers, '_originalControllerName');
+        const workersByOriginalName = keyBy(schema.workers, '_originalWorkerName');
+
+        return namesOfClasses.some(
+          (name) =>
+            schema.controllers[name] ||
+            schema.workers[name] ||
+            controllersByOriginalName[name] ||
+            workersByOriginalName[name]
+        );
       });
 
       if (affectedSegments.length) {
@@ -276,7 +286,7 @@ export class VovkCLIWatcher {
     }
 
     if (this.#segments.every((s) => this.#schemas[s.segmentName])) {
-      log.debug(`All segments with emitSchema=true have schema.`);
+      log.debug(`All segments with "emitSchema" have schema.`);
       await generateClient(this.#projectInfo, this.#segments, this.#schemas);
     }
   }

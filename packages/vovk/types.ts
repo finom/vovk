@@ -26,12 +26,14 @@ export type _HandlerSchema = {
 
 export type _VovkControllerSchema = {
   _controllerName: string;
+  _originalControllerName: string;
   _prefix?: string;
   _handlers: Record<string, _HandlerSchema>;
 };
 
 export type _VovkWorkerSchema = {
   _workerName: string;
+  _originalWorkerName: string;
   _handlers: Record<
     string,
     {
