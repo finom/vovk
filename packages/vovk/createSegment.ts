@@ -5,11 +5,10 @@ import {
   type _KnownAny as KnownAny,
   type _RouteHandler as RouteHandler,
   type _VovkController as VovkController,
-  type _VovkWorker as VovkWorker,
   type _DecoratorOptions as DecoratorOptions,
   type _VovkRequest as VovkRequest,
-  type _VovkSchema as VovkSchema,
 } from './types';
+import getSchema from './utils/getSchema';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
@@ -121,53 +120,6 @@ export function _createSegment() {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return givenTarget;
     };
-  };
-
-  const getSchema = (options: {
-    emitSchema?: boolean;
-    segmentName?: string;
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    controllers: Record<string, Function>;
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    workers?: Record<string, Function>;
-    exposeValidation?: boolean;
-  }) => {
-    const exposeValidation = options?.exposeValidation ?? true;
-    const emitSchema = options.emitSchema ?? true;
-    const schema: VovkSchema = {
-      emitSchema,
-      segmentName: options.segmentName ?? '',
-      controllers: {},
-      workers: {},
-    };
-
-    if (!emitSchema) return schema;
-
-    for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
-      schema.controllers[controllerName] = {
-        _controllerName: controllerName,
-        _prefix: controller._prefix ?? '',
-        _handlers: {
-          ...(exposeValidation
-            ? controller._handlers
-            : Object.fromEntries(
-                Object.entries(controller._handlers).map(([key, value]) => [
-                  key,
-                  { ...value, clientValidators: undefined },
-                ])
-              )),
-        },
-      };
-    }
-
-    for (const [workerName, worker] of Object.entries(options.workers ?? {}) as [string, VovkWorker][]) {
-      schema.workers[workerName] = {
-        _workerName: workerName,
-        _handlers: { ...worker._handlers },
-      };
-    }
-
-    return schema;
   };
 
   const initVovk = (options: {
