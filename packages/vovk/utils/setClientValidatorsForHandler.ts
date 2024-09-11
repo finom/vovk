@@ -13,7 +13,7 @@ export default function setClientValidatorsForHandler(
 
       if (!controller) {
         throw new Error(
-          'Error setting client validators: Controller not found. Did you forget to use an HTTP decorator?'
+          'Error setting client validators. Controller not found. Did you forget to use an HTTP decorator?'
         );
       }
 
@@ -27,7 +27,7 @@ export default function setClientValidatorsForHandler(
       );
 
       if (!handlerName) {
-        throw new Error('Error setting client validators: Handler not found.');
+        throw new Error('Error setting client validators. Handler not found.');
       }
 
       controller._handlers = {
