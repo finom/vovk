@@ -34,6 +34,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   let hasQuery = false;
   const arrayKeys: string[] = [];
   for (const [key, value] of Object.entries(query ?? {})) {
+    if (typeof value === 'undefined') continue;
     if (value instanceof Array) {
       arrayKeys.push(key);
       for (const val of value) {
