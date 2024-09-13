@@ -94,7 +94,7 @@ const prefix = '${projectInfo.apiEntryPoint}';
   const existingTs = await fs.readFile(localTsPath, 'utf-8').catch(() => '');
 
   if (existingJs === js && existingDts === dts && existingTs === ts) {
-    projectInfo.log.info(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms).`);
+    projectInfo.log.info(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
     return { written: false, path: clientoOutDirFullPath };
   }
 

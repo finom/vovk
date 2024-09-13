@@ -14,6 +14,7 @@ import { VovkEnv } from '../types.mjs';
 import { VovkSchema } from 'vovk';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import keyBy from 'lodash/keyBy.js';
+import { capitalize } from 'lodash';
 
 export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;
@@ -48,7 +49,7 @@ export class VovkCLIWatcher {
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
             ? this.#segments
             : [...this.#segments, { routeFilePath: filePath, segmentName }];
-          log.info(`Segment "${segmentName}" has been added`);
+          log.info(`${capitalize(formatLoggedSegmentName(segmentName, true))} has been added`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
           void debouncedEnsureSchemaFiles(
@@ -85,7 +86,7 @@ export class VovkCLIWatcher {
         if (segmentReg.test(filePath)) {
           const segmentName = getSegmentName(filePath);
           this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
-          log.info(`Segment "${segmentName}" has been removed`);
+          log.info(`${capitalize(formatLoggedSegmentName(segmentName, true))} has been removed`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
           void debouncedEnsureSchemaFiles(
