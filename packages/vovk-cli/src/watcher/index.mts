@@ -14,7 +14,7 @@ import { VovkEnv } from '../types.mjs';
 import { VovkSchema } from 'vovk';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import keyBy from 'lodash/keyBy.js';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize.js';
 
 export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;
