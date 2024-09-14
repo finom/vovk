@@ -6,6 +6,7 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import locateSegments from '../locateSegments.mjs';
 import addClassToSegmentCode from './addClassToSegmentCode.mjs';
+import fileExists from '../utils/fileExists.mjs';
 
 function splitByLast(str: string, delimiter: string = '/'): [string, string] {
   const index = str.lastIndexOf(delimiter);
@@ -30,7 +31,7 @@ export default async function newModule({
   moduleNameWithOptionalSegment: string;
   dryRun: boolean;
 }) {
-  const { config, log, apiDir } = await getProjectInfo();
+  const { config, log, apiDir, cwd } = await getProjectInfo();
   const templates = config.templates as Required<typeof config.templates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
   // replace c by controller, s by service, w by worker, everything else keeps the same
@@ -62,41 +63,47 @@ export default async function newModule({
   }
 
   for (const type of what) {
-    const templateFullPath = path.join(config.modulesDir, templates[type]!);
+    const templatePath = templates[type]!;
+    const templateFullPath = path.join(cwd, '../..', templatePath); // TODO WRONG, use import.meta.resolve, also in other modules for fetcher, validateOnClient, etc.
     const templateCode = await fs.readFile(templateFullPath, 'utf-8');
-
-    const { fileName, className, rpcName, code } = render(templateCode, {
+    const { fileName, className, rpcName, code } = await render(templateCode, {
       config,
       withService: what.includes('service'),
       segmentName,
       moduleName,
     });
 
-    const dirName = path.dirname(fileName);
+    const fullModulePath = path.join(config.modulesDir, fileName);
+
+    const dirName = path.dirname(fullModulePath);
 
     if (!dryRun) {
-      await fs.mkdir(dirName, { recursive: true });
-      await fs.writeFile(fileName, code);
-
-      if (type === 'controller' || type === 'worker') {
-        const { routeFilePath } = segment;
-
-        const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
-        const importPath = path.relative(dirName, fileName); // TODO WRONG
-
-        const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {
-          className,
-          rpcName,
-          type,
-          importPath,
-        });
-
-        await fs.writeFile(routeFilePath, newSegmentCode);
-
-        log.info(
-          `Added ${chalkHighlightThing(className)} ${type} to ${formatLoggedSegmentName(segmentName)} as ${chalkHighlightThing(rpcName)}`
-        );
+      if (await fileExists(fullModulePath)) {
+        log.warn(`File ${chalkHighlightThing(fullModulePath)} already exists, skipping`);
+      } else {
+        await fs.mkdir(dirName, { recursive: true });
+        await fs.writeFile(fullModulePath, code);
       }
+    }
+
+    if (type === 'controller' || type === 'worker') {
+      const { routeFilePath } = segment;
+
+      const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
+      const importPath = path.relative(dirName, fileName); // TODO WRONG
+      const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {
+        className,
+        rpcName,
+        type,
+        importPath,
+      });
+      if (!dryRun) {
+        await fs.writeFile(routeFilePath, newSegmentCode);
+      }
+
+      log.info(
+        `Added ${chalkHighlightThing(className)} ${type} to ${formatLoggedSegmentName(segmentName)} as ${chalkHighlightThing(rpcName)}`
+      );
     }
 
     log.info(

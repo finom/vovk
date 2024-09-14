@@ -12,7 +12,6 @@ export default async function newComponents(components: string[], options: NewOp
 
     for (const segmentName of segmentNames) {
       await newSegment({ segmentName, dryRun: options.dryRun });
-      console.log('newSegment', { segmentName, dryRun: options.dryRun });
     }
   } else {
     if (components.length < 2) {
@@ -21,10 +20,9 @@ export default async function newComponents(components: string[], options: NewOp
     const what = components.slice(0, -1);
     const moduleNameWithOptionalSegment = components[components.length - 1];
 
-    if(!moduleNameWithOptionalSegment) {
-        throw new Error('Module name cannot be empty');
+    if (!moduleNameWithOptionalSegment) {
+      throw new Error('A module name with an optional segment cannot be empty');
     }
-    // await newModule({ what, moduleNameWithOptionalSegment, dryRun: options.dryRun });
-    console.log('newModule', { what, moduleNameWithOptionalSegment, dryRun: options.dryRun });
+    await newModule({ what, moduleNameWithOptionalSegment, dryRun: options.dryRun });
   }
 }

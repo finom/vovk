@@ -6,7 +6,7 @@ export default async function getConfig({ clientOutDir }: { clientOutDir?: strin
   const env = process.env as VovkEnv;
   const userConfig = await readConfig();
   const srcRoot = await getRelativeSrcRoot();
-  const config: Required<VovkConfig> = {
+  const config: Required<Omit<VovkConfig, '_devForceAppDir'>> = {
     modulesDir: env.VOVK_MODULES_DIR ?? userConfig.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     validateOnClient: env.VOVK_VALIDATE_ON_CLIENT ?? userConfig.validateOnClient ?? null,
     validationLibrary: env.VOVK_VALIDATION_LIBRARY ?? userConfig.validationLibrary ?? null,
@@ -26,5 +26,6 @@ export default async function getConfig({ clientOutDir }: { clientOutDir?: strin
     },
   };
 
+  // forceAppDir is used for testing purposes
   return { config, srcRoot };
 }

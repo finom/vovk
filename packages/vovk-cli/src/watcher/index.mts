@@ -49,7 +49,7 @@ export class VovkCLIWatcher {
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
             ? this.#segments
             : [...this.#segments, { routeFilePath: filePath, segmentName }];
-          log.info(`${capitalize(formatLoggedSegmentName(segmentName, true))} has been added`);
+          log.info(`${capitalize(formatLoggedSegmentName(segmentName))} has been added`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
           void debouncedEnsureSchemaFiles(
@@ -86,7 +86,7 @@ export class VovkCLIWatcher {
         if (segmentReg.test(filePath)) {
           const segmentName = getSegmentName(filePath);
           this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
-          log.info(`${capitalize(formatLoggedSegmentName(segmentName, true))} has been removed`);
+          log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} has been removed`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
           void debouncedEnsureSchemaFiles(
@@ -229,11 +229,11 @@ export class VovkCLIWatcher {
     const { apiEntryPoint, log, port } = this.#projectInfo;
     const endpoint = `${apiEntryPoint.startsWith('http') ? apiEntryPoint : `http://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 
-    log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName, true)} at ${endpoint}`);
+    log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
     const resp = await fetch(endpoint);
     if (resp.status !== 200) {
       log.warn(
-        `Schema request to ${formatLoggedSegmentName(segmentName, true)} failed with status code ${resp.status}. Expected 200.`
+        `Schema request to ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status}. Expected 200.`
       );
       return;
     }
@@ -242,7 +242,7 @@ export class VovkCLIWatcher {
     try {
       ({ schema } = (await resp.json()) as { schema: VovkSchema | null });
     } catch (error) {
-      log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName, true)}: ${(error as Error).message}`);
+      log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error).message}`);
     }
 
     await this.#handleSchema(schema);
@@ -277,11 +277,11 @@ export class VovkCLIWatcher {
 
       if (diffResult) {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
-        log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName, true)} has been updated in ${timeTook}ms`);
+        log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName)} has been updated in ${timeTook}ms`);
       }
     } else if (schema && (!isEmpty(schema.controllers) || !isEmpty(schema.workers))) {
       log.error(
-        `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName, true)} but emitSchema is false`
+        `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but emitSchema is false`
       );
     }
 

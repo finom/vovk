@@ -10,6 +10,6 @@
     "isolatedModules": true,
     "noEmit": true,
   },
-  "include": ["src/**/*", "templates/**/*", "test/**/*"],
+  "include": ["src/**/*", "templates/**/*", "test/**/*", "tmp/**/*"],
   "exclude": ["node_modules", "dist"]
 }

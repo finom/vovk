@@ -2,12 +2,12 @@ import ejs from 'ejs';
 import matter from 'gray-matter';
 import _ from 'lodash';
 import pluralize from 'pluralize';
-import addCommonTerms from './addCommonTerms';
+import addCommonTerms from './addCommonTerms.mjs';
 import type { VovkConfig } from '../types.mjs';
 
 addCommonTerms();
 
-export default function render(
+export default async function render(
   codeTemplate: string,
   {
     config,
@@ -42,7 +42,8 @@ export default function render(
     // custom YAML variables
   };
 
-  const parsed = matter(ejs.render(codeTemplate, templateVars));
+  const parsed = matter((await ejs.render(codeTemplate, templateVars, { async: true })).trim());
+  console.log(parsed);
   const { fileName, className, rpcName } = parsed.data as {
     fileName: string;
     className: string;
@@ -50,7 +51,7 @@ export default function render(
   };
   const templateContent = parsed.content;
 
-  const code = ejs.render(templateContent, templateVars);
+  const code = await ejs.render(templateContent, templateVars, { async: true });
 
   return { fileName, className, rpcName, code };
 }

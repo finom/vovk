@@ -1,9 +1,8 @@
-<% var modulePascalName = _.upperFirst(_.camelCase(moduleName); %>
+<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
 <% var modulePascalNamePlural = pluralize(modulePascalName); %>
 <% var ControllerName = modulePascalName + 'Controller'; %>
 <% var RPCName = modulePascalName + 'RPC'; %>
 <% var ServiceName = modulePascalName + 'Service'; %>
-
 ---
 # Relative to modules dir
 fileName: <%= getFileDir(segmentName, moduleName) + ControllerName + '.ts' %>
@@ -20,7 +19,7 @@ import { withZod } from 'vovk-zod';
 import { z } from 'zod';
 <% } %>
 
-@prefix('<%= kebabCase(moduleName).toLowerCase() %>')
+@prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
 export default class <%= ControllerName %> {
     @get()
     <% if(config.validationLibrary === 'vovk-zod') { %>
@@ -33,7 +32,7 @@ export default class <%= ControllerName %> {
         <% } %>
     });
     <% } else { %>
-    async get<%= modulePascalNamePlural %>(req: VovkRequest<null, { q: string }>) => {
+    static get<%= modulePascalNamePlural %> = async (req: VovkRequest<null, { q: string }>) => {
         const q = req.nextUrl.searchParams.get('q');
         <% if(withService) { %>
         return <%= ServiceName %>.getMyThingsExample(q);
@@ -61,6 +60,18 @@ export default class <%= ControllerName %> {
         <% } %>
         }
     );
+    <% } else { %>
+    static update<%= modulePascalNamePlural %> = async (req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>, params: { id: string }) => {
+        const { id } = params;
+        const body = await req.json();
+        const q = req.nextUrl.searchParams.get('q');
+        <% if(withService) { %>
+        return MyThingService.updateMyThingExample(id, q, body);
+        <% } else { %>
+        return { id, body, q };
+        <% } %>
+    };
+    <% } %>
 
     @post()
     static create<%= modulePascalNamePlural %> = () => {

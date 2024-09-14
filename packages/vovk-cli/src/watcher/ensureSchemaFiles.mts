@@ -42,7 +42,7 @@ export default segmentSchema;`;
       });
 
       if (isCreated) {
-        projectInfo?.log.debug(`Created empty schema file for ${formatLoggedSegmentName(segmentName, true)}`);
+        projectInfo?.log.debug(`Created empty schema file for ${formatLoggedSegmentName(segmentName)}`);
         hasChanged = true;
       }
     })
@@ -76,7 +76,7 @@ export default segmentSchema;`;
             !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_SCHEMA_NAME, ''))
           ) {
             await fs.unlink(fullPath);
-            projectInfo?.log.debug(`Deleted unnecessary schema file for ${formatLoggedSegmentName(segmentName, true)}`);
+            projectInfo?.log.debug(`Deleted unnecessary schema file for ${formatLoggedSegmentName(segmentName)}`);
             hasChanged = true;
           }
         }
