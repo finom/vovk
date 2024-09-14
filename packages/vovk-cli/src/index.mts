@@ -1,17 +1,18 @@
 #!/usr/bin/env node
+import path from 'path';
 import { Command } from 'commander';
+import { readFileSync } from 'fs';
 import concurrently from 'concurrently';
 import getAvailablePort from './utils/getAvailablePort.mjs';
-import { VovkCLIWatcher } from './watcher/index.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
 import generateClient from './generateClient.mjs';
 import locateSegments from './locateSegments.mjs';
-import { VovkConfig, VovkEnv } from './types.mjs';
-import { VovkSchema } from 'vovk';
-import path from 'path';
-import { readFileSync } from 'fs';
+import { VovkCLIWatcher } from './watcher/index.mjs';
 import { Init } from './init/index.mjs';
 import type { LogLevelNames } from 'loglevel';
+import type { VovkConfig, VovkEnv } from './types.mjs';
+import type { VovkSchema } from 'vovk';
+import newComponents from './new/index.mjs';
 
 export type { VovkConfig, VovkEnv };
 
@@ -28,6 +29,10 @@ interface GenerateOptions {
 export interface InitOptions {
   yes: boolean;
   logLevel: LogLevelNames;
+}
+
+export interface NewOptions {
+  dryRun: boolean;
 }
 
 const program = new Command();
@@ -113,14 +118,30 @@ program
   .description('Initialize Vovk project')
   .option('-Y, --yes', 'Skip all prompts and use default values')
   .option('--log-level <level>', 'Set log level', 'info')
-  .action(async (prefix: string = '.', options: InitOptions) => {
-    await Init.main(prefix, options);
-  });
+  .action((prefix: string = '.', options: InitOptions) => Init.main(prefix, options));
+
+program
+  .command('new [components...]')
+  .alias('n')
+  .description(
+    'Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
+  )
+  .option('--dry-run', 'Do not write files to disk')
+  .action((components: string[], options: NewOptions) => newComponents(components, options));
 
 program
   .command('help')
   .description('Show help message')
   .action(() => program.help());
+
+/*
+vovk new segment [segmentName]
+vovk new controller service [segmentName/]moduleName
+vovk new c s w [segmentName/]moduleName
+
+vovk c s w userApi/user
+vovk new c s w user
+*/
 
 program.parse(process.argv);
 

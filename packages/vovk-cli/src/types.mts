@@ -30,4 +30,11 @@ export type VovkConfig = {
   origin?: string;
   rootSegmentModulesDirName?: string;
   logLevel?: LogLevelNames;
+  custom?: KnownAny;
+  templates?: {
+    service?: string;
+    controller?: string;
+    worker?: string;
+    [key: string]: string | undefined;
+  };
 };

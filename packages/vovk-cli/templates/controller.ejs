@@ -1,0 +1,74 @@
+<% var modulePascalName = _.upperFirst(_.camelCase(moduleName); %>
+<% var modulePascalNamePlural = pluralize(modulePascalName); %>
+<% var ControllerName = modulePascalName + 'Controller'; %>
+<% var RPCName = modulePascalName + 'RPC'; %>
+<% var ServiceName = modulePascalName + 'Service'; %>
+
+---
+# Relative to modules dir
+fileName: <%= getFileDir(segmentName, moduleName) + ControllerName + '.ts' %>
+className: <%= ControllerName %> # Used to define a controller in a segment
+rpcName: <%= RPCName %> # Used to define an exported RPC class in a segment
+---
+
+import { prefix, get, put, post, del<%= !config.validationLibrary ? ', type VovkRequest' : '' %> } from 'vovk';
+<% if(withService) { %>
+import <%= ServiceName %> from './<%= ServiceName %>';
+<% } %>
+<% if(config.validationLibrary === 'vovk-zod') { %>
+import { withZod } from 'vovk-zod';
+import { z } from 'zod';
+<% } %>
+
+@prefix('<%= kebabCase(moduleName).toLowerCase() %>')
+export default class <%= ControllerName %> {
+    @get()
+    <% if(config.validationLibrary === 'vovk-zod') { %>
+    async get<%= modulePascalNamePlural %> = withZod(null, z.object({ q: z.string() }), (req) => {
+        const q = req.nextUrl.searchParams.get('q');
+        <% if(withService) { %>
+        return <%= ServiceName %>.getMyThingsExample(q);
+        <% } else { %>
+        return { q };
+        <% } %>
+    });
+    <% } else { %>
+    async get<%= modulePascalNamePlural %>(req: VovkRequest<null, { q: string }>) => {
+        const q = req.nextUrl.searchParams.get('q');
+        <% if(withService) { %>
+        return <%= ServiceName %>.getMyThingsExample(q);
+        <% } else { %>
+        return { q };
+        <% } %>
+    }
+    <% } %>
+
+    @put(':id')
+    <% if(config.validationLibrary === 'vovk-zod') { %>
+    static update<%= modulePascalNamePlural %> = withZod(
+        z.object({
+        foo: z.union([z.literal('bar'), z.literal('baz')]),
+        }),
+        z.object({ q: z.string() }),
+        async (req, params: { id: string }) => {
+        const { id } = params;
+        const body = await req.json();
+        const q = req.nextUrl.searchParams.get('q');
+        <% if(withService) { %>
+        return MyThingService.updateMyThingExample(id, q, body);
+        <% } else { %>
+        return { id, body, q };
+        <% } %>
+        }
+    );
+
+    @post()
+    static create<%= modulePascalNamePlural %> = () => {
+        // ...
+    };
+
+    @del(':id')
+    static delete<%= modulePascalNamePlural %> = () => {
+        // ...
+    };
+}
