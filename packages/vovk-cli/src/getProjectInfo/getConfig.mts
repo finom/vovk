@@ -17,7 +17,7 @@ export default async function getConfig({ clientOutDir }: { clientOutDir?: strin
     rootEntry: env.VOVK_ROOT_ENTRY ?? userConfig.rootEntry ?? 'api',
     rootSegmentModulesDirName: env.VOVK_ROOT_SEGMENT_MODULES_DIR_NAME ?? userConfig.rootSegmentModulesDirName ?? '',
     logLevel: env.VOVK_LOG_LEVEL ?? userConfig.logLevel ?? 'debug', // TODO: change to 'warn' when v3 is ready
-    custom: (userConfig.custom as unknown) ?? {},
+    prettifyClient: userConfig.prettifyClient ?? false,
     templates: {
       service: 'vovk-cli/templates/service.ejs',
       controller: 'vovk-cli/templates/controller.ejs',

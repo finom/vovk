@@ -30,7 +30,7 @@ export type VovkConfig = {
   origin?: string;
   rootSegmentModulesDirName?: string;
   logLevel?: LogLevelNames;
-  custom?: KnownAny;
+  prettifyClient?: boolean;
   templates?: {
     service?: string;
     controller?: string;

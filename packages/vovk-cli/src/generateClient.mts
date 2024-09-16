@@ -93,9 +93,11 @@ const prefix = '${apiEntryPoint}';
   const existingDts = await fs.readFile(localDtsAbsolutePath, 'utf-8').catch(() => '');
   const existingTs = await fs.readFile(localTsAbsolutePath, 'utf-8').catch(() => '');
 
-  js = await prettify(js, localJsAbsolutePath);
-  dts = await prettify(dts, localDtsAbsolutePath);
-  ts = await prettify(ts, localTsAbsolutePath);
+  if (config.prettifyClient) {
+    js = await prettify(js, localJsAbsolutePath);
+    dts = await prettify(dts, localDtsAbsolutePath);
+    ts = await prettify(ts, localTsAbsolutePath);
+  }
 
   if (existingJs === js && existingDts === dts && existingTs === ts) {
     log.info(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
