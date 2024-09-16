@@ -28,7 +28,7 @@
   "homepage": "https://vovk.dev",
   "dependencies": {
     "commander": "^12.1.0",
-    "vovk-cli": "^0.0.1-beta.19"
+    "vovk-cli": "^0.0.1-beta.20"
   },
   "devDependencies": {
     "loglevel": "^1.9.2"
