@@ -6,18 +6,18 @@ import diffSchema, { DiffResult } from './diffSchema.mjs';
 export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
 
 export default async function writeOneSchemaFile({
-  schemaOutFullPath,
+  schemaOutAbsolutePath,
   schema,
   skipIfExists = false,
 }: {
-  schemaOutFullPath: string;
+  schemaOutAbsolutePath: string;
   schema: VovkSchema;
   skipIfExists?: boolean;
 }): Promise<{
   isCreated: boolean;
   diffResult: DiffResult | null;
 }> {
-  const segmentPath = path.join(schemaOutFullPath, `${schema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
+  const segmentPath = path.join(schemaOutAbsolutePath, `${schema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
 
   if (skipIfExists) {
     try {

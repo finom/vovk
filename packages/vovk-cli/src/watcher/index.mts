@@ -32,12 +32,12 @@ export class VovkCLIWatcher {
   #watchSegments = () => {
     const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
     const { cwd, log, config, apiDir } = this.#projectInfo;
-    const schemaOutFullPath = path.join(cwd, config.schemaOutDir);
-    const apiDirFullPath = path.join(cwd, apiDir);
-    const getSegmentName = (filePath: string) => path.relative(apiDirFullPath, filePath).replace(segmentReg, '');
-    log.debug(`Watching segments in ${apiDirFullPath}`);
+    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
+    const apiDirAbsolutePath = path.join(cwd, apiDir);
+    const getSegmentName = (filePath: string) => path.relative(apiDirAbsolutePath, filePath).replace(segmentReg, '');
+    log.debug(`Watching segments in ${apiDirAbsolutePath}`);
     this.#segmentWatcher = chokidar
-      .watch(apiDirFullPath, {
+      .watch(apiDirAbsolutePath, {
         persistent: true,
         ignoreInitial: true,
       })
@@ -53,9 +53,9 @@ export class VovkCLIWatcher {
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
           void debouncedEnsureSchemaFiles(
-            schemaOutFullPath,
-            this.#segments.map((s) => s.segmentName),
-            this.#projectInfo // TODO refactor
+            this.#projectInfo,
+            schemaOutAbsolutePath,
+            this.#segments.map((s) => s.segmentName)
           );
         }
       })
@@ -68,7 +68,7 @@ export class VovkCLIWatcher {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       .on('addDir', async (dirPath) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
-        this.#segments = await locateSegments(apiDirFullPath);
+        this.#segments = await locateSegments(apiDirAbsolutePath);
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
@@ -76,7 +76,7 @@ export class VovkCLIWatcher {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       .on('unlinkDir', async (dirPath) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
-        this.#segments = await locateSegments(apiDirFullPath);
+        this.#segments = await locateSegments(apiDirAbsolutePath);
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
@@ -90,9 +90,9 @@ export class VovkCLIWatcher {
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
           void debouncedEnsureSchemaFiles(
-            schemaOutFullPath,
-            this.#segments.map((s) => s.segmentName),
-            this.#projectInfo // TODO refactor
+            this.#projectInfo,
+            schemaOutAbsolutePath,
+            this.#segments.map((s) => s.segmentName)
           );
         }
       })
@@ -106,10 +106,10 @@ export class VovkCLIWatcher {
 
   #watchModules = () => {
     const { config, cwd, log } = this.#projectInfo;
-    const modulesDirFullPath = path.join(cwd, config.modulesDir);
-    log.debug(`Watching modules in ${modulesDirFullPath}`);
+    const modulesDirAbsolutePath = path.join(cwd, config.modulesDir);
+    log.debug(`Watching modules in ${modulesDirAbsolutePath}`);
     this.#modulesWatcher = chokidar
-      .watch(modulesDirFullPath, {
+      .watch(modulesDirAbsolutePath, {
         persistent: true,
         ignoreInitial: true,
       })
@@ -256,7 +256,7 @@ export class VovkCLIWatcher {
       return;
     }
 
-    const schemaOutFullPath = path.join(cwd, config.schemaOutDir);
+    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const segment = this.#segments.find((s) => s.segmentName === schema.segmentName);
 
     if (!segment) {
@@ -268,7 +268,7 @@ export class VovkCLIWatcher {
     if (schema.emitSchema) {
       const now = Date.now();
       const { diffResult } = await writeOneSchemaFile({
-        schemaOutFullPath,
+        schemaOutAbsolutePath,
         schema,
         skipIfExists: false,
       });
@@ -303,15 +303,15 @@ export class VovkCLIWatcher {
       log.error(`Unhandled Rejection: ${String(reason)}`);
     });
 
-    const apiDirFullPath = path.join(cwd, apiDir);
-    const schemaOutFullPath = path.join(cwd, config.schemaOutDir);
+    const apiDirAbsolutePath = path.join(cwd, apiDir);
+    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
 
-    this.#segments = await locateSegments(apiDirFullPath);
+    this.#segments = await locateSegments(apiDirAbsolutePath);
 
     await debouncedEnsureSchemaFiles(
-      schemaOutFullPath,
-      this.#segments.map((s) => s.segmentName),
-      this.#projectInfo
+      this.#projectInfo,
+      schemaOutAbsolutePath,
+      this.#segments.map((s) => s.segmentName)
     );
 
     // Request schema every segment in 3 seconds in order to update schema and start watching

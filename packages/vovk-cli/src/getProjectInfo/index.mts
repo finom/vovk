@@ -23,6 +23,10 @@ export default async function getProjectInfo({
     ? path.relative(config.clientOutDir, config.fetcher)
     : config.fetcher;
 
+  const validateOnClientImportPath = config.validateOnClient?.startsWith('.')
+    ? path.relative(config.clientOutDir, config.validateOnClient)
+    : config.validateOnClient;
+
   const log = getLogger(config.logLevel);
 
   return {
@@ -33,6 +37,7 @@ export default async function getProjectInfo({
     srcRoot,
     schemaOutImportPath,
     fetcherClientImportPath,
+    validateOnClientImportPath,
     config,
     log,
   };

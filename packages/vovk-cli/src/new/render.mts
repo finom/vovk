@@ -38,12 +38,10 @@ export default async function render(
     // libraries
     _, // lodash
     pluralize,
-
-    // custom YAML variables
   };
 
+  // first, render the front matter because it can use ejs variables
   const parsed = matter((await ejs.render(codeTemplate, templateVars, { async: true })).trim());
-  console.log(parsed);
   const { fileName, className, rpcName } = parsed.data as {
     fileName: string;
     className: string;

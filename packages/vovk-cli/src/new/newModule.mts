@@ -7,6 +7,7 @@ import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import locateSegments from '../locateSegments.mjs';
 import addClassToSegmentCode from './addClassToSegmentCode.mjs';
 import fileExists from '../utils/fileExists.mjs';
+import prettify from '../utils/prettify.mjs';
 
 function splitByLast(str: string, delimiter: string = '/'): [string, string] {
   const index = str.lastIndexOf(delimiter);
@@ -64,8 +65,8 @@ export default async function newModule({
 
   for (const type of what) {
     const templatePath = templates[type]!;
-    const templateFullPath = path.join(cwd, '../..', templatePath); // TODO WRONG, use import.meta.resolve, also in other modules for fetcher, validateOnClient, etc.
-    const templateCode = await fs.readFile(templateFullPath, 'utf-8');
+    const templateAbsolutePath = path.join(cwd, '../..', templatePath); // TODO WRONG, use import.meta.resolve, also in other modules for fetcher, validateOnClient, etc.
+    const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
     const { fileName, className, rpcName, code } = await render(templateCode, {
       config,
       withService: what.includes('service'),
@@ -73,16 +74,19 @@ export default async function newModule({
       moduleName,
     });
 
-    const fullModulePath = path.join(config.modulesDir, fileName);
+    console.log(config.modulesDir, fileName);
 
-    const dirName = path.dirname(fullModulePath);
+    const absoluteModulePath = path.join(config.modulesDir, fileName);
+
+    const dirName = path.dirname(absoluteModulePath);
+    const prettiedCode = await prettify(code, absoluteModulePath);
 
     if (!dryRun) {
-      if (await fileExists(fullModulePath)) {
-        log.warn(`File ${chalkHighlightThing(fullModulePath)} already exists, skipping`);
+      if (await fileExists(absoluteModulePath)) {
+        log.warn(`File ${chalkHighlightThing(absoluteModulePath)} already exists, skipping this "${type}"`);
       } else {
         await fs.mkdir(dirName, { recursive: true });
-        await fs.writeFile(fullModulePath, code);
+        await fs.writeFile(absoluteModulePath, prettiedCode);
       }
     }
 

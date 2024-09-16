@@ -9,12 +9,12 @@ export default async function installDependencies(
   dependencies: string[],
   devDependencies: string[]
 ): Promise<void> {
-  const fullPath = path.resolve(installDir);
+  const absolutePath = path.resolve(installDir);
 
   try {
     if (dependencies.length > 0) {
-      console.log(`Installing dependencies in ${fullPath}...`);
-      const { stdout, stderr } = await execPromise(`npm install ${dependencies.join(' ')} --prefix ${fullPath}`);
+      console.log(`Installing dependencies in ${absolutePath}...`);
+      const { stdout, stderr } = await execPromise(`npm install ${dependencies.join(' ')} --prefix ${absolutePath}`);
       console.log(stdout);
       if (stderr) {
         console.error(stderr);
@@ -22,9 +22,9 @@ export default async function installDependencies(
     }
 
     if (devDependencies.length > 0) {
-      console.log(`Installing dev dependencies in ${fullPath}...`);
+      console.log(`Installing dev dependencies in ${absolutePath}...`);
       const { stdout, stderr } = await execPromise(
-        `npm install --save-dev ${devDependencies.join(' ')} --prefix ${fullPath}`
+        `npm install --save-dev ${devDependencies.join(' ')} --prefix ${absolutePath}`
       );
       console.log(stdout);
       if (stderr) {

@@ -105,8 +105,8 @@ program
     const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments(apiDir);
-    const schemaOutFullPath = path.join(cwd, config.schemaOutDir);
-    const schema = (await import(path.join(schemaOutFullPath, 'index.js'))) as {
+    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
+    const schema = (await import(path.join(schemaOutAbsolutePath, 'index.js'))) as {
       default: Record<string, VovkSchema>;
     };
 

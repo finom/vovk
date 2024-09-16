@@ -47,6 +47,7 @@
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
     "pluralize": "^8.0.0",
+    "prettier": "^3.3.3",
     "ts-morph": "^23.0.0"
   },
   "devDependencies": {

@@ -6,9 +6,9 @@ import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 
 export default async function ensureSchemaFiles(
-  schemaOutFullPath: string,
-  segmentNames: string[],
-  projectInfo: ProjectInfo | null
+  projectInfo: ProjectInfo | null,
+  schemaOutAbsolutePath: string,
+  segmentNames: string[]
 ): Promise<void> {
   const now = Date.now();
   let hasChanged = false;
@@ -23,15 +23,15 @@ export default async function ensureSchemaFiles(
 declare const segmentSchema: Record<string, VovkSchema>;
 export default segmentSchema;`;
 
-  await fs.mkdir(schemaOutFullPath, { recursive: true });
-  await fs.writeFile(path.join(schemaOutFullPath, 'index.js'), indexContent);
-  await fs.writeFile(path.join(schemaOutFullPath, 'index.d.ts'), dTsContent);
+  await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
+  await fs.writeFile(path.join(schemaOutAbsolutePath, 'index.js'), indexContent);
+  await fs.writeFile(path.join(schemaOutAbsolutePath, 'index.d.ts'), dTsContent);
 
-  // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested) : {} (empty object)
+  // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
       const { isCreated } = await writeOneSchemaFile({
-        schemaOutFullPath,
+        schemaOutAbsolutePath,
         schema: {
           emitSchema: false,
           segmentName,
@@ -54,28 +54,28 @@ export default segmentSchema;`;
 
     await Promise.all(
       entries.map(async (entry) => {
-        const fullPath = path.join(dirPath, entry.name);
+        const absolutePath = path.join(dirPath, entry.name);
 
         if (entry.isDirectory()) {
           // Recursively delete unnecessary files and folders within nested directories
-          await deleteUnnecessaryJsonFiles(fullPath);
+          await deleteUnnecessaryJsonFiles(absolutePath);
 
           // Check if the directory is empty after deletion and remove it if so
-          const remainingEntries = await fs.readdir(fullPath);
+          const remainingEntries = await fs.readdir(absolutePath);
           if (remainingEntries.length === 0) {
-            await fs.rmdir(fullPath);
-            projectInfo?.log.debug(`Deleted unnecessary schema directory "${fullPath}"`);
+            await fs.rmdir(absolutePath);
+            projectInfo?.log.debug(`Deleted unnecessary schema directory "${absolutePath}"`);
             hasChanged = true;
           }
         } else if (entry.isFile() && entry.name.endsWith('.json')) {
-          const relativePath = path.relative(schemaOutFullPath, fullPath);
+          const relativePath = path.relative(schemaOutAbsolutePath, absolutePath);
           const segmentName = relativePath.replace(/\\/g, '/').slice(0, -5); // Remove '.json' extension
 
           if (
             !segmentNames.includes(segmentName) &&
             !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_SCHEMA_NAME, ''))
           ) {
-            await fs.unlink(fullPath);
+            await fs.unlink(absolutePath);
             projectInfo?.log.debug(`Deleted unnecessary schema file for ${formatLoggedSegmentName(segmentName)}`);
             hasChanged = true;
           }
@@ -85,7 +85,7 @@ export default segmentSchema;`;
   }
 
   // Start the recursive deletion from the root directory
-  await deleteUnnecessaryJsonFiles(schemaOutFullPath);
+  await deleteUnnecessaryJsonFiles(schemaOutAbsolutePath);
 
   if (hasChanged) projectInfo?.log.info(`Schema files updated in ${Date.now() - now}ms`);
 }
