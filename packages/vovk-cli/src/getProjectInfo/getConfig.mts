@@ -6,7 +6,7 @@ export default async function getConfig({ clientOutDir }: { clientOutDir?: strin
   const env = process.env as VovkEnv;
   const userConfig = await readConfig();
   const srcRoot = await getRelativeSrcRoot();
-  const config: Required<Omit<VovkConfig, '_devForceAppDir'>> = {
+  const config: Required<VovkConfig> = {
     modulesDir: env.VOVK_MODULES_DIR ?? userConfig.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     validateOnClient: env.VOVK_VALIDATE_ON_CLIENT ?? userConfig.validateOnClient ?? null,
     validationLibrary: env.VOVK_VALIDATION_LIBRARY ?? userConfig.validationLibrary ?? null,
@@ -19,6 +19,7 @@ export default async function getConfig({ clientOutDir }: { clientOutDir?: strin
     logLevel: env.VOVK_LOG_LEVEL ?? userConfig.logLevel ?? 'debug', // TODO: change to 'warn' when v3 is ready
     prettifyClient: userConfig.prettifyClient ?? false,
     templates: {
+      // TODO individual templates for each validation library
       service: 'vovk-cli/templates/service.ejs',
       controller: 'vovk-cli/templates/controller.ejs',
       worker: 'vovk-cli/templates/worker.ejs',
@@ -26,6 +27,5 @@ export default async function getConfig({ clientOutDir }: { clientOutDir?: strin
     },
   };
 
-  // forceAppDir is used for testing purposes
   return { config, srcRoot };
 }

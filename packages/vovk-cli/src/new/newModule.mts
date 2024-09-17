@@ -65,7 +65,10 @@ export default async function newModule({
 
   for (const type of what) {
     const templatePath = templates[type]!;
-    const templateAbsolutePath = path.join(cwd, '../..', templatePath); // TODO WRONG, use import.meta.resolve, also in other modules for fetcher, validateOnClient, etc.
+    const templateAbsolutePath =
+      templatePath.startsWith('/') || templatePath.startsWith('.')
+        ? path.resolve(cwd, templatePath)
+        : path.resolve(cwd, './node_modules', templatePath);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
     const { fileName, className, rpcName, code } = await render(templateCode, {
       config,
@@ -74,9 +77,7 @@ export default async function newModule({
       moduleName,
     });
 
-    console.log(config.modulesDir, fileName);
-
-    const absoluteModulePath = path.join(config.modulesDir, fileName);
+    const absoluteModulePath = path.join(cwd, config.modulesDir, fileName);
 
     const dirName = path.dirname(absoluteModulePath);
     const prettiedCode = await prettify(code, absoluteModulePath);
@@ -94,7 +95,7 @@ export default async function newModule({
       const { routeFilePath } = segment;
 
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
-      const importPath = path.relative(dirName, fileName); // TODO WRONG
+      const importPath = path.relative(dirName, absoluteModulePath).replace(/\.(ts|tsx)$/, '');
       const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {
         className,
         rpcName,
