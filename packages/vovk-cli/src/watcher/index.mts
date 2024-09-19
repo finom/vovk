@@ -192,7 +192,10 @@ export class VovkCLIWatcher {
   #processControllerChange = async (filePath: string) => {
     const { log } = this.#projectInfo;
     const code = await fs.readFile(filePath, 'utf-8').catch(() => null);
-    if (typeof code !== 'string') return;
+    if (typeof code !== 'string') {
+      log.error(`Error reading file ${filePath}`);
+      return;
+    }
     const nameOfClasReg = /\bclass\s+([A-Za-z_]\w*)(?:\s*<[^>]*>)?\s*\{/g;
     const namesOfClasses = [...code.matchAll(nameOfClasReg)].map((match) => match[1]);
 
@@ -222,6 +225,8 @@ export class VovkCLIWatcher {
           await this.#requestSchema(segment.segmentName);
         }
       }
+    } else {
+      log.debug(`File ${filePath} does not contain any vovk controller or worker`);
     }
   };
 
