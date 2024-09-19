@@ -218,7 +218,7 @@ export class VovkCLIWatcher {
 
       if (affectedSegments.length) {
         log.debug(
-          `A file with controller or worker ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments)}`
+          `A file with controller or worker ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
         );
 
         for (const segment of affectedSegments) {
