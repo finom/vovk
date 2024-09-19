@@ -40,7 +40,7 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
     });
   });
 
-  const LIMIT = 5;
+  const LIMIT = diffNormalized.length < 12 ? diffNormalized.length : 10;
 
   for (const diffNormalizedItem of diffNormalized.slice(0, LIMIT)) {
     switch (diffNormalizedItem.what) {
@@ -110,6 +110,6 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
   }
 
   if (diffNormalized.length > LIMIT) {
-    projectInfo.log.info(`...and ${diffNormalized.length - LIMIT} more changes`);
+    projectInfo.log.info(`... and ${diffNormalized.length - LIMIT} more changes`);
   }
 }

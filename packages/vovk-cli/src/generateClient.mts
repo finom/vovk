@@ -100,7 +100,7 @@ const prefix = '${apiEntryPoint}';
   }
 
   if (existingJs === js && existingDts === dts && existingTs === ts) {
-    log.info(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
+    log.debug(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
     return { written: false, path: clientoOutDirAbsolutePath };
   }
 

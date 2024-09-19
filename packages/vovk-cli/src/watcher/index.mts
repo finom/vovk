@@ -232,8 +232,12 @@ export class VovkCLIWatcher {
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
     const resp = await fetch(endpoint);
     if (resp.status !== 200) {
+      const probableCause = {
+        404: 'The segment is not compiled.',
+        500: 'Syntax error in one of controllers.',
+      }[resp.status];
       log.warn(
-        `Schema request to ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status}. Expected 200.`
+        `Schema request to ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}` : ''}`
       );
       return;
     }
