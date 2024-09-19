@@ -12,16 +12,11 @@ import getSchema from './utils/getSchema';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
-const toKebabCase = (str: string) => {
-  return (
-    str
-      // Insert a hyphen before each uppercase letter, then convert to lowercase
-      .replace(/([A-Z])/g, '-$1')
-      .toLowerCase()
-      // Remove any leading hyphen if the original string started with an uppercase letter
-      .replace(/^-/, '')
-  );
-};
+const toKebabCase = (str: string) =>
+  str
+    .replace(/([A-Z])/g, '-$1')
+    .toLowerCase()
+    .replace(/^-/, '');
 
 export function _createSegment() {
   const segment = new Segment();

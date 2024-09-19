@@ -18,6 +18,20 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
     diffNormalized.push({ what: 'worker', type: 'removed', name });
   });
 
+  diffResult.workers.handlers.forEach((handler) => {
+    handler.added.forEach((name) => {
+      diffNormalized.push({ what: 'workerHandler', type: 'added', name: `${handler.nameOfClass}.${name}` });
+    });
+
+    handler.removed.forEach((name) => {
+      diffNormalized.push({ what: 'workerHandler', type: 'removed', name: `${handler.nameOfClass}.${name}` });
+    });
+
+    handler.changed.forEach((name) => {
+      diffNormalized.push({ what: 'workerHandler', type: 'changed', name: `${handler.nameOfClass}.${name}` });
+    });
+  });
+
   diffResult.controllers.added.forEach((name) => {
     diffNormalized.push({ what: 'controller', type: 'added', name });
   });
