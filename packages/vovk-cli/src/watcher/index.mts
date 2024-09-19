@@ -160,7 +160,7 @@ export class VovkCLIWatcher {
     }, 1000);
 
     chokidar
-      .watch('vovk.config.{js,mjs,cjs}', {
+      .watch(['vovk.config.{js,mjs,cjs}', '.config/vovk.config.{js,mjs,cjs}'], {
         persistent: true,
         cwd,
         ignoreInitial: false,

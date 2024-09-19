@@ -4,7 +4,7 @@ import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 
 export default async function getConfig({ clientOutDir }: { clientOutDir?: string }) {
   const env = process.env as VovkEnv;
-  const userConfig = await readConfig();
+  const { userConfig, configPaths } = await readConfig();
   const srcRoot = await getRelativeSrcRoot();
   const config: Required<VovkConfig> = {
     modulesDir: env.VOVK_MODULES_DIR ?? userConfig.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
@@ -27,5 +27,5 @@ export default async function getConfig({ clientOutDir }: { clientOutDir?: strin
     },
   };
 
-  return { config, srcRoot };
+  return { config, srcRoot, configPaths };
 }

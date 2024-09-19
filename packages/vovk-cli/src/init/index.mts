@@ -64,7 +64,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import * as jsonc from 'jsonc-parser';
 import type { VovkConfig } from '../types.mjs';
-import getConfigPath from '../getProjectInfo/getConfigPath.mjs';
+import getConfigPath from '../getProjectInfo/getConfigPaths.mjs';
 import type { InitOptions } from '../index.mjs';
 import chalk from 'chalk';
 import fileExists from '../utils/fileExists.mjs';

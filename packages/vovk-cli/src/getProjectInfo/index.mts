@@ -14,7 +14,7 @@ export default async function getProjectInfo({
   process.env.PORT = port;
 
   const cwd = process.cwd();
-  const { config, srcRoot } = await getConfig({ clientOutDir });
+  const { config, srcRoot, configPaths } = await getConfig({ clientOutDir });
   const apiEntryPoint = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
@@ -28,6 +28,10 @@ export default async function getProjectInfo({
     : config.validateOnClient;
 
   const log = getLogger(config.logLevel);
+
+  if (configPaths.length > 1) {
+    log.warn(`Multiple config files found. Using the first one: ${configPaths[0]}`);
+  }
 
   return {
     cwd,
