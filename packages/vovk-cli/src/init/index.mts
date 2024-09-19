@@ -195,10 +195,10 @@ class Context {
       throw new Error(`tsconfig.json not found at ${root}. Run "npx tsc --init" to create a new tsconfig.json file.`);
     }
 
-    if (configPath) {
+    if (configPath.length) {
       if (
         !(await confirm({
-          message: `Found existing config file at ${configPath}. Do you want to reinitialize the project?`,
+          message: `Found existing config file at ${configPath[0]}. Do you want to reinitialize the project?`,
         }))
       )
         return;
@@ -282,6 +282,8 @@ class Context {
     }
 
     await installDependencies(root, toBeInstalled, ['concurrently', 'vovk-cli']);
+
+    // TODO create config file, based on .config folder and "module" in package.json
   }
 }
 

@@ -226,7 +226,7 @@ export class VovkCLIWatcher {
         }
       }
     } else {
-      log.debug(`File ${filePath} does not contain any vovk controller or worker`);
+      log.debug(`The file does not contain any controller or worker`);
     }
   };
 
