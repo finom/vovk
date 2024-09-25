@@ -6,7 +6,7 @@ import path from 'path';
  * @param {string} filePath - The path to the file.
  * @returns {Promise<boolean>} - A promise that resolves to true if the file exists, false otherwise.
  */
-const fileExists = async (filePath: string): Promise<boolean> => !!(await fs.stat(filePath).catch(() => false));
+const getFileSystemEntryType = async (filePath: string): Promise<boolean> => !!(await fs.stat(filePath).catch(() => false));
 
 async function postinstall(): Promise<void> {
   const vovk = path.join(import.meta.dirname, '../../.vovk');
@@ -14,7 +14,7 @@ async function postinstall(): Promise<void> {
   const ts = path.join(vovk, 'client.d.ts');
   const index = path.join(vovk, 'index.ts');
 
-  if ((await fileExists(js)) || (await fileExists(ts)) || (await fileExists(index))) {
+  if ((await getFileSystemEntryType(js)) || (await getFileSystemEntryType(ts)) || (await getFileSystemEntryType(index))) {
     return;
   }
 

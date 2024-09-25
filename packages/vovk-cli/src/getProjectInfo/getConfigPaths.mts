@@ -1,8 +1,14 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-export default async function getConfigPaths(relativePath = ''): Promise<string[]> {
-  const rootDir = path.resolve(process.cwd(), relativePath || '');
+export default async function getConfigPaths({
+  cwd,
+  relativePath,
+}: {
+  cwd: string;
+  relativePath?: string;
+}): Promise<string[]> {
+  const rootDir = path.resolve(cwd, relativePath || '');
   const baseName = 'vovk.config';
   const extensions = ['cjs', 'mjs', 'js'];
   const dirs = [path.join(rootDir, '.config'), rootDir];

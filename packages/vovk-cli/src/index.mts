@@ -27,8 +27,17 @@ interface GenerateOptions {
 }
 
 export interface InitOptions {
-  yes: boolean;
+  yes?: boolean;
   logLevel: LogLevelNames;
+  useNpm?: boolean;
+  useYarn?: boolean;
+  usePnpm?: boolean;
+  useBun?: boolean;
+  skipInstall?: boolean;
+  updateTsConfig?: boolean;
+  updateScripts?: 'implicit' | 'explicit';
+  validationLibrary?: string;
+  validateOnClient?: boolean;
 }
 
 export interface NewOptions {
@@ -118,7 +127,16 @@ program
   .description('Initialize Vovk project')
   .option('-Y, --yes', 'Skip all prompts and use default values')
   .option('--log-level <level>', 'Set log level', 'info')
-  .action((prefix: string = '.', options: InitOptions) => Init.main(prefix, options));
+  .option('--use-npm', 'Use npm as package manager')
+  .option('--use-yarn', 'Use yarn as package manager')
+  .option('--use-pnpm', 'Use pnpm as package manager')
+  .option('--use-bun', 'Use bun as package manager')
+  .option('--skip-install', 'Skip installing dependencies')
+  .option('--update-ts-config', 'Update tsconfig.json')
+  .option('--update-scripts <mode>', 'Update package.json scripts (implicit or explicit)')
+  .option('--validation-library <library>', 'Validation library to use')
+  .option('--validate-on-client', 'Validate on client')
+  .action((prefix: string = '.', options: InitOptions) => new Init().main(prefix, options));
 
 program
   .command('new [components...]')

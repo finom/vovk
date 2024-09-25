@@ -10,7 +10,7 @@
   "prefix": ".",
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
-    "test": "NODE_OPTIONS=\"--loader ts-node/esm\" TS_NODE_PROJECT=./tsconfig.test.json node test/index.mts",
+    "test": "npm run build && NODE_OPTIONS=\"--loader ts-node/esm\" TS_NODE_PROJECT=./tsconfig.test.json node --test test/**.mts",
     "ncu": "npm-check-updates -u",
     "npm-publish": "npm publish"
   },

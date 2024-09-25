@@ -6,7 +6,7 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import locateSegments from '../locateSegments.mjs';
 import addClassToSegmentCode from './addClassToSegmentCode.mjs';
-import fileExists from '../utils/fileExists.mjs';
+import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import prettify from '../utils/prettify.mjs';
 
 function splitByLast(str: string, delimiter: string = '/'): [string, string] {
@@ -83,7 +83,7 @@ export default async function newModule({
     const prettiedCode = await prettify(code, absoluteModulePath);
 
     if (!dryRun) {
-      if (await fileExists(absoluteModulePath)) {
+      if (await getFileSystemEntryType(absoluteModulePath)) {
         log.warn(`File ${chalkHighlightThing(absoluteModulePath)} already exists, skipping this "${type}"`);
       } else {
         await fs.mkdir(dirName, { recursive: true });

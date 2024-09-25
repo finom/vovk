@@ -16,7 +16,7 @@ enum _HttpMethod {
 
 const HttpMethod = _HttpMethod as typeof VovkHttpMethod;
 
-void describe('diffJson', async () => {
+void describe('#diffSchema', async () => {
   await test('Test case 1: No changes', () => {
     const oldJson: VovkSchema = {
       emitSchema: true,

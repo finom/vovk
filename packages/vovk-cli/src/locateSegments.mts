@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import fileExists from './utils/fileExists.mjs';
+import getFileSystemEntryType from './utils/getFileSystemEntryType.mjs';
 
 export type Segment = {
   routeFilePath: string;
@@ -23,7 +23,7 @@ export default async function locateSegments(dir: string, rootDir = dir): Promis
       if (file.startsWith('[[...') && file.endsWith(']]')) {
         // Check if there's a route.ts file inside this directory
         const routeFilePath = path.join(filePath, 'route.ts');
-        if (await fileExists(routeFilePath)) {
+        if (await getFileSystemEntryType(routeFilePath)) {
           // Calculate the basePath relative to the root directory
           const segmentName = path.relative(rootDir, dir);
           results.push({ routeFilePath, segmentName });

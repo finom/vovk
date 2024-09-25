@@ -2,10 +2,10 @@ import readConfig from './readConfig.mjs';
 import type { VovkConfig, VovkEnv } from '../types.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 
-export default async function getConfig({ clientOutDir }: { clientOutDir?: string }) {
+export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: string; cwd: string }) {
   const env = process.env as VovkEnv;
-  const { userConfig, configPaths } = await readConfig();
-  const srcRoot = await getRelativeSrcRoot();
+  const { userConfig, configPaths } = await readConfig({ cwd });
+  const srcRoot = await getRelativeSrcRoot({ cwd });
   const config: Required<VovkConfig> = {
     modulesDir: env.VOVK_MODULES_DIR ?? userConfig.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     validateOnClient: env.VOVK_VALIDATE_ON_CLIENT ?? userConfig.validateOnClient ?? null,

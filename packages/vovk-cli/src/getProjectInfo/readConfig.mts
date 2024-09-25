@@ -1,8 +1,8 @@
 import type { VovkConfig } from '../types.mjs';
-import getConfigPath from './getConfigPaths.mjs';
+import getConfigPaths from './getConfigPaths.mjs';
 
-async function readConfig(): Promise<{ userConfig: VovkConfig; configPaths: string[] }> {
-  const configPaths = await getConfigPath();
+async function readConfig({ cwd }: { cwd: string }): Promise<{ userConfig: VovkConfig; configPaths: string[] }> {
+  const configPaths = await getConfigPaths({ cwd });
   let userConfig: VovkConfig = {};
 
   if (!configPaths.length) {

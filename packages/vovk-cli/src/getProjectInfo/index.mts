@@ -7,14 +7,14 @@ export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 export default async function getProjectInfo({
   port: givenPort,
   clientOutDir,
-}: { port?: number; clientOutDir?: string } = {}) {
+  cwd = process.cwd(),
+}: { port?: number; clientOutDir?: string; cwd?: string } = {}) {
   const port = givenPort?.toString() ?? process.env.PORT ?? '3000';
 
   // Make PORT available to the config file at getConfig
   process.env.PORT = port;
 
-  const cwd = process.cwd();
-  const { config, srcRoot, configPaths } = await getConfig({ clientOutDir });
+  const { config, srcRoot, configPaths } = await getConfig({ clientOutDir, cwd });
   const apiEntryPoint = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 

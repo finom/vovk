@@ -1,8 +1,7 @@
 import path from 'path';
 import directoryExists from './directoryExists.mjs';
 
-export default async function getRelativeSrcRoot() {
-  const cwd = process.cwd();
+export default async function getRelativeSrcRoot({ cwd }: { cwd: string }) {
   // Next.js Docs: src/app or src/pages will be ignored if app or pages are present in the root directory.
   if (await directoryExists(path.join(cwd, 'app'))) {
     return '.';

@@ -58,233 +58,257 @@ npx vovk-cli init
 */
 
 import { confirm, select } from '@inquirer/prompts';
-import NPMCliPackageJson from '@npmcli/package-json';
-import type { TsConfigJson } from 'type-fest';
 import path from 'path';
 import fs from 'fs/promises';
-import * as jsonc from 'jsonc-parser';
-import type { VovkConfig } from '../types.mjs';
-import getConfigPath from '../getProjectInfo/getConfigPaths.mjs';
+import getConfigPaths from '../getProjectInfo/getConfigPaths.mjs';
 import type { InitOptions } from '../index.mjs';
 import chalk from 'chalk';
-import fileExists from '../utils/fileExists.mjs';
+import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import installDependencies from './installDependencies.mjs';
 import getLogger from '../utils/getLogger.mjs';
+import createConfig from './createConfig.mjs';
+import updateNPMScripts from './updateNPMScripts.mjs';
+import checkTSConfigForExperimentalDecorators from './checkTSConfigForExperimentalDecorators.mjs';
+import updateTSConfig from './updateTSConfig.mjs';
 
-abstract class Action<T> {
-  data: T;
-  // public prevAction: Action | null = null;
-  action: () => void;
-  constructor(public context: Context) {}
-  toJSON = () => this.data;
-}
-
-class InstallValidationLibraryAction extends Action<{
-  validationLibrary: string | null;
-  enableClientValidation?: boolean;
-}> {
-  constructor(context: Context, data: InstallValidationLibraryAction['data']) {
-    super(context);
-
-    this.data = data;
-  }
-
-  action = () => {
-    this.context.vovkConfig.validationLibrary = this.data.validationLibrary;
-    if (this.data.validationLibrary && this.data.enableClientValidation) {
-      this.context.vovkConfig.validateOnClient = `${this.data.validationLibrary}/validateOnClient`;
-    }
-  };
-}
-
-class UpdateNpmScriptsAction extends Action<{ shouldUpdateNpmScripts: boolean; useConcurrently?: boolean }> {
-  constructor(context: Context) {
-    super(context);
-
-    this.data = { shouldUpdateNpmScripts: true };
-  }
-
-  action = async () => {
-    if (this.data.shouldUpdateNpmScripts && typeof this.data.useConcurrently === 'undefined') {
-      throw new Error('useConcurrently must be defined');
-    }
-
-    const pkgJson = await NPMCliPackageJson.load(this.context.root);
-
-    pkgJson.update({
-      scripts: {
-        generate: 'vovk generate',
-        dev: this.data.useConcurrently
-          ? 'PORT=3000 concurrently "vovk dev" "next dev" --kill-others'
-          : 'vovk dev --next-dev',
-      },
-    });
-
-    await pkgJson.save();
-  };
-}
-
-class UpdateTsconfigAction extends Action<null> {
-  constructor(context: Context) {
-    super(context);
-  }
-
-  action = async () => {
-    const tsconfigPath = path.resolve(process.cwd(), 'tsconfig.json');
-
-    try {
-      // Read the content of tsconfig.json asynchronously
-      const tsconfigContent = await fs.readFile(tsconfigPath, 'utf8');
-
-      // Use jsonc-parser to generate edits and modify the experimentalDecorators property
-      const edits = jsonc.modify(tsconfigContent, ['compilerOptions', 'experimentalDecorators'], true, {
-        formattingOptions: {},
-      });
-
-      // Apply the edits to the original content
-      const updatedContent = jsonc.applyEdits(tsconfigContent, edits);
-
-      // Write the updated content back to the file asynchronously
-      await fs.writeFile(tsconfigPath, updatedContent, 'utf8');
-    } catch (error) {
-      throw new Error(`Failed to update tsconfig.json at ${tsconfigPath}. ${String(error)}`);
-    }
-  };
-
-  static async checkTsconfigForExperimentalDecorators() {
-    const tsconfigPath = path.resolve(process.cwd(), 'tsconfig.json');
-    let tsconfigContent: string;
-    try {
-      tsconfigContent = await fs.readFile(tsconfigPath, 'utf8');
-    } catch (error) {
-      throw new Error(
-        `Failed to read tsconfig.json at ${tsconfigPath}. You can run "npx tsc --init" to create it. ${String(error)}`
-      );
-    }
-
-    const tsconfig = jsonc.parse(tsconfigContent) as TsConfigJson;
-
-    return !!tsconfig?.compilerOptions?.experimentalDecorators;
-  }
-}
-
-class Context {
-  actions: Action<unknown>[] = [];
-  vovkConfig: VovkConfig = {};
+export class Init {
   root: string;
   log: ReturnType<typeof getLogger>;
 
-  static async main(prefix: string, { yes, logLevel }: InitOptions) {
-    // TODO handle yes option
-    console.log('yes', yes);
-    const context = new Context();
-    const cwd = process.cwd();
-    const configPath = await getConfigPath(prefix);
-    const toBeInstalled: string[] = ['vovk'];
-    const root = path.join(cwd, prefix);
-    const log = getLogger(logLevel);
+  async #init(
+    {
+      configPaths,
+    }: {
+      configPaths: string[];
+    },
+    {
+      useNpm,
+      useYarn,
+      usePnpm,
+      useBun,
+      skipInstall,
+      updateTsConfig,
+      updateScripts,
+      validationLibrary,
+      validateOnClient,
+    }: Omit<InitOptions, 'yes' | 'logLevel'>
+  ) {
+    const { log, root } = this;
+    const dependencies: string[] = ['vovk'];
+    const devDependencies: string[] = ['vovk-cli'];
 
-    context.root = root;
-    context.log = log;
-
-    if (!(await fileExists(path.join(root, 'package.json')))) {
-      throw new Error(`package.json not found at ${root}. Run "npx create-next-app" to create a new Next.js project.`);
+    // delete older config files
+    if (configPaths.length) {
+      await Promise.all(configPaths.map((configPath) => fs.rm(configPath)));
     }
-
-    if (!(await fileExists(path.join(root, 'tsconfig.json')))) {
-      throw new Error(`tsconfig.json not found at ${root}. Run "npx tsc --init" to create a new tsconfig.json file.`);
-    }
-
-    if (configPath.length) {
-      if (
-        !(await confirm({
-          message: `Found existing config file at ${configPath[0]}. Do you want to reinitialize the project?`,
-        }))
-      )
-        return;
-    }
-
-    const validationLibrary = await select({
-      message: 'Choose validation library',
-      default: 'vovk-zod',
-      choices: [
-        {
-          name: 'vovk-zod',
-          value: 'vovk-zod',
-          description: 'Use Zod for data validation',
-        },
-        {
-          name: 'vovk-yup',
-          value: 'vovk-yup',
-          description: 'Use Yup for data validation',
-        },
-        {
-          name: 'vovk-dto',
-          value: 'vovk-dto',
-          description: 'Use class-validator and class-transformer for data validation',
-        },
-        { name: 'None', value: null, description: 'Install validation library later' },
-      ],
-    });
 
     if (validationLibrary) {
-      toBeInstalled.push(validationLibrary);
-      toBeInstalled.push(
+      dependencies.push(validationLibrary);
+      dependencies.push(
         ...({
           'vovk-zod': ['zod'],
           'vovk-yup': ['yup'],
           'vovk-dto': ['class-validator', 'class-transformer'],
         }[validationLibrary] ?? [])
       );
-      const installValidationLibraryAction = new InstallValidationLibraryAction(context, { validationLibrary });
-      context.actions.push(installValidationLibraryAction);
+    }
 
-      installValidationLibraryAction.data.enableClientValidation = await confirm({
-        message: 'Do you want to enable client validation?',
+    if (updateTsConfig) {
+      try {
+        await updateTSConfig(root);
+      } catch (error) {
+        log.error(`Failed to update tsconfig.json: ${(error as Error).message}`);
+      }
+    }
+
+    if (updateScripts) {
+      try {
+        await updateNPMScripts(root, updateScripts);
+      } catch (error) {
+        log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
+      }
+      if (updateScripts === 'explicit') {
+        devDependencies.push('concurrently');
+      }
+    }
+
+    if (!skipInstall) {
+      try {
+        await installDependencies({
+          log,
+          installDir: root,
+          dependencies,
+          devDependencies,
+          options: {
+            useNpm,
+            useYarn,
+            usePnpm,
+            useBun,
+          },
+        });
+      } catch (error) {
+        log.error(`Failed to install dependencies: ${(error as Error).message}`);
+      }
+    }
+
+    try {
+      await createConfig({
+        root,
+        log,
+        options: { validationLibrary, validateOnClient },
       });
+    } catch (error) {
+      log.error(`Failed to create config: ${(error as Error).message}`);
+    }
+  }
+
+  // TODO handle errors but don't exit
+
+  async main(
+    prefix: string,
+    {
+      yes,
+      logLevel,
+      useNpm,
+      useYarn,
+      usePnpm,
+      useBun,
+      skipInstall,
+      updateTsConfig,
+      updateScripts,
+      validationLibrary,
+      validateOnClient,
+    }: InitOptions
+  ) {
+    const cwd = process.cwd();
+    const root = path.join(cwd, prefix);
+    const log = getLogger(logLevel);
+
+    this.root = root;
+    this.log = log;
+
+    const configPaths = await getConfigPaths({ cwd, relativePath: prefix });
+
+    if (yes) {
+      return this.#init(
+        { configPaths },
+        {
+          useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
+          useYarn: useYarn ?? false,
+          usePnpm: usePnpm ?? false,
+          useBun: useBun ?? false,
+          skipInstall: skipInstall ?? false,
+          updateTsConfig: updateTsConfig ?? true,
+          updateScripts: updateScripts ?? 'implicit',
+          validationLibrary: validationLibrary ?? 'vovk-zod',
+          validateOnClient: validateOnClient ?? true,
+        }
+      );
     }
 
-    const devScriptType = await select({
-      message: 'Do you want to update package.json by adding "generate" and "dev" scripts?',
-      default: 'IMPLICIT',
-      choices: [
-        {
-          name: 'Yes, with implicit concurrently',
-          description: `The "dev" script will use concurrently API internally and automatically set a port ${chalk.whiteBright(`"vovk dev --next-dev"`)}`,
-          value: 'IMPLICIT' as const,
-        },
-        {
-          name: 'Yes, with explicit concurrently',
-          value: 'EXPLICIT' as const,
-          description: `The "dev" script will use pre-defined PORT variable ${chalk.whiteBright(`"PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others"`)}`,
-        },
-        {
-          name: 'No',
-          value: null,
-          description: 'Add the scripts manually',
-        },
-      ],
-    });
-
-    if (devScriptType) {
-      const updateNpmScriptsAction = new UpdateNpmScriptsAction(context);
-      context.actions.push(updateNpmScriptsAction);
-
-      updateNpmScriptsAction.data.useConcurrently = devScriptType === 'EXPLICIT';
+    if (!(await getFileSystemEntryType(path.join(root, 'package.json')))) {
+      throw new Error(`package.json not found at ${root}. Run "npx create-next-app" to create a new Next.js project.`);
     }
 
-    if (
-      !(await UpdateTsconfigAction.checkTsconfigForExperimentalDecorators()) &&
-      (await confirm({ message: 'Do you want to add experimentalDecorators to tsconfig.json?' }))
-    ) {
-      const updateTsconfigAction = new UpdateTsconfigAction(context);
-      context.actions.push(updateTsconfigAction);
+    if (!(await getFileSystemEntryType(path.join(root, 'tsconfig.json')))) {
+      throw new Error(`tsconfig.json not found at ${root}. Run "npx tsc --init" to create a new tsconfig.json file.`);
     }
 
-    await installDependencies(root, toBeInstalled, ['concurrently', 'vovk-cli']);
+    if (configPaths.length) {
+      if (
+        !(await confirm({
+          message: `Found existing config file${configPaths.length > 1 ? 's' : '1'} at ${configPaths.join(', ')}. Do you want to reinitialize the project?`,
+        }))
+      )
+        return;
+    }
 
-    // TODO create config file, based on .config folder and "module" in package.json
+    validationLibrary =
+      validationLibrary ??
+      (await select({
+        message: 'Choose validation library',
+        default: 'vovk-zod',
+        choices: [
+          {
+            name: 'vovk-zod',
+            value: 'vovk-zod',
+            description: 'Use Zod for data validation',
+          },
+          {
+            name: 'vovk-yup',
+            value: 'vovk-yup',
+            description: 'Use Yup for data validation',
+          },
+          {
+            name: 'vovk-dto',
+            value: 'vovk-dto',
+            description: 'Use class-validator and class-transformer for data validation',
+          },
+          { name: 'None', value: undefined, description: 'Install validation library later' },
+        ],
+      }));
+
+    if (validationLibrary) {
+      validateOnClient =
+        validateOnClient ??
+        (await confirm({
+          message: 'Do you want to enable client validation?',
+        }));
+    }
+
+    updateScripts =
+      updateScripts ??
+      (await select({
+        message: 'Do you want to update package.json by adding "generate" and "dev" scripts?',
+        default: 'implicit',
+        choices: [
+          {
+            name: 'Yes, with implicit concurrently',
+            description: `The "dev" script will use concurrently API internally and automatically set a port ${chalk.whiteBright.bold(`"vovk dev --next-dev"`)}`,
+            value: 'implicit' as const,
+          },
+          {
+            name: 'Yes, with explicit concurrently',
+            value: 'explicit' as const,
+            description: `The "dev" script will use pre-defined PORT variable ${chalk.whiteBright.bold(`"PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others"`)}`,
+          },
+          {
+            name: 'No',
+            value: undefined,
+            description: 'Add the scripts manually',
+          },
+        ],
+      }));
+
+    if (updateTsConfig) {
+      let shouldAsk = false;
+
+      try {
+        shouldAsk = !(await checkTSConfigForExperimentalDecorators(root));
+      } catch (error) {
+        log.error(`Failed to check tsconfig.json for experimentalDecorators: ${(error as Error).message}`);
+      }
+
+      if (shouldAsk) {
+        updateTsConfig = await confirm({
+          message: 'Do you want to add experimentalDecorators to tsconfig.json?',
+        });
+      }
+    }
+
+    await this.#init(
+      { configPaths },
+      {
+        useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
+        useYarn: useYarn ?? false,
+        usePnpm: usePnpm ?? false,
+        useBun: useBun ?? false,
+        skipInstall: skipInstall ?? false,
+        updateTsConfig,
+        updateScripts,
+        validationLibrary,
+        validateOnClient,
+      }
+    );
   }
 }
-
-export const Init = Context;

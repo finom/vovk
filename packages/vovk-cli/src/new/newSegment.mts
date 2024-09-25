@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import getProjectInfo from '../getProjectInfo/index.mjs';
-import fileExists from '../utils/fileExists.mjs';
+import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import prettify from '../utils/prettify.mjs';
@@ -11,7 +11,7 @@ export default async function newSegment({ segmentName, dryRun }: { segmentName:
 
   const absoluteSegmentRoutePath = path.join(cwd, apiDir, segmentName, '[[...vovk]]/route.ts');
 
-  if (await fileExists(absoluteSegmentRoutePath)) {
+  if (await getFileSystemEntryType(absoluteSegmentRoutePath)) {
     return log.error(
       `Unable to create new segment. ${formatLoggedSegmentName(segmentName, { upperFirst: true })} already exists.`
     );

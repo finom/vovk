@@ -1,21 +1,29 @@
 import assert from 'node:assert';
-import { test, describe, beforeEach, afterEach } from 'node:test';
+import { test, describe, beforeEach, afterEach, before } from 'node:test';
 import fs from 'fs/promises';
 import path from 'path';
 import * as glob from 'glob';
 import ensureSchemaFiles from '../src/watcher/ensureSchemaFiles.mjs';
+import getProjectInfo, { type ProjectInfo } from '../src/getProjectInfo/index.mjs';
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 
 // Helper function to clear and create a temporary directory
 async function setupTmpDir() {
   await cleanupTmpDir();
-  await fs.mkdir(tmpDir, { recursive: true });
+  await fs.mkdir(path.join(tmpDir, 'app'), { recursive: true });
 }
 
 async function cleanupTmpDir() {
   await fs.rm(tmpDir, { recursive: true, force: true });
 }
+
+let projectInfo: ProjectInfo;
+
+before(async () => {
+  await setupTmpDir();
+  projectInfo = await getProjectInfo({ cwd: tmpDir });
+});
 
 beforeEach(async () => {
   await setupTmpDir();
@@ -25,12 +33,12 @@ afterEach(async () => {
   await cleanupTmpDir();
 });
 
-void describe('Check if schema files are created and removed correctly', async () => {
+void describe('#ensureSchemaFiles', async () => {
   await test('ensureSchemaFiles creates and removes files correctly with nested segments', async () => {
     const initialSegments = ['segment1', 'segment2', 'folder1/segment3', 'folder2/segment4'];
 
     // Run the function with the initial segments
-    await ensureSchemaFiles(tmpDir, initialSegments, null);
+    await ensureSchemaFiles(projectInfo, tmpDir, initialSegments);
 
     // Check if files are created
     let files = glob.sync('**/*.json', { cwd: tmpDir });
@@ -53,7 +61,7 @@ module.exports['folder2/segment4'] = require('./folder2/segment4.json');`;
     const updatedSegments = ['segment2', 'folder1/segment3', 'segment5'];
 
     // Run the function with the updated segments
-    await ensureSchemaFiles(tmpDir, updatedSegments, null);
+    await ensureSchemaFiles(projectInfo, tmpDir, updatedSegments);
 
     // Check if files are updated correctly
     files = glob.sync('**/*.json', { cwd: tmpDir });
