@@ -1,4 +1,4 @@
-import { describe, test } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import diffSchema from '../src/watcher/diffSchema.mjs';
 import type { HttpMethod as VovkHttpMethod, VovkSchema } from 'vovk';
@@ -17,7 +17,7 @@ enum _HttpMethod {
 const HttpMethod = _HttpMethod as typeof VovkHttpMethod;
 
 void describe('#diffSchema', async () => {
-  await test('Test case 1: No changes', () => {
+  await it('Test case 1: No changes', () => {
     const oldJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
@@ -60,7 +60,7 @@ void describe('#diffSchema', async () => {
     });
   });
 
-  await test('Test case 2: Workers and Controllers added and removed', () => {
+  await it('Test case 2: Workers and Controllers added and removed', () => {
     const oldJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
@@ -135,7 +135,7 @@ void describe('#diffSchema', async () => {
     });
   });
 
-  await test('Test case 3: Handlers added, removed, and changed', () => {
+  await it('Test case 3: Handlers added, removed, and changed', () => {
     const oldJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
@@ -230,7 +230,7 @@ void describe('#diffSchema', async () => {
     });
   });
 
-  await test('Test case 4: Complex changes', () => {
+  await it('Test case 4: Complex changes', () => {
     const oldJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',

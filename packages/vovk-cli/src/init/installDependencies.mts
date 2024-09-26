@@ -79,41 +79,37 @@ export default async function installDependencies({
   devDependencies: string[];
   options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'>;
 }): Promise<void> {
-  try {
-    const packageManager = getPackageManager(options);
+  const packageManager = getPackageManager(options);
 
-    // Ensure commandName is typed as CommandName
-    const installPackages = async (type: string, packages: string[], commandName: CommandName): Promise<void> => {
-      if (packages.length > 0) {
-        log.info(`Installing ${type} in ${installDir} using ${packageManager}...`);
-        const installCommand = packageManagerCommands[packageManager][commandName](packages, installDir);
+  // Ensure commandName is typed as CommandName
+  const installPackages = async (type: string, packages: string[], commandName: CommandName): Promise<void> => {
+    if (packages.length > 0) {
+      log.info(`Installing ${type} in ${installDir} using ${packageManager}...`);
+      const installCommand = packageManagerCommands[packageManager][commandName](packages, installDir);
 
-        const { command, args } = installCommand;
+      const { command, args } = installCommand;
 
-        await new Promise<void>((resolve, reject) => {
-          const child = spawn(command, args, {
-            stdio: 'inherit',
-            shell: true,
-          });
-
-          child.on('close', (code) => {
-            if (code !== 0) {
-              reject(new Error(`${command} exited with code ${code}`));
-            } else {
-              resolve();
-            }
-          });
-
-          child.on('error', (err) => {
-            reject(err);
-          });
+      await new Promise<void>((resolve, reject) => {
+        const child = spawn(command, args, {
+          stdio: 'inherit',
+          shell: true,
         });
-      }
-    };
 
-    await installPackages('dependencies', dependencies, 'install');
-    await installPackages('devDependencies', devDependencies, 'installDev');
-  } catch (err) {
-    log.error(`Error installing dependencies: ${(err as Error).message}`);
-  }
+        child.on('close', (code) => {
+          if (code !== 0) {
+            reject(new Error(`${command} exited with code ${code}`));
+          } else {
+            resolve();
+          }
+        });
+
+        child.on('error', (err) => {
+          reject(err);
+        });
+      });
+    }
+  };
+
+  await installPackages('dependencies', dependencies, 'install');
+  await installPackages('devDependencies', devDependencies, 'installDev');
 }

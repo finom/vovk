@@ -14,7 +14,7 @@ export default async function getProjectInfo({
   // Make PORT available to the config file at getConfig
   process.env.PORT = port;
 
-  const { config, srcRoot, configPaths } = await getConfig({ clientOutDir, cwd });
+  const { config, srcRoot, configAbsolutePaths } = await getConfig({ clientOutDir, cwd });
   const apiEntryPoint = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
 
@@ -29,8 +29,8 @@ export default async function getProjectInfo({
 
   const log = getLogger(config.logLevel);
 
-  if (configPaths.length > 1) {
-    log.warn(`Multiple config files found. Using the first one: ${configPaths[0]}`);
+  if (configAbsolutePaths.length > 1) {
+    log.warn(`Multiple config files found. Using the first one: ${configAbsolutePaths[0]}`);
   }
 
   return {

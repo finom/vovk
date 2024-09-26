@@ -1,10 +1,10 @@
-import readConfig from './readConfig.mjs';
+import getUserConfig from './getUserConfig.mjs';
 import type { VovkConfig, VovkEnv } from '../types.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 
 export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: string; cwd: string }) {
   const env = process.env as VovkEnv;
-  const { userConfig, configPaths } = await readConfig({ cwd });
+  const { userConfig, configAbsolutePaths } = await getUserConfig({ cwd });
   const srcRoot = await getRelativeSrcRoot({ cwd });
   const config: Required<VovkConfig> = {
     modulesDir: env.VOVK_MODULES_DIR ?? userConfig.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
@@ -19,7 +19,6 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
     logLevel: env.VOVK_LOG_LEVEL ?? userConfig.logLevel ?? 'debug', // TODO: change to 'warn' when v3 is ready
     prettifyClient: userConfig.prettifyClient ?? false,
     templates: {
-      // TODO individual templates for each validation library
       service: 'vovk-cli/templates/service.ejs',
       controller: 'vovk-cli/templates/controller.ejs',
       worker: 'vovk-cli/templates/worker.ejs',
@@ -27,5 +26,5 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
     },
   };
 
-  return { config, srcRoot, configPaths };
+  return { config, srcRoot, configAbsolutePaths };
 }

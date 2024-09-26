@@ -60,7 +60,7 @@ npx vovk-cli init
 import { confirm, select } from '@inquirer/prompts';
 import path from 'path';
 import fs from 'fs/promises';
-import getConfigPaths from '../getProjectInfo/getConfigPaths.mjs';
+import getConfigPaths from '../getProjectInfo/getConfigAbsolutePaths.mjs';
 import type { InitOptions } from '../index.mjs';
 import chalk from 'chalk';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
@@ -94,8 +94,8 @@ export class Init {
     }: Omit<InitOptions, 'yes' | 'logLevel'>
   ) {
     const { log, root } = this;
-    const dependencies: string[] = ['vovk'];
-    const devDependencies: string[] = ['vovk-cli'];
+    const dependencies: string[] = ['vovk@beta']; // TODO: change to latest
+    const devDependencies: string[] = ['vovk-cli@beta'];
 
     // delete older config files
     if (configPaths.length) {
@@ -162,8 +162,6 @@ export class Init {
     }
   }
 
-  // TODO handle errors but don't exit
-
   async main(
     prefix: string,
     {
@@ -181,7 +179,7 @@ export class Init {
     }: InitOptions
   ) {
     const cwd = process.cwd();
-    const root = path.join(cwd, prefix);
+    const root = path.resolve(cwd, prefix);
     const log = getLogger(logLevel);
 
     this.root = root;

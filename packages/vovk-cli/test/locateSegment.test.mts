@@ -1,12 +1,12 @@
 import assert from 'node:assert';
-import test, { describe } from 'node:test';
+import { it, describe } from 'node:test';
 import locateSegments from '../src/locateSegments.mjs';
 import path from 'node:path';
 
 const __dirname = import.meta.dirname;
 
 void describe('#locateSegment', async () => {
-  await test('Locates segments properly', async () => {
+  await it('Locates segments properly', async () => {
     const rootDirectory = path.join(__dirname, '../test_data/segments');
     const results = await locateSegments(rootDirectory);
 

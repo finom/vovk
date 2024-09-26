@@ -126,7 +126,7 @@ program
   .command('init [prefix]')
   .description('Initialize Vovk project')
   .option('-Y, --yes', 'Skip all prompts and use default values')
-  .option('--log-level <level>', 'Set log level', 'info')
+  .option('--log-level <level>', 'Set log level', 'debug') // TODO change to 'info'
   .option('--use-npm', 'Use npm as package manager')
   .option('--use-yarn', 'Use yarn as package manager')
   .option('--use-pnpm', 'Use pnpm as package manager')

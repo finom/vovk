@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import { test, describe, beforeEach, afterEach, before } from 'node:test';
-import fs from 'fs/promises';
-import path from 'path';
+import { it, describe, beforeEach, afterEach, before } from 'node:test';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import * as glob from 'glob';
 import ensureSchemaFiles from '../src/watcher/ensureSchemaFiles.mjs';
 import getProjectInfo, { type ProjectInfo } from '../src/getProjectInfo/index.mjs';
@@ -34,7 +34,7 @@ afterEach(async () => {
 });
 
 void describe('#ensureSchemaFiles', async () => {
-  await test('ensureSchemaFiles creates and removes files correctly with nested segments', async () => {
+  await it('ensureSchemaFiles creates and removes files correctly with nested segments', async () => {
     const initialSegments = ['segment1', 'segment2', 'folder1/segment3', 'folder2/segment4'];
 
     // Run the function with the initial segments
