@@ -103,7 +103,7 @@ export class Init {
     }
 
     if (validationLibrary) {
-      dependencies.push(validationLibrary);
+      dependencies.push(validationLibrary + '@beta');
       dependencies.push(
         ...({
           'vovk-zod': ['zod'],
