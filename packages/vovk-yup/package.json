@@ -1,6 +1,6 @@
 {
   "name": "vovk-yup",
-  "version": "0.0.1-beta.6",
+  "version": "0.0.1-beta.7",
   "description": "Yup validation for Vovk.js",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
   "author": "Andrii Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-beta.29",
+    "vovk": "^3.0.0-beta.30",
     "yup": "*"
   },
   "dependencies": {
