@@ -19,7 +19,7 @@ program
   .option('-Y, --yes', 'Skip all prompts and use default values')
   .option('--log-level <level>', 'Set log level', 'info')
   .action(async (prefix: string = '.', options: InitOptions) => {
-    await Init.main(prefix, options);
+    await new Init().main(prefix, options);
   });
 
 program
