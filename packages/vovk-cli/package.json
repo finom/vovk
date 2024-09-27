@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-beta.27",
+  "version": "0.0.1-beta.28",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -31,7 +31,7 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-beta.30"
+    "vovk": "^3.0.0-beta.32"
   },
   "dependencies": {
     "@inquirer/prompts": "^5.5.0",
@@ -49,7 +49,7 @@
     "pluralize": "^8.0.0",
     "prettier": "^3.3.3",
     "tar-stream": "^3.1.7",
-    "ts-morph": "^23.0.0",
+    "ts-morph": "^23.0.0"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.5",

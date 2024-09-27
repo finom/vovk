@@ -108,6 +108,7 @@ export class VovkCLIWatcher {
     const { config, cwd, log } = this.#projectInfo;
     const modulesDirAbsolutePath = path.join(cwd, config.modulesDir);
     log.debug(`Watching modules in ${modulesDirAbsolutePath}`);
+    const processControllerChange = debounceWithArgs(this.#processControllerChange, 500);
     this.#modulesWatcher = chokidar
       .watch(modulesDirAbsolutePath, {
         persistent: true,
@@ -115,11 +116,11 @@ export class VovkCLIWatcher {
       })
       .on('add', (filePath) => {
         log.debug(`File ${filePath} has been added to modules folder`);
-        void this.#processControllerChange(filePath);
+        void processControllerChange(filePath);
       })
       .on('change', (filePath) => {
         log.debug(`File ${filePath} has been changed at modules folder`);
-        void this.#processControllerChange(filePath);
+        void processControllerChange(filePath);
       })
       .on('unlink', (filePath) => {
         log.debug(`File ${filePath} has been removed from modules folder`);
