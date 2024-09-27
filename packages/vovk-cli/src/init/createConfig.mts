@@ -40,7 +40,7 @@ export default async function createConfig({
       const validationTemplates = await getTemplateFilesFromPackage(validationLibrary);
       Object.assign(templates, validationTemplates);
     } catch (error) {
-      log.error(`Failed to fetch validation library templates: ${(error as Error).message}`);
+      log.warn(`Failed to fetch validation library templates: ${(error as Error).message}`);
     }
   }
 

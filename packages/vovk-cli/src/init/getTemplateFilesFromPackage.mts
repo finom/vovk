@@ -8,38 +8,34 @@ import { Readable } from 'stream';
  * @returns A promise that resolves to an array of file paths.
  */
 export default async function getTemplatesFiles(packageName: string) {
-  try {
-    // Fetch package metadata from the npm registry
-    const metadataResponse = await fetch(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`);
-    if (!metadataResponse.ok) {
-      throw new Error(`Failed to fetch package metadata: ${metadataResponse.statusText}`);
-    }
-
-    const metadata = (await metadataResponse.json()) as NpmPackageMetadata;
-    const latestVersion = metadata['dist-tags'].latest;
-    const tarballUrl = metadata.versions[latestVersion].dist.tarball;
-
-    // Fetch the tarball
-    const tarballResponse = await fetch(tarballUrl);
-    if (!tarballResponse.ok) {
-      throw new Error(`Failed to fetch tarball: ${tarballResponse.statusText}`);
-    }
-
-    const tarballArrayBuffer = await tarballResponse.arrayBuffer();
-    const tarballBuffer = Buffer.from(tarballArrayBuffer);
-
-    // Extract the tarball in memory and collect template files
-    const templateFiles = await extractTemplatesFromTarball(tarballBuffer);
-
-    const entries = templateFiles
-      .filter((fileName) => fileName.startsWith('/templates/') && !fileName.endsWith('/') && fileName.endsWith('.ejs'))
-      .map((fileName) => [fileName.substring('/templates/'.length), `${packageName}${fileName}`]);
-
-    return Object.fromEntries(entries) as Record<string, string>;
-  } catch (error) {
-    console.error('Error fetching templates files:', error);
-    throw error;
+  // Fetch package metadata from the npm registry
+  const metadataResponse = await fetch(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`);
+  if (!metadataResponse.ok) {
+    throw new Error(`Failed to fetch package metadata: ${metadataResponse.statusText}`);
   }
+
+  const metadata = (await metadataResponse.json()) as NpmPackageMetadata;
+  const latestVersion = metadata['dist-tags'].latest;
+  const tarballUrl = metadata.versions[latestVersion].dist.tarball;
+
+  // Fetch the tarball
+  const tarballResponse = await fetch(tarballUrl);
+  if (!tarballResponse.ok) {
+    throw new Error(`Failed to fetch tarball: ${tarballResponse.statusText}`);
+  }
+
+  const tarballArrayBuffer = await tarballResponse.arrayBuffer();
+  const tarballBuffer = Buffer.from(tarballArrayBuffer);
+
+  // Extract the tarball in memory and collect template files
+  const templateFiles = await extractTemplatesFromTarball(tarballBuffer);
+
+  const entries = templateFiles
+    .filter((fileName) => fileName.startsWith('/templates/') && !fileName.endsWith('/') && fileName.endsWith('.ejs'))
+    .map((fileName) => [fileName.substring('/templates/'.length), `${packageName}${fileName}`]);
+
+  console.log(templateFiles);
+  return Object.fromEntries(entries) as Record<string, string>;
 }
 
 /**
@@ -100,11 +96,3 @@ interface NpmPackageVersion {
   };
 }
 
-// Example usage
-getTemplatesFiles('your-package-name')
-  .then((files) => {
-    console.log('Files in templates folder:', files);
-  })
-  .catch((err) => {
-    console.error('Error:', err);
-  });
