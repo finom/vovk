@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-beta.32",
+  "version": "0.0.1-beta.33",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
