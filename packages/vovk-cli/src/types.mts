@@ -16,6 +16,8 @@ export type VovkEnv = {
   VOVK_API_ENTRY_POINT?: string;
   VOVK_ROOT_SEGMENT_MODULES_DIR_NAME?: string;
   VOVK_LOG_LEVEL?: LogLevelNames;
+  VOVK_PRETTIFY_CLIENT?: string;
+  VOVK_DEV_HTTPS?: string;
   __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
 };
 
@@ -31,6 +33,7 @@ export type VovkConfig = {
   rootSegmentModulesDirName?: string;
   logLevel?: LogLevelNames;
   prettifyClient?: boolean;
+  devHttps?: boolean;
   templates?: {
     service?: string;
     controller?: string;

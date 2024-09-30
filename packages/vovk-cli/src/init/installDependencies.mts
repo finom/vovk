@@ -3,16 +3,16 @@ import { InitOptions } from '../index.mjs';
 import getLogger from '../utils/getLogger.mjs';
 
 type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
-type CommandName = 'install' | 'installDev';
+type InstallType = 'dependencies' | 'devDependencies';
 
 interface InstallCommand {
-  command: string;
+  command: PackageManager;
   args: string[];
 }
 
 type PackageManagerCommands = Record<
   PackageManager,
-  Record<CommandName, (packages: string[], installDir: string) => InstallCommand>
+  Record<InstallType, (packages: string[], installDir: string) => InstallCommand>
 >;
 
 function getPackageManager(options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'>): PackageManager {
@@ -25,41 +25,41 @@ function getPackageManager(options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'us
 
 const packageManagerCommands: PackageManagerCommands = {
   npm: {
-    install: (packages: string[], installDir: string): InstallCommand => ({
+    dependencies: (packages: string[], installDir: string): InstallCommand => ({
       command: 'npm',
       args: ['install', ...packages, '--prefix', installDir],
     }),
-    installDev: (packages: string[], installDir: string): InstallCommand => ({
+    devDependencies: (packages: string[], installDir: string): InstallCommand => ({
       command: 'npm',
       args: ['install', '--save-dev', ...packages, '--prefix', installDir],
     }),
   },
   yarn: {
-    install: (packages: string[], installDir: string): InstallCommand => ({
+    dependencies: (packages: string[], installDir: string): InstallCommand => ({
       command: 'yarn',
       args: ['add', ...packages, '--cwd', installDir],
     }),
-    installDev: (packages: string[], installDir: string): InstallCommand => ({
+    devDependencies: (packages: string[], installDir: string): InstallCommand => ({
       command: 'yarn',
       args: ['add', '--dev', ...packages, '--cwd', installDir],
     }),
   },
   pnpm: {
-    install: (packages: string[], installDir: string): InstallCommand => ({
+    dependencies: (packages: string[], installDir: string): InstallCommand => ({
       command: 'pnpm',
       args: ['install', ...packages, '--dir', installDir],
     }),
-    installDev: (packages: string[], installDir: string): InstallCommand => ({
+    devDependencies: (packages: string[], installDir: string): InstallCommand => ({
       command: 'pnpm',
       args: ['install', ...packages, '--save-dev', '--dir', installDir],
     }),
   },
   bun: {
-    install: (packages: string[], installDir: string): InstallCommand => ({
+    dependencies: (packages: string[], installDir: string): InstallCommand => ({
       command: 'bun',
       args: ['add', ...packages, '--cwd', installDir],
     }),
-    installDev: (packages: string[], installDir: string): InstallCommand => ({
+    devDependencies: (packages: string[], installDir: string): InstallCommand => ({
       command: 'bun',
       args: ['add', '-d', ...packages, '--cwd', installDir],
     }),
@@ -82,10 +82,9 @@ export default async function installDependencies({
   const packageManager = getPackageManager(options);
 
   // Ensure commandName is typed as CommandName
-  const installPackages = async (type: string, packages: string[], commandName: CommandName): Promise<void> => {
+  const installPackages = async (type: InstallType, packages: string[]): Promise<void> => {
     if (packages.length > 0) {
-      log.info(`Installing ${type} in ${installDir} using ${packageManager}...`);
-      const installCommand = packageManagerCommands[packageManager][commandName](packages, installDir);
+      const installCommand = packageManagerCommands[packageManager][type](packages, installDir);
 
       const { command, args } = installCommand;
 
@@ -110,6 +109,13 @@ export default async function installDependencies({
     }
   };
 
-  await installPackages('dependencies', dependencies, 'install');
-  await installPackages('devDependencies', devDependencies, 'installDev');
+  if (dependencies.length === 0 && devDependencies.length === 0) {
+    log.warn('No dependencies or devDependencies to install');
+    return;
+  }
+
+  log.info(`Installing dependencies and devDependencies at ${installDir} using ${packageManager}...`);
+
+  await installPackages('dependencies', dependencies);
+  await installPackages('devDependencies', devDependencies);
 }

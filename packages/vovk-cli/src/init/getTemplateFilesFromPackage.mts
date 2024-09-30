@@ -7,7 +7,10 @@ import { Readable } from 'stream';
  * @param packageName - The name of the NPM package.
  * @returns A promise that resolves to an array of file paths.
  */
-export default async function getTemplatesFiles(packageName: string) {
+export default async function getTemplatesFiles(
+  packageName: string,
+  channel = 'beta' // TODO change to latest
+): Promise<Record<string, string>> {
   // Fetch package metadata from the npm registry
   const metadataResponse = await fetch(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`);
   if (!metadataResponse.ok) {
@@ -15,7 +18,7 @@ export default async function getTemplatesFiles(packageName: string) {
   }
 
   const metadata = (await metadataResponse.json()) as NpmPackageMetadata;
-  const latestVersion = metadata['dist-tags'].latest;
+  const latestVersion = metadata['dist-tags'][channel];
   const tarballUrl = metadata.versions[latestVersion].dist.tarball;
 
   // Fetch the tarball
@@ -31,8 +34,8 @@ export default async function getTemplatesFiles(packageName: string) {
   const templateFiles = await extractTemplatesFromTarball(tarballBuffer);
 
   const entries = templateFiles
-    .filter((fileName) => fileName.startsWith('/templates/') && !fileName.endsWith('/') && fileName.endsWith('.ejs'))
-    .map((fileName) => [fileName.substring('/templates/'.length), `${packageName}${fileName}`]);
+    .filter((fileName) => fileName.startsWith('templates/') && !fileName.endsWith('/') && fileName.endsWith('.ejs'))
+    .map((fileName) => [fileName.substring('templates/'.length).replace(/\.ejs$/, ''), `${packageName}/${fileName}`]);
 
   console.log(templateFiles);
   return Object.fromEntries(entries) as Record<string, string>;
@@ -50,6 +53,7 @@ function extractTemplatesFromTarball(tarballBuffer: Buffer): Promise<string[]> {
 
     extract.on('entry', (header: Headers, stream: Readable, next: () => void) => {
       const filePath = header.name;
+      console.log('filePath', filePath);
       // Check if the file is in the 'templates' folder
       if (filePath.startsWith('package/templates/')) {
         files.push(filePath.replace('package/', ''));
@@ -95,4 +99,3 @@ interface NpmPackageVersion {
     tarball: string;
   };
 }
-

@@ -15,6 +15,7 @@ import { VovkSchema } from 'vovk';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import keyBy from 'lodash/keyBy.js';
 import capitalize from 'lodash/capitalize.js';
+import { Agent, setGlobalDispatcher } from 'undici';
 
 export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;
@@ -232,8 +233,9 @@ export class VovkCLIWatcher {
   };
 
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
-    const { apiEntryPoint, log, port } = this.#projectInfo;
-    const endpoint = `${apiEntryPoint.startsWith('http') ? apiEntryPoint : `http://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
+    const { apiEntryPoint, log, port, config } = this.#projectInfo;
+    const { devHttps } = config;
+    const endpoint = `${apiEntryPoint.startsWith(`http${devHttps ? 's' : ''}://`) ? apiEntryPoint : `http${devHttps ? 's' : ''}://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
     const resp = await fetch(endpoint);
@@ -260,11 +262,12 @@ export class VovkCLIWatcher {
 
   async #handleSchema(schema: VovkSchema | null) {
     const { log, config, cwd } = this.#projectInfo;
-    log.debug(`Handling received schema`);
     if (!schema) {
       log.warn('Segment schema is null');
       return;
     }
+
+    log.debug(`Handling received schema from ${formatLoggedSegmentName(schema.segmentName)}`);
 
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const segment = this.#segments.find((s) => s.segmentName === schema.segmentName);
@@ -304,6 +307,16 @@ export class VovkCLIWatcher {
   async start({ clientOutDir }: { clientOutDir?: string } = {}) {
     this.#projectInfo = await getProjectInfo({ clientOutDir });
     const { log, config, cwd, apiDir } = this.#projectInfo;
+
+    if (config.devHttps) {
+      const agent = new Agent({
+        connect: {
+          rejectUnauthorized: false,
+        },
+      });
+
+      setGlobalDispatcher(agent);
+    }
 
     process.on('uncaughtException', (err) => {
       log.error(`Uncaught Exception: ${err.message}`);

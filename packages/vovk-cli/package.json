@@ -10,7 +10,7 @@
   "prefix": ".",
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
-    "test": "npm run build && chmod +x ./dist/index.mjs && NODE_OPTIONS=\"--loader ts-node/esm\" TS_NODE_PROJECT=./tsconfig.test.json node --test test/**.mts",
+    "test": "npm run build && chmod +x ./dist/index.mjs && NODE_OPTIONS=\"--loader ts-node/esm\" TS_NODE_PROJECT=./tsconfig.test.json node --test --test-only test/**.mts",
     "ncu": "npm-check-updates -u",
     "npm-publish": "npm publish"
   },
@@ -49,7 +49,8 @@
     "pluralize": "^8.0.0",
     "prettier": "^3.3.3",
     "tar-stream": "^3.1.7",
-    "ts-morph": "^23.0.0"
+    "ts-morph": "^23.0.0",
+    "undici": "^6.19.8"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.5",
