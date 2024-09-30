@@ -13,6 +13,7 @@ import type { LogLevelNames } from 'loglevel';
 import type { VovkConfig, VovkEnv } from './types.mjs';
 import type { VovkSchema } from 'vovk';
 import newComponents from './new/index.mjs';
+import 'dotenv/config';
 
 export type { VovkConfig, VovkEnv };
 

@@ -40,6 +40,7 @@
     "chokidar": "^3.6.0",
     "commander": "^12.1.0",
     "concurrently": "^8.2.2",
+    "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "gray-matter": "^4.0.3",
     "inflection": "^3.0.0",
