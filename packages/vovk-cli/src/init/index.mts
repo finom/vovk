@@ -70,6 +70,7 @@ import createConfig from './createConfig.mjs';
 import updateNPMScripts from './updateNPMScripts.mjs';
 import checkTSConfigForExperimentalDecorators from './checkTSConfigForExperimentalDecorators.mjs';
 import updateTSConfig from './updateTSConfig.mjs';
+import updateDependenciesWithoutInstalling from './updateDependenciesWithoutInstalling.mjs';
 
 export class Init {
   root: string;
@@ -91,19 +92,22 @@ export class Init {
       updateScripts,
       validationLibrary,
       validateOnClient,
+      dryRun,
+      channel,
     }: Omit<InitOptions, 'yes' | 'logLevel'>
   ) {
     const { log, root } = this;
-    const dependencies: string[] = ['vovk@beta']; // TODO: change to latest
-    const devDependencies: string[] = ['vovk-cli@beta'];
+    const dependencies: string[] = ['vovk'];
+    const devDependencies: string[] = ['vovk-cli'];
 
     // delete older config files
     if (configPaths.length) {
       await Promise.all(configPaths.map((configPath) => fs.rm(configPath)));
+      log.debug(`Deleted existing config file${configPaths.length > 1 ? 's' : ''} at ${configPaths.join(', ')}`);
     }
 
     if (validationLibrary) {
-      dependencies.push(validationLibrary + '@beta'); // TODO: change to latest
+      dependencies.push(validationLibrary);
       dependencies.push(
         ...({
           'vovk-zod': ['zod'],
@@ -115,7 +119,8 @@ export class Init {
 
     if (updateTsConfig) {
       try {
-        await updateTSConfig(root);
+        if (!dryRun) await updateTSConfig(root);
+        log.debug('Updated tsconfig.json');
       } catch (error) {
         log.error(`Failed to update tsconfig.json: ${(error as Error).message}`);
       }
@@ -123,7 +128,8 @@ export class Init {
 
     if (updateScripts) {
       try {
-        await updateNPMScripts(root, updateScripts);
+        if (!dryRun) await updateNPMScripts(root, updateScripts);
+        log.debug('Updated scripts in package.json');
       } catch (error) {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
       }
@@ -132,31 +138,48 @@ export class Init {
       }
     }
 
+    if (!dryRun) {
+      await updateDependenciesWithoutInstalling({
+        log,
+        dir: root,
+        dependencyNames: dependencies,
+        devDependencyNames: devDependencies,
+        channel: channel ?? 'latest',
+      });
+    }
+
+    log.debug('Updated dependencies in package.json');
+
     if (!skipInstall) {
       try {
-        await installDependencies({
-          log,
-          installDir: root,
-          dependencies,
-          devDependencies,
-          options: {
-            useNpm,
-            useYarn,
-            usePnpm,
-            useBun,
-          },
-        });
+        if (!dryRun) {
+          await installDependencies({
+            log,
+            installDir: root,
+            options: {
+              useNpm,
+              useYarn,
+              usePnpm,
+              useBun,
+            },
+          });
+        }
+
+        log.debug('Dependencies installed successfully');
       } catch (error) {
         log.error(`Failed to install dependencies: ${(error as Error).message}`);
       }
     }
 
     try {
-      await createConfig({
+      const { configAbsolutePath } = await createConfig({
         root,
         log,
         options: { validationLibrary, validateOnClient },
+        dryRun,
       });
+
+      log.debug('Config created successfully at ' + configAbsolutePath);
     } catch (error) {
       log.error(`Failed to create config: ${(error as Error).message}`);
     }
@@ -176,6 +199,8 @@ export class Init {
       updateScripts,
       validationLibrary,
       validateOnClient,
+      dryRun,
+      channel,
     }: InitOptions
   ) {
     const cwd = process.cwd();
@@ -306,6 +331,8 @@ export class Init {
         updateScripts,
         validationLibrary,
         validateOnClient,
+        dryRun,
+        channel,
       }
     );
   }

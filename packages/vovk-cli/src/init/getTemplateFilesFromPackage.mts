@@ -1,6 +1,7 @@
 import { createGunzip, Gunzip } from 'zlib';
 import tar, { Headers } from 'tar-stream';
 import { Readable } from 'stream';
+import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
 
 /**
  * Retrieves a list of files in the 'templates' folder of an NPM package.
@@ -11,13 +12,7 @@ export default async function getTemplatesFiles(
   packageName: string,
   channel = 'beta' // TODO change to latest
 ): Promise<Record<string, string>> {
-  // Fetch package metadata from the npm registry
-  const metadataResponse = await fetch(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`);
-  if (!metadataResponse.ok) {
-    throw new Error(`Failed to fetch package metadata: ${metadataResponse.statusText}`);
-  }
-
-  const metadata = (await metadataResponse.json()) as NpmPackageMetadata;
+  const metadata = await getNPMPackageMetadata(packageName);
   const latestVersion = metadata['dist-tags'][channel];
   const tarballUrl = metadata.versions[latestVersion].dist.tarball;
 
@@ -53,6 +48,7 @@ function extractTemplatesFromTarball(tarballBuffer: Buffer): Promise<string[]> {
 
     extract.on('entry', (header: Headers, stream: Readable, next: () => void) => {
       const filePath = header.name;
+      // TODO revisit logs
       console.log('filePath', filePath);
       // Check if the file is in the 'templates' folder
       if (filePath.startsWith('package/templates/')) {
@@ -77,25 +73,4 @@ function extractTemplatesFromTarball(tarballBuffer: Buffer): Promise<string[]> {
     const tarballStream = Readable.from(tarballBuffer);
     tarballStream.pipe(gunzip).pipe(extract);
   });
-}
-
-/**
- * Interface representing the structure of NPM package metadata.
- */
-interface NpmPackageMetadata {
-  'dist-tags': {
-    [tag: string]: string;
-  };
-  versions: {
-    [version: string]: NpmPackageVersion;
-  };
-}
-
-/**
- * Interface representing a specific version of an NPM package.
- */
-interface NpmPackageVersion {
-  dist: {
-    tarball: string;
-  };
 }

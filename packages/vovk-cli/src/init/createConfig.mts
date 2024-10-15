@@ -10,10 +10,12 @@ import type { InitOptions } from '../index.mjs';
 export default async function createConfig({
   root,
   log,
+  dryRun,
   options: { validationLibrary, validateOnClient },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
+  dryRun?: boolean;
   options: Pick<InitOptions, 'validationLibrary' | 'validateOnClient'>;
 }) {
   const config: VovkConfig = {};
@@ -53,6 +55,8 @@ ${isModule ? '\nexport default config;' : 'module.exports = config;'}`,
     configAbsolutePath
   );
 
-  await fs.writeFile(configAbsolutePath, configStr, 'utf-8');
+  if (!dryRun) await fs.writeFile(configAbsolutePath, configStr, 'utf-8');
   log.info(`Config created at ${configAbsolutePath}`);
+
+  return { configAbsolutePath };
 }

@@ -39,6 +39,8 @@ export interface InitOptions {
   updateScripts?: 'implicit' | 'explicit';
   validationLibrary?: string;
   validateOnClient?: boolean;
+  dryRun?: boolean;
+  channel?: 'latest' | 'beta' | 'dev';
 }
 
 export interface NewOptions {
@@ -129,7 +131,7 @@ export function initProgram(p: typeof program, command: string) {
     .command(command + '[prefix]')
     .description('Initialize Vovk project')
     .option('-Y, --yes', 'Skip all prompts and use default values')
-    .option('--log-level <level>', 'Set log level', 'debug') // TODO change to 'info'
+    .option('--log-level <level>', 'Set log level', 'info')
     .option('--use-npm', 'Use npm as package manager')
     .option('--use-yarn', 'Use yarn as package manager')
     .option('--use-pnpm', 'Use pnpm as package manager')
@@ -139,6 +141,8 @@ export function initProgram(p: typeof program, command: string) {
     .option('--update-scripts <mode>', 'Update package.json scripts (implicit or explicit)')
     .option('--validation-library <library>', 'Validation library to use')
     .option('--validate-on-client', 'Validate on client')
+    .option('--dry-run', 'Do not write files to disk')
+    .option('--channel <channel>', 'Channel to use for fetching packages', 'latest')
     .action((prefix: string = '.', options: InitOptions) => new Init().main(prefix, options));
 }
 
