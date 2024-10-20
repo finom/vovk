@@ -20,5 +20,9 @@
      }
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["packages/**/*.ts"]
+  "include": ["packages/**/*.ts"],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
+  }
 }

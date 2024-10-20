@@ -4,11 +4,7 @@
     "exclude": ["node_modules", "src"],
     "compilerOptions": {
         "outDir": "./test_dist",
-        "rootDir": "./test",
-        "noEmit": true,
-    },
-    "ts-node": {
-        "esm": true,
-        "experimentalSpecifierResolution": "node",       
+        "rootDir": ".",
+        "noEmit": false,
     }
 }

@@ -5,9 +5,5 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "noEmit": false,
-    },
-    "ts-node": {
-        "esm": true,
-        "experimentalSpecifierResolution": "node",       
     }
 }

@@ -19,12 +19,13 @@ async function updateDeps({
     packageNames.map(async (packageName) => {
       if (packageJson[key]?.[packageName]) return; // Skip if already present
       const metadata = await getNPMPackageMetadata(packageName);
-      const isVovk = packageName.startsWith('vovk-');
+      const isVovk = packageName.startsWith('vovk');
 
       const latestVersion = metadata['dist-tags'][isVovk ? channel : 'latest'];
       if (!packageJson[key]) {
         packageJson[key] = {};
       }
+      console.log(packageName, latestVersion);
       packageJson[key][packageName] = `^${latestVersion}`;
     })
   );
@@ -49,4 +50,5 @@ export default async function updateDependenciesWithoutInstalling({
   log.debug('Updated dependencies in package.json');
   await updateDeps({ packageJson, packageNames: devDependencyNames, channel, key: 'devDependencies' });
   log.debug('Updated devDependencies in package.json');
+  await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }

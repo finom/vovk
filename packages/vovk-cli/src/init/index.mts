@@ -139,6 +139,7 @@ export class Init {
     }
 
     if (!dryRun) {
+      console.log('channel', channel);
       await updateDependenciesWithoutInstalling({
         log,
         dir: root,
@@ -155,7 +156,7 @@ export class Init {
         if (!dryRun) {
           await installDependencies({
             log,
-            installDir: root,
+            cwd: root,
             options: {
               useNpm,
               useYarn,
@@ -225,6 +226,8 @@ export class Init {
           updateScripts: updateScripts ?? 'implicit',
           validationLibrary: validationLibrary ?? 'vovk-zod',
           validateOnClient: validateOnClient ?? true,
+          dryRun: dryRun ?? false,
+          channel: channel ?? 'latest',
         }
       );
     }

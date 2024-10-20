@@ -7,18 +7,18 @@
     "dev": "vovk dev --next-dev"
   },
   "dependencies": {
-    "next": "14.2.13",
     "react": "^18",
     "react-dom": "^18",
+    "next": "14.2.13",
     "vovk": "^3.0.0-beta.33",
     "vovk-zod": "^1.0.0-beta.10",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "typescript": "^5",
-    "vovk-cli": "^0.0.1-beta.32"
+    "vovk-cli": "^0.0.1-beta.34"
   }
 }
