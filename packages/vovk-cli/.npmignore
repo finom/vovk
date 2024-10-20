@@ -4,4 +4,3 @@ test_data
 .eslintrc.mjs
 tsconfig.*
 .turbo
-# tmp_test_dir

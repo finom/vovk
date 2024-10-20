@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { it, describe } from 'node:test';
-import locateSegments from '../src/locateSegments.mjs';
+import locateSegments from '../../src/locateSegments.mjs';
 import path from 'node:path';
 
 const __dirname = import.meta.dirname;

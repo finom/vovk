@@ -5,3 +5,4 @@ test_dist
 .DS_Store
 .turbo
 tmp
+tmp_*

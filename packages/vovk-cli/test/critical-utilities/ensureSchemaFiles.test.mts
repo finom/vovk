@@ -3,8 +3,8 @@ import { it, describe, beforeEach, afterEach, before } from 'node:test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import * as glob from 'glob';
-import ensureSchemaFiles from '../src/watcher/ensureSchemaFiles.mjs';
-import getProjectInfo, { type ProjectInfo } from '../src/getProjectInfo/index.mjs';
+import ensureSchemaFiles from '../../src/watcher/ensureSchemaFiles.mjs';
+import getProjectInfo, { type ProjectInfo } from '../../src/getProjectInfo/index.mjs';
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 
