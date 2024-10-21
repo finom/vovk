@@ -37,7 +37,7 @@ export interface InitOptions {
   skipInstall?: boolean;
   updateTsConfig?: boolean;
   updateScripts?: 'implicit' | 'explicit';
-  validationLibrary?: string;
+  validationLibrary?: string | null;
   validateOnClient?: boolean;
   dryRun?: boolean;
   channel?: 'latest' | 'beta' | 'dev';
@@ -139,7 +139,10 @@ export function initProgram(p: typeof program, command: string) {
     .option('--skip-install', 'Skip installing dependencies')
     .option('--update-ts-config', 'Update tsconfig.json')
     .option('--update-scripts <mode>', 'Update package.json scripts (implicit or explicit)')
-    .option('--validation-library <library>', 'Validation library to use')
+    .option(
+      '--validation-library <library>',
+      'Validation library to use ("vovk-zod", "vovk-yup", "vovk-dto" or another). Set to "none" to skip validation'
+    )
     .option('--validate-on-client', 'Validate on client')
     .option('--dry-run', 'Do not write files to disk')
     .option('--channel <channel>', 'Channel to use for fetching packages', 'latest')

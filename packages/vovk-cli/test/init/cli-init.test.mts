@@ -36,15 +36,7 @@ void describe.only('New project', async () => {
   await it('Works with --yes', async () => {
     await createNextApp();
     await vovkInit('--yes');
-    await assertConfig(['vovk.config.js'], {
-      validationLibrary: 'vovk-zod',
-      validateOnClient: 'vovk-zod/validateOnClient',
-      templates: {
-        controller: 'vovk-zod/templates/controller.ejs',
-        service: 'vovk-zod/templates/service.ejs',
-        worker: 'vovk-cli/templates/worker.ejs',
-      },
-    });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-zod', 'zod'],
@@ -62,15 +54,7 @@ void describe.only('New project', async () => {
   await it('Works with --yes and --skip-install', async () => {
     await createNextApp('--skip-install');
     await vovkInit('--yes --skip-install');
-    await assertConfig(['vovk.config.js'], {
-      validationLibrary: 'vovk-zod',
-      validateOnClient: 'vovk-zod/validateOnClient',
-      templates: {
-        controller: 'vovk-zod/templates/controller.ejs',
-        service: 'vovk-zod/templates/service.ejs',
-        worker: 'vovk-cli/templates/worker.ejs',
-      },
-    });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-zod', 'zod'],
@@ -84,15 +68,7 @@ void describe.only('New project', async () => {
   await it('Works with --yes and --use-yarn', async () => {
     await createNextApp('--use-yarn');
     await vovkInit('--yes --use-yarn');
-    await assertConfig(['vovk.config.js'], {
-      validationLibrary: 'vovk-zod',
-      validateOnClient: 'vovk-zod/validateOnClient',
-      templates: {
-        controller: 'vovk-zod/templates/controller.ejs',
-        service: 'vovk-zod/templates/service.ejs',
-        worker: 'vovk-cli/templates/worker.ejs',
-      },
-    });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-zod', 'zod'],

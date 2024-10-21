@@ -35,6 +35,20 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
     );
   }
 
+  assertConfig.makeConfig = (validationLibrary: string | null) => ({
+    ...(validationLibrary
+      ? {
+          validationLibrary,
+          validateOnClient: `${validationLibrary}/validateOnClient`,
+        }
+      : {}),
+    templates: {
+      controller: `${validationLibrary ?? 'vovk-cli'}/templates/controller.ejs`,
+      service: `${validationLibrary ?? 'vovk-cli'}/templates/service.ejs`,
+      worker: 'vovk-cli/templates/worker.ejs',
+    },
+  });
+
   async function assertDirExists(dirPath: string) {
     assert.strictEqual(
       await getFileSystemEntryType(path.join(projectDir, dirPath)),

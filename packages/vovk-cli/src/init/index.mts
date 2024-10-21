@@ -250,29 +250,31 @@ export class Init {
     }
 
     validationLibrary =
-      validationLibrary ??
-      (await select({
-        message: 'Choose validation library',
-        default: 'vovk-zod',
-        choices: [
-          {
-            name: 'vovk-zod',
-            value: 'vovk-zod',
-            description: 'Use Zod for data validation',
-          },
-          {
-            name: 'vovk-yup',
-            value: 'vovk-yup',
-            description: 'Use Yup for data validation',
-          },
-          {
-            name: 'vovk-dto',
-            value: 'vovk-dto',
-            description: 'Use class-validator and class-transformer for data validation',
-          },
-          { name: 'None', value: undefined, description: 'Install validation library later' },
-        ],
-      }));
+      validationLibrary === 'none'
+        ? null
+        : (validationLibrary ??
+          (await select({
+            message: 'Choose validation library',
+            default: 'vovk-zod',
+            choices: [
+              {
+                name: 'vovk-zod',
+                value: 'vovk-zod',
+                description: 'Use Zod for data validation',
+              },
+              {
+                name: 'vovk-yup',
+                value: 'vovk-yup',
+                description: 'Use Yup for data validation',
+              },
+              {
+                name: 'vovk-dto',
+                value: 'vovk-dto',
+                description: 'Use class-validator and class-transformer for data validation',
+              },
+              { name: 'None', value: null, description: 'Install validation library later' },
+            ],
+          })));
 
     if (validationLibrary) {
       validateOnClient =
