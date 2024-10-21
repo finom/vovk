@@ -28,9 +28,7 @@ const { createNextApp, vovkInit, assertConfig, assertDirExists, assertDeps, asse
 
 beforeEach(async () => {});
 
-afterEach(async () => {
-  // await runScript(`rm -rf ${projectDir}`);
-});
+afterEach(async () => {});
 
 void describe.only('New project', async () => {
   await it('Works with --yes', async () => {
@@ -83,6 +81,48 @@ void describe.only('New project', async () => {
     // check if yarn.lock does not exist
     await assertNotExists('./package-lock.json');
   });
-});
 
-void describe('New project (prompting)', async () => {});
+  await it('Works with --yes and --validation-library="none"', async () => {
+    await createNextApp();
+    await vovkInit('--yes --validation-library=none');
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null));
+
+    await assertDeps({
+      dependencies: ['vovk'],
+      devDependencies: ['vovk-cli'],
+    });
+  });
+
+  await it('Works with --yes and --validation-library="vovk-zod"', async () => {
+    await createNextApp();
+    await vovkInit('--yes --validation-library=vovk-zod');
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-zod', 'zod'],
+      devDependencies: ['vovk-cli'],
+    });
+  });
+
+  await it('Works with --yes and --validation-library="vovk-yup"', async () => {
+    await createNextApp();
+    await vovkInit('--yes --validation-library=vovk-yup');
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-yup'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-yup', 'yup'],
+      devDependencies: ['vovk-cli'],
+    });
+  });
+
+  await it('Works with --yes and --validation-library="vovk-dto"', async () => {
+    await createNextApp();
+    await vovkInit('--yes --validation-library=vovk-dto');
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'class-validator', 'class-transformer'],
+      devDependencies: ['vovk-cli'],
+    });
+  });
+});

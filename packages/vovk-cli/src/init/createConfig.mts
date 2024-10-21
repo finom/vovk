@@ -26,11 +26,6 @@ export default async function createConfig({
     .then((content) => (JSON.parse(content) as { type: 'module' }).type === 'module');
   const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
 
-  config.validationLibrary = validationLibrary;
-  if (validateOnClient) {
-    config.validateOnClient = `${validationLibrary}/validateOnClient`;
-  }
-
   const templates: VovkConfig['templates'] = {
     controller: 'vovk-cli/templates/controller.ejs',
     service: 'vovk-cli/templates/service.ejs',
@@ -38,6 +33,11 @@ export default async function createConfig({
   };
 
   if (validationLibrary) {
+    config.validationLibrary = validationLibrary;
+    if (validateOnClient) {
+      config.validateOnClient = `${validationLibrary}/validateOnClient`;
+    }
+
     try {
       const validationTemplates = await getTemplateFilesFromPackage(validationLibrary);
       Object.assign(templates, validationTemplates);

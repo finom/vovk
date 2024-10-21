@@ -26,7 +26,11 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
   async function assertConfig(testConfigPaths: string[], testConfig: VovkConfig) {
     const { userConfig, configAbsolutePaths } = await getUserConfig({ cwd: projectDir });
 
-    assert.deepStrictEqual(userConfig, testConfig, 'Config does not match');
+    assert.deepStrictEqual(
+      userConfig,
+      testConfig,
+      'Config does not match. Config paths: ' + JSON.stringify(configAbsolutePaths)
+    );
 
     assert.deepStrictEqual(
       configAbsolutePaths,

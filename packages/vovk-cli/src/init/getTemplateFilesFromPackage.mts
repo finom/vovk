@@ -32,7 +32,6 @@ export default async function getTemplatesFiles(
     .filter((fileName) => fileName.startsWith('templates/') && !fileName.endsWith('/') && fileName.endsWith('.ejs'))
     .map((fileName) => [fileName.substring('templates/'.length).replace(/\.ejs$/, ''), `${packageName}/${fileName}`]);
 
-  console.log(templateFiles);
   return Object.fromEntries(entries) as Record<string, string>;
 }
 
@@ -48,8 +47,7 @@ function extractTemplatesFromTarball(tarballBuffer: Buffer): Promise<string[]> {
 
     extract.on('entry', (header: Headers, stream: Readable, next: () => void) => {
       const filePath = header.name;
-      // TODO revisit logs
-      console.log('filePath', filePath);
+      // TODO revisit comments
       // Check if the file is in the 'templates' folder
       if (filePath.startsWith('package/templates/')) {
         files.push(filePath.replace('package/', ''));

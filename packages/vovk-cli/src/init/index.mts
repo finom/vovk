@@ -100,6 +100,8 @@ export class Init {
     const dependencies: string[] = ['vovk'];
     const devDependencies: string[] = ['vovk-cli'];
 
+    log.error('init validationLibrary ' + validationLibrary);
+
     // delete older config files
     if (configPaths.length) {
       await Promise.all(configPaths.map((configPath) => fs.rm(configPath)));
@@ -214,6 +216,7 @@ export class Init {
     const configPaths = await getConfigPaths({ cwd, relativePath: prefix });
 
     if (yes) {
+      log.error('validationLibrary ' + validationLibrary);
       return this.#init(
         { configPaths },
         {
@@ -224,7 +227,8 @@ export class Init {
           skipInstall: skipInstall ?? false,
           updateTsConfig: updateTsConfig ?? true,
           updateScripts: updateScripts ?? 'implicit',
-          validationLibrary: validationLibrary ?? 'vovk-zod',
+          validationLibrary:
+            validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
           validateOnClient: validateOnClient ?? true,
           dryRun: dryRun ?? false,
           channel: channel ?? 'latest',
@@ -250,7 +254,7 @@ export class Init {
     }
 
     validationLibrary =
-      validationLibrary === 'none'
+      validationLibrary?.toLowerCase() === 'none'
         ? null
         : (validationLibrary ??
           (await select({

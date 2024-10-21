@@ -29,8 +29,6 @@ export async function runScript(
     const { env = process.env, timeout = 0, inputs = [] } = options;
     const [command, ...args] = commandWithArgs.split(/\s+/);
 
-    console.log('command, args', command, args);
-
     const child = spawn(command, args, {
       env,
       cwd: options.cwd,
@@ -42,7 +40,6 @@ export async function runScript(
 
     child.on('error', (error) => {
       if (scriptTimeout) clearTimeout(scriptTimeout);
-      console.log('ebal rot', error);
       reject(error);
     });
 
