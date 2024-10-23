@@ -8,7 +8,7 @@ export default async function updateNPMScripts(root: string, updateScriptsMode: 
       generate: 'vovk generate',
       dev:
         updateScriptsMode === 'explicit'
-          ? 'PORT=3000 concurrently "vovk dev" "next dev" --kill-others'
+          ? "PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others"
           : 'vovk dev --next-dev',
     },
   });

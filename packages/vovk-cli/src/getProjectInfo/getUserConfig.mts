@@ -6,12 +6,12 @@ async function getUserConfig({
   cwd,
 }: {
   cwd: string;
-}): Promise<{ userConfig: VovkConfig; configAbsolutePaths: string[] }> {
+}): Promise<{ userConfig: VovkConfig | null; configAbsolutePaths: string[]; error?: Error }> {
   const configAbsolutePaths = await getConfigAbsolutePaths({ cwd });
-  let userConfig: VovkConfig = {};
+  let userConfig: VovkConfig;
 
   if (!configAbsolutePaths.length) {
-    return { userConfig, configAbsolutePaths };
+    return { userConfig: null, configAbsolutePaths, error: new Error('No config file found') };
   }
 
   const configPath = configAbsolutePaths[0];
@@ -23,8 +23,7 @@ async function getUserConfig({
       const cacheBuster = Date.now();
       ({ default: userConfig } = (await import(`${configPath}?cache=${cacheBuster}`)) as { default: VovkConfig });
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('🐺 ❌ Error reading config file:', (e as Error).message);
+      return { userConfig: null, configAbsolutePaths, error: e as Error };
     }
   }
 

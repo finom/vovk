@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import * as jsonc from 'jsonc-parser';
 
-export default async function updateTSConfig(root: string) {
+export default async function updateTypeScriptConfig(root: string) {
   const tsconfigPath = path.join(root, 'tsconfig.json');
 
   const tsconfigContent = await fs.readFile(tsconfigPath, 'utf8');

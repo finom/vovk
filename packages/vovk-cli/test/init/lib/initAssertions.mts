@@ -5,6 +5,7 @@ import path from 'node:path';
 import getUserConfig from '../../../src/getProjectInfo/getUserConfig.mjs';
 import { VovkConfig } from '../../../src/types.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../../../src/utils/getFileSystemEntryType.mjs';
+import checkTSConfigForExperimentalDecorators from '../../../src/init/checkTSConfigForExperimentalDecorators.mjs';
 
 export default function initAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);
@@ -23,19 +24,19 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
     await runScript(`./dist/index.mjs init ${dir} --channel=beta --log-level=debug ${extraParams}`, { cwd });
   }
 
-  async function assertConfig(testConfigPaths: string[], testConfig: VovkConfig) {
+  async function assertConfig(testConfigPaths: string[], testConfig: VovkConfig | null) {
     const { userConfig, configAbsolutePaths } = await getUserConfig({ cwd: projectDir });
-
-    assert.deepStrictEqual(
-      userConfig,
-      testConfig,
-      'Config does not match. Config paths: ' + JSON.stringify(configAbsolutePaths)
-    );
 
     assert.deepStrictEqual(
       configAbsolutePaths,
       testConfigPaths.map((p) => path.join(projectDir, p)),
       'Config paths do not match'
+    );
+
+    assert.deepStrictEqual(
+      userConfig,
+      testConfig,
+      'Config does not match. Config paths: ' + JSON.stringify(configAbsolutePaths)
     );
   }
 
@@ -69,18 +70,50 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
     );
   }
 
-  async function assertDeps({ dependencies, devDependencies }: { dependencies: string[]; devDependencies: string[] }) {
+  async function assertDeps({
+    dependencies,
+    devDependencies,
+    opposite,
+  }: {
+    dependencies: string[];
+    devDependencies: string[];
+    opposite?: boolean;
+  }) {
     const packageJson = JSON.parse(await fs.readFile(path.join(projectDir, 'package.json'), 'utf-8')) as {
       dependencies: Record<string, string>;
       devDependencies: Record<string, string>;
     };
 
     for (const dep of dependencies) {
-      assert.ok(packageJson.dependencies[dep], `Dependency ${dep} not found`);
+      if (opposite) {
+        assert.ok(!packageJson.dependencies[dep], `Dependency ${dep} found`);
+      } else {
+        assert.ok(packageJson.dependencies[dep], `Dependency ${dep} not found`);
+      }
     }
 
     for (const dep of devDependencies) {
-      assert.ok(packageJson.devDependencies[dep], `Dev dependency ${dep} not found`);
+      if (opposite) {
+        assert.ok(!packageJson.devDependencies[dep], `Dev dependency ${dep} found`);
+      } else {
+        assert.ok(packageJson.devDependencies[dep], `Dev dependency ${dep} not found`);
+      }
+    }
+  }
+
+  async function assertScripts(scripts: Record<string, string | undefined>) {
+    // TODO move read/write package.json to a helper function
+    const packageJson = JSON.parse(await fs.readFile(path.join(projectDir, 'package.json'), 'utf-8')) as {
+      scripts: Record<string, string>;
+    };
+
+    for (const [script, command] of Object.entries(scripts)) {
+      if (typeof command === 'undefined') {
+        assert.ok(!packageJson.scripts[script], `Script ${script} found`);
+        continue;
+      } else {
+        assert.strictEqual(packageJson.scripts[script], command, `Script ${script} not found`);
+      }
     }
   }
 
@@ -88,13 +121,25 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
     assert.strictEqual(await getFileSystemEntryType(path.join(projectDir, filePath)), null, `File ${filePath} exists`);
   }
 
+  async function assertTsConfig(opposite?: boolean) {
+    const hasDecorators = await checkTSConfigForExperimentalDecorators(projectDir);
+
+    if (opposite) {
+      assert.strictEqual(hasDecorators, false, 'Experimental decorators found');
+    } else {
+      assert.strictEqual(hasDecorators, true, 'Experimental decorators not found');
+    }
+  }
+
   return {
     createNextApp,
     vovkInit,
     assertConfig,
+    assertScripts,
     assertDirExists,
     assertFileExists,
     assertDeps,
     assertNotExists,
+    assertTsConfig,
   };
 }

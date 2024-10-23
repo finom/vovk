@@ -69,7 +69,7 @@ import getLogger from '../utils/getLogger.mjs';
 import createConfig from './createConfig.mjs';
 import updateNPMScripts from './updateNPMScripts.mjs';
 import checkTSConfigForExperimentalDecorators from './checkTSConfigForExperimentalDecorators.mjs';
-import updateTSConfig from './updateTSConfig.mjs';
+import updateTypeScriptConfig from './updateTypeScriptConfig.mjs';
 import updateDependenciesWithoutInstalling from './updateDependenciesWithoutInstalling.mjs';
 
 export class Init {
@@ -100,8 +100,6 @@ export class Init {
     const dependencies: string[] = ['vovk'];
     const devDependencies: string[] = ['vovk-cli'];
 
-    log.error('init validationLibrary ' + validationLibrary);
-
     // delete older config files
     if (configPaths.length) {
       await Promise.all(configPaths.map((configPath) => fs.rm(configPath)));
@@ -121,7 +119,7 @@ export class Init {
 
     if (updateTsConfig) {
       try {
-        if (!dryRun) await updateTSConfig(root);
+        if (!dryRun) await updateTypeScriptConfig(root);
         log.debug('Updated tsconfig.json');
       } catch (error) {
         log.error(`Failed to update tsconfig.json: ${(error as Error).message}`);
@@ -141,7 +139,6 @@ export class Init {
     }
 
     if (!dryRun) {
-      console.log('channel', channel);
       await updateDependenciesWithoutInstalling({
         log,
         dir: root,
@@ -216,7 +213,6 @@ export class Init {
     const configPaths = await getConfigPaths({ cwd, relativePath: prefix });
 
     if (yes) {
-      log.error('validationLibrary ' + validationLibrary);
       return this.#init(
         { configPaths },
         {
@@ -295,14 +291,14 @@ export class Init {
         default: 'implicit',
         choices: [
           {
-            name: 'Yes, with implicit concurrently',
-            description: `The "dev" script will use concurrently API internally and automatically set a port ${chalk.whiteBright.bold(`"vovk dev --next-dev"`)}`,
+            name: 'Yes, use "concurrently" implicitly',
+            description: `The "dev" script will use "concurrently" API internally in order to run "next dev" and "vovk dev" together and automatically look for an available port ${chalk.whiteBright.bold(`"vovk dev --next-dev"`)}`,
             value: 'implicit' as const,
           },
           {
-            name: 'Yes, with explicit concurrently',
+            name: 'Yes, use "concurrently" explicitly',
             value: 'explicit' as const,
-            description: `The "dev" script will use pre-defined PORT variable ${chalk.whiteBright.bold(`"PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others"`)}`,
+            description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others"`)}`,
           },
           {
             name: 'No',
