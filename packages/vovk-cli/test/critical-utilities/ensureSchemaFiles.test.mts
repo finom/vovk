@@ -8,6 +8,8 @@ import getProjectInfo, { type ProjectInfo } from '../../src/getProjectInfo/index
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 
+// TODO comments
+
 // Helper function to clear and create a temporary directory
 async function setupTmpDir() {
   await cleanupTmpDir();
@@ -33,7 +35,7 @@ afterEach(async () => {
   await cleanupTmpDir();
 });
 
-void describe('#ensureSchemaFiles', async () => {
+void describe('ensureSchemaFiles', async () => {
   await it('ensureSchemaFiles creates and removes files correctly with nested segments', async () => {
     const initialSegments = ['segment1', 'segment2', 'folder1/segment3', 'folder2/segment4'];
 

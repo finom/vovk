@@ -1,42 +1,26 @@
-// 1. Test with --yes DONE
-// 2. Test with --use-npm and other options DONE
-// 3. Test with --skip-install DONE
-// 4. Test with --validation-library none/zod/yup/dto DONE
-// 5. Test with prompting
-// 6. Test with prompting + flags sich as --update-tsconfig
-// 7. Test with prompting + flags sich as --validation-library
-// 8. Test with prompting + flags sich as --validate-on-client
-// 9. Test config creation at .config folder DONE
-// 10. If package.json is type module use .mjs extension DONE
-// 12. Dry run DONE
-// 13. Update scripts option DONE
-
-// what to test: run command, check generated config
-// before each: set up next.js project
-// after each: remove folder
-
 import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import initAssertions from './lib/initAssertions.mjs';
-import { runScript } from '../lib/runScript.mjs';
+import getCLIAssertions from '../lib/getCLIAssertions.mjs';
+import { DOWN, ENTER, runScript } from '../lib/runScript.mjs';
+import omit from 'lodash/omit.js';
 
-const dir = 'tmp_test_dir';
-const cwd = path.resolve(import.meta.dirname, '../../..');
+await describe('CLI Init', async () => {
+  const dir = 'tmp_test_dir';
+  const cwd = path.resolve(import.meta.dirname, '../../..');
 
-const {
-  createNextApp,
-  vovkInit,
-  assertConfig,
-  assertScripts,
-  assertDirExists,
-  assertDeps,
-  assertFileExists,
-  assertNotExists,
-  assertTsConfig,
-} = initAssertions({ cwd, dir });
+  const {
+    createNextApp,
+    vovkInit,
+    assertConfig,
+    assertScripts,
+    assertDirExists,
+    assertDeps,
+    assertFileExists,
+    assertNotExists,
+    assertTsConfig,
+  } = getCLIAssertions({ cwd, dir });
 
-void describe.only('New project', async () => {
   await it('Works with --yes', async () => {
     await createNextApp();
     await vovkInit('--yes');
@@ -273,6 +257,161 @@ void describe.only('New project', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-zod', 'zod'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig();
+  });
+
+  await it('Works with prompting', async () => {
+    await createNextApp();
+    await vovkInit('', { inputs: [ENTER, ENTER, ENTER, ENTER] });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-zod', 'zod'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig();
+  });
+
+  await it('Works with prompting and --use-yarn', async () => {
+    await createNextApp('--use-yarn');
+    await vovkInit('--use-yarn', { inputs: [ENTER, ENTER, ENTER, ENTER] });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-zod', 'zod'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig();
+
+    await assertDirExists('./node_modules/vovk');
+    await assertDirExists('./node_modules/vovk-cli');
+
+    await assertNotExists('./package-lock.json');
+    await assertFileExists('./yarn.lock');
+  });
+
+  await it('Works with prompting and no TSConfig update', async () => {
+    await createNextApp();
+    await vovkInit('', { inputs: [ENTER, ENTER, ENTER, 'N', ENTER] });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-zod', 'zod'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig(true);
+  });
+
+  await it('Works with prompting and --update-ts-config', async () => {
+    await createNextApp();
+    await vovkInit('--update-ts-config', { inputs: [ENTER, ENTER, ENTER] });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-zod', 'zod'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig();
+  });
+
+  await it('Works with prompting and --validation-library', async () => {
+    await createNextApp();
+    await vovkInit('--validation-library=vovk-dto', { inputs: [ENTER, ENTER, ENTER] });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-dto', 'class-validator', 'class-transformer'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig();
+  });
+
+  await it('Works with prompting and --validation-library=none', async () => {
+    await createNextApp();
+    await vovkInit('--validation-library=none', { inputs: [ENTER, ENTER, ENTER] });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null));
+
+    await assertDeps({
+      dependencies: ['vovk'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertDeps({
+      dependencies: ['vovk-dto', 'vovk-zod'],
+      opposite: true,
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig();
+  });
+
+  await it('Works with prompting and no "validate on client" selection', async () => {
+    await createNextApp();
+    await vovkInit('', { inputs: [ENTER, 'N', ENTER, ENTER, ENTER] });
+    await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig('vovk-zod'), 'validateOnClient'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-zod', 'zod'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig();
+  });
+
+  await it('Works with prompting and down arrow selection', async () => {
+    await createNextApp();
+    await vovkInit('', { inputs: [DOWN, ENTER, ENTER, ENTER, ENTER] });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-yup'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-yup', 'yup'],
       devDependencies: ['vovk-cli'],
     });
 

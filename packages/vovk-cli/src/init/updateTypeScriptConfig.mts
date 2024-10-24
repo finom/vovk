@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import * as jsonc from 'jsonc-parser';
+import prettify from '../utils/prettify.mjs';
 
 export default async function updateTypeScriptConfig(root: string) {
   const tsconfigPath = path.join(root, 'tsconfig.json');
@@ -13,7 +14,7 @@ export default async function updateTypeScriptConfig(root: string) {
   });
 
   // Apply the edits to the original content
-  const updatedContent = jsonc.applyEdits(tsconfigContent, edits);
+  const updatedContent = await prettify(jsonc.applyEdits(tsconfigContent, edits), tsconfigPath);
 
   await fs.writeFile(tsconfigPath, updatedContent, 'utf8');
 }

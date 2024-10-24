@@ -166,6 +166,7 @@ program
   .action(() => program.help());
 
 /*
+TODO
 vovk new segment [segmentName]
 vovk new controller service [segmentName/]moduleName
 vovk new c s w [segmentName/]moduleName

@@ -243,7 +243,7 @@ export class Init {
     if (configPaths.length) {
       if (
         !(await confirm({
-          message: `Found existing config file${configPaths.length > 1 ? 's' : '1'} at ${configPaths.join(', ')}. Do you want to reinitialize the project?`,
+          message: `Found existing config file${configPaths.length > 1 ? 's' : ''} at ${configPaths.join(', ')}. Do you want to reinitialize the project?`,
         }))
       )
         return;
@@ -308,7 +308,7 @@ export class Init {
         ],
       }));
 
-    if (updateTsConfig) {
+    if (typeof updateTsConfig === 'undefined') {
       let shouldAsk = false;
 
       try {

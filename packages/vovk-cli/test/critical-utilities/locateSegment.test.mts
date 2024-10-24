@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const __dirname = import.meta.dirname;
 
-void describe('#locateSegment', async () => {
+void describe('locateSegment', async () => {
   await it('Locates segments properly', async () => {
     const rootDirectory = path.join(__dirname, '../test_data/segments');
     const results = await locateSegments(rootDirectory);

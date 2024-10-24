@@ -1,13 +1,13 @@
 import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
-import { runScript } from '../../lib/runScript.mjs';
+import { runScript } from './runScript.mjs';
 import path from 'node:path';
-import getUserConfig from '../../../src/getProjectInfo/getUserConfig.mjs';
-import { VovkConfig } from '../../../src/types.mjs';
-import getFileSystemEntryType, { FileSystemEntryType } from '../../../src/utils/getFileSystemEntryType.mjs';
-import checkTSConfigForExperimentalDecorators from '../../../src/init/checkTSConfigForExperimentalDecorators.mjs';
+import getUserConfig from '../../src/getProjectInfo/getUserConfig.mjs';
+import { VovkConfig } from '../../src/types.mjs';
+import getFileSystemEntryType, { FileSystemEntryType } from '../../src/utils/getFileSystemEntryType.mjs';
+import checkTSConfigForExperimentalDecorators from '../../src/init/checkTSConfigForExperimentalDecorators.mjs';
 
-export default function initAssertions({ cwd, dir }: { cwd: string; dir: string }) {
+export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);
 
   async function createNextApp(extraParams?: string) {
@@ -20,8 +20,12 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
     );
   }
 
-  async function vovkInit(extraParams?: string) {
-    await runScript(`./dist/index.mjs init ${dir} --channel=beta --log-level=debug ${extraParams}`, { cwd });
+  async function vovkInit(extraParams?: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
+    const script = `./dist/index.mjs init ${dir} --channel=beta --log-level=debug ${extraParams}`;
+    return runScript(script, {
+      ...options,
+      cwd,
+    });
   }
 
   async function assertConfig(testConfigPaths: string[], testConfig: VovkConfig | null) {
@@ -75,8 +79,8 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
     devDependencies,
     opposite,
   }: {
-    dependencies: string[];
-    devDependencies: string[];
+    dependencies?: string[];
+    devDependencies?: string[];
     opposite?: boolean;
   }) {
     const packageJson = JSON.parse(await fs.readFile(path.join(projectDir, 'package.json'), 'utf-8')) as {
@@ -84,7 +88,7 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
       devDependencies: Record<string, string>;
     };
 
-    for (const dep of dependencies) {
+    for (const dep of dependencies ?? []) {
       if (opposite) {
         assert.ok(!packageJson.dependencies[dep], `Dependency ${dep} found`);
       } else {
@@ -92,7 +96,7 @@ export default function initAssertions({ cwd, dir }: { cwd: string; dir: string 
       }
     }
 
-    for (const dep of devDependencies) {
+    for (const dep of devDependencies ?? []) {
       if (opposite) {
         assert.ok(!packageJson.devDependencies[dep], `Dev dependency ${dep} found`);
       } else {

@@ -1,61 +1,55 @@
+/* eslint-disable no-console */
 /* global NodeJS */
-import { spawn } from 'child_process';
+import * as pty from 'node-pty';
 
-async function runInputs(inputs: string[], stdin: NodeJS.WritableStream) {
-  if (inputs.length > 0) {
-    for (const input of inputs) {
-      stdin.write(input);
-
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
+// TODO comment
+async function runInputs(inputs: string[], child: pty.IPty) {
+  for (const input of inputs) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    child.write(input);
   }
-
-  stdin.end();
 }
 
-export async function runScript(
+export const DOWN = '\x1B\x5B\x42';
+export const UP = '\x1B\x5B\x41';
+export const ENTER = '\x0D';
+
+export function runScript(
   commandWithArgs: string,
   options: {
     env?: NodeJS.ProcessEnv;
-    timeout?: number;
     inputs?: string[];
     cwd: string;
   } = {
     cwd: process.cwd(),
   }
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  console.info('Running script:', commandWithArgs);
+  const { env = process.env, inputs = [] } = options;
+  const [command, ...args] = commandWithArgs.split(/\s+/);
+
+  const child = pty.spawn(command, args, {
+    env,
+    cwd: options.cwd,
+    cols: 80,
+    rows: 30,
+  });
+
+  void runInputs(inputs, child);
+
   return new Promise((resolve, reject) => {
-    const { env = process.env, timeout = 0, inputs = [] } = options;
-    const [command, ...args] = commandWithArgs.split(/\s+/);
-
-    const child = spawn(command, args, {
-      env,
-      cwd: options.cwd,
-      stdio: ['pipe', 'inherit', 'inherit'],
+    let result = '';
+    child.onData((data) => {
+      process.stdout.write(data); // Output data immediately
+      result += data; // Accumulate data if needed
     });
 
-    let scriptTimeout: NodeJS.Timeout;
-    const { stdin } = child;
-
-    child.on('error', (error) => {
-      if (scriptTimeout) clearTimeout(scriptTimeout);
-      reject(error);
+    child.onExit((exitCode) => {
+      if (exitCode.exitCode === 0) {
+        resolve(result); // Resolve with the accumulated result
+      } else {
+        reject(new Error(`Process exited with code ${exitCode.exitCode}`));
+      }
     });
-
-    child.on('close', (code) => {
-      if (scriptTimeout) clearTimeout(scriptTimeout);
-      resolve({ code });
-    });
-
-    void runInputs(inputs, stdin);
-
-    // Set timeout if specified
-    if (timeout > 0) {
-      scriptTimeout = setTimeout(() => {
-        child.kill('SIGTERM');
-        reject(new Error(`Script timed out after ${timeout} ms`));
-      }, timeout);
-    }
   });
 }
