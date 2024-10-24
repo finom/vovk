@@ -4,7 +4,9 @@ import newSegment from './newSegment.mjs';
 
 export default async function newComponents(components: string[], options: NewOptions) {
   if (components[0] === 'segment' || components[0] === 'segments') {
-    let segmentNames = components.slice(1);
+    let segmentNames = components
+      .slice(1)
+      .map((segmentName) => (segmentName === '""' || segmentName === "''" ? '' : segmentName));
 
     if (!segmentNames.length) {
       segmentNames = [''];

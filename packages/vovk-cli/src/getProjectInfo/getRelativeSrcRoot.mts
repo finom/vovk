@@ -9,5 +9,5 @@ export default async function getRelativeSrcRoot({ cwd }: { cwd: string }) {
     return './src';
   }
 
-  throw new Error(`Could not find app router directory. Check Next.js docs for more info.`);
+  throw new Error(`${cwd} Could not find app router directory. Check Next.js docs for more info.`);
 }

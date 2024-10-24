@@ -25,7 +25,6 @@ async function updateDeps({
       if (!packageJson[key]) {
         packageJson[key] = {};
       }
-      console.log(packageName, latestVersion);
       packageJson[key][packageName] = `^${latestVersion}`;
     })
   );

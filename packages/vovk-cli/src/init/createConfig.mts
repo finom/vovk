@@ -56,7 +56,6 @@ ${isModule ? '\nexport default config;' : 'module.exports = config;'}`,
   );
 
   if (!dryRun) await fs.writeFile(configAbsolutePath, configStr, 'utf-8');
-  log.info(`Config created at ${configAbsolutePath}`);
 
   return { configAbsolutePath };
 }

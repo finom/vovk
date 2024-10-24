@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import { InitOptions } from '../index.mjs';
 import getLogger from '../utils/getLogger.mjs';
 
@@ -26,15 +26,18 @@ export default async function installDependencies({
   log.info(`Installing dependencies at ${cwd} using ${packageManager}...`);
 
   await new Promise<void>((resolve, reject) => {
-    exec(`${packageManager} install`, { cwd }, (error, stdout, stderr) => {
-      if (error) {
-        reject(new Error(stderr));
-      } else {
-        log.debug(stdout);
+    const child = spawn(packageManager, ['install'], { cwd, stdio: 'inherit' });
+
+    child.on('close', (code) => {
+      if (code === 0) {
         resolve();
+      } else {
+        reject(new Error(`${packageManager} install process exited with code ${code}`));
       }
     });
-  });
 
-  return Promise.resolve();
+    child.on('error', (error) => {
+      reject(error);
+    });
+  });
 }

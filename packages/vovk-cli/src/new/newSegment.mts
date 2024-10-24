@@ -12,7 +12,7 @@ export default async function newSegment({ segmentName, dryRun }: { segmentName:
   const absoluteSegmentRoutePath = path.join(cwd, apiDir, segmentName, '[[...vovk]]/route.ts');
 
   if (await getFileSystemEntryType(absoluteSegmentRoutePath)) {
-    return log.error(
+    throw new Error(
       `Unable to create new segment. ${formatLoggedSegmentName(segmentName, { upperFirst: true })} already exists.`
     );
   }
@@ -27,7 +27,7 @@ export type Controllers = typeof controllers;
 export type Workers = typeof workers;
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
-  emitSchema: true,
+${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
   workers,
   controllers,
 });

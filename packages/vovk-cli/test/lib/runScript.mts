@@ -48,7 +48,7 @@ export function runScript(
       if (exitCode.exitCode === 0) {
         resolve(result); // Resolve with the accumulated result
       } else {
-        reject(new Error(`Process exited with code ${exitCode.exitCode}`));
+        reject(new Error(`Process exited with code ${exitCode.exitCode}\nOutput:\n${result || 'no output'}`));
       }
     });
   });

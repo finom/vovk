@@ -117,19 +117,10 @@ export class Init {
       );
     }
 
-    if (updateTsConfig) {
-      try {
-        if (!dryRun) await updateTypeScriptConfig(root);
-        log.debug('Updated tsconfig.json');
-      } catch (error) {
-        log.error(`Failed to update tsconfig.json: ${(error as Error).message}`);
-      }
-    }
-
     if (updateScripts) {
       try {
         if (!dryRun) await updateNPMScripts(root, updateScripts);
-        log.debug('Updated scripts in package.json');
+        log.info('Updated scripts at package.json');
       } catch (error) {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
       }
@@ -138,21 +129,32 @@ export class Init {
       }
     }
 
-    if (!dryRun) {
-      await updateDependenciesWithoutInstalling({
-        log,
-        dir: root,
-        dependencyNames: dependencies,
-        devDependencyNames: devDependencies,
-        channel: channel ?? 'latest',
-      });
+    if (updateTsConfig) {
+      try {
+        if (!dryRun) await updateTypeScriptConfig(root);
+        log.info('Added "experimentalDecorators" to tsconfig.json');
+      } catch (error) {
+        log.error(`Failed to update tsconfig.json: ${(error as Error).message}`);
+      }
     }
 
-    log.debug('Updated dependencies in package.json');
-
-    if (!skipInstall) {
+    if (!dryRun) {
       try {
-        if (!dryRun) {
+        await updateDependenciesWithoutInstalling({
+          log,
+          dir: root,
+          dependencyNames: dependencies,
+          devDependencyNames: devDependencies,
+          channel: channel ?? 'latest',
+        });
+
+        log.info('Updated dependencies and devDependencies in package.json');
+      } catch (error) {
+        log.error(`Failed to update dependencies: ${(error as Error).message}. Please `);
+      }
+
+      if (!skipInstall) {
+        try {
           await installDependencies({
             log,
             cwd: root,
@@ -163,11 +165,11 @@ export class Init {
               useBun,
             },
           });
-        }
 
-        log.debug('Dependencies installed successfully');
-      } catch (error) {
-        log.error(`Failed to install dependencies: ${(error as Error).message}`);
+          log.info('Dependencies installed successfully');
+        } catch (error) {
+          log.error(`Failed to install dependencies: ${(error as Error).message}`);
+        }
       }
     }
 
@@ -179,7 +181,7 @@ export class Init {
         dryRun,
       });
 
-      log.debug('Config created successfully at ' + configAbsolutePath);
+      log.info('Config created successfully at ' + configAbsolutePath);
     } catch (error) {
       log.error(`Failed to create config: ${(error as Error).message}`);
     }

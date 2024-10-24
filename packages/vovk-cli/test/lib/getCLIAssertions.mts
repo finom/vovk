@@ -10,6 +10,14 @@ import checkTSConfigForExperimentalDecorators from '../../src/init/checkTSConfig
 export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);
 
+  function runAtCWD(command: string) {
+    return runScript(command, { cwd });
+  }
+
+  function runAtProjectDir(command: string) {
+    return runScript(command, { cwd: projectDir });
+  }
+
   async function createNextApp(extraParams?: string) {
     await runScript(`rm -rf ${projectDir}`);
     await runScript(
@@ -135,7 +143,42 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     }
   }
 
+  async function assertFile(filePath: string, exp?: RegExp | string | RegExp[] | string[]) {
+    let content;
+    try {
+      content = await fs.readFile(path.join(projectDir, filePath), 'utf-8');
+    } catch (e) {
+      assert.fail(`File ${filePath} does not exist`);
+    }
+
+    assert.ok(content, `File ${filePath} is empty`);
+
+    if (exp) {
+      if (typeof exp === 'string') {
+        assert.ok(
+          content.replace(/\s+/g, '').includes(exp.replace(/\s+/g, '')),
+          `File ${filePath} does not match the string ${exp}`
+        );
+      } else if (exp instanceof RegExp) {
+        assert.ok(exp.test(content), `File ${filePath} does not match the regex ${exp}`);
+      } else if (Array.isArray(exp)) {
+        for (const e of exp) {
+          if (typeof e === 'string') {
+            assert.ok(
+              content.replace(/\s+/g, '').includes(e.replace(/\s+/g, '')),
+              `File ${filePath} does not match the string ${e}`
+            );
+          } else if (e instanceof RegExp) {
+            assert.ok(e.test(content), `File ${filePath} does not match the regex ${e}`);
+          }
+        }
+      }
+    }
+  }
+
   return {
+    runAtCWD,
+    runAtProjectDir,
     createNextApp,
     vovkInit,
     assertConfig,
@@ -145,5 +188,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     assertDeps,
     assertNotExists,
     assertTsConfig,
+    assertFile,
   };
 }

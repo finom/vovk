@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
-import { DOWN, ENTER, runScript } from '../lib/runScript.mjs';
+import { DOWN, ENTER } from '../lib/runScript.mjs';
 import omit from 'lodash/omit.js';
 
 await describe('CLI Init', async () => {
@@ -10,6 +10,7 @@ await describe('CLI Init', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
 
   const {
+    runAtProjectDir,
     createNextApp,
     vovkInit,
     assertConfig,
@@ -227,7 +228,7 @@ await describe('CLI Init', async () => {
 
   await it('Utilizes .config folder', async () => {
     await createNextApp();
-    await runScript('mkdir .config', { cwd: path.join(cwd, dir) });
+    await runAtProjectDir('mkdir .config');
     await vovkInit('--yes');
     await assertConfig(['.config/vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
