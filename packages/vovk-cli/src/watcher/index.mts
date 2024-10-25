@@ -177,6 +177,8 @@ export class VovkCLIWatcher {
       .on('error', (error) => {
         log.error(`Error watching config files: ${error.message}`);
       });
+
+    void handle();
   };
 
   #watch() {
