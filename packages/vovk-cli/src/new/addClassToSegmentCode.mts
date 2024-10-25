@@ -3,13 +3,13 @@ import { Project, SyntaxKind } from 'ts-morph';
 export default function addClassToSegmentCode(
   segmentSourceCode: string,
   {
-    className,
-    rpcName,
+    sourceName,
+    compiledName,
     type,
     importPath,
   }: {
-    className: string;
-    rpcName: string;
+    sourceName: string;
+    compiledName: string;
     type: 'worker' | 'controller';
     importPath: string;
   }
@@ -24,7 +24,7 @@ export default function addClassToSegmentCode(
 
   if (!importDeclaration) {
     importDeclaration = sourceFile.addImportDeclaration({
-      defaultImport: className,
+      defaultImport: sourceName,
       moduleSpecifier: importPath,
     });
   }
@@ -38,11 +38,11 @@ export default function addClassToSegmentCode(
       const objectLiteral = initializer.asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
 
       // Check if the property already exists
-      const existingProperty = objectLiteral.getProperty(rpcName);
+      const existingProperty = objectLiteral.getProperty(compiledName);
       if (!existingProperty) {
         objectLiteral.addPropertyAssignment({
-          name: rpcName,
-          initializer: className,
+          name: compiledName,
+          initializer: sourceName,
         });
       }
     }

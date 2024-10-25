@@ -21,9 +21,10 @@ export default async function render(
     moduleName: string;
   }
 ) {
-  const getFileDir = (givenSegmentName: string, givenModuleName: string) =>
-    [_.camelCase(givenModuleName), givenSegmentName || config.rootSegmentModulesDirName].filter(Boolean).join('/') +
-    '/';
+  const getModulePath = (givenSegmentName: string, givenModuleName: string, fileName?: string) =>
+    [givenSegmentName || config.rootSegmentModulesDirName, _.camelCase(givenModuleName), fileName]
+      .filter(Boolean)
+      .join('/');
 
   const templateVars = {
     // input
@@ -33,7 +34,7 @@ export default async function render(
     moduleName,
 
     // utils
-    getFileDir,
+    getModulePath,
 
     // libraries
     _, // lodash
@@ -42,14 +43,14 @@ export default async function render(
 
   // first, render the front matter because it can use ejs variables
   const parsed = matter((await ejs.render(codeTemplate, templateVars, { async: true })).trim());
-  const { fileName, className, rpcName } = parsed.data as {
-    fileName: string;
-    className: string;
-    rpcName: string;
+  const { filePath, sourceName, compiledName } = parsed.data as {
+    filePath: string;
+    sourceName: string;
+    compiledName: string;
   };
   const templateContent = parsed.content;
 
   const code = await ejs.render(templateContent, templateVars, { async: true });
 
-  return { fileName, className, rpcName, code };
+  return { filePath, sourceName, compiledName, code };
 }

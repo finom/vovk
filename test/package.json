@@ -3,6 +3,7 @@
   "version": "0.1.1-beta.0",
   "private": true,
   "scripts": {
+    "ncu": "npm-check-updates -u && npm i",
     "dev": "node ../packages/vovk-cli/dist/index.mjs dev --next-dev",
     "build": "next build",
     "start": "next start",
@@ -10,16 +11,16 @@
     "generate": "node ../packages/vovk-cli/dist/index.mjs generate"
   },
   "dependencies": {
-    "next": "^14.2.4",
+    "next": "^15.0.1",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
+    "@types/node": "^22.8.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10",
-    "eslint-config-next": "14.2.4",
+    "eslint-config-next": "15.0.1",
     "postcss": "^8",
     "tailwindcss": "^3"
   }

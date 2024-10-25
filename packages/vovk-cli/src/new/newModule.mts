@@ -70,14 +70,14 @@ export default async function newModule({
         ? path.resolve(cwd, templatePath)
         : path.resolve(cwd, './node_modules', templatePath);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
-    const { fileName, className, rpcName, code } = await render(templateCode, {
+    const { filePath, sourceName, compiledName, code } = await render(templateCode, {
       config,
       withService: what.includes('service'),
       segmentName,
       moduleName,
     });
 
-    const absoluteModulePath = path.join(cwd, config.modulesDir, fileName);
+    const absoluteModulePath = path.join(cwd, config.modulesDir, filePath);
 
     const dirName = path.dirname(absoluteModulePath);
     const prettiedCode = await prettify(code, absoluteModulePath);
@@ -97,8 +97,8 @@ export default async function newModule({
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
       const importPath = path.relative(dirName, absoluteModulePath).replace(/\.(ts|tsx)$/, '');
       const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {
-        className,
-        rpcName,
+        sourceName,
+        compiledName,
         type,
         importPath,
       });
@@ -107,12 +107,12 @@ export default async function newModule({
       }
 
       log.info(
-        `Added ${chalkHighlightThing(className)} ${type} to ${formatLoggedSegmentName(segmentName)} as ${chalkHighlightThing(rpcName)}`
+        `Added ${chalkHighlightThing(sourceName)} ${type} to ${formatLoggedSegmentName(segmentName)} as ${chalkHighlightThing(compiledName)}`
       );
     }
 
     log.info(
-      `Created ${chalkHighlightThing(fileName)} with ${chalkHighlightThing(type)} template for ${formatLoggedSegmentName(segmentName)}`
+      `Created ${chalkHighlightThing(sourceName)} with ${chalkHighlightThing(type)} template for ${formatLoggedSegmentName(segmentName)}`
     );
   }
 }

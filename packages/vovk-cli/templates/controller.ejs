@@ -1,1 +1,50 @@
-// TODO
+<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
+<% var modulePascalNamePlural = pluralize(modulePascalName); %>
+<% var ControllerName = modulePascalName + 'Controller'; %>
+<% var RPCName = modulePascalName + 'RPC'; %>
+<% var ServiceName = modulePascalName + 'Service'; %>
+---
+filePath: <%= getModulePath(segmentName, moduleName, ControllerName + '.ts') %> # Relative to "modules" dir
+sourceName: <%= ControllerName %> # Used to define import declaration in a segment route file for the given class
+compiledName: <%= RPCName %> # Used to define a compiled object name
+---
+
+import { prefix, get, put, post, del<%= !config.validationLibrary ? ', type VovkRequest' : '' %> } from 'vovk';
+<% if(withService) { %>
+import <%= ServiceName %> from './<%= ServiceName %>';
+<% } %>
+
+@prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
+export default class <%= ControllerName %> {
+    @get()
+    static get<%= modulePascalNamePlural %> = async (req: VovkRequest<null, { q: string }>) => {
+        const q = req.nextUrl.searchParams.get('q');
+        <% if(withService) { %>
+        return <%= ServiceName %>.getMyThingsExample(q);
+        <% } else { %>
+        return { q };
+        <% } %>
+    }
+
+    @put(':id')
+    static update<%= modulePascalNamePlural %> = async (req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>, params: { id: string }) => {
+        const { id } = params;
+        const body = await req.json();
+        const q = req.nextUrl.searchParams.get('q');
+        <% if(withService) { %>
+        return MyThingService.updateMyThingExample(id, q, body);
+        <% } else { %>
+        return { id, body, q };
+        <% } %>
+    };
+
+    @post()
+    static create<%= modulePascalNamePlural %> = () => {
+        // ...
+    };
+
+    @del(':id')
+    static delete<%= modulePascalNamePlural %> = () => {
+        // ...
+    };
+}
