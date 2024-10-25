@@ -161,6 +161,8 @@ export class VovkCLIWatcher {
       this.#watchSegments();
     }, 1000);
 
+    let ready = false;
+
     chokidar
       .watch(['vovk.config.{js,mjs,cjs}', '.config/vovk.config.{js,mjs,cjs}'], {
         persistent: true,
@@ -172,7 +174,10 @@ export class VovkCLIWatcher {
       .on('change', () => void handle())
       .on('unlink', () => void handle())
       .on('ready', () => {
+        if (ready) return;
+        // for some reason this watcher triggers ready event twice
         log.debug('Config files watcher is ready');
+        ready = true;
       })
       .on('error', (error) => {
         log.error(`Error watching config files: ${error.message}`);
