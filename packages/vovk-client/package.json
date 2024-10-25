@@ -1,6 +1,6 @@
 {
   "name": "vovk-client",
-  "version": "0.0.4-beta.0",
+  "version": "0.0.4-draft.0",
   "description": "Vovk.ts Client",
   "main": "index.js",
   "scripts": {
