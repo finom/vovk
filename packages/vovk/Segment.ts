@@ -41,26 +41,26 @@ export class _Segment {
     OPTIONS: new Map(),
   };
 
-  GET = (req: VovkRequest, data: { params: Record<string, string[]> }) => {
-    return this.#callMethod(HttpMethod.GET, req, data.params);
-  };
-  POST = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
-    this.#callMethod(HttpMethod.POST, req, data.params);
+  GET = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+    this.#callMethod(HttpMethod.GET, req, await data.params);
 
-  PUT = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
-    this.#callMethod(HttpMethod.PUT, req, data.params);
+  POST = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+    this.#callMethod(HttpMethod.POST, req, await data.params);
 
-  PATCH = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
-    this.#callMethod(HttpMethod.PATCH, req, data.params);
+  PUT = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+    this.#callMethod(HttpMethod.PUT, req, await data.params);
 
-  DELETE = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
-    this.#callMethod(HttpMethod.DELETE, req, data.params);
+  PATCH = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+    this.#callMethod(HttpMethod.PATCH, req, await data.params);
 
-  HEAD = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
-    this.#callMethod(HttpMethod.HEAD, req, data.params);
+  DELETE = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+    this.#callMethod(HttpMethod.DELETE, req, await data.params);
 
-  OPTIONS = (req: VovkRequest, data: { params: Record<string, string[]> }) =>
-    this.#callMethod(HttpMethod.OPTIONS, req, data.params);
+  HEAD = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+    this.#callMethod(HttpMethod.HEAD, req, await data.params);
+
+  OPTIONS = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+    this.#callMethod(HttpMethod.OPTIONS, req, await data.params);
 
   respond = (status: HttpStatus, body: unknown, options?: DecoratorOptions) => {
     return new Response(JSON.stringify(body), {

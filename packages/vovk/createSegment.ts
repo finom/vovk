@@ -133,8 +133,8 @@ export function _createSegment() {
       controller._onError = options?.onError;
     }
 
-    async function GET_DEV(req: VovkRequest, data: { params: Record<string, string[]> }) {
-      const { params } = data;
+    async function GET_DEV(req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) {
+      const params = await data.params;
       if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
         // Wait for schema to be set (it can be set after decorators are called with another setTimeout)
         await new Promise((resolve) => setTimeout(resolve, 10));
