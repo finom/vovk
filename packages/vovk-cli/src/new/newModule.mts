@@ -27,10 +27,18 @@ export default async function newModule({
   what,
   moduleNameWithOptionalSegment,
   dryRun,
+  fileName: fileNameFlag,
+  dirName: dirNameFlag,
+  template: templateFlag,
+  overwrite,
 }: {
   what: string[];
   moduleNameWithOptionalSegment: string;
-  dryRun: boolean;
+  dryRun?: boolean;
+  fileName?: string;
+  dirName?: string;
+  template?: string;
+  overwrite?: boolean;
 }) {
   const { config, log, apiDir, cwd } = await getProjectInfo();
   const templates = config.templates as Required<typeof config.templates>;
@@ -64,38 +72,54 @@ export default async function newModule({
   }
 
   for (const type of what) {
-    const templatePath = templates[type]!;
+    const templatePath = templateFlag ?? templates[type]!;
     const templateAbsolutePath =
       templatePath.startsWith('/') || templatePath.startsWith('.')
         ? path.resolve(cwd, templatePath)
         : path.resolve(cwd, './node_modules', templatePath);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
-    const { filePath, sourceName, compiledName, code } = await render(templateCode, {
+    const {
+      dirName: renderedDirName,
+      fileName: renderedFileName,
+      sourceName,
+      compiledName,
+      code,
+    } = await render(templateCode, {
+      cwd,
       config,
       withService: what.includes('service'),
       segmentName,
       moduleName,
     });
 
-    const absoluteModulePath = path.join(cwd, config.modulesDir, filePath);
+    const fileName = fileNameFlag || renderedFileName;
+    const dirName = dirNameFlag || renderedDirName;
 
-    const dirName = path.dirname(absoluteModulePath);
+    const absoluteModuleDir = path.join(cwd, config.modulesDir, dirName);
+    const absoluteModulePath = path.join(absoluteModuleDir, fileName);
+
     const prettiedCode = await prettify(code, absoluteModulePath);
 
     if (!dryRun) {
-      if (await getFileSystemEntryType(absoluteModulePath)) {
+      if (!overwrite && (await getFileSystemEntryType(absoluteModulePath))) {
         log.warn(`File ${chalkHighlightThing(absoluteModulePath)} already exists, skipping this "${type}"`);
       } else {
-        await fs.mkdir(dirName, { recursive: true });
+        await fs.mkdir(absoluteModuleDir, { recursive: true });
         await fs.writeFile(absoluteModulePath, prettiedCode);
       }
     }
 
     if (type === 'controller' || type === 'worker') {
-      const { routeFilePath } = segment;
+      if (!sourceName) {
+        throw new Error('sourceName is required');
+      }
+      if (!compiledName) {
+        throw new Error('compiledName is required');
+      }
 
+      const { routeFilePath } = segment;
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
-      const importPath = path.relative(dirName, absoluteModulePath).replace(/\.(ts|tsx)$/, '');
+      const importPath = path.relative(absoluteModuleDir, absoluteModulePath).replace(/\.(ts|tsx)$/, '');
       const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {
         sourceName,
         compiledName,
@@ -112,7 +136,7 @@ export default async function newModule({
     }
 
     log.info(
-      `Created ${chalkHighlightThing(sourceName)} with ${chalkHighlightThing(type)} template for ${formatLoggedSegmentName(segmentName)}`
+      `Created ${chalkHighlightThing(fileName)} using "${chalkHighlightThing(type)}" template for ${formatLoggedSegmentName(segmentName)}`
     );
   }
 }

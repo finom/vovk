@@ -1,7 +1,27 @@
-<% var ServiceName = _.upperFirst(_.camelCase(moduleName) + 'Service'; %>
-
+<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
+<% var modulePascalNamePlural = pluralize(modulePascalName); %>
+<% var serviceName = modulePascalName + 'Service'; %>
+<% var controllerName = modulePascalName + 'Controller'; %>
 ---
-filePath: <%= getModulePath(segmentName, moduleName, ServiceName + '.ts') %> # Relative to "modules" dir
+dirName: <%= getModuleDirName(segmentName, moduleName) %> # Relative to the root dir
+fileName: <%= serviceName + '.ts' %>
 ---
 
-// TO DO: Implement <%= ServiceName %>
+import type { VovkControllerBody, VovkControllerQuery } from 'vovk';
+import <%= controllerName %> from './<%= controllerName %>';
+
+export default class <%= serviceName %> {
+  static get<%= modulePascalNamePlural %> = (q: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>['q']) => {
+    return [];
+  };
+
+  static update<%= modulePascalName %> = (
+    id: string,
+    q: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>['q'],
+    body: VovkControllerBody<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>
+  ) => {
+    return { id, q, body };
+  };
+
+  // ...
+}

@@ -42,7 +42,7 @@ export class VovkCLIWatcher {
         persistent: true,
         ignoreInitial: true,
       })
-      .on('add', (filePath) => {
+      .on('add', (filePath: string) => {
         log.debug(`File ${filePath} has been added to segments folder`);
         if (segmentReg.test(filePath)) {
           const segmentName = getSegmentName(filePath);
@@ -60,14 +60,14 @@ export class VovkCLIWatcher {
           );
         }
       })
-      .on('change', (filePath) => {
+      .on('change', (filePath: string) => {
         log.debug(`File ${filePath} has been changed at segments folder`);
         if (segmentReg.test(filePath)) {
           void this.#requestSchema(getSegmentName(filePath));
         }
       })
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      .on('addDir', async (dirPath) => {
+      .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
         this.#segments = await locateSegments(apiDirAbsolutePath);
         for (const { segmentName } of this.#segments) {
@@ -75,14 +75,14 @@ export class VovkCLIWatcher {
         }
       })
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      .on('unlinkDir', async (dirPath) => {
+      .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
         this.#segments = await locateSegments(apiDirAbsolutePath);
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
       })
-      .on('unlink', (filePath) => {
+      .on('unlink', (filePath: string) => {
         log.debug(`File ${filePath} has been removed from segments folder`);
         if (segmentReg.test(filePath)) {
           const segmentName = getSegmentName(filePath);
@@ -100,8 +100,8 @@ export class VovkCLIWatcher {
       .on('ready', () => {
         log.debug('Segments watcher is ready');
       })
-      .on('error', (error) => {
-        log.error(`Error watching segments folder: ${error.message}`);
+      .on('error', (error: Error) => {
+        log.error(`Error watching segments folder: ${error?.message ?? 'Unknown error'}`);
       });
   };
 
@@ -115,15 +115,15 @@ export class VovkCLIWatcher {
         persistent: true,
         ignoreInitial: true,
       })
-      .on('add', (filePath) => {
+      .on('add', (filePath: string) => {
         log.debug(`File ${filePath} has been added to modules folder`);
         void processControllerChange(filePath);
       })
-      .on('change', (filePath) => {
+      .on('change', (filePath: string) => {
         log.debug(`File ${filePath} has been changed at modules folder`);
         void processControllerChange(filePath);
       })
-      .on('unlink', (filePath) => {
+      .on('unlink', (filePath: string) => {
         log.debug(`File ${filePath} has been removed from modules folder`);
       })
       .on('addDir', () => {
@@ -139,8 +139,8 @@ export class VovkCLIWatcher {
       .on('ready', () => {
         log.debug('Modules watcher is ready');
       })
-      .on('error', (error) => {
-        log.error(`Error watching modules folder: ${error.message}`);
+      .on('error', (error: Error) => {
+        log.error(`Error watching modules folder: ${error?.message ?? 'Unknown error'}`);
       });
   };
 
@@ -148,6 +148,8 @@ export class VovkCLIWatcher {
     const { log, cwd } = this.#projectInfo;
     log.debug(`Watching config files`);
     let isInitial = true;
+    let isReady = false;
+
     const handle = debounce(async () => {
       this.#projectInfo = await getProjectInfo();
       if (!isInitial) {
@@ -161,8 +163,6 @@ export class VovkCLIWatcher {
       this.#watchSegments();
     }, 1000);
 
-    let ready = false;
-
     chokidar
       .watch(['vovk.config.{js,mjs,cjs}', '.config/vovk.config.{js,mjs,cjs}'], {
         persistent: true,
@@ -174,14 +174,12 @@ export class VovkCLIWatcher {
       .on('change', () => void handle())
       .on('unlink', () => void handle())
       .on('ready', () => {
-        if (ready) return;
+        if (isReady) return;
         // for some reason this watcher triggers ready event twice
         log.debug('Config files watcher is ready');
-        ready = true;
+        isReady = true;
       })
-      .on('error', (error) => {
-        log.error(`Error watching config files: ${error.message}`);
-      });
+      .on('error', (error: Error) => log.error(`Error watching config files: ${error?.message ?? 'Unknown error'}`));
 
     void handle();
   };
@@ -344,13 +342,13 @@ export class VovkCLIWatcher {
       this.#segments.map((s) => s.segmentName)
     );
 
-    // Request schema every segment in 3 seconds in order to update schema and start watching
+    // Request schema every segment in 5 seconds in order to update schema and start watching
     setTimeout(() => {
       for (const { segmentName } of this.#segments) {
         void this.#requestSchema(segmentName);
       }
       this.#watch();
-    }, 3000);
+    }, 5000);
   }
 }
 const env = process.env as VovkEnv;

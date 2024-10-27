@@ -13,13 +13,15 @@ export default async function ensureSchemaFiles(
   const now = Date.now();
   let hasChanged = false;
   // Create index.js file
-  const indexContent = segmentNames
+  const indexContent = `// auto-generated
+  ${segmentNames
     .map((segmentName) => {
       return `module.exports['${segmentName}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
     })
-    .join('\n');
+    .join('\n')}`;
 
-  const dTsContent = `import type { VovkSchema } from 'vovk';
+  const dTsContent = `// auto-generated
+import type { VovkSchema } from 'vovk';
 declare const segmentSchema: Record<string, VovkSchema>;
 export default segmentSchema;`;
 

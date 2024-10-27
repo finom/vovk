@@ -2,8 +2,12 @@ import type { NewOptions } from '../index.mjs';
 import newModule from './newModule.mjs';
 import newSegment from './newSegment.mjs';
 
-export default async function newComponents(components: string[], options: NewOptions) {
+export default async function newComponents(
+  components: string[],
+  { dryRun, fileName, dirName, template, overwrite }: NewOptions
+) {
   if (components[0] === 'segment' || components[0] === 'segments') {
+    // vovk new segment [segmentName]
     let segmentNames = components
       .slice(1)
       .map((segmentName) => (segmentName === '""' || segmentName === "''" ? '' : segmentName));
@@ -13,9 +17,10 @@ export default async function newComponents(components: string[], options: NewOp
     }
 
     for (const segmentName of segmentNames) {
-      await newSegment({ segmentName, dryRun: options.dryRun });
+      await newSegment({ segmentName, overwrite, dryRun });
     }
   } else {
+    // vovk new [what...] [moduleNameWithOptionalSegment]
     if (components.length < 2) {
       throw new Error('Invalid command invocation. Please provide at least two arguments.');
     }
@@ -25,6 +30,15 @@ export default async function newComponents(components: string[], options: NewOp
     if (!moduleNameWithOptionalSegment) {
       throw new Error('A module name with an optional segment cannot be empty');
     }
-    await newModule({ what, moduleNameWithOptionalSegment, dryRun: options.dryRun });
+
+    await newModule({
+      what,
+      moduleNameWithOptionalSegment,
+      fileName,
+      dirName,
+      template,
+      overwrite,
+      dryRun,
+    });
   }
 }

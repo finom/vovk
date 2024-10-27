@@ -17,10 +17,10 @@ import 'dotenv/config';
 
 export type { VovkConfig, VovkEnv };
 
+// TODO move to types
 interface DevOptions {
-  project: string;
   clientOut?: string;
-  nextDev: boolean;
+  nextDev?: boolean;
 }
 
 interface GenerateOptions {
@@ -44,7 +44,11 @@ export interface InitOptions {
 }
 
 export interface NewOptions {
-  dryRun: boolean;
+  dryRun?: boolean;
+  template?: string;
+  dirName?: string;
+  fileName?: string;
+  overwrite?: boolean;
 }
 
 const program = new Command();
@@ -144,8 +148,8 @@ export function initProgram(p: typeof program, command: string) {
       'Validation library to use ("vovk-zod", "vovk-yup", "vovk-dto" or another). Set to "none" to skip validation'
     )
     .option('--validate-on-client', 'Validate on client')
-    .option('--dry-run', 'Do not write files to disk')
     .option('--channel <channel>', 'Channel to use for fetching packages', 'latest')
+    .option('--dry-run', 'Do not write files to disk')
     .action((prefix: string = '.', options: InitOptions) => new Init().main(prefix, options));
 }
 
@@ -157,6 +161,10 @@ program
   .description(
     'Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
   )
+  .option('-O, --overwrite', 'Overwrite existing files')
+  .option('--template', 'Override config template')
+  .option('--dir-name', 'Override dirName in template file')
+  .option('--file-name', 'Override fileName in template file')
   .option('--dry-run', 'Do not write files to disk')
   .action((components: string[], options: NewOptions) => newComponents(components, options));
 

@@ -41,3 +41,11 @@ export type VovkConfig = {
     [key: string]: string | undefined;
   };
 };
+
+export type VovkModuleRenderResult = {
+  fileName: string;
+  dirName: string;
+  sourceName?: string;
+  compiledName?: string;
+  code: string;
+};

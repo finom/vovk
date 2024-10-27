@@ -6,12 +6,20 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import prettify from '../utils/prettify.mjs';
 
-export default async function newSegment({ segmentName, dryRun }: { segmentName: string; dryRun: boolean }) {
+export default async function newSegment({
+  segmentName,
+  overwrite,
+  dryRun,
+}: {
+  segmentName: string;
+  overwrite?: boolean;
+  dryRun?: boolean;
+}) {
   const { apiDir, cwd, log } = await getProjectInfo();
 
   const absoluteSegmentRoutePath = path.join(cwd, apiDir, segmentName, '[[...vovk]]/route.ts');
 
-  if (await getFileSystemEntryType(absoluteSegmentRoutePath)) {
+  if (!overwrite && (await getFileSystemEntryType(absoluteSegmentRoutePath))) {
     throw new Error(
       `Unable to create new segment. ${formatLoggedSegmentName(segmentName, { upperFirst: true })} already exists.`
     );
