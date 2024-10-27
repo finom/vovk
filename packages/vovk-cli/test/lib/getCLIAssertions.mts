@@ -147,7 +147,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     let content;
     try {
       content = await fs.readFile(path.join(projectDir, filePath), 'utf-8');
-    } catch (e) {
+    } catch {
       assert.fail(`File ${filePath} does not exist`);
     }
 

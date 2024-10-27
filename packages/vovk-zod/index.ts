@@ -1,4 +1,4 @@
-/* eslint-disable no-redeclare */
+ 
 import { z } from 'zod';
 import { HttpException, HttpStatus, type VovkRequest } from 'vovk';
 import setClientValidatorsForHandler from 'vovk/utils/setClientValidatorsForHandler';

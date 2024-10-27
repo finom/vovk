@@ -1,11 +1,11 @@
 import path from 'path';
-import directoryExists from './directoryExists.mjs';
+import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 
 export default async function getRelativeSrcRoot({ cwd }: { cwd: string }) {
   // Next.js Docs: src/app or src/pages will be ignored if app or pages are present in the root directory.
-  if (await directoryExists(path.join(cwd, 'app'))) {
+  if (await getFileSystemEntryType(path.join(cwd, 'app')) === FileSystemEntryType.DIRECTORY) {
     return '.';
-  } else if (await directoryExists(path.join(cwd, 'src/app'))) {
+  } else if (await getFileSystemEntryType(path.join(cwd, 'src/app')) === FileSystemEntryType.DIRECTORY) {
     return './src';
   }
 

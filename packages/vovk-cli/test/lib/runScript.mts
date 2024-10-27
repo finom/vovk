@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 /* global NodeJS */
 import * as pty from 'node-pty';
 

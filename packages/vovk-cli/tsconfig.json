@@ -11,5 +11,5 @@
     "noEmit": true,
   },
   "include": ["src/**/*", "templates/**/*", "test/**/*", "tmp/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "test_data"]
 }

@@ -2,6 +2,7 @@
   "name": "test",
   "version": "0.1.1-beta.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "ncu": "npm-check-updates -u && npm i",
     "dev": "node ../packages/vovk-cli/dist/index.mjs dev --next-dev",

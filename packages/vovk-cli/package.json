@@ -36,7 +36,7 @@
     "vovk": "^3.0.0-draft.3"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.0.0",
+    "@inquirer/prompts": "^7.0.1",
     "@npmcli/package-json": "^6.0.1",
     "chalk": "^5.3.0",
     "chokidar": "^4.0.1",

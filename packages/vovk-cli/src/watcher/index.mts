@@ -66,7 +66,7 @@ export class VovkCLIWatcher {
           void this.#requestSchema(getSegmentName(filePath));
         }
       })
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+       
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
         this.#segments = await locateSegments(apiDirAbsolutePath);
@@ -74,7 +74,7 @@ export class VovkCLIWatcher {
           void this.#requestSchema(segmentName);
         }
       })
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+       
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
         this.#segments = await locateSegments(apiDirAbsolutePath);

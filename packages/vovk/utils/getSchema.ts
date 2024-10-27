@@ -1,12 +1,15 @@
-import { _VovkSchema as VovkSchema, _VovkController as VovkController, _VovkWorker as VovkWorker } from '../types';
+import { 
+  _VovkSchema as VovkSchema, 
+  _VovkController as VovkController, 
+  _VovkWorker as VovkWorker, 
+  _StaticClass  as StaticClass
+} from '../types';
 
-export default function (options: {
+export default function getSchema(options: {
   emitSchema?: boolean;
   segmentName?: string;
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  controllers: Record<string, Function>;
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  workers?: Record<string, Function>;
+  controllers: Record<string, StaticClass>;
+  workers?: Record<string, StaticClass>;
   exposeValidation?: boolean;
 }) {
   const exposeValidation = options?.exposeValidation ?? true;

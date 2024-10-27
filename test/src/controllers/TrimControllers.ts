@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 import { prefix, get } from '../../../packages/vovk';
+import { _StaticClass } from 'vovk/types';
 
 export const prefixes = ['trim-prefix-1', '/trim-prefix-2', 'trim-prefix-3/', '/trim-prefix-4/'];
 export const endpoints = ['trim-endpoint-1', '/trim-endpoint-2', 'trim-endpoint-3/', '/trim-endpoint-4/'];
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-const controllers: Record<string, Function> = {};
+const controllers: Record<string, _StaticClass> = {};
 
 for (const p of prefixes) {
   @prefix(p)

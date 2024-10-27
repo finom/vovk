@@ -9,8 +9,7 @@ export default class ErrorController {
 
   @get('code')
   static code() {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, prettier/prettier
-    ({} as any).someMethod();
+    ({} as { someMethod: () => void }).someMethod();
   }
 
   @get('http-exception')

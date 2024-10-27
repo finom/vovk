@@ -8,7 +8,7 @@ import MyWorker from '../worker/MyWorker';
 export default function Home() {
   useEffect(() => {
     if (typeof Worker === 'undefined') return;
-    // eslint-disable-next-line no-undef
+     
     const win = window as unknown as {
       schemaWorker: typeof schemaWorker;
       standaloneWorker: typeof standaloneWorker;

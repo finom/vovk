@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { _Segment as Segment } from './Segment';
 import {
   _HttpMethod as HttpMethod,
@@ -7,6 +7,7 @@ import {
   type _VovkController as VovkController,
   type _DecoratorOptions as DecoratorOptions,
   type _VovkRequest as VovkRequest,
+  type _StaticClass as StaticClass,
 } from './types';
 import getSchema from './utils/getSchema';
 
@@ -112,17 +113,15 @@ export function _createSegment() {
     return (givenTarget: KnownAny) => {
       const controller = givenTarget as VovkController;
       controller._prefix = path;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+       
       return givenTarget;
     };
   };
 
   const initVovk = (options: {
     segmentName?: string;
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    controllers: Record<string, Function>;
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    workers?: Record<string, Function>;
+    controllers: Record<string, StaticClass>;
+    workers?: Record<string, StaticClass>;
     exposeValidation?: boolean;
     emitSchema?: boolean;
     onError?: (err: Error, req: VovkRequest) => void | Promise<void>;

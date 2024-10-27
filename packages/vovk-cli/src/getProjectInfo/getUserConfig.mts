@@ -18,7 +18,7 @@ async function getUserConfig({
   // TODO explain
   try {
     userConfig = await importUncachedModule<VovkConfig>(configPath);
-  } catch (e) {
+  } catch {
     try {
       const cacheBuster = Date.now();
       ({ default: userConfig } = (await import(`${configPath}?cache=${cacheBuster}`)) as { default: VovkConfig });

@@ -31,15 +31,15 @@ export type _WorkerPromiseInstance<T> = OmitNever<_WorkerPromiseInstanceWithNeve
 };
 
 export interface _WorkerInput {
-  method: string;
+  methodName: string;
   args: unknown[];
   key: number;
 }
 
 export interface _WorkerOutput {
+  methodName: string;
   result?: unknown;
   error?: unknown;
   done?: true;
   key: number;
-  method: string;
 }

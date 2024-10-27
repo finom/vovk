@@ -30,25 +30,25 @@ export function _worker() {
 
     if (typeof self === 'undefined') return; // no-op in non-worker environment
 
-    // eslint-disable-next-line no-undef
+     
     const w = self as unknown as Worker;
 
     w.onmessage = async (evt: MessageEvent<WorkerInput>) => {
-      const { method, args, key } = evt.data;
+      const { methodName, args, key } = evt.data;
       try {
-        const result = await target[method](...args);
+        const result = await target[methodName](...args);
 
         if (result && typeof result === 'object' && 'next' in result && typeof result.next === 'function') {
           const iterable = result as Iterable<unknown> | AsyncIterable<unknown>;
           for await (const result of iterable) {
-            w.postMessage({ result, key, method } satisfies WorkerOutput);
+            w.postMessage({ result, key, methodName } satisfies WorkerOutput);
           }
-          w.postMessage({ done: true, key, method } satisfies WorkerOutput);
+          w.postMessage({ done: true, key, methodName } satisfies WorkerOutput);
         } else {
-          w.postMessage({ result, key, method } satisfies WorkerOutput);
+          w.postMessage({ result, key, methodName } satisfies WorkerOutput);
         }
       } catch (e) {
-        w.postMessage({ error: e, key, method } satisfies WorkerOutput);
+        w.postMessage({ error: e, key, methodName } satisfies WorkerOutput);
       }
     };
   };

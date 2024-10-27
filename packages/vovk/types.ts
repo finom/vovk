@@ -4,6 +4,8 @@ import { _StreamAsyncIterator as StreamAsyncIterator } from './client/types';
 
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+export type _StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
+
 export type _VovkSchema = {
   emitSchema: boolean;
   segmentName: string;
@@ -47,14 +49,12 @@ export type _VovkControllerInternal = _VovkControllerSchema & {
   _onError?: (err: Error, req: _VovkRequest) => void | Promise<void>;
 };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type _VovkController = Function &
+export type _VovkController = _StaticClass &
   _VovkControllerInternal & {
     [key: string]: unknown;
   };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type _VovkWorker = Function &
+export type _VovkWorker = _StaticClass &
   _VovkWorkerSchema & {
     [key: string]: unknown;
   };

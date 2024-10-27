@@ -7,7 +7,9 @@
     ".next/types/**/*.ts",
     "src/**/*.ts",
     "packages/**/*.ts",
-    "vovk.config.js"
+    "vovk.config.js",
+    "next.config.js",
+    "postcss.config.js",
   ],
   "compilerOptions": {
     "noEmit": true,

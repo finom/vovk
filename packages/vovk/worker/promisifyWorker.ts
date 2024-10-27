@@ -34,13 +34,11 @@ export function _promisifyWorker<T extends object>(
     return _promisifyWorker<T>(worker, givenWorkerService);
   };
 
-  for (const method of Object.keys(workerService._handlers) as (keyof T & string)[]) {
-    const { isGenerator } = workerService._handlers[method];
-    const value = workerService[method];
+  for (const methodName of Object.keys(workerService._handlers) as (keyof T & string)[]) {
+    const { isGenerator } = workerService._handlers[methodName];
 
     if (isGenerator) {
-      // @ts-expect-error TODO Fix this
-      instance[method] = (...args: Parameters<typeof value>) => {
+      const method = (...args: unknown[]) => {
         const key = callsKey;
         callsKey += 1;
         return {
@@ -53,8 +51,8 @@ export function _promisifyWorker<T extends object>(
             let messageResolver: ((message: WorkerOutput) => void) | null = null;
 
             const onMessage = (e: MessageEvent<WorkerOutput>) => {
-              const { method: m, key: k } = e.data;
-              if (k !== key || m !== method) {
+              const { methodName: m, key: k } = e.data;
+              if (k !== key || m !== methodName) {
                 return;
               }
               if (messageResolver) {
@@ -81,7 +79,7 @@ export function _promisifyWorker<T extends object>(
             w.addEventListener('message', onMessage);
             w.addEventListener('error', onError);
 
-            w.postMessage({ key, args, method } satisfies WorkerInput);
+            w.postMessage({ key, args, methodName } satisfies WorkerInput);
 
             try {
               while (true) {
@@ -117,9 +115,11 @@ export function _promisifyWorker<T extends object>(
           },
         };
       };
+
+      // @ts-expect-error TODO
+      instance[methodName] = method;
     } else {
-      // @ts-expect-error TODO Fix this
-      instance[method] = (...args: Parameters<typeof value>) => {
+      const method = (...args: unknown[]) => {
         if (!instance.worker) {
           throw new Error('Worker is not provided or terminated');
         }
@@ -135,8 +135,8 @@ export function _promisifyWorker<T extends object>(
           };
 
           const onMessage = (e: MessageEvent<WorkerOutput>) => {
-            const { result, error, key: k, method: m } = e.data;
-            if (k !== key || m !== method) {
+            const { result, error, key: k, methodName: m } = e.data;
+            if (k !== key || m !== methodName) {
               return;
             }
             w.removeEventListener('message', onMessage);
@@ -150,9 +150,12 @@ export function _promisifyWorker<T extends object>(
 
           w.addEventListener('message', onMessage);
           w.addEventListener('error', onError);
-          w.postMessage({ key, args, method } satisfies WorkerInput);
+          w.postMessage({ key, args, methodName } satisfies WorkerInput);
         });
       };
+
+      // @ts-expect-error TODO
+      instance[methodName] = method;
     }
   }
   return instance;
