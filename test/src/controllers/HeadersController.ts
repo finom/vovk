@@ -4,9 +4,9 @@ import { get, prefix } from '../../../packages/vovk';
 @prefix('headers')
 export default class HeadersController {
   @get()
-  static get() {
-    const headersList = headers();
-    const hello = headersList.get('x-hello-header');
+  static async get() {
+    const headerList = await headers();
+    const hello = headerList.get('x-hello-header');
 
     return { hello };
   }

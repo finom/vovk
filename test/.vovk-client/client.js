@@ -1,12 +1,12 @@
 // auto-generated
- 
+/* eslint-disable */
 const { clientizeController } = require('vovk/client');
 const { promisifyWorker } = require('vovk/worker');
 const { default: fetcher } = require('vovk/client/defaultFetcher');
 const schema = require('../.vovk-schema');
 
 const { default: validateOnClient = null } = require('vovk-zod/validateOnClient');
-const prefix = 'http://localhost:3000/api';
+const prefix = 'http://localhost:3210/api';
 exports.ClientController = clientizeController(schema['foo/client'].controllers.ClientController, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 exports.ClientController5x = clientizeController(schema['foo/client'].controllers.ClientController5x, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 exports.StreamingController = clientizeController(schema['foo/client'].controllers.StreamingController, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });

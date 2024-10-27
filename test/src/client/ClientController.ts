@@ -33,8 +33,9 @@ export default class ClientController {
   }
 
   @get.auto()
-  static getHelloWorldHeaders() {
-    const hello = headers().get('x-test');
+  static async getHelloWorldHeaders() {
+    const headerList = await headers();
+    const hello = headerList.get('x-test');
     return { hello };
   }
 

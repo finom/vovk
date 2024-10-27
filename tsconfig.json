@@ -20,7 +20,7 @@
      }
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["packages/**/*.ts", "scripts/*.ts", "*.js", "test/*.js"],
+  "include": ["packages/**/*.ts", "scripts/*.ts", "*.js", "*.mjs", "test/*.js", "jest.config.mjs"],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node",
