@@ -23,7 +23,7 @@
   "author": "Andrii Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.9",
+    "vovk": "^3.0.0-draft.10",
     "yup": "*"
   },
   "dependencies": {
