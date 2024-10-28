@@ -28,4 +28,3 @@ Cases covered by the unit tests:
 - Stream Response
 - Static API
 - Custom metadata for .vovk.json
-

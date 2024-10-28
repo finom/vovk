@@ -2,6 +2,6 @@
   "extends": "../../tsconfig.json",
   "include": ["*.ts", "templates/**/*"],
   "compilerOptions": {
-    "noEmit": true,
+    "noEmit": true
   }
 }

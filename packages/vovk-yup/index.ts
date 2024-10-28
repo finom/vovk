@@ -1,4 +1,3 @@
- 
 import * as Yup from 'yup';
 import { HttpException, HttpStatus, type VovkRequest } from 'vovk';
 import setClientValidatorsForHandler from 'vovk/utils/setClientValidatorsForHandler';

@@ -15,10 +15,10 @@ export default async function ensureSchemaFiles(
   // Create index.js file
   const indexContent = `// auto-generated
 ${segmentNames
-    .map((segmentName) => {
-      return `module.exports['${segmentName}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
-    })
-    .join('\n')}`;
+  .map((segmentName) => {
+    return `module.exports['${segmentName}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
+  })
+  .join('\n')}`;
 
   const dTsContent = `// auto-generated
 import type { VovkSchema } from 'vovk';

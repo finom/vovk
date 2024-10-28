@@ -9,7 +9,7 @@
     "packages/**/*.ts",
     "vovk.config.js",
     "next.config.js",
-    "postcss.config.js",
+    "postcss.config.js"
   ],
   "compilerOptions": {
     "noEmit": true,
@@ -21,18 +21,10 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "vovk/*": [
-        "../packages/vovk/*"
-      ],
-      "vovk-cli/*": [
-        "../packages/vovk-cli/*"
-      ],
-      "vovk-validate-client-ajv/*": [
-        "../packages/vovk-validate-client-ajv/*"
-      ],
-      "next/*": [
-        "./node_modules/next/*"
-      ]
+      "vovk/*": ["../packages/vovk/*"],
+      "vovk-cli/*": ["../packages/vovk-cli/*"],
+      "vovk-validate-client-ajv/*": ["../packages/vovk-validate-client-ajv/*"],
+      "next/*": ["./node_modules/next/*"]
     },
     "moduleResolution": "node"
   }

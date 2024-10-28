@@ -4,7 +4,8 @@ import segmentsSchema from '../../.vovk-schema';
 describe('Custom .vovk.json schema', () => {
   it('Should write custom schema', () => {
     expect(
-      segmentsSchema['foo/client'].controllers.CostomSchemaControllerRPC._handlers.getWithCustomSchema.customSchema?.hello
+      segmentsSchema['foo/client'].controllers.CostomSchemaControllerRPC._handlers.getWithCustomSchema.customSchema
+        ?.hello
     ).toEqual('world');
   });
 });

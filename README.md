@@ -28,7 +28,6 @@
   <a href="https://github.com/finom/vovk/actions/workflows/main.yml"><img src="https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg" alt="Build status" /></a>
 </p>
 
-
  <br />
 
 Example back-end Controller Class:
@@ -37,7 +36,7 @@ Example back-end Controller Class:
 // /src/modules/post/PostController.ts
 import { get, prefix, type VovkRequest } from 'vovk';
 import PostService from './PostService';
- 
+
 @prefix('posts')
 export default class PostController {
   /**
@@ -47,19 +46,19 @@ export default class PostController {
   @post(':postId/comments')
   static async createComment(
     // decorate NextRequest type with body and query types
-    req: VovkRequest<
-      { content: string; userId: string }, 
-      { notificationType: 'push' | 'email' }
-    >,
+    req: VovkRequest<{ content: string; userId: string }, { notificationType: 'push' | 'email' }>,
     { postId }: { postId: string } // params
   ) {
     // use standard Next.js API to get body and query
     const { content, userId } = await req.json();
     const notificationType = req.nextUrl.searchParams.get('notificationType');
- 
+
     // perform the request to the database in a custom service
-    return PostService.createComment({ 
-      postId, content, userId, notificationType,
+    return PostService.createComment({
+      postId,
+      content,
+      userId,
+      notificationType,
     });
   }
 }
@@ -72,23 +71,25 @@ Example component that uses the auto-generated client library:
 import { useState } from 'react';
 import { PostController } from 'vovk-client';
 import type { VovkReturnType } from 'vovk';
- 
+
 export default function Example() {
   const [response, setResponse] = useState<VovkReturnType<typeof PostController.createComment>>();
- 
+
   return (
     <>
       <button
-        onClick={async () => setResponse(
-          await PostController.createComment({
-            body: { 
-              content: 'Hello, World!', 
-              userId: '1', 
-            },
-            params: { postId: '69' },
-            query: { notificationType: 'push' }
-          })
-        )}
+        onClick={async () =>
+          setResponse(
+            await PostController.createComment({
+              body: {
+                content: 'Hello, World!',
+                userId: '1',
+              },
+              params: { postId: '69' },
+              query: { notificationType: 'push' },
+            })
+          )
+        }
       >
         Post a comment
       </button>
@@ -103,9 +104,9 @@ Alternatively, the resource can be fetched wit the regular `fetch` function:
 ```ts
 fetch('/api/posts/69?notificationType=push', {
   method: 'POST',
-  body: JSON.stringify({ 
-    content: 'Hello, World!', 
-    userId: '1', 
+  body: JSON.stringify({
+    content: 'Hello, World!',
+    userId: '1',
   }),
-})
+});
 ```

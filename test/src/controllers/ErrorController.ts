@@ -9,7 +9,7 @@ export default class ErrorController {
 
   @get('code')
   static code() {
-    ({} as { someMethod: () => void }).someMethod();
+    (({}) as { someMethod: () => void }).someMethod();
   }
 
   @get('http-exception')

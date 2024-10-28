@@ -76,7 +76,6 @@ module.exports['folder2/segment4'] = require('./folder2/segment4.json');`;
         await fs.stat(path.join(tmpDir, file));
         assert.fail(`${file} should have been deleted`);
       } catch (error) {
-         
         assert.strictEqual((error as NodeJS.ErrnoException).code, 'ENOENT');
       }
     }

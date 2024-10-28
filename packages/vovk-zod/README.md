@@ -13,8 +13,6 @@
   <a href="https://github.com/finom/vovk-zod/actions"><img src="https://github.com/finom/vovk-zod/actions/workflows/main.yml/badge.svg" alt="Build status" /></a>
 </p>
 
-
-
 **vovk-zod** exports `vovkZod` decorator fabric that validates request body and incoming query string with Zod models.
 
 ```ts
@@ -24,30 +22,30 @@ import vovkZod from 'vovk-zod';
 import { put, type VovkRequest } from 'vovk';
 import UserService from './UserService';
 
-const UpdateUserModel = z.object({
+const UpdateUserModel = z
+  .object({
     name: z.string(),
     email: z.string(),
-}).strict();
+  })
+  .strict();
 
-const UpdateUserQueryModel = z.object({
+const UpdateUserQueryModel = z
+  .object({
     id: z.string(),
-}).strict();
+  })
+  .strict();
 
 export default class UserController {
-    @put()
-    @vovkZod(UpdateUserModel, UpdateUserQueryModel)
-    static updateUser(
-        req: VovkRequest<z.infer<typeof UpdateUserModel>, z.infer<typeof UpdateUserQueryModel>>
-    ) {
-        const { name, email } = await req.json();
-        const id = req.nextUrl.searchParams.get('id');
+  @put()
+  @vovkZod(UpdateUserModel, UpdateUserQueryModel)
+  static updateUser(req: VovkRequest<z.infer<typeof UpdateUserModel>, z.infer<typeof UpdateUserQueryModel>>) {
+    const { name, email } = await req.json();
+    const id = req.nextUrl.searchParams.get('id');
 
-        return UserService.updateUser(id, { name, email });
-    }
+    return UserService.updateUser(id, { name, email });
+  }
 }
-
 ```
-
 
 ```ts
 'use client';
@@ -60,7 +58,7 @@ const MyPage = () => {
             query: { id: '696969' },
             body: { name: 'John Doe', email: 'john@example.com' },
             // optionally, disable client validation for debugging purpose
-            disableClientValidation: true, 
+            disableClientValidation: true,
         }).then(/* ... */);
     }, []);
 
@@ -82,14 +80,14 @@ The library doesn't support `FormData` validation, but you can still validate qu
 // ...
 
 export default class HelloController {
-    @post()
-    @vovkZod(null, z.object({ something: z.string() }).strict())
-    static postFormData(req: VovkRequest<FormData, { something: string }>) {
-        const formData = await req.formData();
-        const something = req.nextUrl.searchParams.get('something');
+  @post()
+  @vovkZod(null, z.object({ something: z.string() }).strict())
+  static postFormData(req: VovkRequest<FormData, { something: string }>) {
+    const formData = await req.formData();
+    const something = req.nextUrl.searchParams.get('something');
 
-        // ...
-    }
+    // ...
+  }
 }
 ```
 

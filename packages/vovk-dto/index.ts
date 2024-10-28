@@ -1,4 +1,3 @@
- 
 import { validate, ValidationError } from 'class-validator';
 import { plainToInstance, ClassConstructor } from 'class-transformer';
 import { HttpException, HttpStatus, type VovkRequest } from 'vovk';

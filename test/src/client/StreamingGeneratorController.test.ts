@@ -22,7 +22,9 @@ describe('Streaming generator', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as _VovkControlerYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
+    null as unknown as _VovkControlerYieldType<
+      typeof StreamingGeneratorControllerRPC.postWithStreaming
+    > satisfies Token;
     null as unknown as _VovkClientYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
 

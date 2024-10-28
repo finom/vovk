@@ -14,6 +14,7 @@
     "unit": "PORT=3210 concurrently \"sleep 30 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "unit:watch": "PORT=3210 concurrently \"sleep 30 && npm run test:unit:watch\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
+    "prettier": "prettier --write .",
     "test:unit:watch": "jest --watch",
     "serve:unit": "npm --prefix test run generate && npm --prefix test run build && npm --prefix test run start",
     "lint-nofix": "eslint .",

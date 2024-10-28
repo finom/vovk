@@ -1,10 +1,10 @@
 {
-    "extends": "./tsconfig.json",
-    "include": ["test/**/*.mts"],
-    "exclude": ["node_modules", "src"],
-    "compilerOptions": {
-        "outDir": "./test_dist",
-        "rootDir": ".",
-        "noEmit": false,
-    }
+  "extends": "./tsconfig.json",
+  "include": ["test/**/*.mts"],
+  "exclude": ["node_modules", "src"],
+  "compilerOptions": {
+    "outDir": "./test_dist",
+    "rootDir": ".",
+    "noEmit": false
+  }
 }

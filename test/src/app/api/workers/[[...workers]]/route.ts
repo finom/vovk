@@ -2,7 +2,7 @@ import { initVovk } from 'vovk';
 import MyWorker from 'src/worker/MyWorker';
 import MyInnerWorker from 'src/worker/MyInnerWorker';
 
-const workers = { 
+const workers = {
   MyWorkerWPC: MyWorker,
   MyInnerWorkerWPC: MyInnerWorker,
 };

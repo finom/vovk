@@ -9,10 +9,9 @@ describe('Worker', () => {
     const browser = await puppeteer.launch({ headless: true });
     page = await browser.newPage();
     await page.goto('http://localhost:' + process.env.PORT);
-     
+
     page.on('console', async (message) => {
       if (message.text() != 'JSHandle@error') {
-         
         console.log(`${message.type().substring(0, 3).toUpperCase()} ${message.text()}`);
         return;
       }
@@ -22,7 +21,6 @@ describe('Worker', () => {
         })
       );
 
-       
       console.log(`${message.type().substring(0, 3).toUpperCase()} ${messages.filter(Boolean).join(', ')}`);
     });
   });
@@ -34,7 +32,7 @@ describe('Worker', () => {
   it('Should work with schema', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       return MyWorkerWPCFromWindow.findLargestPrimeBelow(100000);
     });
@@ -45,7 +43,7 @@ describe('Worker', () => {
   it('Can call other workers', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       return MyWorkerWPCFromWindow.calculateFibonacci(10);
     });
@@ -56,7 +54,7 @@ describe('Worker', () => {
   it('Can use clientized controllers', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       return MyWorkerWPCFromWindow.getClientizeHelloWorld();
     });
@@ -67,7 +65,7 @@ describe('Worker', () => {
   it('Implements generator', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       const numbers: number[] = [];
 
@@ -84,7 +82,7 @@ describe('Worker', () => {
   it('Implements async generator', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       const numbers: number[] = [];
 
@@ -101,7 +99,7 @@ describe('Worker', () => {
   it('Generator throws an error', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       const numbers: number[] = [];
 
@@ -125,7 +123,7 @@ describe('Worker', () => {
   it('Async generator throws an error', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       const numbers: number[] = [];
 

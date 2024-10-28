@@ -16,13 +16,13 @@
     "declaration": true,
     "noEmit": true,
     "paths": {
-       "next/*": ["./test/node_modules/next/*"]
-     }
+      "next/*": ["./test/node_modules/next/*"]
+    }
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["packages/**/*.ts", "scripts/*.ts", "*.js", "*.mjs", "test/*.js", "jest.config.mjs"],
+  "include": ["packages/**/*.ts", "packages/**/*.mts", "scripts/*.ts", "*.js", "*.mjs", "test/*.js", "jest.config.mjs"],
   "ts-node": {
     "esm": true,
-    "experimentalSpecifierResolution": "node",
+    "experimentalSpecifierResolution": "node"
   }
 }

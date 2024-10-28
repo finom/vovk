@@ -30,7 +30,6 @@ export function _worker() {
 
     if (typeof self === 'undefined') return; // no-op in non-worker environment
 
-     
     const w = self as unknown as Worker;
 
     w.onmessage = async (evt: MessageEvent<WorkerInput>) => {

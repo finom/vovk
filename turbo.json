@@ -1,12 +1,12 @@
 {
-    "tasks": {
-      "build": {
-        "dependsOn": ["^build"]
-      },
-      "test": {
-        "dependsOn": ["build"]
-      },
-      "lint": {},
-      "ncu": {}
-    }
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "lint": {},
+    "ncu": {}
   }
+}

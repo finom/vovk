@@ -1,4 +1,3 @@
- 
 import { _Segment as Segment } from './Segment';
 import {
   _HttpMethod as HttpMethod,
@@ -113,7 +112,7 @@ export function _createSegment() {
     return (givenTarget: KnownAny) => {
       const controller = givenTarget as VovkController;
       controller._prefix = path;
-       
+
       return givenTarget;
     };
   };

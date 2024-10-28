@@ -5,10 +5,10 @@
     "target": "ESNext",
     "moduleResolution": "node",
     "declaration": true,
-    "esModuleInterop": true, 
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
-    "noEmit": true,
+    "noEmit": true
   },
   "include": ["src/**/*", "templates/**/*", "test/**/*", "tmp/**/*"],
   "exclude": ["node_modules", "dist", "test_data"]

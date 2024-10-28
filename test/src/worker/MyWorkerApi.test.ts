@@ -10,10 +10,9 @@ describe('Worker API', () => {
     const browser = await puppeteer.launch({ headless: true });
     page = await browser.newPage();
     await page.goto('http://localhost:' + process.env.PORT);
-     
+
     page.on('console', async (message) => {
       if (message.text() != 'JSHandle@error') {
-         
         console.log(`${message.type().substring(0, 3).toUpperCase()} ${message.text()}`);
         return;
       }
@@ -23,7 +22,6 @@ describe('Worker API', () => {
         })
       );
 
-       
       console.log(`${message.type().substring(0, 3).toUpperCase()} ${messages.filter(Boolean).join(', ')}`);
     });
   });
@@ -35,7 +33,7 @@ describe('Worker API', () => {
   it('Should work with schema', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       return schemaWorker.findLargestPrimeBelow(100000);
     });
@@ -46,7 +44,7 @@ describe('Worker API', () => {
   it('Should work as standalone', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { standaloneWorker } = window as unknown as { standaloneWorker: WorkerPromiseInstance<typeof MyWorker> };
       return standaloneWorker.findLargestPrimeBelow(100000);
     });
@@ -57,7 +55,7 @@ describe('Worker API', () => {
   it('Can call other workers', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       return schemaWorker.calculateFibonacci(10);
     });
@@ -68,7 +66,7 @@ describe('Worker API', () => {
   it('Can use clientized controllers', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       return schemaWorker.getClientizeHelloWorld();
     });
@@ -79,7 +77,7 @@ describe('Worker API', () => {
   it('Implements generator', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       const numbers: number[] = [];
 
@@ -96,7 +94,7 @@ describe('Worker API', () => {
   it('Implements async generator', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       const numbers: number[] = [];
 
@@ -113,7 +111,7 @@ describe('Worker API', () => {
   it('Generator throws an error', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       const numbers: number[] = [];
 
@@ -137,7 +135,7 @@ describe('Worker API', () => {
   it('Async generator throws an error', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { schemaWorker } = window as unknown as { schemaWorker: WorkerPromiseInstance<typeof MyWorker> };
       const numbers: number[] = [];
 
@@ -161,7 +159,7 @@ describe('Worker API', () => {
   it('Terminates', async () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
-       
+
       const { isTerminated } = window as unknown as {
         isTerminated: boolean;
       };

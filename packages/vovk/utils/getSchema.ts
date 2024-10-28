@@ -1,8 +1,8 @@
-import { 
-  _VovkSchema as VovkSchema, 
-  _VovkController as VovkController, 
-  _VovkWorker as VovkWorker, 
-  _StaticClass  as StaticClass
+import {
+  _VovkSchema as VovkSchema,
+  _VovkController as VovkController,
+  _VovkWorker as VovkWorker,
+  _StaticClass as StaticClass,
 } from '../types';
 
 export default function getSchema(options: {

@@ -3,9 +3,9 @@ import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSys
 
 export default async function getRelativeSrcRoot({ cwd }: { cwd: string }) {
   // Next.js Docs: src/app or src/pages will be ignored if app or pages are present in the root directory.
-  if (await getFileSystemEntryType(path.join(cwd, 'app')) === FileSystemEntryType.DIRECTORY) {
+  if ((await getFileSystemEntryType(path.join(cwd, 'app'))) === FileSystemEntryType.DIRECTORY) {
     return '.';
-  } else if (await getFileSystemEntryType(path.join(cwd, 'src/app')) === FileSystemEntryType.DIRECTORY) {
+  } else if ((await getFileSystemEntryType(path.join(cwd, 'src/app'))) === FileSystemEntryType.DIRECTORY) {
     return './src';
   }
 

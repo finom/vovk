@@ -81,7 +81,6 @@ program
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
-           
           console.warn(`🐺 Next.js Port ${failedPort} is in use, trying ${tryingPort} instead.`)
         ).catch(() => {
           throw new Error(`🐺 ❌ Failed to find available Next port after ${portAttempts} attempts`);

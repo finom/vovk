@@ -123,10 +123,30 @@ await describe.only('CLI New', async () => {
     );
   });
 
-  await it.only('Throws if segment already exists', async () => {
+  await it('Throws if segment already exists', async () => {
     await createNextApp();
     await vovkInit('--yes');
     await runAtProjectDir('../dist/index.mjs new segment foo');
     await assert.rejects(() => runAtProjectDir('../dist/index.mjs new segment foo'));
+  });
+
+  await it('New Controller', async () => {
+    await createNextApp();
+    await vovkInit('--yes');
+    await runAtProjectDir('../dist/index.mjs new segment');
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `const controllers = {};`,
+      `initVovk({
+        emitSchema: true,
+        workers,
+        controllers, 
+      });`,
+    ]);
+    await runAtProjectDir('../dist/index.mjs new controller user');
+    await assertFile(
+      'src/app/controllers/foo.ts',
+      `import { controller } from 'vovk';
+      import { Request, Response } from 'express';`
+    );
   });
 });

@@ -66,7 +66,7 @@ export class VovkCLIWatcher {
           void this.#requestSchema(getSegmentName(filePath));
         }
       })
-       
+
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
         this.#segments = await locateSegments(apiDirAbsolutePath);
@@ -74,7 +74,7 @@ export class VovkCLIWatcher {
           void this.#requestSchema(segmentName);
         }
       })
-       
+
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
         this.#segments = await locateSegments(apiDirAbsolutePath);
