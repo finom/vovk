@@ -45,7 +45,6 @@ export interface InitOptions {
 
 /*
 TODO Next
-- Create VovkBody and VovkQuery types to replace existing types
 - Update NewOptions and corresponding functions
 - Compile templates to /test and write controller tests
 - Continue with templates and test them
@@ -54,11 +53,9 @@ TODO Next
 export interface NewOptions {
   dryRun?: boolean;
   template?: string;
-  // TODO replace these 2 options by --path and -P
   dirName?: string;
-  fileName?: string;
-  // TODO add --no-segment-update
   overwrite?: boolean;
+  noSegmentUpdate?: boolean;
 }
 
 const program = new Command();
@@ -175,6 +172,7 @@ program
   .option('--dir-name', 'Override dirName in template file')
   .option('--file-name', 'Override fileName in template file')
   .option('--dry-run', 'Do not write files to disk')
+  .option('--no-segment-update', 'Do not update segment files when creating a new module')
   .action((components: string[], options: NewOptions) => newComponents(components, options));
 
 program

@@ -130,7 +130,7 @@ await describe.only('CLI New', async () => {
     await assert.rejects(() => runAtProjectDir('../dist/index.mjs new segment foo'));
   });
 
-  await it('New Controller', async () => {
+  await it.only('New Controller', async () => {
     await createNextApp();
     await vovkInit('--yes');
     await runAtProjectDir('../dist/index.mjs new segment');
@@ -143,10 +143,23 @@ await describe.only('CLI New', async () => {
       });`,
     ]);
     await runAtProjectDir('../dist/index.mjs new controller user');
+
     await assertFile(
-      'src/app/controllers/foo.ts',
-      `import { controller } from 'vovk';
-      import { Request, Response } from 'express';`
+      'src/modules/user/UserController.ts',
+      `export default class UserController {
+        @get()
+        static getUsers = async (`
     );
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `import UserController from '../../modules/user/UserController';`,
+      `const controllers = {
+        UserRPC: UserController,
+      };`,
+      `initVovk({
+        emitSchema: true,
+        workers,
+        controllers, 
+      });`,
+    ]);
   });
 });

@@ -27,17 +27,17 @@ export default async function newModule({
   what,
   moduleNameWithOptionalSegment,
   dryRun,
-  fileName: fileNameFlag,
   dirName: dirNameFlag,
   template: templateFlag,
+  noSegmentUpdate,
   overwrite,
 }: {
   what: string[];
   moduleNameWithOptionalSegment: string;
   dryRun?: boolean;
-  fileName?: string;
   dirName?: string;
   template?: string;
+  noSegmentUpdate?: boolean;
   overwrite?: boolean;
 }) {
   const { config, log, apiDir, cwd } = await getProjectInfo();
@@ -80,7 +80,7 @@ export default async function newModule({
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
     const {
       dirName: renderedDirName,
-      fileName: renderedFileName,
+      fileName,
       sourceName,
       compiledName,
       code,
@@ -92,7 +92,6 @@ export default async function newModule({
       moduleName,
     });
 
-    const fileName = fileNameFlag || renderedFileName;
     const dirName = dirNameFlag || renderedDirName;
 
     const absoluteModuleDir = path.join(cwd, config.modulesDir, dirName);
@@ -120,14 +119,17 @@ export default async function newModule({
       const { routeFilePath } = segment;
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
       const importPath = path.relative(absoluteModuleDir, absoluteModulePath).replace(/\.(ts|tsx)$/, '');
-      const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {
-        sourceName,
-        compiledName,
-        type,
-        importPath,
-      });
-      if (!dryRun) {
-        await fs.writeFile(routeFilePath, newSegmentCode);
+
+      if (!noSegmentUpdate) {
+        const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {
+          sourceName,
+          compiledName,
+          type,
+          importPath,
+        });
+        if (!dryRun) {
+          await fs.writeFile(routeFilePath, newSegmentCode);
+        }
       }
 
       log.info(
