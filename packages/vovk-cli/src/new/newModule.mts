@@ -71,6 +71,10 @@ export default async function newModule({
     throw new Error(`Segment ${segmentName} not found`);
   }
 
+  if(noSegmentUpdate && !what.includes('controller')) {
+    log.warn('--no-segment-update flag is ignored because it is only relevant when creating a controller');
+  }
+
   for (const type of what) {
     const templatePath = templateFlag ?? templates[type]!;
     const templateAbsolutePath =
@@ -92,9 +96,7 @@ export default async function newModule({
       moduleName,
     });
 
-    const dirName = dirNameFlag || renderedDirName;
-
-    const absoluteModuleDir = path.join(cwd, config.modulesDir, dirName);
+    const absoluteModuleDir = path.join(cwd, dirNameFlag || renderedDirName);
     const absoluteModulePath = path.join(absoluteModuleDir, fileName);
 
     const prettiedCode = await prettify(code, absoluteModulePath);
@@ -118,7 +120,7 @@ export default async function newModule({
 
       const { routeFilePath } = segment;
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
-      const importPath = path.relative(absoluteModuleDir, absoluteModulePath).replace(/\.(ts|tsx)$/, '');
+      const importPath = path.relative(path.dirname(routeFilePath), absoluteModulePath).replace(/\.(ts|tsx)$/, '');
 
       if (!noSegmentUpdate) {
         const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {

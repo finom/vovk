@@ -1,4 +1,9 @@
 // 1. new segment DONE
+/* .option('--template', 'Override config template')
+  .option('--dir-name', 'Override dirName in template file. Relative to the root of the project')
+  .option('--no-segment-update', 'Do not update segment files when creating a new module')
+  .option('--dry-run', 'Do not write files to disk')
+  */
 // 2. new controller + service: null, zod, yup, dto; different segments
 // 4. new controller: null, zod, yup, dto
 // 3. new worker: null
@@ -130,9 +135,9 @@ await describe.only('CLI New', async () => {
     await assert.rejects(() => runAtProjectDir('../dist/index.mjs new segment foo'));
   });
 
-  await it.only('New Controller', async () => {
+  await it.only('New Controller (user and post)', async () => {
     await createNextApp();
-    await vovkInit('--yes');
+    await vovkInit('--yes --validation-library=none');
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -146,14 +151,37 @@ await describe.only('CLI New', async () => {
 
     await assertFile(
       'src/modules/user/UserController.ts',
-      `export default class UserController {
+      [`export default class UserController {
         @get()
-        static getUsers = async (`
+        static getUsers = async (`,
+      `static createUser = `,
+      `static updateUser = `],
     );
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import UserController from '../../modules/user/UserController';`,
+      `import UserController from '../../../modules/user/UserController';`,
+      `const controllers = {
+        UserRPC: UserController
+      };`,
+      `initVovk({
+        emitSchema: true,
+        workers,
+        controllers, 
+      });`,
+    ]);
+
+    await runAtProjectDir('../dist/index.mjs new controller post');
+    await assertFile('src/modules/post/PostController.ts', [
+      `export default class PostController {
+        @get()
+        static getPosts = async (`,
+      `static createPost = `,
+      `static updatePost = `,
+    ]);
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `import PostController from '../../../modules/post/PostController';`,
       `const controllers = {
         UserRPC: UserController,
+        PostRPC: PostController
       };`,
       `initVovk({
         emitSchema: true,

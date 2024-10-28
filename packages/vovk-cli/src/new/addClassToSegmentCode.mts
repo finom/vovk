@@ -1,4 +1,4 @@
-import { Project, SyntaxKind } from 'ts-morph';
+import { Project, QuoteKind, SyntaxKind } from 'ts-morph';
 
 export default function addClassToSegmentCode(
   segmentSourceCode: string,
@@ -14,7 +14,11 @@ export default function addClassToSegmentCode(
     importPath: string;
   }
 ): string {
-  const project = new Project();
+  const project = new Project({
+    manipulationSettings: {
+      quoteKind: QuoteKind.Single
+    }
+  });
   const sourceFile = project.createSourceFile('route.ts', segmentSourceCode, { overwrite: true });
 
   // Add the import if it doesn't exist

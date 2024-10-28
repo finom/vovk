@@ -169,10 +169,9 @@ program
   )
   .option('-O, --overwrite', 'Overwrite existing files')
   .option('--template', 'Override config template')
-  .option('--dir-name', 'Override dirName in template file')
-  .option('--file-name', 'Override fileName in template file')
-  .option('--dry-run', 'Do not write files to disk')
+  .option('--dir-name', 'Override dirName in template file. Relative to the root of the project')
   .option('--no-segment-update', 'Do not update segment files when creating a new module')
+  .option('--dry-run', 'Do not write files to disk')
   .action((components: string[], options: NewOptions) => newComponents(components, options));
 
 program

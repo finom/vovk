@@ -157,19 +157,19 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
       if (typeof exp === 'string') {
         assert.ok(
           content.replace(/\s+/g, '').includes(exp.replace(/\s+/g, '')),
-          `File ${filePath} does not match the string ${exp}`
+          `File ${filePath} does not match the string "${exp}". Content: ${content}`
         );
       } else if (exp instanceof RegExp) {
-        assert.ok(exp.test(content), `File ${filePath} does not match the regex ${exp}`);
+        assert.ok(exp.test(content), `File ${filePath} does not match the regex "${exp}". Content: ${content}`);
       } else if (Array.isArray(exp)) {
         for (const e of exp) {
           if (typeof e === 'string') {
             assert.ok(
               content.replace(/\s+/g, '').includes(e.replace(/\s+/g, '')),
-              `File ${filePath} does not match the string ${e}`
+              `File ${filePath} does not match the string "${e}". Content: ${content}`
             );
           } else if (e instanceof RegExp) {
-            assert.ok(e.test(content), `File ${filePath} does not match the regex ${e}`);
+            assert.ok(e.test(content), `File ${filePath} does not match the regex "${e}". Content: ${content}`);
           }
         }
       }
