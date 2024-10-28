@@ -1,20 +1,20 @@
 import { worker } from '../../../packages/vovk/worker';
-import { ClientController, MyInnerWorker } from '.vovk-client/client';
+import { ClientControllerRPC, MyInnerWorkerWPC } from '.vovk-client/client';
 
 @worker()
 export default class MyWorker {
   static getClientizeHelloWorld(prefix?: string) {
-    return ClientController.getHelloWorldHeaders({
+    return ClientControllerRPC.getHelloWorldHeaders({
       prefix,
       headers: { 'x-test': 'world' },
     });
   }
 
   static calculateFibonacci(n: number): Promise<number> {
-    if (!MyInnerWorker.worker) {
-      MyInnerWorker.employ(new Worker(new URL('./MyInnerWorker.ts', import.meta.url)));
+    if (!MyInnerWorkerWPC.worker) {
+      MyInnerWorkerWPC.employ(new Worker(new URL('./MyInnerWorker.ts', import.meta.url)));
     }
-    return MyInnerWorker.calculateFibonacci(n);
+    return MyInnerWorkerWPC.calculateFibonacci(n);
   }
 
   static findLargestPrimeBelow(max: number): number {

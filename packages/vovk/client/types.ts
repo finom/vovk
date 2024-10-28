@@ -68,7 +68,7 @@ type OmitNever<T> = {
 };
 
 type _VovkClientWithNever<T, OPTS extends { [key: string]: KnownAny }> = {
-  [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> : never;
+  [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> & { __isClientMethod: boolean }: never;
 };
 
 export type _VovkClient<T, OPTS extends { [key: string]: KnownAny }> = OmitNever<_VovkClientWithNever<T, OPTS>>;

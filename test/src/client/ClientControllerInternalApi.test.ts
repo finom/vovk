@@ -7,7 +7,7 @@ const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
 const schema = segmentsSchema['foo/client'].controllers;
 
-const defaultController = clientizeController<typeof ClientController>(schema.ClientController, 'foo/client', {
+const defaultController = clientizeController<typeof ClientController>(schema.ClientControllerRPC, 'foo/client', {
   defaultOptions: { prefix },
 });
 
@@ -18,7 +18,7 @@ describe('Internal client API', () => {
   });
 
   it('Should handle custom options', async () => {
-    const noOptionsController = clientizeController<typeof ClientController>(schema.ClientController, 'foo/client');
+    const noOptionsController = clientizeController<typeof ClientController>(schema.ClientControllerRPC, 'foo/client');
     const result = await noOptionsController.getHelloWorldObjectLiteral({
       prefix,
     });

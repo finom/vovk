@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import type { VovkSchema } from 'vovk';
 import diffSchema, { DiffResult } from './diffSchema.mjs';
+import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
 export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
 
@@ -19,7 +20,7 @@ export default async function writeOneSchemaFile({
 }> {
   const segmentPath = path.join(schemaOutAbsolutePath, `${schema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
 
-  if (skipIfExists) {
+  if (skipIfExists && await getFileSystemEntryType(segmentPath)) {
     try {
       await fs.stat(segmentPath);
       return { isCreated: false, diffResult: null };

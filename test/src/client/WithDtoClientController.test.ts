@@ -1,5 +1,5 @@
 import { it, expect, describe } from '@jest/globals';
-import { WithDtoClientController } from '../../.vovk-client/client';
+import { WithDtoClientControllerRPC } from '../../.vovk-client/client';
 import { HttpException } from 'vovk';
 import validateOnClient from 'vovk-dto/validateOnClient';
 import { plainToInstance } from 'class-transformer';
@@ -7,7 +7,7 @@ import { BodyDto, QueryDto, QueryWithArrayDto, ReturnDto } from './WithDtoClient
 
 describe('Validation with with vovk-dto', () => {
   it('Should handle DTO server validation', async () => {
-    const result = await WithDtoClientController.postWithBodyQueryAndParams({
+    const result = await WithDtoClientControllerRPC.postWithBodyQueryAndParams({
       body: { hello: 'body' },
       query: { hey: 'query' },
       params: { param: 'foo' },
@@ -22,7 +22,7 @@ describe('Validation with with vovk-dto', () => {
     });
 
     let { rejects } = expect(async () => {
-      await WithDtoClientController.postWithBodyQueryAndParams({
+      await WithDtoClientControllerRPC.postWithBodyQueryAndParams({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -39,7 +39,7 @@ describe('Validation with with vovk-dto', () => {
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithDtoClientController.postWithBodyQueryAndParams({
+      await WithDtoClientControllerRPC.postWithBodyQueryAndParams({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
@@ -57,7 +57,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Should handle DTO client validation', async () => {
-    const result = await WithDtoClientController.postWithBodyQueryAndParams({
+    const result = await WithDtoClientControllerRPC.postWithBodyQueryAndParams({
       body: plainToInstance(BodyDto, { hello: 'body' }),
       query: plainToInstance(QueryDto, { hey: 'query' }),
       params: { param: 'foo' },
@@ -71,7 +71,7 @@ describe('Validation with with vovk-dto', () => {
     });
 
     let { rejects } = expect(async () => {
-      await WithDtoClientController.postWithBodyQueryAndParams({
+      await WithDtoClientControllerRPC.postWithBodyQueryAndParams({
         body: plainToInstance(BodyDto, {
           hello: 'wrong' as 'body',
         }),
@@ -87,7 +87,7 @@ describe('Validation with with vovk-dto', () => {
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithDtoClientController.postWithBodyQueryAndParams({
+      await WithDtoClientControllerRPC.postWithBodyQueryAndParams({
         body: plainToInstance(BodyDto, { hello: 'body' }),
         query: plainToInstance(QueryDto, {
           hey: 'wrong' as 'query',
@@ -104,7 +104,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Handles requests with body and null query', async () => {
-    const result = await WithDtoClientController.putWithBodyAndNullQuery({
+    const result = await WithDtoClientControllerRPC.putWithBodyAndNullQuery({
       body: plainToInstance(BodyDto, { hello: 'body' }),
       validateOnClient,
     });
@@ -114,7 +114,7 @@ describe('Validation with with vovk-dto', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithDtoClientController.putWithBodyAndNullQuery({
+      await WithDtoClientControllerRPC.putWithBodyAndNullQuery({
         body: plainToInstance(BodyDto, {
           hello: 'wrong' as 'body',
         }),
@@ -129,7 +129,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Handles requests with body only', async () => {
-    const result = await WithDtoClientController.putWithBodyOnly({
+    const result = await WithDtoClientControllerRPC.putWithBodyOnly({
       body: plainToInstance(BodyDto, { hello: 'body' }),
       validateOnClient,
     });
@@ -139,7 +139,7 @@ describe('Validation with with vovk-dto', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithDtoClientController.putWithBodyOnly({
+      await WithDtoClientControllerRPC.putWithBodyOnly({
         body: plainToInstance(BodyDto, {
           hello: 'wrong' as 'body',
         }),
@@ -154,7 +154,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Handles with query only', async () => {
-    const result = await WithDtoClientController.getWithQueryAndNullBody({
+    const result = await WithDtoClientControllerRPC.getWithQueryAndNullBody({
       query: plainToInstance(QueryDto, { hey: 'query' }),
       validateOnClient,
     });
@@ -164,7 +164,7 @@ describe('Validation with with vovk-dto', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithDtoClientController.getWithQueryAndNullBody({
+      await WithDtoClientControllerRPC.getWithQueryAndNullBody({
         query: plainToInstance(QueryDto, {
           hey: 'wrong' as 'query',
         }),
@@ -180,7 +180,7 @@ describe('Validation with with vovk-dto', () => {
 
   it('Handles query as an array client validation', async () => {
     const query = { array1: ['foo'], array2: ['bar', 'baz'], hey: 'query' };
-    const result = await WithDtoClientController.getWithQueryArrayAndNullBody({
+    const result = await WithDtoClientControllerRPC.getWithQueryArrayAndNullBody({
       query: plainToInstance(QueryWithArrayDto, query),
       validateOnClient,
     });
@@ -190,7 +190,7 @@ describe('Validation with with vovk-dto', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithDtoClientController.getWithQueryArrayAndNullBody({
+      await WithDtoClientControllerRPC.getWithQueryArrayAndNullBody({
         query: plainToInstance(QueryWithArrayDto, {
           array1: [1],
           array2: ['bar', 'baz'],
@@ -208,7 +208,7 @@ describe('Validation with with vovk-dto', () => {
 
   it('Handles query as an array server validation', async () => {
     let query = { array1: ['foo'] as 'foo'[], array2: ['bar', 'baz'] as ('bar' | 'baz')[], hey: 'query' as const };
-    const result = await WithDtoClientController.getWithQueryArrayAndNullBody({
+    const result = await WithDtoClientControllerRPC.getWithQueryArrayAndNullBody({
       query,
       disableClientValidation: true,
       validateOnClient,
@@ -219,7 +219,7 @@ describe('Validation with with vovk-dto', () => {
     query = { array1: ['foo'], array2: ['bar'], hey: 'query' };
 
     const { rejects } = expect(async () => {
-      await WithDtoClientController.getWithQueryArrayAndNullBody({
+      await WithDtoClientControllerRPC.getWithQueryArrayAndNullBody({
         query: plainToInstance(QueryWithArrayDto, query),
         disableClientValidation: true,
         validateOnClient,
@@ -233,7 +233,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('req.vovk.body and req.vovk.query should return an instance of a DTO', async () => {
-    const result = await WithDtoClientController.postWithBodyAndQueryWithReqVovk({
+    const result = await WithDtoClientControllerRPC.postWithBodyAndQueryWithReqVovk({
       body: plainToInstance(BodyDto, { hello: 'body' }),
       query: plainToInstance(QueryDto, { hey: 'query' }),
       validateOnClient,
@@ -255,7 +255,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Should transform response on client-side to a DTO class', async () => {
-    const result = await WithDtoClientController.postWithBodyAndQueryTransformed({
+    const result = await WithDtoClientControllerRPC.postWithBodyAndQueryTransformed({
       body: { hello: 'body' },
       query: { hey: 'query' },
       transform: (resp) => plainToInstance(ReturnDto, resp),

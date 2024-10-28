@@ -1,9 +1,8 @@
 import type { Token } from './StreamingController';
 import { expect, describe, it, xit } from '@jest/globals';
-import { HttpException, VovkYieldType, VovkControlerYieldType } from 'vovk';
-import { StreamingController } from '../../.vovk-client/client';
-
-type StreamingControllerType = typeof StreamingController;
+import { HttpException, VovkYieldType } from 'vovk';
+import { StreamingControllerRPC } from '../../.vovk-client/client';
+import { _VovkControlerYieldType, _VovkClientYieldType } from 'vovk/types';
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -13,7 +12,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingController.postWithStreaming({
+    using resp = await StreamingControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -23,8 +22,9 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControlerYieldType<StreamingControllerType['postWithStreaming']> satisfies Token;
-    null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
+    null as unknown as _VovkControlerYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
+    null as unknown as _VovkClientYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
+    null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
     expect(expected).toEqual(expectedCollected);
   });
@@ -34,7 +34,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingController.postWithStreaming({
+    using resp = await StreamingControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -62,7 +62,7 @@ describe('Streaming', () => {
     let resp;
 
     {
-      resp = await StreamingController.postWithStreaming({
+      resp = await StreamingControllerRPC.postWithStreaming({
         body: tokens,
         query: { query: 'queryValue' },
         prefix,
@@ -94,7 +94,7 @@ describe('Streaming', () => {
     let r;
 
     {
-      using resp = await StreamingController.postWithStreaming({
+      using resp = await StreamingControllerRPC.postWithStreaming({
         body: tokens,
         query: { query: 'queryValue' },
         prefix,
@@ -120,7 +120,7 @@ describe('Streaming', () => {
   it('Should handle immediate errors', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
 
-    const respPromise = StreamingController.postWithStreamingAndImmediateError({
+    const respPromise = StreamingControllerRPC.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -134,7 +134,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingController.postWithStreamingAndDelayedError({
+    using resp = await StreamingControllerRPC.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -154,7 +154,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingController.postWithStreamingAndDelayedCustomError({
+    using resp = await StreamingControllerRPC.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -182,7 +182,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    const resp = await StreamingController.postWithStreamingAndDelayedUnhandledError({
+    const resp = await StreamingControllerRPC.postWithStreamingAndDelayedUnhandledError({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import puppeteer, { type Page } from 'puppeteer';
 import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
-import type { MyWorker } from '../../.vovk-client/client';
+import type { MyWorkerWPC } from '../../.vovk-client/client';
 
 describe('Worker', () => {
   let page: Page;
@@ -35,8 +35,8 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
        
-      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
-      return MyWorkerPromisified.findLargestPrimeBelow(100000);
+      const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
+      return MyWorkerWPCFromWindow.findLargestPrimeBelow(100000);
     });
 
     expect(result).toEqual(99991);
@@ -46,8 +46,8 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
        
-      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
-      return MyWorkerPromisified.calculateFibonacci(10);
+      const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
+      return MyWorkerWPCFromWindow.calculateFibonacci(10);
     });
 
     expect(result).toEqual(55);
@@ -57,8 +57,8 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
        
-      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
-      return MyWorkerPromisified.getClientizeHelloWorld();
+      const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
+      return MyWorkerWPCFromWindow.getClientizeHelloWorld();
     });
 
     expect(result).toEqual({ hello: 'world' });
@@ -68,10 +68,10 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
        
-      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
+      const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       const numbers: number[] = [];
 
-      for await (const number of MyWorkerPromisified.generator()) {
+      for await (const number of MyWorkerWPCFromWindow.generator()) {
         numbers.push(number);
       }
 
@@ -85,10 +85,10 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
        
-      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
+      const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       const numbers: number[] = [];
 
-      for await (const number of MyWorkerPromisified.asyncGenerator()) {
+      for await (const number of MyWorkerWPCFromWindow.asyncGenerator()) {
         numbers.push(number);
       }
 
@@ -102,13 +102,13 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
        
-      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
+      const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       const numbers: number[] = [];
 
       let error: string | undefined;
 
       try {
-        for await (const number of MyWorkerPromisified.generatorWithError()) {
+        for await (const number of MyWorkerWPCFromWindow.generatorWithError()) {
           numbers.push(number);
         }
       } catch (e) {
@@ -126,13 +126,13 @@ describe('Worker', () => {
     const result = await page.evaluate(async () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
        
-      const { MyWorkerPromisified } = window as unknown as { MyWorkerPromisified: typeof MyWorker };
+      const { MyWorkerWPC: MyWorkerWPCFromWindow } = window as unknown as { MyWorkerWPC: typeof MyWorkerWPC };
       const numbers: number[] = [];
 
       let error: string | undefined;
 
       try {
-        for await (const number of MyWorkerPromisified.asyncGeneratorWithError()) {
+        for await (const number of MyWorkerWPCFromWindow.asyncGeneratorWithError()) {
           numbers.push(number);
         }
       } catch (e) {

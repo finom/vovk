@@ -9,14 +9,13 @@ import WithYupClientController from 'src/client/WithYupClientController';
 import WithDtoClientController from 'src/client/WithDtoClientController';
 
 const controllers = {
-  ClientController,
-  ClientController5x: ClientController,
-  StreamingController,
-  StreamingGeneratorController,
-  CostomSchemaController,
-  WithZodClientController,
-  WithYupClientController,
-  WithDtoClientController,
+  ClientControllerRPC: ClientController,
+  StreamingControllerRPC: StreamingController,
+  StreamingGeneratorControllerRPC: StreamingGeneratorController,
+  CostomSchemaControllerRPC: CostomSchemaController,
+  WithZodClientControllerRPC: WithZodClientController,
+  WithYupClientControllerRPC: WithYupClientController,
+  WithDtoClientControllerRPC: WithDtoClientController,
 };
 
 const workers = {};

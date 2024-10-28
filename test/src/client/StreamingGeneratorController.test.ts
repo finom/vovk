@@ -1,9 +1,8 @@
 import type { Token } from './StreamingGeneratorController';
 import { expect, describe, xit, it } from '@jest/globals';
-import { VovkYieldType, VovkControlerYieldType } from 'vovk';
-import { StreamingGeneratorController } from '../../.vovk-client/client';
-
-type StreamingGeneratorControllerType = typeof StreamingGeneratorController;
+import { VovkYieldType } from 'vovk';
+import { StreamingGeneratorControllerRPC } from '../../.vovk-client/client';
+import { _VovkClientYieldType, _VovkControlerYieldType } from 'vovk/types';
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -13,7 +12,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingGeneratorController.postWithStreaming({
+    using resp = await StreamingGeneratorControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -23,8 +22,9 @@ describe('Streaming generator', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControlerYieldType<StreamingGeneratorControllerType['postWithStreaming']> satisfies Token;
-    null as unknown as VovkYieldType<typeof StreamingGeneratorController.postWithStreaming> satisfies Token;
+    null as unknown as _VovkControlerYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
+    null as unknown as _VovkClientYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
+    null as unknown as VovkYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
 
     expect(expected).toEqual(expectedCollected);
   });
@@ -34,7 +34,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingGeneratorController.postWithStreaming({
+    using resp = await StreamingGeneratorControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -53,7 +53,7 @@ describe('Streaming generator', () => {
   it('Should handle immediate errors', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
 
-    using resp = await StreamingGeneratorController.postWithStreamingAndImmediateError({
+    using resp = await StreamingGeneratorControllerRPC.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -71,7 +71,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingGeneratorController.postWithStreamingAndDelayedError({
+    using resp = await StreamingGeneratorControllerRPC.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -91,7 +91,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingGeneratorController.postWithStreamingAndDelayedCustomError({
+    using resp = await StreamingGeneratorControllerRPC.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,
@@ -119,7 +119,7 @@ describe('Streaming generator', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingGeneratorController.postWithStreamingAndDelayedUnhandledError({
+    using resp = await StreamingGeneratorControllerRPC.postWithStreamingAndDelayedUnhandledError({
       body: tokens,
       query: { query: 'queryValue' },
       prefix,

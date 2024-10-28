@@ -14,7 +14,7 @@ export default async function ensureSchemaFiles(
   let hasChanged = false;
   // Create index.js file
   const indexContent = `// auto-generated
-  ${segmentNames
+${segmentNames
     .map((segmentName) => {
       return `module.exports['${segmentName}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
     })
@@ -22,12 +22,24 @@ export default async function ensureSchemaFiles(
 
   const dTsContent = `// auto-generated
 import type { VovkSchema } from 'vovk';
-declare const segmentSchema: Record<string, VovkSchema>;
+declare const segmentSchema: {
+${segmentNames.map((segmentName) => `  '${segmentName}': VovkSchema;`).join('\n')}
+};
 export default segmentSchema;`;
 
+  const jsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.js');
+  const dTsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.d.ts');
+
+  const existingJs = await fs.readFile(jsAbsolutePath, 'utf-8').catch(() => null);
+  const existingDTs = await fs.readFile(dTsAbsolutePath, 'utf-8').catch(() => null);
+
   await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
-  await fs.writeFile(path.join(schemaOutAbsolutePath, 'index.js'), indexContent);
-  await fs.writeFile(path.join(schemaOutAbsolutePath, 'index.d.ts'), dTsContent);
+  if (existingJs !== indexContent) {
+    await fs.writeFile(jsAbsolutePath, indexContent);
+  }
+  if (existingDTs !== dTsContent) {
+    await fs.writeFile(dTsAbsolutePath, dTsContent);
+  }
 
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested)
   await Promise.all(

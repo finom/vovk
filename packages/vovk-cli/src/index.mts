@@ -43,11 +43,21 @@ export interface InitOptions {
   channel?: 'latest' | 'beta' | 'dev';
 }
 
+/*
+TODO Next
+- Create VovkBody and VovkQuery types to replace existing types
+- Update NewOptions and corresponding functions
+- Compile templates to /test and write controller tests
+- Continue with templates and test them
+*/
+
 export interface NewOptions {
   dryRun?: boolean;
   template?: string;
+  // TODO replace these 2 options by --path and -P
   dirName?: string;
   fileName?: string;
+  // TODO add --no-segment-update
   overwrite?: boolean;
 }
 

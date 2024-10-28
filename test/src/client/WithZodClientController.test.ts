@@ -1,10 +1,10 @@
 import { it, expect, describe } from '@jest/globals';
-import { WithZodClientController } from '../../.vovk-client/client';
+import { WithZodClientControllerRPC } from '../../.vovk-client/client';
 import { HttpException } from 'vovk';
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
   it('Should handle Zod server validation', async () => {
-    const result = await WithZodClientController.postWithBodyAndQuery({
+    const result = await WithZodClientControllerRPC.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
       disableClientValidation: true,
@@ -16,7 +16,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     let { rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
+      await WithZodClientControllerRPC.postWithBodyAndQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -31,7 +31,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
+      await WithZodClientControllerRPC.postWithBodyAndQuery({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
@@ -47,7 +47,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
   });
 
   it('Should handle Zod client validation', async () => {
-    const result = await WithZodClientController.postWithBodyAndQuery({
+    const result = await WithZodClientControllerRPC.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
     });
@@ -58,7 +58,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     let { rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
+      await WithZodClientControllerRPC.postWithBodyAndQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -72,7 +72,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithZodClientController.postWithBodyAndQuery({
+      await WithZodClientControllerRPC.postWithBodyAndQuery({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
@@ -87,7 +87,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
   });
 
   it('Handles requests with body and null query', async () => {
-    const result = await WithZodClientController.putWithBodyAndNullQuery({
+    const result = await WithZodClientControllerRPC.putWithBodyAndNullQuery({
       body: { hello: 'body' },
     });
 
@@ -96,7 +96,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     const { rejects } = expect(async () => {
-      await WithZodClientController.putWithBodyAndNullQuery({
+      await WithZodClientControllerRPC.putWithBodyAndNullQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -110,7 +110,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
   });
 
   it('Handles requests with body only', async () => {
-    const result = await WithZodClientController.putWithBodyOnly({
+    const result = await WithZodClientControllerRPC.putWithBodyOnly({
       body: { hello: 'body' },
     });
 
@@ -119,7 +119,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     const { rejects } = expect(async () => {
-      await WithZodClientController.putWithBodyOnly({
+      await WithZodClientControllerRPC.putWithBodyOnly({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -133,7 +133,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
   });
 
   it('Handles with query only', async () => {
-    const result = await WithZodClientController.getWithQueryAndNullBody({
+    const result = await WithZodClientControllerRPC.getWithQueryAndNullBody({
       query: { hey: 'query' },
     });
 
@@ -142,7 +142,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     const { rejects } = expect(async () => {
-      await WithZodClientController.getWithQueryAndNullBody({
+      await WithZodClientControllerRPC.getWithQueryAndNullBody({
         query: {
           hey: 'wrong' as 'query',
         },

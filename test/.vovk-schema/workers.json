@@ -3,8 +3,9 @@
   "segmentName": "workers",
   "controllers": {},
   "workers": {
-    "MyWorker": {
-      "_workerName": "MyWorker",
+    "MyWorkerWPC": {
+      "_workerName": "MyWorkerWPC",
+      "_originalWorkerName": "MyWorker",
       "_handlers": {
         "getClientizeHelloWorld": {},
         "calculateFibonacci": {},
@@ -23,14 +24,9 @@
         }
       }
     },
-    "MyInnerWorker": {
-      "_workerName": "MyInnerWorker",
-      "_handlers": {
-        "calculateFibonacci": {}
-      }
-    },
-    "MyInnerWorkerX": {
-      "_workerName": "MyInnerWorkerX",
+    "MyInnerWorkerWPC": {
+      "_workerName": "MyInnerWorkerWPC",
+      "_originalWorkerName": "MyInnerWorker",
       "_handlers": {
         "calculateFibonacci": {}
       }

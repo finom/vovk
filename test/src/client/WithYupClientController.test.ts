@@ -1,11 +1,11 @@
 import { it, expect, describe } from '@jest/globals';
-import { WithYupClientController } from '../../.vovk-client/client';
+import { WithYupClientControllerRPC } from '../../.vovk-client/client';
 import { HttpException } from 'vovk';
 import validateOnClient from 'vovk-yup/validateOnClient';
 
 describe('Validation with with vovk-yup', () => {
   it('Should handle Yup server validation', async () => {
-    const result = await WithYupClientController.postWithBodyAndQuery({
+    const result = await WithYupClientControllerRPC.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
       disableClientValidation: true,
@@ -18,7 +18,7 @@ describe('Validation with with vovk-yup', () => {
     });
 
     let { rejects } = expect(async () => {
-      await WithYupClientController.postWithBodyAndQuery({
+      await WithYupClientControllerRPC.postWithBodyAndQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -34,7 +34,7 @@ describe('Validation with with vovk-yup', () => {
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithYupClientController.postWithBodyAndQuery({
+      await WithYupClientControllerRPC.postWithBodyAndQuery({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
@@ -51,7 +51,7 @@ describe('Validation with with vovk-yup', () => {
   });
 
   it('Should handle Yup client validation', async () => {
-    const result = await WithYupClientController.postWithBodyAndQuery({
+    const result = await WithYupClientControllerRPC.postWithBodyAndQuery({
       body: { hello: 'body' },
       query: { hey: 'query' },
       validateOnClient,
@@ -63,7 +63,7 @@ describe('Validation with with vovk-yup', () => {
     });
 
     let { rejects } = expect(async () => {
-      await WithYupClientController.postWithBodyAndQuery({
+      await WithYupClientControllerRPC.postWithBodyAndQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -78,7 +78,7 @@ describe('Validation with with vovk-yup', () => {
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithYupClientController.postWithBodyAndQuery({
+      await WithYupClientControllerRPC.postWithBodyAndQuery({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
@@ -94,7 +94,7 @@ describe('Validation with with vovk-yup', () => {
   });
 
   it('Handles requests with body and null query', async () => {
-    const result = await WithYupClientController.putWithBodyAndNullQuery({
+    const result = await WithYupClientControllerRPC.putWithBodyAndNullQuery({
       body: { hello: 'body' },
       validateOnClient,
     });
@@ -104,7 +104,7 @@ describe('Validation with with vovk-yup', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithYupClientController.putWithBodyAndNullQuery({
+      await WithYupClientControllerRPC.putWithBodyAndNullQuery({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -119,7 +119,7 @@ describe('Validation with with vovk-yup', () => {
   });
 
   it('Handles requests with body only', async () => {
-    const result = await WithYupClientController.putWithBodyOnly({
+    const result = await WithYupClientControllerRPC.putWithBodyOnly({
       body: { hello: 'body' },
       validateOnClient,
     });
@@ -129,7 +129,7 @@ describe('Validation with with vovk-yup', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithYupClientController.putWithBodyOnly({
+      await WithYupClientControllerRPC.putWithBodyOnly({
         body: {
           hello: 'wrong' as 'body',
         },
@@ -144,7 +144,7 @@ describe('Validation with with vovk-yup', () => {
   });
 
   it('Handles with query only', async () => {
-    const result = await WithYupClientController.getWithQueryAndNullBody({
+    const result = await WithYupClientControllerRPC.getWithQueryAndNullBody({
       query: { hey: 'query' },
       validateOnClient,
     });
@@ -154,7 +154,7 @@ describe('Validation with with vovk-yup', () => {
     });
 
     const { rejects } = expect(async () => {
-      await WithYupClientController.getWithQueryAndNullBody({
+      await WithYupClientControllerRPC.getWithQueryAndNullBody({
         query: {
           hey: 'wrong' as 'query',
         },

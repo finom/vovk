@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from 'react';
-import { MyWorker as MyWorkerPromisified } from '../../.vovk-client/client';
+import { MyWorkerWPC } from '../../.vovk-client/client';
 import { promisifyWorker } from '../../../packages/vovk/worker';
 import segmentSchema from '.vovk-schema';
 import MyWorker from '../worker/MyWorker';
@@ -12,16 +12,16 @@ export default function Home() {
     const win = window as unknown as {
       schemaWorker: typeof schemaWorker;
       standaloneWorker: typeof standaloneWorker;
-      MyWorkerPromisified: typeof MyWorkerPromisified;
+      MyWorkerWPC: typeof MyWorkerWPC;
       isTerminated: boolean;
     };
     if (win.schemaWorker) return;
 
-    MyWorkerPromisified.employ(new Worker(new URL('../worker/MyWorker.ts', import.meta.url)));
+    MyWorkerWPC.employ(new Worker(new URL('../worker/MyWorker.ts', import.meta.url)));
 
     const schemaWorker = promisifyWorker<typeof MyWorker>(
       new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
-      segmentSchema.workers.workers.MyWorker
+      segmentSchema.workers.workers.MyWorkerWPC
     );
 
     const standaloneWorker = promisifyWorker<typeof MyWorker>(
@@ -38,7 +38,7 @@ export default function Home() {
 
     win.schemaWorker = schemaWorker;
     win.standaloneWorker = standaloneWorker;
-    win.MyWorkerPromisified = MyWorkerPromisified;
+    win.MyWorkerWPC = MyWorkerWPC;
 
     win.isTerminated = toBeTerminated._isTerminated ?? false;
   }, []);
