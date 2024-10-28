@@ -133,7 +133,7 @@ export type _VovkControllerReturnType<
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = Awaited<ReturnType<T>>;
 
-export type _VovkControlerYieldType<
+export type _VovkControllerYieldType<
   T extends _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
@@ -171,58 +171,27 @@ export type _VovkClientYieldType<T extends (...args: _KnownAny[]) => unknown> = 
 
 export type _VovkClientReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
 
-// TODO: { __isClientMethod: boolean } looks dirty, refactor
-type ClientStaticMethod = ((...args: _KnownAny[]) => _KnownAny) & { __isClientMethod: boolean };
-
 export type _VovkBody<
-  T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends ClientStaticMethod
-  ? _VovkClientBody<T>
-  : T extends _ControllerStaticMethod<REQ, PARAMS>
-    ? _VovkControllerBody<T, REQ, PARAMS>
-    : never;
+  T extends (options: OPTIONS) => _KnownAny,
+  OPTIONS extends { body: B; [key: string]: _KnownAny } = Parameters<T>[0],
+  B = _KnownAny,
+> = _VovkClientBody<T, OPTIONS, B>;
 
 export type _VovkQuery<
-  T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends _ControllerStaticMethod<REQ, PARAMS>
-  ? _VovkControllerQuery<T, REQ, PARAMS>
-  : T extends ClientStaticMethod
-    ? _VovkClientQuery<T>
-    : never;
+  T extends (options: OPTIONS) => _KnownAny,
+  OPTIONS extends { query: Q; [key: string]: _KnownAny } = Parameters<T>[0],
+  Q = _KnownAny,
+> = _VovkClientQuery<T, OPTIONS, Q>;
 
 export type _VovkParams<
-  T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends _ControllerStaticMethod<REQ, PARAMS>
-  ? _VovkControllerParams<T, REQ, PARAMS>
-  : T extends ClientStaticMethod
-    ? _VovkClientParams<T>
-    : never;
+  T extends (options: OPTIONS) => _KnownAny,
+  OPTIONS extends { params: P; [key: string]: _KnownAny } = Parameters<T>[0],
+  P = _KnownAny,
+> = _VovkClientParams<T, OPTIONS, P>;
 
-export type _VovkYieldType<
-  T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends _ControllerStaticMethod<REQ, PARAMS> 
-  ? _VovkControlerYieldType<T, REQ, PARAMS>
-  : T extends ClientStaticMethod
-    ?  _VovkClientYieldType<T>
-    : never;
+export type _VovkReturnType<T extends (...args: _KnownAny) => unknown> = _VovkClientReturnType<T>;
 
-export type _VovkReturnType<
-  T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends _ControllerStaticMethod<REQ, PARAMS> 
-  ? _VovkControllerReturnType<T, REQ, PARAMS>
-  : T extends ClientStaticMethod
-    ?  _VovkClientReturnType<T>
-    : never;
+export type _VovkYieldType<T extends (...args: _KnownAny) => unknown> = _VovkClientYieldType<T>;
 
 export type _StreamAbortMessage = {
   isError: true;
