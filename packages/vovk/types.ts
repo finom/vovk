@@ -188,40 +188,40 @@ export type _VovkQuery<
   T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends ClientStaticMethod
-  ? _VovkClientQuery<T>
-  : T extends _ControllerStaticMethod<REQ, PARAMS>
-    ? _VovkControllerQuery<T, REQ, PARAMS>
+> = T extends _ControllerStaticMethod<REQ, PARAMS>
+  ? _VovkControllerQuery<T, REQ, PARAMS>
+  : T extends ClientStaticMethod
+    ? _VovkClientQuery<T>
     : never;
 
 export type _VovkParams<
   T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends ClientStaticMethod
-  ? _VovkClientParams<T>
-  : T extends _ControllerStaticMethod<REQ, PARAMS>
-    ? _VovkControllerParams<T, REQ, PARAMS>
+> = T extends _ControllerStaticMethod<REQ, PARAMS>
+  ? _VovkControllerParams<T, REQ, PARAMS>
+  : T extends ClientStaticMethod
+    ? _VovkClientParams<T>
     : never;
 
 export type _VovkYieldType<
   T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends ClientStaticMethod
-  ? _VovkClientYieldType<T>
-  : T extends _ControllerStaticMethod<REQ, PARAMS>
-    ? _VovkControlerYieldType<T, REQ, PARAMS>
+> = T extends _ControllerStaticMethod<REQ, PARAMS> 
+  ? _VovkControlerYieldType<T, REQ, PARAMS>
+  : T extends ClientStaticMethod
+    ?  _VovkClientYieldType<T>
     : never;
 
 export type _VovkReturnType<
   T extends ClientStaticMethod | _ControllerStaticMethod<REQ, PARAMS>,
   REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
   PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends ClientStaticMethod
-  ? _VovkClientReturnType<T>
-  : T extends _ControllerStaticMethod<REQ, PARAMS>
-    ? _VovkControllerReturnType<T, REQ, PARAMS>
+> = T extends _ControllerStaticMethod<REQ, PARAMS> 
+  ? _VovkControllerReturnType<T, REQ, PARAMS>
+  : T extends ClientStaticMethod
+    ?  _VovkClientReturnType<T>
     : never;
 
 export type _StreamAbortMessage = {
