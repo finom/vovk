@@ -4,7 +4,7 @@
 <% var compiledName = modulePascalName + 'RPC'; %>
 <% var serviceName = modulePascalName + 'Service'; %>
 ---
-dirName: <%= getModuleDirName(segmentName, moduleName) %> # Relative to the root dir
+dirName: <%= getModuleDirName(segmentName, moduleName) %> # Relative to the project root
 fileName: <%= controllerName + '.ts' %>
 sourceName: <%= controllerName %> # Used to define import declaration in a segment route file for the given class
 compiledName: <%= compiledName %> # Used to define a compiled object name

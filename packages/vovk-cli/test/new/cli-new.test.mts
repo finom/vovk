@@ -7,6 +7,7 @@
 // 2. new controller + service: null, zod, yup, dto; different segments
 // 4. new controller: null, zod, yup, dto
 // 3. new worker: null
+// 5. new service: null
 // 6. new state (modify config so it has state); different segments
 // 7. new state + custom controller (modify config so it has state and custom controller)
 // 8. rootSegmentModulesDirName

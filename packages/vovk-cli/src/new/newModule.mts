@@ -71,10 +71,6 @@ export default async function newModule({
     throw new Error(`Segment ${segmentName} not found`);
   }
 
-  if(noSegmentUpdate && !what.includes('controller')) {
-    log.warn('--no-segment-update flag is ignored because it is only relevant when creating a controller');
-  }
-
   for (const type of what) {
     const templatePath = templateFlag ?? templates[type]!;
     const templateAbsolutePath =

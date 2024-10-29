@@ -41,7 +41,7 @@ function getAvailablePort(
         onWarning(startPort, startPort + 1);
         getAvailablePort(startPort + 1, maxAttempts, attempt + 1, onWarning).then(resolve, reject);
       } else {
-        reject('No available ports found');
+        reject(new Error('No available ports found'));
       }
     });
   });

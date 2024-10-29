@@ -3,12 +3,12 @@
 <% var serviceName = modulePascalName + 'Service'; %>
 <% var controllerName = modulePascalName + 'Controller'; %>
 ---
-dirName: <%= getModuleDirName(segmentName, moduleName) %> # Relative to the root dir
+dirName: <%= getModuleDirName(segmentName, moduleName) %> # Relative to the project root
 fileName: <%= serviceName + '.ts' %>
 ---
 
 import type { VovkControllerBody, VovkControllerQuery } from 'vovk';
-import <%= controllerName %> from './<%= controllerName %>';
+import type <%= controllerName %> from './<%= controllerName %>';
 
 export default class <%= serviceName %> {
   static get<%= modulePascalNamePlural %> = (q: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>['q']) => {
@@ -17,8 +17,8 @@ export default class <%= serviceName %> {
 
   static update<%= modulePascalName %> = (
     id: string,
-    q: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>['q'],
-    body: VovkControllerBody<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>
+    q: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalName %>>['q'],
+    body: VovkControllerBody<typeof <%= controllerName %>.get<%= modulePascalName %>>
   ) => {
     return { id, q, body };
   };
