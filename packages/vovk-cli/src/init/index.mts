@@ -64,13 +64,15 @@ import getConfigPaths from '../getProjectInfo/getConfigAbsolutePaths.mjs';
 import type { InitOptions } from '../index.mjs';
 import chalk from 'chalk';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
-import installDependencies from './installDependencies.mjs';
+import installDependencies, { getPackageManager } from './installDependencies.mjs';
 import getLogger from '../utils/getLogger.mjs';
 import createConfig from './createConfig.mjs';
 import updateNPMScripts from './updateNPMScripts.mjs';
 import checkTSConfigForExperimentalDecorators from './checkTSConfigForExperimentalDecorators.mjs';
 import updateTypeScriptConfig from './updateTypeScriptConfig.mjs';
 import updateDependenciesWithoutInstalling from './updateDependenciesWithoutInstalling.mjs';
+import logUpdateDependenciesError from './logUpdateDependenciesError.mjs';
+import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 
 export class Init {
   root: string;
@@ -139,6 +141,7 @@ export class Init {
     }
 
     if (!dryRun) {
+      let depsUpdated = false;
       try {
         await updateDependenciesWithoutInstalling({
           log,
@@ -148,12 +151,15 @@ export class Init {
           channel: channel ?? 'latest',
         });
 
+        depsUpdated = true;
+
         log.info('Updated dependencies and devDependencies in package.json');
-      } catch (error) {
-        log.error(`Failed to update dependencies: ${(error as Error).message}. Please `);
+      } catch (e) {
+        const error = e as Error;
+        logUpdateDependenciesError({ log, error, useNpm, useYarn, usePnpm, useBun, dependencies, devDependencies });
       }
 
-      if (!skipInstall) {
+      if (!skipInstall && depsUpdated) {
         try {
           await installDependencies({
             log,
@@ -168,7 +174,12 @@ export class Init {
 
           log.info('Dependencies installed successfully');
         } catch (error) {
-          log.error(`Failed to install dependencies: ${(error as Error).message}`);
+          log.error(`Failed to install dependencies: ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(getPackageManager({
+            useNpm,
+            useYarn,
+            usePnpm,
+            useBun,
+          }) + ' install')}`);
         }
       }
     }

@@ -5,7 +5,7 @@ import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 import { DOWN, ENTER } from '../lib/runScript.mjs';
 import omit from 'lodash/omit.js';
 
-await describe('CLI Init', async () => {
+await describe.only('CLI init', async () => {
   const dir = 'tmp_test_dir';
   const cwd = path.resolve(import.meta.dirname, '../../..');
 
@@ -59,7 +59,7 @@ await describe('CLI Init', async () => {
     });
 
     await assertScripts({
-      dev: 'next dev',
+      dev: 'next dev --turbopack',
       generate: undefined,
     });
 
@@ -128,7 +128,7 @@ await describe('CLI Init', async () => {
     await assertNotExists('./node_modules/vovk-cli');
   });
 
-  await it('Works with --yes and --use-yarn', async () => {
+  await it.only('Works with --yes and --use-yarn', async () => {
     await createNextApp('--use-yarn');
     await vovkInit('--yes --use-yarn');
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));

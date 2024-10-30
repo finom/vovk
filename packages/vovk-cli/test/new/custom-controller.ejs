@@ -1,0 +1,21 @@
+<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
+<% var modulePascalNamePlural = pluralize(modulePascalName); %>
+<% var controllerName = modulePascalName + 'Controller'; %>
+<% var compiledName = modulePascalName + 'RPC'; %>
+<% var serviceName = modulePascalName + 'Service'; %>
+---
+dirName: <%= getModuleDirName(segmentName, moduleName) %>
+fileName: <%= controllerName + '.ts' %>
+sourceName: <%= controllerName %>
+compiledName: <%= compiledName %>
+---
+
+import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
+<% if(withService) { %>
+import <%= serviceName %> from './<%= serviceName %>';
+<% } %>
+
+@prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
+
+// hello <%= moduleName %>
+export default class <%= controllerName %> {}

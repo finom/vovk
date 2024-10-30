@@ -43,17 +43,10 @@ export interface InitOptions {
   channel?: 'latest' | 'beta' | 'dev';
 }
 
-/*
-TODO Next
-- Update NewOptions and corresponding functions
-- Compile templates to /test and write controller tests
-- Continue with templates and test them
-*/
-
 export interface NewOptions {
   dryRun?: boolean;
   template?: string;
-  dirName?: string;
+  dir?: string;
   overwrite?: boolean;
   noSegmentUpdate?: boolean;
 }
@@ -168,8 +161,8 @@ program
     'Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
   )
   .option('-O, --overwrite', 'Overwrite existing files')
-  .option('--template', 'Override config template')
-  .option('--dir-name', 'Override dirName in template file. Relative to the root of the project')
+  .option('--template <template>', 'Override config template')
+  .option('--dir <dirname>', 'Override dirName in template file. Relative to the root of the project')
   .option('--no-segment-update', 'Do not update segment files when creating a new module')
   .option('--dry-run', 'Do not write files to disk')
   .action((components: string[], options: NewOptions) => newComponents(components, options));

@@ -27,7 +27,7 @@ export default async function newModule({
   what,
   moduleNameWithOptionalSegment,
   dryRun,
-  dirName: dirNameFlag,
+  dir: dirNameFlag,
   template: templateFlag,
   noSegmentUpdate,
   overwrite,
@@ -35,7 +35,7 @@ export default async function newModule({
   what: string[];
   moduleNameWithOptionalSegment: string;
   dryRun?: boolean;
-  dirName?: string;
+  dir?: string;
   template?: string;
   noSegmentUpdate?: boolean;
   overwrite?: boolean;
@@ -57,12 +57,24 @@ export default async function newModule({
     }
   });
 
-  // check if template exists
-  for (const type of what) {
-    if (!templates[type]) {
-      throw new Error(`Template for ${type} not found in config`);
+  console.log('moduleNameWithOptionalSegment', moduleNameWithOptionalSegment);
+
+  console.log('what', what);
+
+  if(templateFlag) {
+    if(what.length > 1) {
+      throw new Error('Cannot use --template flag with multiple types');
+    }
+  } else {
+    // check if template exists
+    for (const type of what) {
+      if (!templates[type]) {
+        throw new Error(`Template for ${type} not found in config`);
+      }
     }
   }
+
+  
 
   const segments = await locateSegments(apiDir);
   const segment = segments.find((s) => s.segmentName === segmentName);

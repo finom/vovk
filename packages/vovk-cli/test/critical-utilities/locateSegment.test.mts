@@ -3,28 +3,26 @@ import { it, describe } from 'node:test';
 import locateSegments from '../../src/locateSegments.mjs';
 import path from 'node:path';
 
-const __dirname = import.meta.dirname;
-
-void describe('locateSegment', async () => {
+await describe('locateSegment', async () => {
   await it('Locates segments properly', async () => {
-    const rootDirectory = path.join(__dirname, '../test_data/segments');
+    const rootDirectory = path.join(import.meta.dirname, '../../../test_data/segments');
     const results = await locateSegments(rootDirectory);
 
     const expectedResults = [
       {
-        routeFilePath: path.join(__dirname, '../test_data/segments/[[...vovk]]/route.ts'),
+        routeFilePath: path.join(rootDirectory, '[[...vovk]]/route.ts'),
         segmentName: '',
       },
       {
-        routeFilePath: path.join(__dirname, '../test_data/segments/bar/[[...custom]]/route.ts'),
+        routeFilePath: path.join(rootDirectory, 'bar/[[...custom]]/route.ts'),
         segmentName: 'bar',
       },
       {
-        routeFilePath: path.join(__dirname, '../test_data/segments/foo/[[...vovk]]/route.ts'),
+        routeFilePath: path.join(rootDirectory, '/foo/[[...vovk]]/route.ts'),
         segmentName: 'foo',
       },
       {
-        routeFilePath: path.join(__dirname, '../test_data/segments/quux/corge/[[...vovk]]/route.ts'),
+        routeFilePath: path.join(rootDirectory, 'quux/corge/[[...vovk]]/route.ts'),
         segmentName: 'quux/corge',
       },
     ];

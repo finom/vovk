@@ -35,7 +35,7 @@ afterEach(async () => {
   await cleanupTmpDir();
 });
 
-void describe('ensureSchemaFiles', async () => {
+await describe('ensureSchemaFiles', async () => {
   await it('ensureSchemaFiles creates and removes files correctly with nested segments', async () => {
     const initialSegments = ['segment1', 'segment2', 'folder1/segment3', 'folder2/segment4'];
 
@@ -51,7 +51,8 @@ void describe('ensureSchemaFiles', async () => {
 
     // Check if index.js is created and has the correct content
     const indexPath = path.join(tmpDir, 'index.js');
-    const expectedIndexContent = `module.exports['segment1'] = require('./segment1.json');
+    const expectedIndexContent = `// auto-generated
+module.exports['segment1'] = require('./segment1.json');
 module.exports['segment2'] = require('./segment2.json');
 module.exports['folder1/segment3'] = require('./folder1/segment3.json');
 module.exports['folder2/segment4'] = require('./folder2/segment4.json');`;
@@ -81,7 +82,8 @@ module.exports['folder2/segment4'] = require('./folder2/segment4.json');`;
     }
 
     // Check if the updated index.js file is correct
-    const updatedExpectedIndexContent = `module.exports['segment2'] = require('./segment2.json');
+    const updatedExpectedIndexContent = `// auto-generated
+module.exports['segment2'] = require('./segment2.json');
 module.exports['folder1/segment3'] = require('./folder1/segment3.json');
 module.exports['segment5'] = require('./segment5.json');`;
 
