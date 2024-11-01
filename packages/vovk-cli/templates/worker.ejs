@@ -16,7 +16,7 @@ export default class <%= workerName %> {
        return 'Hello, World';
     };
 
-    static heavyComputationYield = function* () {
+    static heavyComputationGenerator = function* () {
         for(const str of ['Hello', 'World'] as const) {
             yield str;
         }

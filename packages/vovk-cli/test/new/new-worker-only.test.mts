@@ -26,7 +26,7 @@ await describe.only('CLI new worker only', async () => {
       'src/modules/user/UserWorker.ts',
       [`@worker()
         export default class UserWorker {
-        static getUsers = async (`],
+        static heavyComputation = (`],
     );
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import UserWorker from '../../../modules/user/UserWorker';`,
@@ -44,7 +44,7 @@ await describe.only('CLI new worker only', async () => {
     await assertFile('src/modules/post/PostWorker.ts', [
       `@worker()
         export default class PostWorker {
-        static getPosts = async (`,
+        static heavyComputation = (`,
     ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import PostWorker from '../../../modules/post/PostWorker';`,
