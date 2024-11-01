@@ -1,1 +1,24 @@
-// TODO
+<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
+<% var modulePascalNamePlural = pluralize(modulePascalName); %>
+<% var workerName = modulePascalName + 'Worker'; %>
+<% var compiledName = modulePascalName + 'WPC'; %>
+---
+dirName: <%= getModuleDirName(segmentName, moduleName) %>
+fileName: <%= controllerName + '.ts' %>
+sourceName: <%= workerName %>
+compiledName: <%= compiledName %>
+---
+import { worker } from 'vovk';
+
+@worker()
+export default class <%= workerName %> {
+    static heavyComputation = () => {
+       return 'Hello, World';
+    };
+
+    static heavyComputationYield = function* () {
+        for(const str of ['Hello', 'World'] as const) {
+            yield str;
+        }
+    };
+}

@@ -1,9 +1,9 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import omit from 'lodash/omit.js';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 import { DOWN, ENTER } from '../lib/runScript.mjs';
-import omit from 'lodash/omit.js';
 
 await describe('CLI init', async () => {
   const dir = 'tmp_test_dir';

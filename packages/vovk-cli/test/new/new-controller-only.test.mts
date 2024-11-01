@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 
-//  TODO new controller: null, zod, yup, dto
+// TODO new controller: zod, yup, dto
 
 await describe('CLI new controller only', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({ 
