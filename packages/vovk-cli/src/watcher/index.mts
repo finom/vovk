@@ -16,6 +16,7 @@ import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import keyBy from 'lodash/keyBy.js';
 import capitalize from 'lodash/capitalize.js';
 import { Agent, setGlobalDispatcher } from 'undici';
+import ensureClient from './ensureClient.mjs';
 
 export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;
@@ -36,7 +37,7 @@ export class VovkCLIWatcher {
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const apiDirAbsolutePath = path.join(cwd, apiDir);
     const getSegmentName = (filePath: string) => path.relative(apiDirAbsolutePath, filePath).replace(segmentReg, '');
-    log.debug(`Watching segments in ${apiDirAbsolutePath}`);
+    log.debug(`Watching segments at ${apiDirAbsolutePath}`);
     this.#segmentWatcher = chokidar
       .watch(apiDirAbsolutePath, {
         persistent: true,
@@ -108,7 +109,7 @@ export class VovkCLIWatcher {
   #watchModules = () => {
     const { config, cwd, log } = this.#projectInfo;
     const modulesDirAbsolutePath = path.join(cwd, config.modulesDir);
-    log.debug(`Watching modules in ${modulesDirAbsolutePath}`);
+    log.debug(`Watching modules at ${modulesDirAbsolutePath}`);
     const processControllerChange = debounceWithArgs(this.#processControllerChange, 500);
     this.#modulesWatcher = chokidar
       .watch(modulesDirAbsolutePath, {
@@ -184,13 +185,15 @@ export class VovkCLIWatcher {
     void handle();
   };
 
-  #watch() {
+  async #watch() {
     if (this.#isWatching) throw new Error('Already watching');
     const { log } = this.#projectInfo;
 
     log.debug(
       `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
+
+    await ensureClient(this.#projectInfo);
 
     // automatically watches segments and modules
     this.#watchConfig();

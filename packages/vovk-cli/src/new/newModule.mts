@@ -28,7 +28,7 @@ export default async function newModule({
   moduleNameWithOptionalSegment,
   dryRun,
   dir: dirNameFlag,
-  template: templateFlag,
+  templates: templatesFlag,
   noSegmentUpdate,
   overwrite,
 }: {
@@ -36,12 +36,12 @@ export default async function newModule({
   moduleNameWithOptionalSegment: string;
   dryRun?: boolean;
   dir?: string;
-  template?: string;
+  templates?: string[];
   noSegmentUpdate?: boolean;
   overwrite?: boolean;
 }) {
   const { config, log, apiDir, cwd } = await getProjectInfo();
-  const templates = config.templates as Required<typeof config.templates>;
+  let templates = config.templates as Required<typeof config.templates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
   // replace c by controller, s by service, w by worker, everything else keeps the same
   what = what.map((s) => {
@@ -57,20 +57,22 @@ export default async function newModule({
     }
   });
 
-  console.log('moduleNameWithOptionalSegment', moduleNameWithOptionalSegment);
-
-  console.log('what', what);
-
-  if (templateFlag) {
-    if (what.length > 1) {
-      throw new Error('Cannot use --template flag with multiple types');
+  if (templatesFlag) {
+    if (templatesFlag.length > what.length) {
+      throw new Error('Too many templates provided');
     }
-  } else {
-    // check if template exists
-    for (const type of what) {
-      if (!templates[type]) {
-        throw new Error(`Template for ${type} not found in config`);
-      }
+    templates = templatesFlag.reduce(
+      (acc, templatePath, index) => ({
+        ...acc,
+        [what[index]]: templatePath,
+      }),
+      templates
+    );
+  }
+
+  for (const type of what) {
+    if (!templates[type]) {
+      throw new Error(`Template for "${type}" not found`);
     }
   }
 
@@ -78,11 +80,13 @@ export default async function newModule({
   const segment = segments.find((s) => s.segmentName === segmentName);
 
   if (!segment) {
-    throw new Error(`Segment ${segmentName} not found`);
+    throw new Error(
+      `Unable to create module. Segment "${segmentName}" not found. Run "vovk new segment ${segmentName}" to create it`
+    );
   }
 
   for (const type of what) {
-    const templatePath = templateFlag ?? templates[type]!;
+    const templatePath = templates[type]!;
     const templateAbsolutePath =
       templatePath.startsWith('/') || templatePath.startsWith('.')
         ? path.resolve(cwd, templatePath)
@@ -101,8 +105,16 @@ export default async function newModule({
       segmentName,
       moduleName,
     });
+    const dirName = dirNameFlag || renderedDirName;
+    if (!dirName) {
+      throw new Error(`The template for "${type}" does not provide a dirName`);
+    }
 
-    const absoluteModuleDir = path.join(cwd, dirNameFlag || renderedDirName);
+    if (!fileName) {
+      throw new Error(`The template for "${type}" does not provide a fileName`);
+    }
+
+    const absoluteModuleDir = path.join(cwd, dirName);
     const absoluteModulePath = path.join(absoluteModuleDir, fileName);
 
     const prettiedCode = await prettify(code, absoluteModulePath);
@@ -113,15 +125,19 @@ export default async function newModule({
       } else {
         await fs.mkdir(absoluteModuleDir, { recursive: true });
         await fs.writeFile(absoluteModulePath, prettiedCode);
+        log.info(
+          `Created ${chalkHighlightThing(fileName)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
+        );
       }
     }
 
     if (type === 'controller' || type === 'worker') {
       if (!sourceName) {
-        throw new Error('sourceName is required');
+        throw new Error(`The template for "${type}" does not provide a sourceName`);
       }
+
       if (!compiledName) {
-        throw new Error('compiledName is required');
+        throw new Error('The template for "${type}" does not provide a compiledName');
       }
 
       const { routeFilePath } = segment;
@@ -129,24 +145,23 @@ export default async function newModule({
       const importPath = path.relative(path.dirname(routeFilePath), absoluteModulePath).replace(/\.(ts|tsx)$/, '');
 
       if (!noSegmentUpdate) {
-        const newSegmentCode = addClassToSegmentCode(segmentSourceCode, {
-          sourceName,
-          compiledName,
-          type,
-          importPath,
-        });
+        const newSegmentCode = await prettify(
+          addClassToSegmentCode(segmentSourceCode, {
+            sourceName,
+            compiledName,
+            type,
+            importPath,
+          }),
+          routeFilePath
+        );
         if (!dryRun) {
           await fs.writeFile(routeFilePath, newSegmentCode);
         }
       }
 
       log.info(
-        `Added ${chalkHighlightThing(sourceName)} ${type} to ${formatLoggedSegmentName(segmentName)} as ${chalkHighlightThing(compiledName)}`
+        `Added ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
       );
     }
-
-    log.info(
-      `Created ${chalkHighlightThing(fileName)} using "${chalkHighlightThing(type)}" template for ${formatLoggedSegmentName(segmentName)}`
-    );
   }
 }

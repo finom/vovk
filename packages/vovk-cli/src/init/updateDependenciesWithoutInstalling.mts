@@ -4,6 +4,7 @@ import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
 import { PackageJson } from 'type-fest';
 import path from 'path';
 import chalk from 'chalk';
+import { InitOptions } from '../types.mjs';
 
 async function updateDeps({
   packageJson,
@@ -13,7 +14,7 @@ async function updateDeps({
 }: {
   packageNames: string[];
   packageJson: PackageJson;
-  channel: 'latest' | 'beta' | 'dev';
+  channel: InitOptions['channel'];
   key: 'dependencies' | 'devDependencies';
 }) {
   return Promise.all(
@@ -22,7 +23,7 @@ async function updateDeps({
       const metadata = await getNPMPackageMetadata(packageName);
       const isVovk = packageName.startsWith('vovk');
 
-      const latestVersion = metadata['dist-tags'][isVovk ? channel : 'latest'];
+      const latestVersion = metadata['dist-tags'][isVovk ? (channel ?? 'latest') : 'latest'];
       if (!packageJson[key]) {
         packageJson[key] = {};
       }
@@ -42,7 +43,7 @@ export default async function updateDependenciesWithoutInstalling({
   dir: string;
   dependencyNames: string[];
   devDependencyNames: string[];
-  channel: 'latest' | 'beta' | 'dev';
+  channel: InitOptions['channel'];
 }) {
   const packageJsonPath = path.join(dir, 'package.json');
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8')) as PackageJson;

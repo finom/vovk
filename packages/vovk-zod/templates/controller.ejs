@@ -20,7 +20,7 @@ import <%= serviceName %> from './<%= serviceName %>';
 @prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
 export default class <%= controllerName %> {
     @get()
-    async get<%= modulePascalNamePlural %> = withZod(null, z.object({ q: z.string() }), (req) => {
+    static get<%= modulePascalNamePlural %> = withZod(null, z.object({ q: z.string() }), (req) => {
         const q = req.nextUrl.searchParams.get('q');
         <% if(withService) { %>
         return <%= serviceName %>.get<%= modulePascalNamePlural %>(q);

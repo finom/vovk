@@ -5,7 +5,7 @@ import type { VovkConfig } from '../types.mjs';
 import getTemplateFilesFromPackage from './getTemplateFilesFromPackage.mjs';
 import type getLogger from '../utils/getLogger.mjs';
 import prettify from '../utils/prettify.mjs';
-import type { InitOptions } from '../index.mjs';
+import type { InitOptions } from '../types.mjs';
 
 export default async function createConfig({
   root,

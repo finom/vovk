@@ -49,3 +49,37 @@ export type VovkModuleRenderResult = {
   compiledName?: string;
   code: string;
 };
+
+/* CLI Commands */
+export interface DevOptions {
+  clientOut?: string;
+  nextDev?: boolean;
+}
+
+export interface GenerateOptions {
+  clientOut?: string;
+}
+
+export interface InitOptions {
+  yes?: boolean;
+  logLevel: LogLevelNames;
+  useNpm?: boolean;
+  useYarn?: boolean;
+  usePnpm?: boolean;
+  useBun?: boolean;
+  skipInstall?: boolean;
+  updateTsConfig?: boolean;
+  updateScripts?: 'implicit' | 'explicit';
+  validationLibrary?: string | null;
+  validateOnClient?: boolean;
+  dryRun?: boolean;
+  channel?: 'latest' | 'beta' | 'draft';
+}
+
+export interface NewOptions {
+  dryRun?: boolean;
+  templates?: string[];
+  dir?: string;
+  overwrite?: boolean;
+  noSegmentUpdate?: boolean;
+}

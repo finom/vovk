@@ -61,7 +61,7 @@ import { confirm, select } from '@inquirer/prompts';
 import path from 'path';
 import fs from 'fs/promises';
 import getConfigPaths from '../getProjectInfo/getConfigAbsolutePaths.mjs';
-import type { InitOptions } from '../index.mjs';
+import type { InitOptions } from '../types.mjs';
 import chalk from 'chalk';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import installDependencies, { getPackageManager } from './installDependencies.mjs';

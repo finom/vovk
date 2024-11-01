@@ -1,10 +1,10 @@
-import type { NewOptions } from '../index.mjs';
+import type { NewOptions } from '../types.mjs';
 import newModule from './newModule.mjs';
 import newSegment from './newSegment.mjs';
 
 export default async function newComponents(
   components: string[],
-  { dryRun, dir, template, overwrite, noSegmentUpdate }: NewOptions
+  { dryRun, dir, templates, overwrite, noSegmentUpdate }: NewOptions
 ) {
   if (components[0] === 'segment' || components[0] === 'segments') {
     // vovk new segment [segmentName]
@@ -35,7 +35,7 @@ export default async function newComponents(
       what,
       moduleNameWithOptionalSegment,
       dir,
-      template,
+      templates,
       overwrite,
       noSegmentUpdate,
       dryRun,

@@ -9,47 +9,12 @@ import generateClient from './generateClient.mjs';
 import locateSegments from './locateSegments.mjs';
 import { VovkCLIWatcher } from './watcher/index.mjs';
 import { Init } from './init/index.mjs';
-import type { LogLevelNames } from 'loglevel';
-import type { VovkConfig, VovkEnv } from './types.mjs';
+import type { DevOptions, GenerateOptions, InitOptions, NewOptions, VovkConfig, VovkEnv } from './types.mjs';
 import type { VovkSchema } from 'vovk';
 import newComponents from './new/index.mjs';
 import 'dotenv/config';
 
 export type { VovkConfig, VovkEnv };
-
-// TODO move to types
-interface DevOptions {
-  clientOut?: string;
-  nextDev?: boolean;
-}
-
-interface GenerateOptions {
-  clientOut?: string;
-}
-
-export interface InitOptions {
-  yes?: boolean;
-  logLevel: LogLevelNames;
-  useNpm?: boolean;
-  useYarn?: boolean;
-  usePnpm?: boolean;
-  useBun?: boolean;
-  skipInstall?: boolean;
-  updateTsConfig?: boolean;
-  updateScripts?: 'implicit' | 'explicit';
-  validationLibrary?: string | null;
-  validateOnClient?: boolean;
-  dryRun?: boolean;
-  channel?: 'latest' | 'beta' | 'dev';
-}
-
-export interface NewOptions {
-  dryRun?: boolean;
-  template?: string;
-  dir?: string;
-  overwrite?: boolean;
-  noSegmentUpdate?: boolean;
-}
 
 const program = new Command();
 
@@ -71,6 +36,7 @@ program
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
+          // eslint-disable-next-line no-console
           console.warn(`🐺 Next.js Port ${failedPort} is in use, trying ${tryingPort} instead.`)
         ).catch(() => {
           throw new Error(`🐺 ❌ Failed to find available Next port after ${portAttempts} attempts`);
@@ -79,6 +45,8 @@ program
     if (!PORT) {
       throw new Error('🐺 ❌ PORT env variable is required');
     }
+
+    console.log(`TODO:`, command.args);
 
     if (options.nextDev) {
       const { result } = concurrently(
@@ -133,7 +101,7 @@ export function initProgram(p: typeof program, command: string) {
   return p
     .command(command + '[prefix]')
     .description('Initialize Vovk project')
-    .option('-Y, --yes', 'Skip all prompts and use default values')
+    .option('-y, --yes', 'Skip all prompts and use default values')
     .option('--log-level <level>', 'Set log level', 'info')
     .option('--use-npm', 'Use npm as package manager')
     .option('--use-yarn', 'Use yarn as package manager')
@@ -160,8 +128,11 @@ program
   .description(
     'Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
   )
-  .option('-O, --overwrite', 'Overwrite existing files')
-  .option('--template <template>', 'Override config template')
+  .option('-o, --overwrite', 'Overwrite existing files')
+  .option(
+    '--template, --templates <templates...>',
+    'Override config template. Accepts an array of strings that correspond the order of the components'
+  )
   .option('--dir <dirname>', 'Override dirName in template file. Relative to the root of the project')
   .option('--no-segment-update', 'Do not update segment files when creating a new module')
   .option('--dry-run', 'Do not write files to disk')

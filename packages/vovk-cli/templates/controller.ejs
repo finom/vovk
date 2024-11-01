@@ -23,7 +23,7 @@ export default class <%= controllerName %> {
         <% if(withService) { %>
         return <%= serviceName %>.get<%= modulePascalNamePlural %>(q);
         <% } else { %>
-        return { q };
+        return [{ q }];
         <% } %>
     }
 
@@ -33,7 +33,7 @@ export default class <%= controllerName %> {
         const body = await req.json();
         const q = req.nextUrl.searchParams.get('q');
         <% if(withService) { %>
-        return MyThingService.update<%= modulePascalName %>(id, q, body);
+        return <%= serviceName %>.update<%= modulePascalName %>(id, q, body);
         <% } else { %>
         return { id, body, q };
         <% } %>

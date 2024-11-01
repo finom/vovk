@@ -12,13 +12,13 @@ import type <%= controllerName %> from './<%= controllerName %>';
 
 export default class <%= serviceName %> {
   static get<%= modulePascalNamePlural %> = (q: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>['q']) => {
-    return [];
+    return [{ q }];
   };
 
   static update<%= modulePascalName %> = (
     id: string,
-    q: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalName %>>['q'],
-    body: VovkControllerBody<typeof <%= controllerName %>.get<%= modulePascalName %>>
+    q: VovkControllerQuery<typeof <%= controllerName %>.update<%= modulePascalName %>>['q'],
+    body: VovkControllerBody<typeof <%= controllerName %>.update<%= modulePascalName %>>
   ) => {
     return { id, q, body };
   };

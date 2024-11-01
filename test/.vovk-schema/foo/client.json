@@ -142,7 +142,9 @@
                   "const": "body"
                 }
               },
-              "required": ["hello"],
+              "required": [
+                "hello"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -154,7 +156,9 @@
                   "const": "query"
                 }
               },
-              "required": ["hey"],
+              "required": [
+                "hey"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -172,7 +176,9 @@
                   "const": "body"
                 }
               },
-              "required": ["hello"],
+              "required": [
+                "hello"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -190,7 +196,9 @@
                   "const": "body"
                 }
               },
-              "required": ["hello"],
+              "required": [
+                "hello"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -208,7 +216,9 @@
                   "const": "query"
                 }
               },
-              "required": ["hey"],
+              "required": [
+                "hey"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -231,10 +241,14 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": ["body"]
+                  "enum": [
+                    "body"
+                  ]
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             },
             "query": {
               "type": "object",
@@ -242,10 +256,14 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": ["query"]
+                  "enum": [
+                    "query"
+                  ]
                 }
               },
-              "required": ["hey"]
+              "required": [
+                "hey"
+              ]
             }
           }
         },
@@ -259,10 +277,14 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": ["body"]
+                  "enum": [
+                    "body"
+                  ]
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             }
           }
         },
@@ -276,10 +298,14 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": ["body"]
+                  "enum": [
+                    "body"
+                  ]
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             }
           }
         },
@@ -293,10 +319,14 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": ["query"]
+                  "enum": [
+                    "query"
+                  ]
                 }
               },
-              "required": ["hey"]
+              "required": [
+                "hey"
+              ]
             }
           }
         }

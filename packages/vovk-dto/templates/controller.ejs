@@ -1,1 +1,13 @@
+<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
+<% var modulePascalNamePlural = pluralize(modulePascalName); %>
+<% var controllerName = modulePascalName + 'Controller'; %>
+<% var compiledName = modulePascalName + 'RPC'; %>
+<% var serviceName = modulePascalName + 'Service'; %>
+---
+dirName: <%= getModuleDirName(segmentName, moduleName) %>
+fileName: <%= controllerName + '.ts' %>
+sourceName: <%= controllerName %>
+compiledName: <%= compiledName %>
+---
+
 // TODO

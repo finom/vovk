@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { InitOptions } from '../index.mjs';
+import type { InitOptions } from '../types.mjs';
 import getLogger from '../utils/getLogger.mjs';
 
 type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
