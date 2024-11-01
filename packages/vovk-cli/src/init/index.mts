@@ -157,10 +157,12 @@ export class Init {
         logUpdateDependenciesError({ log, error, useNpm, useYarn, usePnpm, useBun, dependencies, devDependencies });
       }
 
-      if(depsUpdated) {
+      if (depsUpdated) {
         const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun });
         if (skipInstall) {
-          log.info(`Installation skipped. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`);
+          log.info(
+            `Installation skipped. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`
+          );
         } else {
           try {
             await installDependencies({
@@ -176,7 +178,9 @@ export class Init {
 
             log.info('Dependencies installed successfully');
           } catch (error) {
-            log.warn(`Failed to install dependencies: ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`);
+            log.warn(
+              `Failed to install dependencies: ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`
+            );
           }
         }
       }

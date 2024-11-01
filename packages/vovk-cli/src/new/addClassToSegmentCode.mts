@@ -16,8 +16,8 @@ export default function addClassToSegmentCode(
 ): string {
   const project = new Project({
     manipulationSettings: {
-      quoteKind: QuoteKind.Single
-    }
+      quoteKind: QuoteKind.Single,
+    },
   });
   const sourceFile = project.createSourceFile('route.ts', segmentSourceCode, { overwrite: true });
 

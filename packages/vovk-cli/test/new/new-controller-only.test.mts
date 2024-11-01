@@ -5,9 +5,9 @@ import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 // TODO new controller: zod, yup, dto
 
 await describe('CLI new controller only', async () => {
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({ 
+  const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
-    dir: 'tmp_test_dir'
+    dir: 'tmp_test_dir',
   });
 
   await it('New controller without validation library', async () => {
@@ -24,14 +24,13 @@ await describe('CLI new controller only', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller user');
 
-    await assertFile(
-      'src/modules/user/UserController.ts',
-      [`export default class UserController {
+    await assertFile('src/modules/user/UserController.ts', [
+      `export default class UserController {
         @get()
         static getUsers = async (`,
       `static createUser = `,
-      `static updateUser = `],
-    );
+      `static updateUser = `,
+    ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import UserController from '../../../modules/user/UserController';`,
       `const controllers = {

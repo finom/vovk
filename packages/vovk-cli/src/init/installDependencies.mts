@@ -4,7 +4,9 @@ import getLogger from '../utils/getLogger.mjs';
 
 type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
 
-export function getPackageManager(options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'>): PackageManager {
+export function getPackageManager(
+  options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'>
+): PackageManager {
   if (options.useNpm) return 'npm';
   if (options.useYarn) return 'yarn';
   if (options.usePnpm) return 'pnpm';

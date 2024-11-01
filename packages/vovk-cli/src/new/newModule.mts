@@ -61,8 +61,8 @@ export default async function newModule({
 
   console.log('what', what);
 
-  if(templateFlag) {
-    if(what.length > 1) {
+  if (templateFlag) {
+    if (what.length > 1) {
       throw new Error('Cannot use --template flag with multiple types');
     }
   } else {
@@ -73,8 +73,6 @@ export default async function newModule({
       }
     }
   }
-
-  
 
   const segments = await locateSegments(apiDir);
   const segment = segments.find((s) => s.segmentName === segmentName);

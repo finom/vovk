@@ -4,9 +4,9 @@ import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 
 // TODO rootSegmentModulesDirName
 await describe('CLI new controller and flags', async () => {
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({ 
+  const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
-    dir: 'tmp_test_dir'
+    dir: 'tmp_test_dir',
   });
 
   await it('New controller with --template', async () => {
@@ -55,14 +55,13 @@ await describe('CLI new controller and flags', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller veryComplexEntity --dir=custom-dir');
 
-    await assertFile(
-      'custom-dir/VeryComplexEntityController.ts',
-      [`export default class VeryComplexEntityController {
+    await assertFile('custom-dir/VeryComplexEntityController.ts', [
+      `export default class VeryComplexEntityController {
         @get()
         static getVeryComplexEntities = async (`,
       `static createVeryComplexEntity = `,
-      `static updateVeryComplexEntity = `],
-    );
+      `static updateVeryComplexEntity = `,
+    ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import VeryComplexEntityController from '../../../../custom-dir/VeryComplexEntityController';`,
       `const controllers = {
@@ -90,14 +89,13 @@ await describe('CLI new controller and flags', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller coolRedChair --no-segment-update');
 
-    await assertFile(
-      'src/modules/coolRedChair/CoolRedChairController.ts',
-      [`export default class CoolRedChairController {
+    await assertFile('src/modules/coolRedChair/CoolRedChairController.ts', [
+      `export default class CoolRedChairController {
         @get()
         static getCoolRedChairs = async (`,
       `static createCoolRedChair = `,
-      `static updateCoolRedChair = `],
-    );
+      `static updateCoolRedChair = `,
+    ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import CoolRedChairController from '../../../modules/coolRedChair/CoolRedChairController';`,
       `const controllers = {

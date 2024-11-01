@@ -3,9 +3,9 @@ import path from 'node:path';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 
 await describe.only('CLI new worker only', async () => {
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({ 
+  const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
-    dir: 'tmp_test_dir'
+    dir: 'tmp_test_dir',
   });
 
   await it.only('New worker', async () => {
@@ -22,12 +22,11 @@ await describe.only('CLI new worker only', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new worker user');
 
-    await assertFile(
-      'src/modules/user/UserWorker.ts',
-      [`@worker()
+    await assertFile('src/modules/user/UserWorker.ts', [
+      `@worker()
         export default class UserWorker {
-        static heavyComputation = (`],
-    );
+        static heavyComputation = (`,
+    ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import UserWorker from '../../../modules/user/UserWorker';`,
       `const workers = {
