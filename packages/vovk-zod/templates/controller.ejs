@@ -1,35 +1,36 @@
 <% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
 <% var modulePascalNamePlural = pluralize(modulePascalName); %>
-<% var ControllerName = modulePascalName + 'Controller'; %>
-<% var RPCName = modulePascalName + 'RPC'; %>
-<% var ServiceName = modulePascalName + 'Service'; %>
+<% var controllerName = modulePascalName + 'Controller'; %>
+<% var compiledName = modulePascalName + 'RPC'; %>
+<% var serviceName = modulePascalName + 'Service'; %>
 ---
-filePath: <%= getModulePath(segmentName, moduleName, ControllerName + '.ts') %> # Relative to "modules" dir
-sourceName: <%= ControllerName %> # Used to define import declaration in a segment route file for the given class
-compiledName: <%= RPCName %> # Used to define a compiled object name
+dirName: <%= getModuleDirName(segmentName, moduleName) %>
+fileName: <%= controllerName + '.ts' %>
+sourceName: <%= controllerName %>
+compiledName: <%= compiledName %>
 ---
 
 import { prefix, get, put, post, del } from 'vovk';
-<% if(withService) { %>
-import <%= ServiceName %> from './<%= ServiceName %>';
-<% } %>
 import { withZod } from 'vovk-zod';
 import { z } from 'zod';
+<% if(withService) { %>
+import <%= serviceName %> from './<%= serviceName %>';
+<% } %>
 
 @prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
-export default class <%= ControllerName %> {
+export default class <%= controllerName %> {
     @get()
     async get<%= modulePascalNamePlural %> = withZod(null, z.object({ q: z.string() }), (req) => {
         const q = req.nextUrl.searchParams.get('q');
         <% if(withService) { %>
-        return <%= ServiceName %>.getMyThingsExample(q);
+        return <%= serviceName %>.get<%= modulePascalNamePlural %>(q);
         <% } else { %>
         return { q };
         <% } %>
     });
 
     @put(':id')
-    static update<%= modulePascalNamePlural %> = withZod(
+    static update<%= modulePascalName %> = withZod(
         z.object({
           foo: z.union([z.literal('bar'), z.literal('baz')]),
         }),
@@ -47,12 +48,12 @@ export default class <%= ControllerName %> {
     );
 
     @post()
-    static create<%= modulePascalNamePlural %> = () => {
+    static create<%= modulePascalName %> = () => {
         // ...
     };
 
     @del(':id')
-    static delete<%= modulePascalNamePlural %> = () => {
+    static delete<%= modulePascalName %> = () => {
         // ...
     };
 }

@@ -10,7 +10,7 @@ await describe('CLI new controller only', async () => {
     dir: 'tmp_test_dir'
   });
 
-  await it('New controller (user and post)', async () => {
+  await it('New controller without validation library', async () => {
     await createNextApp();
     await vovkInit('--yes --validation-library=none');
     await runAtProjectDir('../dist/index.mjs new segment');
