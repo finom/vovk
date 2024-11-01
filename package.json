@@ -6,7 +6,6 @@
     "packages/*"
   ],
   "type": "module",
-  "packageManager": "npm@10.9.0",
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "scripts": {
     "ncu": "turbo run ncu && npm --prefix test ncu && npm-check-updates -u && npm i",

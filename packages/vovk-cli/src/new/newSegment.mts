@@ -49,6 +49,6 @@ ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
   }
 
   log.info(
-    `${formatLoggedSegmentName(segmentName, { upperFirst: true })} created at ${absoluteSegmentRoutePath}. Run ${chalkHighlightThing(`vovk new controller ${segmentName}/someName`)} to create a controller or modify the segment file manually`
+    `${formatLoggedSegmentName(segmentName, { upperFirst: true })} created at ${absoluteSegmentRoutePath}. Run ${chalkHighlightThing(`vovk new controller ${[segmentName, 'someName'].filter(Boolean).join('/')}`)} to create a controller.`
   );
 }

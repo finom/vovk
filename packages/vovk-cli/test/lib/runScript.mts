@@ -23,6 +23,7 @@ export function runScript(
     cwd: process.cwd(),
   }
 ) {
+  // eslint-disable-next-line no-console
   console.info('Running script:', commandWithArgs);
   const { env = process.env, inputs = [] } = options;
   const [command, ...args] = commandWithArgs.split(/\s+/);

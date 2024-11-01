@@ -152,34 +152,32 @@ export class Init {
         });
 
         depsUpdated = true;
-
-        log.info('Updated dependencies and devDependencies in package.json');
       } catch (e) {
         const error = e as Error;
         logUpdateDependenciesError({ log, error, useNpm, useYarn, usePnpm, useBun, dependencies, devDependencies });
       }
 
-      if (!skipInstall && depsUpdated) {
-        try {
-          await installDependencies({
-            log,
-            cwd: root,
-            options: {
-              useNpm,
-              useYarn,
-              usePnpm,
-              useBun,
-            },
-          });
+      if(depsUpdated) {
+        const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun });
+        if (skipInstall) {
+          log.info(`Installation skipped. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`);
+        } else {
+          try {
+            await installDependencies({
+              log,
+              cwd: root,
+              options: {
+                useNpm,
+                useYarn,
+                usePnpm,
+                useBun,
+              },
+            });
 
-          log.info('Dependencies installed successfully');
-        } catch (error) {
-          log.error(`Failed to install dependencies: ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(getPackageManager({
-            useNpm,
-            useYarn,
-            usePnpm,
-            useBun,
-          }) + ' install')}`);
+            log.info('Dependencies installed successfully');
+          } catch (error) {
+            log.warn(`Failed to install dependencies: ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`);
+          }
         }
       }
     }

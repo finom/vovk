@@ -67,7 +67,7 @@ export default function logUpdateDependenciesError(
     const installCmd = installCommands.join(' && ');
   
     // Log the error with the appropriate manual installation instructions
-    log.error(
+    log.warn(
       `Failed to update dependencies: ${error.message}. Please, install them manually with ${chalkHighlightThing(installCmd)}`
     );
   }
