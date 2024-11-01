@@ -1,17 +1,17 @@
 #!/usr/bin/env node
-import path from 'path';
+import path from 'node:path';
+import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
-import { readFileSync } from 'fs';
 import concurrently from 'concurrently';
+import type { VovkSchema } from 'vovk';
 import getAvailablePort from './utils/getAvailablePort.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
 import generateClient from './generateClient.mjs';
 import locateSegments from './locateSegments.mjs';
 import { VovkCLIWatcher } from './watcher/index.mjs';
 import { Init } from './init/index.mjs';
-import type { DevOptions, GenerateOptions, InitOptions, NewOptions, VovkConfig, VovkEnv } from './types.mjs';
-import type { VovkSchema } from 'vovk';
 import newComponents from './new/index.mjs';
+import type { DevOptions, GenerateOptions, InitOptions, NewOptions, VovkConfig, VovkEnv } from './types.mjs';
 import 'dotenv/config';
 
 export type { VovkConfig, VovkEnv };

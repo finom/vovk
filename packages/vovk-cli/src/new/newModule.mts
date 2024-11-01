@@ -1,11 +1,11 @@
-import path from 'path';
-import fs from 'fs/promises';
-import getProjectInfo from '../getProjectInfo/index.mjs';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import render from './render.mjs';
+import addClassToSegmentCode from './addClassToSegmentCode.mjs';
+import getProjectInfo from '../getProjectInfo/index.mjs';
+import locateSegments from '../locateSegments.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import locateSegments from '../locateSegments.mjs';
-import addClassToSegmentCode from './addClassToSegmentCode.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import prettify from '../utils/prettify.mjs';
 

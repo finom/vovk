@@ -1,5 +1,5 @@
-import chalkHighlightThing from './chalkHighlightThing.mjs';
 import upperFirstLodash from 'lodash/upperFirst.js';
+import chalkHighlightThing from './chalkHighlightThing.mjs';
 
 export default function formatLoggedSegmentName(
   segmentName: string,

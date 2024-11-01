@@ -1,5 +1,5 @@
-import { promises as fs } from 'fs';
-import * as path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import getFileSystemEntryType from './utils/getFileSystemEntryType.mjs';
 
 export type Segment = {

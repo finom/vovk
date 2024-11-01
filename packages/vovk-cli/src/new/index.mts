@@ -1,6 +1,6 @@
-import type { NewOptions } from '../types.mjs';
 import newModule from './newModule.mjs';
 import newSegment from './newSegment.mjs';
+import type { NewOptions } from '../types.mjs';
 
 export default async function newComponents(
   components: string[],

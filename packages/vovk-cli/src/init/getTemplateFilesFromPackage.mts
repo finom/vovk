@@ -1,6 +1,6 @@
-import { createGunzip, Gunzip } from 'zlib';
+import { Readable } from 'node:stream';
+import { createGunzip, Gunzip } from 'node:zlib';
 import tar, { Headers } from 'tar-stream';
-import { Readable } from 'stream';
 import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
 
 /**

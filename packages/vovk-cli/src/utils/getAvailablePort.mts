@@ -1,5 +1,6 @@
-import net from 'net';
+import net from 'node:net';
 
+// TODO check comments
 /**
  * Checks if a port is available.
  * @param {number} port - The port to check.

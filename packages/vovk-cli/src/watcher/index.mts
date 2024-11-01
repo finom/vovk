@@ -1,22 +1,22 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import type { VovkSchema } from 'vovk';
 import * as chokidar from 'chokidar';
-import fs from 'fs/promises';
-import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
-import path from 'path';
+import { Agent, setGlobalDispatcher } from 'undici';
+import keyBy from 'lodash/keyBy.js';
+import capitalize from 'lodash/capitalize.js';
+import debounce from 'lodash/debounce.js';
+import isEmpty from 'lodash/isEmpty.js';
 import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
 import writeOneSchemaFile from './writeOneSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
+import ensureClient from './ensureClient.mjs';
+import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
 import generateClient from '../generateClient.mjs';
 import locateSegments, { type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
-import debounce from 'lodash/debounce.js';
-import isEmpty from 'lodash/isEmpty.js';
-import { VovkEnv } from '../types.mjs';
-import { VovkSchema } from 'vovk';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import keyBy from 'lodash/keyBy.js';
-import capitalize from 'lodash/capitalize.js';
-import { Agent, setGlobalDispatcher } from 'undici';
-import ensureClient from './ensureClient.mjs';
+import type { VovkEnv } from '../types.mjs';
 
 export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;

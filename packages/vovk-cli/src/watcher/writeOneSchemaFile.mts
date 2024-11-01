@@ -1,7 +1,7 @@
-import path from 'path';
-import fs from 'fs/promises';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import type { VovkSchema } from 'vovk';
-import diffSchema, { DiffResult } from './diffSchema.mjs';
+import diffSchema, { type DiffResult } from './diffSchema.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
 export const ROOT_SEGMENT_SCHEMA_NAME = '_root';

@@ -1,11 +1,10 @@
-import path from 'path';
-import fs from 'fs/promises';
-import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
-import type { VovkConfig } from '../types.mjs';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import getTemplateFilesFromPackage from './getTemplateFilesFromPackage.mjs';
 import type getLogger from '../utils/getLogger.mjs';
 import prettify from '../utils/prettify.mjs';
-import type { InitOptions } from '../types.mjs';
+import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
+import type { VovkConfig, InitOptions } from '../types.mjs';
 
 export default async function createConfig({
   root,

@@ -1,5 +1,5 @@
-import path from 'path';
-import fs from 'fs/promises';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import getProjectInfo from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';

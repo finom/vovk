@@ -1,5 +1,5 @@
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
-import getLogger from '../utils/getLogger.mjs';
+import type getLogger from '../utils/getLogger.mjs';
 import { getPackageManager } from './installDependencies.mjs';
 
 export default function logUpdateDependenciesError({

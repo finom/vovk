@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import getConfig from './getConfig.mjs';
 import getLogger from '../utils/getLogger.mjs';
 

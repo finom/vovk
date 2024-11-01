@@ -1,5 +1,5 @@
-import path from 'path';
-import fs from 'fs/promises';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import * as jsonc from 'jsonc-parser';
 import prettify from '../utils/prettify.mjs';
 

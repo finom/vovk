@@ -1,4 +1,4 @@
-import { LogLevelNames } from 'loglevel';
+import type { LogLevelNames } from 'loglevel';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type KnownAny = any;

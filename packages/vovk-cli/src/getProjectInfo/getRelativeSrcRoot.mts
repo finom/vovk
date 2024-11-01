@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 
 export default async function getRelativeSrcRoot({ cwd }: { cwd: string }) {

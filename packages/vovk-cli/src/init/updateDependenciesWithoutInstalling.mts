@@ -1,9 +1,9 @@
-import fs from 'fs/promises';
-import getLogger from '../utils/getLogger.mjs';
-import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { PackageJson } from 'type-fest';
-import path from 'path';
 import chalk from 'chalk';
+import type getLogger from '../utils/getLogger.mjs';
+import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
 import { InitOptions } from '../types.mjs';
 
 async function updateDeps({
