@@ -9,7 +9,7 @@
     "packages/**/*.ts",
     "vovk.config.js",
     "next.config.js",
-    "postcss.config.js"
+    "postcss.config.js",
   ],
   "compilerOptions": {
     "noEmit": true,

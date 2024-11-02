@@ -10,4 +10,42 @@ sourceName: <%= controllerName %>
 compiledName: <%= compiledName %>
 ---
 
-// TODO
+import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
+<% if(withService) { %>
+import <%= serviceName %> from './<%= serviceName %>';
+<% } %>
+
+@prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
+export default class <%= controllerName %> {
+    @get()
+    static get<%= modulePascalNamePlural %> = async (req: VovkRequest<null, { search: string }>) => {
+        const search = req.nextUrl.searchParams.get('search');
+        <% if(withService) { %>
+        return <%= serviceName %>.get<%= modulePascalNamePlural %>(search);
+        <% } else { %>
+        return { results: [], search };
+        <% } %>
+    }
+
+    @put(':id')
+    static update<%= modulePascalName %> = async (req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>, params: { id: string }) => {
+        const { id } = params;
+        const body = await req.json();
+        const q = req.nextUrl.searchParams.get('q');
+        <% if(withService) { %>
+        return <%= serviceName %>.update<%= modulePascalName %>(id, q, body);
+        <% } else { %>
+        return { id, body, q };
+        <% } %>
+    };
+
+    @post()
+    static create<%= modulePascalName %> = () => {
+        // ...
+    };
+
+    @del(':id')
+    static delete<%= modulePascalName %> = () => {
+        // ...
+    };
+}

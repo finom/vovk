@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -P tsconfig.build.json",
+    "tsc": "tsc --noEmit",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u"
   },

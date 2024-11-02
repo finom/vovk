@@ -3,9 +3,11 @@ import type DtoControllerAndServiceEntityController from './DtoControllerAndServ
 
 export default class DtoControllerAndServiceEntityService {
   static getDtoControllerAndServiceEntities = (
-    q: VovkControllerQuery<typeof DtoControllerAndServiceEntityController.getDtoControllerAndServiceEntities>['q']
+    search: VovkControllerQuery<
+      typeof DtoControllerAndServiceEntityController.getDtoControllerAndServiceEntities
+    >['search']
   ) => {
-    return [{ q }];
+    return { results: [], search };
   };
 
   static updateDtoControllerAndServiceEntity = (

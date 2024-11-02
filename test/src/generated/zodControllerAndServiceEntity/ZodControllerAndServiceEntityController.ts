@@ -7,10 +7,10 @@ import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntit
 @prefix('zod-controller-and-service-entity')
 export default class ZodControllerAndServiceEntityController {
   @get()
-  static getZodControllerAndServiceEntities = withZod(null, z.object({ q: z.string() }), (req) => {
-    const q = req.nextUrl.searchParams.get('q');
+  static getZodControllerAndServiceEntities = withZod(null, z.object({ search: z.string() }), (req) => {
+    const search = req.nextUrl.searchParams.get('search');
 
-    return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities(q);
+    return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities(search);
   });
 
   @put(':id')
@@ -24,7 +24,7 @@ export default class ZodControllerAndServiceEntityController {
       const body = await req.json();
       const q = req.nextUrl.searchParams.get('q');
 
-      return MyThingService.updateMyThingExample(id, q, body);
+      return ZodControllerAndServiceEntityService.updateZodControllerAndServiceEntity(id, q, body);
     }
   );
 

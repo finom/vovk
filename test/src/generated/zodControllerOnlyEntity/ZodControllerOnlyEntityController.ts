@@ -5,10 +5,10 @@ import { z } from 'zod';
 @prefix('zod-controller-only-entity')
 export default class ZodControllerOnlyEntityController {
   @get()
-  static getZodControllerOnlyEntities = withZod(null, z.object({ q: z.string() }), (req) => {
-    const q = req.nextUrl.searchParams.get('q');
+  static getZodControllerOnlyEntities = withZod(null, z.object({ search: z.string() }), (req) => {
+    const search = req.nextUrl.searchParams.get('search');
 
-    return { q };
+    return { results: [], search };
   });
 
   @put(':id')

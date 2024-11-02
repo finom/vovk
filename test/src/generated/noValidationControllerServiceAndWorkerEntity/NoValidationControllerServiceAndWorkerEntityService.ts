@@ -3,11 +3,11 @@ import type NoValidationControllerServiceAndWorkerEntityController from './NoVal
 
 export default class NoValidationControllerServiceAndWorkerEntityService {
   static getNoValidationControllerServiceAndWorkerEntities = (
-    q: VovkControllerQuery<
+    search: VovkControllerQuery<
       typeof NoValidationControllerServiceAndWorkerEntityController.getNoValidationControllerServiceAndWorkerEntities
-    >['q']
+    >['search']
   ) => {
-    return [{ q }];
+    return { results: [], search };
   };
 
   static updateNoValidationControllerServiceAndWorkerEntity = (

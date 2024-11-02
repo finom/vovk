@@ -11,8 +11,8 @@ import type { VovkControllerBody, VovkControllerQuery } from 'vovk';
 import type <%= controllerName %> from './<%= controllerName %>';
 
 export default class <%= serviceName %> {
-  static get<%= modulePascalNamePlural %> = (q: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>['q']) => {
-    return [{ q }];
+  static get<%= modulePascalNamePlural %> = (search: VovkControllerQuery<typeof <%= controllerName %>.get<%= modulePascalNamePlural %>>['search']) => {
+    return { results: [], search };
   };
 
   static update<%= modulePascalName %> = (

@@ -3,9 +3,11 @@ import type ZodControllerAndServiceEntityController from './ZodControllerAndServ
 
 export default class ZodControllerAndServiceEntityService {
   static getZodControllerAndServiceEntities = (
-    q: VovkControllerQuery<typeof ZodControllerAndServiceEntityController.getZodControllerAndServiceEntities>['q']
+    search: VovkControllerQuery<
+      typeof ZodControllerAndServiceEntityController.getZodControllerAndServiceEntities
+    >['search']
   ) => {
-    return [{ q }];
+    return { results: [], search };
   };
 
   static updateZodControllerAndServiceEntity = (

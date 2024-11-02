@@ -10,4 +10,52 @@ sourceName: <%= controllerName %>
 compiledName: <%= compiledName %>
 ---
 
-// TODO
+import { prefix, get, put, post, del } from 'vovk';
+import { withYup } from 'vovk-yup';
+import * as yup from 'yup';
+<% if(withService) { %>
+import <%= serviceName %> from './<%= serviceName %>';
+<% } %>
+
+// TODO: Implement with DTO
+
+@prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
+export default class <%= controllerName %> {
+    @get()
+    static get<%= modulePascalNamePlural %> = withYup(null, yup.object({ search: yup.string() }), (req) => {
+        const search = req.nextUrl.searchParams.get('search');
+        <% if(withService) { %>
+        return <%= serviceName %>.get<%= modulePascalNamePlural %>(search);
+        <% } else { %>
+        return { results: [], search };
+        <% } %>
+    });
+
+    @put(':id')
+    static update<%= modulePascalName %> = withYup(
+        yup.object({
+            foo: yup.mixed().oneOf(['bar', 'baz']).required(),
+        }),
+        yup.object({ q: yup.string() }),
+        async (req, params: { id: string }) => {
+            const { id } = params;
+            const body = await req.json();
+            const q = req.nextUrl.searchParams.get('q');
+            <% if(withService) { %>
+            return <%= serviceName %>.update<%= modulePascalName %>(id, q, body);
+            <% } else { %>
+            return { id, body, q };
+            <% } %>
+        }
+    );
+
+    @post()
+    static create<%= modulePascalName %> = () => {
+        // ...
+    };
+
+    @del(':id')
+    static delete<%= modulePascalName %> = () => {
+        // ...
+    };
+}

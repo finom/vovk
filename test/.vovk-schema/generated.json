@@ -60,12 +60,12 @@
             "query": {
               "type": "object",
               "properties": {
-                "q": {
+                "search": {
                   "type": "string"
                 }
               },
               "required": [
-                "q"
+                "search"
               ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
@@ -130,12 +130,12 @@
             "query": {
               "type": "object",
               "properties": {
-                "q": {
+                "search": {
                   "type": "string"
                 }
               },
               "required": [
-                "q"
+                "search"
               ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
@@ -190,23 +190,175 @@
     },
     "YupControllerOnlyEntityRPC": {
       "_controllerName": "YupControllerOnlyEntityRPC",
-      "_prefix": "",
-      "_handlers": {}
+      "_originalControllerName": "YupControllerOnlyEntityController",
+      "_prefix": "yup-controller-only-entity",
+      "_handlers": {
+        "getYupControllerOnlyEntities": {
+          "path": "",
+          "httpMethod": "GET",
+          "clientValidators": {
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "updateYupControllerOnlyEntity": {
+          "path": ":id",
+          "httpMethod": "PUT",
+          "clientValidators": {
+            "body": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "foo": {
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
+                }
+              },
+              "required": [
+                "foo"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "q": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "createYupControllerOnlyEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteYupControllerOnlyEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
     },
     "YupControllerAndServiceEntityRPC": {
       "_controllerName": "YupControllerAndServiceEntityRPC",
-      "_prefix": "",
-      "_handlers": {}
+      "_originalControllerName": "YupControllerAndServiceEntityController",
+      "_prefix": "yup-controller-and-service-entity",
+      "_handlers": {
+        "getYupControllerAndServiceEntities": {
+          "path": "",
+          "httpMethod": "GET",
+          "clientValidators": {
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "updateYupControllerAndServiceEntity": {
+          "path": ":id",
+          "httpMethod": "PUT",
+          "clientValidators": {
+            "body": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "foo": {
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
+                }
+              },
+              "required": [
+                "foo"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "q": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "createYupControllerAndServiceEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteYupControllerAndServiceEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
     },
     "DtoControllerOnlyEntityRPC": {
       "_controllerName": "DtoControllerOnlyEntityRPC",
-      "_prefix": "",
-      "_handlers": {}
+      "_originalControllerName": "DtoControllerOnlyEntityController",
+      "_prefix": "dto-controller-only-entity",
+      "_handlers": {
+        "getDtoControllerOnlyEntities": {
+          "path": "",
+          "httpMethod": "GET"
+        },
+        "updateDtoControllerOnlyEntity": {
+          "path": ":id",
+          "httpMethod": "PUT"
+        },
+        "createDtoControllerOnlyEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteDtoControllerOnlyEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
     },
     "DtoControllerAndServiceEntityRPC": {
       "_controllerName": "DtoControllerAndServiceEntityRPC",
-      "_prefix": "",
-      "_handlers": {}
+      "_originalControllerName": "DtoControllerAndServiceEntityController",
+      "_prefix": "dto-controller-and-service-entity",
+      "_handlers": {
+        "getDtoControllerAndServiceEntities": {
+          "path": "",
+          "httpMethod": "GET"
+        },
+        "updateDtoControllerAndServiceEntity": {
+          "path": ":id",
+          "httpMethod": "PUT"
+        },
+        "createDtoControllerAndServiceEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteDtoControllerAndServiceEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
     }
   },
   "workers": {

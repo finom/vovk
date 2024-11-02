@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "tsc": "tsc --noEmit",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u"
   },

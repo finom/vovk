@@ -6,6 +6,7 @@
   "types": "./index.d.mts",
   "scripts": {
     "build": "tsc",
+    "tsc": "tsc --noEmit",
     "ncu": "npm-check-updates -u",
     "npm-publish": "npm publish"
   },

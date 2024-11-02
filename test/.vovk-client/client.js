@@ -6,7 +6,7 @@ const { default: fetcher } = require('vovk/client/defaultFetcher');
 const schema = require('../.vovk-schema');
 
 const { default: validateOnClient = null } = require('vovk-zod/validateOnClient');
-const prefix = 'http://localhost:3000/api';
+const prefix = 'http://localhost:3210/api';
 exports.ClientControllerRPC = clientizeController(schema['foo/client'].controllers.ClientControllerRPC, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 exports.StreamingControllerRPC = clientizeController(schema['foo/client'].controllers.StreamingControllerRPC, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });
 exports.StreamingGeneratorControllerRPC = clientizeController(schema['foo/client'].controllers.StreamingGeneratorControllerRPC, 'foo/client', { fetcher, validateOnClient, defaultOptions: { prefix } });

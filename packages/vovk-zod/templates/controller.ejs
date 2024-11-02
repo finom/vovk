@@ -20,12 +20,12 @@ import <%= serviceName %> from './<%= serviceName %>';
 @prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
 export default class <%= controllerName %> {
     @get()
-    static get<%= modulePascalNamePlural %> = withZod(null, z.object({ q: z.string() }), (req) => {
-        const q = req.nextUrl.searchParams.get('q');
+    static get<%= modulePascalNamePlural %> = withZod(null, z.object({ search: z.string() }), (req) => {
+        const search = req.nextUrl.searchParams.get('search');
         <% if(withService) { %>
-        return <%= serviceName %>.get<%= modulePascalNamePlural %>(q);
+        return <%= serviceName %>.get<%= modulePascalNamePlural %>(search);
         <% } else { %>
-        return { q };
+        return { results: [], search };
         <% } %>
     });
 
@@ -40,7 +40,7 @@ export default class <%= controllerName %> {
             const body = await req.json();
             const q = req.nextUrl.searchParams.get('q');
             <% if(withService) { %>
-            return MyThingService.updateMyThingExample(id, q, body);
+            return <%= serviceName %>.update<%= modulePascalName %>(id, q, body);
             <% } else { %>
             return { id, body, q };
             <% } %>

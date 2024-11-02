@@ -5,10 +5,12 @@ import NoValidationControllerServiceAndWorkerEntityService from './NoValidationC
 @prefix('no-validation-controller-service-and-worker-entity')
 export default class NoValidationControllerServiceAndWorkerEntityController {
   @get()
-  static getNoValidationControllerServiceAndWorkerEntities = async (req: VovkRequest<null, { q: string }>) => {
-    const q = req.nextUrl.searchParams.get('q');
+  static getNoValidationControllerServiceAndWorkerEntities = async (req: VovkRequest<null, { search: string }>) => {
+    const search = req.nextUrl.searchParams.get('search');
 
-    return NoValidationControllerServiceAndWorkerEntityService.getNoValidationControllerServiceAndWorkerEntities(q);
+    return NoValidationControllerServiceAndWorkerEntityService.getNoValidationControllerServiceAndWorkerEntities(
+      search
+    );
   };
 
   @put(':id')

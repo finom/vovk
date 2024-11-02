@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "npm-publish": "npm publish",
+    "tsc": "tsc --noEmit",
     "ncu": "npm-check-updates -u"
   },
   "prettier": {

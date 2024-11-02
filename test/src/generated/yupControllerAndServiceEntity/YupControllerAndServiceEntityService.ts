@@ -3,9 +3,11 @@ import type YupControllerAndServiceEntityController from './YupControllerAndServ
 
 export default class YupControllerAndServiceEntityService {
   static getYupControllerAndServiceEntities = (
-    q: VovkControllerQuery<typeof YupControllerAndServiceEntityController.getYupControllerAndServiceEntities>['q']
+    search: VovkControllerQuery<
+      typeof YupControllerAndServiceEntityController.getYupControllerAndServiceEntities
+    >['search']
   ) => {
-    return [{ q }];
+    return { results: [], search };
   };
 
   static updateYupControllerAndServiceEntity = (

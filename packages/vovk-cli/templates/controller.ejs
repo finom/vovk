@@ -18,12 +18,12 @@ import <%= serviceName %> from './<%= serviceName %>';
 @prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
 export default class <%= controllerName %> {
     @get()
-    static get<%= modulePascalNamePlural %> = async (req: VovkRequest<null, { q: string }>) => {
-        const q = req.nextUrl.searchParams.get('q');
+    static get<%= modulePascalNamePlural %> = async (req: VovkRequest<null, { search: string }>) => {
+        const search = req.nextUrl.searchParams.get('search');
         <% if(withService) { %>
-        return <%= serviceName %>.get<%= modulePascalNamePlural %>(q);
+        return <%= serviceName %>.get<%= modulePascalNamePlural %>(search);
         <% } else { %>
-        return [{ q }];
+        return { results: [], search };
         <% } %>
     }
 
