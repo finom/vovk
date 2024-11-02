@@ -2,6 +2,7 @@ import { post, prefix, put, del, get } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { Contains, IsArray, IsString, ArrayNotEmpty, ArrayMinSize } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { OmitType } from '@nestjs/mapped-types';
 
 export class BodyDto {
   @Contains('body')
@@ -33,6 +34,17 @@ export class ReturnDto {
   @Contains('query')
   hey: 'query';
 }
+
+class BodyComplexDto {
+  @Contains('hello_body')
+  hello: 'hello_body';
+  @Contains('world_body')
+  world: 'world_body';
+  @Contains('omit')
+  omit: 'omit';
+}
+
+export class MappedDto extends OmitType(BodyComplexDto, ['omit'] as const) {}
 
 @prefix('with-dto')
 export default class WithDtoClientController {
@@ -80,5 +92,11 @@ export default class WithDtoClientController {
   @get.auto()
   static getWithQueryArrayAndNullBody = withDto(null, QueryWithArrayDto, (req) => {
     return { query: req.vovk.query() };
+  });
+
+  @put.auto()
+  static putWithMappedType = withDto(MappedDto, async (req) => {
+    const body = await req.vovk.body();
+    return { body };
   });
 }

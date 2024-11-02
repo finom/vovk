@@ -46,7 +46,7 @@ describe('Generated modules', () => {
       update: YupControllerAndServiceEntityRPC.updateYupControllerAndServiceEntity,
       delete: YupControllerAndServiceEntityRPC.deleteYupControllerAndServiceEntity,
     },
-   } as const;
+  } as const;
 
   for (const [blockName, rpc] of Object.entries(rpcs)) {
     describe(blockName, () => {
@@ -56,29 +56,29 @@ describe('Generated modules', () => {
           query: { q: 'hello' },
           body: { foo: 'bar' },
         });
-  
+
         const expectedResult = {
           id: 'id_1',
           body: { foo: 'bar' },
           q: 'hello',
         };
-  
+
         expect(result satisfies typeof expectedResult).toEqual(expectedResult);
       });
-  
+
       it('Get', async () => {
         const result = await rpc.read({
           query: { search: 'hello' },
         });
-  
+
         const expectedResult = {
           results: [],
           search: 'hello',
         };
-  
+
         expect(result satisfies typeof expectedResult).toEqual(expectedResult);
       });
-  
+
       it('Other methods', async () => {
         expect(typeof rpc.create).toEqual('function');
         expect(typeof rpc.delete).toEqual('function');

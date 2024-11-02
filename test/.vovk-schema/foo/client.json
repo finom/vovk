@@ -412,6 +412,16 @@
               "isDTO": true
             }
           }
+        },
+        "putWithMappedType": {
+          "httpMethod": "PUT",
+          "path": "put-with-mapped-type",
+          "clientValidators": {
+            "body": {
+              "isDTO": true
+            },
+            "query": null
+          }
         }
       }
     }

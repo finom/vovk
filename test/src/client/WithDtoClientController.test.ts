@@ -269,4 +269,15 @@ describe('Validation with with vovk-dto', () => {
 
     expect(result instanceof ReturnDto).toBe(true);
   });
+
+  it('Works with mapped types', async () => {
+    const result = await WithDtoClientControllerRPC.putWithMappedType({
+      body: { hello: 'hello_body', world: 'world_body' },
+      validateOnClient,
+    });
+
+    expect(result satisfies { body: { hello: 'hello_body'; world: 'world_body' } }).toEqual({
+      body: { hello: 'hello_body', world: 'world_body' },
+    });
+  });
 });

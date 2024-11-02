@@ -12,6 +12,8 @@
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
   },
   "dependencies": {
+    "@nestjs/mapped-types": "^2.0.5",
+    "class-transformer": "^0.5.1",
     "next": "^15.0.1",
     "react": "^18",
     "react-dom": "^18"
