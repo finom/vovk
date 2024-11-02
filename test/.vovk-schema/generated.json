@@ -321,11 +321,25 @@
       "_handlers": {
         "getDtoControllerOnlyEntities": {
           "path": "",
-          "httpMethod": "GET"
+          "httpMethod": "GET",
+          "clientValidators": {
+            "body": null,
+            "query": {
+              "isDTO": true
+            }
+          }
         },
         "updateDtoControllerOnlyEntity": {
           "path": ":id",
-          "httpMethod": "PUT"
+          "httpMethod": "PUT",
+          "clientValidators": {
+            "body": {
+              "isDTO": true
+            },
+            "query": {
+              "isDTO": true
+            }
+          }
         },
         "createDtoControllerOnlyEntity": {
           "path": "",
@@ -344,11 +358,25 @@
       "_handlers": {
         "getDtoControllerAndServiceEntities": {
           "path": "",
-          "httpMethod": "GET"
+          "httpMethod": "GET",
+          "clientValidators": {
+            "body": null,
+            "query": {
+              "isDTO": true
+            }
+          }
         },
         "updateDtoControllerAndServiceEntity": {
           "path": ":id",
-          "httpMethod": "PUT"
+          "httpMethod": "PUT",
+          "clientValidators": {
+            "body": {
+              "isDTO": true
+            },
+            "query": {
+              "isDTO": true
+            }
+          }
         },
         "createDtoControllerAndServiceEntity": {
           "path": "",

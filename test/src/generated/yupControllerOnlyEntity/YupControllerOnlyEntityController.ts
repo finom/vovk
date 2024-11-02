@@ -2,6 +2,8 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
+// TODO: Implement with DTO
+
 @prefix('yup-controller-only-entity')
 export default class YupControllerOnlyEntityController {
   @get()

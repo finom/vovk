@@ -11,7 +11,7 @@ export class UpdateUserDto extends PartialType(
 ) {}
 ```
 
-Since **@nestjs/mapped-types** has backward compatibility code that attempts to support older versions of **class-transformer**, it includes a `require` call for module `class-transformer/storage` that does not exists in the latest version of **class-transformer**. Webpack (used by Next.js internally) tries to compile this module and introduces compilation errors. To address this problem, you can modify Next.js Webpack configuration to ignore this import completely:
+Since **@nestjs/mapped-types** has backward compatibility code that attempts to support older versions of **class-transformer**, it includes a `require` call for module `class-transformer/storage` that does not exists in the latest version of **class-transformer**. Webpack (used by Next.js internally) tries to compile this module and introduces compilation errors. To address this problem, you can modify Next.js Webpack configuration to ignore this import completely by aliasing it to `false`:
 
 ```js
 /** @type {import('next').NextConfig} */
@@ -23,4 +23,21 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+```
+
+You can also use `webpack.IgnorePlugin` if needed:
+
+```ts
+const webpack = require('webpack');
+
+module.exports = {
+  webpack: (config) => {
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /class-transformer\/storage/,
+      })
+    );
+    return config;
+  },
+};
 ```
