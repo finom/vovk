@@ -2,13 +2,13 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 
-await describe.only('CLI new worker only', async () => {
+await describe('CLI new worker only', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir',
   });
 
-  await it.only('New worker', async () => {
+  await it('New worker', async () => {
     await createNextApp();
     await vovkInit('--yes');
     await runAtProjectDir('../dist/index.mjs new segment');
