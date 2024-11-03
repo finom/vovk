@@ -51,17 +51,3 @@ export default class DtoControllerAndServiceEntityController {
     // ...
   };
 }
-
-
-function withCallback<T, R>(arg: T, handler: (arg2: T) => R) {
-  console.log(arg);
-  return handler;
-}
-
-const foo = withCallback('hello', (arg) => {
-  return bar(arg);
-});
-
-function bar(arg: Parameters<typeof foo>[0]) {
-   console.log(arg);
-}
