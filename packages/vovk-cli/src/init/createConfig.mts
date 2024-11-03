@@ -9,13 +9,11 @@ import type { VovkConfig, InitOptions } from '../types.mjs';
 export default async function createConfig({
   root,
   log,
-  dryRun,
-  options: { validationLibrary, validateOnClient },
+  options: { validationLibrary, validateOnClient, rootSegmentModulesDirName, dryRun },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
-  dryRun?: boolean;
-  options: Pick<InitOptions, 'validationLibrary' | 'validateOnClient'>;
+  options: Pick<InitOptions, 'validationLibrary' | 'validateOnClient' | 'rootSegmentModulesDirName' | 'dryRun'>;
 }) {
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
@@ -30,6 +28,10 @@ export default async function createConfig({
     service: 'vovk-cli/templates/service.ejs',
     worker: 'vovk-cli/templates/worker.ejs',
   };
+
+  if(rootSegmentModulesDirName) {
+    config.rootSegmentModulesDirName = rootSegmentModulesDirName;
+  }
 
   if (validationLibrary) {
     config.validationLibrary = validationLibrary;

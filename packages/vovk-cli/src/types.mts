@@ -3,7 +3,7 @@ import type { LogLevelNames } from 'loglevel';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type KnownAny = any;
 
-export type VovkEnv = {
+export type VovkDevEnv = {
   PORT?: string;
   VOVK_CLIENT_OUT_DIR?: string;
   VOVK_SCHEMA_OUT_DIR?: string;
@@ -44,7 +44,7 @@ export type VovkConfig = {
 
 export type VovkModuleRenderResult = {
   fileName: string;
-  dirName: string;
+  dirName: string; // TODO dir?
   sourceName?: string;
   compiledName?: string;
   code: string;
@@ -72,6 +72,7 @@ export interface InitOptions {
   updateScripts?: 'implicit' | 'explicit';
   validationLibrary?: string | null;
   validateOnClient?: boolean;
+  rootSegmentModulesDirName?: string;
   dryRun?: boolean;
   channel?: 'latest' | 'beta' | 'draft';
 }

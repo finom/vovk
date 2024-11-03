@@ -16,7 +16,7 @@ import generateClient from '../generateClient.mjs';
 import locateSegments, { type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import type { VovkEnv } from '../types.mjs';
+import type { VovkDevEnv } from '../types.mjs';
 
 export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;
@@ -354,7 +354,7 @@ export class VovkCLIWatcher {
     }, 5000);
   }
 }
-const env = process.env as VovkEnv;
+const env = process.env as VovkDevEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
   void new VovkCLIWatcher().start();
 }

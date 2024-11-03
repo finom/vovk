@@ -11,10 +11,10 @@ import locateSegments from './locateSegments.mjs';
 import { VovkCLIWatcher } from './watcher/index.mjs';
 import { Init } from './init/index.mjs';
 import newComponents from './new/index.mjs';
-import type { DevOptions, GenerateOptions, InitOptions, NewOptions, VovkConfig, VovkEnv } from './types.mjs';
+import type { DevOptions, GenerateOptions, InitOptions, NewOptions, VovkConfig, VovkDevEnv } from './types.mjs';
 import 'dotenv/config';
 
-export type { VovkConfig, VovkEnv };
+export type { VovkConfig, VovkDevEnv };
 
 const program = new Command();
 
@@ -115,6 +115,7 @@ export function initProgram(p: typeof program, command: string) {
       'Validation library to use ("vovk-zod", "vovk-yup", "vovk-dto" or another). Set to "none" to skip validation'
     )
     .option('--validate-on-client', 'Validate on client')
+    .option('--root-segment-modules-dir-name <name>', 'Root segment modules directory name')
     .option('--channel <channel>', 'Channel to use for fetching packages', 'latest')
     .option('--dry-run', 'Do not write files to disk')
     .action((prefix: string = '.', options: InitOptions) => new Init().main(prefix, options));

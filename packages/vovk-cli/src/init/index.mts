@@ -35,6 +35,7 @@ export class Init {
       updateScripts,
       validationLibrary,
       validateOnClient,
+      rootSegmentModulesDirName,
       dryRun,
       channel,
     }: Omit<InitOptions, 'yes' | 'logLevel'>
@@ -131,8 +132,7 @@ export class Init {
       const { configAbsolutePath } = await createConfig({
         root,
         log,
-        options: { validationLibrary, validateOnClient },
-        dryRun,
+        options: { validationLibrary, validateOnClient, rootSegmentModulesDirName, dryRun },
       });
 
       log.info('Config created successfully at ' + configAbsolutePath);
@@ -155,6 +155,7 @@ export class Init {
       updateScripts,
       validationLibrary,
       validateOnClient,
+      rootSegmentModulesDirName,
       dryRun,
       channel,
     }: InitOptions
@@ -182,6 +183,7 @@ export class Init {
           validationLibrary:
             validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
           validateOnClient: validateOnClient ?? true,
+          rootSegmentModulesDirName: rootSegmentModulesDirName ?? '',
           dryRun: dryRun ?? false,
           channel: channel ?? 'latest',
         }

@@ -2,7 +2,6 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 
-// TODO rootSegmentModulesDirName
 await describe('CLI new controller and flags', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
@@ -31,7 +30,38 @@ await describe('CLI new controller and flags', async () => {
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import MegaUserController from '../../../modules/megaUser/MegaUserController';`,
       `const controllers = {
-        MegaUserRPC: MegaUserController
+        MegaUserRPC: MegaUserController,
+      };`,
+      `initVovk({
+        emitSchema: true,
+        workers,
+        controllers, 
+      });`,
+    ]);
+  });
+
+  await it('New controller with --root-segment-modules-dir-name', async () => {
+    await createNextApp();
+    await vovkInit('--yes --validation-library=none --root-segment-modules-dir-name=myRoot');
+    await runAtProjectDir('../dist/index.mjs new segment');
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `const controllers = {};`,
+      `initVovk({
+        emitSchema: true,
+        workers,
+        controllers, 
+      });`,
+    ]);
+    await runAtProjectDir('../dist/index.mjs new controller racoon');
+
+    await assertFile(
+      'src/modules/myRoot/racoon/RacoonController.ts',
+      `export default class RacoonController {`
+    );
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `import RacoonController from '../../../modules/myRoot/racoon/RacoonController';`,
+      `const controllers = {
+        RacoonRPC: RacoonController,
       };`,
       `initVovk({
         emitSchema: true,
@@ -65,7 +95,7 @@ await describe('CLI new controller and flags', async () => {
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import VeryComplexEntityController from '../../../../custom-dir/VeryComplexEntityController';`,
       `const controllers = {
-        VeryComplexEntityRPC: VeryComplexEntityController
+        VeryComplexEntityRPC: VeryComplexEntityController,
       };`,
       `initVovk({
         emitSchema: true,
@@ -99,7 +129,7 @@ await describe('CLI new controller and flags', async () => {
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import CoolRedChairController from '../../../modules/coolRedChair/CoolRedChairController';`,
       `const controllers = {
-        CoolRedChairRPC: CoolRedChairController
+        CoolRedChairRPC: CoolRedChairController,
       };`,
       `initVovk({
         emitSchema: true,

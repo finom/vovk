@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 
-await describe.only('CLI new controller only', async () => {
+await describe('CLI new controller only', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir',
@@ -32,7 +32,7 @@ await describe.only('CLI new controller only', async () => {
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import UserController from '../../../modules/user/UserController';`,
       `const controllers = {
-        UserRPC: UserController
+        UserRPC: UserController,
       };`,
       `initVovk({
         emitSchema: true,
@@ -53,7 +53,7 @@ await describe.only('CLI new controller only', async () => {
       `import PostController from '../../../modules/post/PostController';`,
       `const controllers = {
         UserRPC: UserController,
-        PostRPC: PostController
+        PostRPC: PostController,
       };`,
       `initVovk({
         emitSchema: true,
@@ -63,7 +63,7 @@ await describe.only('CLI new controller only', async () => {
     ]);
   });
 
-  await it.only('New controller with zod validation library', async () => {
+  await it('New controller with zod validation library', async () => {
     await createNextApp();
     await vovkInit('--yes --validation-library=vovk-zod');
     await runAtProjectDir('../dist/index.mjs new segment');
@@ -89,7 +89,7 @@ await describe.only('CLI new controller only', async () => {
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import UserController from '../../../modules/user/UserController';`,
       `const controllers = {
-        UserRPC: UserController
+        UserRPC: UserController,
       };`,
       `initVovk({
         emitSchema: true,
@@ -124,7 +124,7 @@ await describe.only('CLI new controller only', async () => {
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import UserController from '../../../modules/user/UserController';`,
       `const controllers = {
-        UserRPC: UserController
+        UserRPC: UserController,
       };`,
       `initVovk({
         emitSchema: true,
@@ -159,7 +159,7 @@ await describe.only('CLI new controller only', async () => {
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import UserController from '../../../modules/user/UserController';`,
       `const controllers = {
-        UserRPC: UserController
+        UserRPC: UserController,
       };`,
       `initVovk({
         emitSchema: true,
