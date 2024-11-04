@@ -72,7 +72,6 @@ export interface InitOptions {
   updateScripts?: 'implicit' | 'explicit';
   validationLibrary?: string | null;
   validateOnClient?: boolean;
-  rootSegmentModulesDirName?: string;
   dryRun?: boolean;
   channel?: 'latest' | 'beta' | 'draft';
 }

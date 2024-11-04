@@ -1,11 +1,14 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
+import updateConfigProperty from '../lib/updateConfigProperty.mjs';
 
 await describe('CLI new controller and flags', async () => {
+  const cwd = path.resolve(import.meta.dirname, '../../..');
+  const dir = 'tmp_test_dir';
   const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
-    cwd: path.resolve(import.meta.dirname, '../../..'),
-    dir: 'tmp_test_dir',
+    cwd,
+    dir,
   });
 
   await it('New controller with --template', async () => {
@@ -23,14 +26,14 @@ await describe('CLI new controller and flags', async () => {
     await runAtProjectDir('../dist/index.mjs new controller megaUser --template=../test/new/custom-controller.ejs');
 
     await assertFile(
-      'src/modules/megaUser/MegaUserController.ts',
+      'src/modules/megaUser/MegaUserCustomController.ts',
       `// hello megaUser
-        export default class MegaUserController {`
+        export default class MegaUserCustomController {`
     );
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import MegaUserController from '../../../modules/megaUser/MegaUserController';`,
+      `import MegaUserCustomController from '../../../modules/megaUser/MegaUserCustomController';`,
       `const controllers = {
-        MegaUserRPC: MegaUserController,
+        MegaUserRPC: MegaUserCustomController,
       };`,
       `initVovk({
         emitSchema: true,
@@ -40,9 +43,10 @@ await describe('CLI new controller and flags', async () => {
     ]);
   });
 
-  await it('New controller with --root-segment-modules-dir-name', async () => {
+  await it('New controller with rootSegmentModulesDirName set at config', async () => {
     await createNextApp();
-    await vovkInit('--yes --validation-library=none --root-segment-modules-dir-name=myRoot');
+    await vovkInit('--yes --validation-library=none');
+    await updateConfigProperty(path.join(cwd, dir, 'vovk.config.js'), ['rootSegmentModulesDirName'], 'myRoot');
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -54,10 +58,7 @@ await describe('CLI new controller and flags', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller racoon');
 
-    await assertFile(
-      'src/modules/myRoot/racoon/RacoonController.ts',
-      `export default class RacoonController {`
-    );
+    await assertFile('src/modules/myRoot/racoon/RacoonController.ts', `export default class RacoonController {`);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import RacoonController from '../../../modules/myRoot/racoon/RacoonController';`,
       `const controllers = {

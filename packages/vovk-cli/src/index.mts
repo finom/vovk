@@ -115,7 +115,6 @@ export function initProgram(p: typeof program, command: string) {
       'Validation library to use ("vovk-zod", "vovk-yup", "vovk-dto" or another). Set to "none" to skip validation'
     )
     .option('--validate-on-client', 'Validate on client')
-    .option('--root-segment-modules-dir-name <name>', 'Root segment modules directory name')
     .option('--channel <channel>', 'Channel to use for fetching packages', 'latest')
     .option('--dry-run', 'Do not write files to disk')
     .action((prefix: string = '.', options: InitOptions) => new Init().main(prefix, options));
@@ -143,16 +142,6 @@ program
   .command('help')
   .description('Show help message')
   .action(() => program.help());
-
-/*
-TODO
-vovk new segment [segmentName]
-vovk new controller service [segmentName/]moduleName
-vovk new c s w [segmentName/]moduleName
-
-vovk c s w userApi/user
-vovk new c s w user
-*/
 
 program.parse(process.argv);
 

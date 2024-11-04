@@ -30,7 +30,7 @@ await describe('CLI new worker only', async () => {
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `import UserWorker from '../../../modules/user/UserWorker';`,
       `const workers = {
-        UserWPC: UserWorker
+        UserWPC: UserWorker,
       };`,
       `initVovk({
         emitSchema: true,
@@ -49,7 +49,7 @@ await describe('CLI new worker only', async () => {
       `import PostWorker from '../../../modules/post/PostWorker';`,
       `const workers = {
         UserWPC: UserWorker,
-        PostWPC: PostWorker
+        PostWPC: PostWorker,
       };`,
       `initVovk({
         emitSchema: true,

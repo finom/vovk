@@ -1,7 +1,7 @@
 /* global NodeJS */
 import * as pty from 'node-pty';
 
-// TODO comment
+// TODO comments
 async function runInputs(inputs: string[], child: pty.IPty) {
   for (const input of inputs) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -17,7 +17,7 @@ export function runScript(
   commandWithArgs: string,
   options: {
     env?: NodeJS.ProcessEnv;
-    inputs?: string[];
+    inputs?: string[]; // TODO rename to combo
     cwd: string;
   } = {
     cwd: process.cwd(),
@@ -26,10 +26,15 @@ export function runScript(
   // eslint-disable-next-line no-console
   console.info('Running script:', commandWithArgs);
   const { env = process.env, inputs = [] } = options;
-  const [command, ...args] = commandWithArgs.split(/\s+/);
 
-  const child = pty.spawn(command, args, {
-    env,
+  const envWithPath = {
+    ...process.env,
+    PATH: process.env.PATH, // Explicitly set PATH
+    ...env, // Include any additional env vars passed in options
+  };
+
+  const child = pty.spawn('sh', ['-c', commandWithArgs], {
+    env: envWithPath,
     cwd: options.cwd,
     cols: 80,
     rows: 30,
@@ -37,7 +42,7 @@ export function runScript(
 
   void runInputs(inputs, child);
 
-  return new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
     let result = '';
     child.onData((data) => {
       process.stdout.write(data); // Output data immediately
@@ -51,5 +56,9 @@ export function runScript(
         reject(new Error(`Process exited with code ${exitCode.exitCode}\nOutput:\n${result || 'no output'}`));
       }
     });
-  });
+  }) as Promise<string> & { kill: () => void };
+
+  promise.kill = () => child.kill('SIGKILL');
+
+  return promise;
 }

@@ -35,7 +35,6 @@ export class Init {
       updateScripts,
       validationLibrary,
       validateOnClient,
-      rootSegmentModulesDirName,
       dryRun,
       channel,
     }: Omit<InitOptions, 'yes' | 'logLevel'>
@@ -132,7 +131,7 @@ export class Init {
       const { configAbsolutePath } = await createConfig({
         root,
         log,
-        options: { validationLibrary, validateOnClient, rootSegmentModulesDirName, dryRun },
+        options: { validationLibrary, validateOnClient, channel, dryRun },
       });
 
       log.info('Config created successfully at ' + configAbsolutePath);
@@ -155,7 +154,6 @@ export class Init {
       updateScripts,
       validationLibrary,
       validateOnClient,
-      rootSegmentModulesDirName,
       dryRun,
       channel,
     }: InitOptions
@@ -183,7 +181,6 @@ export class Init {
           validationLibrary:
             validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
           validateOnClient: validateOnClient ?? true,
-          rootSegmentModulesDirName: rootSegmentModulesDirName ?? '',
           dryRun: dryRun ?? false,
           channel: channel ?? 'latest',
         }
@@ -245,23 +242,23 @@ export class Init {
     updateScripts =
       updateScripts ??
       (await select({
-        message: 'Do you want to update package.json by adding "generate" and "dev" scripts?',
+        message: 'Do you want to update package.json by adding "generate" and "dev" NPM scripts?',
         default: 'implicit',
         choices: [
           {
             name: 'Yes, use "concurrently" implicitly',
-            description: `The "dev" script will use "concurrently" API internally in order to run "next dev" and "vovk dev" together and automatically look for an available port ${chalk.whiteBright.bold(`"vovk dev --next-dev"`)}`,
             value: 'implicit' as const,
+            description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"vovk dev --next-dev"`)}`,
           },
           {
             name: 'Yes, use "concurrently" explicitly',
             value: 'explicit' as const,
-            description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others"`)}`,
+            description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"PORT=3000 concurrently 'next dev' 'vovk dev' --kill-others"`)}`,
           },
           {
             name: 'No',
             value: undefined,
-            description: 'Add the scripts manually',
+            description: 'Add the NPM scripts manually',
           },
         ],
       }));

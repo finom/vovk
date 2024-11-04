@@ -10,17 +10,10 @@ const vovkConfig = {
   // DOC: src/app or src/pages will be ignored if app or pages are present in the root directory.
   rootEntry: 'api',
   logLevel: 'debug',
+  templates: {
+    service: 'none',
+    controller: 'none',
+  },
 };
-
-// vovk create segment foo
-// vovk create segment [root]
-/*
-export const { GET } = initVovk({
-  controllers,
-  segmentName: 'foo',
-});
-*/
-// vovk create module foo/myModule
-// - Create service/controller, add controller to segment
 
 module.exports = vovkConfig;

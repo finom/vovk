@@ -10,12 +10,12 @@ import checkTSConfigForExperimentalDecorators from '../../src/init/checkTSConfig
 export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);
 
-  function runAtCWD(command: string) {
-    return runScript(command, { cwd });
+  function runAtCWD(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
+    return runScript(command, { cwd, ...options });
   }
 
-  function runAtProjectDir(command: string) {
-    return runScript(command, { cwd: projectDir });
+  function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
+    return runScript(command, { cwd: projectDir, ...options });
   }
 
   async function createNextApp(extraParams?: string) {
@@ -61,7 +61,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
       : {}),
     templates: {
       controller: `${validationLibrary ?? 'vovk-cli'}/templates/controller.ejs`,
-      service: `${validationLibrary ?? 'vovk-cli'}/templates/service.ejs`,
+      service: 'vovk-cli/templates/service.ejs',
       worker: 'vovk-cli/templates/worker.ejs',
     },
   });

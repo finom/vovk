@@ -18,6 +18,7 @@ import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import type { VovkDevEnv } from '../types.mjs';
 
+// TODO rename folder to dev, remove this class
 export class VovkCLIWatcher {
   #projectInfo: ProjectInfo;
 

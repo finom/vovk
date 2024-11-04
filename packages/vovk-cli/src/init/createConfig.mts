@@ -9,11 +9,11 @@ import type { VovkConfig, InitOptions } from '../types.mjs';
 export default async function createConfig({
   root,
   log,
-  options: { validationLibrary, validateOnClient, rootSegmentModulesDirName, dryRun },
+  options: { validationLibrary, validateOnClient, channel, dryRun },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
-  options: Pick<InitOptions, 'validationLibrary' | 'validateOnClient' | 'rootSegmentModulesDirName' | 'dryRun'>;
+  options: Pick<InitOptions, 'validationLibrary' | 'validateOnClient' | 'channel' | 'dryRun'>;
 }) {
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
@@ -29,10 +29,6 @@ export default async function createConfig({
     worker: 'vovk-cli/templates/worker.ejs',
   };
 
-  if(rootSegmentModulesDirName) {
-    config.rootSegmentModulesDirName = rootSegmentModulesDirName;
-  }
-
   if (validationLibrary) {
     config.validationLibrary = validationLibrary;
     if (validateOnClient) {
@@ -40,7 +36,7 @@ export default async function createConfig({
     }
 
     try {
-      const validationTemplates = await getTemplateFilesFromPackage(validationLibrary);
+      const validationTemplates = await getTemplateFilesFromPackage(validationLibrary, channel);
       Object.assign(templates, validationTemplates);
     } catch (error) {
       log.warn(`Failed to fetch validation library templates: ${(error as Error).message}`);

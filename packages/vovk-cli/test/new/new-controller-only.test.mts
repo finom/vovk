@@ -63,6 +63,42 @@ await describe('CLI new controller only', async () => {
     ]);
   });
 
+  await it('New controller on non-root segment', async () => {
+    await createNextApp();
+    await vovkInit('--yes --validation-library=none');
+    await runAtProjectDir('../dist/index.mjs new segment foo');
+    await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
+      `const controllers = {};`,
+      `initVovk({
+        segmentName: 'foo',
+        emitSchema: true,
+        workers,
+        controllers, 
+      });`,
+    ]);
+    await runAtProjectDir('../dist/index.mjs new controller foo/user');
+
+    await assertFile('src/modules/foo/user/UserController.ts', [
+      `export default class UserController {
+        @get()
+        static getUsers = async (`,
+      `static createUser = `,
+      `static updateUser = `,
+    ]);
+    await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
+      `import UserController from '../../../../modules/foo/user/UserController';`,
+      `const controllers = {
+        UserRPC: UserController,
+      };`,
+      `initVovk({
+        segmentName: 'foo',
+        emitSchema: true,
+        workers,
+        controllers, 
+      });`,
+    ]);
+  });
+
   await it('New controller with zod validation library', async () => {
     await createNextApp();
     await vovkInit('--yes --validation-library=vovk-zod');

@@ -100,7 +100,7 @@ await describe('CLI init', async () => {
     });
 
     await assertScripts({
-      dev: "PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others",
+      dev: "PORT=3000 concurrently 'next dev' 'vovk dev' --kill-others",
       generate: 'vovk generate',
     });
 

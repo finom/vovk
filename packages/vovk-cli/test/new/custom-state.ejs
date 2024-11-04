@@ -1,0 +1,7 @@
+<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
+---
+dirName: <%= getModuleDirName(segmentName, moduleName) %>
+fileName: <%= modulePascalName + 'State.ts' %>
+---
+
+// this is the custom "<%= modulePascalName %>" state

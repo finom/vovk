@@ -2,15 +2,16 @@ import { Readable } from 'node:stream';
 import { createGunzip, Gunzip } from 'node:zlib';
 import tar, { Headers } from 'tar-stream';
 import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
+import { InitOptions } from '../types.mjs';
 
 /**
  * Retrieves a list of files in the 'templates' folder of an NPM package.
  * @param packageName - The name of the NPM package.
  * @returns A promise that resolves to an array of file paths.
  */
-export default async function getTemplatesFiles(
+export default async function getTemplateFilesFromPackage(
   packageName: string,
-  channel = 'beta' // TODO change to latest
+  channel: InitOptions['channel'] = 'latest'
 ): Promise<Record<string, string>> {
   const metadata = await getNPMPackageMetadata(packageName);
   const latestVersion = metadata['dist-tags'][channel];
