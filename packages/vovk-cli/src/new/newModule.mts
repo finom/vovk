@@ -93,7 +93,7 @@ export default async function newModule({
         : path.resolve(cwd, './node_modules', templatePath);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
     const {
-      dirName: renderedDirName,
+      dir: renderedDirName,
       fileName,
       sourceName,
       compiledName,

@@ -11,7 +11,7 @@ import {
   _VovkControllerQuery,
 } from '../../../packages/vovk/types';
 
-const prefix = 'http://localhost:' + process.env.PORT + '/api';
+const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Client with vovk-client', () => {
   it(`Should handle requests that return NextResponse.json`, async () => {
@@ -21,7 +21,7 @@ describe('Client with vovk-client', () => {
 
   it(`Should handle object literals`, async () => {
     const result = await ClientControllerRPC.getHelloWorldObjectLiteral({
-      prefix,
+      apiRoot,
     });
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });
@@ -69,7 +69,7 @@ describe('Client with vovk-client', () => {
 
   it(`Should handle headers`, async () => {
     const result = await ClientControllerRPC.getHelloWorldHeaders({
-      prefix,
+      apiRoot,
       headers: { 'x-test': 'world' },
     });
     expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
@@ -77,7 +77,7 @@ describe('Client with vovk-client', () => {
 
   it(`Should handle simple requests and return a normal array`, async () => {
     const result = await ClientControllerRPC.getHelloWorldArray({
-      prefix,
+      apiRoot,
       headers: { 'x-test': 'world' },
     });
     expect(result satisfies { hello: string }[]).toEqual([{ hello: 'world' }]);

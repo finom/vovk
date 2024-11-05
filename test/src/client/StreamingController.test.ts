@@ -4,7 +4,7 @@ import { HttpException, VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from '../../.vovk-client/client';
 import { _VovkControllerYieldType, _VovkClientYieldType } from 'vovk/types';
 
-const prefix = 'http://localhost:' + process.env.PORT + '/api';
+const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Streaming', () => {
   it('Should work', async () => {
@@ -15,7 +15,7 @@ describe('Streaming', () => {
     using resp = await StreamingControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     for await (const message of resp) {
@@ -37,7 +37,7 @@ describe('Streaming', () => {
     using resp = await StreamingControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     let count = 0;
@@ -65,7 +65,7 @@ describe('Streaming', () => {
       resp = await StreamingControllerRPC.postWithStreaming({
         body: tokens,
         query: { query: 'queryValue' },
-        prefix,
+        apiRoot,
       });
 
       r = resp;
@@ -97,7 +97,7 @@ describe('Streaming', () => {
       using resp = await StreamingControllerRPC.postWithStreaming({
         body: tokens,
         query: { query: 'queryValue' },
-        prefix,
+        apiRoot,
       });
 
       r = resp;
@@ -123,7 +123,7 @@ describe('Streaming', () => {
     const respPromise = StreamingControllerRPC.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     await expect(() => respPromise).rejects.toThrowError(HttpException);
@@ -137,7 +137,7 @@ describe('Streaming', () => {
     using resp = await StreamingControllerRPC.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     await expect(async () => {
@@ -157,7 +157,7 @@ describe('Streaming', () => {
     using resp = await StreamingControllerRPC.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     // TODO I don't know why rejects.toThrowError doesn't work here
@@ -185,7 +185,7 @@ describe('Streaming', () => {
     const resp = await StreamingControllerRPC.postWithStreamingAndDelayedUnhandledError({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     await expect(async () => {

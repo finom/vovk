@@ -8,7 +8,7 @@ import getAvailablePort from './utils/getAvailablePort.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
 import generateClient from './generateClient.mjs';
 import locateSegments from './locateSegments.mjs';
-import { VovkCLIWatcher } from './watcher/index.mjs';
+import { VovkDev } from './dev/index.mjs';
 import { Init } from './init/index.mjs';
 import newComponents from './new/index.mjs';
 import type { DevOptions, GenerateOptions, InitOptions, NewOptions, VovkConfig, VovkDevEnv } from './types.mjs';
@@ -46,14 +46,12 @@ program
       throw new Error('🐺 ❌ PORT env variable is required');
     }
 
-    console.log(`TODO:`, command.args);
-
     if (options.nextDev) {
       const { result } = concurrently(
         [
           {
-            command: `node ${import.meta.dirname}/watcher/index.mjs`,
-            name: 'Vovk.ts Schema Watcher',
+            command: `node ${import.meta.dirname}/dev/index.mjs`,
+            name: 'Vovk Dev Command',
             env: Object.assign(
               { PORT, __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const },
               options.clientOut ? { VOVK_CLIENT_OUT_DIR: options.clientOut } : {}
@@ -76,7 +74,7 @@ program
         // do nothing, all processes are killed
       }
     } else {
-      void new VovkCLIWatcher().start({ clientOutDir: options.clientOut });
+      void new VovkDev().start({ clientOutDir: options.clientOut });
     }
   });
 

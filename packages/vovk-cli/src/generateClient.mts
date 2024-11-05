@@ -58,11 +58,11 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   ts += `
 ${validateOnClientImportPath ? `import validateOnClient from '${validateOnClientImportPath}';\n` : '\nconst validateOnClient = undefined;'}
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-const prefix = '${apiEntryPoint}';
+const apiRoot = '${apiEntryPoint}';
 `;
   js += `
 const { default: validateOnClient = null } = ${validateOnClientImportPath ? `require('${validateOnClientImportPath}')` : '{}'};
-const prefix = '${apiEntryPoint}';
+const apiRoot = '${apiEntryPoint}';
 `;
 
   for (let i = 0; i < segments.length; i++) {
@@ -75,8 +75,8 @@ const prefix = '${apiEntryPoint}';
 
     for (const key of Object.keys(schema.controllers)) {
       dts += `export const ${key}: ReturnType<typeof clientizeController<Controllers${i}["${key}"], Options>>;\n`;
-      js += `exports.${key} = clientizeController(schema['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
-      ts += `export const ${key} = clientizeController<Controllers${i}["${key}"], Options>(schema['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { prefix } });\n`;
+      js += `exports.${key} = clientizeController(schema['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { apiRoot } });\n`;
+      ts += `export const ${key} = clientizeController<Controllers${i}["${key}"], Options>(schema['${segmentName}'].controllers.${key}, '${segmentName}', { fetcher, validateOnClient, defaultOptions: { apiRoot } });\n`;
     }
 
     for (const key of Object.keys(schema.workers)) {

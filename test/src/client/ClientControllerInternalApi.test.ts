@@ -3,12 +3,12 @@ import type ClientController from './ClientController';
 import { clientizeController } from 'vovk/client';
 import { it, expect, describe } from '@jest/globals';
 
-const prefix = 'http://localhost:' + process.env.PORT + '/api';
+const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
 const schema = segmentsSchema['foo/client'].controllers;
 
 const defaultController = clientizeController<typeof ClientController>(schema.ClientControllerRPC, 'foo/client', {
-  defaultOptions: { prefix },
+  defaultOptions: { apiRoot },
 });
 
 describe('Internal client API', () => {
@@ -20,7 +20,7 @@ describe('Internal client API', () => {
   it('Should handle custom options', async () => {
     const noOptionsController = clientizeController<typeof ClientController>(schema.ClientControllerRPC, 'foo/client');
     const result = await noOptionsController.getHelloWorldObjectLiteral({
-      prefix,
+      apiRoot,
     });
     expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
   });

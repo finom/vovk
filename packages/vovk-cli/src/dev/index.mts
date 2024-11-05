@@ -18,8 +18,7 @@ import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import type { VovkDevEnv } from '../types.mjs';
 
-// TODO rename folder to dev, remove this class
-export class VovkCLIWatcher {
+export class VovkDev {
   #projectInfo: ProjectInfo;
 
   #segments: Segment[] = [];
@@ -357,5 +356,5 @@ export class VovkCLIWatcher {
 }
 const env = process.env as VovkDevEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
-  void new VovkCLIWatcher().start();
+  void new VovkDev().start();
 }

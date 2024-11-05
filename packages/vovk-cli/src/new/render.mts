@@ -42,17 +42,12 @@ export default async function render(
     pluralize,
   };
 
-  // first, render the front matter because it can use ejs variables
   const parsed = matter((await ejs.render(codeTemplate, templateVars, { async: true })).trim());
-  const { dirName, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
+  const { dir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
   const code = parsed.content;
 
-  // const templateContent = parsed.content; TODO
-
-  // const code = await ejs.render(templateContent, templateVars, { async: true });
-
   return {
-    dirName,
+    dir,
     fileName,
     sourceName,
     compiledName,

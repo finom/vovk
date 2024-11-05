@@ -3,9 +3,9 @@ import { ClientControllerRPC, MyInnerWorkerWPC } from '.vovk-client/client';
 
 @worker()
 export default class MyWorker {
-  static getClientizeHelloWorld(prefix?: string) {
+  static getClientizeHelloWorld(apiRoot?: string) {
     return ClientControllerRPC.getHelloWorldHeaders({
-      prefix,
+      apiRoot,
       headers: { 'x-test': 'world' },
     });
   }

@@ -78,7 +78,7 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
     name: keyof T;
     httpMethod: HttpMethod;
     getEndpoint: (data: {
-      prefix: string;
+      apiRoot: string;
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => string;
@@ -96,7 +96,7 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
 // `RequestInit` is the type of options passed to fetch function
 export interface _VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
   reactNative?: { textStreaming: boolean };
-  prefix?: string;
+  apiRoot?: string;
   segmentName?: string;
   disableClientValidation?: boolean;
   validateOnClient?: _VovkValidateOnClient;

@@ -44,7 +44,7 @@ export type VovkConfig = {
 
 export type VovkModuleRenderResult = {
   fileName: string;
-  dirName: string; // TODO dir?
+  dir: string;
   sourceName?: string;
   compiledName?: string;
   code: string;

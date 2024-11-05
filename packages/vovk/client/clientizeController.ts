@@ -68,17 +68,17 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
 
   for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(schema)) {
     const getEndpoint = ({
-      prefix,
+      apiRoot,
       params,
       query,
     }: {
-      prefix: string;
+      apiRoot: string;
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => {
       const mainPrefix =
-        (prefix.startsWith('http://') || prefix.startsWith('https://') || prefix.startsWith('/') ? '' : '/') +
-        (prefix.endsWith('/') ? prefix : `${prefix}/`) +
+        (apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/') +
+        (apiRoot.endsWith('/') ? apiRoot : `${apiRoot}/`) +
         (segmentName ? `${segmentName}/` : '');
       return mainPrefix + getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query);
     };

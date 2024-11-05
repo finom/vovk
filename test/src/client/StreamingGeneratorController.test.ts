@@ -4,7 +4,7 @@ import { VovkYieldType } from 'vovk';
 import { StreamingGeneratorControllerRPC } from '../../.vovk-client/client';
 import { _VovkClientYieldType, _VovkControllerYieldType } from 'vovk/types';
 
-const prefix = 'http://localhost:' + process.env.PORT + '/api';
+const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Streaming generator', () => {
   it('Should work with generator', async () => {
@@ -15,7 +15,7 @@ describe('Streaming generator', () => {
     using resp = await StreamingGeneratorControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     for await (const message of resp) {
@@ -37,7 +37,7 @@ describe('Streaming generator', () => {
     using resp = await StreamingGeneratorControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     let count = 0;
@@ -56,7 +56,7 @@ describe('Streaming generator', () => {
     using resp = await StreamingGeneratorControllerRPC.postWithStreamingAndImmediateError({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     await expect(async () => {
@@ -74,7 +74,7 @@ describe('Streaming generator', () => {
     using resp = await StreamingGeneratorControllerRPC.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     await expect(async () => {
@@ -94,7 +94,7 @@ describe('Streaming generator', () => {
     using resp = await StreamingGeneratorControllerRPC.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     // TODO I don't know why rejects.toThrowError doesn't work here
@@ -122,7 +122,7 @@ describe('Streaming generator', () => {
     using resp = await StreamingGeneratorControllerRPC.postWithStreamingAndDelayedUnhandledError({
       body: tokens,
       query: { query: 'queryValue' },
-      prefix,
+      apiRoot,
     });
 
     await expect(async () => {
