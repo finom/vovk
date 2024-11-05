@@ -6,7 +6,7 @@ import type {
   _VovkControllerQuery,
   _VovkControllerParams,
 } from '../types';
-import { _StreamResponse as StreamResponse } from '../StreamResponse';
+import { _StreamJSONResponse as StreamJSONResponse } from '../StreamJSONResponse';
 import type { NextResponse } from 'next/server';
 
 export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_VovkControllerBody<T> extends undefined | void
@@ -37,7 +37,7 @@ type StaticMethodReturn<T extends _ControllerStaticMethod> =
 type StaticMethodReturnPromise<T extends _ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
 type ClientMethod<
-  T extends (...args: KnownAny[]) => void | object | StreamResponse<STREAM> | Promise<StreamResponse<STREAM>>,
+  T extends (...args: KnownAny[]) => void | object | StreamJSONResponse<STREAM> | Promise<StreamJSONResponse<STREAM>>,
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = <R>(
@@ -54,8 +54,8 @@ type ClientMethod<
       }
     > | void)
 ) => ReturnType<T> extends
-  | Promise<StreamResponse<infer U>>
-  | StreamResponse<infer U>
+  | Promise<StreamJSONResponse<infer U>>
+  | StreamJSONResponse<infer U>
   | Iterator<infer U>
   | AsyncIterator<infer U>
   ? Promise<_StreamAsyncIterator<U>>

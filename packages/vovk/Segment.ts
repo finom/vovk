@@ -9,7 +9,7 @@ import {
   type _KnownAny as _KnownAny,
 } from './types';
 import { _HttpException as HttpException } from './HttpException';
-import { _StreamResponse as StreamResponse } from './StreamResponse';
+import { _StreamJSONResponse as StreamJSONResponse } from './StreamJSONResponse';
 import reqQuery from './utils/reqQuery';
 import reqMeta from './utils/reqMeta';
 
@@ -188,9 +188,9 @@ export class _Segment {
             typeof (result as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
 
       if (isIterator && !(result instanceof Array)) {
-        const streamResponse = new StreamResponse({
+        const streamResponse = new StreamJSONResponse({
           headers: {
-            ...StreamResponse.defaultHeaders,
+            ...StreamJSONResponse.defaultHeaders,
             ..._Segment.getHeadersFromOptions(staticMethod._options),
           },
         });

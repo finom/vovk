@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import type { _StreamResponse as StreamResponse } from './StreamResponse';
+import type { _StreamJSONResponse as StreamJSONResponse } from './StreamJSONResponse';
 import { _StreamAsyncIterator as StreamAsyncIterator } from './client/types';
 
 export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -126,7 +126,7 @@ export type _VovkControllerYieldType<T extends (req: _VovkRequest<_KnownAny, _Kn
   ? Y
   : T extends (...args: _KnownAny[]) => Generator<infer Y, _KnownAny, _KnownAny>
     ? Y
-    : T extends (...args: _KnownAny[]) => Promise<StreamResponse<infer Y>> | StreamResponse<infer Y>
+    : T extends (...args: _KnownAny[]) => Promise<StreamJSONResponse<infer Y>> | StreamJSONResponse<infer Y>
       ? Y
       : never;
 
