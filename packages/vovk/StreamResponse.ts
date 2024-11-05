@@ -3,7 +3,8 @@ import './utils/shim';
 
 export class _StreamResponse<T> extends Response {
   public static defaultHeaders = {
-    'Content-Type': 'text/plain; charset=utf-8',
+    'content-type': 'text/plain; charset=utf-8',
+    'x-vovk-stream': 'true',
   };
 
   public isClosed = false;
