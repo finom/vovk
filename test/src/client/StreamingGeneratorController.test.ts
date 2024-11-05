@@ -1,4 +1,4 @@
-import type { Token } from './StreamingGeneratorController';
+import type { Token, default as StreamingGeneratorController } from './StreamingGeneratorController';
 import { expect, describe, xit, it } from '@jest/globals';
 import { VovkYieldType } from 'vovk';
 import { StreamingGeneratorControllerRPC } from '../../.vovk-client/client';
@@ -22,9 +22,7 @@ describe('Streaming generator', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as _VovkControllerYieldType<
-      typeof StreamingGeneratorControllerRPC.postWithStreaming
-    > satisfies Token;
+    null as unknown as _VovkControllerYieldType<typeof StreamingGeneratorController.postWithStreaming> satisfies Token;
     null as unknown as _VovkClientYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
 

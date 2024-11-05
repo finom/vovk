@@ -1,6 +1,6 @@
 import { ClientControllerRPC } from '../../.vovk-client/client';
 import type ClientController from './ClientController';
-import { VovkBody, VovkParams, VovkQuery, VovkReturnType } from 'vovk';
+import type { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
 import {
   _VovkClientBody,
@@ -9,7 +9,7 @@ import {
   _VovkControllerBody,
   _VovkControllerParams,
   _VovkControllerQuery,
-} from 'vovk/types';
+} from '../../../packages/vovk/types';
 
 const prefix = 'http://localhost:' + process.env.PORT + '/api';
 

@@ -92,7 +92,6 @@ export interface _VovkRequest<BODY = undefined, QUERY extends object | undefined
       keys: () => IterableIterator<keyof QUERY>;
       values: () => IterableIterator<QUERY[keyof QUERY]>;
       // TODO (?) append, delete, set
-      readonly __queryType: QUERY;
     };
   };
   vovk: {
@@ -103,41 +102,27 @@ export interface _VovkRequest<BODY = undefined, QUERY extends object | undefined
 }
 
 export type _ControllerStaticMethod<
-  REQ extends _VovkRequest<undefined, _KnownAny> = _VovkRequest<undefined, Record<string, string | string[]>>,
+  REQ extends _VovkRequest<_KnownAny, _KnownAny> = _VovkRequest<undefined, Record<string, string | string[]>>,
   PARAMS extends { [key: string]: string } = _KnownAny,
 > = ((req: REQ, params: PARAMS) => unknown) & {
   _controller?: _VovkController;
 };
 
-export type _VovkControllerBody<
-  T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = Awaited<ReturnType<Parameters<T>[0]['json']>>;
+export type _VovkControllerBody<T extends _ControllerStaticMethod<_KnownAny, _KnownAny>> = Awaited<
+  ReturnType<Parameters<T>[0]['vovk']['body']>
+>;
 
-export type _VovkControllerQuery<
-  T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = Parameters<T>[0]['nextUrl']['searchParams']['__queryType'];
+export type _VovkControllerQuery<T extends _ControllerStaticMethod<_KnownAny, _KnownAny>> = ReturnType<
+  Parameters<T>[0]['vovk']['query']
+>;
 
-export type _VovkControllerParams<
-  T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = Parameters<T>[1];
+export type _VovkControllerParams<T extends _ControllerStaticMethod<_KnownAny, _KnownAny>> = Parameters<T>[1];
 
-export type _VovkControllerReturnType<
-  T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = Awaited<ReturnType<T>>;
+export type _VovkControllerReturnType<T extends _ControllerStaticMethod<_KnownAny, _KnownAny>> = Awaited<ReturnType<T>>;
 
-export type _VovkControllerYieldType<
-  T extends _ControllerStaticMethod<REQ, PARAMS>,
-  REQ extends _VovkRequest<undefined, _KnownAny> = Parameters<T>[0],
-  PARAMS extends { [key: string]: string } = _KnownAny,
-> = T extends (...args: _KnownAny[]) => AsyncGenerator<infer Y, _KnownAny, _KnownAny>
+export type _VovkControllerYieldType<T extends (req: _VovkRequest<_KnownAny, _KnownAny>) => _KnownAny> = T extends (
+  ...args: _KnownAny[]
+) => AsyncGenerator<infer Y, _KnownAny, _KnownAny>
   ? Y
   : T extends (...args: _KnownAny[]) => Generator<infer Y, _KnownAny, _KnownAny>
     ? Y
