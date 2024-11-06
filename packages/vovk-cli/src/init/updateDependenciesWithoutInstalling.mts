@@ -49,12 +49,12 @@ export default async function updateDependenciesWithoutInstalling({
   await updateDeps({ packageJson, packageNames: dependencyNames, channel, key: 'dependencies' });
   await updateDeps({ packageJson, packageNames: devDependencyNames, channel, key: 'devDependencies' });
   await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
-  log.info('Added dependencies to package.json:' + dependencyNames.join(', '));
+  log.info('Added dependencies to package.json:');
   for (const dependency of dependencyNames) {
-    log.raw.log(` - ${chalk.cyan(dependency)}`);
+    log.raw.info(` - ${chalk.cyan(dependency)}`);
   }
-  log.info('Added devDependencies to package.json:' + devDependencyNames.join(', '));
+  log.info('Added devDependencies to package.json:');
   for (const dependency of devDependencyNames) {
-    log.raw.log(` - ${chalk.cyan(dependency)}`);
+    log.raw.info(` - ${chalk.cyan(dependency)}`);
   }
 }
