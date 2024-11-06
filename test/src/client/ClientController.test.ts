@@ -3,9 +3,6 @@ import type ClientController from './ClientController';
 import type { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
 import {
-  _VovkClientBody,
-  _VovkClientParams,
-  _VovkClientQuery,
   _VovkControllerBody,
   _VovkControllerParams,
   _VovkControllerQuery,
@@ -100,9 +97,7 @@ describe('Client with vovk-client', () => {
     // @ts-expect-error Expect error
     null as unknown as VovkBody<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
     null as unknown as VovkBody<typeof ClientControllerRPC.getWithParams> satisfies undefined;
-    // @ts-expect-error Expect error
-    null as unknown as _VovkClientBody<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
-    null as unknown as _VovkClientBody<typeof ClientControllerRPC.getWithParams> satisfies undefined;
+
     // @ts-expect-error Expect error
     null as unknown as _VovkControllerBody<typeof ClientController.getWithParams> satisfies { hello: 'world' };
     null as unknown as _VovkControllerBody<typeof ClientController.getWithParams> satisfies undefined;
@@ -110,9 +105,7 @@ describe('Client with vovk-client', () => {
     // @ts-expect-error Expect error
     null as unknown as VovkQuery<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
     null as unknown as VovkQuery<typeof ClientControllerRPC.getWithParams> satisfies undefined;
-    // @ts-expect-error Expect error
-    null as unknown as _VovkClientQuery<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
-    null as unknown as _VovkClientQuery<typeof ClientControllerRPC.getWithParams> satisfies undefined;
+
     // @ts-expect-error Expect error
     null as unknown as _VovkControllerQuery<typeof ClientController.getWithParams> satisfies { hello: 'world' };
     null as unknown as _VovkControllerQuery<typeof ClientController.getWithParams> satisfies undefined;
@@ -120,9 +113,8 @@ describe('Client with vovk-client', () => {
     null as unknown as VovkParams<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
     // @ts-expect-error Expect error
     null as unknown as VovkParams<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'foo' };
-    null as unknown as _VovkClientParams<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
-    // @ts-expect-error Expect error
-    null as unknown as _VovkClientParams<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'foo' };
+    null as unknown as VovkParams<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
+
     null as unknown as _VovkControllerParams<typeof ClientController.getWithParams> satisfies { hello: 'world' };
     // @ts-expect-error Expect error
     null as unknown as _VovkControllerParams<typeof ClientController.getWithParams> satisfies { hello: 'foo' };
@@ -137,15 +129,9 @@ describe('Client with vovk-client', () => {
       query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
     });
 
-    type Body = _VovkControllerBody<typeof ClientController.postWithAll>;
-
-    type Query = _VovkControllerQuery<typeof ClientController.postWithAll>;
-
-    null as unknown as VovkBody<typeof ClientControllerRPC.postWithAll> satisfies Body;
     // @ts-expect-error Expect error
     null as unknown as VovkBody<typeof ClientControllerRPC.postWithAll> satisfies { hello: 'foo' };
 
-    null as unknown as VovkQuery<typeof ClientControllerRPC.postWithAll> satisfies Query;
     // @ts-expect-error Expect error
     null as unknown as VovkQuery<typeof ClientControllerRPC.postWithAll> satisfies { query: 'bar' };
 
@@ -160,18 +146,17 @@ describe('Client with vovk-client', () => {
   });
 
   it('Should handle requests body and query with using of req.vovk object', async () => {
+    const body = { isBody: true } as const;
+    const query = { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] } as const;
     const result = await ClientControllerRPC.postWithBodyAndQueryUsingReqVovk({
-      body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
+      body,
+      query,
     });
 
-    type Body = _VovkControllerBody<typeof ClientController.postWithBodyAndQueryUsingReqVovk>;
 
-    type Query = _VovkControllerQuery<typeof ClientController.postWithBodyAndQueryUsingReqVovk>;
+    null as unknown as VovkBody<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies typeof body;
 
-    null as unknown as VovkBody<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies Body;
-
-    null as unknown as VovkQuery<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies Query;
+    null as unknown as VovkQuery<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies typeof query;
 
     expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk>).toEqual({
       body: { isBody: true },

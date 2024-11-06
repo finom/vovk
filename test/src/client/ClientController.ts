@@ -88,7 +88,7 @@ export default class ClientController {
 
   @post('with-all-using-req-vovk')
   static async postWithBodyAndQueryUsingReqVovk(
-    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; array1: 'foo'[]; array2: ('bar' | 'baz')[] }>
+    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue'; array1: readonly ['foo']; array2: readonly ['bar', 'baz'] }>
   ) {
     req.vovk.meta({ isMeta1: true });
     req.vovk.meta({ isMeta2: true });
