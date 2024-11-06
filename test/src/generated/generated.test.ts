@@ -69,6 +69,7 @@ describe('Generated modules', () => {
           params: { id: 'id_1' },
           query: { q: 'hello' },
           body: { foo: 'bar' },
+          disableClientValidation: true,
         });
 
         const expectedResult = {
@@ -83,6 +84,7 @@ describe('Generated modules', () => {
       it('Get', async () => {
         const result = await rpc.read({
           query: { search: 'hello' },
+          disableClientValidation: true,
         });
 
         const expectedResult = {
