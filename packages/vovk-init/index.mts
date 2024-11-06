@@ -6,7 +6,7 @@ import initProgram from 'vovk-cli/dist/initProgram.mjs';
 
 const program = new Command();
 
-const packageJSON = JSON.parse(readFileSync(path.join(import.meta.dirname, '../package.json'), 'utf-8')) as {
+const packageJSON = JSON.parse(readFileSync(path.join(import.meta.dirname, './package.json'), 'utf-8')) as {
   version: string;
 };
 
