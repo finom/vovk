@@ -2,7 +2,7 @@
 import { Command } from 'commander';
 import path from 'path';
 import { readFileSync } from 'fs';
-import { initProgram } from 'vovk-cli';
+import initProgram from 'vovk-cli/dist/initProgram.mjs';
 
 const program = new Command();
 
