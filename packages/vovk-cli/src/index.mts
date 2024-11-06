@@ -24,6 +24,8 @@ const packageJSON = JSON.parse(readFileSync(path.join(import.meta.dirname, '../p
 
 program.name('vovk').description('Vovk CLI').version(packageJSON.version);
 
+initProgram(program, 'init ');
+
 program
   .command('dev')
   .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
@@ -93,8 +95,6 @@ program
 
     await generateClient(projectInfo, segments, schema.default);
   });
-
-initProgram(program, 'init ');
 
 program
   .command('new [components...]')

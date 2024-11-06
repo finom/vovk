@@ -1,12 +1,11 @@
-// reused at vovk-init
-
 import { Command } from 'commander';
 import { InitOptions } from './types.mjs';
 import { Init } from './init/index.mjs';
 
-export default function initProgram(program: Command, command: string) {
+// reused at vovk-init
+export default function initProgram(program: Command, command: string, isDefault = false) {
   return program
-    .command(command + '[prefix]')
+    .command(command + '[prefix]', { isDefault })
     .description('Initialize Vovk project')
     .option('-y, --yes', 'Skip all prompts and use default values')
     .option('--log-level <level>', 'Set log level', 'info')
