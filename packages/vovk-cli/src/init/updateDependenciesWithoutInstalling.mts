@@ -19,7 +19,6 @@ async function updateDeps({
 }) {
   return Promise.all(
     packageNames.map(async (packageName) => {
-      if (packageJson[key]?.[packageName]) return; // Skip if already present
       const metadata = await getNPMPackageMetadata(packageName);
       const isVovk = packageName.startsWith('vovk');
 
