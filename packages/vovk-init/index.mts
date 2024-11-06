@@ -12,7 +12,7 @@ const packageJSON = JSON.parse(readFileSync(path.join(import.meta.dirname, './pa
 
 program.name('vovk').description('Vovk Init CLI').version(packageJSON.version);
 
-initProgram(program, '');
+initProgram(program, '', true);
 
 program
   .command('help')
