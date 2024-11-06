@@ -24,7 +24,7 @@ describe('Generated modules', () => {
       update: NoValidationControllerServiceAndWorkerEntityRPC.updateNoValidationControllerServiceAndWorkerEntity,
       delete: NoValidationControllerServiceAndWorkerEntityRPC.deleteNoValidationControllerServiceAndWorkerEntity,
     },
-      'Controller only with Zod': {
+    'Controller only with Zod': {
       create: ZodControllerOnlyEntityRPC.createZodControllerOnlyEntity,
       read: ZodControllerOnlyEntityRPC.getZodControllerOnlyEntities,
       update: ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity,
@@ -47,7 +47,7 @@ describe('Generated modules', () => {
       read: YupControllerAndServiceEntityRPC.getYupControllerAndServiceEntities,
       update: YupControllerAndServiceEntityRPC.updateYupControllerAndServiceEntity,
       delete: YupControllerAndServiceEntityRPC.deleteYupControllerAndServiceEntity,
-    }, 
+    },
     'Controller only with DTO': {
       create: DtoControllerOnlyEntityRPC.createDtoControllerOnlyEntity,
       read: DtoControllerOnlyEntityRPC.getDtoControllerOnlyEntities,

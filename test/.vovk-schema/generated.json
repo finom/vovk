@@ -64,9 +64,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -81,15 +79,10 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ],
+              "required": ["foo"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -100,9 +93,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "q"
-              ],
+              "required": ["q"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -134,9 +125,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -151,15 +140,10 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ],
+              "required": ["foo"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -170,9 +154,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "q"
-              ],
+              "required": ["q"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -217,18 +199,11 @@
               "default": {},
               "properties": {
                 "foo": {
-                  "type": [
-                    "string"
-                  ],
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "type": ["string"],
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "type": "object",
@@ -280,18 +255,11 @@
               "default": {},
               "properties": {
                 "foo": {
-                  "type": [
-                    "string"
-                  ],
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "type": ["string"],
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "type": "object",

@@ -2,11 +2,7 @@ import { ClientControllerRPC } from '../../.vovk-client/client';
 import type ClientController from './ClientController';
 import type { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
-import {
-  _VovkControllerBody,
-  _VovkControllerParams,
-  _VovkControllerQuery,
-} from '../../../packages/vovk/types';
+import { _VovkControllerBody, _VovkControllerParams, _VovkControllerQuery } from '../../../packages/vovk/types';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -152,7 +148,6 @@ describe('Client with vovk-client', () => {
       body,
       query,
     });
-
 
     null as unknown as VovkBody<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies typeof body;
 
