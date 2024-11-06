@@ -3,9 +3,9 @@ import { InitOptions } from './types.mjs';
 import { Init } from './init/index.mjs';
 
 // reused at vovk-init
-export default function initProgram(program: Command, command: string, isDefault = false) {
+export default function initProgram(program: Command) {
   return program
-    .command(command + '[prefix]', { isDefault })
+    .argument('[prefix]', 'Directory to initialize project in', '.')
     .description('Initialize Vovk project')
     .option('-y, --yes', 'Skip all prompts and use default values')
     .option('--log-level <level>', 'Set log level', 'info')
