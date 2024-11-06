@@ -18,3 +18,9 @@ program
   .command('help')
   .description('Show help message')
   .action(() => program.help());
+
+program.parse(process.argv);
+
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+}
