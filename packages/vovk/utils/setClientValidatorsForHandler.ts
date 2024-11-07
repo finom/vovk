@@ -2,7 +2,7 @@ import { _KnownAny as KnownAny, _VovkController as VovkController } from '../typ
 
 export default function setClientValidatorsForHandler(
   h: (...args: KnownAny[]) => KnownAny,
-  validators: {
+  validation: {
     body: unknown;
     query: unknown;
   }
@@ -34,10 +34,7 @@ export default function setClientValidatorsForHandler(
         ...controller._handlers,
         [handlerName]: {
           ...controller._handlers[handlerName],
-          validation: {
-            body: validators.body,
-            query: validators.query,
-          },
+          validation,
         },
       };
 
