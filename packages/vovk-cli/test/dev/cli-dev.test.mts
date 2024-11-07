@@ -62,8 +62,8 @@ await describe('CLI dev', async () => {
 
         await new Promise((resolve) => setTimeout(resolve, 10_000));
 
-        assert.strictEqual((await getSchema()).controllers.UserRPC._controllerName, 'UserRPC');
-        assert.ok((await getSchema()).controllers.UserRPC._handlers.getUsers);
+        assert.strictEqual((await getSchema()).controllers.UserRPC.controllerName, 'UserRPC');
+        assert.ok((await getSchema()).controllers.UserRPC.handlers.getUsers);
 
         const segmentAbsolutePath = path.join(cwd, dir, 'src/app/api/[[...vovk]]/route.ts');
         const controllerAbsolutePath = path.join(cwd, dir, 'src/modules/user/UserController.ts');
@@ -74,7 +74,7 @@ await describe('CLI dev', async () => {
 
         await new Promise((resolve) => setTimeout(resolve, 10_000));
 
-        assert.strictEqual((await getSchema()).controllers.CustomUserRPC._controllerName, 'CustomUserRPC');
+        assert.strictEqual((await getSchema()).controllers.CustomUserRPC.controllerName, 'CustomUserRPC');
 
         const controllerCode = await fs.readFile(controllerAbsolutePath, 'utf8');
 
@@ -82,7 +82,7 @@ await describe('CLI dev', async () => {
 
         await new Promise((resolve) => setTimeout(resolve, 10_000));
 
-        assert.ok((await getSchema()).controllers.CustomUserRPC._handlers.getPeople);
+        assert.ok((await getSchema()).controllers.CustomUserRPC.handlers.getPeople);
         dev.kill();
       } catch (error) {
         dev.kill();

@@ -23,16 +23,16 @@ await describe('diffSchema', async () => {
       segmentName: '',
       workers: {
         WorkerA: {
-          _workerName: 'WorkerA',
-          _originalWorkerName: 'WorkerA',
-          _handlers: { handlerA: {} },
+          workerName: 'WorkerA',
+          originalWorkerName: 'WorkerA',
+          handlers: { handlerA: {} },
         },
       },
       controllers: {
         ControllerA: {
-          _controllerName: 'ControllerA',
-          _originalControllerName: 'ControllerA',
-          _handlers: {
+          controllerName: 'ControllerA',
+          originalControllerName: 'ControllerA',
+          handlers: {
             handlerB: {
               path: 'path',
               httpMethod: HttpMethod.GET,
@@ -66,21 +66,21 @@ await describe('diffSchema', async () => {
       segmentName: '',
       workers: {
         WorkerA: {
-          _workerName: 'WorkerA',
-          _originalWorkerName: 'WorkerA',
-          _handlers: { handlerA: {} },
+          workerName: 'WorkerA',
+          originalWorkerName: 'WorkerA',
+          handlers: { handlerA: {} },
         },
         WorkerB: {
-          _workerName: 'WorkerB',
-          _originalWorkerName: 'WorkerB',
-          _handlers: { handlerB: {} },
+          workerName: 'WorkerB',
+          originalWorkerName: 'WorkerB',
+          handlers: { handlerB: {} },
         },
       },
       controllers: {
         ControllerA: {
-          _controllerName: 'ControllerA',
-          _originalControllerName: 'ControllerA',
-          _handlers: {
+          controllerName: 'ControllerA',
+          originalControllerName: 'ControllerA',
+          handlers: {
             handlerC: {
               path: 'path',
               httpMethod: HttpMethod.GET,
@@ -95,21 +95,21 @@ await describe('diffSchema', async () => {
       segmentName: '',
       workers: {
         WorkerB: {
-          _workerName: 'WorkerB',
-          _originalWorkerName: 'WorkerB',
-          _handlers: { handlerB: {} },
+          workerName: 'WorkerB',
+          originalWorkerName: 'WorkerB',
+          handlers: { handlerB: {} },
         },
         WorkerC: {
-          _workerName: 'WorkerC',
-          _originalWorkerName: 'WorkerC',
-          _handlers: { handlerD: {} },
+          workerName: 'WorkerC',
+          originalWorkerName: 'WorkerC',
+          handlers: { handlerD: {} },
         },
       },
       controllers: {
         ControllerB: {
-          _controllerName: 'ControllerB',
-          _originalControllerName: 'ControllerB',
-          _handlers: {
+          controllerName: 'ControllerB',
+          originalControllerName: 'ControllerB',
+          handlers: {
             handlerE: {
               path: 'path',
               httpMethod: HttpMethod.GET,
@@ -141,16 +141,16 @@ await describe('diffSchema', async () => {
       segmentName: '',
       workers: {
         WorkerA: {
-          _workerName: 'WorkerA',
-          _originalWorkerName: 'WorkerA',
-          _handlers: { handlerA: {}, handlerB: {} },
+          workerName: 'WorkerA',
+          originalWorkerName: 'WorkerA',
+          handlers: { handlerA: {}, handlerB: {} },
         },
       },
       controllers: {
         ControllerA: {
-          _controllerName: 'ControllerA',
-          _originalControllerName: 'ControllerA',
-          _handlers: {
+          controllerName: 'ControllerA',
+          originalControllerName: 'ControllerA',
+          handlers: {
             handlerC: {
               path: 'path',
               httpMethod: HttpMethod.GET,
@@ -169,9 +169,9 @@ await describe('diffSchema', async () => {
       segmentName: '',
       workers: {
         WorkerA: {
-          _workerName: 'WorkerA',
-          _originalWorkerName: 'WorkerA',
-          _handlers: {
+          workerName: 'WorkerA',
+          originalWorkerName: 'WorkerA',
+          handlers: {
             handlerB: {}, // Unchanged
             handlerE: {}, // Added
             handlerA: { isGenerator: true }, // Changed
@@ -180,9 +180,9 @@ await describe('diffSchema', async () => {
       },
       controllers: {
         ControllerA: {
-          _controllerName: 'ControllerA',
-          _originalControllerName: 'ControllerA',
-          _handlers: {
+          controllerName: 'ControllerA',
+          originalControllerName: 'ControllerA',
+          handlers: {
             handlerD: {
               path: 'path',
               httpMethod: HttpMethod.GET,
@@ -236,21 +236,21 @@ await describe('diffSchema', async () => {
       segmentName: '',
       workers: {
         WorkerA: {
-          _workerName: 'WorkerA',
-          _originalWorkerName: 'WorkerA',
-          _handlers: { handlerA: {}, handlerB: {} },
+          workerName: 'WorkerA',
+          originalWorkerName: 'WorkerA',
+          handlers: { handlerA: {}, handlerB: {} },
         },
         WorkerB: {
-          _workerName: 'WorkerB',
-          _originalWorkerName: 'WorkerB',
-          _handlers: { handlerC: {} },
+          workerName: 'WorkerB',
+          originalWorkerName: 'WorkerB',
+          handlers: { handlerC: {} },
         },
       },
       controllers: {
         ControllerA: {
-          _controllerName: 'ControllerA',
-          _originalControllerName: 'ControllerA',
-          _handlers: {
+          controllerName: 'ControllerA',
+          originalControllerName: 'ControllerA',
+          handlers: {
             handlerD: {
               path: 'path',
               httpMethod: HttpMethod.GET,
@@ -265,21 +265,21 @@ await describe('diffSchema', async () => {
       segmentName: '',
       workers: {
         WorkerA: {
-          _workerName: 'WorkerA',
-          _originalWorkerName: 'WorkerA',
-          _handlers: { handlerB: {}, handlerE: {} },
+          workerName: 'WorkerA',
+          originalWorkerName: 'WorkerA',
+          handlers: { handlerB: {}, handlerE: {} },
         },
         WorkerC: {
-          _workerName: 'WorkerC',
-          _originalWorkerName: 'WorkerC',
-          _handlers: { handlerF: {} },
+          workerName: 'WorkerC',
+          originalWorkerName: 'WorkerC',
+          handlers: { handlerF: {} },
         },
       },
       controllers: {
         ControllerA: {
-          _controllerName: 'ControllerA',
-          _originalControllerName: 'ControllerA',
-          _handlers: {
+          controllerName: 'ControllerA',
+          originalControllerName: 'ControllerA',
+          handlers: {
             handlerD: {
               path: 'path',
               httpMethod: HttpMethod.GET,
@@ -291,9 +291,9 @@ await describe('diffSchema', async () => {
           },
         },
         ControllerB: {
-          _controllerName: 'ControllerB',
-          _originalControllerName: 'ControllerB',
-          _handlers: {
+          controllerName: 'ControllerB',
+          originalControllerName: 'ControllerB',
+          handlers: {
             handlerH: {
               path: 'path',
               httpMethod: HttpMethod.GET,

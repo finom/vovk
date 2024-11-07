@@ -54,19 +54,19 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 };
 
 export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
-  givenController: VovkControllerSchema,
+  controllerSchema: VovkControllerSchema,
   segmentName?: string,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
-  const controller = givenController as T & VovkControllerSchema;
+  const schema = controllerSchema as T & VovkControllerSchema;
   const client = {} as VovkClient<T, OPTS>;
-  if (!controller) throw new Error(`Unable to clientize. Controller schema is not provided`);
-  const schema = controller._handlers;
-  if (!schema) throw new Error(`Unable to clientize. No schema for controller ${String(controller?._controllerName)}`);
-  const controllerPrefix = trimPath(controller._prefix ?? '');
+  if (!schema) throw new Error(`Unable to clientize. Controller schema is not provided`);
+  if (!schema.handlers)
+    throw new Error(`Unable to clientize. No schema for controller ${String(schema?.controllerName)}`);
+  const controllerPrefix = trimPath(schema.prefix ?? '');
   const { fetcher: settingsFetcher = defaultFetcher } = options ?? {};
 
-  for (const [staticMethodName, { path, httpMethod, clientValidators }] of Object.entries(schema)) {
+  for (const [staticMethodName, { path, httpMethod, validation }] of Object.entries(schema.handlers)) {
     const getEndpoint = ({
       apiRoot,
       params,
@@ -97,7 +97,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
       const validate = async ({ body, query, endpoint }: { body?: unknown; query?: unknown; endpoint: string }) => {
         await (input.validateOnClient ?? options?.validateOnClient)?.(
           { body, query, endpoint },
-          clientValidators ?? {}
+          validation ?? {}
         );
       };
 

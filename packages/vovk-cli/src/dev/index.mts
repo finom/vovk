@@ -250,7 +250,6 @@ export class VovkDev {
     if (resp.status !== 200) {
       const probableCause = {
         404: 'The segment is not compiled.',
-        500: 'Syntax error in one of controllers.',
       }[resp.status];
       log.warn(
         `Schema request to ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}` : ''}`

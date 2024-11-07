@@ -3,10 +3,10 @@
   "segmentName": "generated",
   "controllers": {
     "NoValidationControllerOnlyEntityRPC": {
-      "_controllerName": "NoValidationControllerOnlyEntityRPC",
-      "_originalControllerName": "NoValidationControllerOnlyEntityController",
-      "_prefix": "no-validation-controller-only-entity",
-      "_handlers": {
+      "controllerName": "NoValidationControllerOnlyEntityRPC",
+      "originalControllerName": "NoValidationControllerOnlyEntityController",
+      "prefix": "no-validation-controller-only-entity",
+      "handlers": {
         "getNoValidationControllerOnlyEntities": {
           "path": "",
           "httpMethod": "GET"
@@ -26,10 +26,10 @@
       }
     },
     "NoValidationControllerServiceAndWorkerEntityRPC": {
-      "_controllerName": "NoValidationControllerServiceAndWorkerEntityRPC",
-      "_originalControllerName": "NoValidationControllerServiceAndWorkerEntityController",
-      "_prefix": "no-validation-controller-service-and-worker-entity",
-      "_handlers": {
+      "controllerName": "NoValidationControllerServiceAndWorkerEntityRPC",
+      "originalControllerName": "NoValidationControllerServiceAndWorkerEntityController",
+      "prefix": "no-validation-controller-service-and-worker-entity",
+      "handlers": {
         "getNoValidationControllerServiceAndWorkerEntities": {
           "path": "",
           "httpMethod": "GET"
@@ -49,14 +49,14 @@
       }
     },
     "ZodControllerOnlyEntityRPC": {
-      "_controllerName": "ZodControllerOnlyEntityRPC",
-      "_originalControllerName": "ZodControllerOnlyEntityController",
-      "_prefix": "zod-controller-only-entity",
-      "_handlers": {
+      "controllerName": "ZodControllerOnlyEntityRPC",
+      "originalControllerName": "ZodControllerOnlyEntityController",
+      "prefix": "zod-controller-only-entity",
+      "handlers": {
         "getZodControllerOnlyEntities": {
           "path": "",
           "httpMethod": "GET",
-          "clientValidators": {
+          "validation": {
             "query": {
               "type": "object",
               "properties": {
@@ -64,7 +64,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"],
+              "required": [
+                "search"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -73,16 +75,21 @@
         "updateZodControllerOnlyEntity": {
           "path": ":id",
           "httpMethod": "PUT",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"],
+              "required": [
+                "foo"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -93,7 +100,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"],
+              "required": [
+                "q"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -110,14 +119,14 @@
       }
     },
     "ZodControllerAndServiceEntityRPC": {
-      "_controllerName": "ZodControllerAndServiceEntityRPC",
-      "_originalControllerName": "ZodControllerAndServiceEntityController",
-      "_prefix": "zod-controller-and-service-entity",
-      "_handlers": {
+      "controllerName": "ZodControllerAndServiceEntityRPC",
+      "originalControllerName": "ZodControllerAndServiceEntityController",
+      "prefix": "zod-controller-and-service-entity",
+      "handlers": {
         "getZodControllerAndServiceEntities": {
           "path": "",
           "httpMethod": "GET",
-          "clientValidators": {
+          "validation": {
             "query": {
               "type": "object",
               "properties": {
@@ -125,7 +134,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"],
+              "required": [
+                "search"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -134,16 +145,21 @@
         "updateZodControllerAndServiceEntity": {
           "path": ":id",
           "httpMethod": "PUT",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"],
+              "required": [
+                "foo"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -154,7 +170,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"],
+              "required": [
+                "q"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -171,14 +189,14 @@
       }
     },
     "YupControllerOnlyEntityRPC": {
-      "_controllerName": "YupControllerOnlyEntityRPC",
-      "_originalControllerName": "YupControllerOnlyEntityController",
-      "_prefix": "yup-controller-only-entity",
-      "_handlers": {
+      "controllerName": "YupControllerOnlyEntityRPC",
+      "originalControllerName": "YupControllerOnlyEntityController",
+      "prefix": "yup-controller-only-entity",
+      "handlers": {
         "getYupControllerOnlyEntities": {
           "path": "",
           "httpMethod": "GET",
-          "clientValidators": {
+          "validation": {
             "query": {
               "type": "object",
               "default": {},
@@ -193,17 +211,24 @@
         "updateYupControllerOnlyEntity": {
           "path": ":id",
           "httpMethod": "PUT",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "default": {},
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -227,14 +252,14 @@
       }
     },
     "YupControllerAndServiceEntityRPC": {
-      "_controllerName": "YupControllerAndServiceEntityRPC",
-      "_originalControllerName": "YupControllerAndServiceEntityController",
-      "_prefix": "yup-controller-and-service-entity",
-      "_handlers": {
+      "controllerName": "YupControllerAndServiceEntityRPC",
+      "originalControllerName": "YupControllerAndServiceEntityController",
+      "prefix": "yup-controller-and-service-entity",
+      "handlers": {
         "getYupControllerAndServiceEntities": {
           "path": "",
           "httpMethod": "GET",
-          "clientValidators": {
+          "validation": {
             "query": {
               "type": "object",
               "default": {},
@@ -249,17 +274,24 @@
         "updateYupControllerAndServiceEntity": {
           "path": ":id",
           "httpMethod": "PUT",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "default": {},
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -283,14 +315,14 @@
       }
     },
     "DtoControllerOnlyEntityRPC": {
-      "_controllerName": "DtoControllerOnlyEntityRPC",
-      "_originalControllerName": "DtoControllerOnlyEntityController",
-      "_prefix": "dto-controller-only-entity",
-      "_handlers": {
+      "controllerName": "DtoControllerOnlyEntityRPC",
+      "originalControllerName": "DtoControllerOnlyEntityController",
+      "prefix": "dto-controller-only-entity",
+      "handlers": {
         "getDtoControllerOnlyEntities": {
           "path": "",
           "httpMethod": "GET",
-          "clientValidators": {
+          "validation": {
             "body": null,
             "query": {
               "isDTO": true
@@ -300,7 +332,7 @@
         "updateDtoControllerOnlyEntity": {
           "path": ":id",
           "httpMethod": "PUT",
-          "clientValidators": {
+          "validation": {
             "body": {
               "isDTO": true
             },
@@ -320,14 +352,14 @@
       }
     },
     "DtoControllerAndServiceEntityRPC": {
-      "_controllerName": "DtoControllerAndServiceEntityRPC",
-      "_originalControllerName": "DtoControllerAndServiceEntityController",
-      "_prefix": "dto-controller-and-service-entity",
-      "_handlers": {
+      "controllerName": "DtoControllerAndServiceEntityRPC",
+      "originalControllerName": "DtoControllerAndServiceEntityController",
+      "prefix": "dto-controller-and-service-entity",
+      "handlers": {
         "getDtoControllerAndServiceEntities": {
           "path": "",
           "httpMethod": "GET",
-          "clientValidators": {
+          "validation": {
             "body": null,
             "query": {
               "isDTO": true
@@ -337,7 +369,7 @@
         "updateDtoControllerAndServiceEntity": {
           "path": ":id",
           "httpMethod": "PUT",
-          "clientValidators": {
+          "validation": {
             "body": {
               "isDTO": true
             },
@@ -359,9 +391,9 @@
   },
   "workers": {
     "NoValidationControllerServiceAndWorkerEntityWPC": {
-      "_workerName": "NoValidationControllerServiceAndWorkerEntityWPC",
-      "_originalWorkerName": "NoValidationControllerServiceAndWorkerEntityWorker",
-      "_handlers": {
+      "workerName": "NoValidationControllerServiceAndWorkerEntityWPC",
+      "originalWorkerName": "NoValidationControllerServiceAndWorkerEntityWorker",
+      "handlers": {
         "heavyComputation": {},
         "heavyComputationGenerator": {
           "isGenerator": true

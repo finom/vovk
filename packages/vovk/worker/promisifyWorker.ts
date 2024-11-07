@@ -7,10 +7,10 @@ import type {
 
 export function _promisifyWorker<T extends object>(
   currentWorker: Worker | null,
-  givenWorkerService: object
+  workerSchema: object
 ): WorkerPromiseInstance<T> {
-  if (!givenWorkerService) throw new Error('Worker schema is not provided');
-  const workerService = givenWorkerService as T & VovkWorkerSchema;
+  if (!workerSchema) throw new Error('Worker schema is not provided');
+  const schema = workerSchema as T & VovkWorkerSchema;
   const instance = {
     worker: currentWorker,
   } as WorkerPromiseInstance<T>;
@@ -30,12 +30,10 @@ export function _promisifyWorker<T extends object>(
     return instance;
   };
 
-  instance.fork = (worker: Worker) => {
-    return _promisifyWorker<T>(worker, givenWorkerService);
-  };
+  instance.fork = (worker: Worker) => _promisifyWorker<T>(worker, schema);
 
-  for (const methodName of Object.keys(workerService._handlers) as (keyof T & string)[]) {
-    const { isGenerator } = workerService._handlers[methodName];
+  for (const methodName of Object.keys(schema.handlers) as (keyof T & string)[]) {
+    const { isGenerator } = schema.handlers[methodName];
 
     if (isGenerator) {
       const method = (...args: unknown[]) => {

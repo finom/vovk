@@ -3,10 +3,10 @@
   "segmentName": "foo/client",
   "controllers": {
     "ClientControllerRPC": {
-      "_controllerName": "ClientControllerRPC",
-      "_originalControllerName": "ClientController",
-      "_prefix": "client",
-      "_handlers": {
+      "controllerName": "ClientControllerRPC",
+      "originalControllerName": "ClientController",
+      "prefix": "client",
+      "handlers": {
         "getHelloWorldResponseObject": {
           "httpMethod": "GET",
           "path": "get-hello-world-response-object"
@@ -54,10 +54,10 @@
       }
     },
     "StreamingControllerRPC": {
-      "_controllerName": "StreamingControllerRPC",
-      "_originalControllerName": "StreamingController",
-      "_prefix": "streaming",
-      "_handlers": {
+      "controllerName": "StreamingControllerRPC",
+      "originalControllerName": "StreamingController",
+      "prefix": "streaming",
+      "handlers": {
         "postWithStreaming": {
           "httpMethod": "POST",
           "path": "post-with-streaming"
@@ -81,10 +81,10 @@
       }
     },
     "StreamingGeneratorControllerRPC": {
-      "_controllerName": "StreamingGeneratorControllerRPC",
-      "_originalControllerName": "StreamingGeneratorController",
-      "_prefix": "streaming-generator",
-      "_handlers": {
+      "controllerName": "StreamingGeneratorControllerRPC",
+      "originalControllerName": "StreamingGeneratorController",
+      "prefix": "streaming-generator",
+      "handlers": {
         "postWithAsyncStreaming": {
           "httpMethod": "POST",
           "path": "post-with-async-streaming"
@@ -112,12 +112,12 @@
       }
     },
     "CostomSchemaControllerRPC": {
-      "_controllerName": "CostomSchemaControllerRPC",
-      "_originalControllerName": "CostomSchemaController",
-      "_prefix": "",
-      "_handlers": {
+      "controllerName": "CostomSchemaControllerRPC",
+      "originalControllerName": "CostomSchemaController",
+      "prefix": "",
+      "handlers": {
         "getWithCustomSchema": {
-          "customSchema": {
+          "custom": {
             "hello": "world"
           },
           "httpMethod": "GET",
@@ -126,14 +126,14 @@
       }
     },
     "WithZodClientControllerRPC": {
-      "_controllerName": "WithZodClientControllerRPC",
-      "_originalControllerName": "WithZodClientController",
-      "_prefix": "with-zod",
-      "_handlers": {
+      "controllerName": "WithZodClientControllerRPC",
+      "originalControllerName": "WithZodClientController",
+      "prefix": "with-zod",
+      "handlers": {
         "postWithBodyAndQuery": {
           "httpMethod": "POST",
           "path": "post-with-body-and-query",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "properties": {
@@ -142,7 +142,9 @@
                   "const": "body"
                 }
               },
-              "required": ["hello"],
+              "required": [
+                "hello"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -154,7 +156,9 @@
                   "const": "query"
                 }
               },
-              "required": ["hey"],
+              "required": [
+                "hey"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -163,7 +167,7 @@
         "putWithBodyAndNullQuery": {
           "httpMethod": "PUT",
           "path": "put-with-body-and-null-query",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "properties": {
@@ -172,7 +176,9 @@
                   "const": "body"
                 }
               },
-              "required": ["hello"],
+              "required": [
+                "hello"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -181,7 +187,7 @@
         "putWithBodyOnly": {
           "httpMethod": "DELETE",
           "path": "put-with-body-only",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "properties": {
@@ -190,7 +196,9 @@
                   "const": "body"
                 }
               },
-              "required": ["hello"],
+              "required": [
+                "hello"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -199,7 +207,7 @@
         "getWithQueryAndNullBody": {
           "httpMethod": "GET",
           "path": "get-with-query-and-null-body",
-          "clientValidators": {
+          "validation": {
             "query": {
               "type": "object",
               "properties": {
@@ -208,7 +216,9 @@
                   "const": "query"
                 }
               },
-              "required": ["hey"],
+              "required": [
+                "hey"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -217,24 +227,28 @@
       }
     },
     "WithYupClientControllerRPC": {
-      "_controllerName": "WithYupClientControllerRPC",
-      "_originalControllerName": "WithYupClientController",
-      "_prefix": "with-yup",
-      "_handlers": {
+      "controllerName": "WithYupClientControllerRPC",
+      "originalControllerName": "WithYupClientController",
+      "prefix": "with-yup",
+      "handlers": {
         "postWithBodyAndQuery": {
           "httpMethod": "POST",
           "path": "post-with-body-and-query",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "default": {},
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": ["body"]
+                  "enum": [
+                    "body"
+                  ]
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             },
             "query": {
               "type": "object",
@@ -242,75 +256,91 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": ["query"]
+                  "enum": [
+                    "query"
+                  ]
                 }
               },
-              "required": ["hey"]
+              "required": [
+                "hey"
+              ]
             }
           }
         },
         "putWithBodyAndNullQuery": {
           "httpMethod": "PUT",
           "path": "put-with-body-and-null-query",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "default": {},
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": ["body"]
+                  "enum": [
+                    "body"
+                  ]
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             }
           }
         },
         "putWithBodyOnly": {
           "httpMethod": "DELETE",
           "path": "put-with-body-only",
-          "clientValidators": {
+          "validation": {
             "body": {
               "type": "object",
               "default": {},
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": ["body"]
+                  "enum": [
+                    "body"
+                  ]
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             }
           }
         },
         "getWithQueryAndNullBody": {
           "httpMethod": "GET",
           "path": "get-with-query-and-null-body",
-          "clientValidators": {
+          "validation": {
             "query": {
               "type": "object",
               "default": {},
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": ["query"]
+                  "enum": [
+                    "query"
+                  ]
                 }
               },
-              "required": ["hey"]
+              "required": [
+                "hey"
+              ]
             }
           }
         }
       }
     },
     "WithDtoClientControllerRPC": {
-      "_controllerName": "WithDtoClientControllerRPC",
-      "_originalControllerName": "WithDtoClientController",
-      "_prefix": "with-dto",
-      "_handlers": {
+      "controllerName": "WithDtoClientControllerRPC",
+      "originalControllerName": "WithDtoClientController",
+      "prefix": "with-dto",
+      "handlers": {
         "postWithBodyQueryAndParams": {
           "path": "with-params/:param",
           "httpMethod": "POST",
-          "clientValidators": {
+          "validation": {
             "body": {
               "isDTO": true
             },
@@ -322,7 +352,7 @@
         "postWithBodyAndQueryTransformed": {
           "httpMethod": "POST",
           "path": "post-with-body-and-query-transformed",
-          "clientValidators": {
+          "validation": {
             "body": {
               "isDTO": true
             },
@@ -334,7 +364,7 @@
         "putWithBodyAndNullQuery": {
           "httpMethod": "PUT",
           "path": "put-with-body-and-null-query",
-          "clientValidators": {
+          "validation": {
             "body": {
               "isDTO": true
             },
@@ -344,7 +374,7 @@
         "putWithBodyOnly": {
           "httpMethod": "DELETE",
           "path": "put-with-body-only",
-          "clientValidators": {
+          "validation": {
             "body": {
               "isDTO": true
             },
@@ -354,7 +384,7 @@
         "getWithQueryAndNullBody": {
           "httpMethod": "GET",
           "path": "get-with-query-and-null-body",
-          "clientValidators": {
+          "validation": {
             "body": null,
             "query": {
               "isDTO": true
@@ -364,7 +394,7 @@
         "postWithBodyAndQueryWithReqVovk": {
           "httpMethod": "POST",
           "path": "post-with-body-and-query-with-req-vovk",
-          "clientValidators": {
+          "validation": {
             "body": {
               "isDTO": true
             },
@@ -376,7 +406,7 @@
         "getWithQueryArrayAndNullBody": {
           "httpMethod": "GET",
           "path": "get-with-query-array-and-null-body",
-          "clientValidators": {
+          "validation": {
             "body": null,
             "query": {
               "isDTO": true
@@ -386,7 +416,7 @@
         "putWithMappedType": {
           "httpMethod": "PUT",
           "path": "put-with-mapped-type",
-          "clientValidators": {
+          "validation": {
             "body": {
               "isDTO": true
             },

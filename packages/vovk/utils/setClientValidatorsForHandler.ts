@@ -34,7 +34,7 @@ export default function setClientValidatorsForHandler(
         ...controller._handlers,
         [handlerName]: {
           ...controller._handlers[handlerName],
-          clientValidators: {
+          validation: {
             body: validators.body,
             query: validators.query,
           },

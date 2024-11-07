@@ -22,21 +22,21 @@ export type _VovkErrorResponse = {
 export type _HandlerSchema = {
   path: string;
   httpMethod: _HttpMethod;
-  clientValidators?: { query?: _KnownAny; body?: _KnownAny };
-  customSchema?: Record<string, _KnownAny>;
+  validation?: { query?: _KnownAny; body?: _KnownAny };
+  custom?: Record<string, _KnownAny>;
 };
 
 export type _VovkControllerSchema = {
-  _controllerName: string;
-  _originalControllerName: string;
-  _prefix?: string;
-  _handlers: Record<string, _HandlerSchema>;
+  controllerName: string;
+  originalControllerName: string;
+  prefix?: string;
+  handlers: Record<string, _HandlerSchema>;
 };
 
 export type _VovkWorkerSchema = {
-  _workerName: string;
-  _originalWorkerName: string;
-  _handlers: Record<
+  workerName: string;
+  originalWorkerName: string;
+  handlers: Record<
     string,
     {
       isGenerator?: true;
@@ -44,7 +44,10 @@ export type _VovkWorkerSchema = {
   >;
 };
 
-export type _VovkControllerInternal = _VovkControllerSchema & {
+export type _VovkControllerInternal = {
+  _controllerName?: _VovkControllerSchema['controllerName'];
+  _prefix?: _VovkControllerSchema['prefix'];
+  _handlers: _VovkControllerSchema['handlers'];
   _activated?: true;
   _onError?: (err: Error, req: _VovkRequest) => void | Promise<void>;
 };
@@ -54,10 +57,10 @@ export type _VovkController = _StaticClass &
     [key: string]: unknown;
   };
 
-export type _VovkWorker = _StaticClass &
-  _VovkWorkerSchema & {
-    [key: string]: unknown;
-  };
+export type _VovkWorker = _StaticClass & {
+  _handlers: _VovkWorkerSchema['handlers'];
+  [key: string]: unknown;
+};
 
 export type _DecoratorOptions = {
   cors?: boolean;

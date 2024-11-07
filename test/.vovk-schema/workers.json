@@ -4,9 +4,9 @@
   "controllers": {},
   "workers": {
     "MyWorkerWPC": {
-      "_workerName": "MyWorkerWPC",
-      "_originalWorkerName": "MyWorker",
-      "_handlers": {
+      "workerName": "MyWorkerWPC",
+      "originalWorkerName": "MyWorker",
+      "handlers": {
         "getClientizeHelloWorld": {},
         "calculateFibonacci": {},
         "findLargestPrimeBelow": {},
@@ -25,9 +25,9 @@
       }
     },
     "MyInnerWorkerWPC": {
-      "_workerName": "MyInnerWorkerWPC",
-      "_originalWorkerName": "MyInnerWorker",
-      "_handlers": {
+      "workerName": "MyInnerWorkerWPC",
+      "originalWorkerName": "MyInnerWorker",
+      "handlers": {
         "calculateFibonacci": {}
       }
     }

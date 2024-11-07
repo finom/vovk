@@ -44,7 +44,7 @@ describe('Hidden features', () => {
       (_req: NextRequest, next) => next(),
       (helloBody: 'helloBody', helloQuery: 'helloQuery') => {
         return {
-          clientValidators: {
+          validation: {
             body: { iAmABodyValidator: helloBody },
             query: { iAmAQueryValidator: helloQuery },
           },
@@ -62,11 +62,11 @@ describe('Hidden features', () => {
 
     expect((MyController as unknown as VovkController)._handlers).toHaveProperty('myMethod');
 
-    expect((MyController as unknown as VovkController)._handlers?.myMethod.clientValidators?.body).toEqual({
+    expect((MyController as unknown as VovkController)._handlers?.myMethod.validation?.body).toEqual({
       iAmABodyValidator: 'helloBody',
     });
 
-    expect((MyController as unknown as VovkController)._handlers?.myMethod.clientValidators?.query).toEqual({
+    expect((MyController as unknown as VovkController)._handlers?.myMethod.validation?.query).toEqual({
       iAmAQueryValidator: 'helloQuery',
     });
   });

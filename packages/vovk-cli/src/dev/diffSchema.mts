@@ -20,7 +20,7 @@ export interface DiffResult {
   controllers: WorkersOrControllersDiff;
 }
 
-export function diffHandlers<T extends _VovkWorkerSchema['_handlers'] | _VovkControllerSchema['_handlers']>(
+export function diffHandlers<T extends _VovkWorkerSchema['handlers'] | _VovkControllerSchema['handlers']>(
   oldHandlers: T,
   newHandlers: T,
   nameOfClass: string
@@ -58,7 +58,7 @@ export function diffWorkersOrControllers<T extends VovkSchema['controllers'] | V
     if (!(item in oldItems)) {
       added.push(item);
     } else {
-      const handlers = diffHandlers(oldItems[item]._handlers, newItem._handlers, item);
+      const handlers = diffHandlers(oldItems[item].handlers, newItem.handlers, item);
       if (handlers.added.length || handlers.removed.length || handlers.changed.length) {
         handlersDiff.push(handlers);
       }

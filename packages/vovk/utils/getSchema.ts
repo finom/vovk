@@ -25,16 +25,16 @@ export default function getSchema(options: {
 
   for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
     schema.controllers[controllerName] = {
-      _controllerName: controllerName,
-      _originalControllerName: controller.name,
-      _prefix: controller._prefix ?? '',
-      _handlers: {
+      controllerName: controllerName,
+      originalControllerName: controller.name,
+      prefix: controller._prefix ?? '',
+      handlers: {
         ...(exposeValidation
           ? controller._handlers
           : Object.fromEntries(
               Object.entries(controller._handlers).map(([key, value]) => [
                 key,
-                { ...value, clientValidators: undefined },
+                { ...value, validation: undefined },
               ])
             )),
       },
@@ -43,9 +43,9 @@ export default function getSchema(options: {
 
   for (const [workerName, worker] of Object.entries(options.workers ?? {}) as [string, VovkWorker][]) {
     schema.workers[workerName] = {
-      _workerName: workerName,
-      _originalWorkerName: worker.name,
-      _handlers: { ...worker._handlers },
+      workerName,
+      originalWorkerName: worker.name,
+      handlers: { ...worker._handlers },
     };
   }
 

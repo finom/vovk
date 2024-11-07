@@ -1,11 +1,11 @@
 import { createDecorator, get } from 'vovk';
 
-const customSchema = createDecorator(null, (hello: 'world') => {
+const custom = createDecorator(null, (hello: 'world') => {
   return (handlerSchema) => {
     return {
       ...handlerSchema,
-      customSchema: {
-        ...handlerSchema?.customSchema,
+      custom: {
+        ...handlerSchema?.custom,
         hello,
       },
     };
@@ -15,7 +15,7 @@ const customSchema = createDecorator(null, (hello: 'world') => {
 export default class CostomSchemaController {
   // The endpoint itself isn't going to be tested, it modifies .vovk.json that in its turn is tested
   @get.auto()
-  @customSchema('world')
+  @custom('world')
   static getWithCustomSchema() {
     return null;
   }

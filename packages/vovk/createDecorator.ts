@@ -39,8 +39,8 @@ export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
         [propertyKey]: {
           ...handlerSchema,
           // avoid override of path and httpMethod
-          ...(initResult?.clientValidators ? { clientValidators: initResult.clientValidators } : {}),
-          ...(initResult?.customSchema ? { customSchema: initResult.customSchema } : {}),
+          ...(initResult?.validation ? { validation: initResult.validation } : {}),
+          ...(initResult?.custom ? { custom: initResult.custom } : {}),
         },
       };
 
