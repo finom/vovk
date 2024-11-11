@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 
-await describe.only('CLI new controller only', async () => {
+await describe('CLI new controller only', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir',
@@ -170,7 +170,7 @@ await describe.only('CLI new controller only', async () => {
     ]);
   });
 
-  await it.only('New controller with dto validation library', async () => {
+  await it('New controller with dto validation library', async () => {
     await createNextApp();
     await vovkInit('--yes --validation-library=vovk-dto');
     await runAtProjectDir('../dist/index.mjs new segment');
