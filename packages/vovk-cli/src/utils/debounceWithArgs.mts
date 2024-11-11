@@ -14,9 +14,6 @@ export default function debounceWithArgs<T extends (...args: KnownAny[]) => Know
       debouncedFunctions.set(key, debounce(fn, wait));
     }
 
-    const debouncedFn = debouncedFunctions.get(key);
-    if (debouncedFn) {
-      debouncedFn(...args);
-    }
+    return debouncedFunctions.get(key)!(...args);
   };
 }

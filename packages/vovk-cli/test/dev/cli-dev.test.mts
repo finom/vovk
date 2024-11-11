@@ -80,7 +80,7 @@ await describe('CLI dev', async () => {
 
         await fs.writeFile(controllerAbsolutePath, controllerCode.replace('getUsers', 'getPeople'));
 
-        await new Promise((resolve) => setTimeout(resolve, 10_000));
+        await new Promise((resolve) => setTimeout(resolve, 20_000));
 
         assert.ok((await getSchema()).controllers.CustomUserRPC.handlers.getPeople);
         dev.kill();

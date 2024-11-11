@@ -214,8 +214,8 @@ export class VovkDev {
       const affectedSegments = this.#segments.filter((s) => {
         const schema = this.#schemas[s.segmentName];
         if (!schema) return false;
-        const controllersByOriginalName = keyBy(schema.controllers, '_originalControllerName');
-        const workersByOriginalName = keyBy(schema.workers, '_originalWorkerName');
+        const controllersByOriginalName = keyBy(schema.controllers, 'originalControllerName' satisfies keyof VovkSchema['controllers'][string]);
+        const workersByOriginalName = keyBy(schema.workers, 'originalWorkerName' satisfies keyof VovkSchema['workers'][string]);
 
         return namesOfClasses.some(
           (name) =>
@@ -234,6 +234,8 @@ export class VovkDev {
         for (const segment of affectedSegments) {
           await this.#requestSchema(segment.segmentName);
         }
+      } else {
+        log.debug(`The class ${namesOfClasses.join(', ')} does not belong to any segment`);
       }
     } else {
       log.debug(`The file does not contain any controller or worker`);
