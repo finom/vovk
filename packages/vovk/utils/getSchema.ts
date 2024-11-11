@@ -32,7 +32,7 @@ export default function getSchema(options: {
         ...(exposeValidation
           ? controller._handlers
           : Object.fromEntries(
-              Object.entries(controller._handlers).map(([key, value]) => [
+              Object.entries(controller._handlers ?? {}).map(([key, value]) => [
                 key,
                 { ...value, validation: undefined },
               ])
