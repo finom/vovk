@@ -311,8 +311,8 @@ export class VovkDev {
     }
   }
 
-  async start({ clientOutDir }: { clientOutDir?: string } = {}) {
-    this.#projectInfo = await getProjectInfo({ clientOutDir });
+  async start() {
+    this.#projectInfo = await getProjectInfo();
     const { log, config, cwd, apiDir } = this.#projectInfo;
 
     if (config.devHttps) {

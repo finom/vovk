@@ -52,7 +52,6 @@ export type VovkModuleRenderResult = {
 
 /* CLI Commands */
 export interface DevOptions {
-  clientOut?: string;
   nextDev?: boolean;
 }
 

@@ -29,7 +29,6 @@ initProgram(program.command('init'));
 program
   .command('dev')
   .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
-  .option('--client-out <path>', 'Path to client output directory')
   .option('--next-dev', 'Start schema watcher and Next.js with automatic port allocation', false)
   .allowUnknownOption(true)
   .action(async (options: DevOptions, command: Command) => {
@@ -52,17 +51,14 @@ program
       const { result } = concurrently(
         [
           {
-            command: `node ${import.meta.dirname}/dev/index.mjs`,
-            name: 'Vovk Dev Command',
-            env: Object.assign(
-              { PORT, __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const },
-              options.clientOut ? { VOVK_CLIENT_OUT_DIR: options.clientOut } : {}
-            ),
-          },
-          {
             command: `npx next dev ${command.args.join(' ')}`,
             name: 'Next.js Development Server',
             env: { PORT },
+          },
+          {
+            command: `node ${import.meta.dirname}/dev/index.mjs`,
+            name: 'Vovk Dev Command',
+            env: { PORT, __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const },
           },
         ],
         {
@@ -76,7 +72,7 @@ program
         // do nothing, all processes are killed
       }
     } else {
-      void new VovkDev().start({ clientOutDir: options.clientOut });
+      void new VovkDev().start();
     }
   });
 
