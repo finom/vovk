@@ -5,6 +5,7 @@ export default async function updateNPMScripts(root: string, updateScriptsMode: 
 
   pkgJson.update({
     scripts: {
+      ...pkgJson.content.scripts,
       generate: 'vovk generate',
       dev:
         updateScriptsMode === 'explicit'

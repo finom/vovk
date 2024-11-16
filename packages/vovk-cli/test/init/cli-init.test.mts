@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import omit from 'lodash/omit.js';
 import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 import { DOWN, ENTER } from '../lib/runScript.mjs';
+import { PackageJson } from 'type-fest';
 
 await describe('CLI init', async () => {
   const dir = 'tmp_test_dir';
@@ -22,11 +23,17 @@ await describe('CLI init', async () => {
     assertTsConfig,
   } = getCLIAssertions({ cwd, dir });
 
-  await it('Works with --yes', async () => {
+  await it('Works with --yes and does not change other scripts', async () => {
     await createNextApp();
+
+    const packageJSON = JSON.parse(await fs.readFile(path.join(cwd, dir, 'package.json'), 'utf-8')) as PackageJson;
+    packageJSON.scripts!.test = 'jest';
+    await fs.writeFile(path.join(cwd, dir, 'package.json'), JSON.stringify(packageJSON, null, 2));
+
     await vovkInit('--yes');
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
+    
     await assertDeps({
       dependencies: ['vovk', 'vovk-zod', 'zod'],
       devDependencies: ['vovk-cli'],
@@ -35,6 +42,8 @@ await describe('CLI init', async () => {
     await assertScripts({
       dev: 'vovk dev --next-dev',
       generate: 'vovk generate',
+      test: 'jest',
+      build: 'next build',
     });
 
     await assertTsConfig();
