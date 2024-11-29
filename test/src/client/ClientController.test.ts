@@ -1,6 +1,6 @@
 import { ClientControllerRPC } from '../../.vovk-client/client';
 import type ClientController from './ClientController';
-import type { VovkBody, VovkParams, VovkQuery, VovkReturnType } from '../../../packages/vovk';
+import { HttpStatus, type VovkBody, type VovkErrorResponse, type VovkParams, type VovkQuery, type VovkReturnType } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
 import { _VovkControllerBody, _VovkControllerParams, _VovkControllerQuery } from '../../../packages/vovk/types';
 
@@ -51,6 +51,18 @@ describe('Client with vovk-client', () => {
   it('Should override type with client method generic', async () => {
     const result = await ClientControllerRPC.getHelloWorldResponseObject<{ override: true }>();
     expect(result satisfies { override: true }).toEqual({ hello: 'world' });
+  });
+
+  it('Should rethrow exceptions', async () => {
+    try {
+      await ClientControllerRPC.getErrorResponse();
+    } catch(e) {
+      const err = e as VovkErrorResponse;
+
+      expect(err.statusCode).toEqual(HttpStatus.BAD_REQUEST);
+      expect(err.message).toEqual('This is an error');
+      expect(err.cause).toEqual({ theCause: 'This is the cause' });
+    }
   });
 
   it('Should transform response using "transform" option and override type with client method generic', async () => {

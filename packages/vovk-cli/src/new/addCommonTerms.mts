@@ -3,6 +3,7 @@ import pluralize from 'pluralize';
 // feel free to open a direct PR if you have more common terms to add
 const terms = [
   ['entity', 'entities'],
+  ['entry', 'entries'],
   ['regex', 'regexes'],
   ['index', 'indices'],
   ['matrix', 'matrices'],

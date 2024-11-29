@@ -50,6 +50,10 @@
         "postWithBodyAndQueryUsingReqVovk": {
           "path": "with-all-using-req-vovk",
           "httpMethod": "POST"
+        },
+        "getErrorResponse": {
+          "path": "error",
+          "httpMethod": "GET"
         }
       }
     },

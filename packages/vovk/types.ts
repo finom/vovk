@@ -14,6 +14,7 @@ export type _VovkSchema = {
 };
 
 export type _VovkErrorResponse = {
+  cause?: unknown;
   statusCode: _HttpStatus;
   message: string;
   isError: true;

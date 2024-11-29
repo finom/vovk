@@ -72,10 +72,11 @@ export class _Segment {
     });
   };
 
-  #respondWithError = (statusCode: HttpStatus, message: string, options?: DecoratorOptions) => {
+  #respondWithError = (statusCode: HttpStatus, message: string, options?: DecoratorOptions, cause?: unknown) => {
     return this.respond(
       statusCode,
       {
+        cause,
         statusCode,
         message,
         isError: true,
@@ -226,7 +227,7 @@ export class _Segment {
 
       if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
         const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
-        return this.#respondWithError(statusCode, err.message, staticMethod._options);
+        return this.#respondWithError(statusCode, err.message, staticMethod._options, err.cause);
       }
 
       throw e; // if NEXT_REDIRECT or NEXT_NOT_FOUND, rethrow it

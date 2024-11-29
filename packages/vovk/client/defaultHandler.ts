@@ -15,7 +15,8 @@ export const _defaultHandler = async (response: Response) => {
 
   if (!response.ok) {
     // handle server errors
-    throw new HttpException(response.status, (result as VovkErrorResponse)?.message ?? DEFAULT_ERROR_MESSAGE);
+    const errorResponse = result as VovkErrorResponse;
+    throw new HttpException(response.status, errorResponse?.message ?? DEFAULT_ERROR_MESSAGE, errorResponse?.cause);
   }
 
   return result;

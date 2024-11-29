@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { VovkRequest, get, post, prefix } from 'vovk';
+import { HttpException, HttpStatus, VovkRequest, get, post, prefix } from 'vovk';
 import { NextResponse } from 'next/server';
 
 @prefix('client')
@@ -105,5 +105,10 @@ export default class ClientController {
     const metaNulled = req.vovk.meta();
 
     return { body, query, meta, metaNulled };
+  }
+
+  @get('error')
+  static getErrorResponse() {
+    throw new HttpException(HttpStatus.BAD_REQUEST, 'This is an error', { theCause: 'This is the cause' });
   }
 }
