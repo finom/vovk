@@ -102,6 +102,7 @@ export interface _VovkRequest<BODY = undefined, QUERY extends object | undefined
     body: () => Promise<BODY>;
     query: () => QUERY;
     meta: <T = Record<_KnownAny, _KnownAny>>(meta?: T | null) => T;
+    form: <T = _KnownAny>() => Promise<T>;
   };
 }
 

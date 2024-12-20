@@ -12,6 +12,7 @@ import { _HttpException as HttpException } from './HttpException';
 import { _StreamJSONResponse as StreamJSONResponse } from './StreamJSONResponse';
 import reqQuery from './utils/reqQuery';
 import reqMeta from './utils/reqMeta';
+import reqForm from './utils/reqForm';
 
 export class _Segment {
   private static getHeadersFromOptions(options?: DecoratorOptions) {
@@ -175,6 +176,7 @@ export class _Segment {
       body: () => req.json(),
       query: () => reqQuery(req),
       meta: <T = _KnownAny>(meta?: T | null) => reqMeta<T>(req, meta),
+      form: <T = _KnownAny>() => reqForm<T>(req),
     };
 
     try {

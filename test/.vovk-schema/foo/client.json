@@ -51,6 +51,10 @@
           "path": "with-all-using-req-vovk",
           "httpMethod": "POST"
         },
+        "postWithFormDataUsingReqVovk": {
+          "path": "form-data",
+          "httpMethod": "POST"
+        },
         "getErrorResponse": {
           "path": "error",
           "httpMethod": "GET"

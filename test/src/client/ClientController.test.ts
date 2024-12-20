@@ -173,6 +173,17 @@ describe('Client with vovk-client', () => {
     });
   });
 
+  it('Should handle requests form data with using of req.vovk object', async () => {
+    const body = new FormData();
+    body.append('field', 'value');
+    const result = await ClientControllerRPC.postWithFormDataUsingReqVovk({
+      body,
+    });
+
+    expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithFormDataUsingReqVovk>).toEqual({ field: 'value' });
+  });
+
+
   it('Should accept custom fetcher as an option', async () => {
     const result = await ClientControllerRPC.postWithBodyAndQueryUsingReqVovk({
       body: { isBody: true },
