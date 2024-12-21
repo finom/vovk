@@ -3,7 +3,7 @@ import { _VovkController as VovkController, _StaticClass as StaticClass } from '
 export function _generateStaticAPI(c: Record<string, StaticClass>, slug = 'vovk') {
   const controllers = c as Record<string, VovkController>;
   return [
-    { [slug]: ['_vovk-ping_'] },
+    { [slug]: ['_schema_'] },
     ...Object.values(controllers)
       .map((controller) => {
         const handlers = controller._handlers;
