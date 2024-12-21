@@ -1,4 +1,4 @@
-import { _VovkController as VovkController, _StaticClass as StaticClass } from './types';
+import { _VovkController as VovkController, _StaticClass as StaticClass } from '../types';
 
 export function _generateStaticAPI(c: Record<string, StaticClass>, slug = 'vovk') {
   const controllers = c as Record<string, VovkController>;

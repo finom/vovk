@@ -25,7 +25,7 @@ import { _HttpException as HttpException } from './HttpException';
 import { _createDecorator as createDecorator } from './createDecorator';
 import { _StreamJSONResponse as StreamJSONResponse } from './StreamJSONResponse';
 import { worker } from './worker';
-import { _generateStaticAPI as generateStaticAPI } from './generateStaticAPI';
+import { _generateStaticAPI as generateStaticAPI } from './utils/generateStaticAPI';
 
 export {
   type VovkClientFetcher,
