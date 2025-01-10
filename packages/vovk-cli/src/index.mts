@@ -94,7 +94,6 @@ program
     const schema = await import(schemaImportUrl) as {
       default: Record<string, VovkSchema>;
     };
-    console.log('schema', schema);
 
     await generateClient(projectInfo, segments, schema.default);
   });
