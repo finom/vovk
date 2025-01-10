@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.32",
+  "version": "0.0.1-draft.33",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -10,7 +10,7 @@
   "prefix": ".",
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
-    "postbuild": "chmod +x ./dist/index.mjs", 
+    "postbuild": "chmod +x ./dist/index.mjs",
     "build-test": "rm -rf test_dist && tsc -P tsconfig.test.json",
     "pre-test": "npm run build && npm run build-test",
     "test-only": "npm run pre-test && node --test --test-only test_dist/test/**/*.mjs",
