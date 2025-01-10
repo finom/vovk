@@ -3,6 +3,7 @@
 <% var controllerName = modulePascalName + 'Controller'; %>
 <% var compiledName = modulePascalName + 'RPC'; %>
 <% var serviceName = modulePascalName + 'Service'; %>
+<% var prefix = pluralize(_.kebabCase(moduleName).toLowerCase()); %>
 ---
 dir: <%= getModuleDirName(segmentName, moduleName) %>
 fileName: <%= controllerName + '.ts' %>
@@ -17,7 +18,7 @@ import * as yup from 'yup';
 import <%= serviceName %> from './<%= serviceName %>';
 <% } %>
 
-@prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
+@prefix('<%= prefix %>')
 export default class <%= controllerName %> {
     @get()
     static get<%= modulePascalNamePlural %> = withYup(null, yup.object({ search: yup.string() }), (req) => {

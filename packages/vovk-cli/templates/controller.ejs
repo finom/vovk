@@ -3,6 +3,7 @@
 <% var controllerName = modulePascalName + 'Controller'; %>
 <% var compiledName = modulePascalName + 'RPC'; %>
 <% var serviceName = modulePascalName + 'Service'; %>
+<% var prefix = pluralize(_.kebabCase(moduleName).toLowerCase()); %>
 ---
 dir: <%= getModuleDirName(segmentName, moduleName) %>
 fileName: <%= controllerName + '.ts' %>
@@ -15,7 +16,7 @@ import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
 import <%= serviceName %> from './<%= serviceName %>';
 <% } %>
 
-@prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
+@prefix('<%= prefix %>')
 export default class <%= controllerName %> {
     @get()
     static get<%= modulePascalNamePlural %> = async (req: VovkRequest<null, { search: string }>) => {
