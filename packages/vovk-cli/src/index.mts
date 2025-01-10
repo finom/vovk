@@ -81,13 +81,18 @@ program
   .description('Generate client')
   .option('--client-out <path>', 'Path to output directory')
   .action(async (options: GenerateOptions) => {
+    console.log('GENERATE');
     const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
+    console.log('projectInfo', projectInfo);
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments(apiDir);
+    console.log('segments', segments);
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
+    console.log('schemaOutAbsolutePath', schemaOutAbsolutePath);
     const schema = (await import(path.join(schemaOutAbsolutePath, 'index.js'))) as {
       default: Record<string, VovkSchema>;
     };
+    console.log('schema', schema);
 
     await generateClient(projectInfo, segments, schema.default);
   });
