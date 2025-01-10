@@ -40,7 +40,7 @@ export class Init {
     }: Omit<InitOptions, 'yes' | 'logLevel'>
   ) {
     const { log, root } = this;
-    const dependencies: string[] = ['vovk'];
+    const dependencies: string[] = ['vovk', 'vovk-client'];
     const devDependencies: string[] = ['vovk-cli'];
 
     // delete older config files

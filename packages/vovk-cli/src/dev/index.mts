@@ -251,7 +251,7 @@ export class VovkDev {
     const resp = await fetch(endpoint);
     if (resp.status !== 200) {
       const probableCause = {
-        404: 'The segment is not compiled.',
+        404: 'The segment did not compile or config.origin is wrong.',
       }[resp.status];
       log.warn(
         `Schema request to ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}` : ''}`
