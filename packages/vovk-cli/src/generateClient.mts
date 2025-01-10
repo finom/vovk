@@ -11,6 +11,7 @@ export default async function generateClient(
   segments: Segment[],
   segmentsSchema: Record<string, VovkSchema>
 ) {
+  console.log('generateClient');
   const { config, cwd, log, validateOnClientImportPath, apiEntryPoint, fetcherClientImportPath, schemaOutImportPath } =
     projectInfo;
   const now = Date.now();

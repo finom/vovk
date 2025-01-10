@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import getConfigAbsolutePaths from './getConfigAbsolutePaths.mjs';
 import importUncachedModule from './importUncachedModule.mjs';
 import type { VovkConfig } from '../types.mjs';
@@ -21,7 +22,8 @@ async function getUserConfig({
   } catch {
     try {
       const cacheBuster = Date.now();
-      ({ default: userConfig } = (await import(`${configPath}?cache=${cacheBuster}`)) as { default: VovkConfig });
+      const configPathUrl = pathToFileURL(configPath).href;
+      ({ default: userConfig } = (await import(`${configPathUrl}?cache=${cacheBuster}`)) as { default: VovkConfig });
     } catch (e) {
       return { userConfig: null, configAbsolutePaths, error: e as Error };
     }

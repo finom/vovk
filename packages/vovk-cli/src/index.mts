@@ -13,6 +13,7 @@ import newComponents from './new/index.mjs';
 import type { DevOptions, GenerateOptions, NewOptions, VovkConfig, VovkDevEnv } from './types.mjs';
 import 'dotenv/config';
 import initProgram from './initProgram.mjs';
+import { pathToFileURL } from 'node:url';
 
 export type { VovkConfig, VovkDevEnv };
 
@@ -89,7 +90,8 @@ program
     console.log('segments', segments);
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     console.log('schemaOutAbsolutePath', schemaOutAbsolutePath);
-    const schema = (await import(path.join(schemaOutAbsolutePath, 'index.js'))) as {
+    const schemaImportUrl = pathToFileURL(path.join(schemaOutAbsolutePath, 'index.js')).href;
+    const schema = await import(schemaImportUrl) as {
       default: Record<string, VovkSchema>;
     };
     console.log('schema', schema);
