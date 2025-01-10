@@ -16,6 +16,7 @@ export default async function generateClient(
     projectInfo;
   const now = Date.now();
   const clientoOutDirAbsolutePath = path.join(cwd, config.clientOutDir);
+  console.log('schemaOutImportPath', schemaOutImportPath);
   let dts = `// auto-generated
 /* eslint-disable */
 import type { clientizeController } from 'vovk/client';
