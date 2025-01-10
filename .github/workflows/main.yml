@@ -4,13 +4,11 @@ on:
   push:
     branches:
       - main
-      - beta
-      - draft
+      - v3
   pull_request:
     branches:
       - main
-      - beta
-      - draft
+      - v3
   workflow_dispatch:
 
 jobs:
