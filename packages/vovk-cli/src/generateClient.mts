@@ -11,12 +11,10 @@ export default async function generateClient(
   segments: Segment[],
   segmentsSchema: Record<string, VovkSchema>
 ) {
-  console.log('generateClient');
   const { config, cwd, log, validateOnClientImportPath, apiEntryPoint, fetcherClientImportPath, schemaOutImportPath } =
     projectInfo;
   const now = Date.now();
   const clientoOutDirAbsolutePath = path.join(cwd, config.clientOutDir);
-  console.log('schemaOutImportPath', schemaOutImportPath);
   let dts = `// auto-generated
 /* eslint-disable */
 import type { clientizeController } from 'vovk/client';
