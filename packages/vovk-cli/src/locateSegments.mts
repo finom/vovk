@@ -25,7 +25,7 @@ export default async function locateSegments(dir: string, rootDir = dir): Promis
         const routeFilePath = path.join(filePath, 'route.ts');
         if (await getFileSystemEntryType(routeFilePath)) {
           // Calculate the basePath relative to the root directory
-          const segmentName = path.relative(rootDir, dir);
+          const segmentName = path.relative(rootDir, dir).replace(/\\/g, '/');
           results.push({ routeFilePath, segmentName });
         }
       }
