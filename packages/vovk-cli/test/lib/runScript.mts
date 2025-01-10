@@ -1,9 +1,8 @@
 /* global NodeJS */
 import * as pty from 'node-pty';
 
-// TODO comments
-async function runInputs(inputs: string[], child: pty.IPty) {
-  for (const input of inputs) {
+async function runInputs(combo: string[], child: pty.IPty) {
+  for (const input of combo) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     child.write(input);
   }
@@ -17,7 +16,7 @@ export function runScript(
   commandWithArgs: string,
   options: {
     env?: NodeJS.ProcessEnv;
-    inputs?: string[]; // TODO rename to combo
+    combo?: string[];
     cwd: string;
   } = {
     cwd: process.cwd(),
@@ -25,7 +24,7 @@ export function runScript(
 ) {
   // eslint-disable-next-line no-console
   console.info('Running script:', commandWithArgs);
-  const { env = process.env, inputs = [] } = options;
+  const { env = process.env, combo = [] } = options;
 
   const envWithPath = {
     ...process.env,
@@ -40,7 +39,7 @@ export function runScript(
     rows: 30,
   });
 
-  void runInputs(inputs, child);
+  void runInputs(combo, child);
 
   const promise = new Promise((resolve, reject) => {
     let result = '';

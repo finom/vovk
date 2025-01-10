@@ -1,4 +1,4 @@
-import { _Segment as Segment } from './Segment';
+import { _VovkApp as VovkApp } from './VovkApp';
 import {
   _HttpMethod as HttpMethod,
   type _KnownAny as KnownAny,
@@ -18,10 +18,10 @@ const toKebabCase = (str: string) =>
     .toLowerCase()
     .replace(/^-/, '');
 
-export function _createSegment() {
-  const segment = new Segment();
+export function _createVovkApp() {
+  const vovkApp = new VovkApp();
 
-  const getDecoratorCreator = (httpMethod: HttpMethod) => {
+  const createHTTPDecorator = (httpMethod: HttpMethod) => {
     const assignSchema = (
       controller: VovkController,
       propertyKey: string,
@@ -41,8 +41,8 @@ export function _createSegment() {
         );
       }
 
-      const methods: Record<string, RouteHandler> = segment._routes[httpMethod].get(controller) ?? {};
-      segment._routes[httpMethod].set(controller, methods);
+      const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
+      vovkApp.routes[httpMethod].set(controller, methods);
 
       controller._handlers = {
         ...controller._handlers,
@@ -79,8 +79,8 @@ export function _createSegment() {
     const auto = (options?: DecoratorOptions) => {
       function decorator(givenTarget: KnownAny, propertyKey: string) {
         const controller = givenTarget as VovkController;
-        const methods: Record<string, RouteHandler> = segment._routes[httpMethod].get(controller) ?? {};
-        segment._routes[httpMethod].set(controller, methods);
+        const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
+        vovkApp.routes[httpMethod].set(controller, methods);
 
         controller._handlers = {
           ...controller._handlers,
@@ -137,30 +137,30 @@ export function _createSegment() {
         // Wait for schema to be set (it can be set after decorators are called with another setTimeout)
         await new Promise((resolve) => setTimeout(resolve, 10));
         const schema = getSchema(options);
-        return segment.respond(200, { schema });
+        return vovkApp.respond(200, { schema });
       }
-      return segment.GET(req, data);
+      return vovkApp.GET(req, data);
     }
 
     return {
-      GET: process.env.NODE_ENV === 'development' ? GET_DEV : segment.GET,
-      POST: segment.POST,
-      PUT: segment.PUT,
-      PATCH: segment.PATCH,
-      DELETE: segment.DELETE,
-      HEAD: segment.HEAD,
-      OPTIONS: segment.OPTIONS,
+      GET: process.env.NODE_ENV === 'development' ? GET_DEV : vovkApp.GET,
+      POST: vovkApp.POST,
+      PUT: vovkApp.PUT,
+      PATCH: vovkApp.PATCH,
+      DELETE: vovkApp.DELETE,
+      HEAD: vovkApp.HEAD,
+      OPTIONS: vovkApp.OPTIONS,
     };
   };
 
   return {
-    get: getDecoratorCreator(HttpMethod.GET),
-    post: getDecoratorCreator(HttpMethod.POST),
-    put: getDecoratorCreator(HttpMethod.PUT),
-    patch: getDecoratorCreator(HttpMethod.PATCH),
-    del: getDecoratorCreator(HttpMethod.DELETE),
-    head: getDecoratorCreator(HttpMethod.HEAD),
-    options: getDecoratorCreator(HttpMethod.OPTIONS),
+    get: createHTTPDecorator(HttpMethod.GET),
+    post: createHTTPDecorator(HttpMethod.POST),
+    put: createHTTPDecorator(HttpMethod.PUT),
+    patch: createHTTPDecorator(HttpMethod.PATCH),
+    del: createHTTPDecorator(HttpMethod.DELETE),
+    head: createHTTPDecorator(HttpMethod.HEAD),
+    options: createHTTPDecorator(HttpMethod.OPTIONS),
     prefix,
     initVovk,
   };

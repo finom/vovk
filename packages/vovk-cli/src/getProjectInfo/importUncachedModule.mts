@@ -4,7 +4,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import './importUncachedModuleWorker.mjs'; // required for TS compilation
 
-// TODO comments
 function importUncachedModule<T>(modulePath: string): Promise<T> {
   return new Promise((resolve, reject) => {
     const __filename = fileURLToPath(import.meta.url);

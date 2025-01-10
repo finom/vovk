@@ -14,7 +14,7 @@ import reqQuery from './utils/reqQuery';
 import reqMeta from './utils/reqMeta';
 import reqForm from './utils/reqForm';
 
-export class _Segment {
+export class _VovkApp {
   private static getHeadersFromOptions(options?: DecoratorOptions) {
     if (!options) return {};
 
@@ -32,7 +32,7 @@ export class _Segment {
     return headers;
   }
 
-  _routes: Record<HttpMethod, Map<VovkController, Record<string, RouteHandler>>> = {
+  routes: Record<HttpMethod, Map<VovkController, Record<string, RouteHandler>>> = {
     GET: new Map(),
     POST: new Map(),
     PUT: new Map(),
@@ -68,7 +68,7 @@ export class _Segment {
       status,
       headers: {
         'Content-Type': 'application/json',
-        ..._Segment.getHeadersFromOptions(options),
+        ..._VovkApp.getHeadersFromOptions(options),
       },
     });
   };
@@ -87,7 +87,7 @@ export class _Segment {
   };
 
   #callMethod = async (httpMethod: HttpMethod, req: VovkRequest, params: Record<string, string[]>) => {
-    const controllers = this._routes[httpMethod];
+    const controllers = this.routes[httpMethod];
     const methodParams: Record<string, string> = {};
     const path = params[Object.keys(params)[0]];
 
@@ -194,7 +194,7 @@ export class _Segment {
         const streamResponse = new StreamJSONResponse({
           headers: {
             ...StreamJSONResponse.defaultHeaders,
-            ..._Segment.getHeadersFromOptions(staticMethod._options),
+            ..._VovkApp.getHeadersFromOptions(staticMethod._options),
           },
         });
 

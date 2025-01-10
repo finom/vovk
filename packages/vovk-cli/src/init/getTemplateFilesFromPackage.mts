@@ -4,6 +4,7 @@ import tar, { Headers } from 'tar-stream';
 import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
 import { InitOptions } from '../types.mjs';
 
+// Crereated with AI
 /**
  * Retrieves a list of files in the 'templates' folder of an NPM package.
  * @param packageName - The name of the NPM package.
@@ -48,7 +49,6 @@ function extractTemplatesFromTarball(tarballBuffer: Buffer): Promise<string[]> {
 
     extract.on('entry', (header: Headers, stream: Readable, next: () => void) => {
       const filePath = header.name;
-      // TODO revisit comments
       // Check if the file is in the 'templates' folder
       if (filePath.startsWith('package/templates/')) {
         files.push(filePath.replace('package/', ''));

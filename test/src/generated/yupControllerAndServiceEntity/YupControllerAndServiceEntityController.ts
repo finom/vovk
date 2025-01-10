@@ -4,8 +4,6 @@ import * as yup from 'yup';
 
 import YupControllerAndServiceEntityService from './YupControllerAndServiceEntityService';
 
-// TODO: Implement with DTO
-
 @prefix('yup-controller-and-service-entity')
 export default class YupControllerAndServiceEntityController {
   @get()

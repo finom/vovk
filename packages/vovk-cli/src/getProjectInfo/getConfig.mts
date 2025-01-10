@@ -17,7 +17,7 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',
     rootSegmentModulesDirName: env.VOVK_ROOT_SEGMENT_MODULES_DIR_NAME ?? conf.rootSegmentModulesDirName ?? '',
-    logLevel: env.VOVK_LOG_LEVEL ?? conf.logLevel ?? 'debug', // TODO: change to 'warn' when v3 is ready
+    logLevel: env.VOVK_LOG_LEVEL ?? conf.logLevel ?? 'warn',
     prettifyClient: (env.VOVK_PRETTIFY_CLIENT ? !!env.VOVK_PRETTIFY_CLIENT : null) ?? conf.prettifyClient ?? false,
     devHttps: (env.VOVK_DEV_HTTPS ? !!env.VOVK_DEV_HTTPS : null) ?? conf.devHttps ?? false,
     templates: {

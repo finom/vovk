@@ -132,7 +132,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
       return input.transform ? fetcherPromise.then(input.transform) : fetcherPromise;
     };
 
-    // @ts-expect-error TODO: Fix this
+    // @ts-expect-error TODO
     client[staticMethodName] = handler;
   }
 

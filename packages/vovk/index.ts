@@ -1,4 +1,4 @@
-import { _createSegment as createSegment } from './createSegment';
+import { _createVovkApp as createVovkApp } from './createVovkApp';
 import {
   type _VovkErrorResponse as VovkErrorResponse,
   type _VovkRequest as VovkRequest,
@@ -48,10 +48,10 @@ export {
   HttpException,
   HttpStatus,
   HttpMethod,
-  createSegment,
+  createVovkApp,
   createDecorator,
   worker,
   generateStaticAPI,
 };
 
-export const { get, post, put, patch, del, head, options, prefix, initVovk } = createSegment();
+export const { get, post, put, patch, del, head, options, prefix, initVovk } = createVovkApp();

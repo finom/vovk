@@ -2,7 +2,6 @@ import { parentPort, workerData as wData } from 'node:worker_threads';
 import { pathToFileURL } from 'node:url';
 
 void (async () => {
-  // TODO Comments
   if (!parentPort) return;
   const workerData = wData as { modulePath: string };
   try {

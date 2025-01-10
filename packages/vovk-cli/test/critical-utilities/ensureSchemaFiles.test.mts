@@ -8,8 +8,6 @@ import getProjectInfo, { type ProjectInfo } from '../../src/getProjectInfo/index
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 
-// TODO comments
-
 // Helper function to clear and create a temporary directory
 async function setupTmpDir() {
   await cleanupTmpDir();

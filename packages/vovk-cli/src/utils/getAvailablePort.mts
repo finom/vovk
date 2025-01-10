@@ -1,6 +1,6 @@
 import net from 'node:net';
 
-// TODO check comments
+// Created with AI
 /**
  * Checks if a port is available.
  * @param {number} port - The port to check.

@@ -8,13 +8,13 @@ describe('Static JSON API', () => {
     const staticAPIWithCustomSlug = generateStaticAPI({ controllers: StaticApiController }, 'custom');
 
     expect(staticAPI).toEqual([
-      { vovk: ['_vovk-ping_'] },
+      { vovk: ['_schema_'] },
       { vovk: ['static-api', 'endpoint-one'] },
       { vovk: ['static-api', 'endpoint-two'] },
     ]);
 
     expect(staticAPIWithCustomSlug).toEqual([
-      { custom: ['_vovk-ping_'] },
+      { custom: ['_schema_'] },
       { custom: ['static-api', 'endpoint-one'] },
       { custom: ['static-api', 'endpoint-two'] },
     ]);
