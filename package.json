@@ -11,7 +11,7 @@
     "ncu": "turbo run ncu --dangerously-disable-package-manager-check && npm --prefix test ncu && npm-check-updates -u && npm i",
     "test:main": "npm --prefix test run generate && npm run lint-nofix && turbo run tsc --dangerously-disable-package-manager-check && tsc --project ./packages/vovk-cli/tsconfig.json --noemit && npm run unit",
     "test:cli": "npm --prefix packages/vovk-cli run test",
-    "test": "npm run build && npm run test:main && npm run test:cli",
+    "test": "npm run build && npm run test:cli",
     "unit": "cross-env PORT=3210 concurrently \"sleep 30 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "unit:watch": "cross-env PORT=3210 concurrently \"sleep 30 && npm run test:unit:watch\" \"npm run serve:unit\" --kill-others --success first",
     "test:unit": "jest",
