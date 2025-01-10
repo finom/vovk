@@ -31,7 +31,7 @@ type StaticMethodReturn<T extends _ControllerStaticMethod> =
   ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
     ? U
     : ReturnType<T> extends Response | Promise<Response>
-      ? unknown
+      ? Awaited<ReturnType<T>>
       : ReturnType<T>;
 
 type StaticMethodReturnPromise<T extends _ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
