@@ -254,7 +254,7 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await it('If type pf package is "module", creates an .mjs file', async () => {
+  await it('If type of package is "module", creates an .mjs file', async () => {
     await createNextApp();
     // set package.json type to module
     const pkgPath = path.join(cwd, dir, 'package.json');
@@ -280,7 +280,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting', async () => {
     await createNextApp();
-    await vovkInit('', { inputs: [ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('', { combo: [ENTER, ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
@@ -298,7 +298,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and --use-yarn', async () => {
     await createNextApp('--use-yarn');
-    await vovkInit('--use-yarn', { inputs: [ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('--use-yarn', { combo: [ENTER, ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
@@ -322,7 +322,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and no TSConfig update', async () => {
     await createNextApp();
-    await vovkInit('', { inputs: [ENTER, ENTER, ENTER, 'N', ENTER] });
+    await vovkInit('', { combo: [ENTER, ENTER, ENTER, 'N', ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
@@ -340,7 +340,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and --update-ts-config', async () => {
     await createNextApp();
-    await vovkInit('--update-ts-config', { inputs: [ENTER, ENTER, ENTER] });
+    await vovkInit('--update-ts-config', { combo: [ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
@@ -358,7 +358,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and --validation-library', async () => {
     await createNextApp();
-    await vovkInit('--validation-library=vovk-dto', { inputs: [ENTER, ENTER, ENTER] });
+    await vovkInit('--validation-library=vovk-dto', { combo: [ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
 
     await assertDeps({
@@ -376,7 +376,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and --validation-library=none', async () => {
     await createNextApp();
-    await vovkInit('--validation-library=none', { inputs: [ENTER, ENTER, ENTER] });
+    await vovkInit('--validation-library=none', { combo: [ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null));
 
     await assertDeps({
@@ -399,7 +399,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and no "validate on client" selection', async () => {
     await createNextApp();
-    await vovkInit('', { inputs: [ENTER, 'N', ENTER, ENTER, ENTER] });
+    await vovkInit('', { combo: [ENTER, 'N', ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig('vovk-zod'), 'validateOnClient'));
 
     await assertDeps({
@@ -417,7 +417,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and down arrow selection', async () => {
     await createNextApp();
-    await vovkInit('', { inputs: [DOWN, ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('', { combo: [DOWN, ENTER, ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-yup'));
 
     await assertDeps({
