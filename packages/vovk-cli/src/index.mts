@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import 'dotenv/config';
 import { Command } from 'commander';
 import concurrently from 'concurrently';
 import type { VovkSchema } from 'vovk';
@@ -10,12 +12,10 @@ import generateClient from './generateClient.mjs';
 import locateSegments from './locateSegments.mjs';
 import { VovkDev } from './dev/index.mjs';
 import newComponents from './new/index.mjs';
-import type { DevOptions, GenerateOptions, NewOptions, VovkConfig, VovkDevEnv } from './types.mjs';
-import 'dotenv/config';
+import type { DevOptions, GenerateOptions, NewOptions, VovkConfig, VovkEnv } from './types.mjs';
 import initProgram from './initProgram.mjs';
-import { pathToFileURL } from 'node:url';
 
-export type { VovkConfig, VovkDevEnv };
+export type { VovkConfig, VovkEnv };
 
 const program = new Command();
 

@@ -16,7 +16,7 @@ import generateClient from '../generateClient.mjs';
 import locateSegments, { type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import type { VovkDevEnv } from '../types.mjs';
+import type { VovkEnv } from '../types.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
@@ -196,7 +196,7 @@ export class VovkDev {
 
     // automatically watches segments and modules
     this.#watchConfig();
-    log.info('Vovk Dev Watcher is ready');
+    log.info('Ready');
   }
 
   #processControllerChange = async (filePath: string) => {
@@ -355,7 +355,7 @@ export class VovkDev {
     }, 5000);
   }
 }
-const env = process.env as VovkDevEnv;
+const env = process.env as VovkEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
   void new VovkDev().start();
 }

@@ -3,7 +3,7 @@ import type { LogLevelNames } from 'loglevel';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type KnownAny = any;
 
-export type VovkDevEnv = {
+export type VovkEnv = {
   PORT?: string;
   VOVK_CLIENT_OUT_DIR?: string;
   VOVK_SCHEMA_OUT_DIR?: string;
