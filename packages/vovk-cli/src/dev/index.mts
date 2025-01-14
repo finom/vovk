@@ -155,9 +155,8 @@ export class VovkDev {
       this.#projectInfo = await getProjectInfo();
       if (!isInitial) {
         log.info('Config file has been updated');
-
-        isInitial = false;
       }
+      isInitial = false;
       await this.#modulesWatcher?.close();
       await this.#segmentWatcher?.close();
       this.#watchModules();
@@ -197,6 +196,7 @@ export class VovkDev {
 
     // automatically watches segments and modules
     this.#watchConfig();
+    log.info('Vovk Dev Watcher is ready');
   }
 
   #processControllerChange = async (filePath: string) => {

@@ -6,20 +6,6 @@ export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explic
 
 export type _StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
 
-export type _VovkSchema = {
-  emitSchema: boolean;
-  segmentName: string;
-  workers: Record<string, _VovkWorkerSchema>;
-  controllers: Record<string, _VovkControllerSchema>;
-};
-
-export type _VovkErrorResponse = {
-  cause?: unknown;
-  statusCode: _HttpStatus;
-  message: string;
-  isError: true;
-};
-
 export type _HandlerSchema = {
   path: string;
   httpMethod: _HttpMethod;
@@ -43,6 +29,20 @@ export type _VovkWorkerSchema = {
       isGenerator?: true;
     }
   >;
+};
+
+export type _VovkSchema = {
+  emitSchema: boolean;
+  segmentName: string;
+  workers: Record<string, _VovkWorkerSchema>;
+  controllers: Record<string, _VovkControllerSchema>;
+};
+
+export type _VovkErrorResponse = {
+  cause?: unknown;
+  statusCode: _HttpStatus;
+  message: string;
+  isError: true;
 };
 
 export type _VovkControllerInternal = {

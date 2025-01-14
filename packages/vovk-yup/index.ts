@@ -71,7 +71,7 @@ function withYup<
       }
     }
 
-    return givenHandler!(req, params) as unknown;
+    return givenHandler!(req, params);
   };
 
   void setClientValidatorsForHandler(h, {
