@@ -21,7 +21,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   async function createNextApp(extraParams?: string) {
     await runScript(`rm -rf ${projectDir}`);
     await runScript(
-      `npx create-next-app ${dir} --ts --app --src-dir --no-eslint --no-tailwind --no-import-alias --turbopack ${extraParams ?? ''}`,
+      `npx create-next-app ${dir} --ts --app --src-dir --no-eslint --no-tailwind --no-import-alias ${extraParams ? (extraParams.includes('--turbopack') ? extraParams : `${extraParams} --no-turbopack`) : '--no-turbopack'}`,
       {
         cwd,
       }

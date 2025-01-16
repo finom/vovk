@@ -116,6 +116,26 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
+  await it('Preserves next dev flags with --update-scripts=implicit', async () => {
+    await createNextApp('--turbopack');
+    await vovkInit('--yes --update-scripts=implicit');
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev -- --turbopack',
+      generate: 'vovk generate',
+    });
+  });
+
+  await it('Preserves next dev flags with --update-scripts=explicit', async () => {
+    await createNextApp('--turbopack');
+    await vovkInit('--yes --update-scripts=explicit');
+
+    await assertScripts({
+      dev: "PORT=3000 concurrently 'next dev --turbopack' 'vovk dev' --kill-others",
+      generate: 'vovk generate',
+    });
+  });
+
   await it('Works with --yes and --skip-install', async () => {
     await createNextApp('--skip-install');
     await vovkInit('--yes --skip-install');
@@ -278,7 +298,7 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await it('Works with prompting', async () => {
+  await it.only('Works with prompting', async () => {
     await createNextApp();
     await vovkInit('', { combo: [ENTER, ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));

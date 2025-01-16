@@ -164,7 +164,8 @@ export class VovkDev {
     }, 1000);
 
     chokidar
-      .watch(['vovk.config.{js,mjs,cjs}', '.config/vovk.config.{js,mjs,cjs}'], {
+      // .watch(['vovk.config.{js,mjs,cjs}', '.config/vovk.config.{js,mjs,cjs}'], {
+      .watch(['vovk.config.js', 'vovk.config.mjs', 'vovk.config.cjs', '.config/vovk.config.js', '.config/vovk.config.mjs', '.config/vovk.config.cjs'], {
         persistent: true,
         cwd,
         ignoreInitial: false,
@@ -248,25 +249,35 @@ export class VovkDev {
     const endpoint = `${apiEntryPoint.startsWith(`http${devHttps ? 's' : ''}://`) ? apiEntryPoint : `http${devHttps ? 's' : ''}://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
-    const resp = await fetch(endpoint);
-    if (resp.status !== 200) {
-      const probableCause = {
-        404: 'The segment did not compile or config.origin is wrong.',
-      }[resp.status];
-      log.warn(
-        `Schema request to ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}` : ''}`
-      );
-      return;
-    }
 
-    let schema: VovkSchema | null = null;
     try {
-      ({ schema } = (await resp.json()) as { schema: VovkSchema | null });
+      const resp = await fetch(endpoint);
+
+      if (resp.status !== 200) {
+        const probableCause = {
+          404: 'The segment did not compile or config.origin is wrong.',
+        }[resp.status];
+        log.warn(
+          `Schema request to ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}` : ''}`
+        );
+        return { isError: true };
+      }
+
+      let schema: VovkSchema | null = null;
+      try {
+        ({ schema } = (await resp.json()) as { schema: VovkSchema | null });
+      } catch (error) {
+        log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error).message}`);
+      }
+
+      await this.#handleSchema(schema);
     } catch (error) {
-      log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error).message}`);
+      log.error(`Error requesting schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error).message}`);
+
+      return { isError: true };
     }
 
-    await this.#handleSchema(schema);
+    return { isError: false };
   }, 500);
 
   async #handleSchema(schema: VovkSchema | null) {
@@ -349,7 +360,25 @@ export class VovkDev {
     // Request schema every segment in 5 seconds in order to update schema and start watching
     setTimeout(() => {
       for (const { segmentName } of this.#segments) {
-        void this.#requestSchema(segmentName);
+        const MAX_ATTEMPTS = 3;
+        let attempts = 0;
+        void this.#requestSchema(segmentName).then(({ isError }) => {
+          if (isError) {
+            const interval = setInterval(() => {
+              attempts++;
+              if (attempts >= MAX_ATTEMPTS) {
+                clearInterval(interval);
+                log.error(`Failed to request schema for ${formatLoggedSegmentName(segmentName)} after ${MAX_ATTEMPTS} attempts`);
+                return;
+              }
+              void this.#requestSchema(segmentName).then(({ isError: isError2 }) => {
+                if (!isError2) {
+                  clearInterval(interval);
+                }
+              });
+            }, 5000);
+          }
+        });
       }
       this.#watch();
     }, 5000);
