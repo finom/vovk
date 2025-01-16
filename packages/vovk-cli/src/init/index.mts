@@ -8,12 +8,13 @@ import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import installDependencies, { getPackageManager } from './installDependencies.mjs';
 import getLogger from '../utils/getLogger.mjs';
 import createConfig from './createConfig.mjs';
-import updateNPMScripts from './updateNPMScripts.mjs';
+import updateNPMScripts, { getDevScript } from './updateNPMScripts.mjs';
 import checkTSConfigForExperimentalDecorators from './checkTSConfigForExperimentalDecorators.mjs';
 import updateTypeScriptConfig from './updateTypeScriptConfig.mjs';
 import updateDependenciesWithoutInstalling from './updateDependenciesWithoutInstalling.mjs';
 import logUpdateDependenciesError from './logUpdateDependenciesError.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import NPMCliPackageJson from '@npmcli/package-json';
 
 export class Init {
   root: string;
@@ -22,8 +23,10 @@ export class Init {
   async #init(
     {
       configPaths,
+      pkgJson,
     }: {
       configPaths: string[];
+      pkgJson: NPMCliPackageJson;
     },
     {
       useNpm,
@@ -62,7 +65,7 @@ export class Init {
 
     if (updateScripts) {
       try {
-        if (!dryRun) await updateNPMScripts(root, updateScripts);
+        if (!dryRun) await updateNPMScripts(pkgJson, root, updateScripts);
         log.info('Updated scripts at package.json');
       } catch (error) {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
@@ -161,6 +164,7 @@ export class Init {
     const cwd = process.cwd();
     const root = path.resolve(cwd, prefix);
     const log = getLogger(logLevel);
+    const pkgJson = await NPMCliPackageJson.load(root);
 
     this.root = root;
     this.log = log;
@@ -169,7 +173,7 @@ export class Init {
 
     if (yes) {
       return this.#init(
-        { configPaths },
+        { configPaths, pkgJson },
         {
           useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
           useYarn: useYarn ?? false,
@@ -248,12 +252,12 @@ export class Init {
           {
             name: 'Yes, use "concurrently" implicitly',
             value: 'implicit' as const,
-            description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"vovk dev --next-dev"`)}`,
+            description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}`,
           },
           {
             name: 'Yes, use "concurrently" explicitly',
             value: 'explicit' as const,
-            description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"PORT=3000 concurrently 'next dev' 'vovk dev' --kill-others"`)}`,
+            description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}`,
           },
           {
             name: 'No',
@@ -280,7 +284,7 @@ export class Init {
     }
 
     await this.#init(
-      { configPaths },
+      { configPaths, pkgJson },
       {
         useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
         useYarn: useYarn ?? false,

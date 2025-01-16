@@ -298,7 +298,7 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await it.only('Works with prompting', async () => {
+  await it('Works with prompting', async () => {
     await createNextApp();
     await vovkInit('', { combo: [ENTER, ENTER, ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
