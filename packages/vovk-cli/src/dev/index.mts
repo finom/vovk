@@ -336,7 +336,7 @@ export class VovkDev {
     const now = Date.now();
     this.#projectInfo = await getProjectInfo();
     const { log, config, cwd, apiDir } = this.#projectInfo;
-    log.info('Starting');
+    log.info('Starting...');
 
     if (config.devHttps) {
       const agent = new Agent({
@@ -390,10 +390,11 @@ export class VovkDev {
           }
         });
       }
-      this.#watch(() => {
-        log.info(`Ready in ${Date.now() - now}ms`);
-      });
     }, 5000);
+
+    this.#watch(() => {
+      log.info(`Ready in ${Date.now() - now}ms`);
+    });
   }
 }
 const env = process.env as VovkEnv;
