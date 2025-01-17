@@ -2,7 +2,7 @@ import { post, prefix, put, del, get } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { Contains, IsArray, IsString, ArrayNotEmpty, ArrayMinSize } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { OmitType } from '@nestjs/mapped-types';
+import { OmitType } from 'vovk-mapped-types';
 
 export class BodyDto {
   @Contains('body')

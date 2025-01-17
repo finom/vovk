@@ -57,7 +57,7 @@ await describe('CLI init', async () => {
   });
 
   await it('Works with --yes and --dry-run', async () => {
-    await createNextApp();
+    await createNextApp('--turbopack');
     await vovkInit('--yes --dry-run');
     await assertConfig([], null);
 
@@ -243,7 +243,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
 
     await assertDeps({
-      dependencies: ['vovk', 'class-validator', 'class-transformer'],
+      dependencies: ['vovk', 'vovk-dto', 'class-validator', 'class-transformer', 'vovk-mapped-types', 'reflect-metadata'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -382,7 +382,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-dto', 'class-validator', 'class-transformer'],
+      dependencies: ['vovk', 'vovk-dto', 'class-validator', 'class-transformer', 'vovk-mapped-types', 'reflect-metadata'],
       devDependencies: ['vovk-cli'],
     });
 

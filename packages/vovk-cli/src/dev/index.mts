@@ -31,7 +31,7 @@ export class VovkDev {
 
   #segmentWatcher: chokidar.FSWatcher | null = null;
 
-  #watchSegments = () => {
+  #watchSegments = (callback: () => void) => {
     const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
     const { cwd, log, config, apiDir } = this.#projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
@@ -99,6 +99,7 @@ export class VovkDev {
         }
       })
       .on('ready', () => {
+        callback();
         log.debug('Segments watcher is ready');
       })
       .on('error', (error: Error) => {
@@ -106,7 +107,7 @@ export class VovkDev {
       });
   };
 
-  #watchModules = () => {
+  #watchModules = (callback: () => void) => {
     const { config, cwd, log } = this.#projectInfo;
     const modulesDirAbsolutePath = path.join(cwd, config.modulesDir);
     log.debug(`Watching modules at ${modulesDirAbsolutePath}`);
@@ -138,6 +139,7 @@ export class VovkDev {
         }
       })
       .on('ready', () => {
+        callback();
         log.debug('Modules watcher is ready');
       })
       .on('error', (error: Error) => {
@@ -145,7 +147,7 @@ export class VovkDev {
       });
   };
 
-  #watchConfig = () => {
+  #watchConfig = (callback: () => void) => {
     const { log, cwd } = this.#projectInfo;
     log.debug(`Watching config files`);
     let isInitial = true;
@@ -153,14 +155,21 @@ export class VovkDev {
 
     const handle = debounce(async () => {
       this.#projectInfo = await getProjectInfo();
-      if (!isInitial) {
-        log.info('Config file has been updated');
-      }
-      isInitial = false;
       await this.#modulesWatcher?.close();
       await this.#segmentWatcher?.close();
-      this.#watchModules();
-      this.#watchSegments();
+
+      await Promise.all([
+        new Promise((resolve) => this.#watchModules(() => resolve(0))),
+        new Promise((resolve) => this.#watchSegments(() => resolve(0)))
+      ]);
+
+      if (isInitial) {
+        callback();
+      } else {
+        log.info('Config file has been updated');
+      }
+
+      isInitial = false;
     }, 1000);
 
     chokidar
@@ -185,7 +194,7 @@ export class VovkDev {
     void handle();
   };
 
-  async #watch() {
+  async #watch(callback: () => void) {
     if (this.#isWatching) throw new Error('Already watching');
     const { log } = this.#projectInfo;
 
@@ -196,8 +205,7 @@ export class VovkDev {
     await ensureClient(this.#projectInfo);
 
     // automatically watches segments and modules
-    this.#watchConfig();
-    log.info('Ready');
+    this.#watchConfig(callback);
   }
 
   #processControllerChange = async (filePath: string) => {
@@ -325,6 +333,7 @@ export class VovkDev {
   }
 
   async start() {
+    const now = Date.now();
     this.#projectInfo = await getProjectInfo();
     const { log, config, cwd, apiDir } = this.#projectInfo;
 
@@ -380,7 +389,9 @@ export class VovkDev {
           }
         });
       }
-      this.#watch();
+      this.#watch(() => {
+        log.info(`Ready in ${Date.now() - now}ms`);
+      });
     }, 5000);
   }
 }

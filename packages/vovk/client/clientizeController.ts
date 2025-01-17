@@ -16,6 +16,7 @@ import defaultFetcher from './defaultFetcher';
 import { _defaultHandler as defaultHandler } from './defaultHandler';
 import { _defaultStreamHandler as defaultStreamHandler } from './defaultStreamHandler';
 
+// TODO Ugly workaround. Need your ideas how to distinguish between array and non-array query params
 export const ARRAY_QUERY_KEY = '_vovkarr';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
@@ -62,7 +63,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
   const client = {} as VovkClient<T, OPTS>;
   if (!schema) throw new Error(`Unable to clientize. Controller schema is not provided`);
   if (!schema.handlers)
-    throw new Error(`Unable to clientize. No schema for controller ${String(schema?.controllerName)}`);
+    throw new Error(`Unable to clientize. No schema for controller ${String(schema?.controllerName)} provided`);
   const controllerPrefix = trimPath(schema.prefix ?? '');
   const { fetcher: settingsFetcher = defaultFetcher } = options ?? {};
 

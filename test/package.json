@@ -12,7 +12,7 @@
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
   },
   "dependencies": {
-    "@nestjs/mapped-types": "^2.0.5",
+    "vovk-mapped-types": "^0.0.6",
     "class-transformer": "^0.5.1",
     "next": "^15.0.1",
     "react": "^18",
