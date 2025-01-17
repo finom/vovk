@@ -336,6 +336,7 @@ export class VovkDev {
     const now = Date.now();
     this.#projectInfo = await getProjectInfo();
     const { log, config, cwd, apiDir } = this.#projectInfo;
+    log.info('Starting');
 
     if (config.devHttps) {
       const agent = new Agent({
