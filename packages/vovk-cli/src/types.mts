@@ -56,7 +56,11 @@ export interface DevOptions {
 }
 
 export interface GenerateOptions {
-  clientOut?: string;
+  clientOutDir?: string;
+  fileName?: string;
+  template?: string;
+  prettify?: boolean;
+  fullSchema?: string | boolean;
 }
 
 export interface InitOptions {

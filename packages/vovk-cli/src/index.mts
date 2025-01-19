@@ -79,19 +79,25 @@ program
 
 program
   .command('generate')
+  .alias('g')
   .description('Generate client')
-  .option('--client-out <path>', 'Path to output directory')
+  .option('--out, --client-out-dir <path>', 'Path to output directory')
+  .option('--template <path>', 'Path to custom template file in .ejs format')
+  .option('--file-name <name>', 'Custom file name for the output file if --template is used')
+  .option('--full-schema [fileName]', 'Generate client with full schema')
+  .option('--prettify', 'Prettify output files')
   .action(async (options: GenerateOptions) => {
-    const projectInfo = await getProjectInfo({ clientOutDir: options.clientOut });
+    const { clientOutDir, template, prettify, fileName, fullSchema } = options;
+    const projectInfo = await getProjectInfo({ clientOutDir });
     const { cwd, config, apiDir } = projectInfo;
-    const segments = await locateSegments(apiDir);
+    const segments = await locateSegments({ dir: apiDir, config });
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const schemaImportUrl = pathToFileURL(path.join(schemaOutAbsolutePath, 'index.js')).href;
-    const schema = await import(schemaImportUrl) as {
+    const { default: segmentsSchema } = await import(schemaImportUrl) as {
       default: Record<string, VovkSchema>;
     };
 
-    await generateClient(projectInfo, segments, schema.default);
+    await generateClient({ projectInfo, segments, segmentsSchema, template, prettify, fileName, fullSchema });
   });
 
 program

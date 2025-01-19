@@ -18,17 +18,17 @@ import { IsString, IsIn } from 'class-validator';
 import <%= serviceName %> from './<%= serviceName %>';
 <% } %>
 
-export class Get<%= modulePascalNamePlural %>QueryDto {
+class Get<%= modulePascalNamePlural %>QueryDto {
   @IsString()
   search: string;
 }
 
-export class Update<%= modulePascalName %>BodyDto {
+class Update<%= modulePascalName %>BodyDto {
   @IsIn(['bar', 'baz'])
   foo: 'bar' | 'baz';
 }
 
-export class Update<%= modulePascalName %>QueryDto {
+class Update<%= modulePascalName %>QueryDto {
   @IsString()
   q: string;
 }

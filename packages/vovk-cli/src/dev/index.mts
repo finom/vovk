@@ -50,7 +50,11 @@ export class VovkDev {
 
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
             ? this.#segments
-            : [...this.#segments, { routeFilePath: filePath, segmentName }];
+            : [...this.#segments, { 
+              routeFilePath: filePath, 
+              segmentName, 
+              segmentImportPath: path.relative(config.clientOutDir, filePath) // TODO DRY locateSegments 
+            }];
           log.info(`${capitalize(formatLoggedSegmentName(segmentName))} has been added`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
@@ -70,7 +74,7 @@ export class VovkDev {
 
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
-        this.#segments = await locateSegments(apiDirAbsolutePath);
+        this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config });
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
@@ -78,7 +82,7 @@ export class VovkDev {
 
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
-        this.#segments = await locateSegments(apiDirAbsolutePath);
+        this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config });
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
@@ -322,13 +326,13 @@ export class VovkDev {
       }
     } else if (schema && (!isEmpty(schema.controllers) || !isEmpty(schema.workers))) {
       log.error(
-        `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but emitSchema is false`
+        `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but "emitSchema" is false`
       );
     }
 
     if (this.#segments.every((s) => this.#schemas[s.segmentName])) {
       log.debug(`All segments with "emitSchema" have schema.`);
-      await generateClient(this.#projectInfo, this.#segments, this.#schemas);
+      await generateClient({ projectInfo: this.#projectInfo, segments: this.#segments, segmentsSchema: this.#schemas });
     }
   }
 
@@ -359,7 +363,7 @@ export class VovkDev {
     const apiDirAbsolutePath = path.join(cwd, apiDir);
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
 
-    this.#segments = await locateSegments(apiDirAbsolutePath);
+    this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config});
 
     await debouncedEnsureSchemaFiles(
       this.#projectInfo,
@@ -367,7 +371,7 @@ export class VovkDev {
       this.#segments.map((s) => s.segmentName)
     );
 
-    // Request schema every segment in 5 seconds in order to update schema and start watching
+    // Request schema every segment in 5 seconds in order to update schema on start
     setTimeout(() => {
       for (const { segmentName } of this.#segments) {
         const MAX_ATTEMPTS = 3;

@@ -1,0 +1,26 @@
+<%- '// auto-generated\n/* eslint-disable */' %>
+const { clientizeController } = require('vovk/client');
+const { promisifyWorker } = require('vovk/worker');
+const { default: fetcher } = require('<%= fetcherClientImportPath %>');
+const schema = require('<%= schemaOutImportPath %>');
+
+const { default: validateOnClient = null } = <%- validateOnClientImportPath ? `require('${validateOnClientImportPath}')` : '{}'%>;
+const apiRoot = '<%= apiEntryPoint %>';
+
+<% segments.forEach((segment) => {
+    const segSchema = segmentsSchema[segment.segmentName];
+    if (!segSchema || !segSchema.emitSchema) return;
+    const controllers = Object.keys(segSchema.controllers);
+    const workers     = Object.keys(segSchema.workers);
+%>
+  <% controllers.forEach((key) => { %>
+    exports.<%= key %> = clientizeController(
+    schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
+    '<%= segment.segmentName %>', 
+    { fetcher, validateOnClient, defaultOptions: { apiRoot } }
+    );
+  <% }) %>
+  <% workers.forEach((key) => { %>
+    exports.<%= key %> = promisifyWorker(null, schema['<%= segment.segmentName %>'].workers.<%= key %>);
+  <% }) %>
+<% }) %>

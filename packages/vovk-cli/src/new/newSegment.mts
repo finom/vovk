@@ -28,6 +28,8 @@ export default async function newSegment({
   const code = await prettify(
     `import { initVovk } from 'vovk';
 
+export const runtime = 'edge';
+
 const controllers = {};
 const workers = {};
 
@@ -49,6 +51,6 @@ ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
   }
 
   log.info(
-    `${formatLoggedSegmentName(segmentName, { upperFirst: true })} created at ${absoluteSegmentRoutePath}. Run ${chalkHighlightThing(`vovk new controller ${[segmentName, 'thing'].filter(Boolean).join('/')}`)} to create a new controller`
+    `${formatLoggedSegmentName(segmentName, { upperFirst: true })} created at ${absoluteSegmentRoutePath}. Run ${chalkHighlightThing(`npx vovk n s c ${[segmentName, 'thing'].filter(Boolean).join('/')}`)} to create a new controller with service.`
   );
 }

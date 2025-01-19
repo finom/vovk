@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import puppeteer, { type Page } from 'puppeteer';
 import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
-import type { MyWorkerWPC } from '../../.vovk-client/client';
+import type { MyWorkerWPC } from '../../vovk/client';
 
 describe('Worker', () => {
   let page: Page;

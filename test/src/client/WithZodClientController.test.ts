@@ -1,5 +1,5 @@
 import { it, expect, describe } from '@jest/globals';
-import { WithZodClientControllerRPC } from '../../.vovk-client/client';
+import { WithZodClientControllerRPC } from '../../vovk/client';
 import { HttpException } from 'vovk';
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {

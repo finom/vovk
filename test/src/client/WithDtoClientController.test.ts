@@ -1,5 +1,5 @@
 import { it, expect, describe } from '@jest/globals';
-import { WithDtoClientControllerRPC } from '../../.vovk-client/client';
+import { WithDtoClientControllerRPC } from '../../vovk/client';
 import { HttpException } from 'vovk';
 import validateOnClient from 'vovk-dto/validateOnClient';
 import { plainToInstance } from 'class-transformer';

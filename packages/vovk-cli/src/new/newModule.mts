@@ -76,7 +76,7 @@ export default async function newModule({
     }
   }
 
-  const segments = await locateSegments(apiDir);
+  const segments = await locateSegments({ dir: apiDir, config });
   const segment = segments.find((s) => s.segmentName === segmentName);
 
   if (!segment) {

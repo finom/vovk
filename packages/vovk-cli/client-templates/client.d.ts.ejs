@@ -1,0 +1,24 @@
+<%- '// auto-generated\n/* eslint-disable */' %>
+import type { clientizeController, VovkClientFetcher } from 'vovk/client';
+import type { promisifyWorker } from 'vovk/worker';
+import type fetcher from '<%= fetcherClientImportPath %>';
+
+<% segments.forEach((segment, i) => { %>
+    import type { Controllers as Controllers<%= i %>, Workers as Workers<%= i %> } from "<%= segment.segmentImportPath %>";
+<% }) %>
+
+type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
+
+<% segments.forEach((segment, i) => {
+    const segSchema = segmentsSchema[segment.segmentName];
+    if (!segSchema || !segSchema.emitSchema) return;
+    const controllers = Object.keys(segSchema.controllers);
+    const workers     = Object.keys(segSchema.workers);
+%>
+  <% controllers.forEach((key) => { %>
+    export const <%= key %>: ReturnType<typeof clientizeController<Controllers<%= i %>["<%= key %>"], Options>>;
+  <% }) %>
+  <% workers.forEach((key) => { %>
+    export const <%= key %>: ReturnType<typeof promisifyWorker<Workers<%= i %>["<%= key %>"]>>;
+  <% }) %>
+<% }) %>

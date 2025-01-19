@@ -1,0 +1,885 @@
+{
+  "": {
+    "emitSchema": false,
+    "segmentName": "",
+    "controllers": {},
+    "workers": {}
+  },
+  "foo/client": {
+    "emitSchema": true,
+    "segmentName": "foo/client",
+    "controllers": {
+      "ClientControllerRPC": {
+        "controllerName": "ClientControllerRPC",
+        "originalControllerName": "ClientController",
+        "prefix": "client",
+        "handlers": {
+          "getHelloWorldResponseObject": {
+            "httpMethod": "GET",
+            "path": "get-hello-world-response-object"
+          },
+          "getHelloWorldObjectLiteral": {
+            "httpMethod": "GET",
+            "path": "get-hello-world-object-literal"
+          },
+          "getHelloWorldNextResponseObjectPromise": {
+            "httpMethod": "GET",
+            "path": "get-hello-world-next-response-object-promise"
+          },
+          "getHelloWorldRawResponseObjectPromise": {
+            "httpMethod": "GET",
+            "path": "get-hello-world-raw-response-object-promise"
+          },
+          "getHelloWorldObjectLiteralPromise": {
+            "httpMethod": "GET",
+            "path": "get-hello-world-object-literal-promise"
+          },
+          "getHelloWorldHeaders": {
+            "httpMethod": "GET",
+            "path": "get-hello-world-headers"
+          },
+          "getHelloWorldArray": {
+            "httpMethod": "GET",
+            "path": "get-hello-world-array"
+          },
+          "getHelloWorldAndEmptyGeneric": {
+            "httpMethod": "GET",
+            "path": "get-hello-world-and-empty-generic"
+          },
+          "getWithParams": {
+            "path": "with-params/:hello",
+            "httpMethod": "GET"
+          },
+          "postWithAll": {
+            "path": "with-all/:hello",
+            "httpMethod": "POST"
+          },
+          "postWithBodyAndQueryUsingReqVovk": {
+            "path": "with-all-using-req-vovk",
+            "httpMethod": "POST"
+          },
+          "postWithFormDataUsingReqVovk": {
+            "path": "form-data",
+            "httpMethod": "POST"
+          },
+          "getErrorResponse": {
+            "path": "error",
+            "httpMethod": "GET"
+          }
+        }
+      },
+      "StreamingControllerRPC": {
+        "controllerName": "StreamingControllerRPC",
+        "originalControllerName": "StreamingController",
+        "prefix": "streaming",
+        "handlers": {
+          "postWithStreaming": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming"
+          },
+          "postWithStreamingAndImmediateError": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming-and-immediate-error"
+          },
+          "postWithStreamingAndDelayedError": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming-and-delayed-error"
+          },
+          "postWithStreamingAndDelayedCustomError": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming-and-delayed-custom-error"
+          },
+          "postWithStreamingAndDelayedUnhandledError": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming-and-delayed-unhandled-error"
+          }
+        }
+      },
+      "StreamingGeneratorControllerRPC": {
+        "controllerName": "StreamingGeneratorControllerRPC",
+        "originalControllerName": "StreamingGeneratorController",
+        "prefix": "streaming-generator",
+        "handlers": {
+          "postWithAsyncStreaming": {
+            "httpMethod": "POST",
+            "path": "post-with-async-streaming"
+          },
+          "postWithStreaming": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming"
+          },
+          "postWithStreamingAndImmediateError": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming-and-immediate-error"
+          },
+          "postWithStreamingAndDelayedError": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming-and-delayed-error"
+          },
+          "postWithStreamingAndDelayedCustomError": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming-and-delayed-custom-error"
+          },
+          "postWithStreamingAndDelayedUnhandledError": {
+            "httpMethod": "POST",
+            "path": "post-with-streaming-and-delayed-unhandled-error"
+          }
+        }
+      },
+      "CostomSchemaControllerRPC": {
+        "controllerName": "CostomSchemaControllerRPC",
+        "originalControllerName": "CostomSchemaController",
+        "prefix": "",
+        "handlers": {
+          "getWithCustomSchema": {
+            "custom": {
+              "hello": "world"
+            },
+            "httpMethod": "GET",
+            "path": "get-with-custom-schema"
+          }
+        }
+      },
+      "WithZodClientControllerRPC": {
+        "controllerName": "WithZodClientControllerRPC",
+        "originalControllerName": "WithZodClientController",
+        "prefix": "with-zod",
+        "handlers": {
+          "postWithBodyAndQuery": {
+            "httpMethod": "POST",
+            "path": "post-with-body-and-query",
+            "validation": {
+              "body": {
+                "type": "object",
+                "properties": {
+                  "hello": {
+                    "type": "string",
+                    "const": "body"
+                  }
+                },
+                "required": [
+                  "hello"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              },
+              "query": {
+                "type": "object",
+                "properties": {
+                  "hey": {
+                    "type": "string",
+                    "const": "query"
+                  }
+                },
+                "required": [
+                  "hey"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          },
+          "putWithBodyAndNullQuery": {
+            "httpMethod": "PUT",
+            "path": "put-with-body-and-null-query",
+            "validation": {
+              "body": {
+                "type": "object",
+                "properties": {
+                  "hello": {
+                    "type": "string",
+                    "const": "body"
+                  }
+                },
+                "required": [
+                  "hello"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          },
+          "putWithBodyOnly": {
+            "httpMethod": "DELETE",
+            "path": "put-with-body-only",
+            "validation": {
+              "body": {
+                "type": "object",
+                "properties": {
+                  "hello": {
+                    "type": "string",
+                    "const": "body"
+                  }
+                },
+                "required": [
+                  "hello"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          },
+          "getWithQueryAndNullBody": {
+            "httpMethod": "GET",
+            "path": "get-with-query-and-null-body",
+            "validation": {
+              "query": {
+                "type": "object",
+                "properties": {
+                  "hey": {
+                    "type": "string",
+                    "const": "query"
+                  }
+                },
+                "required": [
+                  "hey"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          }
+        }
+      },
+      "WithYupClientControllerRPC": {
+        "controllerName": "WithYupClientControllerRPC",
+        "originalControllerName": "WithYupClientController",
+        "prefix": "with-yup",
+        "handlers": {
+          "postWithBodyAndQuery": {
+            "httpMethod": "POST",
+            "path": "post-with-body-and-query",
+            "validation": {
+              "body": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "hello": {
+                    "type": "string",
+                    "enum": [
+                      "body"
+                    ]
+                  }
+                },
+                "required": [
+                  "hello"
+                ]
+              },
+              "query": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "hey": {
+                    "type": "string",
+                    "enum": [
+                      "query"
+                    ]
+                  }
+                },
+                "required": [
+                  "hey"
+                ]
+              }
+            }
+          },
+          "putWithBodyAndNullQuery": {
+            "httpMethod": "PUT",
+            "path": "put-with-body-and-null-query",
+            "validation": {
+              "body": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "hello": {
+                    "type": "string",
+                    "enum": [
+                      "body"
+                    ]
+                  }
+                },
+                "required": [
+                  "hello"
+                ]
+              }
+            }
+          },
+          "putWithBodyOnly": {
+            "httpMethod": "DELETE",
+            "path": "put-with-body-only",
+            "validation": {
+              "body": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "hello": {
+                    "type": "string",
+                    "enum": [
+                      "body"
+                    ]
+                  }
+                },
+                "required": [
+                  "hello"
+                ]
+              }
+            }
+          },
+          "getWithQueryAndNullBody": {
+            "httpMethod": "GET",
+            "path": "get-with-query-and-null-body",
+            "validation": {
+              "query": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "hey": {
+                    "type": "string",
+                    "enum": [
+                      "query"
+                    ]
+                  }
+                },
+                "required": [
+                  "hey"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "WithDtoClientControllerRPC": {
+        "controllerName": "WithDtoClientControllerRPC",
+        "originalControllerName": "WithDtoClientController",
+        "prefix": "with-dto",
+        "handlers": {
+          "postWithBodyQueryAndParams": {
+            "path": "with-params/:param",
+            "httpMethod": "POST",
+            "validation": {
+              "body": {
+                "isDTO": true
+              },
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "postWithBodyAndQueryTransformed": {
+            "httpMethod": "POST",
+            "path": "post-with-body-and-query-transformed",
+            "validation": {
+              "body": {
+                "isDTO": true
+              },
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "putWithBodyAndNullQuery": {
+            "httpMethod": "PUT",
+            "path": "put-with-body-and-null-query",
+            "validation": {
+              "body": {
+                "isDTO": true
+              },
+              "query": null
+            }
+          },
+          "putWithBodyOnly": {
+            "httpMethod": "DELETE",
+            "path": "put-with-body-only",
+            "validation": {
+              "body": {
+                "isDTO": true
+              },
+              "query": null
+            }
+          },
+          "getWithQueryAndNullBody": {
+            "httpMethod": "GET",
+            "path": "get-with-query-and-null-body",
+            "validation": {
+              "body": null,
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "postWithBodyAndQueryWithReqVovk": {
+            "httpMethod": "POST",
+            "path": "post-with-body-and-query-with-req-vovk",
+            "validation": {
+              "body": {
+                "isDTO": true
+              },
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "getWithQueryArrayAndNullBody": {
+            "httpMethod": "GET",
+            "path": "get-with-query-array-and-null-body",
+            "validation": {
+              "body": null,
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "putWithMappedType": {
+            "httpMethod": "PUT",
+            "path": "put-with-mapped-type",
+            "validation": {
+              "body": {
+                "isDTO": true
+              },
+              "query": null
+            }
+          }
+        }
+      }
+    },
+    "workers": {}
+  },
+  "generated": {
+    "emitSchema": true,
+    "segmentName": "generated",
+    "controllers": {
+      "NoValidationControllerOnlyEntityRPC": {
+        "controllerName": "NoValidationControllerOnlyEntityRPC",
+        "originalControllerName": "NoValidationControllerOnlyEntityController",
+        "prefix": "no-validation-controller-only-entity",
+        "handlers": {
+          "getNoValidationControllerOnlyEntities": {
+            "path": "",
+            "httpMethod": "GET"
+          },
+          "updateNoValidationControllerOnlyEntity": {
+            "path": ":id",
+            "httpMethod": "PUT"
+          },
+          "createNoValidationControllerOnlyEntity": {
+            "path": "",
+            "httpMethod": "POST"
+          },
+          "deleteNoValidationControllerOnlyEntity": {
+            "path": ":id",
+            "httpMethod": "DELETE"
+          }
+        }
+      },
+      "NoValidationControllerServiceAndWorkerEntityRPC": {
+        "controllerName": "NoValidationControllerServiceAndWorkerEntityRPC",
+        "originalControllerName": "NoValidationControllerServiceAndWorkerEntityController",
+        "prefix": "no-validation-controller-service-and-worker-entity",
+        "handlers": {
+          "getNoValidationControllerServiceAndWorkerEntities": {
+            "path": "",
+            "httpMethod": "GET"
+          },
+          "updateNoValidationControllerServiceAndWorkerEntity": {
+            "path": ":id",
+            "httpMethod": "PUT"
+          },
+          "createNoValidationControllerServiceAndWorkerEntity": {
+            "path": "",
+            "httpMethod": "POST"
+          },
+          "deleteNoValidationControllerServiceAndWorkerEntity": {
+            "path": ":id",
+            "httpMethod": "DELETE"
+          }
+        }
+      },
+      "ZodControllerOnlyEntityRPC": {
+        "controllerName": "ZodControllerOnlyEntityRPC",
+        "originalControllerName": "ZodControllerOnlyEntityController",
+        "prefix": "zod-controller-only-entity",
+        "handlers": {
+          "getZodControllerOnlyEntities": {
+            "path": "",
+            "httpMethod": "GET",
+            "validation": {
+              "query": {
+                "type": "object",
+                "properties": {
+                  "search": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "search"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          },
+          "updateZodControllerOnlyEntity": {
+            "path": ":id",
+            "httpMethod": "PUT",
+            "validation": {
+              "body": {
+                "type": "object",
+                "properties": {
+                  "foo": {
+                    "type": "string",
+                    "enum": [
+                      "bar",
+                      "baz"
+                    ]
+                  }
+                },
+                "required": [
+                  "foo"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              },
+              "query": {
+                "type": "object",
+                "properties": {
+                  "q": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "q"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          },
+          "createZodControllerOnlyEntity": {
+            "path": "",
+            "httpMethod": "POST"
+          },
+          "deleteZodControllerOnlyEntity": {
+            "path": ":id",
+            "httpMethod": "DELETE"
+          }
+        }
+      },
+      "ZodControllerAndServiceEntityRPC": {
+        "controllerName": "ZodControllerAndServiceEntityRPC",
+        "originalControllerName": "ZodControllerAndServiceEntityController",
+        "prefix": "zod-controller-and-service-entity",
+        "handlers": {
+          "getZodControllerAndServiceEntities": {
+            "path": "",
+            "httpMethod": "GET",
+            "validation": {
+              "query": {
+                "type": "object",
+                "properties": {
+                  "search": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "search"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          },
+          "updateZodControllerAndServiceEntity": {
+            "path": ":id",
+            "httpMethod": "PUT",
+            "validation": {
+              "body": {
+                "type": "object",
+                "properties": {
+                  "foo": {
+                    "type": "string",
+                    "enum": [
+                      "bar",
+                      "baz"
+                    ]
+                  }
+                },
+                "required": [
+                  "foo"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              },
+              "query": {
+                "type": "object",
+                "properties": {
+                  "q": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "q"
+                ],
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          },
+          "createZodControllerAndServiceEntity": {
+            "path": "",
+            "httpMethod": "POST"
+          },
+          "deleteZodControllerAndServiceEntity": {
+            "path": ":id",
+            "httpMethod": "DELETE"
+          }
+        }
+      },
+      "YupControllerOnlyEntityRPC": {
+        "controllerName": "YupControllerOnlyEntityRPC",
+        "originalControllerName": "YupControllerOnlyEntityController",
+        "prefix": "yup-controller-only-entity",
+        "handlers": {
+          "getYupControllerOnlyEntities": {
+            "path": "",
+            "httpMethod": "GET",
+            "validation": {
+              "query": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "search": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "updateYupControllerOnlyEntity": {
+            "path": ":id",
+            "httpMethod": "PUT",
+            "validation": {
+              "body": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "foo": {
+                    "type": [
+                      "string"
+                    ],
+                    "enum": [
+                      "bar",
+                      "baz"
+                    ]
+                  }
+                },
+                "required": [
+                  "foo"
+                ]
+              },
+              "query": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "q": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "createYupControllerOnlyEntity": {
+            "path": "",
+            "httpMethod": "POST"
+          },
+          "deleteYupControllerOnlyEntity": {
+            "path": ":id",
+            "httpMethod": "DELETE"
+          }
+        }
+      },
+      "YupControllerAndServiceEntityRPC": {
+        "controllerName": "YupControllerAndServiceEntityRPC",
+        "originalControllerName": "YupControllerAndServiceEntityController",
+        "prefix": "yup-controller-and-service-entity",
+        "handlers": {
+          "getYupControllerAndServiceEntities": {
+            "path": "",
+            "httpMethod": "GET",
+            "validation": {
+              "query": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "search": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "updateYupControllerAndServiceEntity": {
+            "path": ":id",
+            "httpMethod": "PUT",
+            "validation": {
+              "body": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "foo": {
+                    "type": [
+                      "string"
+                    ],
+                    "enum": [
+                      "bar",
+                      "baz"
+                    ]
+                  }
+                },
+                "required": [
+                  "foo"
+                ]
+              },
+              "query": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                  "q": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "createYupControllerAndServiceEntity": {
+            "path": "",
+            "httpMethod": "POST"
+          },
+          "deleteYupControllerAndServiceEntity": {
+            "path": ":id",
+            "httpMethod": "DELETE"
+          }
+        }
+      },
+      "DtoControllerOnlyEntityRPC": {
+        "controllerName": "DtoControllerOnlyEntityRPC",
+        "originalControllerName": "DtoControllerOnlyEntityController",
+        "prefix": "dto-controller-only-entity",
+        "handlers": {
+          "getDtoControllerOnlyEntities": {
+            "path": "",
+            "httpMethod": "GET",
+            "validation": {
+              "body": null,
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "updateDtoControllerOnlyEntity": {
+            "path": ":id",
+            "httpMethod": "PUT",
+            "validation": {
+              "body": {
+                "isDTO": true
+              },
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "createDtoControllerOnlyEntity": {
+            "path": "",
+            "httpMethod": "POST"
+          },
+          "deleteDtoControllerOnlyEntity": {
+            "path": ":id",
+            "httpMethod": "DELETE"
+          }
+        }
+      },
+      "DtoControllerAndServiceEntityRPC": {
+        "controllerName": "DtoControllerAndServiceEntityRPC",
+        "originalControllerName": "DtoControllerAndServiceEntityController",
+        "prefix": "dto-controller-and-service-entity",
+        "handlers": {
+          "getDtoControllerAndServiceEntities": {
+            "path": "",
+            "httpMethod": "GET",
+            "validation": {
+              "body": null,
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "updateDtoControllerAndServiceEntity": {
+            "path": ":id",
+            "httpMethod": "PUT",
+            "validation": {
+              "body": {
+                "isDTO": true
+              },
+              "query": {
+                "isDTO": true
+              }
+            }
+          },
+          "createDtoControllerAndServiceEntity": {
+            "path": "",
+            "httpMethod": "POST"
+          },
+          "deleteDtoControllerAndServiceEntity": {
+            "path": ":id",
+            "httpMethod": "DELETE"
+          }
+        }
+      }
+    },
+    "workers": {
+      "NoValidationControllerServiceAndWorkerEntityWPC": {
+        "workerName": "NoValidationControllerServiceAndWorkerEntityWPC",
+        "originalWorkerName": "NoValidationControllerServiceAndWorkerEntityWorker",
+        "handlers": {
+          "heavyComputation": {},
+          "heavyComputationGenerator": {
+            "isGenerator": true
+          }
+        }
+      }
+    }
+  },
+  "workers": {
+    "emitSchema": true,
+    "segmentName": "workers",
+    "controllers": {},
+    "workers": {
+      "MyWorkerWPC": {
+        "workerName": "MyWorkerWPC",
+        "originalWorkerName": "MyWorker",
+        "handlers": {
+          "getClientizeHelloWorld": {},
+          "calculateFibonacci": {},
+          "findLargestPrimeBelow": {},
+          "asyncGenerator": {
+            "isGenerator": true
+          },
+          "asyncGeneratorWithError": {
+            "isGenerator": true
+          },
+          "generator": {
+            "isGenerator": true
+          },
+          "generatorWithError": {
+            "isGenerator": true
+          }
+        }
+      },
+      "MyInnerWorkerWPC": {
+        "workerName": "MyInnerWorkerWPC",
+        "originalWorkerName": "MyInnerWorker",
+        "handlers": {
+          "calculateFibonacci": {}
+        }
+      }
+    }
+  }
+}
