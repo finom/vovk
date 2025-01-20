@@ -93,6 +93,10 @@
       "originalControllerName": "StreamingGeneratorController",
       "prefix": "streaming-generator",
       "handlers": {
+        "getWithStreaming": {
+          "httpMethod": "GET",
+          "path": "get-with-streaming"
+        },
         "postWithAsyncStreaming": {
           "httpMethod": "POST",
           "path": "post-with-async-streaming"
@@ -138,9 +142,9 @@
       "originalControllerName": "WithZodClientController",
       "prefix": "with-zod",
       "handlers": {
-        "postWithBodyAndQuery": {
+        "postWithBodyQueryAndParams": {
+          "path": ":foo",
           "httpMethod": "POST",
-          "path": "post-with-body-and-query",
           "validation": {
             "body": {
               "type": "object",

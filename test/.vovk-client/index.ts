@@ -10,7 +10,7 @@ import validateOnClient from 'vovk-zod/validateOnClient';
 
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-const apiRoot = 'http://localhost:3000/api';
+const apiRoot = 'http://localhost:3001/api';
 
 
   import type { Controllers as Controllers1, Workers as Workers1 } from "../src/app/api/foo/client/[[...client]]/route.ts";

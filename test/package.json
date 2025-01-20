@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "generate": "node ../packages/vovk-cli/dist/index.mjs generate",
-    "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --full-schema --template=../packages/vovk-cli/client-templates/__init__.py --full-schema --out ./python",
+    "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --full-schema --template=python --full-schema --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
   },
   "dependencies": {

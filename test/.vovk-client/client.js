@@ -6,7 +6,7 @@ const { default: fetcher } = require('vovk/client/defaultFetcher');
 const schema = require('../.vovk-schema');
 
 const { default: validateOnClient = null } = require('vovk-zod/validateOnClient');
-const apiRoot = 'http://localhost:3000/api';
+const apiRoot = 'http://localhost:3001/api';
 
 
   

@@ -1,4 +1,4 @@
-import { ClientControllerRPC } from '../../vovk/client';
+import { ClientControllerRPC } from 'vovk-client';
 import type ClientController from './ClientController';
 import { HttpStatus, type VovkBody, type VovkErrorResponse, type VovkParams, type VovkQuery, type VovkReturnType } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';

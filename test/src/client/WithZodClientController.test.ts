@@ -1,26 +1,29 @@
 import { it, expect, describe } from '@jest/globals';
-import { WithZodClientControllerRPC } from '../../vovk/client';
+import { WithZodClientControllerRPC } from 'vovk-client';
 import { HttpException } from 'vovk';
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
   it('Should handle Zod server validation', async () => {
-    const result = await WithZodClientControllerRPC.postWithBodyAndQuery({
+    const result = await WithZodClientControllerRPC.postWithBodyQueryAndParams({
       body: { hello: 'body' },
       query: { hey: 'query' },
+      params: { foo: 'bar' },
       disableClientValidation: true,
     });
 
     expect(result satisfies { body: { hello: string }; query: { hey: string } }).toEqual({
       body: { hello: 'body' },
       query: { hey: 'query' },
+      params: { foo: 'bar' },
     });
 
     let { rejects } = expect(async () => {
-      await WithZodClientControllerRPC.postWithBodyAndQuery({
+      await WithZodClientControllerRPC.postWithBodyQueryAndParams({
         body: {
           hello: 'wrong' as 'body',
         },
         query: { hey: 'query' },
+        params: { foo: 'bar' },
         disableClientValidation: true,
       });
     });
@@ -31,11 +34,12 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithZodClientControllerRPC.postWithBodyAndQuery({
+      await WithZodClientControllerRPC.postWithBodyQueryAndParams({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
         },
+        params: { foo: 'bar' },
         disableClientValidation: true,
       });
     }));
@@ -47,22 +51,25 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
   });
 
   it('Should handle Zod client validation', async () => {
-    const result = await WithZodClientControllerRPC.postWithBodyAndQuery({
+    const result = await WithZodClientControllerRPC.postWithBodyQueryAndParams({
       body: { hello: 'body' },
       query: { hey: 'query' },
+      params: { foo: 'bar' },
     });
 
     expect(result satisfies { body: { hello: 'body' }; query: { hey: 'query' } }).toEqual({
       body: { hello: 'body' },
       query: { hey: 'query' },
+      params: { foo: 'bar' },
     });
 
     let { rejects } = expect(async () => {
-      await WithZodClientControllerRPC.postWithBodyAndQuery({
+      await WithZodClientControllerRPC.postWithBodyQueryAndParams({
         body: {
           hello: 'wrong' as 'body',
         },
         query: { hey: 'query' },
+        params: { foo: 'bar' },
       });
     });
 
@@ -72,11 +79,12 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expect(async () => {
-      await WithZodClientControllerRPC.postWithBodyAndQuery({
+      await WithZodClientControllerRPC.postWithBodyQueryAndParams({
         body: { hello: 'body' },
         query: {
           hey: 'wrong' as 'query',
         },
+        params: { foo: 'bar' },
       });
     }));
 

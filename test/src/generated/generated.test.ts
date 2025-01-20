@@ -7,7 +7,7 @@ import {
   YupControllerAndServiceEntityRPC,
   DtoControllerOnlyEntityRPC,
   DtoControllerAndServiceEntityRPC,
-} from '../../vovk/client';
+} from 'vovk-client';
 import { it, expect, describe } from '@jest/globals';
 
 describe('Generated modules', () => {

@@ -24,4 +24,17 @@ await describe('Custom client templates', async () => {
       `Hello, World!`,
     ]);
   });
+
+  await it.skip('Should generate client with custom templates', async () => {
+    // TODO provide ejs variables to the template
+  });
+
+  await it.skip('Should generate full schema only', async () => {
+  });
+
+  await it.skip('Should generate JS/TS client', async () => {
+  });
+
+  await it.skip('Should generate Python client', async () => {
+  });
 });

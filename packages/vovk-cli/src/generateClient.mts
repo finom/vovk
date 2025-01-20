@@ -12,15 +12,15 @@ export default async function generateClient({
   projectInfo,
   segments,
   segmentsSchema,
-  template,
+  templates = ['main'],
   prettify: prettifyClient,
-  fileName,
   fullSchema,
+  noClient,
 }: {
   projectInfo: ProjectInfo;
   segments: Segment[];
   segmentsSchema: Record<string, VovkSchema>;
-} & Pick<GenerateOptions, 'template' | 'prettify' | 'fileName' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
+} & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema' | 'noClient'>): Promise<{ written: boolean; path: string }> {
   const {
     config,
     cwd,
@@ -30,13 +30,32 @@ export default async function generateClient({
     fetcherClientImportPath,
     schemaOutImportPath,
   } = projectInfo;
-
-  const now = Date.now();
+  const __dirname = path.dirname(new URL(import.meta.url).pathname);
+  const templatesDir = path.join(__dirname, '..', 'client-templates');
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
-  const templateAbsolutePath = template ? path.resolve(cwd, template) : null;
+  const builtInTemplatesMap = {
+    main: ['client.js.ejs', 'index.ts.ejs', 'client.d.ts.ejs'].map((name) => ({
+        templatePath: path.resolve(templatesDir, 'main', name),
+        outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
+    })),
+    python: ['__init__.py'].map((name) => ({
+        templatePath: path.resolve(templatesDir, 'python', name),
+        outPath: path.join(clientOutDirAbsolutePath, name),
+    })),
+  }
 
-  // Ensure that each segment has a matching schema if it needs to be emitted:
-  for (let i = 0; i < segments.length; i++) {
+  const templateFiles = templates.reduce((acc, template) => {
+    if (template in builtInTemplatesMap) {
+      return [...acc, ...builtInTemplatesMap[template as 'main']];
+    }
+    return [...acc, { 
+      templatePath: path.resolve(cwd, template), 
+      outPath: path.join(clientOutDirAbsolutePath, path.basename(template).replace('.ejs', '')) 
+    }];
+  }, [] as { templatePath: string; outPath: string }[]);
+
+   // Ensure that each segment has a matching schema if it needs to be emitted:
+   for (let i = 0; i < segments.length; i++) {
     const { segmentName } = segments[i];
     const schema = segmentsSchema[segmentName];
     if (!schema) {
@@ -47,25 +66,7 @@ export default async function generateClient({
     if (!schema.emitSchema) continue;
   }
 
-  // Directory for default EJS templates
-  const __dirname = path.dirname(new URL(import.meta.url).pathname);
-  const templatesDir = path.join(__dirname, '..', 'client-templates');
-
-  let templateFiles = [];
-
-  if(templateAbsolutePath) {
-    templateFiles.push({
-      templatePath: templateAbsolutePath,
-      outPath: path.join(clientOutDirAbsolutePath, fileName ?? path.basename(templateAbsolutePath).replace('.ejs', '')),
-    });
-  } else {
-    const templateFileNames = ['client.js.ejs', 'index.ts.ejs', 'client.d.ts.ejs']
-
-    templateFiles = templateFileNames.map((name) => ({
-        templatePath: path.resolve(templatesDir, name),
-        outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
-    }));
-  }
+  const now = Date.now();
 
   // Data for the EJS templates:
   const ejsData = {
@@ -78,7 +79,7 @@ export default async function generateClient({
   };
 
   // 1. Process each template in parallel
-  const processedTemplates = await Promise.all(
+  const processedTemplates = noClient ? [] : await Promise.all(
     templateFiles.map(async ({ templatePath, outPath }) => {
       // Read the EJS template
       const templateContent = await fs.readFile(templatePath, 'utf-8');
@@ -105,6 +106,12 @@ export default async function generateClient({
     })
   );
 
+  if(fullSchema) {
+    const fullSchemaOutAbsolutePath = path.resolve(clientOutDirAbsolutePath, typeof fullSchema === 'string' ? fullSchema : 'full-schema.json');
+    await fs.writeFile(fullSchemaOutAbsolutePath, JSON.stringify(segmentsSchema, null, 2));
+    log.info(`Full schema written to ${fullSchemaOutAbsolutePath}`);
+  }
+
   // 2. Check if any file needs rewriting
   const anyNeedsWriting = processedTemplates.some(({ needsWriting }) => needsWriting);
   if (!anyNeedsWriting) {
@@ -127,11 +134,6 @@ export default async function generateClient({
     })
   );
 
-  if(fullSchema) {
-    const fullSchemaOutAbsolutePath = path.resolve(clientOutDirAbsolutePath, typeof fullSchema === 'string' ? fullSchema : 'full-schema.json');
-    await fs.writeFile(fullSchemaOutAbsolutePath, JSON.stringify(segmentsSchema, null, 2));
-    log.info(`Full schema written to ${fullSchemaOutAbsolutePath}`);
-  }
 
   log.info(`Client generated in ${Date.now() - now}ms`);
   return { written: true, path: clientOutDirAbsolutePath };

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from 'react';
-import { MyWorkerWPC } from '../../vovk/client';
+import { MyWorkerWPC } from 'vovk-client';
 import { promisifyWorker } from '../../../packages/vovk/worker';
 import segmentSchema from '.vovk-schema';
 import MyWorker from '../worker/MyWorker';

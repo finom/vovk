@@ -57,10 +57,10 @@ export interface DevOptions {
 
 export interface GenerateOptions {
   clientOutDir?: string;
-  fileName?: string;
-  template?: string;
+  templates?: string[];
   prettify?: boolean;
   fullSchema?: string | boolean;
+  noClient?: boolean;
 }
 
 export interface InitOptions {

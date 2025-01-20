@@ -1,5 +1,5 @@
 import { worker } from '../../../packages/vovk/worker';
-import { ClientControllerRPC, MyInnerWorkerWPC } from 'vovk/client';
+import { ClientControllerRPC, MyInnerWorkerWPC } from 'vovk-client';
 
 @worker()
 export default class MyWorker {

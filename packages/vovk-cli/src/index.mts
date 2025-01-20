@@ -82,12 +82,12 @@ program
   .alias('g')
   .description('Generate client')
   .option('--out, --client-out-dir <path>', 'Path to output directory')
-  .option('--template <path>', 'Path to custom template file in .ejs format')
-  .option('--file-name <name>', 'Custom file name for the output file if --template is used')
+  .option('--template, --templates <templates...>', 'Client code templates')
+  .option('--no-client', 'Do not generate client')
   .option('--full-schema [fileName]', 'Generate client with full schema')
   .option('--prettify', 'Prettify output files')
   .action(async (options: GenerateOptions) => {
-    const { clientOutDir, template, prettify, fileName, fullSchema } = options;
+    const { clientOutDir, templates, prettify, noClient, fullSchema } = options;
     const projectInfo = await getProjectInfo({ clientOutDir });
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments({ dir: apiDir, config });
@@ -97,7 +97,7 @@ program
       default: Record<string, VovkSchema>;
     };
 
-    await generateClient({ projectInfo, segments, segmentsSchema, template, prettify, fileName, fullSchema });
+    await generateClient({ projectInfo, segments, segmentsSchema, templates, prettify, noClient, fullSchema });
   });
 
 program

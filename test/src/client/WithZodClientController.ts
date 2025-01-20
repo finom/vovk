@@ -4,14 +4,14 @@ import * as z from 'zod';
 
 @prefix('with-zod')
 export default class WithZodClientController {
-  @post.auto()
-  static postWithBodyAndQuery = withZod(
+  @post(':foo')
+  static postWithBodyQueryAndParams = withZod(
     z.object({ hello: z.literal('body') }),
     z.object({ hey: z.literal('query') }),
-    async (req) => {
+    async (req, params: { foo: 'bar' }) => {
       const body = await req.json();
       const hey = req.nextUrl.searchParams.get('hey');
-      return { body, query: { hey } };
+      return { body, query: { hey }, params };
     }
   );
 
