@@ -12,7 +12,7 @@ export default async function generateClient({
   projectInfo,
   segments,
   segmentsSchema,
-  templates = ['main'],
+  templates = ['ts', 'compiled'],
   prettify: prettifyClient,
   fullSchema,
   noClient,
@@ -33,20 +33,19 @@ export default async function generateClient({
   const __dirname = path.dirname(new URL(import.meta.url).pathname);
   const templatesDir = path.join(__dirname, '..', 'client-templates');
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
+  const mapper = (dir: string) => (name: string) => ({
+    templatePath: path.resolve(templatesDir, dir, name),
+    outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
+  })
   const builtInTemplatesMap = {
-    main: ['client.js.ejs', 'index.ts.ejs', 'client.d.ts.ejs'].map((name) => ({
-        templatePath: path.resolve(templatesDir, 'main', name),
-        outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
-    })),
-    python: ['__init__.py'].map((name) => ({
-        templatePath: path.resolve(templatesDir, 'python', name),
-        outPath: path.join(clientOutDirAbsolutePath, name),
-    })),
+    ts: ['index.ts.ejs'].map(mapper('ts')),
+    compiled: ['client.js.ejs', 'client.d.ts.ejs'].map(mapper('compiled')),
+    python: ['__init__.py'].map(mapper('python')),
   }
 
   const templateFiles = templates.reduce((acc, template) => {
     if (template in builtInTemplatesMap) {
-      return [...acc, ...builtInTemplatesMap[template as 'main']];
+      return [...acc, ...builtInTemplatesMap[template as 'ts']];
     }
     return [...acc, { 
       templatePath: path.resolve(cwd, template), 
