@@ -8,6 +8,8 @@ import formatLoggedSegmentName from './utils/formatLoggedSegmentName.mjs';
 import prettify from './utils/prettify.mjs';
 import { GenerateOptions } from './types.mjs';
 
+interface ClientTemplate { templatePath: string; outPath: string }
+
 export default async function generateClient({
   projectInfo,
   segments,
@@ -33,7 +35,7 @@ export default async function generateClient({
   const __dirname = path.dirname(new URL(import.meta.url).pathname);
   const templatesDir = path.join(__dirname, '..', 'client-templates');
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
-  const mapper = (dir: string) => (name: string) => ({
+  const mapper = (dir: string) => (name: string): ClientTemplate => ({
     templatePath: path.resolve(templatesDir, dir, name),
     outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
   })
@@ -43,7 +45,7 @@ export default async function generateClient({
     python: ['__init__.py'].map(mapper('python')),
   }
 
-  const templateFiles = templates.reduce((acc, template) => {
+  const templateFiles: ClientTemplate[] = templates.reduce((acc, template) => {
     if (template in builtInTemplatesMap) {
       return [...acc, ...builtInTemplatesMap[template as 'ts']];
     }
@@ -51,7 +53,7 @@ export default async function generateClient({
       templatePath: path.resolve(cwd, template), 
       outPath: path.join(clientOutDirAbsolutePath, path.basename(template).replace('.ejs', '')) 
     }];
-  }, [] as { templatePath: string; outPath: string }[]);
+  }, [] as ClientTemplate[]);
 
    // Ensure that each segment has a matching schema if it needs to be emitted:
    for (let i = 0; i < segments.length; i++) {

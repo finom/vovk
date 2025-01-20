@@ -54,14 +54,11 @@ class _RPCBase:
                 try:
                     data = json.loads(line)
                 except json.JSONDecodeError:
-                    # We got a newline but can't parse this yet -> possible partial JSON
-                    # We'll ignore or re-accumulate it. However, in a pure line-based stream,
-                    # you typically won't get partial JSON once you hit a newline.
+                    # Could happen if line is incomplete, but we got a newline anyway
                     continue
 
                 # If the server signals an error in-stream
                 if data.get("isError") and "reason" in data:
-                    # We can close the response to stop reading further
                     resp.close()
                     raise ServerError(resp.status_code, str(data["reason"]))
 
@@ -71,10 +68,10 @@ class _RPCBase:
             buffer = lines[-1]
 
         # If there's leftover data in the buffer (no trailing newline at end):
-        buffer = buffer.strip()
-        if buffer:
+        leftover = buffer.strip()
+        if leftover:
             try:
-                data = json.loads(buffer)
+                data = json.loads(leftover)
                 if data.get("isError") and "reason" in data:
                     resp.close()
                     raise ServerError(resp.status_code, str(data["reason"]))
@@ -97,15 +94,15 @@ class _RPCBase:
         disable_client_validation: bool = False
     ):
         """
-        1. If disable_client_validation is False, validates `query` & `body` against
-           JSON Schemas (if provided).
-        2. Makes an HTTP request (using `requests`).
-        3. If the response is not 2xx, we parse JSON to see if there's an error structure.
-           Otherwise, we raise requests.HTTPError.
-        4. If 'x-vovk-stream' == 'true', we return a generator that yields objects
-           from a newline-delimited JSON stream. Otherwise, we return the full response.
+        1. If disable_client_validation is False, validates `query` & `body` (if schemas).
+        2. Makes an HTTP request (using `requests` with stream=True).
+        3. If the response is not 2xx:
+           - parse JSON for a possible error structure
+           - or raise requests.HTTPError if not available
+        4. If 'x-vovk-stream' == 'true', return a generator that yields JSON objects.
+        5. Otherwise, parse and return the actual response (JSON -> dict or fallback to text).
         """
-        # Validate query and body if schemas are provided AND validation is not disabled
+        # Validate query and body if schemas are provided AND validation not disabled
         if not disable_client_validation:
             if query_schema:
                 validate(instance=query or {}, schema=query_schema)
@@ -115,45 +112,49 @@ class _RPCBase:
         # Build the final URL
         url = f"{self.base_url}/{endpoint_path}"
 
-        # Make the request (stream=True to allow streaming content)
+        # Make the request (stream=True to handle streaming)
         resp = requests.request(
             method=method,
             url=url,
             params=query,
             json=body,
-            stream=True  # <--- Important for streaming
+            stream=True
         )
 
-        # If it's not 2xx, try to parse a structured error or fallback
+        # Check if status is not 2xx
         if not resp.ok:
             try:
+                # Attempt to parse JSON error
                 data = resp.json()
+                # Example: { "statusCode": 400, "message": "Zod validation failed...", "isError": true }
                 if data.get("isError"):
                     status_code = data.get("statusCode", resp.status_code)
                     message = data.get("message", resp.text)
                     resp.close()
                     raise ServerError(status_code, message)
                 else:
-                    # No recognized structure, fallback
+                    # Not the structured error we expect - fallback
                     resp.raise_for_status()
             except ValueError:
-                # JSON parse failed, fallback to standard HTTP error
+                # If parsing fails, fallback
                 resp.raise_for_status()
 
-        # Check if the server signals "x-vovk-stream: true"
-        # If so, return a generator that yields each JSON object
+        # If we get here, resp is 2xx. Check if streaming is requested.
         if resp.headers.get("x-vovk-stream", "").lower() == "true":
             return self._handle_stream_response(resp)
 
-        # Otherwise, read the response normally (non-streaming)
-        # (You might want to keep streaming logic anyway, but here we can read text or JSON.)
+        # Non-streaming: parse JSON or return text
         content_type = resp.headers.get("Content-Type", "").lower()
-        if "application/json" in content_type:
-            # Return the actual requests.Response if you want the user to do resp.json() later
-            return resp
-        else:
-            # Or possibly read text directly
-            return resp
+        try:
+            if "application/json" in content_type:
+                result = resp.json()  # parse the body as JSON
+            else:
+                result = resp.text  # fallback if not JSON
+        finally:
+            # In either case, we can close the connection now since we're reading full body
+            resp.close()
+
+        return result
 
 
 def _build_controller_class(
@@ -167,10 +168,8 @@ def _build_controller_class(
     them directly on the class (passing base_url, query, body, etc.).
 
     The endpoints will be constructed as: `segmentName/prefix/path`.
-
-    Additionally, if `prefix` or `path` contain placeholder segments like
-    `:id`, they can be replaced by passing a `params` dict, e.g.:
-      params = { "id": 123 }
+    If `prefix` or `path` contain placeholder segments like `:id`, 
+    they can be replaced by passing a `params` dict, e.g. { "id": 123 }
     which would convert "/foo/:id/bar" --> "/foo/123/bar"
     """
     prefix = controller_spec.get("prefix", "").strip("/")
@@ -274,3 +273,4 @@ _controllers_dict = _load_controllers()
 for ctrl_name, ctrl_class in _controllers_dict.items():
     globals()[ctrl_name] = ctrl_class
     __all__.append(ctrl_name)
+

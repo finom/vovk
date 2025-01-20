@@ -2,49 +2,46 @@ from python import WithZodClientControllerRPC, StreamingGeneratorControllerRPC, 
 from jsonschema.exceptions import ValidationError
 import requests
 
-
-# --------------------------------------------------------------------
-# EXAMPLE USAGE:
-# --------------------------------------------------------------------
+# ---------------------------
+# Example usage
+# ---------------------------
 if __name__ == "__main__":
     base_url = "http://localhost:3000/api"
 
-    # Suppose "WithZodClientControllerRPC" is one of your dynamically built controllers
-    # and "streamResponse" is a handler that returns x-vovk-stream: true in the response.
-
     try:
-        # 1) Non-streaming usage (assume server doesn't send x-vovk-stream)
-        resp = WithZodClientControllerRPC.postWithBodyQueryAndParams(
+        # Suppose we have a dynamically generated class "WithZodClientControllerRPC"
+        # and a method "postWithBodyQueryAndParams"
+
+        # 1) Non-streaming usage: returns a dict (parsed JSON) or text, etc.
+        resp_data = WithZodClientControllerRPC.postWithBodyQueryAndParams(
             base_url,
             query={'hey': 'query'},
             body={'hello': 'body'},
             params={'foo': 'bar'}
         )
-        # If not streaming, 'resp' is a requests.Response
-        print("Non-streaming response JSON:", resp.json())
+        # resp_data will be either JSON (Python dict) or text, depending on the content type
+        print("Non-streaming response:", resp_data)
 
-        # 2) Streaming usage
-        #    Suppose this endpoint sets `x-vovk-stream:true` in the response
-        #    and sends newline-delimited JSON objects.
-        stream = StreamingGeneratorControllerRPC.getWithStreaming(
+        # 2) Streaming usage: if endpoint returns 'x-vovk-stream: true'
+        #    we'll get a generator
+        stream_data = StreamingGeneratorControllerRPC.getWithStreaming(
             base_url,
             query={'query': 'streamme'},
             body=None,
             params=None
         )
 
-        # If streaming is detected, the return value is a generator you can iterate over:
-        if hasattr(stream, "__iter__"):
-            print("Streaming data chunks:")
-            for item in stream:
+        # Check if it's a generator
+        if hasattr(stream_data, '__iter__'):
+            print("\nStreaming data:")
+            for item in stream_data:
                 print("Got item:", item)
         else:
-            # Possibly the server responded with 2xx but not x-vovk-stream
-            # => 'stream' is just the raw requests.Response
-            print("Server did not provide streaming; got:", stream.json())
+            # It's not streaming, so it's just the final data
+            print("\nGot a non-stream response for streaming endpoint:", stream_data)
 
     except ServerError as se:
-        print("ServerError caught:")
+        print("ServerError caught:", se)
         print("Status code:", se.status_code)
         print("Message:", se.server_message)
 
