@@ -3,13 +3,11 @@ import { clientizeController, type VovkClientFetcher } from 'vovk/client';
 import { promisifyWorker } from 'vovk/worker';
 import fetcher from '<%= fetcherClientImportPath %>';
 import schema from '<%= schemaOutImportPath %>';
-
 <% if (validateOnClientImportPath) { %>
 import validateOnClient from '<%= validateOnClientImportPath %>';
 <% } else { %>
 const validateOnClient = undefined;
 <% } %>
-
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 const apiRoot = '<%= apiEntryPoint %>';
 
@@ -17,20 +15,20 @@ const apiRoot = '<%= apiEntryPoint %>';
     const segSchema = segmentsSchema[segment.segmentName];
     if (!segSchema || !segSchema.emitSchema) return;
 %>
-  import type { Controllers as Controllers<%= i %>, Workers as Workers<%= i %> } from "<%= segment.segmentImportPath %>";
+import type { Controllers as Controllers<%= i %>, Workers as Workers<%= i %> } from "<%= segment.segmentImportPath %>";
 
   <% Object.keys(segSchema.controllers).forEach((key) => { %>
-    export const <%= key %> = clientizeController<Controllers<%= i %>["<%= key %>"], Options>(
-      schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
-      '<%= segment.segmentName %>', 
-      { fetcher, validateOnClient, defaultOptions: { apiRoot } }
-    );
+export const <%= key %> = clientizeController<Controllers<%= i %>["<%= key %>"], Options>(
+  schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
+  '<%= segment.segmentName %>', 
+  { fetcher, validateOnClient, defaultOptions: { apiRoot } }
+);
   <% }) %>
 
   <% Object.keys(segSchema.workers).forEach((key) => { %>
-    export const <%= key %> = promisifyWorker<Workers<%= i %>["<%= key %>"]>(
-      null, 
-      schema['<%= segment.segmentName %>'].workers.<%= key %>
-    );
+export const <%= key %> = promisifyWorker<Workers<%= i %>["<%= key %>"]>(
+  null, 
+  schema['<%= segment.segmentName %>'].workers.<%= key %>
+);
   <% }) %>
 <% }) %>

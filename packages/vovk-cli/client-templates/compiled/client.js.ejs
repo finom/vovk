@@ -14,13 +14,13 @@ const apiRoot = '<%= apiEntryPoint %>';
     const workers     = Object.keys(segSchema.workers);
 %>
   <% controllers.forEach((key) => { %>
-    exports.<%= key %> = clientizeController(
-    schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
-    '<%= segment.segmentName %>', 
-    { fetcher, validateOnClient, defaultOptions: { apiRoot } }
-    );
+exports.<%= key %> = clientizeController(
+  schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
+  '<%= segment.segmentName %>', 
+  { fetcher, validateOnClient, defaultOptions: { apiRoot } }
+);
   <% }) %>
   <% workers.forEach((key) => { %>
-    exports.<%= key %> = promisifyWorker(null, schema['<%= segment.segmentName %>'].workers.<%= key %>);
+exports.<%= key %> = promisifyWorker(null, schema['<%= segment.segmentName %>'].workers.<%= key %>);
   <% }) %>
 <% }) %>
