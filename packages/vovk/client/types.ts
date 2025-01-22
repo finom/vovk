@@ -16,14 +16,20 @@ type Prettify<T> = {
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
-export type StaticMethodInput<T extends ControllerStaticMethod> = Prettify<
-(VovkControllerBody<T> extends undefined | void
-  ? unknown
-  : VovkControllerBody<T> extends null
-    ? { body?: null }
-    : { body: VovkControllerBody<T> }) &
-  (VovkControllerQuery<T> extends undefined | void ? unknown : { query: VovkControllerQuery<T> }) &
-  (VovkControllerParams<T> extends undefined | void ? unknown : { params: VovkControllerParams<T> })
+type NonUndefined<T> = {
+  [K in keyof T as T[K] extends undefined ? never : K]: T[K];
+};
+
+export type StaticMethodInput<T extends ControllerStaticMethod> = NonUndefined<
+  Prettify<
+  (VovkControllerBody<T> extends undefined | void
+    ? { body?: undefined }
+    : VovkControllerBody<T> extends null
+      ? { body?: null }
+      : { body: VovkControllerBody<T> }) &
+    (VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: VovkControllerQuery<T> }) &
+    (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> })
+  >
 >;
 
 export type StreamAsyncIterator<T> = {
