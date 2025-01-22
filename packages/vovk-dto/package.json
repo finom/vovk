@@ -25,7 +25,7 @@
   "author": "Andrii Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.38",
+    "vovk": "^3.0.0-draft.39",
     "class-validator": "*",
     "class-transformer": "*"
   },
