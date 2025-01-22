@@ -1,5 +1,5 @@
 import { VovkRequest, post, prefix } from 'vovk';
-import { _StreamJSONResponse as StreamJSONResponse } from 'vovk/StreamJSONResponse';
+import { StreamJSONResponse as StreamJSONResponse } from 'vovk/StreamJSONResponse';
 
 export type Token = { token: string; query: 'queryValue' };
 
