@@ -55,7 +55,7 @@ type ClientMethod<
       OPTS & {
         transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
       }
-    > | void)>
+    >)>
 ) => ReturnType<T> extends
   | Promise<StreamJSONResponse<infer U>>
   | StreamJSONResponse<infer U>

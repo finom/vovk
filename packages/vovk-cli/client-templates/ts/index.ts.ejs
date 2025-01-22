@@ -1,5 +1,3 @@
-<% var hasWorkers = !!Object.keys(segSchema.workers).length; %>
-
 <%- '// auto-generated\n/* eslint-disable */' %>
 import { clientizeController, type VovkClientFetcher } from 'vovk/client';
 <% if(hasWorkers) { %>import { promisifyWorker } from 'vovk/worker';<% } %>
@@ -16,6 +14,7 @@ const apiRoot = '<%= apiRoot %>';
 <% segments.forEach((segment, i) => {
     const segSchema = segmentsSchema[segment.segmentName];
     if (!segSchema || !segSchema.emitSchema) return;
+    const hasWorkers = !!Object.keys(segmentsSchema[segment.segmentName].workers).length;
 %>
 import type { Controllers as Controllers<%= i %><% if(hasWorkers) { %>, Workers as Workers<%= i %> <% } %>} from "<%= segment.segmentImportPath %>";
 

@@ -21,6 +21,7 @@ export default async function generate({
   segments: Segment[];
   segmentsSchema: Record<string, VovkSchema>;
 } & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
+  templates = templates ?? projectInfo.config.clientGenerateTemplateNames;
   const noClient = templates?.[0] === 'none';
   const {
     config,
