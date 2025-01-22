@@ -1,25 +1,25 @@
 import type {
-  _KnownAny as KnownAny,
-  _HttpMethod as HttpMethod,
-  _ControllerStaticMethod,
-  _VovkControllerBody,
-  _VovkControllerQuery,
-  _VovkControllerParams,
+  KnownAny,
+  HttpMethod,
+  ControllerStaticMethod,
+  VovkControllerBody,
+  VovkControllerQuery,
+  VovkControllerParams,
 } from '../types';
-import { _StreamJSONResponse as StreamJSONResponse } from '../StreamJSONResponse';
+import type { StreamJSONResponse } from '../StreamJSONResponse';
 import type { NextResponse } from 'next/server';
 
-export type _StaticMethodInput<T extends _ControllerStaticMethod> = (_VovkControllerBody<T> extends undefined | void
+export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControllerBody<T> extends undefined | void
   ? { body?: undefined }
-  : _VovkControllerBody<T> extends null
+  : VovkControllerBody<T> extends null
     ? { body?: null }
-    : { body: _VovkControllerBody<T> }) &
-  (_VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: _VovkControllerQuery<T> }) &
-  (_VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: _VovkControllerParams<T> });
+    : { body: VovkControllerBody<T> }) &
+  (VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: VovkControllerQuery<T> }) &
+  (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> });
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
-export type _StreamAsyncIterator<T> = {
+export type StreamAsyncIterator<T> = {
   status: number;
   [Symbol.dispose](): Promise<void> | void;
   [Symbol.asyncDispose](): Promise<void> | void;
@@ -27,27 +27,27 @@ export type _StreamAsyncIterator<T> = {
   cancel: () => Promise<void> | void;
 };
 
-type StaticMethodReturn<T extends _ControllerStaticMethod> =
+type StaticMethodReturn<T extends ControllerStaticMethod> =
   ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
     ? U
     : ReturnType<T> extends Response | Promise<Response>
       ? Awaited<ReturnType<T>>
       : ReturnType<T>;
 
-type StaticMethodReturnPromise<T extends _ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
+type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
 type ClientMethod<
   T extends (...args: KnownAny[]) => void | object | StreamJSONResponse<STREAM> | Promise<StreamJSONResponse<STREAM>>,
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = <R>(
-  options: (_StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
+  options: (StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? unknown
     : Parameters<T>[0] extends void
-      ? _StaticMethodInput<T>['params'] extends object
-        ? { params: _StaticMethodInput<T>['params'] }
+      ? StaticMethodInput<T>['params'] extends object
+        ? { params: StaticMethodInput<T>['params'] }
         : unknown
-      : _StaticMethodInput<T>) &
+      : StaticMethodInput<T>) &
     (Partial<
       OPTS & {
         transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
@@ -58,7 +58,7 @@ type ClientMethod<
   | StreamJSONResponse<infer U>
   | Iterator<infer U>
   | AsyncIterator<infer U>
-  ? Promise<_StreamAsyncIterator<U>>
+  ? Promise<StreamAsyncIterator<U>>
   : R extends object
     ? Promise<R>
     : StaticMethodReturnPromise<T>;
@@ -67,13 +67,13 @@ type OmitNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];
 };
 
-type _VovkClientWithNever<T, OPTS extends { [key: string]: KnownAny }> = {
+type VovkClientWithNever<T, OPTS extends { [key: string]: KnownAny }> = {
   [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> : never;
 };
 
-export type _VovkClient<T, OPTS extends { [key: string]: KnownAny }> = OmitNever<_VovkClientWithNever<T, OPTS>>;
+export type VovkClient<T, OPTS extends { [key: string]: KnownAny }> = OmitNever<VovkClientWithNever<T, OPTS>>;
 
-export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
+export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
   options: {
     name: keyof T;
     httpMethod: HttpMethod;
@@ -83,7 +83,7 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
       query: { [key: string]: string };
     }) => string;
     validate: (input: { body?: unknown; query?: unknown; endpoint: string }) => void | Promise<void>;
-    defaultStreamHandler: (response: Response) => Promise<_StreamAsyncIterator<unknown>>;
+    defaultStreamHandler: (response: Response) => Promise<StreamAsyncIterator<unknown>>;
     defaultHandler: (response: Response) => Promise<unknown>;
   },
   input: {
@@ -94,22 +94,22 @@ export type _VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<st
 ) => KnownAny;
 
 // `RequestInit` is the type of options passed to fetch function
-export interface _VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
+export interface VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
   reactNative?: { textStreaming: boolean };
   apiRoot?: string;
   segmentName?: string;
   disableClientValidation?: boolean;
-  validateOnClient?: _VovkValidateOnClient;
-  fetcher?: _VovkClientFetcher;
+  validateOnClient?: VovkValidateOnClient;
+  fetcher?: VovkClientFetcher;
 }
 
-export type _VovkValidateOnClient = (
+export type VovkValidateOnClient = (
   input: { body?: unknown; query?: unknown; endpoint: string },
   validators: { body?: unknown; query?: unknown }
 ) => void | Promise<void>;
 
-export type _VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
-  fetcher?: _VovkClientFetcher<OPTS>;
-  validateOnClient?: _VovkValidateOnClient;
+export type VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
+  fetcher?: VovkClientFetcher<OPTS>;
+  validateOnClient?: VovkValidateOnClient;
   defaultOptions?: Partial<OPTS>;
 };

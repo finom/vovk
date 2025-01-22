@@ -1,26 +1,26 @@
 import type { NextRequest } from 'next/server';
-import type { _StreamJSONResponse as StreamJSONResponse } from './StreamJSONResponse';
-import { _StreamAsyncIterator as StreamAsyncIterator } from './client/types';
+import type { StreamJSONResponse } from './StreamJSONResponse';
+import { StreamAsyncIterator } from './client/types';
 
-export type _KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type _StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
+export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
 
-export type _HandlerSchema = {
+export type HandlerSchema = {
   path: string;
-  httpMethod: _HttpMethod;
-  validation?: { query?: _KnownAny; body?: _KnownAny };
-  custom?: Record<string, _KnownAny>;
+  httpMethod: HttpMethod;
+  validation?: { query?: KnownAny; body?: KnownAny };
+  custom?: Record<string, KnownAny>;
 };
 
-export type _VovkControllerSchema = {
+export type VovkControllerSchema = {
   controllerName: string;
   originalControllerName: string;
   prefix?: string;
-  handlers: Record<string, _HandlerSchema>;
+  handlers: Record<string, HandlerSchema>;
 };
 
-export type _VovkWorkerSchema = {
+export type VovkWorkerSchema = {
   workerName: string;
   originalWorkerName: string;
   handlers: Record<
@@ -31,51 +31,51 @@ export type _VovkWorkerSchema = {
   >;
 };
 
-export type _VovkSchema = {
+export type VovkSchema = {
   emitSchema: boolean;
   segmentName: string;
-  workers: Record<string, _VovkWorkerSchema>;
-  controllers: Record<string, _VovkControllerSchema>;
+  workers: Record<string, VovkWorkerSchema>;
+  controllers: Record<string, VovkControllerSchema>;
 };
 
-export type _VovkErrorResponse = {
+export type VovkErrorResponse = {
   cause?: unknown;
-  statusCode: _HttpStatus;
+  statusCode: HttpStatus;
   message: string;
   isError: true;
 };
 
-export type _VovkControllerInternal = {
-  _controllerName?: _VovkControllerSchema['controllerName'];
-  _prefix?: _VovkControllerSchema['prefix'];
-  _handlers: _VovkControllerSchema['handlers'];
+export type VovkControllerInternal = {
+  _controllerName?: VovkControllerSchema['controllerName'];
+  _prefix?: VovkControllerSchema['prefix'];
+  _handlers: VovkControllerSchema['handlers'];
   _activated?: true;
-  _onError?: (err: Error, req: _VovkRequest) => void | Promise<void>;
+  _onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
 };
 
-export type _VovkController = _StaticClass &
-  _VovkControllerInternal & {
+export type VovkController = StaticClass &
+  VovkControllerInternal & {
     [key: string]: unknown;
   };
 
-export type _VovkWorker = _StaticClass & {
-  _handlers: _VovkWorkerSchema['handlers'];
+export type VovkWorker = StaticClass & {
+  _handlers: VovkWorkerSchema['handlers'];
   [key: string]: unknown;
 };
 
-export type _DecoratorOptions = {
+export type DecoratorOptions = {
   cors?: boolean;
   headers?: Record<string, string>;
 };
 
-export type _RouteHandler = ((
-  req: _VovkRequest,
+export type RouteHandler = ((
+  req: VovkRequest,
   params: Record<string, string>
 ) => Response | Promise<Response> | Iterable<unknown> | AsyncIterable<unknown>) & {
-  _options?: _DecoratorOptions;
+  _options?: DecoratorOptions;
 };
 
-export interface _VovkRequest<BODY = undefined, QUERY extends object | undefined = undefined>
+export interface VovkRequest<BODY = undefined, QUERY extends object | undefined = undefined>
   extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<BODY>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
@@ -84,7 +84,7 @@ export interface _VovkRequest<BODY = undefined, QUERY extends object | undefined
       'get' | 'getAll' | 'entries' | 'forEach' | 'keys' | 'values'
     > & {
       get: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY] extends readonly (infer ITEM)[] ? ITEM : QUERY[KEY];
-      getAll: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY] extends _KnownAny[] ? QUERY[KEY] : QUERY[KEY][];
+      getAll: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY] extends KnownAny[] ? QUERY[KEY] : QUERY[KEY][];
       entries: () => IterableIterator<[keyof QUERY, QUERY[keyof QUERY]]>;
       forEach: (
         callbackfn: (
@@ -101,58 +101,58 @@ export interface _VovkRequest<BODY = undefined, QUERY extends object | undefined
   vovk: {
     body: () => Promise<BODY>;
     query: () => QUERY;
-    meta: <T = Record<_KnownAny, _KnownAny>>(meta?: T | null) => T;
-    form: <T = _KnownAny>() => Promise<T>;
+    meta: <T = Record<KnownAny, KnownAny>>(meta?: T | null) => T;
+    form: <T = KnownAny>() => Promise<T>;
   };
 }
 
-export type _ControllerStaticMethod<
-  REQ extends _VovkRequest<_KnownAny, _KnownAny> = _VovkRequest<undefined, Record<string, string | string[]>>,
-  PARAMS extends { [key: string]: string } = _KnownAny,
+export type ControllerStaticMethod<
+  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<undefined, Record<string, string | string[]>>,
+  PARAMS extends { [key: string]: string } = KnownAny,
 > = ((req: REQ, params: PARAMS) => unknown) & {
-  _controller?: _VovkController;
+  _controller?: VovkController;
 };
 
-export type _VovkControllerBody<T extends (...args: _KnownAny) => _KnownAny> = Awaited<
+export type VovkControllerBody<T extends (...args: KnownAny) => KnownAny> = Awaited<
   ReturnType<Parameters<T>[0]['vovk']['body']>
 >;
 
-export type _VovkControllerQuery<T extends (...args: _KnownAny) => _KnownAny> = ReturnType<
+export type VovkControllerQuery<T extends (...args: KnownAny) => KnownAny> = ReturnType<
   Parameters<T>[0]['vovk']['query']
 >;
 
-export type _VovkControllerParams<T extends (...args: _KnownAny) => _KnownAny> = Parameters<T>[1];
+export type VovkControllerParams<T extends (...args: KnownAny) => KnownAny> = Parameters<T>[1];
 
-export type _VovkControllerYieldType<T extends (req: _VovkRequest<_KnownAny, _KnownAny>) => _KnownAny> = T extends (
-  ...args: _KnownAny[]
-) => AsyncGenerator<infer Y, _KnownAny, _KnownAny>
+export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownAny>) => KnownAny> = T extends (
+  ...args: KnownAny[]
+) => AsyncGenerator<infer Y, KnownAny, KnownAny>
   ? Y
-  : T extends (...args: _KnownAny[]) => Generator<infer Y, _KnownAny, _KnownAny>
+  : T extends (...args: KnownAny[]) => Generator<infer Y, KnownAny, KnownAny>
     ? Y
-    : T extends (...args: _KnownAny[]) => Promise<StreamJSONResponse<infer Y>> | StreamJSONResponse<infer Y>
+    : T extends (...args: KnownAny[]) => Promise<StreamJSONResponse<infer Y>> | StreamJSONResponse<infer Y>
       ? Y
       : never;
 
-export type _VovkBody<T extends (...args: _KnownAny[]) => unknown> = Parameters<T>[0]['body'];
+export type VovkBody<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['body'];
 
-export type _VovkQuery<T extends (...args: _KnownAny[]) => unknown> = Parameters<T>[0]['query'];
+export type VovkQuery<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['query'];
 
-export type _VovkParams<T extends (...args: _KnownAny[]) => unknown> = Parameters<T>[0]['params'];
+export type VovkParams<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['params'];
 
-export type _VovkYieldType<T extends (...args: _KnownAny[]) => unknown> = T extends (
-  ...args: _KnownAny[]
+export type VovkYieldType<T extends (...args: KnownAny[]) => unknown> = T extends (
+  ...args: KnownAny[]
 ) => Promise<StreamAsyncIterator<infer Y>>
   ? Y
   : never;
 
-export type _VovkReturnType<T extends (...args: _KnownAny) => unknown> = Awaited<ReturnType<T>>;
+export type VovkReturnType<T extends (...args: KnownAny) => unknown> = Awaited<ReturnType<T>>;
 
-export type _StreamAbortMessage = {
+export type StreamAbortMessage = {
   isError: true;
-  reason: _KnownAny;
+  reason: KnownAny;
 };
 
-export enum _HttpMethod {
+export enum HttpMethod {
   GET = 'GET',
   POST = 'POST',
   PUT = 'PUT',
@@ -162,7 +162,7 @@ export enum _HttpMethod {
   OPTIONS = 'OPTIONS',
 }
 
-export enum _HttpStatus {
+export enum HttpStatus {
   NULL = 0,
   CONTINUE = 100,
   SWITCHING_PROTOCOLS = 101,

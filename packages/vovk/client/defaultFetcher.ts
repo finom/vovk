@@ -1,11 +1,11 @@
 import type {
-  _VovkDefaultFetcherOptions as VovkDefaultFetcherOptions,
-  _VovkClientFetcher as VovkClientFetcher,
+  VovkDefaultFetcherOptions,
+  VovkClientFetcher,
 } from './types';
-import { _HttpStatus as HttpStatus } from '../types';
-import { _HttpException as HttpException } from '../HttpException';
+import { HttpStatus } from '../types';
+import { HttpException } from '../HttpException';
 
-export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultFetcher';
+export const DEFAULT_ERROR_MESSAGE = 'Unknown error at the defaultFetcher';
 
 // defaultFetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
 // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type

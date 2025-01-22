@@ -1,11 +1,11 @@
-import { _HttpStatus as HttpStatus, type _VovkErrorResponse as VovkErrorResponse } from '../types';
-import type { _StreamAsyncIterator as StreamAsyncIterator } from './types';
-import { _HttpException as HttpException } from '../HttpException';
+import { HttpStatus, type VovkErrorResponse } from '../types';
+import type { StreamAsyncIterator } from './types';
+import { HttpException } from '../HttpException';
 import '../utils/shim';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
 
-export const _defaultStreamHandler = async (response: Response): Promise<StreamAsyncIterator<unknown>> => {
+export const defaultStreamHandler = async (response: Response): Promise<StreamAsyncIterator<unknown>> => {
   if (!response.ok) {
     let result: unknown;
     try {

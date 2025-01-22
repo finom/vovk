@@ -1,4 +1,4 @@
-import type { _KnownAny as KnownAny } from '../types';
+import type { KnownAny } from '../types';
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 type ToAsyncGenerator<T> =
@@ -15,28 +15,28 @@ type OmitNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];
 };
 
-export type _WorkerPromiseInstanceWithNever<T> = {
+export type WorkerPromiseInstanceWithNever<T> = {
   [K in keyof T]: T[K] extends (...args: KnownAny[]) => KnownAny
     ? (...args: Parameters<T[K]>) => ToProperReturnType<ReturnType<T[K]>>
     : never;
 };
 
-export type _WorkerPromiseInstance<T> = OmitNever<_WorkerPromiseInstanceWithNever<T>> & {
+export type WorkerPromiseInstance<T> = OmitNever<WorkerPromiseInstanceWithNever<T>> & {
   terminate: () => void;
-  employ: (w: Worker) => _WorkerPromiseInstance<T>;
-  fork: (w: Worker) => _WorkerPromiseInstance<T>;
+  employ: (w: Worker) => WorkerPromiseInstance<T>;
+  fork: (w: Worker) => WorkerPromiseInstance<T>;
   worker: Worker | null;
   _isTerminated?: true;
   [Symbol.dispose]: () => void;
 };
 
-export interface _WorkerInput {
+export interface WorkerInput {
   methodName: string;
   args: unknown[];
   key: number;
 }
 
-export interface _WorkerOutput {
+export interface WorkerOutput {
   methodName: string;
   result?: unknown;
   error?: unknown;

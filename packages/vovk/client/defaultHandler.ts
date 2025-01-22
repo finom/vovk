@@ -1,9 +1,9 @@
-import { type _VovkErrorResponse as VovkErrorResponse } from '../types';
-import { _HttpException as HttpException } from '../HttpException';
+import { type VovkErrorResponse } from '../types';
+import { HttpException } from '../HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultHandler';
 
-export const _defaultHandler = async (response: Response) => {
+export const defaultHandler = async (response: Response) => {
   let result: unknown;
 
   try {

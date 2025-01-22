@@ -1,7 +1,7 @@
-import { _KnownAny as KnownAny, _StreamAbortMessage as StreamAbortMessage } from './types';
+import { KnownAny, StreamAbortMessage } from './types';
 import './utils/shim';
 
-export class _StreamJSONResponse<T> extends Response {
+export class StreamJSONResponse<T> extends Response {
   public static defaultHeaders = {
     'content-type': 'text/plain; charset=utf-8',
     'x-vovk-stream': 'true',
@@ -30,7 +30,7 @@ export class _StreamJSONResponse<T> extends Response {
 
     super(readableStream, {
       ...init,
-      headers: init?.headers ?? _StreamJSONResponse.defaultHeaders,
+      headers: init?.headers ?? StreamJSONResponse.defaultHeaders,
     });
 
     this.readableStream = readableStream;

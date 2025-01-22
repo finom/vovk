@@ -1,13 +1,13 @@
 import type {
-  _HandlerSchema as HandlerSchema,
-  _KnownAny as KnownAny,
-  _VovkController as VovkController,
-  _VovkRequest as VovkRequest,
+  HandlerSchema,
+  KnownAny,
+  VovkController,
+  VovkRequest,
 } from './types';
 
 type Next = () => Promise<unknown>;
 
-export function _createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
+export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
   handler: null | ((this: VovkController, req: REQUEST, next: Next, ...args: ARGS) => unknown),
   initHandler?: (
     this: VovkController,

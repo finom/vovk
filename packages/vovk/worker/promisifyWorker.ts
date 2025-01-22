@@ -1,11 +1,11 @@
-import type { _VovkWorkerSchema as VovkWorkerSchema } from '../types';
+import type { VovkWorkerSchema } from '../types';
 import type {
-  _WorkerInput as WorkerInput,
-  _WorkerOutput as WorkerOutput,
-  _WorkerPromiseInstance as WorkerPromiseInstance,
+  WorkerInput,
+  WorkerOutput,
+  WorkerPromiseInstance,
 } from './types';
 
-export function _promisifyWorker<T extends object>(
+export function promisifyWorker<T extends object>(
   currentWorker: Worker | null,
   workerSchema: object
 ): WorkerPromiseInstance<T> {
@@ -30,7 +30,7 @@ export function _promisifyWorker<T extends object>(
     return instance;
   };
 
-  instance.fork = (worker: Worker) => _promisifyWorker<T>(worker, schema);
+  instance.fork = (worker: Worker) => promisifyWorker<T>(worker, schema);
 
   for (const methodName of Object.keys(schema.handlers) as (keyof T & string)[]) {
     const { isGenerator } = schema.handlers[methodName];

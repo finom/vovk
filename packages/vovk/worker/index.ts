@@ -1,4 +1,4 @@
-import { _worker as worker } from './worker';
-import { _promisifyWorker as promisifyWorker } from './promisifyWorker';
+import { worker } from './worker';
+import { promisifyWorker } from './promisifyWorker';
 
 export { worker, promisifyWorker };

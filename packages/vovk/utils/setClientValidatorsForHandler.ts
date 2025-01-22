@@ -1,4 +1,4 @@
-import { _KnownAny as KnownAny, _VovkController as VovkController } from '../types';
+import { KnownAny as KnownAny, VovkController as VovkController } from '../types';
 
 export default function setClientValidatorsForHandler(
   h: (...args: KnownAny[]) => KnownAny,

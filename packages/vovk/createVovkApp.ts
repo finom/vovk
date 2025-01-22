@@ -1,12 +1,12 @@
-import { _VovkApp as VovkApp } from './VovkApp';
+import { VovkApp as VovkApp } from './VovkApp';
 import {
-  _HttpMethod as HttpMethod,
-  type _KnownAny as KnownAny,
-  type _RouteHandler as RouteHandler,
-  type _VovkController as VovkController,
-  type _DecoratorOptions as DecoratorOptions,
-  type _VovkRequest as VovkRequest,
-  type _StaticClass as StaticClass,
+  HttpMethod,
+  type KnownAny,
+  type RouteHandler,
+  type VovkController,
+  type DecoratorOptions,
+  type VovkRequest,
+  type StaticClass,
 } from './types';
 import getSchema from './utils/getSchema';
 
@@ -18,7 +18,7 @@ const toKebabCase = (str: string) =>
     .toLowerCase()
     .replace(/^-/, '');
 
-export function _createVovkApp() {
+export function createVovkApp() {
   const vovkApp = new VovkApp();
 
   const createHTTPDecorator = (httpMethod: HttpMethod) => {

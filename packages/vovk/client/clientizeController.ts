@@ -1,20 +1,20 @@
 import {
-  type _VovkControllerSchema as VovkControllerSchema,
-  type _ControllerStaticMethod as ControllerStaticMethod,
-  type _VovkControllerParams as VovkControllerParams,
-  type _VovkControllerQuery as VovkControllerQuery,
-  type _KnownAny as KnownAny,
+  type VovkControllerSchema,
+  type ControllerStaticMethod,
+  type VovkControllerParams,
+  type VovkControllerQuery,
+  type KnownAny,
 } from '../types';
 import {
-  type _VovkClientOptions as VovkClientOptions,
-  type _VovkClient as VovkClient,
-  type _VovkDefaultFetcherOptions as VovkDefaultFetcherOptions,
-  _VovkValidateOnClient,
+  type VovkClientOptions,
+  type VovkClient,
+  type VovkDefaultFetcherOptions,
+  VovkValidateOnClient,
 } from './types';
 
 import defaultFetcher from './defaultFetcher';
-import { _defaultHandler as defaultHandler } from './defaultHandler';
-import { _defaultStreamHandler as defaultStreamHandler } from './defaultStreamHandler';
+import { defaultHandler } from './defaultHandler';
+import { defaultStreamHandler } from './defaultStreamHandler';
 
 // TODO Ugly workaround. Need your ideas how to distinguish between array and non-array query params
 export const ARRAY_QUERY_KEY = '_vovkarr';
@@ -54,7 +54,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
 };
 
-export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
+export const clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   controllerSchema: VovkControllerSchema,
   segmentName?: string,
   options?: VovkClientOptions<OPTS>
@@ -89,7 +89,7 @@ export const _clientizeController = <T, OPTS extends Record<string, KnownAny> = 
         body?: unknown;
         query?: { [key: string]: string };
         params?: { [key: string]: string };
-        validateOnClient?: _VovkValidateOnClient;
+        validateOnClient?: VovkValidateOnClient;
         fetcher?: VovkClientOptions<OPTS>['fetcher'];
         transform?: (response: unknown) => unknown;
       } & OPTS = {} as OPTS

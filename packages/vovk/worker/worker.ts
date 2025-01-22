@@ -1,7 +1,7 @@
-import type { _VovkWorker as VovkWorker } from '../types';
-import type { _WorkerInput as WorkerInput, _WorkerOutput as WorkerOutput } from './types';
+import type { VovkWorker } from '../types';
+import type { WorkerInput, WorkerOutput } from './types';
 
-export function _worker() {
+export function worker() {
   return (t: object) => {
     const target = t as Record<
       string,

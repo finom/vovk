@@ -1,8 +1,8 @@
-import { _clientizeController as clientizeController } from './clientizeController';
+import { clientizeController } from './clientizeController';
 import type {
-  _VovkClientFetcher as VovkClientFetcher,
-  _VovkClientOptions as VovkClientOptions,
-  _VovkDefaultFetcherOptions as VovkDefaultFetcherOptions,
+  VovkClientFetcher,
+  VovkClientOptions,
+  VovkDefaultFetcherOptions,
 } from './types';
 
 export { clientizeController };

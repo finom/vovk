@@ -1,20 +1,20 @@
 import {
-  _HttpMethod as HttpMethod,
-  _HttpStatus as HttpStatus,
-  type _RouteHandler as RouteHandler,
-  type _VovkErrorResponse as VovkErrorResponse,
-  type _VovkController as VovkController,
-  type _DecoratorOptions as DecoratorOptions,
-  type _VovkRequest as VovkRequest,
-  type _KnownAny as _KnownAny,
+  HttpMethod,
+  HttpStatus ,
+  type RouteHandler,
+  type VovkErrorResponse,
+  type VovkController,
+  type DecoratorOptions,
+  type VovkRequest,
+  type KnownAny,
 } from './types';
-import { _HttpException as HttpException } from './HttpException';
-import { _StreamJSONResponse as StreamJSONResponse } from './StreamJSONResponse';
+import { HttpException as HttpException } from './HttpException';
+import { StreamJSONResponse } from './StreamJSONResponse';
 import reqQuery from './utils/reqQuery';
 import reqMeta from './utils/reqMeta';
 import reqForm from './utils/reqForm';
 
-export class _VovkApp {
+export class VovkApp {
   private static getHeadersFromOptions(options?: DecoratorOptions) {
     if (!options) return {};
 
@@ -68,7 +68,7 @@ export class _VovkApp {
       status,
       headers: {
         'Content-Type': 'application/json',
-        ..._VovkApp.getHeadersFromOptions(options),
+        ...VovkApp.getHeadersFromOptions(options),
       },
     });
   };
@@ -175,8 +175,8 @@ export class _VovkApp {
     req.vovk = {
       body: () => req.json(),
       query: () => reqQuery(req),
-      meta: <T = _KnownAny>(meta?: T | null) => reqMeta<T>(req, meta),
-      form: <T = _KnownAny>() => reqForm<T>(req),
+      meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(req, meta),
+      form: <T = KnownAny>() => reqForm<T>(req),
     };
 
     try {
@@ -194,7 +194,7 @@ export class _VovkApp {
         const streamResponse = new StreamJSONResponse({
           headers: {
             ...StreamJSONResponse.defaultHeaders,
-            ..._VovkApp.getHeadersFromOptions(staticMethod._options),
+            ...VovkApp.getHeadersFromOptions(staticMethod._options),
           },
         });
 

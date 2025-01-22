@@ -1,5 +1,5 @@
 import { VovkRequest } from 'vovk';
-import { _KnownAny as KnownAny } from '../types';
+import { KnownAny as KnownAny } from '../types';
 
 const metaMap = new WeakMap();
 
