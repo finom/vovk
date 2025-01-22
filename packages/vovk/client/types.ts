@@ -49,12 +49,16 @@ type StaticMethodReturn<T extends ControllerStaticMethod> =
 
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
+type FilterNonMatching<T> = T extends { body?: object; query?: object; params?: object }
+  ? never
+  : T;
+
 type ClientMethod<
   T extends (...args: KnownAny[]) => void | object | StreamJSONResponse<STREAM> | Promise<StreamJSONResponse<STREAM>>,
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = <R>(
-  options: Prettify<(StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
+  options: FilterNonMatching<Prettify<(StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? unknown
     : Parameters<T>[0] extends void
       ? StaticMethodInput<T> extends { params: object }
@@ -65,7 +69,7 @@ type ClientMethod<
       OPTS & {
         transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
       }
-    >)>
+    >)>>
 ) => ReturnType<T> extends
   | Promise<StreamJSONResponse<infer U>>
   | StreamJSONResponse<infer U>
