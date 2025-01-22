@@ -12,17 +12,19 @@ import type { NextResponse } from 'next/server';
 // https://www.totaltypescript.com/concepts/the-prettify-helper
 type Prettify<T> = {
   [K in keyof T]: T[K];
-} & {};
+} & unknown;
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
-export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControllerBody<T> extends undefined | void
+export type StaticMethodInput<T extends ControllerStaticMethod> = Prettify<
+(VovkControllerBody<T> extends undefined | void
   ? { body?: undefined }
   : VovkControllerBody<T> extends null
     ? { body?: null }
     : { body: VovkControllerBody<T> }) &
   (VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: VovkControllerQuery<T> }) &
-  (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> });
+  (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> })
+>;
 
 export type StreamAsyncIterator<T> = {
   status: number;
