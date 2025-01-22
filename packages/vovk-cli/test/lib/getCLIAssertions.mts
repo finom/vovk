@@ -176,11 +176,18 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     }
   }
 
+  async function vovkDevAndKill(timeout = 15000) {
+    const dev = runAtProjectDir(`../dist/index.mjs dev --next-dev`);
+    await new Promise((resolve) => setTimeout(resolve, timeout));
+    await dev.kill();
+  }
+
   return {
     runAtCWD,
     runAtProjectDir,
     createNextApp,
     vovkInit,
+    vovkDevAndKill,
     assertConfig,
     assertScripts,
     assertDirExists,

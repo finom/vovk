@@ -20,6 +20,7 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
     logLevel: env.VOVK_LOG_LEVEL ?? conf.logLevel ?? 'info',
     prettifyClient: (env.VOVK_PRETTIFY_CLIENT ? !!env.VOVK_PRETTIFY_CLIENT : null) ?? conf.prettifyClient ?? false,
     devHttps: (env.VOVK_DEV_HTTPS ? !!env.VOVK_DEV_HTTPS : null) ?? conf.devHttps ?? false,
+    clientGenerateTemplateNames: conf.clientGenerateTemplateNames ?? ['ts', 'compiled'],
     templates: {
       service: 'vovk-cli/templates/service.ejs',
       controller: 'vovk-cli/templates/controller.ejs',

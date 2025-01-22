@@ -2,8 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 
-export default async function ensureClient(projectInfo: ProjectInfo) {
-  const { config, cwd, log } = projectInfo;
+export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
   const now = Date.now();
   const clientoOutDirAbsolutePath = path.join(cwd, config.clientOutDir);
   const dts = `// auto-generated
@@ -13,8 +12,8 @@ export default async function ensureClient(projectInfo: ProjectInfo) {
   const js = dts;
   const ts = dts;
 
-  const localJsAbsolutePath = path.join(clientoOutDirAbsolutePath, 'client.js');
-  const localDtsAbsolutePath = path.join(clientoOutDirAbsolutePath, 'client.d.ts');
+  const localJsAbsolutePath = path.join(clientoOutDirAbsolutePath, 'compiled.js');
+  const localDtsAbsolutePath = path.join(clientoOutDirAbsolutePath, 'compiled.d.ts');
   const localTsAbsolutePath = path.join(clientoOutDirAbsolutePath, 'index.ts');
   const existingJs = await fs.readFile(localJsAbsolutePath, 'utf-8').catch(() => null);
   const existingDts = await fs.readFile(localDtsAbsolutePath, 'utf-8').catch(() => null);

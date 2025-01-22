@@ -34,6 +34,7 @@ export type VovkConfig = {
   logLevel?: LogLevelNames;
   prettifyClient?: boolean;
   devHttps?: boolean;
+  clientGenerateTemplateNames?: string[];
   templates?: {
     service?: string;
     controller?: string;
@@ -60,7 +61,6 @@ export interface GenerateOptions {
   templates?: string[];
   prettify?: boolean;
   fullSchema?: string | boolean;
-  noClient?: boolean;
 }
 
 export interface InitOptions {

@@ -2,59 +2,38 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import ejs from 'ejs';
 import type { VovkSchema } from 'vovk';
-import type { ProjectInfo } from './getProjectInfo/index.mjs';
-import type { Segment } from './locateSegments.mjs';
-import formatLoggedSegmentName from './utils/formatLoggedSegmentName.mjs';
-import prettify from './utils/prettify.mjs';
-import { GenerateOptions } from './types.mjs';
+import type { ProjectInfo } from '../getProjectInfo/index.mjs';
+import type { Segment } from '../locateSegments.mjs';
+import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
+import prettify from '../utils/prettify.mjs';
+import { GenerateOptions } from '../types.mjs';
+import getClientTemplates from './getClientTemplates.mjs';
 
-interface ClientTemplate { templatePath: string; outPath: string }
-
-export default async function generateClient({
+export default async function generate({
   projectInfo,
   segments,
   segmentsSchema,
-  templates = ['ts', 'compiled'],
+  templates,
   prettify: prettifyClient,
   fullSchema,
-  noClient,
 }: {
   projectInfo: ProjectInfo;
   segments: Segment[];
   segmentsSchema: Record<string, VovkSchema>;
-} & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema' | 'noClient'>): Promise<{ written: boolean; path: string }> {
+} & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
+  const noClient = templates?.[0] === 'none';
   const {
     config,
     cwd,
     log,
     validateOnClientImportPath,
-    apiEntryPoint,
+    apiRoot,
     fetcherClientImportPath,
     schemaOutImportPath,
   } = projectInfo;
-  const __dirname = path.dirname(new URL(import.meta.url).pathname);
-  const templatesDir = path.join(__dirname, '..', 'client-templates');
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
-  const mapper = (dir: string) => (name: string): ClientTemplate => ({
-    templatePath: path.resolve(templatesDir, dir, name),
-    outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
-  })
-  const builtInTemplatesMap = {
-    ts: ['index.ts.ejs'].map(mapper('ts')),
-    compiled: ['client.js.ejs', 'client.d.ts.ejs'].map(mapper('compiled')),
-    python: ['__init__.py'].map(mapper('python')),
-  }
 
-  const templateFiles: ClientTemplate[] = templates.reduce((acc, template) => {
-    if (template in builtInTemplatesMap) {
-      return [...acc, ...builtInTemplatesMap[template as 'ts']];
-    }
-    return [...acc, { 
-      templatePath: path.resolve(cwd, template), 
-      outPath: path.join(clientOutDirAbsolutePath, path.basename(template).replace('.ejs', '')) 
-    }];
-  }, [] as ClientTemplate[]);
-
+  const templateFiles = getClientTemplates({ config, cwd, templateNames: templates });
    // Ensure that each segment has a matching schema if it needs to be emitted:
    for (let i = 0; i < segments.length; i++) {
     const { segmentName } = segments[i];
@@ -71,7 +50,7 @@ export default async function generateClient({
 
   // Data for the EJS templates:
   const ejsData = {
-    apiEntryPoint,
+    apiRoot,
     fetcherClientImportPath,
     schemaOutImportPath,
     validateOnClientImportPath,
@@ -110,7 +89,7 @@ export default async function generateClient({
   if(fullSchema) {
     const fullSchemaOutAbsolutePath = path.resolve(clientOutDirAbsolutePath, typeof fullSchema === 'string' ? fullSchema : 'full-schema.json');
     await fs.writeFile(fullSchemaOutAbsolutePath, JSON.stringify(segmentsSchema, null, 2));
-    log.info(`Full schema written to ${fullSchemaOutAbsolutePath}`);
+    log.info(`Full schema has ben written to ${fullSchemaOutAbsolutePath}`);
   }
 
   // 2. Check if any file needs rewriting

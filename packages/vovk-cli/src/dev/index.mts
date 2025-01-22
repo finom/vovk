@@ -12,7 +12,7 @@ import writeOneSchemaFile from './writeOneSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
 import ensureClient from './ensureClient.mjs';
 import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
-import generateClient from '../generateClient.mjs';
+import generate from '../generate/index.mjs';
 import locateSegments, { type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
@@ -256,9 +256,9 @@ export class VovkDev {
   };
 
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
-    const { apiEntryPoint, log, port, config } = this.#projectInfo;
+    const { apiRoot, log, port, config } = this.#projectInfo;
     const { devHttps } = config;
-    const endpoint = `${apiEntryPoint.startsWith(`http${devHttps ? 's' : ''}://`) ? apiEntryPoint : `http${devHttps ? 's' : ''}://localhost:${port}${apiEntryPoint}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
+    const endpoint = `${apiRoot.startsWith(`http${devHttps ? 's' : ''}://`) ? apiRoot : `http${devHttps ? 's' : ''}://localhost:${port}${apiRoot}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
 
@@ -332,7 +332,7 @@ export class VovkDev {
 
     if (this.#segments.every((s) => this.#schemas[s.segmentName])) {
       log.debug(`All segments with "emitSchema" have schema.`);
-      await generateClient({ projectInfo: this.#projectInfo, segments: this.#segments, segmentsSchema: this.#schemas });
+      await generate({ projectInfo: this.#projectInfo, segments: this.#segments, segmentsSchema: this.#schemas });
     }
   }
 

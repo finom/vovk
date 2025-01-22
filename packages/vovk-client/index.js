@@ -1,3 +1,3 @@
 module.exports = {
-  ...require('.vovk-client/client'),
+  ...require('.vovk-client/compiled'),
 };

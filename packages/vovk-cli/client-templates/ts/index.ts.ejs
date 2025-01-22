@@ -1,6 +1,8 @@
+<% var hasWorkers = !!Object.keys(segSchema.workers).length; %>
+
 <%- '// auto-generated\n/* eslint-disable */' %>
 import { clientizeController, type VovkClientFetcher } from 'vovk/client';
-import { promisifyWorker } from 'vovk/worker';
+<% if(hasWorkers) { %>import { promisifyWorker } from 'vovk/worker';<% } %>
 import fetcher from '<%= fetcherClientImportPath %>';
 import schema from '<%= schemaOutImportPath %>';
 <% if (validateOnClientImportPath) { %>
@@ -9,13 +11,13 @@ import validateOnClient from '<%= validateOnClientImportPath %>';
 const validateOnClient = undefined;
 <% } %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-const apiRoot = '<%= apiEntryPoint %>';
+const apiRoot = '<%= apiRoot %>';
 
 <% segments.forEach((segment, i) => {
     const segSchema = segmentsSchema[segment.segmentName];
     if (!segSchema || !segSchema.emitSchema) return;
 %>
-import type { Controllers as Controllers<%= i %>, Workers as Workers<%= i %> } from "<%= segment.segmentImportPath %>";
+import type { Controllers as Controllers<%= i %><% if(hasWorkers) { %>, Workers as Workers<%= i %> <% } %>} from "<%= segment.segmentImportPath %>";
 
   <% Object.keys(segSchema.controllers).forEach((key) => { %>
 export const <%= key %> = clientizeController<Controllers<%= i %>["<%= key %>"], Options>(

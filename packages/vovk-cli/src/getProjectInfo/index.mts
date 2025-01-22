@@ -15,7 +15,7 @@ export default async function getProjectInfo({
   process.env.PORT = port;
 
   const { config, srcRoot, configAbsolutePaths, userConfig, error } = await getConfig({ clientOutDir, cwd });
-  const apiEntryPoint = `${config.origin ?? ''}/${config.rootEntry}`;
+  const apiRoot = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
   const schemaOutImportPath = path.relative(config.clientOutDir, config.schemaOutDir).replace(/\\/g, '/'); // windows fix
   const fetcherClientImportPath = config.fetcher.startsWith('.')
@@ -39,7 +39,7 @@ export default async function getProjectInfo({
   return {
     cwd,
     port,
-    apiEntryPoint,
+    apiRoot,
     apiDir,
     srcRoot,
     schemaOutImportPath,

@@ -5,7 +5,7 @@ const { default: fetcher } = require('<%= fetcherClientImportPath %>');
 const schema = require('<%= schemaOutImportPath %>');
 
 const { default: validateOnClient = null } = <%- validateOnClientImportPath ? `require('${validateOnClientImportPath}')` : '{}'%>;
-const apiRoot = '<%= apiEntryPoint %>';
+const apiRoot = '<%= apiRoot %>';
 
 <% segments.forEach((segment) => {
     const segSchema = segmentsSchema[segment.segmentName];

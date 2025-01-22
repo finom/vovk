@@ -8,7 +8,7 @@ import concurrently from 'concurrently';
 import type { VovkSchema } from 'vovk';
 import getAvailablePort from './utils/getAvailablePort.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
-import generateClient from './generateClient.mjs';
+import generate from './generate/index.mjs';
 import locateSegments from './locateSegments.mjs';
 import { VovkDev } from './dev/index.mjs';
 import newComponents from './new/index.mjs';
@@ -82,12 +82,11 @@ program
   .alias('g')
   .description('Generate client')
   .option('--out, --client-out-dir <path>', 'Path to output directory')
-  .option('--template, --templates <templates...>', 'Client code templates')
-  .option('--no-client', 'Do not generate client')
+  .option('--template, --templates <templates...>', 'Client code templates ("ts", "compiled", "python", "none", a custom path)')
   .option('--full-schema [fileName]', 'Generate client with full schema')
   .option('--prettify', 'Prettify output files')
   .action(async (options: GenerateOptions) => {
-    const { clientOutDir, templates, prettify, noClient, fullSchema } = options;
+    const { clientOutDir, templates, prettify, fullSchema } = options;
     const projectInfo = await getProjectInfo({ clientOutDir });
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments({ dir: apiDir, config });
@@ -97,7 +96,7 @@ program
       default: Record<string, VovkSchema>;
     };
 
-    await generateClient({ projectInfo, segments, segmentsSchema, templates, prettify, noClient, fullSchema });
+    await generate({ projectInfo, segments, segmentsSchema, templates, prettify, fullSchema });
   });
 
 program

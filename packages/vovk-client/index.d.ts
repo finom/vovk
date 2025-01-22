@@ -1,1 +1,1 @@
-export * from '.vovk-client/client';
+export * from '.vovk-client/compiled';
