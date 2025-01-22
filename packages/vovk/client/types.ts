@@ -9,28 +9,18 @@ import type {
 import type { StreamJSONResponse } from '../StreamJSONResponse';
 import type { NextResponse } from 'next/server';
 
-// https://www.totaltypescript.com/concepts/the-prettify-helper
+export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControllerBody<T> extends undefined | void
+  ? { body?: undefined }
+  : VovkControllerBody<T> extends null
+    ? { body?: null }
+    : { body: VovkControllerBody<T> }) &
+  (VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: VovkControllerQuery<T> }) &
+  (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> });
+
 type Prettify<T> = {
   [K in keyof T]: T[K];
-} & unknown;
-
+} & {};
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
-
-type NonUndefined<T> = {
-  [K in keyof T as T[K] extends undefined ? never : K]: T[K];
-};
-
-export type StaticMethodInput<T extends ControllerStaticMethod> = NonUndefined<
-  Prettify<
-  (VovkControllerBody<T> extends undefined | void
-    ? { body?: undefined }
-    : VovkControllerBody<T> extends null
-      ? { body?: null }
-      : { body: VovkControllerBody<T> }) &
-    (VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: VovkControllerQuery<T> }) &
-    (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> })
-  >
->;
 
 export type StreamAsyncIterator<T> = {
   status: number;
@@ -54,10 +44,10 @@ type ClientMethod<
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = <R>(
-  options: Prettify<(StaticMethodInput<T> extends Partial<{ body?: undefined | null; query?: undefined; params?: undefined }>
+  options: Prettify<(StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? unknown
     : Parameters<T>[0] extends void
-      ? StaticMethodInput<T> extends { params: object }
+      ? StaticMethodInput<T>['params'] extends object
         ? { params: StaticMethodInput<T>['params'] }
         : unknown
       : StaticMethodInput<T>) &
