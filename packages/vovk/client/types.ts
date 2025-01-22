@@ -44,18 +44,18 @@ type ClientMethod<
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = <R>(
-  options: Prettify<(StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
+  options: (StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? unknown
     : Parameters<T>[0] extends void
       ? StaticMethodInput<T>['params'] extends object
         ? { params: StaticMethodInput<T>['params'] }
         : unknown
-      : StaticMethodInput<T>) &
+      : Prettify<StaticMethodInput<T>>) &
     (Partial<
       OPTS & {
         transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
       }
-    >)>
+    >)
 ) => ReturnType<T> extends
   | Promise<StreamJSONResponse<infer U>>
   | StreamJSONResponse<infer U>
