@@ -89,11 +89,11 @@ export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<str
     defaultStreamHandler: (response: Response) => Promise<StreamAsyncIterator<unknown>>;
     defaultHandler: (response: Response) => Promise<unknown>;
   },
-  input: {
+  input: Prettify<{
     body: unknown;
     query: { [key: string]: string };
     params: { [key: string]: string };
-  } & OPTS
+  } & OPTS>
 ) => KnownAny;
 
 // `RequestInit` is the type of options passed to fetch function
