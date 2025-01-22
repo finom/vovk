@@ -1,32 +1,28 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import getFileSystemEntryType from './utils/getFileSystemEntryType.mjs';
 
-/**
- * Checks if a file exists at the given path.
- * @param {string} filePath - The path to the file.
- * @returns {Promise<boolean>} - A promise that resolves to true if the file exists, false otherwise.
- */
-const getFileSystemEntryType = async (filePath: string): Promise<boolean> =>
-  !!(await fs.stat(filePath).catch(() => false));
 
 async function postinstall(): Promise<void> {
+  // TODO: The function doesn't consider client templates, how to do that?
   const vovk = path.join(import.meta.dirname, '../../.vovk-client');
   const js = path.join(vovk, 'compiled.js');
   const ts = path.join(vovk, 'compiled.d.ts');
   const index = path.join(vovk, 'index.ts');
-
-  if (
-    (await getFileSystemEntryType(js)) ||
-    (await getFileSystemEntryType(ts)) ||
-    (await getFileSystemEntryType(index))
-  ) {
-    return;
+       
+  await fs.mkdir(vovk, { recursive: true });
+console.log('vovk', vovk);
+  if(!(await getFileSystemEntryType(js))) {
+    await fs.writeFile(js, '/* postinstall */');
   }
 
-  await fs.mkdir(vovk, { recursive: true });
-  await fs.writeFile(js, '/* postinstall */');
-  await fs.writeFile(ts, '/* postinstall */');
-  await fs.writeFile(index, '/* postinstall */');
+  if(!(await getFileSystemEntryType(ts))) {
+    await fs.writeFile(ts, '/* postinstall */');
+  }
+
+  if(!(await getFileSystemEntryType(index))) {
+    await fs.writeFile(index, '/* postinstall */');
+  }
 }
 
 void postinstall();

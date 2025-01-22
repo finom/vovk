@@ -30,6 +30,6 @@
     "class-transformer": "*"
   },
   "dependencies": {
-    "zod-to-json-schema": "^3.23.5"
+    "zod-to-json-schema": "^3.24.1"
   }
 }

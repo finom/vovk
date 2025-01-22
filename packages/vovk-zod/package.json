@@ -21,7 +21,7 @@
     "zod": "*"
   },
   "dependencies": {
-    "zod-to-json-schema": "^3.23.5",
-    "vovk-validate-client-ajv": "^0.0.0-draft.13"
+    "zod-to-json-schema": "^3.24.1",
+    "vovk-validate-client-ajv": "^0.0.0-draft.14"
   }
 }
