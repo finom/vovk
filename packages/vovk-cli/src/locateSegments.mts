@@ -10,7 +10,15 @@ export type Segment = {
 };
 
 // config: null is used for testing
-export default async function locateSegments({ dir, rootDir, config }: {dir: string, rootDir?: string, config: Required<VovkConfig> | null }): Promise<Segment[]> {
+export default async function locateSegments({
+  dir,
+  rootDir,
+  config,
+}: {
+  dir: string;
+  rootDir?: string;
+  config: Required<VovkConfig> | null;
+}): Promise<Segment[]> {
   let results: Segment[] = [];
 
   rootDir = rootDir ?? dir;

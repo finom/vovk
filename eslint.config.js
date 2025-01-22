@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import eslintConfigPrettier from 'eslint-config-prettier/recommended';
+import eslintConfigPrettier from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import { includeIgnoreFile } from '@eslint/compat';
 
@@ -16,7 +16,7 @@ const ignores = [
   'packages/**/*.mjs',
   'packages/**/*.js',
   'test/.vovk-client/',
-  '!packages/**/eslint.config.js'
+  '!packages/**/eslint.config.js',
 ];
 
 export default tseslint.config(

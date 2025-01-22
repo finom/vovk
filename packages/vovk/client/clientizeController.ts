@@ -5,12 +5,7 @@ import {
   type VovkControllerQuery,
   type KnownAny,
 } from '../types';
-import {
-  type VovkClientOptions,
-  type VovkClient,
-  type VovkDefaultFetcherOptions,
-  VovkValidateOnClient,
-} from './types';
+import { type VovkClientOptions, type VovkClient, type VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
 import defaultFetcher from './defaultFetcher';
 import { defaultHandler } from './defaultHandler';
@@ -96,10 +91,7 @@ export const clientizeController = <T, OPTS extends Record<string, KnownAny> = V
     ) => {
       const fetcher = input.fetcher ?? settingsFetcher;
       const validate = async ({ body, query, endpoint }: { body?: unknown; query?: unknown; endpoint: string }) => {
-        await (input.validateOnClient ?? options?.validateOnClient)?.(
-          { body, query, endpoint },
-          validation ?? {}
-        );
+        await (input.validateOnClient ?? options?.validateOnClient)?.({ body, query, endpoint }, validation ?? {});
       };
 
       const internalOptions: Parameters<typeof fetcher>[0] = {

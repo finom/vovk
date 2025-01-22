@@ -28,7 +28,7 @@ export default function Home() {
     const schema: _VovkWorkerSchema = {
       workerName: 'MyWorker',
       originalWorkerName: 'MyWorker',
-      handlers: (MyWorker as unknown as { _handlers: _VovkWorkerSchema['handlers'] })._handlers 
+      handlers: (MyWorker as unknown as { _handlers: _VovkWorkerSchema['handlers'] })._handlers,
     };
 
     const standaloneWorker = promisifyWorker<typeof MyWorker>(

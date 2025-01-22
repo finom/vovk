@@ -1,6 +1,13 @@
 import { ClientControllerRPC } from 'vovk-client';
 import type ClientController from './ClientController';
-import { HttpStatus, type VovkBody, type VovkErrorResponse, type VovkParams, type VovkQuery, type VovkReturnType } from '../../../packages/vovk';
+import {
+  HttpStatus,
+  type VovkBody,
+  type VovkErrorResponse,
+  type VovkParams,
+  type VovkQuery,
+  type VovkReturnType,
+} from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
 import { _VovkControllerBody, _VovkControllerParams, _VovkControllerQuery } from '../../../packages/vovk/types';
 
@@ -56,7 +63,7 @@ describe('Client with vovk-client', () => {
   it('Should rethrow exceptions', async () => {
     try {
       await ClientControllerRPC.getErrorResponse();
-    } catch(e) {
+    } catch (e) {
       const err = e as VovkErrorResponse;
 
       expect(err.statusCode).toEqual(HttpStatus.BAD_REQUEST);
@@ -180,9 +187,10 @@ describe('Client with vovk-client', () => {
       body,
     });
 
-    expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithFormDataUsingReqVovk>).toEqual({ field: 'value' });
+    expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithFormDataUsingReqVovk>).toEqual({
+      field: 'value',
+    });
   });
-
 
   it('Should accept custom fetcher as an option', async () => {
     const result = await ClientControllerRPC.postWithBodyAndQueryUsingReqVovk({

@@ -33,7 +33,6 @@ await describe('CLI init', async () => {
     await vovkInit('--yes');
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
-    
     await assertDeps({
       dependencies: ['vovk', 'vovk-zod', 'zod'],
       devDependencies: ['vovk-cli'],
@@ -243,7 +242,14 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-dto', 'class-validator', 'class-transformer', 'vovk-mapped-types', 'reflect-metadata'],
+      dependencies: [
+        'vovk',
+        'vovk-dto',
+        'class-validator',
+        'class-transformer',
+        'vovk-mapped-types',
+        'reflect-metadata',
+      ],
       devDependencies: ['vovk-cli'],
     });
 
@@ -382,7 +388,14 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-dto', 'class-validator', 'class-transformer', 'vovk-mapped-types', 'reflect-metadata'],
+      dependencies: [
+        'vovk',
+        'vovk-dto',
+        'class-validator',
+        'class-transformer',
+        'vovk-mapped-types',
+        'reflect-metadata',
+      ],
       devDependencies: ['vovk-cli'],
     });
 

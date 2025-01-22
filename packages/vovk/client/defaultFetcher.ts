@@ -1,7 +1,4 @@
-import type {
-  VovkDefaultFetcherOptions,
-  VovkClientFetcher,
-} from './types';
+import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types';
 import { HttpStatus } from '../types';
 import { HttpException } from '../HttpException';
 

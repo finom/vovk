@@ -1,9 +1,5 @@
 import type { VovkWorkerSchema } from '../types';
-import type {
-  WorkerInput,
-  WorkerOutput,
-  WorkerPromiseInstance,
-} from './types';
+import type { WorkerInput, WorkerOutput, WorkerPromiseInstance } from './types';
 
 export function promisifyWorker<T extends object>(
   currentWorker: Worker | null,

@@ -1,6 +1,6 @@
 import {
   HttpMethod,
-  HttpStatus ,
+  HttpStatus,
   type RouteHandler,
   type VovkErrorResponse,
   type VovkController,

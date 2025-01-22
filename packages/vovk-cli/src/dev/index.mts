@@ -50,11 +50,14 @@ export class VovkDev {
 
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
             ? this.#segments
-            : [...this.#segments, { 
-              routeFilePath: filePath, 
-              segmentName, 
-              segmentImportPath: path.relative(config.clientOutDir, filePath) // TODO DRY locateSegments 
-            }];
+            : [
+                ...this.#segments,
+                {
+                  routeFilePath: filePath,
+                  segmentName,
+                  segmentImportPath: path.relative(config.clientOutDir, filePath), // TODO DRY locateSegments
+                },
+              ];
           log.info(`${capitalize(formatLoggedSegmentName(segmentName))} has been added`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
@@ -164,7 +167,7 @@ export class VovkDev {
 
       await Promise.all([
         new Promise((resolve) => this.#watchModules(() => resolve(0))),
-        new Promise((resolve) => this.#watchSegments(() => resolve(0)))
+        new Promise((resolve) => this.#watchSegments(() => resolve(0))),
       ]);
 
       if (isInitial) {
@@ -178,12 +181,22 @@ export class VovkDev {
 
     chokidar
       // .watch(['vovk.config.{js,mjs,cjs}', '.config/vovk.config.{js,mjs,cjs}'], {
-      .watch(['vovk.config.js', 'vovk.config.mjs', 'vovk.config.cjs', '.config/vovk.config.js', '.config/vovk.config.mjs', '.config/vovk.config.cjs'], {
-        persistent: true,
-        cwd,
-        ignoreInitial: false,
-        depth: 0,
-      })
+      .watch(
+        [
+          'vovk.config.js',
+          'vovk.config.mjs',
+          'vovk.config.cjs',
+          '.config/vovk.config.js',
+          '.config/vovk.config.mjs',
+          '.config/vovk.config.cjs',
+        ],
+        {
+          persistent: true,
+          cwd,
+          ignoreInitial: false,
+          depth: 0,
+        }
+      )
       .on('add', () => void handle())
       .on('change', () => void handle())
       .on('unlink', () => void handle())
@@ -227,8 +240,14 @@ export class VovkDev {
       const affectedSegments = this.#segments.filter((s) => {
         const schema = this.#schemas[s.segmentName];
         if (!schema) return false;
-        const controllersByOriginalName = keyBy(schema.controllers, 'originalControllerName' satisfies keyof VovkSchema['controllers'][string]);
-        const workersByOriginalName = keyBy(schema.workers, 'originalWorkerName' satisfies keyof VovkSchema['workers'][string]);
+        const controllersByOriginalName = keyBy(
+          schema.controllers,
+          'originalControllerName' satisfies keyof VovkSchema['controllers'][string]
+        );
+        const workersByOriginalName = keyBy(
+          schema.workers,
+          'originalWorkerName' satisfies keyof VovkSchema['workers'][string]
+        );
 
         return namesOfClasses.some(
           (name) =>
@@ -363,7 +382,7 @@ export class VovkDev {
     const apiDirAbsolutePath = path.join(cwd, apiDir);
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
 
-    this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config});
+    this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config });
 
     await debouncedEnsureSchemaFiles(
       this.#projectInfo,
@@ -382,7 +401,9 @@ export class VovkDev {
               attempts++;
               if (attempts >= MAX_ATTEMPTS) {
                 clearInterval(interval);
-                log.error(`Failed to request schema for ${formatLoggedSegmentName(segmentName)} after ${MAX_ATTEMPTS} attempts`);
+                log.error(
+                  `Failed to request schema for ${formatLoggedSegmentName(segmentName)} after ${MAX_ATTEMPTS} attempts`
+                );
                 return;
               }
               void this.#requestSchema(segmentName).then(({ isError: isError2 }) => {

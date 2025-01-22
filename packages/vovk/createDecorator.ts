@@ -1,9 +1,4 @@
-import type {
-  HandlerSchema,
-  KnownAny,
-  VovkController,
-  VovkRequest,
-} from './types';
+import type { HandlerSchema, KnownAny, VovkController, VovkRequest } from './types';
 
 type Next = () => Promise<unknown>;
 

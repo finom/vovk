@@ -1,8 +1,9 @@
 import { KnownAny } from '../types.mjs';
 
-export default function debounceWithArgs<
-  Callback extends (...args: KnownAny[]) => KnownAny
->(callback: Callback, wait: number): (...args: Parameters<Callback>) => Promise<Awaited<ReturnType<Callback>>> {
+export default function debounceWithArgs<Callback extends (...args: KnownAny[]) => KnownAny>(
+  callback: Callback,
+  wait: number
+): (...args: Parameters<Callback>) => Promise<Awaited<ReturnType<Callback>>> {
   // Stores timeouts keyed by the stringified arguments
   const timeouts = new Map<string, NodeJS.Timeout>();
 

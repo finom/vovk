@@ -229,7 +229,8 @@ export class Init {
               {
                 name: 'vovk-dto',
                 value: 'vovk-dto',
-                description: 'Use class-validator for data validation. Also installs class-transformer, vovk-mapped-types and reflect-metadata',
+                description:
+                  'Use class-validator for data validation. Also installs class-transformer, vovk-mapped-types and reflect-metadata',
               },
               { name: 'None', value: null, description: 'Install validation library later' },
             ],
