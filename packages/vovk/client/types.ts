@@ -17,6 +17,9 @@ export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControlle
   (VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: VovkControllerQuery<T> }) &
   (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> });
 
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
 export type StreamAsyncIterator<T> = {
@@ -41,7 +44,7 @@ type ClientMethod<
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = <R>(
-  options: (StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
+  options: Prettify<(StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? unknown
     : Parameters<T>[0] extends void
       ? StaticMethodInput<T>['params'] extends object
@@ -52,7 +55,7 @@ type ClientMethod<
       OPTS & {
         transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
       }
-    > | void)
+    > | void)>
 ) => ReturnType<T> extends
   | Promise<StreamJSONResponse<infer U>>
   | StreamJSONResponse<infer U>

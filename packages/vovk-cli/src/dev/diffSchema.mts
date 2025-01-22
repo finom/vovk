@@ -1,5 +1,5 @@
 import type { VovkSchema } from 'vovk';
-import type { _VovkControllerSchema, _VovkWorkerSchema } from 'vovk/types';
+import type { VovkControllerSchema, VovkWorkerSchema } from 'vovk/types';
 import isEqual from 'lodash/isEqual.js';
 
 interface HandlersDiff {
@@ -20,7 +20,7 @@ export interface DiffResult {
   controllers: WorkersOrControllersDiff;
 }
 
-export function diffHandlers<T extends _VovkWorkerSchema['handlers'] | _VovkControllerSchema['handlers']>(
+export function diffHandlers<T extends VovkWorkerSchema['handlers'] | VovkControllerSchema['handlers']>(
   oldHandlers: T,
   newHandlers: T,
   nameOfClass: string
