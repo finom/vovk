@@ -17,9 +17,6 @@ export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControlle
   (VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: VovkControllerQuery<T> }) &
   (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> });
 
-type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
 export type StreamAsyncIterator<T> = {
@@ -50,7 +47,7 @@ type ClientMethod<
       ? StaticMethodInput<T>['params'] extends object
         ? { params: StaticMethodInput<T>['params'] }
         : unknown
-      : Prettify<StaticMethodInput<T>>) &
+      : StaticMethodInput<T>) &
     (Partial<
       OPTS & {
         transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
@@ -89,11 +86,11 @@ export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<str
     defaultStreamHandler: (response: Response) => Promise<StreamAsyncIterator<unknown>>;
     defaultHandler: (response: Response) => Promise<unknown>;
   },
-  input: Prettify<{
+  input: {
     body: unknown;
     query: { [key: string]: string };
     params: { [key: string]: string };
-  } & OPTS>
+  } & OPTS
 ) => KnownAny;
 
 // `RequestInit` is the type of options passed to fetch function
