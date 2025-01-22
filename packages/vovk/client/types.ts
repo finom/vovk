@@ -18,12 +18,12 @@ type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
 export type StaticMethodInput<T extends ControllerStaticMethod> = Prettify<
 (VovkControllerBody<T> extends undefined | void
-  ? void
+  ? unknown
   : VovkControllerBody<T> extends null
     ? { body?: null }
     : { body: VovkControllerBody<T> }) &
-  (VovkControllerQuery<T> extends undefined | void ? void : { query: VovkControllerQuery<T> }) &
-  (VovkControllerParams<T> extends undefined | void ? void : { params: VovkControllerParams<T> })
+  (VovkControllerQuery<T> extends undefined | void ? unknown : { query: VovkControllerQuery<T> }) &
+  (VovkControllerParams<T> extends undefined | void ? unknown : { params: VovkControllerParams<T> })
 >;
 
 export type StreamAsyncIterator<T> = {

@@ -36,7 +36,7 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.39"
+    "vovk": "^3.0.0-draft.40"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.1.0",
