@@ -7,7 +7,7 @@ import type MyWorker from './MyWorker';
 describe('Worker API', () => {
   let page: Page;
   beforeAll(async () => {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     page = await browser.newPage();
     await page.goto('http://localhost:' + process.env.PORT);
 
