@@ -30,7 +30,7 @@ export default function getClientTemplates({
     python: ['__init__.py'].map(mapper('python')),
   };
 
-  const templateFiles: ClientTemplate[] = (templateNames ?? config.clientGenerateTemplateNames).reduce(
+  const templateFiles: ClientTemplate[] = (templateNames ?? config.experimental_clientGenerateTemplateNames).reduce(
     (acc, template) => {
       if (template in builtInTemplatesMap) {
         return [...acc, ...builtInTemplatesMap[template as 'ts']];

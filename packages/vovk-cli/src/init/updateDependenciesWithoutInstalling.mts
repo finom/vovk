@@ -20,7 +20,7 @@ async function updateDeps({
   return Promise.all(
     packageNames.map(async (packageName) => {
       const metadata = await getNPMPackageMetadata(packageName);
-      const isVovk = packageName.startsWith('vovk');
+      const isVovk = packageName.startsWith('vovk') && packageName !== 'vovk-mapped-types';
 
       const latestVersion = metadata['dist-tags'][isVovk ? (channel ?? 'latest') : 'latest'];
       if (!packageJson[key]) {

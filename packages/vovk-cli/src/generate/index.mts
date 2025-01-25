@@ -21,7 +21,7 @@ export default async function generate({
   segments: Segment[];
   segmentsSchema: Record<string, VovkSchema>;
 } & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
-  templates = templates ?? projectInfo.config.clientGenerateTemplateNames;
+  templates = templates ?? projectInfo.config.experimental_clientGenerateTemplateNames;
   const noClient = templates?.[0] === 'none';
   const { config, cwd, log, validateOnClientImportPath, apiRoot, fetcherClientImportPath, schemaOutImportPath } =
     projectInfo;
@@ -50,7 +50,7 @@ export default async function generate({
     segmentsSchema,
   };
 
-  // 1. Process each template in parallel
+  // Process each template in parallel
   const processedTemplates = noClient
     ? []
     : await Promise.all(
@@ -80,6 +80,13 @@ export default async function generate({
         })
       );
 
+  const anyNeedsWriting = processedTemplates.some(({ needsWriting }) => needsWriting);
+
+  if (fullSchema || anyNeedsWriting) {
+    // Make sure the output directory exists
+    await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
+  }
+
   if (fullSchema) {
     const fullSchemaOutAbsolutePath = path.resolve(
       clientOutDirAbsolutePath,
@@ -89,17 +96,12 @@ export default async function generate({
     log.info(`Full schema has ben written to ${fullSchemaOutAbsolutePath}`);
   }
 
-  // 2. Check if any file needs rewriting
-  const anyNeedsWriting = processedTemplates.some(({ needsWriting }) => needsWriting);
   if (!anyNeedsWriting) {
     log.debug(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
     return { written: false, path: clientOutDirAbsolutePath };
   }
 
-  // 3. Make sure the output directory exists
-  await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
-
-  // 4. Write updated files where needed
+  // Write updated files where needed
   await Promise.all(
     processedTemplates.map(({ outPath, rendered, needsWriting }) => {
       if (needsWriting) {

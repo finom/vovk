@@ -14,7 +14,7 @@ enum _HttpMethod {
   OPTIONS = 'OPTIONS',
 }
 
-const HttpMethod = _HttpMethod as typeof VovkHttpMethod;
+const HttpMethod = _HttpMethod as unknown as typeof VovkHttpMethod;
 
 await describe('diffSchema', async () => {
   await it('Test case 1: No changes', () => {

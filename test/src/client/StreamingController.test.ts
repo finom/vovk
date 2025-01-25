@@ -2,7 +2,7 @@ import type { Token, default as StreamingController } from './StreamingControlle
 import { expect, describe, it, xit } from '@jest/globals';
 import { HttpException, VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from 'vovk-client';
-import { _VovkControllerYieldType } from 'vovk/types';
+import { VovkControllerYieldType } from 'vovk/types';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -22,7 +22,7 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as _VovkControllerYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
+    null as unknown as VovkControllerYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
     expect(expected).toEqual(expectedCollected);

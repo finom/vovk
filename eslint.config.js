@@ -16,7 +16,8 @@ const ignores = [
   'packages/**/*.mjs',
   'packages/**/*.js',
   'test/.vovk-client/',
-  '!packages/**/eslint.config.js',
+  'packages/**/eslint.config.js',
+  '**/emscripten_fetch_worker.js',
 ];
 
 export default tseslint.config(

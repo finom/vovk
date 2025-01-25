@@ -9,7 +9,7 @@ import {
   type VovkReturnType,
 } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
-import { _VovkControllerBody, _VovkControllerParams, _VovkControllerQuery } from '../../../packages/vovk/types';
+import { VovkControllerBody, VovkControllerParams, VovkControllerQuery } from '../../../packages/vovk/types';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -114,25 +114,25 @@ describe('Client with vovk-client', () => {
     null as unknown as VovkBody<typeof ClientControllerRPC.getWithParams> satisfies undefined;
 
     // @ts-expect-error Expect error
-    null as unknown as _VovkControllerBody<typeof ClientController.getWithParams> satisfies { hello: 'world' };
-    null as unknown as _VovkControllerBody<typeof ClientController.getWithParams> satisfies undefined;
+    null as unknown as VovkControllerBody<typeof ClientController.getWithParams> satisfies { hello: 'world' };
+    null as unknown as VovkControllerBody<typeof ClientController.getWithParams> satisfies undefined;
 
     // @ts-expect-error Expect error
     null as unknown as VovkQuery<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
     null as unknown as VovkQuery<typeof ClientControllerRPC.getWithParams> satisfies undefined;
 
     // @ts-expect-error Expect error
-    null as unknown as _VovkControllerQuery<typeof ClientController.getWithParams> satisfies { hello: 'world' };
-    null as unknown as _VovkControllerQuery<typeof ClientController.getWithParams> satisfies undefined;
+    null as unknown as VovkControllerQuery<typeof ClientController.getWithParams> satisfies { hello: 'world' };
+    null as unknown as VovkControllerQuery<typeof ClientController.getWithParams> satisfies undefined;
 
     null as unknown as VovkParams<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
     // @ts-expect-error Expect error
     null as unknown as VovkParams<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'foo' };
     null as unknown as VovkParams<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
 
-    null as unknown as _VovkControllerParams<typeof ClientController.getWithParams> satisfies { hello: 'world' };
+    null as unknown as VovkControllerParams<typeof ClientController.getWithParams> satisfies { hello: 'world' };
     // @ts-expect-error Expect error
-    null as unknown as _VovkControllerParams<typeof ClientController.getWithParams> satisfies { hello: 'foo' };
+    null as unknown as VovkControllerParams<typeof ClientController.getWithParams> satisfies { hello: 'foo' };
 
     expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
   });

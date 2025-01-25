@@ -2,7 +2,7 @@ import type { Token, default as StreamingGeneratorController } from './Streaming
 import { expect, describe, xit, it } from '@jest/globals';
 import { VovkYieldType } from 'vovk';
 import { StreamingGeneratorControllerRPC } from 'vovk-client';
-import { _VovkControllerYieldType } from 'vovk/types';
+import { VovkControllerYieldType } from 'vovk/types';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -22,7 +22,7 @@ describe('Streaming generator', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as _VovkControllerYieldType<typeof StreamingGeneratorController.postWithStreaming> satisfies Token;
+    null as unknown as VovkControllerYieldType<typeof StreamingGeneratorController.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingGeneratorControllerRPC.postWithStreaming> satisfies Token;
 
     expect(expected).toEqual(expectedCollected);

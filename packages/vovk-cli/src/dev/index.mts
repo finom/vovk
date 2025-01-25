@@ -7,6 +7,7 @@ import keyBy from 'lodash/keyBy.js';
 import capitalize from 'lodash/capitalize.js';
 import debounce from 'lodash/debounce.js';
 import isEmpty from 'lodash/isEmpty.js';
+import once from 'lodash/once.js';
 import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
 import writeOneSchemaFile from './writeOneSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
@@ -30,6 +31,8 @@ export class VovkDev {
   #modulesWatcher: chokidar.FSWatcher | null = null;
 
   #segmentWatcher: chokidar.FSWatcher | null = null;
+
+  #onFirstTimeGenerate: (() => void) | null = null;
 
   #watchSegments = (callback: () => void) => {
     const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
@@ -109,8 +112,8 @@ export class VovkDev {
         callback();
         log.debug('Segments watcher is ready');
       })
-      .on('error', (error: Error) => {
-        log.error(`Error watching segments folder: ${error?.message ?? 'Unknown error'}`);
+      .on('error', (error) => {
+        log.error(`Error watching segments folder: ${(error as Error)?.message ?? 'Unknown error'}`);
       });
   };
 
@@ -149,8 +152,8 @@ export class VovkDev {
         callback();
         log.debug('Modules watcher is ready');
       })
-      .on('error', (error: Error) => {
-        log.error(`Error watching modules folder: ${error?.message ?? 'Unknown error'}`);
+      .on('error', (error) => {
+        log.error(`Error watching modules folder: ${(error as Error)?.message ?? 'Unknown error'}`);
       });
   };
 
@@ -206,7 +209,9 @@ export class VovkDev {
         log.debug('Config files watcher is ready');
         isReady = true;
       })
-      .on('error', (error: Error) => log.error(`Error watching config files: ${error?.message ?? 'Unknown error'}`));
+      .on('error', (error) =>
+        log.error(`Error watching config files: ${(error as Error)?.message ?? 'Unknown error'}`)
+      );
 
     void handle();
   };
@@ -303,13 +308,23 @@ export class VovkDev {
 
       await this.#handleSchema(schema);
     } catch (error) {
-      log.error(`Error requesting schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error).message}`);
+      log.error(
+        `Error requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}: ${(error as Error).message}`
+      );
 
       return { isError: true };
     }
 
     return { isError: false };
   }, 500);
+
+  #generate = debounce(
+    () =>
+      generate({ projectInfo: this.#projectInfo, segments: this.#segments, segmentsSchema: this.#schemas }).then(
+        this.#onFirstTimeGenerate
+      ),
+    1000
+  );
 
   async #handleSchema(schema: VovkSchema | null) {
     const { log, config, cwd } = this.#projectInfo;
@@ -351,15 +366,22 @@ export class VovkDev {
 
     if (this.#segments.every((s) => this.#schemas[s.segmentName])) {
       log.debug(`All segments with "emitSchema" have schema.`);
-      await generate({ projectInfo: this.#projectInfo, segments: this.#segments, segmentsSchema: this.#schemas });
+      this.#generate();
     }
   }
 
-  async start() {
+  async start({ thenKill }: { thenKill: boolean }) {
     const now = Date.now();
     this.#projectInfo = await getProjectInfo();
     const { log, config, cwd, apiDir } = this.#projectInfo;
     log.info('Starting...');
+
+    if (thenKill) {
+      this.#onFirstTimeGenerate = once(() => {
+        log.info('The schemas and the RPC client have been generated. Exiting...');
+        process.exit(0);
+      });
+    }
 
     if (config.devHttps) {
       const agent = new Agent({
@@ -390,10 +412,12 @@ export class VovkDev {
       this.#segments.map((s) => s.segmentName)
     );
 
+    const MAX_ATTEMPTS = 5;
+    const DELAY = 5000;
+
     // Request schema every segment in 5 seconds in order to update schema on start
     setTimeout(() => {
       for (const { segmentName } of this.#segments) {
-        const MAX_ATTEMPTS = 3;
         let attempts = 0;
         void this.#requestSchema(segmentName).then(({ isError }) => {
           if (isError) {
@@ -409,13 +433,14 @@ export class VovkDev {
               void this.#requestSchema(segmentName).then(({ isError: isError2 }) => {
                 if (!isError2) {
                   clearInterval(interval);
+                  log.info(`Requested schema for ${formatLoggedSegmentName(segmentName)} after ${attempts} attempts`);
                 }
               });
-            }, 5000);
+            }, DELAY);
           }
         });
       }
-    }, 5000);
+    }, DELAY);
 
     this.#watch(() => {
       log.info(`Ready in ${Date.now() - now}ms`);
@@ -424,5 +449,5 @@ export class VovkDev {
 }
 const env = process.env as VovkEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
-  void new VovkDev().start();
+  void new VovkDev().start({ thenKill: env.__VOVK_THEN_KILL__ === 'true' });
 }

@@ -1,6 +1,6 @@
 import { it, expect, describe } from '@jest/globals';
 import MiscController from './MiscController';
-import { type _VovkController as VovkController } from '../../../packages/vovk/types';
+import { type VovkController as VovkController } from '../../../packages/vovk/types';
 import { NextRequest } from 'next/server';
 import { createDecorator, get } from '../../../packages/vovk';
 

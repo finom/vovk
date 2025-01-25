@@ -10,6 +10,8 @@ const validateOnClient = undefined;
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 const apiRoot = '<%= apiRoot %>';
 
+// Hello from custom.js.ejs
+
 <% segments.forEach((segment, i) => {
     const segSchema = segmentsSchema[segment.segmentName];
     if (!segSchema || !segSchema.emitSchema) return;

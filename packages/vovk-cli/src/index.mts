@@ -30,11 +30,13 @@ initProgram(program.command('init'));
 program
   .command('dev')
   .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
-  .option('--next-dev', 'Start schema watcher and Next.js with automatic port allocation', false)
+  .option('--next-dev', 'Start schema watcher and Next.js with automatic port allocation')
+  .option('--then-kill', 'Kill the processe when schema and client is generated')
   .allowUnknownOption(true)
   .action(async (options: DevOptions, command: Command) => {
+    const { nextDev, thenKill = false } = options;
     const portAttempts = 30;
-    const PORT = !options.nextDev
+    const PORT = !nextDev
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
@@ -48,18 +50,22 @@ program
       throw new Error('🐺 ❌ PORT env variable is required');
     }
 
-    if (options.nextDev) {
+    if (nextDev) {
       const { result } = concurrently(
         [
           {
             command: `npx next dev ${command.args.join(' ')}`,
             name: 'Next.js Development Server',
-            env: { PORT },
+            env: { PORT } satisfies VovkEnv,
           },
           {
             command: `node ${import.meta.dirname}/dev/index.mjs`,
-            name: 'Vovk Dev Command',
-            env: { PORT, __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const },
+            name: 'Vovk Dev Watcher',
+            env: {
+              PORT,
+              __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
+              __VOVK_THEN_KILL__: thenKill ? 'true' : 'false',
+            } satisfies VovkEnv,
           },
         ],
         {
@@ -73,7 +79,7 @@ program
         // do nothing, all processes are killed
       }
     } else {
-      void new VovkDev().start();
+      void new VovkDev().start({ thenKill });
     }
   });
 

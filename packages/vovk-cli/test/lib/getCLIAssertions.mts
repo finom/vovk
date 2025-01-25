@@ -176,10 +176,14 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     }
   }
 
-  async function vovkDevAndKill(timeout = 15000) {
-    const dev = runAtProjectDir(`../dist/index.mjs dev --next-dev`);
-    await new Promise((resolve) => setTimeout(resolve, timeout));
-    await dev.kill();
+  async function assertDirFileList(dirPath: string, files: string[]) {
+    const dir = await fs.readdir(path.join(projectDir, dirPath));
+
+    assert.deepStrictEqual(dir.sort(), files.sort(), `Directory ${dirPath} does not contain the correct files`);
+  }
+
+  async function vovkDevAndKill() {
+    return runAtProjectDir(`../dist/index.mjs dev --next-dev --then-kill`);
   }
 
   return {
@@ -196,5 +200,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     assertNotExists,
     assertTsConfig,
     assertFile,
+    assertDirFileList,
   };
 }
