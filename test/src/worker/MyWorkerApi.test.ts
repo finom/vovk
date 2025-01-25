@@ -27,7 +27,7 @@ describe('Worker API', () => {
   });
 
   afterAll(async () => {
-    await page.close();
+    await page?.close();
   });
 
   it('Should work with schema', async () => {
