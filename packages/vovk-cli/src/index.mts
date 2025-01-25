@@ -31,10 +31,10 @@ program
   .command('dev')
   .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
   .option('--next-dev', 'Start schema watcher and Next.js with automatic port allocation')
-  .option('--then-kill', 'Kill the processe when schema and client is generated')
+  .option('--exit', 'Kill the processe when schema and client is generated')
   .allowUnknownOption(true)
   .action(async (options: DevOptions, command: Command) => {
-    const { nextDev, thenKill = false } = options;
+    const { nextDev, exit = false } = options;
     const portAttempts = 30;
     const PORT = !nextDev
       ? process.env.PORT
@@ -64,7 +64,7 @@ program
             env: {
               PORT,
               __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
-              __VOVK_THEN_KILL__: thenKill ? 'true' : 'false',
+              __VOVK_EXIT__: exit ? 'true' : 'false',
             } satisfies VovkEnv,
           },
         ],
@@ -79,7 +79,7 @@ program
         // do nothing, all processes are killed
       }
     } else {
-      void new VovkDev().start({ thenKill });
+      void new VovkDev().start({ exit });
     }
   });
 

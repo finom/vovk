@@ -370,13 +370,13 @@ export class VovkDev {
     }
   }
 
-  async start({ thenKill }: { thenKill: boolean }) {
+  async start({ exit }: { exit: boolean }) {
     const now = Date.now();
     this.#projectInfo = await getProjectInfo();
     const { log, config, cwd, apiDir } = this.#projectInfo;
     log.info('Starting...');
 
-    if (thenKill) {
+    if (exit) {
       this.#onFirstTimeGenerate = once(() => {
         log.info('The schemas and the RPC client have been generated. Exiting...');
         process.exit(0);
@@ -449,5 +449,5 @@ export class VovkDev {
 }
 const env = process.env as VovkEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
-  void new VovkDev().start({ thenKill: env.__VOVK_THEN_KILL__ === 'true' });
+  void new VovkDev().start({ exit: env.__VOVK_EXIT__ === 'true' });
 }

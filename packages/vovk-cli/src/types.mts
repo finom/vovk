@@ -19,7 +19,7 @@ export type VovkEnv = {
   VOVK_PRETTIFY_CLIENT?: string;
   VOVK_DEV_HTTPS?: string;
   __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
-  __VOVK_THEN_KILL__?: 'true' | 'false';
+  __VOVK_EXIT__?: 'true' | 'false';
 };
 
 export type VovkConfig = {
@@ -55,7 +55,7 @@ export type VovkModuleRenderResult = {
 /* CLI Commands */
 export interface DevOptions {
   nextDev?: boolean;
-  thenKill?: boolean;
+  exit?: boolean;
 }
 
 export interface GenerateOptions {
