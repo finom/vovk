@@ -71,6 +71,7 @@ program
         {
           killOthers: ['failure', 'success'],
           prefix: 'none',
+          successCondition: 'first',
         }
       );
       try {

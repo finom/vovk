@@ -379,7 +379,6 @@ export class VovkDev {
     if (exit) {
       this.#onFirstTimeGenerate = once(() => {
         log.info('The schemas and the RPC client have been generated. Exiting...');
-        process.exit(0);
       });
     }
 
@@ -442,9 +441,13 @@ export class VovkDev {
       }
     }, DELAY);
 
-    this.#watch(() => {
-      log.info(`Ready in ${Date.now() - now}ms`);
-    });
+    if (!exit) {
+      this.#watch(() => {
+        log.info(`Ready in ${Date.now() - now}ms. Making initial requests for schemas in a moment...`);
+      });
+    } else {
+      log.info(`Ready in ${Date.now() - now}ms. Making initial requests for schemas in a moment...`);
+    }
   }
 }
 const env = process.env as VovkEnv;

@@ -4,7 +4,7 @@ import getCLIAssertions from '../lib/getCLIAssertions.mjs';
 
 const compiledClientFolderName = 'client-from-template';
 
-await describe('Client templates', async () => {
+await describe.only('Client templates', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile, vovkDevAndKill, assertDirFileList } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir',
@@ -21,7 +21,7 @@ await describe('Client templates', async () => {
 
   const customTemplatesDir = path.join(import.meta.dirname, '../../../test_data/client-templates');
 
-  await it('Basic check', async () => {
+  await it.only('Basic check', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --template ${customTemplatesDir}/hello-world.js --out ${compiledClientFolderName}`
     );

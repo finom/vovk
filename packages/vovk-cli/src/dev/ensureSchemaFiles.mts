@@ -5,6 +5,9 @@ import writeOneSchemaFile, { ROOT_SEGMENT_SCHEMA_NAME } from './writeOneSchemaFi
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 
+/**
+ * Ensure that the schema files are created to avoid any import errors.
+ */
 export default async function ensureSchemaFiles(
   projectInfo: ProjectInfo | null,
   schemaOutAbsolutePath: string,
@@ -101,7 +104,7 @@ export default segmentSchema;`;
   // Start the recursive deletion from the root directory
   await deleteUnnecessaryJsonFiles(schemaOutAbsolutePath);
 
-  if (hasChanged) projectInfo?.log.info(`Schema files updated in ${Date.now() - now}ms`);
+  if (hasChanged) projectInfo?.log.info(`Created empty schema files in ${Date.now() - now}ms`);
 }
 
 export const debouncedEnsureSchemaFiles = debounce(ensureSchemaFiles, 1000);
