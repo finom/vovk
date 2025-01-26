@@ -183,7 +183,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function vovkDevAndKill() {
-    return runAtProjectDir(`../dist/index.mjs dev --next-dev --then-kill`);
+    return runAtProjectDir(`../dist/index.mjs dev --next-dev --exit`);
   }
 
   return {
