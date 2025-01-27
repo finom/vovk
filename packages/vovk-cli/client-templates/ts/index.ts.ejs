@@ -27,7 +27,6 @@ export const <%= key %> = createRPC<Controllers<%= i %>["<%= key %>"], Options>(
 
   <% Object.keys(segSchema.workers).forEach((key) => { %>
 export const <%= key %> = createWPC<Workers<%= i %>["<%= key %>"]>(
-  null, 
   schema['<%= segment.segmentName %>'].workers.<%= key %>
 );
   <% }) %>

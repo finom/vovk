@@ -2,8 +2,8 @@ import type { VovkWorkerSchema } from '../types';
 import type { WorkerInput, WorkerOutput, WorkerPromiseInstance } from './types';
 
 export function createWPC<T extends object>(
-  currentWorker: Worker | null,
-  workerSchema: object
+  workerSchema: object,
+  currentWorker?: Worker,
 ): WorkerPromiseInstance<T> {
   if (!workerSchema) throw new Error('Worker schema is not provided');
   const schema = workerSchema as T & VovkWorkerSchema;
@@ -26,7 +26,7 @@ export function createWPC<T extends object>(
     return instance;
   };
 
-  instance.fork = (worker: Worker) => createWPC<T>(worker, schema);
+  instance.fork = (worker: Worker) => createWPC<T>(schema, worker);
 
   for (const methodName of Object.keys(schema.handlers) as (keyof T & string)[]) {
     const { isGenerator } = schema.handlers[methodName];

@@ -20,6 +20,6 @@ exports.<%= key %> = createRPC(
 );
   <% }) %>
   <% workers.forEach((key) => { %>
-exports.<%= key %> = createWPC(null, schema['<%= segment.segmentName %>'].workers.<%= key %>);
+exports.<%= key %> = createWPC(schema['<%= segment.segmentName %>'].workers.<%= key %>);
   <% }) %>
 <% }) %>
