@@ -1,8 +1,7 @@
 import type { Token, default as StreamingController } from './StreamingController';
 import { expect, describe, it, xit } from '@jest/globals';
-import { HttpException, VovkYieldType } from 'vovk';
+import { HttpException, type VovkYieldType, type VovkControllerYieldType } from 'vovk';
 import { StreamingControllerRPC } from 'vovk-client';
-import { VovkControllerYieldType } from 'vovk/types';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 

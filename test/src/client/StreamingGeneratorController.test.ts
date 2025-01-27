@@ -2,7 +2,7 @@ import type { Token, default as StreamingGeneratorController } from './Streaming
 import { expect, describe, xit, it } from '@jest/globals';
 import { VovkYieldType } from 'vovk';
 import { StreamingGeneratorControllerRPC } from 'vovk-client';
-import { VovkControllerYieldType } from 'vovk/types';
+import { VovkControllerYieldType } from 'vovk';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 

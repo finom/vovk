@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import puppeteer, { type Page } from 'puppeteer';
 import { it, expect, describe, beforeAll, afterAll } from '@jest/globals';
-import type { WorkerPromiseInstance } from '../../../packages/vovk/worker/types';
+import type { WorkerPromiseInstance } from '../../../packages/vovk/dist/worker/types';
 import type MyWorker from './MyWorker';
 
 describe('Worker API', () => {

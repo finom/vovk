@@ -1,10 +1,9 @@
 'use client';
 import { useEffect } from 'react';
 import { MyWorkerWPC } from 'vovk-client';
-import { promisifyWorker } from '../../../packages/vovk/worker';
+import { createWPC, type VovkWorkerSchema } from 'vovk';
 import segmentSchema from '.vovk-schema';
 import MyWorker from '../worker/MyWorker';
-import { VovkWorkerSchema } from 'vovk/types';
 
 export default function Home() {
   useEffect(() => {
@@ -20,7 +19,7 @@ export default function Home() {
 
     MyWorkerWPC.employ(new Worker(new URL('../worker/MyWorker.ts', import.meta.url)));
 
-    const schemaWorker = promisifyWorker<typeof MyWorker>(
+    const schemaWorker = createWPC<typeof MyWorker>(
       new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
       segmentSchema.workers.workers.MyWorkerWPC
     );
@@ -31,12 +30,12 @@ export default function Home() {
       handlers: (MyWorker as unknown as { _handlers: VovkWorkerSchema['handlers'] })._handlers,
     };
 
-    const standaloneWorker = promisifyWorker<typeof MyWorker>(
+    const standaloneWorker = createWPC<typeof MyWorker>(
       new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
       schema
     );
 
-    const toBeTerminated = promisifyWorker<typeof MyWorker>(
+    const toBeTerminated = createWPC<typeof MyWorker>(
       new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
       schema
     );

@@ -9,7 +9,7 @@ import {
   type VovkReturnType,
 } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
-import { VovkControllerBody, VovkControllerParams, VovkControllerQuery } from '../../../packages/vovk/types';
+import { VovkControllerBody, VovkControllerParams, VovkControllerQuery } from '../../../packages/vovk';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 

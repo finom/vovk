@@ -1,12 +1,14 @@
 import { it, expect, describe } from '@jest/globals';
 import MiscController from './MiscController';
-import { type VovkController as VovkController } from '../../../packages/vovk/types';
+import { type VovkControllerSchema } from '../../../packages/vovk';
 import { NextRequest } from 'next/server';
 import { createDecorator, get } from '../../../packages/vovk';
 
 describe('Hidden features', () => {
   it(`Schema`, () => {
-    expect((MiscController as unknown as VovkController)._handlers).toHaveProperty(`getMethod`);
+    expect((MiscController as unknown as { _handlers: VovkControllerSchema['handlers'] })._handlers).toHaveProperty(
+      `getMethod`
+    );
   });
 
   it('Method preserves name and controller properties', () => {
@@ -60,13 +62,19 @@ describe('Hidden features', () => {
       }
     }
 
-    expect((MyController as unknown as VovkController)._handlers).toHaveProperty('myMethod');
+    expect((MyController as unknown as { _handlers: VovkControllerSchema['handlers'] })._handlers).toHaveProperty(
+      'myMethod'
+    );
 
-    expect((MyController as unknown as VovkController)._handlers?.myMethod.validation?.body).toEqual({
+    expect(
+      (MyController as unknown as { _handlers: VovkControllerSchema['handlers'] })._handlers?.myMethod.validation?.body
+    ).toEqual({
       iAmABodyValidator: 'helloBody',
     });
 
-    expect((MyController as unknown as VovkController)._handlers?.myMethod.validation?.query).toEqual({
+    expect(
+      (MyController as unknown as { _handlers: VovkControllerSchema['handlers'] })._handlers?.myMethod.validation?.query
+    ).toEqual({
       iAmAQueryValidator: 'helloQuery',
     });
   });
