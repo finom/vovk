@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.44",
+  "version": "0.0.1-draft.45",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -36,7 +36,7 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.51"
+    "vovk": "^3.0.0-draft.52"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.2.3",
