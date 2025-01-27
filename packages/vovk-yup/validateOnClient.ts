@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 import { buildYup } from 'schema-to-yup';
 import { HttpException, HttpStatus, VovkValidateOnClient } from 'vovk';
 
-const validateOnClientDto: VovkValidateOnClient = async (input, validators) => {
+const validateOnClientYup: VovkValidateOnClient = async (input, validators) => {
   if (validators.body) {
     try {
       await buildYup(validators.body).validate(input.body);
@@ -38,4 +38,4 @@ const validateOnClientDto: VovkValidateOnClient = async (input, validators) => {
   }
 };
 
-export default validateOnClientDto;
+export default validateOnClientYup;

@@ -1,8 +1,6 @@
 import * as Yup from 'yup';
-import { HttpException, HttpStatus, type VovkRequest } from 'vovk';
-import setClientValidatorsForHandler from 'vovk/utils/setClientValidatorsForHandler';
+import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest } from 'vovk';
 import { convertSchema } from '@sodaru/yup-to-json-schema';
-import reqQuery from 'vovk/utils/reqQuery';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KnownAny = any;
@@ -58,7 +56,7 @@ function withYup<
     }
 
     if (queryModel) {
-      const query = reqQuery(req);
+      const query = req.vovk.query();
 
       try {
         await queryModel.validate(query);

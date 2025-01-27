@@ -86,7 +86,7 @@ export class VovkApp {
     );
   };
 
-  #callMethod = async (httpMethod: HttpMethod, req: VovkRequest, params: Record<string, string[]>) => {
+  #callMethod = async (httpMethod: HttpMethod, req: VovkRequest<KnownAny, KnownAny>, params: Record<string, string[]>) => {
     const controllers = this.routes[httpMethod];
     const methodParams: Record<string, string> = {};
     const path = params[Object.keys(params)[0]];

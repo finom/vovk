@@ -1,8 +1,6 @@
 import { z } from 'zod';
-import { HttpException, HttpStatus, type VovkRequest } from 'vovk';
-import setClientValidatorsForHandler from 'vovk/utils/setClientValidatorsForHandler';
+import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest } from 'vovk';
 import { default as zodToJsonSchema } from 'zod-to-json-schema';
-import reqQuery from 'vovk/utils/reqQuery';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KnownAny = any;
@@ -57,7 +55,7 @@ function withZod<
     }
 
     if (queryModel) {
-      const query = reqQuery(req);
+      const query = req.vovk.query();
 
       try {
         queryModel.parse(query);

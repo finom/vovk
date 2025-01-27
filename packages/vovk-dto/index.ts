@@ -1,8 +1,6 @@
 import { validate, ValidationError } from 'class-validator';
 import { plainToInstance, ClassConstructor } from 'class-transformer';
-import { HttpException, HttpStatus, type VovkRequest } from 'vovk';
-import setClientValidatorsForHandler from 'vovk/utils/setClientValidatorsForHandler';
-import reqQuery from 'vovk/utils/reqQuery';
+import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest } from 'vovk';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KnownAny = any;
@@ -64,7 +62,7 @@ function withDto<
     }
 
     if (queryDto) {
-      const query = reqQuery(req);
+      const query = req.vovk.query();
       const queryInstance = plainToInstance(queryDto as ClassConstructor<QUERY>, query);
 
       const queryErrors: ValidationError[] = await validate(queryInstance as object);

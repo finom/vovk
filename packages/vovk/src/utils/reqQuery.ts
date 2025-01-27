@@ -1,6 +1,5 @@
 import { ARRAY_QUERY_KEY } from '../client/clientizeController';
-import { KnownAny as KnownAny } from '../types';
-import { VovkRequest } from 'vovk';
+import type { KnownAny, VovkRequest } from '../types';
 
 export default function reqQuery<T extends object | undefined>(req: VovkRequest<KnownAny, T>): T {
   type Query = NonNullable<T>;

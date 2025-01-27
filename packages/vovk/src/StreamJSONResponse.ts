@@ -1,5 +1,5 @@
 import { KnownAny, StreamAbortMessage } from './types';
-import './utils/shim';
+import '../utils/shim';
 
 export class StreamJSONResponse<T> extends Response {
   public static defaultHeaders = {

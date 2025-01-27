@@ -4,6 +4,6 @@
     "outDir": "dist",
     "noEmit": false
   },
-  "include": ["**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["dist"]
 }

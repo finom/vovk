@@ -1,6 +1,6 @@
-import { KnownAny as KnownAny, VovkController as VovkController } from '../types';
+import type { KnownAny, VovkController } from '../types';
 
-export default function setClientValidatorsForHandler(
+export function setClientValidatorsForHandler(
   h: (...args: KnownAny[]) => KnownAny,
   validation: {
     body: unknown;
@@ -8,6 +8,7 @@ export default function setClientValidatorsForHandler(
   }
 ) {
   return new Promise<void>((resolve) => {
+    // the setTimeout is necessary to ensure that the _controller is already defined
     setTimeout(() => {
       const controller = (h as unknown as { _controller: VovkController })._controller;
 

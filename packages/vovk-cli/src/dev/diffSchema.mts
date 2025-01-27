@@ -1,5 +1,4 @@
-import type { VovkSchema } from 'vovk';
-import type { VovkControllerSchema, VovkWorkerSchema } from 'vovk/types';
+import type { VovkControllerSchema, VovkWorkerSchema, VovkSchema } from 'vovk';
 import isEqual from 'lodash/isEqual.js';
 
 interface HandlersDiff {
