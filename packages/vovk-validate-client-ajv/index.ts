@@ -1,5 +1,5 @@
 import Ajv from 'ajv';
-import { HttpException, HttpStatus, VovkValidateOnClient } from 'vovk';
+import { HttpException, HttpStatus, type VovkValidateOnClient } from 'vovk';
 import addFormats from 'ajv-formats';
 
 const ajv = new Ajv();

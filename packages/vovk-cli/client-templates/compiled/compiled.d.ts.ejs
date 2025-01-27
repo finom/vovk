@@ -1,7 +1,6 @@
 
 <%- '// auto-generated\n/* eslint-disable */' %>
-import type { clientizeController, VovkClientFetcher } from 'vovk/client';
-import type { promisifyWorker } from 'vovk/worker';
+import type { createRPC, createWPC, VovkClientFetcher } from 'vovk';
 import type fetcher from '<%= fetcherClientImportPath %>';
 <% segments.forEach((segment, i) => { 
   const hasWorkers = !!Object.keys(segmentsSchema[segment.segmentName].workers).length;
@@ -17,9 +16,9 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
     const workers     = Object.keys(segSchema.workers);
 %>
   <% controllers.forEach((key) => { %>
-export const <%= key %>: ReturnType<typeof clientizeController<Controllers<%= i %>["<%= key %>"], Options>>;
+export const <%= key %>: ReturnType<typeof createRPC<Controllers<%= i %>["<%= key %>"], Options>>;
   <% }) %>
   <% workers.forEach((key) => { %>
-export const <%= key %>: ReturnType<typeof promisifyWorker<Workers<%= i %>["<%= key %>"]>>;
+export const <%= key %>: ReturnType<typeof createWPC<Workers<%= i %>["<%= key %>"]>>;
   <% }) %>
 <% }) %>

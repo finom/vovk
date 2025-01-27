@@ -1,7 +1,7 @@
 import type { VovkWorkerSchema } from '../types';
 import type { WorkerInput, WorkerOutput, WorkerPromiseInstance } from './types';
 
-export function promisifyWorker<T extends object>(
+export function createWPC<T extends object>(
   currentWorker: Worker | null,
   workerSchema: object
 ): WorkerPromiseInstance<T> {
@@ -26,7 +26,7 @@ export function promisifyWorker<T extends object>(
     return instance;
   };
 
-  instance.fork = (worker: Worker) => promisifyWorker<T>(worker, schema);
+  instance.fork = (worker: Worker) => createWPC<T>(worker, schema);
 
   for (const methodName of Object.keys(schema.handlers) as (keyof T & string)[]) {
     const { isGenerator } = schema.handlers[methodName];

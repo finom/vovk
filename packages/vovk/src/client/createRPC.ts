@@ -49,7 +49,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
 };
 
-export const clientizeController = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
+export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   controllerSchema: VovkControllerSchema,
   segmentName?: string,
   options?: VovkClientOptions<OPTS>

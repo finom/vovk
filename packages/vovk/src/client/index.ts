@@ -1,5 +1,5 @@
-import { clientizeController } from './clientizeController';
-import type { VovkClientFetcher, VovkClientOptions, VovkDefaultFetcherOptions } from './types';
+import { createRPC } from './createRPC';
+import type { VovkClientFetcher, VovkClientOptions, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
-export { clientizeController };
-export type { VovkClientFetcher, VovkClientOptions, VovkDefaultFetcherOptions };
+export { createRPC };
+export type { VovkClientFetcher, VovkClientOptions, VovkDefaultFetcherOptions, VovkValidateOnClient };

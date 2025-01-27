@@ -1,5 +1,5 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
-import { clientizeController, type VovkClientFetcher } from 'vovk/client';
+import { createRPC, createWPC, type VovkClientFetcher } from 'vovk';
 import fetcher from '<%= fetcherClientImportPath %>';
 import schema from '<%= schemaOutImportPath %>';
 <% if (validateOnClientImportPath) { %>
@@ -18,7 +18,7 @@ const apiRoot = '<%= apiRoot %>';
 import type { Controllers as Controllers<%= i %><% if(hasWorkers) { %>, Workers as Workers<%= i %> <% } %>} from "<%= segment.segmentImportPath %>";
 
   <% Object.keys(segSchema.controllers).forEach((key) => { %>
-export const <%= key %> = clientizeController<Controllers<%= i %>["<%= key %>"], Options>(
+export const <%= key %> = createRPC<Controllers<%= i %>["<%= key %>"], Options>(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 
   { fetcher, validateOnClient, defaultOptions: { apiRoot } }
@@ -26,7 +26,7 @@ export const <%= key %> = clientizeController<Controllers<%= i %>["<%= key %>"],
   <% }) %>
 
   <% Object.keys(segSchema.workers).forEach((key) => { %>
-export const <%= key %> = promisifyWorker<Workers<%= i %>["<%= key %>"]>(
+export const <%= key %> = createWPC<Workers<%= i %>["<%= key %>"]>(
   null, 
   schema['<%= segment.segmentName %>'].workers.<%= key %>
 );

@@ -1,4 +1,4 @@
 import { worker } from './worker';
-import { promisifyWorker } from './promisifyWorker';
+import { createWPC } from './createWPC';
 
-export { worker, promisifyWorker };
+export { worker, createWPC };

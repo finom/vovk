@@ -1,6 +1,5 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
-const { clientizeController } = require('vovk/client');
-const { promisifyWorker } = require('vovk/worker');
+const { createRPC, createWPC } = require('vovk');
 const { default: fetcher } = require('<%= fetcherClientImportPath %>');
 const schema = require('<%= schemaOutImportPath %>');
 
@@ -14,13 +13,13 @@ const apiRoot = '<%= apiRoot %>';
     const workers     = Object.keys(segSchema.workers);
 %>
   <% controllers.forEach((key) => { %>
-exports.<%= key %> = clientizeController(
+exports.<%= key %> = createRPC(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 
   { fetcher, validateOnClient, defaultOptions: { apiRoot } }
 );
   <% }) %>
   <% workers.forEach((key) => { %>
-exports.<%= key %> = promisifyWorker(null, schema['<%= segment.segmentName %>'].workers.<%= key %>);
+exports.<%= key %> = createWPC(null, schema['<%= segment.segmentName %>'].workers.<%= key %>);
   <% }) %>
 <% }) %>
