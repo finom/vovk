@@ -1,6 +1,3 @@
-
-
-
 <p align="center"> 
   <picture>
     <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
@@ -12,6 +9,9 @@
 
 <p align="center">
   Back-end meta-framework for <a href="https://nextjs.org/docs/app">Next.js</a>
+  <br />
+<a href="https://www.npmjs.com/package/vovk"><img src="https://badge.fury.io/js/vovk.svg" alt="npm version" /></a>&nbsp;
+
 </p>
 
 [![](https://badge.fury.io/js/vovk.svg)](https://www.npmjs.com/package/vovk)
