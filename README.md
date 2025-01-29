@@ -4,12 +4,12 @@
     <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
     <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
   </picture><br>
-  <strong>RESTful RPC for Next.js</strong>
+  <strong>REST + RPC = ♥️</strong>
   
 </p>
 
 <p align="center">
-  Transforms <a href="https://nextjs.org/docs/app">Next.js</a> into a powerful REST API platform with RPC capabilities. 
+  Back-end meta-framework for&nbsp; <a href="https://nextjs.org/docs/app">Next.js</a>
 </p>
 
 <p align="center">
