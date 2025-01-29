@@ -10,6 +10,7 @@
 <p align="center">
   Back-end meta-framework for <a href="https://nextjs.org/docs/app">Next.js</a>
   <br />
+  <br />
 <a href="https://www.npmjs.com/package/vovk"><img src="https://badge.fury.io/js/vovk.svg" alt="npm version" /></a>&nbsp;
 </p>
 
