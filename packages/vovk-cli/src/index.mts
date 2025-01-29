@@ -29,6 +29,7 @@ initProgram(program.command('init'));
 
 program
   .command('dev')
+  .alias('d')
   .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
   .option('--next-dev', 'Start schema watcher and Next.js with automatic port allocation')
   .option('--exit', 'Kill the processe when schema and client is generated')
