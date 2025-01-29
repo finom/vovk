@@ -15,7 +15,7 @@
 
 ## vovk [![npm version](https://badge.fury.io/js/vovk.svg)](https://www.npmjs.com/package/vovk)
 
-The main library that's going to be used in production. It provides a wrapper for Next.js API routes, RPC API that's used by the generated client, utilities and types. The package has [zero dependencies](https://bundlephobia.com/result?p=vovk).
+The main library with [zero dependencies](https://bundlephobia.com/result?p=vovk) that's going to be used in production. It provides a wrapper for Next.js API routes, RPC API that's used by the generated client, utilities and types.
 
 ```sh
 npm install vovk
