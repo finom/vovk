@@ -14,6 +14,9 @@
 
 </p>
 
-[![](https://badge.fury.io/js/vovk.svg)](https://www.npmjs.com/package/vovk)
+This is the main library that's going to be used in production.
 
-The main library that's going to be used in production.
+```sh
+npm install vovk
+```
+
