@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  Back-end meta-framework for&nbsp; <a href="https://nextjs.org/docs/app">Next.js</a>
+  Back-end meta-framework for <a href="https://nextjs.org/docs/app">Next.js</a>
 </p>
 
 <p align="center">
