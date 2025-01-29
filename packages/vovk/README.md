@@ -16,7 +16,9 @@
 
 ----------
 
-## **vovk** is the main library that's going to be used in production.
+## vovk
+
+The main library that's going to be used in production.
 
 ```sh
 npm install vovk
