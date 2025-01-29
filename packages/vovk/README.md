@@ -1,8 +1,5 @@
-# vovk [![](https://badge.fury.io/js/vovk.svg)](https://www.npmjs.com/package/vovk)
 
 
-
-The main library that's going to be used in production.
 
 <p align="center"> 
   <picture>
@@ -16,3 +13,7 @@ The main library that's going to be used in production.
 <p align="center">
   Back-end meta-framework for <a href="https://nextjs.org/docs/app">Next.js</a>
 </p>
+
+[![](https://badge.fury.io/js/vovk.svg)](https://www.npmjs.com/package/vovk)
+
+The main library that's going to be used in production.
