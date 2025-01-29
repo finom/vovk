@@ -21,4 +21,4 @@ The main library that's going to be used in production.
 npm install vovk
 ```
 
-For more information, please visit the [getting started guide](https://vovk.dev/getting-started).
+For more information, please visit the [getting started guide](https://vovk.dev/getting-started) or check out the [examples](https://vovk-examples.vercel.app/).
