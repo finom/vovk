@@ -2,6 +2,11 @@
 import { createRPC, createWPC, type VovkClientFetcher } from 'vovk';
 import fetcher from '<%= fetcherClientImportPath %>';
 import schema from '<%= schemaOutImportPath %>';
+<% segments.forEach((segment, i) => { 
+  const hasWorkers = !!Object.keys(segmentsSchema[segment.segmentName].workers).length;
+%>
+import type { Controllers as Controllers<%= i %><% if(hasWorkers) { %>, Workers as Workers<%= i %> <% } %> } from "<%= segment.segmentImportPath %>";
+<% }) %>
 <% if (validateOnClientImportPath) { %>
 import validateOnClient from '<%= validateOnClientImportPath %>';
 <% } else { %>
@@ -15,8 +20,6 @@ const apiRoot = '<%= apiRoot %>';
     if (!segSchema || !segSchema.emitSchema) return;
     const hasWorkers = !!Object.keys(segmentsSchema[segment.segmentName].workers).length;
 %>
-import type { Controllers as Controllers<%= i %><% if(hasWorkers) { %>, Workers as Workers<%= i %> <% } %>} from "<%= segment.segmentImportPath %>";
-
   <% Object.keys(segSchema.controllers).forEach((key) => { %>
 export const <%= key %> = createRPC<Controllers<%= i %>["<%= key %>"], Options>(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 

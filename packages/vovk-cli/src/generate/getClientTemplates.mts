@@ -15,8 +15,7 @@ export default function getClientTemplates({
   cwd: string;
   templateNames?: string[];
 }): ClientTemplate[] {
-  const __dirname = path.dirname(new URL(import.meta.url).pathname);
-  const templatesDir = path.join(__dirname, '../..', 'client-templates');
+  const templatesDir = path.join(import.meta.dirname, '../..', 'client-templates');
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
   const mapper =
     (dir: string) =>
