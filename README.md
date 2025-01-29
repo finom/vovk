@@ -5,7 +5,6 @@
     <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
   </picture><br>
   <strong>REST + RPC = ♥️</strong>
-  
 </p>
 
 <p align="center">
