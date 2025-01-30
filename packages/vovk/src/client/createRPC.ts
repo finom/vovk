@@ -10,9 +10,7 @@ import { type VovkClientOptions, type VovkClient, type VovkDefaultFetcherOptions
 import defaultFetcher from './defaultFetcher';
 import { defaultHandler } from './defaultHandler';
 import { defaultStreamHandler } from './defaultStreamHandler';
-
-// TODO Ugly workaround. Need your ideas how to distinguish between array and non-array query params
-export const ARRAY_QUERY_KEY = '_vovkarr';
+import serializeQuery from '../utils/serializeQuery';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -26,27 +24,9 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
     result = result.replace(`:${key}`, value as string);
   }
 
-  const searchParams = new URLSearchParams();
-  let hasQuery = false;
-  const arrayKeys: string[] = [];
-  for (const [key, value] of Object.entries(query ?? {})) {
-    if (typeof value === 'undefined') continue;
-    if (value instanceof Array) {
-      arrayKeys.push(key);
-      for (const val of value) {
-        searchParams.append(key, val);
-      }
-    } else {
-      searchParams.set(key, value);
-    }
-    hasQuery = true;
-  }
+  const queryStr = query ? serializeQuery(query) : null;
 
-  if (arrayKeys.length) {
-    searchParams.set(ARRAY_QUERY_KEY, arrayKeys.join(','));
-  }
-
-  return `${result}${hasQuery ? '?' : ''}${searchParams.toString()}`;
+  return `${result}${queryStr ? '?' : ''}${queryStr}`;
 };
 
 export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(

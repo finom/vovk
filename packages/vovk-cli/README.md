@@ -11,7 +11,7 @@
   Back-end meta-framework for <a href="https://nextjs.org/docs/app">Next.js</a>
 </p>
 
-----------
+---
 
 ## vovk-cli [![npm version](https://badge.fury.io/js/vovk-cli.svg)](https://www.npmjs.com/package/vovk-cli)
 

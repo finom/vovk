@@ -107,7 +107,7 @@ export interface VovkRequest<BODY = undefined, QUERY extends object | undefined 
 }
 
 export type ControllerStaticMethod<
-  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<undefined, Record<string, string | string[]>>,
+  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<undefined, Record<string, KnownAny>>,
   PARAMS extends { [key: string]: string } = KnownAny,
 > = ((req: REQ, params: PARAMS) => unknown) & {
   _controller?: VovkController;

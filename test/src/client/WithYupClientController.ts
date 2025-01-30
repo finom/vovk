@@ -40,4 +40,40 @@ export default class WithYupClientController {
       return { query: { hey } };
     }
   );
+
+  @get('nested-query')
+  static getNestedQuery = withYup(
+    null,
+    Yup.object().shape({
+      x: Yup.string().required(),
+      y: Yup.array().of(Yup.string().required()).required(),
+      z: Yup.object()
+        .shape({
+          f: Yup.string().required(),
+          u: Yup.array().of(Yup.string().required()).required(),
+          d: Yup.object()
+            .shape({
+              x: Yup.string().required(),
+              arrOfObjects: Yup.array()
+                .of(
+                  Yup.object().shape({
+                    foo: Yup.string().required(),
+                    nestedArr: Yup.array().of(Yup.string().required()).notRequired(),
+                    nestedObj: Yup.object()
+                      .shape({
+                        deepKey: Yup.string(),
+                      })
+                      .notRequired(),
+                  })
+                )
+                .required(),
+            })
+            .required(),
+        })
+        .required(),
+    }),
+    (req) => {
+      return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
+    }
+  );
 }

@@ -1,40 +1,26 @@
-Description is coming soon.
+<p align="center"> 
+  <picture>
+    <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
+    <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
+    <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
+  </picture><br>
+  <strong>REST + RPC = ♥️</strong>
+</p>
 
-## Mapped types
+<p align="center">
+  Back-end meta-framework for <a href="https://nextjs.org/docs/app">Next.js</a>
+</p>
 
-You can install [@nestjs/mapped-types](https://github.com/nestjs/mapped-types) to get essential utilities such as `PartialType`, `OmitType`, `PickType` and `IntersectionType`.
+---
 
-```ts
-export class UpdateUserDto extends PartialType(OmitType(CreateUserDto, ['email'] as const)) {}
+## vovk-dto [![npm version](https://badge.fury.io/js/vovk-dto.svg)](https://www.npmjs.com/package/vovk-dto)
+
+TODO
+
+The main library with [zero dependencies](https://bundlephobia.com/result?p=vovk) that's going to be used in production. It provides a wrapper for Next.js API routes, internal RPC API, utilities and types.
+
+```sh
+npm install vovk
 ```
 
-Since **@nestjs/mapped-types** has backward compatibility code that attempts to support older versions of **class-transformer**, it includes a `require` call for module `class-transformer/storage` that does not exists in the latest version of **class-transformer**. Webpack (used by Next.js internally) tries to compile this module and introduces compilation errors. To address this problem, you can modify Next.js Webpack configuration to ignore this import completely by aliasing it to `false`:
-
-```js
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  webpack: (config) => {
-    config.resolve.alias['class-transformer/storage'] = false;
-    return config;
-  },
-};
-
-module.exports = nextConfig;
-```
-
-You can also use `webpack.IgnorePlugin` if needed:
-
-```ts
-const webpack = require('webpack');
-
-module.exports = {
-  webpack: (config) => {
-    config.plugins.push(
-      new webpack.IgnorePlugin({
-        resourceRegExp: /class-transformer\/storage/,
-      })
-    );
-    return config;
-  },
-};
-```
+For more information, please visit the [getting started guide](https://vovk.dev/getting-started) or check out the [Vovk.ts examples](https://vovk-examples.vercel.app/).

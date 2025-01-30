@@ -1,9 +1,10 @@
 import { it, expect, describe } from '@jest/globals';
 import { WithDtoClientControllerRPC } from 'vovk-client';
-import { HttpException } from 'vovk';
+import { HttpException, VovkReturnType } from 'vovk';
 import validateOnClient from 'vovk-dto/validateOnClient';
 import { plainToInstance } from 'class-transformer';
-import { BodyDto, QueryDto, QueryWithArrayDto, ReturnDto } from './WithDtoClientController';
+import { BodyDto, NestedExampleObjectDTO, QueryDto, QueryWithArrayDto, ReturnDto } from './WithDtoClientController';
+import { NESTED_QUERY_EXAMPLE } from './ClientController';
 
 describe('Validation with with vovk-dto', () => {
   it('Should handle DTO server validation', async () => {
@@ -279,5 +280,56 @@ describe('Validation with with vovk-dto', () => {
     expect(result satisfies { body: { hello: 'hello_body'; world: 'world_body' } }).toEqual({
       body: { hello: 'hello_body', world: 'world_body' },
     });
+  });
+
+  it('Should handle nested queries on server', async () => {
+    const { query, search } = await WithDtoClientControllerRPC.getNestedQuery({
+      query: NESTED_QUERY_EXAMPLE,
+      disableClientValidation: true,
+    });
+
+    expect(query satisfies VovkReturnType<typeof WithDtoClientControllerRPC.getNestedQuery>['query']).toEqual(
+      NESTED_QUERY_EXAMPLE
+    );
+
+    expect(search).toEqual(
+      '?x=xx&y[0]=yy&y[1]=uu&z[f]=x&z[u][0]=uu&z[u][1]=xx&z[d][x]=ee&z[d][arrOfObjects][0][foo]=bar&z[d][arrOfObjects][0][nestedArr][0]=one&z[d][arrOfObjects][0][nestedArr][1]=two&z[d][arrOfObjects][0][nestedArr][2]=three&z[d][arrOfObjects][1][foo]=baz&z[d][arrOfObjects][1][nestedObj][deepKey]=deepValue'
+    );
+
+    const { rejects } = expect(async () => {
+      await WithDtoClientControllerRPC.getNestedQuery({
+        query: {
+          ...NESTED_QUERY_EXAMPLE,
+          // @ts-expect-error Expect error
+          x: null,
+        },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Validation failed. Invalid request query on server for http:.*. x must be a string/);
+  });
+
+  it('Should handle nested queries on client', async () => {
+    const { query } = await WithDtoClientControllerRPC.getNestedQuery({
+      query: plainToInstance(NestedExampleObjectDTO, NESTED_QUERY_EXAMPLE),
+      validateOnClient,
+    });
+
+    expect(query satisfies VovkReturnType<typeof WithDtoClientControllerRPC.getNestedQuery>['query']).toEqual(
+      NESTED_QUERY_EXAMPLE
+    );
+
+    const { rejects } = expect(async () => {
+      await WithDtoClientControllerRPC.getNestedQuery({
+        query: plainToInstance(NestedExampleObjectDTO, {
+          ...NESTED_QUERY_EXAMPLE,
+          x: null,
+        }),
+        validateOnClient,
+      });
+    });
+
+    await rejects.toThrow(/Validation failed. Invalid request query on client for http:.*. x must be a string/);
   });
 });

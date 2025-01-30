@@ -51,6 +51,10 @@
           "path": "with-all-using-req-vovk",
           "httpMethod": "POST"
         },
+        "getNestedQuery": {
+          "path": "nested-query",
+          "httpMethod": "GET"
+        },
         "postWithFormDataUsingReqVovk": {
           "path": "form-data",
           "httpMethod": "POST"
@@ -154,9 +158,7 @@
                   "const": "body"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -168,9 +170,7 @@
                   "const": "query"
                 }
               },
-              "required": [
-                "hey"
-              ],
+              "required": ["hey"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -188,9 +188,7 @@
                   "const": "body"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -208,9 +206,7 @@
                   "const": "body"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -228,9 +224,85 @@
                   "const": "query"
                 }
               },
-              "required": [
-                "hey"
-              ],
+              "required": ["hey"],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            }
+          }
+        },
+        "getNestedQuery": {
+          "path": "nested-query",
+          "httpMethod": "GET",
+          "validation": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "string"
+                },
+                "y": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "z": {
+                  "type": "object",
+                  "properties": {
+                    "f": {
+                      "type": "string"
+                    },
+                    "u": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "d": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "string"
+                        },
+                        "arrOfObjects": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "foo": {
+                                "type": "string"
+                              },
+                              "nestedArr": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "nestedObj": {
+                                "type": "object",
+                                "properties": {
+                                  "deepKey": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": ["deepKey"],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": ["foo"],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": ["x", "arrOfObjects"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["f", "u", "d"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["x", "y", "z"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -253,14 +325,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -268,14 +336,10 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": [
-                    "query"
-                  ]
+                  "enum": ["query"]
                 }
               },
-              "required": [
-                "hey"
-              ]
+              "required": ["hey"]
             }
           }
         },
@@ -289,14 +353,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           }
         },
@@ -310,14 +370,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           }
         },
@@ -331,14 +387,95 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": [
-                    "query"
-                  ]
+                  "enum": ["query"]
                 }
               },
-              "required": [
-                "hey"
-              ]
+              "required": ["hey"]
+            }
+          }
+        },
+        "getNestedQuery": {
+          "path": "nested-query",
+          "httpMethod": "GET",
+          "validation": {
+            "query": {
+              "type": "object",
+              "default": {
+                "z": {
+                  "d": {}
+                }
+              },
+              "properties": {
+                "x": {
+                  "type": "string"
+                },
+                "y": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "z": {
+                  "type": "object",
+                  "default": {
+                    "d": {}
+                  },
+                  "properties": {
+                    "f": {
+                      "type": "string"
+                    },
+                    "u": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "d": {
+                      "type": "object",
+                      "default": {},
+                      "properties": {
+                        "x": {
+                          "type": "string"
+                        },
+                        "arrOfObjects": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "default": {
+                              "nestedObj": {}
+                            },
+                            "properties": {
+                              "foo": {
+                                "type": "string"
+                              },
+                              "nestedArr": {
+                                "type": ["array", "null"],
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "nestedObj": {
+                                "type": ["object", "null"],
+                                "default": {},
+                                "properties": {
+                                  "deepKey": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": ["deepKey"]
+                              }
+                            },
+                            "required": ["foo"]
+                          }
+                        }
+                      },
+                      "required": ["x", "arrOfObjects"]
+                    }
+                  },
+                  "required": ["f", "u", "d"]
+                }
+              },
+              "required": ["x", "y", "z"]
             }
           }
         }
@@ -433,6 +570,16 @@
               "isDTO": true
             },
             "query": null
+          }
+        },
+        "getNestedQuery": {
+          "path": "nested-query",
+          "httpMethod": "GET",
+          "validation": {
+            "body": null,
+            "query": {
+              "isDTO": true
+            }
           }
         }
       }

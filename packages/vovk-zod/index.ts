@@ -15,7 +15,7 @@ type VovkRequestWithOptionalZod<
 function withZod<
   T extends (req: REQ, params: KnownAny) => KnownAny,
   ZOD_BODY extends z.ZodSchema<unknown> | null,
-  ZOD_QUERY extends z.ZodSchema<Record<string, string | string[]> | undefined> | null = z.ZodSchema<undefined>,
+  ZOD_QUERY extends z.ZodSchema<Record<string, KnownAny> | undefined> | null = z.ZodSchema<undefined>,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
 >(
   bodyModel: ZOD_BODY,
@@ -25,13 +25,13 @@ function withZod<
 function withZod<
   T extends (req: REQ, params: KnownAny) => KnownAny,
   ZOD_BODY extends z.ZodSchema<unknown> | null,
-  ZOD_QUERY extends z.ZodSchema<Record<string, string | string[]> | undefined> | null = z.ZodSchema<undefined>,
+  ZOD_QUERY extends z.ZodSchema<Record<string, KnownAny> | undefined> | null = z.ZodSchema<undefined>,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
 >(bodyModel: ZOD_BODY, givenHandler: T): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withZod<
   T extends (req: REQ, params: KnownAny) => KnownAny,
   ZOD_BODY extends z.ZodSchema<unknown> | null,
-  ZOD_QUERY extends z.ZodSchema<Record<string, string | string[]> | undefined> | null = z.ZodSchema<undefined>,
+  ZOD_QUERY extends z.ZodSchema<Record<string, KnownAny> | undefined> | null = z.ZodSchema<undefined>,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
 >(bodyModel: ZOD_BODY, queryModel: ZOD_QUERY | null | T, givenHandler?: T) {
   if (typeof queryModel === 'function') {

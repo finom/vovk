@@ -1,6 +1,7 @@
 import { it, expect, describe } from '@jest/globals';
 import { WithZodClientControllerRPC } from 'vovk-client';
-import { HttpException } from 'vovk';
+import { HttpException, VovkReturnType } from 'vovk';
+import { NESTED_QUERY_EXAMPLE } from './ClientController';
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
   it('Should handle Zod server validation', async () => {
@@ -161,5 +162,57 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       /Ajv validation failed. Invalid request query on client for http:.*\. data\/hey must be equal to constant/
     );
     await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle nested queries on server', async () => {
+    const { query, search } = await WithZodClientControllerRPC.getNestedQuery({
+      query: NESTED_QUERY_EXAMPLE,
+      disableClientValidation: true,
+    });
+
+    expect(query satisfies VovkReturnType<typeof WithZodClientControllerRPC.getNestedQuery>['query']).toEqual(
+      NESTED_QUERY_EXAMPLE
+    );
+
+    expect(search).toEqual(
+      '?x=xx&y[0]=yy&y[1]=uu&z[f]=x&z[u][0]=uu&z[u][1]=xx&z[d][x]=ee&z[d][arrOfObjects][0][foo]=bar&z[d][arrOfObjects][0][nestedArr][0]=one&z[d][arrOfObjects][0][nestedArr][1]=two&z[d][arrOfObjects][0][nestedArr][2]=three&z[d][arrOfObjects][1][foo]=baz&z[d][arrOfObjects][1][nestedObj][deepKey]=deepValue'
+    );
+
+    const { rejects } = expect(async () => {
+      await WithZodClientControllerRPC.getNestedQuery({
+        query: {
+          ...NESTED_QUERY_EXAMPLE,
+          // @ts-expect-error Expect error
+          x: null,
+        },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Zod validation failed. Invalid request query on server for http:.*. Required \(x\)/);
+  });
+
+  it('Should handle nested queries on client', async () => {
+    const { query } = await WithZodClientControllerRPC.getNestedQuery({
+      query: NESTED_QUERY_EXAMPLE,
+    });
+
+    expect(query satisfies VovkReturnType<typeof WithZodClientControllerRPC.getNestedQuery>['query']).toEqual(
+      NESTED_QUERY_EXAMPLE
+    );
+
+    const { rejects } = expect(async () => {
+      await WithZodClientControllerRPC.getNestedQuery({
+        query: {
+          ...NESTED_QUERY_EXAMPLE,
+          // @ts-expect-error Expect error
+          x: null,
+        },
+      });
+    });
+
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request query on client for http:.*\. data\/x must be string/
+    );
   });
 });

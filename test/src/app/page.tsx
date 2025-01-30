@@ -21,7 +21,7 @@ export default function Home() {
 
     const schemaWorker = createWPC<typeof MyWorker>(
       segmentSchema.workers.workers.MyWorkerWPC,
-      new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
+      new Worker(new URL('../worker/MyWorker.ts', import.meta.url))
     );
 
     const schema: VovkWorkerSchema = {
@@ -32,12 +32,12 @@ export default function Home() {
 
     const standaloneWorker = createWPC<typeof MyWorker>(
       schema,
-      new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
+      new Worker(new URL('../worker/MyWorker.ts', import.meta.url))
     );
 
     const toBeTerminated = createWPC<typeof MyWorker>(
       schema,
-      new Worker(new URL('../worker/MyWorker.ts', import.meta.url)),
+      new Worker(new URL('../worker/MyWorker.ts', import.meta.url))
     );
 
     toBeTerminated.terminate();

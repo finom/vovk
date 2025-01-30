@@ -32,4 +32,34 @@ export default class WithZodClientController {
     const hey = req.nextUrl.searchParams.get('hey');
     return { query: { hey } };
   });
+
+  @get('nested-query')
+  static getNestedQuery = withZod(
+    null,
+    z.object({
+      x: z.string(),
+      y: z.array(z.string()),
+      z: z.object({
+        f: z.string(),
+        u: z.array(z.string()),
+        d: z.object({
+          x: z.string(),
+          arrOfObjects: z.array(
+            z.object({
+              foo: z.string(),
+              nestedArr: z.array(z.string()).optional(),
+              nestedObj: z
+                .object({
+                  deepKey: z.string(),
+                })
+                .optional(),
+            })
+          ),
+        }),
+      }),
+    }),
+    (req) => {
+      return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
+    }
+  );
 }

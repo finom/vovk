@@ -10,6 +10,7 @@ import {
 } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
 import { VovkControllerBody, VovkControllerParams, VovkControllerQuery } from '../../../packages/vovk';
+import { NESTED_QUERY_EXAMPLE } from './ClientController';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -141,7 +142,7 @@ describe('Client with vovk-client', () => {
     const result = await ClientControllerRPC.postWithAll({
       params: { hello: 'world' },
       body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
+      query: { simpleQueryParam: 'queryValue' },
     });
 
     // @ts-expect-error Expect error
@@ -156,7 +157,7 @@ describe('Client with vovk-client', () => {
     expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll>).toEqual({
       params: { hello: 'world' },
       body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
+      query: { simpleQueryParam: 'queryValue' },
     });
   });
 
@@ -190,6 +191,18 @@ describe('Client with vovk-client', () => {
     expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithFormDataUsingReqVovk>).toEqual({
       field: 'value',
     });
+  });
+
+  it('Should handle nested queries', async () => {
+    const { query, search } = await ClientControllerRPC.getNestedQuery({ query: NESTED_QUERY_EXAMPLE });
+
+    expect(query satisfies VovkReturnType<typeof ClientControllerRPC.getNestedQuery>['query']).toEqual(
+      NESTED_QUERY_EXAMPLE
+    );
+
+    expect(search).toEqual(
+      '?x=xx&y[0]=yy&y[1]=uu&z[f]=x&z[u][0]=uu&z[u][1]=xx&z[d][x]=ee&z[d][arrOfObjects][0][foo]=bar&z[d][arrOfObjects][0][nestedArr][0]=one&z[d][arrOfObjects][0][nestedArr][1]=two&z[d][arrOfObjects][0][nestedArr][2]=three&z[d][arrOfObjects][1][foo]=baz&z[d][arrOfObjects][1][nestedObj][deepKey]=deepValue'
+    );
   });
 
   it('Should accept custom fetcher as an option', async () => {
