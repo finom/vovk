@@ -1,6 +1,6 @@
 {
   "name": "vovk-init",
-  "version": "0.0.1-draft.19",
+  "version": "0.0.1-draft.20",
   "bin": "./index.mjs",
   "type": "module",
   "types": "./index.d.mts",
