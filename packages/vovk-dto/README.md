@@ -21,6 +21,6 @@ Validation library for DTOs (Data Transfer Objects) implemented with [class-vali
 npm install vovk-dto
 ```
 
-For more information, please visit the [documentation](https://vovk.dev/validation/vovk-dto) or check out the [live DTO example](https://vovk-examples.vercel.app/dto).
+For more information, please visit the [documentation](https://vovk.dev/validation/vovk-dto) and check out the [live DTO example](https://vovk-examples.vercel.app/dto).
 
 You might also be interested type mapping library for DTOs [vovk-mapped-types](https://github.com/finom/vovk-mapped-types).

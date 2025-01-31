@@ -13,20 +13,10 @@
 
 ---
 
-TODO
-
 ## vovk-validate-client-ajv [![npm version](https://badge.fury.io/js/vovk-validate-client-ajv.svg)](https://www.npmjs.com/package/vovk-validate-client-ajv)
 
-CLI setup wizard for Vovk.ts that asks about preferred validation library, updates **tsconfig.json** to make the project support decorators, updates NPM scripts, creates [config file](https://vovk.dev/config) and installs the necessary dependencies.
+A library that is re-exported from [vovk-zod/validateOnClient](https://vovk.dev/validation/vovk-zod) and [vovk-yup/validateOnClient](https://vovk.dev/validation/vovk-yup) that provides client-side validation for JSON schemas emitted by these libraries. If you build a custom validation library that also emits JSON schemas, you can use this package to create your `validateOnClient` function.
 
-```sh
-npm install vovk-validate-client-ajv
-```
-
-The package is a shortcut for `npx vovk-cli init` provided by [vovk-cli](https://vovk.dev/cli).
-
-In order to get all the supported flags, please check the [documentation](https://vovk.dev/cli/vovk-init) or run:
-
-```sh
-npx vovk-init help
+```ts
+export { default } from 'vovk-validate-client-ajv';
 ```
