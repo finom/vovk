@@ -78,7 +78,7 @@ await describe.only('Client templates', async () => {
     );
 
     await assertFile(`${compiledClientFolderName}/compiled.js`, [
-      `const { default: fetcher } = require('vovk/client/defaultFetcher')`,
+      `const { default: fetcher } = require('vovk/dist/client/defaultFetcher')`,
     ]);
     await assertFile(`${compiledClientFolderName}/compiled.d.ts`, [
       'import type { Controllers as Controllers0} from "../src/app/api/[[...vovk]]/route.ts";',
@@ -96,7 +96,7 @@ await describe.only('Client templates', async () => {
     );
 
     await assertFile(`${compiledClientFolderName}/compiled.js`, [
-      `const { default: fetcher } = require('vovk/client/defaultFetcher')`,
+      `const { default: fetcher } = require('vovk/dist/client/defaultFetcher')`,
     ]);
     await assertFile(`${compiledClientFolderName}/compiled.d.ts`, [
       'import type { Controllers as Controllers0} from "../src/app/api/[[...vovk]]/route.ts";',
