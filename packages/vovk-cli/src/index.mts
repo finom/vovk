@@ -30,9 +30,9 @@ initProgram(program.command('init'));
 program
   .command('dev')
   .alias('d')
-  .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
-  .option('--next-dev', 'Start schema watcher and Next.js with automatic port allocation')
-  .option('--exit', 'Kill the processe when schema and client is generated')
+  .description('start schema watcher (optional flag --next-dev to start it with Next.js)')
+  .option('--next-dev', 'start schema watcher and Next.js with automatic port allocation')
+  .option('--exit', 'kill the processe when schema and client is generated')
   .allowUnknownOption(true)
   .action(async (options: DevOptions, command: Command) => {
     const { nextDev, exit = false } = options;
@@ -89,13 +89,13 @@ program
   .command('generate')
   .alias('g')
   .description('Generate client')
-  .option('--out, --client-out-dir <path>', 'Path to output directory')
+  .option('--out, --client-out-dir <path>', 'path to output directory')
   .option(
     '--template, --templates <templates...>',
-    'Client code templates ("ts", "compiled", "python", "none", a custom path)'
+    'client code templates ("ts", "compiled", "python", "none", a custom path)'
   )
-  .option('--full-schema [fileName]', 'Generate client with full schema')
-  .option('--prettify', 'Prettify output files')
+  .option('--full-schema [fileName]', 'generate client with full schema')
+  .option('--prettify', 'prettify output files')
   .action(async (options: GenerateOptions) => {
     const { clientOutDir, templates, prettify, fullSchema } = options;
     const projectInfo = await getProjectInfo({ clientOutDir });
@@ -114,16 +114,16 @@ program
   .command('new [components...]')
   .alias('n')
   .description(
-    'Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
+    'create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
   )
-  .option('-o, --overwrite', 'Overwrite existing files')
+  .option('-o, --overwrite', 'overwrite existing files')
   .option(
     '--template, --templates <templates...>',
-    'Override config template. Accepts an array of strings that correspond the order of the components'
+    'override config template; accepts an array of strings that correspond the order of the components'
   )
-  .option('--dir <dirname>', 'Override dirName in template file. Relative to the root of the project')
-  .option('--no-segment-update', 'Do not update segment files when creating a new module')
-  .option('--dry-run', 'Do not write files to disk')
+  .option('--dir <dirname>', 'override dirName in template file; relative to the root of the project')
+  .option('--no-segment-update', 'do not update segment files when creating a new module')
+  .option('--dry-run', 'do not write files to disk')
   .action((components: string[], options: NewOptions) => newComponents(components, options));
 
 program

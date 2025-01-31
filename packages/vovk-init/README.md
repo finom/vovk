@@ -13,14 +13,12 @@
 
 ---
 
-TODO
-
-## vovk-validate-client-ajv [![npm version](https://badge.fury.io/js/vovk-validate-client-ajv.svg)](https://www.npmjs.com/package/vovk-validate-client-ajv)
+## vovk-init [![npm version](https://badge.fury.io/js/vovk-init.svg)](https://www.npmjs.com/package/vovk-init)
 
 CLI setup wizard for Vovk.ts that asks about preferred validation library, updates **tsconfig.json** to make the project support decorators, updates NPM scripts, creates [config file](https://vovk.dev/config) and installs the necessary dependencies.
 
 ```sh
-npm install vovk-validate-client-ajv
+npx vovk-init
 ```
 
 The package is a shortcut for `npx vovk-cli init` provided by [vovk-cli](https://vovk.dev/cli).

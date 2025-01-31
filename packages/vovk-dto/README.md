@@ -15,12 +15,12 @@
 
 ## vovk-dto [![npm version](https://badge.fury.io/js/vovk-dto.svg)](https://www.npmjs.com/package/vovk-dto)
 
-TODO
-
-The main library with [zero dependencies](https://bundlephobia.com/result?p=vovk) that's going to be used in production. It provides a wrapper for Next.js API routes, internal RPC API, utilities and types.
+Validation library for DTOs (Data Transfer Objects) implemented with [class-validator]([https://](https://www.npmjs.com/package/class-validator))
 
 ```sh
-npm install vovk
+npm install vovk-dto
 ```
 
-For more information, please visit the [getting started guide](https://vovk.dev/getting-started) or check out the [Vovk.ts examples](https://vovk-examples.vercel.app/).
+For more information, please visit the [documentation](https://vovk.dev/validation/vovk-dto) or check out the [live DTO example](https://vovk-examples.vercel.app/dto).
+
+You might also be interested type mapping library for DTOs [vovk-mapped-types](https://github.com/finom/vovk-mapped-types).
