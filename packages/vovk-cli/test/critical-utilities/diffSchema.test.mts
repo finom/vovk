@@ -36,6 +36,7 @@ await describe('diffSchema', async () => {
             handlerB: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
           },
         },
@@ -84,6 +85,7 @@ await describe('diffSchema', async () => {
             handlerC: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
           },
         },
@@ -113,6 +115,7 @@ await describe('diffSchema', async () => {
             handlerE: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
           },
         },
@@ -154,10 +157,12 @@ await describe('diffSchema', async () => {
             handlerC: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
             handlerD: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
           },
         },
@@ -186,14 +191,17 @@ await describe('diffSchema', async () => {
             handlerD: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
             handlerF: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
             handlerC: {
               path: 'newPath', // Changed
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
           },
         },
@@ -254,6 +262,7 @@ await describe('diffSchema', async () => {
             handlerD: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
           },
         },
@@ -283,10 +292,12 @@ await describe('diffSchema', async () => {
             handlerD: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
             handlerG: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
           },
         },
@@ -297,6 +308,7 @@ await describe('diffSchema', async () => {
             handlerH: {
               path: 'path',
               httpMethod: HttpMethod.GET,
+              validation: {},
             },
           },
         },

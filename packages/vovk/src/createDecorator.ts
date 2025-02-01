@@ -9,7 +9,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
     ...args: ARGS
   ) =>
     | Omit<VovkHandlerSchema, 'path' | 'httpMethod'>
-    | ((handlerSchema: VovkHandlerSchema | null) => Omit<VovkHandlerSchema, 'path' | 'httpMethod'>)
+    | ((handlerSchema: VovkHandlerSchema | null) => Omit<Partial<VovkHandlerSchema>, 'path' | 'httpMethod'>)
     | null
     | undefined
 ) {

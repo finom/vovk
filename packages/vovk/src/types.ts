@@ -10,7 +10,7 @@ export type VovkHandlerSchema = {
   path: string;
   httpMethod: HttpMethod;
   validation: { query?: KnownAny; body?: KnownAny };
-  custom: Record<string, KnownAny>;
+  custom?: Record<string, KnownAny>;
 };
 
 export type VovkControllerSchema = {
