@@ -48,7 +48,6 @@ export function createVovkApp() {
       controller._handlers = {
         ...controller._handlers,
         [propertyKey]: {
-          validation: {},
           ...((controller._handlers ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
           path,
           httpMethod,

@@ -9,7 +9,7 @@ export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no
 export type VovkHandlerSchema = {
   path: string;
   httpMethod: HttpMethod;
-  validation: { query?: KnownAny; body?: KnownAny };
+  validation?: { query?: KnownAny; body?: KnownAny };
   custom?: Record<string, KnownAny>;
 };
 
