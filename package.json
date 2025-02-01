@@ -87,5 +87,8 @@
     "turbo": "^2.3.4",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.21.0"
+  },
+  "dependencies": {
+    "yup": "^1.6.1"
   }
 }

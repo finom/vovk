@@ -7,6 +7,7 @@ import {
   type DecoratorOptions,
   type VovkRequest,
   type StaticClass,
+  VovkHandlerSchema,
 } from './types';
 import getSchema from './utils/getSchema';
 
@@ -47,9 +48,11 @@ export function createVovkApp() {
       controller._handlers = {
         ...controller._handlers,
         [propertyKey]: {
-          ...(controller._handlers ?? {})[propertyKey],
           path,
           httpMethod,
+          validation: {},
+          custom: {},
+          ...((controller._handlers ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
         },
       };
 
