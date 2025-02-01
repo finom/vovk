@@ -5,6 +5,7 @@ import type {
   VovkControllerBody,
   VovkControllerQuery,
   VovkControllerParams,
+  VovkHandlerSchema,
 } from '../types';
 import type { StreamJSONResponse } from '../StreamJSONResponse';
 import type { NextResponse } from 'next/server';
@@ -40,7 +41,7 @@ type ClientMethod<
   T extends (...args: KnownAny[]) => void | object | StreamJSONResponse<STREAM> | Promise<StreamJSONResponse<STREAM>>,
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
-> = <R>(
+> = (<R>(
   options: (StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
     ? unknown
     : Parameters<T>[0] extends void
@@ -61,7 +62,9 @@ type ClientMethod<
   ? Promise<StreamAsyncIterator<U>>
   : R extends object
     ? Promise<R>
-    : StaticMethodReturnPromise<T>;
+    : StaticMethodReturnPromise<T>) & {
+  schema: VovkHandlerSchema;
+};
 
 type OmitNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];

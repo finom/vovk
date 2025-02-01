@@ -1,4 +1,4 @@
-import type { HandlerSchema, KnownAny, VovkController, VovkRequest } from './types';
+import type { VovkHandlerSchema, KnownAny, VovkController, VovkRequest } from './types';
 
 type Next = () => Promise<unknown>;
 
@@ -8,8 +8,8 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
     this: VovkController,
     ...args: ARGS
   ) =>
-    | Omit<HandlerSchema, 'path' | 'httpMethod'>
-    | ((handlerSchema: HandlerSchema | null) => Omit<HandlerSchema, 'path' | 'httpMethod'>)
+    | Omit<VovkHandlerSchema, 'path' | 'httpMethod'>
+    | ((handlerSchema: VovkHandlerSchema | null) => Omit<VovkHandlerSchema, 'path' | 'httpMethod'>)
     | null
     | undefined
 ) {
@@ -25,7 +25,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
       }
       const sourceMethod = originalMethod._sourceMethod ?? originalMethod;
 
-      const handlerSchema: HandlerSchema | null = controller._handlers?.[propertyKey] ?? null;
+      const handlerSchema: VovkHandlerSchema | null = controller._handlers?.[propertyKey] ?? null;
       const initResultReturn = initHandler?.call(controller, ...args);
       const initResult = typeof initResultReturn === 'function' ? initResultReturn(handlerSchema) : initResultReturn;
 

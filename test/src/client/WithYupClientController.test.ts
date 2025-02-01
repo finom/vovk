@@ -1,6 +1,6 @@
 import { it, expect, describe } from '@jest/globals';
 import { WithYupClientControllerRPC } from 'vovk-client';
-import { HttpException, VovkReturnType } from 'vovk';
+import { HttpException, type VovkReturnType } from 'vovk';
 import validateOnClient from 'vovk-yup/validateOnClient';
 import { NESTED_QUERY_EXAMPLE } from './ClientController';
 

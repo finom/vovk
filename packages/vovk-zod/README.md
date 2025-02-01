@@ -22,4 +22,3 @@ npm install vovk-zod
 ```
 
 For more information, please visit the [documentation](https://vovk.dev/validation/vovk-zod) and check out the [live Zod example](https://vovk-examples.vercel.app/zod).
-

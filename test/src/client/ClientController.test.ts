@@ -7,9 +7,11 @@ import {
   type VovkParams,
   type VovkQuery,
   type VovkReturnType,
+  type VovkControllerBody,
+  type VovkControllerParams,
+  type VovkControllerQuery,
 } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
-import { VovkControllerBody, VovkControllerParams, VovkControllerQuery } from '../../../packages/vovk';
 import { NESTED_QUERY_EXAMPLE } from './ClientController';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
@@ -158,6 +160,13 @@ describe('Client with vovk-client', () => {
       params: { hello: 'world' },
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue' },
+    });
+  });
+
+  it('Should store schema at handler.schema', async () => {
+    expect(WithZodClientControllerRPC.postWithBodyQueryAndParams.schema satisfies VovkHandlerSchema).toEqual({
+      httpMethod: 'POST',
+      path: 'with-all/:hello',
     });
   });
 

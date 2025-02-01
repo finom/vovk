@@ -15,7 +15,7 @@
 
 ## vovk-dto [![npm version](https://badge.fury.io/js/vovk-dto.svg)](https://www.npmjs.com/package/vovk-dto)
 
-Validation library for DTOs (Data Transfer Objects) implemented with [class-validator]([https://](https://www.npmjs.com/package/class-validator))
+Validation library for DTOs (Data Transfer Objects) implemented with [class-validator](<[https://](https://www.npmjs.com/package/class-validator)>)
 
 ```sh
 npm install vovk-dto

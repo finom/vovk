@@ -16,6 +16,7 @@ import {
   type VovkSchema,
   type VovkWorkerSchema,
   type VovkControllerSchema,
+  type VovkHandlerSchema,
 } from './types';
 import {
   type VovkClientOptions,
@@ -50,6 +51,7 @@ export {
   type VovkClientOptions,
   type VovkWorkerSchema,
   type VovkControllerSchema,
+  type VovkHandlerSchema,
   StreamJSONResponse,
   HttpException,
   HttpStatus,

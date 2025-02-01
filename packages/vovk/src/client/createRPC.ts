@@ -42,7 +42,8 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
   const controllerPrefix = trimPath(schema.prefix ?? '');
   const { fetcher: settingsFetcher = defaultFetcher } = options ?? {};
 
-  for (const [staticMethodName, { path, httpMethod, validation }] of Object.entries(schema.handlers)) {
+  for (const [staticMethodName, handlerSchema] of Object.entries(schema.handlers)) {
+    const { path, httpMethod, validation } = handlerSchema;
     const getEndpoint = ({
       apiRoot,
       params,
@@ -104,6 +105,8 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
 
       return input.transform ? fetcherPromise.then(input.transform) : fetcherPromise;
     };
+
+    handler.schema = handlerSchema;
 
     // @ts-expect-error TODO
     client[staticMethodName] = handler;

@@ -1,6 +1,6 @@
 import { it, expect, describe } from '@jest/globals';
 import { WithZodClientControllerRPC } from 'vovk-client';
-import { HttpException, VovkReturnType } from 'vovk';
+import { HttpException, type VovkReturnType, type VovkHandlerSchema } from 'vovk';
 import { NESTED_QUERY_EXAMPLE } from './ClientController';
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
@@ -93,6 +93,39 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       /Ajv validation failed. Invalid request query on client for http:.*\. data\/hey must be equal to constant/
     );
     await rejects.toThrowError(HttpException);
+  });
+
+  it('Should store schema at handler.schema', async () => {
+    expect(WithZodClientControllerRPC.postWithBodyQueryAndParams.schema satisfies VovkHandlerSchema).toEqual({
+      httpMethod: 'POST',
+      path: ':foo',
+      validation: {
+        body: {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          additionalProperties: false,
+          properties: {
+            hello: {
+              const: 'body',
+              type: 'string',
+            },
+          },
+          required: ['hello'],
+          type: 'object',
+        },
+        query: {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          additionalProperties: false,
+          properties: {
+            hey: {
+              const: 'query',
+              type: 'string',
+            },
+          },
+          required: ['hey'],
+          type: 'object',
+        },
+      },
+    });
   });
 
   it('Handles requests with body and null query', async () => {

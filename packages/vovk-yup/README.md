@@ -22,4 +22,3 @@ npm install vovk-yup
 ```
 
 For more information, please visit the [documentation](https://vovk.dev/validation/vovk-yup) and check out the [live Yup example](https://vovk-examples.vercel.app/yup).
-

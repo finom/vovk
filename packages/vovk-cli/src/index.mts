@@ -42,9 +42,9 @@ program
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
           // eslint-disable-next-line no-console
-          console.warn(`🐺 Next.js Port ${failedPort} is in use, trying ${tryingPort} instead.`)
+          console.warn(`🐺 Port ${failedPort} is in use, trying ${tryingPort} instead.`)
         ).catch(() => {
-          throw new Error(`🐺 ❌ Failed to find available Next port after ${portAttempts} attempts`);
+          throw new Error(`🐺 ❌ Failed to find an available port after ${portAttempts} attempts`);
         }));
 
     if (!PORT) {

@@ -6,7 +6,7 @@ export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explici
 
 export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
 
-export type HandlerSchema = {
+export type VovkHandlerSchema = {
   path: string;
   httpMethod: HttpMethod;
   validation?: { query?: KnownAny; body?: KnownAny };
@@ -17,7 +17,7 @@ export type VovkControllerSchema = {
   controllerName: string;
   originalControllerName: string;
   prefix?: string;
-  handlers: Record<string, HandlerSchema>;
+  handlers: Record<string, VovkHandlerSchema>;
 };
 
 export type VovkWorkerSchema = {
