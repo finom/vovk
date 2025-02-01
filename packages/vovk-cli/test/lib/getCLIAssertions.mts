@@ -55,7 +55,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   assertConfig.makeConfig = (validationLibrary: string | null) => ({
     ...(validationLibrary
       ? {
-          validationLibrary,
           validateOnClientPath: `${validationLibrary}/validateOnClient`,
         }
       : {}),
