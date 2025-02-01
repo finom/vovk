@@ -10,7 +10,6 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
   const config: Required<VovkConfig> = {
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     validateOnClientPath: env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.validateOnClientPath ?? null,
-    validationLibrary: env.VOVK_VALIDATION_LIBRARY ?? conf.validationLibrary ?? null,
     fetcherPath: env.VOVK_FETCHER_PATH ?? conf.fetcherPath ?? 'vovk/dist/client/defaultFetcher',
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     clientOutDir: clientOutDir ?? env.VOVK_CLIENT_OUT_DIR ?? conf.clientOutDir ?? './node_modules/.vovk-client',

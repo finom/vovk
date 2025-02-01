@@ -10,7 +10,6 @@ export type VovkEnv = {
   VOVK_FETCHER_PATH?: string;
   VOVK_VALIDATE_ON_CLIENT_PATH?: string;
   VOVK_MODULES_DIR?: string;
-  VOVK_VALIDATION_LIBRARY?: string;
   VOVK_ORIGIN?: string;
   VOVK_ROOT_ENTRY?: string;
   VOVK_API_ENTRY_POINT?: string;
@@ -28,7 +27,6 @@ export type VovkConfig = {
   fetcherPath?: string;
   validateOnClientPath?: string | null;
   modulesDir?: string;
-  validationLibrary?: string | null;
   rootEntry?: string;
   origin?: string;
   rootSegmentModulesDirName?: string;
