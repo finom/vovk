@@ -10,6 +10,7 @@ import {
   type VovkControllerBody,
   type VovkControllerParams,
   type VovkControllerQuery,
+  VovkHandlerSchema,
 } from '../../../packages/vovk';
 import { it, expect, describe } from '@jest/globals';
 import { NESTED_QUERY_EXAMPLE } from './ClientController';
@@ -164,7 +165,7 @@ describe('Client with vovk-client', () => {
   });
 
   it('Should store schema at handler.schema', async () => {
-    expect(WithZodClientControllerRPC.postWithBodyQueryAndParams.schema satisfies VovkHandlerSchema).toEqual({
+    expect(ClientControllerRPC.postWithAll.schema satisfies VovkHandlerSchema).toEqual({
       httpMethod: 'POST',
       path: 'with-all/:hello',
     });

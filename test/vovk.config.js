@@ -2,7 +2,7 @@
 /** @type {import('vovk-cli').VovkConfig} */
 const vovkConfig = {
   modulesDir: './src', // for watching and to create new files there
-  validateOnClient: 'vovk-zod/validateOnClient',
+  validateOnClientPath: 'vovk-zod/validateOnClient',
   schemaOutDir: './.vovk-schema',
   validationLibrary: 'vovk-zod',
   origin: `http://localhost:${process.env.PORT}`,

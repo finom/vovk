@@ -18,13 +18,13 @@ export default async function getProjectInfo({
   const apiRoot = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
   const schemaOutImportPath = path.relative(config.clientOutDir, config.schemaOutDir).replace(/\\/g, '/'); // windows fix
-  const fetcherClientImportPath = config.fetcher.startsWith('.')
-    ? path.relative(config.clientOutDir, config.fetcher)
-    : config.fetcher;
+  const fetcherClientImportPath = config.fetcherPath.startsWith('.')
+    ? path.relative(config.clientOutDir, config.fetcherPath)
+    : config.fetcherPath;
 
-  const validateOnClientImportPath = config.validateOnClient?.startsWith('.')
-    ? path.relative(config.clientOutDir, config.validateOnClient)
-    : config.validateOnClient;
+  const validateOnClientImportPath = config.validateOnClientPath?.startsWith('.')
+    ? path.relative(config.clientOutDir, config.validateOnClientPath)
+    : config.validateOnClientPath;
 
   const log = getLogger(config.logLevel);
 

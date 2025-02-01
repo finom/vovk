@@ -433,7 +433,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and no "validate on client" selection', async () => {
     await createNextApp();
     await vovkInit('', { combo: [ENTER, 'N', ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig('vovk-zod'), 'validateOnClient'));
+    await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig('vovk-zod'), 'validateOnClientPath'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-zod', 'zod'],

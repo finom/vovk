@@ -7,8 +7,8 @@ export type VovkEnv = {
   PORT?: string;
   VOVK_CLIENT_OUT_DIR?: string;
   VOVK_SCHEMA_OUT_DIR?: string;
-  VOVK_FETCHER?: string;
-  VOVK_VALIDATE_ON_CLIENT?: string;
+  VOVK_FETCHER_PATH?: string;
+  VOVK_VALIDATE_ON_CLIENT_PATH?: string;
   VOVK_MODULES_DIR?: string;
   VOVK_VALIDATION_LIBRARY?: string;
   VOVK_ORIGIN?: string;
@@ -25,8 +25,8 @@ export type VovkEnv = {
 export type VovkConfig = {
   clientOutDir?: string;
   schemaOutDir?: string;
-  fetcher?: string;
-  validateOnClient?: string | null;
+  fetcherPath?: string;
+  validateOnClientPath?: string | null;
   modulesDir?: string;
   validationLibrary?: string | null;
   rootEntry?: string;

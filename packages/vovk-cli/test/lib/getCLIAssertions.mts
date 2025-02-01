@@ -56,7 +56,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     ...(validationLibrary
       ? {
           validationLibrary,
-          validateOnClient: `${validationLibrary}/validateOnClient`,
+          validateOnClientPath: `${validationLibrary}/validateOnClient`,
         }
       : {}),
     templates: {
