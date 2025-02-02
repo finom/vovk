@@ -2,7 +2,7 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod';
 
-@prefix('zod-controller-only-entity')
+@prefix('zod-controller-only-entities')
 export default class ZodControllerOnlyEntityController {
   @get()
   static getZodControllerOnlyEntities = withZod(null, z.object({ search: z.string() }), (req) => {

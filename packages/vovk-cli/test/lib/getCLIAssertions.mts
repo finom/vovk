@@ -61,7 +61,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     templates: {
       controller: `${validationLibrary ?? 'vovk-cli'}/templates/controller.ejs`,
       service: 'vovk-cli/templates/service.ejs',
-      worker: 'vovk-cli/templates/worker.ejs',
     },
   });
 

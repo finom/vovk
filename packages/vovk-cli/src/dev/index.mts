@@ -240,7 +240,7 @@ export class VovkDev {
     const nameOfClasReg = /\bclass\s+([A-Za-z_]\w*)(?:\s*<[^>]*>)?\s*\{/g;
     const namesOfClasses = [...code.matchAll(nameOfClasReg)].map((match) => match[1]);
 
-    const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options|worker)\b[^}]*}\s*from\s*['"]vovk['"]/;
+    const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
     if (importRegex.test(code) && namesOfClasses.length) {
       const affectedSegments = this.#segments.filter((s) => {
         const schema = this.#schemas[s.segmentName];
@@ -249,23 +249,13 @@ export class VovkDev {
           schema.controllers,
           'originalControllerName' satisfies keyof VovkSchema['controllers'][string]
         );
-        const workersByOriginalName = keyBy(
-          schema.workers,
-          'originalWorkerName' satisfies keyof VovkSchema['workers'][string]
-        );
 
-        return namesOfClasses.some(
-          (name) =>
-            schema.controllers[name] ||
-            schema.workers[name] ||
-            controllersByOriginalName[name] ||
-            workersByOriginalName[name]
-        );
+        return namesOfClasses.some((name) => schema.controllers[name] || controllersByOriginalName[name]);
       });
 
       if (affectedSegments.length) {
         log.debug(
-          `A file with controller or worker ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
+          `A file with controller ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
         );
 
         for (const segment of affectedSegments) {
@@ -275,7 +265,7 @@ export class VovkDev {
         log.debug(`The class ${namesOfClasses.join(', ')} does not belong to any segment`);
       }
     } else {
-      log.debug(`The file does not contain any controller or worker`);
+      log.debug(`The file does not contain any controller`);
     }
   };
 
@@ -358,7 +348,7 @@ export class VovkDev {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
         log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName)} has been updated in ${timeTook}ms`);
       }
-    } else if (schema && (!isEmpty(schema.controllers) || !isEmpty(schema.workers))) {
+    } else if (schema && !isEmpty(schema.controllers)) {
       log.error(
         `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but "emitSchema" is false`
       );

@@ -6,32 +6,10 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 
 export default function logDiffResult(segmentName: string, diffResult: DiffResult, projectInfo: ProjectInfo) {
   const diffNormalized: {
-    what: 'worker' | 'controller' | 'workerHandler' | 'controllerHandler';
+    what: 'controller' | 'controllerHandler';
     type: 'added' | 'removed' | 'changed';
     name: string;
   }[] = [];
-
-  diffResult.workers.added.forEach((name) => {
-    diffNormalized.push({ what: 'worker', type: 'added', name });
-  });
-
-  diffResult.workers.removed.forEach((name) => {
-    diffNormalized.push({ what: 'worker', type: 'removed', name });
-  });
-
-  diffResult.workers.handlers.forEach((handler) => {
-    handler.added.forEach((name) => {
-      diffNormalized.push({ what: 'workerHandler', type: 'added', name: `${handler.nameOfClass}.${name}` });
-    });
-
-    handler.removed.forEach((name) => {
-      diffNormalized.push({ what: 'workerHandler', type: 'removed', name: `${handler.nameOfClass}.${name}` });
-    });
-
-    handler.changed.forEach((name) => {
-      diffNormalized.push({ what: 'workerHandler', type: 'changed', name: `${handler.nameOfClass}.${name}` });
-    });
-  });
 
   diffResult.controllers.added.forEach((name) => {
     diffNormalized.push({ what: 'controller', type: 'added', name });
@@ -62,20 +40,6 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
 
   for (const diffNormalizedItem of diffNormalized.slice(0, LIMIT)) {
     switch (diffNormalizedItem.what) {
-      case 'worker':
-        switch (diffNormalizedItem.type) {
-          case 'added':
-            projectInfo.log.info(
-              `Schema for WPC ${chalkHighlightThing(diffNormalizedItem.name)} has been ${addedText} at ${formatLoggedSegmentName(segmentName)}`
-            );
-            break;
-          case 'removed':
-            projectInfo.log.info(
-              `Schema for WPC ${chalkHighlightThing(diffNormalizedItem.name)} has been ${removedText} from ${formatLoggedSegmentName(segmentName)}`
-            );
-            break;
-        }
-        break;
       case 'controller':
         switch (diffNormalizedItem.type) {
           case 'added':
@@ -90,21 +54,6 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
             break;
         }
         break;
-      case 'workerHandler':
-        switch (diffNormalizedItem.type) {
-          case 'added':
-            projectInfo.log.info(
-              `Schema for WPC method ${chalkHighlightThing(diffNormalizedItem.name)} has been ${addedText} at ${formatLoggedSegmentName(segmentName)}`
-            );
-            break;
-          case 'removed':
-            projectInfo.log.info(
-              `Schema for WPC method ${chalkHighlightThing(diffNormalizedItem.name)} has been ${removedText} from ${formatLoggedSegmentName(segmentName)}`
-            );
-            break;
-        }
-        break;
-
       case 'controllerHandler':
         switch (diffNormalizedItem.type) {
           case 'added':

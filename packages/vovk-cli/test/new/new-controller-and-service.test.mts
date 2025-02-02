@@ -24,7 +24,6 @@ await describe('CLI new controller and service', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers,
       });`,
     ]);
@@ -58,7 +57,6 @@ await describe('CLI new controller and service', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);

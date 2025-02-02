@@ -1,6 +1,6 @@
 import {
   NoValidationControllerOnlyEntityRPC,
-  NoValidationControllerServiceAndWorkerEntityRPC,
+  NoValidationControllerAndServiceEntityRPC,
   ZodControllerOnlyEntityRPC,
   ZodControllerAndServiceEntityRPC,
   YupControllerOnlyEntityRPC,
@@ -19,10 +19,10 @@ describe('Generated modules', () => {
       delete: NoValidationControllerOnlyEntityRPC.deleteNoValidationControllerOnlyEntity,
     },
     'Controller and service with no validation': {
-      create: NoValidationControllerServiceAndWorkerEntityRPC.createNoValidationControllerServiceAndWorkerEntity,
-      read: NoValidationControllerServiceAndWorkerEntityRPC.getNoValidationControllerServiceAndWorkerEntities,
-      update: NoValidationControllerServiceAndWorkerEntityRPC.updateNoValidationControllerServiceAndWorkerEntity,
-      delete: NoValidationControllerServiceAndWorkerEntityRPC.deleteNoValidationControllerServiceAndWorkerEntity,
+      create: NoValidationControllerAndServiceEntityRPC.createNoValidationControllerAndServiceEntity,
+      read: NoValidationControllerAndServiceEntityRPC.getNoValidationControllerAndServiceEntities,
+      update: NoValidationControllerAndServiceEntityRPC.updateNoValidationControllerAndServiceEntity,
+      delete: NoValidationControllerAndServiceEntityRPC.deleteNoValidationControllerAndServiceEntity,
     },
     'Controller only with Zod': {
       create: ZodControllerOnlyEntityRPC.createZodControllerOnlyEntity,

@@ -1,4 +1,4 @@
-import type { VovkControllerSchema, VovkWorkerSchema, VovkSchema } from 'vovk';
+import type { VovkControllerSchema, VovkSchema } from 'vovk';
 import isEqual from 'lodash/isEqual.js';
 
 interface HandlersDiff {
@@ -8,18 +8,17 @@ interface HandlersDiff {
   changed: string[];
 }
 
-interface WorkersOrControllersDiff {
+interface ControllersDiff {
   added: string[];
   removed: string[];
   handlers: HandlersDiff[];
 }
 
 export interface DiffResult {
-  workers: WorkersOrControllersDiff;
-  controllers: WorkersOrControllersDiff;
+  controllers: ControllersDiff;
 }
 
-export function diffHandlers<T extends VovkWorkerSchema['handlers'] | VovkControllerSchema['handlers']>(
+export function diffHandlers<T extends VovkControllerSchema['handlers']>(
   oldHandlers: T,
   newHandlers: T,
   nameOfClass: string
@@ -45,10 +44,7 @@ export function diffHandlers<T extends VovkWorkerSchema['handlers'] | VovkContro
   return { nameOfClass, added, removed, changed };
 }
 
-export function diffWorkersOrControllers<T extends VovkSchema['controllers'] | VovkSchema['workers']>(
-  oldItems: T,
-  newItems: T
-): WorkersOrControllersDiff {
+export function diffControllers<T extends VovkSchema['controllers']>(oldItems: T, newItems: T): ControllersDiff {
   const added: string[] = [];
   const removed: string[] = [];
   const handlersDiff: HandlersDiff[] = [];
@@ -76,11 +72,6 @@ export function diffWorkersOrControllers<T extends VovkSchema['controllers'] | V
 /**
 example output:
 {
-  workers: {
-    added: ["WorkerC"],
-    removed: ["WorkerA"],
-    handlers: []
-  },
   controllers: {
     added: ["ControllerC"],
     removed: ["ControllerB"],
@@ -96,14 +87,7 @@ example output:
 }
 */
 export default function diffSchema(oldJson: VovkSchema, newJson: VovkSchema): DiffResult {
-  const workersDiff = diffWorkersOrControllers<VovkSchema['workers']>(oldJson.workers ?? {}, newJson.workers ?? {});
-  const controllersDiff = diffWorkersOrControllers<VovkSchema['controllers']>(
-    oldJson.controllers ?? {},
-    newJson.controllers ?? {}
-  );
-
   return {
-    workers: workersDiff,
-    controllers: controllersDiff,
+    controllers: diffControllers<VovkSchema['controllers']>(oldJson.controllers ?? {}, newJson.controllers ?? {}),
   };
 }

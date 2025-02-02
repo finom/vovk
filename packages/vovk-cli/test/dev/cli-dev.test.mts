@@ -31,7 +31,6 @@ await describe('CLI dev', async () => {
           `const controllers = {};`,
           `initVovk({
                 emitSchema: true,
-                workers,
                 controllers, 
             });`,
         ]);
@@ -53,7 +52,6 @@ await describe('CLI dev', async () => {
         };`,
           `initVovk({
             emitSchema: true,
-            workers,
             controllers, 
         });`,
         ]);

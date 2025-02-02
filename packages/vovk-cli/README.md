@@ -24,6 +24,6 @@ npm install -D vovk-cli
 - [vovk dev](https://vovk.dev/cli/vovk-dev) - starts the development script that watches the changes in controllers and regenerates the schema and client.
 - [vovk generate](https://vovk.dev/cli/vovk-generate) - generates the client based on the schema.
 - [vovk init](https://vovk.dev/cli/vovk-init) - initializes the Vovk.ts project.
-- [vovk new](https://vovk.dev/cli/vovk-new) - generates a new controller, service, worker or a custom module.
+- [vovk new](https://vovk.dev/cli/vovk-new) - generates a new controller, service or a custom module.
 
 For more information, please visit the [CLI documentation](https://vovk.dev/cli) or use `npx vovk-cli --help` to get the list of available commands and options.

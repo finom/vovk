@@ -20,21 +20,9 @@ export type VovkControllerSchema = {
   handlers: Record<string, VovkHandlerSchema>;
 };
 
-export type VovkWorkerSchema = {
-  workerName: string;
-  originalWorkerName: string;
-  handlers: Record<
-    string,
-    {
-      isGenerator?: true;
-    }
-  >;
-};
-
 export type VovkSchema = {
   emitSchema: boolean;
   segmentName: string;
-  workers: Record<string, VovkWorkerSchema>;
   controllers: Record<string, VovkControllerSchema>;
 };
 
@@ -57,11 +45,6 @@ export type VovkController = StaticClass &
   VovkControllerInternal & {
     [key: string]: unknown;
   };
-
-export type VovkWorker = StaticClass & {
-  _handlers: VovkWorkerSchema['handlers'];
-  [key: string]: unknown;
-};
 
 export type DecoratorOptions = {
   cors?: boolean;

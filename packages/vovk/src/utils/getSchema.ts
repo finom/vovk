@@ -1,10 +1,9 @@
-import type { VovkSchema, VovkController, VovkWorker, StaticClass } from '../types';
+import type { VovkSchema, VovkController, StaticClass } from '../types';
 
 export default function getSchema(options: {
   emitSchema?: boolean;
   segmentName?: string;
   controllers: Record<string, StaticClass>;
-  workers?: Record<string, StaticClass>;
   exposeValidation?: boolean;
 }) {
   const exposeValidation = options?.exposeValidation ?? true;
@@ -13,7 +12,6 @@ export default function getSchema(options: {
     emitSchema,
     segmentName: options.segmentName ?? '',
     controllers: {},
-    workers: {},
   };
 
   if (!emitSchema) return schema;
@@ -30,14 +28,6 @@ export default function getSchema(options: {
               Object.entries(controller._handlers ?? {}).map(([key, value]) => [key, { ...value, validation: {} }])
             )),
       },
-    };
-  }
-
-  for (const [workerName, worker] of Object.entries(options.workers ?? {}) as [string, VovkWorker][]) {
-    schema.workers[workerName] = {
-      workerName,
-      originalWorkerName: worker.name,
-      handlers: { ...worker._handlers },
     };
   }
 

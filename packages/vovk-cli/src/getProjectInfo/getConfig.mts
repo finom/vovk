@@ -23,7 +23,6 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
     templates: {
       service: 'vovk-cli/templates/service.ejs',
       controller: 'vovk-cli/templates/controller.ejs',
-      worker: 'vovk-cli/templates/worker.ejs',
       ...conf.templates,
     },
   };

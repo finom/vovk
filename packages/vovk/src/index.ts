@@ -14,7 +14,6 @@ import {
   type VovkControllerParams,
   type VovkControllerYieldType,
   type VovkSchema,
-  type VovkWorkerSchema,
   type VovkControllerSchema,
   type VovkHandlerSchema,
 } from './types';
@@ -28,7 +27,6 @@ import {
 import { HttpException } from './HttpException';
 import { createDecorator } from './createDecorator';
 import { StreamJSONResponse } from './StreamJSONResponse';
-import { worker, createWPC } from './worker';
 import { generateStaticAPI } from './utils/generateStaticAPI';
 import { setClientValidatorsForHandler } from './utils/setClientValidatorsForHandler';
 
@@ -49,7 +47,6 @@ export {
   type VovkYieldType,
   type VovkReturnType,
   type VovkClientOptions,
-  type VovkWorkerSchema,
   type VovkControllerSchema,
   type VovkHandlerSchema,
   StreamJSONResponse,
@@ -58,8 +55,6 @@ export {
   HttpMethod,
   createVovkApp,
   createDecorator,
-  worker,
-  createWPC,
   createRPC,
   generateStaticAPI,
   setClientValidatorsForHandler,

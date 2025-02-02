@@ -5,12 +5,10 @@ export default function addClassToSegmentCode(
   {
     sourceName,
     compiledName,
-    type,
     importPath,
   }: {
     sourceName: string;
     compiledName: string;
-    type: 'worker' | 'controller';
     importPath: string;
   }
 ): string {
@@ -33,8 +31,8 @@ export default function addClassToSegmentCode(
     });
   }
 
-  // Get the variable declaration for controllers or workers
-  const variableDeclaration = sourceFile.getVariableDeclaration(`${type}s`);
+  // Get the variable declaration for controllers
+  const variableDeclaration = sourceFile.getVariableDeclaration('controllers');
   if (variableDeclaration) {
     const initializer = variableDeclaration.getInitializer();
 

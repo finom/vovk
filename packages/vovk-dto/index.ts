@@ -1,4 +1,4 @@
-import { validate, ValidationError } from 'class-validator';
+import { validate, type ValidationError } from 'class-validator';
 import { plainToInstance, ClassConstructor } from 'class-transformer';
 import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest } from 'vovk';
 
@@ -47,8 +47,8 @@ function withDto<
     if (bodyDto) {
       const body: unknown = await req.json();
       const bodyInstance = plainToInstance(bodyDto, body);
-
       const bodyErrors: ValidationError[] = await validate(bodyInstance as object);
+
       if (bodyErrors.length > 0) {
         const err = bodyErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
         throw new HttpException(
@@ -64,8 +64,8 @@ function withDto<
     if (queryDto) {
       const query = req.vovk.query();
       const queryInstance = plainToInstance(queryDto as ClassConstructor<QUERY>, query);
-
       const queryErrors: ValidationError[] = await validate(queryInstance as object);
+
       if (queryErrors.length > 0) {
         const err = queryErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
         throw new HttpException(

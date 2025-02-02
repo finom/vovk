@@ -2,7 +2,7 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
-@prefix('yup-controller-only-entity')
+@prefix('yup-controller-only-entities')
 export default class YupControllerOnlyEntityController {
   @get()
   static getYupControllerOnlyEntities = withYup(null, yup.object({ search: yup.string() }), (req) => {

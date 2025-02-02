@@ -37,7 +37,6 @@ export type VovkConfig = {
   templates?: {
     service?: string;
     controller?: string;
-    worker?: string;
     [key: string]: string | undefined;
   };
 };

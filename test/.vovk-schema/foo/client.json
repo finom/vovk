@@ -461,8 +461,7 @@
                                   "deepKey": {
                                     "type": "string"
                                   }
-                                },
-                                "required": ["deepKey"]
+                                }
                               }
                             },
                             "required": ["foo"]
@@ -584,6 +583,5 @@
         }
       }
     }
-  },
-  "workers": {}
+  }
 }

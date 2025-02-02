@@ -26,7 +26,6 @@ export default async function createConfig({
   const templates: VovkConfig['templates'] = {
     controller: 'vovk-cli/templates/controller.ejs',
     service: 'vovk-cli/templates/service.ejs',
-    worker: 'vovk-cli/templates/worker.ejs',
   };
 
   if (validationLibrary) {

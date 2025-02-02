@@ -17,7 +17,6 @@ await describe('CLI new segment', async () => {
       'src/app/api/[[...vovk]]/route.ts',
       `initVovk({
         emitSchema: true,
-        workers,
         controllers,
       });`
     );
@@ -31,7 +30,6 @@ await describe('CLI new segment', async () => {
       'src/app/api/[[...vovk]]/route.ts',
       `initVovk({
         emitSchema: true,
-        workers,
         controllers,
       });`
     );
@@ -45,7 +43,6 @@ await describe('CLI new segment', async () => {
       'src/app/api/[[...vovk]]/route.ts',
       `initVovk({
         emitSchema: true,
-        workers,
         controllers,
       });`
     );
@@ -60,7 +57,6 @@ await describe('CLI new segment', async () => {
       `initVovk({
         segmentName: 'foo',
         emitSchema: true,
-        workers,
         controllers,
       });`
     );
@@ -75,7 +71,6 @@ await describe('CLI new segment', async () => {
       `initVovk({
         segmentName: 'bar/baz/qwe',
         emitSchema: true,
-        workers,
         controllers,
       });`
     );
@@ -89,7 +84,6 @@ await describe('CLI new segment', async () => {
       'src/app/api/[[...vovk]]/route.ts',
       `initVovk({
           emitSchema: true,
-          workers,
           controllers,
         });`
     );
@@ -98,7 +92,6 @@ await describe('CLI new segment', async () => {
       `initVovk({
           segmentName: 'foo',
           emitSchema: true,
-          workers,
           controllers,
         });`
     );
@@ -107,7 +100,6 @@ await describe('CLI new segment', async () => {
       `initVovk({
         segmentName: 'foo/bar/baz',
         emitSchema: true,
-        workers,
         controllers,
       });`
     );

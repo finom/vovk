@@ -21,13 +21,6 @@ await describe('diffSchema', async () => {
     const oldJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
-      workers: {
-        WorkerA: {
-          workerName: 'WorkerA',
-          originalWorkerName: 'WorkerA',
-          handlers: { handlerA: {} },
-        },
-      },
       controllers: {
         ControllerA: {
           controllerName: 'ControllerA',
@@ -47,11 +40,6 @@ await describe('diffSchema', async () => {
     const diff = diffSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
-      workers: {
-        added: [],
-        removed: [],
-        handlers: [],
-      },
       controllers: {
         added: [],
         removed: [],
@@ -60,22 +48,10 @@ await describe('diffSchema', async () => {
     });
   });
 
-  await it('Test case 2: Workers and Controllers added and removed', () => {
+  await it('Test case 2: Controllers added and removed', () => {
     const oldJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
-      workers: {
-        WorkerA: {
-          workerName: 'WorkerA',
-          originalWorkerName: 'WorkerA',
-          handlers: { handlerA: {} },
-        },
-        WorkerB: {
-          workerName: 'WorkerB',
-          originalWorkerName: 'WorkerB',
-          handlers: { handlerB: {} },
-        },
-      },
       controllers: {
         ControllerA: {
           controllerName: 'ControllerA',
@@ -93,18 +69,6 @@ await describe('diffSchema', async () => {
     const newJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
-      workers: {
-        WorkerB: {
-          workerName: 'WorkerB',
-          originalWorkerName: 'WorkerB',
-          handlers: { handlerB: {} },
-        },
-        WorkerC: {
-          workerName: 'WorkerC',
-          originalWorkerName: 'WorkerC',
-          handlers: { handlerD: {} },
-        },
-      },
       controllers: {
         ControllerB: {
           controllerName: 'ControllerB',
@@ -122,11 +86,6 @@ await describe('diffSchema', async () => {
     const diff = diffSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
-      workers: {
-        added: ['WorkerC'],
-        removed: ['WorkerA'],
-        handlers: [],
-      },
       controllers: {
         added: ['ControllerB'],
         removed: ['ControllerA'],
@@ -139,13 +98,6 @@ await describe('diffSchema', async () => {
     const oldJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
-      workers: {
-        WorkerA: {
-          workerName: 'WorkerA',
-          originalWorkerName: 'WorkerA',
-          handlers: { handlerA: {}, handlerB: {} },
-        },
-      },
       controllers: {
         ControllerA: {
           controllerName: 'ControllerA',
@@ -167,17 +119,6 @@ await describe('diffSchema', async () => {
     const newJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
-      workers: {
-        WorkerA: {
-          workerName: 'WorkerA',
-          originalWorkerName: 'WorkerA',
-          handlers: {
-            handlerB: {}, // Unchanged
-            handlerE: {}, // Added
-            handlerA: { isGenerator: true }, // Changed
-          },
-        },
-      },
       controllers: {
         ControllerA: {
           controllerName: 'ControllerA',
@@ -203,18 +144,6 @@ await describe('diffSchema', async () => {
     const diff = diffSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
-      workers: {
-        added: [],
-        removed: [],
-        handlers: [
-          {
-            nameOfClass: 'WorkerA',
-            added: ['handlerE'],
-            removed: [],
-            changed: ['handlerA'],
-          },
-        ],
-      },
       controllers: {
         added: [],
         removed: [],
@@ -234,18 +163,6 @@ await describe('diffSchema', async () => {
     const oldJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
-      workers: {
-        WorkerA: {
-          workerName: 'WorkerA',
-          originalWorkerName: 'WorkerA',
-          handlers: { handlerA: {}, handlerB: {} },
-        },
-        WorkerB: {
-          workerName: 'WorkerB',
-          originalWorkerName: 'WorkerB',
-          handlers: { handlerC: {} },
-        },
-      },
       controllers: {
         ControllerA: {
           controllerName: 'ControllerA',
@@ -263,18 +180,6 @@ await describe('diffSchema', async () => {
     const newJson: VovkSchema = {
       emitSchema: true,
       segmentName: '',
-      workers: {
-        WorkerA: {
-          workerName: 'WorkerA',
-          originalWorkerName: 'WorkerA',
-          handlers: { handlerB: {}, handlerE: {} },
-        },
-        WorkerC: {
-          workerName: 'WorkerC',
-          originalWorkerName: 'WorkerC',
-          handlers: { handlerF: {} },
-        },
-      },
       controllers: {
         ControllerA: {
           controllerName: 'ControllerA',
@@ -306,18 +211,6 @@ await describe('diffSchema', async () => {
     const diff = diffSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
-      workers: {
-        added: ['WorkerC'],
-        removed: ['WorkerB'],
-        handlers: [
-          {
-            nameOfClass: 'WorkerA',
-            added: ['handlerE'],
-            removed: ['handlerA'],
-            changed: [],
-          },
-        ],
-      },
       controllers: {
         added: ['ControllerB'],
         removed: [],

@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntityService';
 
-@prefix('zod-controller-and-service-entity')
+@prefix('zod-controller-and-service-entities')
 export default class ZodControllerAndServiceEntityController {
   @get()
   static getZodControllerAndServiceEntities = withZod(null, z.object({ search: z.string() }), (req) => {

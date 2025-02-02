@@ -2,7 +2,7 @@ chmod +x ../packages/vovk-cli/dist/index.mjs;
 ../packages/vovk-cli/dist/index.mjs n segment generated -o;
 # No validation
 ../packages/vovk-cli/dist/index.mjs n c generated/noValidationControllerOnlyEntity -o --template ../packages/vovk-cli/templates/controller.ejs;
-../packages/vovk-cli/dist/index.mjs n c s w generated/noValidationControllerServiceAndWorkerEntity -o --templates ../packages/vovk-cli/templates/controller.ejs ../packages/vovk-cli/templates/service.ejs ../packages/vovk-cli/templates/worker.ejs;
+../packages/vovk-cli/dist/index.mjs n c s generated/noValidationControllerAndServiceEntity -o --templates ../packages/vovk-cli/templates/controller.ejs ../packages/vovk-cli/templates/service.ejs;
 # Zod
 ../packages/vovk-cli/dist/index.mjs n c generated/zodControllerOnlyEntity -o --templates ../packages/vovk-zod/templates/controller.ejs;
 ../packages/vovk-cli/dist/index.mjs n c s generated/zodControllerAndServiceEntity -o --templates ../packages/vovk-zod/templates/controller.ejs ../packages/vovk-cli/templates/service.ejs;

@@ -9,17 +9,12 @@ const apiRoot = '<%= apiRoot %>';
 <% segments.forEach((segment) => {
     const segSchema = segmentsSchema[segment.segmentName];
     if (!segSchema || !segSchema.emitSchema) return;
-    const controllers = Object.keys(segSchema.controllers);
-    const workers     = Object.keys(segSchema.workers);
 %>
-  <% controllers.forEach((key) => { %>
+  <% Object.keys(segSchema.controllers).forEach((key) => { %>
 exports.<%= key %> = createRPC(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 
   { fetcher, validateOnClient, defaultOptions: { apiRoot } }
 );
-  <% }) %>
-  <% workers.forEach((key) => { %>
-exports.<%= key %> = createWPC(schema['<%= segment.segmentName %>'].workers.<%= key %>);
   <% }) %>
 <% }) %>

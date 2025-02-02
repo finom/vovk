@@ -19,7 +19,6 @@ await describe('Custom components', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -45,7 +44,6 @@ await describe('Custom components', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -67,7 +65,6 @@ await describe('Custom components', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -95,7 +92,6 @@ await describe('Custom components', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);

@@ -5,7 +5,7 @@
     "NoValidationControllerOnlyEntityRPC": {
       "controllerName": "NoValidationControllerOnlyEntityRPC",
       "originalControllerName": "NoValidationControllerOnlyEntityController",
-      "prefix": "no-validation-controller-only-entity",
+      "prefix": "no-validation-controller-only-entities",
       "handlers": {
         "getNoValidationControllerOnlyEntities": {
           "path": "",
@@ -25,24 +25,24 @@
         }
       }
     },
-    "NoValidationControllerServiceAndWorkerEntityRPC": {
-      "controllerName": "NoValidationControllerServiceAndWorkerEntityRPC",
-      "originalControllerName": "NoValidationControllerServiceAndWorkerEntityController",
-      "prefix": "no-validation-controller-service-and-worker-entity",
+    "NoValidationControllerAndServiceEntityRPC": {
+      "controllerName": "NoValidationControllerAndServiceEntityRPC",
+      "originalControllerName": "NoValidationControllerAndServiceEntityController",
+      "prefix": "no-validation-controller-and-service-entities",
       "handlers": {
-        "getNoValidationControllerServiceAndWorkerEntities": {
+        "getNoValidationControllerAndServiceEntities": {
           "path": "",
           "httpMethod": "GET"
         },
-        "updateNoValidationControllerServiceAndWorkerEntity": {
+        "updateNoValidationControllerAndServiceEntity": {
           "path": ":id",
           "httpMethod": "PUT"
         },
-        "createNoValidationControllerServiceAndWorkerEntity": {
+        "createNoValidationControllerAndServiceEntity": {
           "path": "",
           "httpMethod": "POST"
         },
-        "deleteNoValidationControllerServiceAndWorkerEntity": {
+        "deleteNoValidationControllerAndServiceEntity": {
           "path": ":id",
           "httpMethod": "DELETE"
         }
@@ -51,7 +51,7 @@
     "ZodControllerOnlyEntityRPC": {
       "controllerName": "ZodControllerOnlyEntityRPC",
       "originalControllerName": "ZodControllerOnlyEntityController",
-      "prefix": "zod-controller-only-entity",
+      "prefix": "zod-controller-only-entities",
       "handlers": {
         "getZodControllerOnlyEntities": {
           "path": "",
@@ -112,7 +112,7 @@
     "ZodControllerAndServiceEntityRPC": {
       "controllerName": "ZodControllerAndServiceEntityRPC",
       "originalControllerName": "ZodControllerAndServiceEntityController",
-      "prefix": "zod-controller-and-service-entity",
+      "prefix": "zod-controller-and-service-entities",
       "handlers": {
         "getZodControllerAndServiceEntities": {
           "path": "",
@@ -173,7 +173,7 @@
     "YupControllerOnlyEntityRPC": {
       "controllerName": "YupControllerOnlyEntityRPC",
       "originalControllerName": "YupControllerOnlyEntityController",
-      "prefix": "yup-controller-only-entity",
+      "prefix": "yup-controller-only-entities",
       "handlers": {
         "getYupControllerOnlyEntities": {
           "path": "",
@@ -229,7 +229,7 @@
     "YupControllerAndServiceEntityRPC": {
       "controllerName": "YupControllerAndServiceEntityRPC",
       "originalControllerName": "YupControllerAndServiceEntityController",
-      "prefix": "yup-controller-and-service-entity",
+      "prefix": "yup-controller-and-service-entities",
       "handlers": {
         "getYupControllerAndServiceEntities": {
           "path": "",
@@ -285,7 +285,7 @@
     "DtoControllerOnlyEntityRPC": {
       "controllerName": "DtoControllerOnlyEntityRPC",
       "originalControllerName": "DtoControllerOnlyEntityController",
-      "prefix": "dto-controller-only-entity",
+      "prefix": "dto-controller-only-entities",
       "handlers": {
         "getDtoControllerOnlyEntities": {
           "path": "",
@@ -322,7 +322,7 @@
     "DtoControllerAndServiceEntityRPC": {
       "controllerName": "DtoControllerAndServiceEntityRPC",
       "originalControllerName": "DtoControllerAndServiceEntityController",
-      "prefix": "dto-controller-and-service-entity",
+      "prefix": "dto-controller-and-service-entities",
       "handlers": {
         "getDtoControllerAndServiceEntities": {
           "path": "",
@@ -353,18 +353,6 @@
         "deleteDtoControllerAndServiceEntity": {
           "path": ":id",
           "httpMethod": "DELETE"
-        }
-      }
-    }
-  },
-  "workers": {
-    "NoValidationControllerServiceAndWorkerEntityWPC": {
-      "workerName": "NoValidationControllerServiceAndWorkerEntityWPC",
-      "originalWorkerName": "NoValidationControllerServiceAndWorkerEntityWorker",
-      "handlers": {
-        "heavyComputation": {},
-        "heavyComputationGenerator": {
-          "isGenerator": true
         }
       }
     }

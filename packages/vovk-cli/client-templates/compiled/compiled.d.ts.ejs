@@ -2,23 +2,16 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
 import type { createRPC, createWPC, VovkClientFetcher } from 'vovk';
 import type fetcher from '<%= fetcherClientImportPath %>';
-<% segments.forEach((segment, i) => { 
-  const hasWorkers = !!Object.keys(segmentsSchema[segment.segmentName].workers).length;
-%>
-import type { Controllers as Controllers<%= i %><% if(hasWorkers) { %>, Workers as Workers<%= i %> <% } %> } from "<%= segment.segmentImportPath %>";
+<% segments.forEach((segment, i) => { %>
+import type { Controllers as Controllers<%= i %> } from "<%= segment.segmentImportPath %>";
 <% }) %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 
 <% segments.forEach((segment, i) => {
     const segSchema = segmentsSchema[segment.segmentName];
     if (!segSchema || !segSchema.emitSchema) return;
-    const controllers = Object.keys(segSchema.controllers);
-    const workers     = Object.keys(segSchema.workers);
 %>
-  <% controllers.forEach((key) => { %>
+  <% Object.keys(segSchema.controllers).forEach((key) => { %>
 export const <%= key %>: ReturnType<typeof createRPC<Controllers<%= i %>["<%= key %>"], Options>>;
-  <% }) %>
-  <% workers.forEach((key) => { %>
-export const <%= key %>: ReturnType<typeof createWPC<Workers<%= i %>["<%= key %>"]>>;
   <% }) %>
 <% }) %>

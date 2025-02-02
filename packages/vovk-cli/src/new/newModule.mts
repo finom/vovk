@@ -43,15 +43,13 @@ export default async function newModule({
   const { config, log, apiDir, cwd } = await getProjectInfo();
   let templates = config.templates as Required<typeof config.templates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
-  // replace c by controller, s by service, w by worker, everything else keeps the same
+  // replace c by controller, s by service, everything else keeps the same
   what = what.map((s) => {
     switch (s) {
       case 'c':
         return 'controller';
       case 's':
         return 'service';
-      case 'w':
-        return 'worker';
       default:
         return s;
     }
@@ -131,13 +129,13 @@ export default async function newModule({
       }
     }
 
-    if (type === 'controller' || type === 'worker') {
+    if (type === 'controller') {
       if (!sourceName) {
         throw new Error(`The template for "${type}" does not provide a sourceName`);
       }
 
       if (!compiledName) {
-        throw new Error('The template for "${type}" does not provide a compiledName');
+        throw new Error(`The template for "${type}" does not provide a compiledName`);
       }
 
       const { routeFilePath } = segment;
@@ -149,7 +147,6 @@ export default async function newModule({
           addClassToSegmentCode(segmentSourceCode, {
             sourceName,
             compiledName,
-            type,
             importPath,
           }),
           routeFilePath

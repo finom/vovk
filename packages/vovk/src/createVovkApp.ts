@@ -121,7 +121,6 @@ export function createVovkApp() {
   const initVovk = (options: {
     segmentName?: string;
     controllers: Record<string, StaticClass>;
-    workers?: Record<string, StaticClass>;
     exposeValidation?: boolean;
     emitSchema?: boolean;
     onError?: (err: Error, req: VovkRequest) => void | Promise<void>;

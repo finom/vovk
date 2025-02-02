@@ -4,7 +4,7 @@ import * as yup from 'yup';
 
 import YupControllerAndServiceEntityService from './YupControllerAndServiceEntityService';
 
-@prefix('yup-controller-and-service-entity')
+@prefix('yup-controller-and-service-entities')
 export default class YupControllerAndServiceEntityController {
   @get()
   static getYupControllerAndServiceEntities = withYup(null, yup.object({ search: yup.string() }), (req) => {

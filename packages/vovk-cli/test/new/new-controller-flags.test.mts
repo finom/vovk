@@ -19,7 +19,6 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -37,7 +36,6 @@ await describe('CLI new controller and flags', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -52,7 +50,6 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -66,7 +63,6 @@ await describe('CLI new controller and flags', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -80,7 +76,6 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -100,7 +95,6 @@ await describe('CLI new controller and flags', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -114,7 +108,6 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -134,7 +127,6 @@ await describe('CLI new controller and flags', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -148,7 +140,6 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -158,7 +149,6 @@ await describe('CLI new controller and flags', async () => {
       'src/app/api/[[...vovk]]/route.ts',
       `initVovk({
         emitSchema: true,
-        workers,
         controllers,
       });`
     );

@@ -4,22 +4,22 @@ import { IsString, IsIn } from 'class-validator';
 
 import DtoControllerAndServiceEntityService from './DtoControllerAndServiceEntityService';
 
-export class GetDtoControllerAndServiceEntitiesQueryDto {
+class GetDtoControllerAndServiceEntitiesQueryDto {
   @IsString()
   search: string;
 }
 
-export class UpdateDtoControllerAndServiceEntityBodyDto {
+class UpdateDtoControllerAndServiceEntityBodyDto {
   @IsIn(['bar', 'baz'])
   foo: 'bar' | 'baz';
 }
 
-export class UpdateDtoControllerAndServiceEntityQueryDto {
+class UpdateDtoControllerAndServiceEntityQueryDto {
   @IsString()
   q: string;
 }
 
-@prefix('dto-controller-and-service-entity')
+@prefix('dto-controller-and-service-entities')
 export default class DtoControllerAndServiceEntityController {
   @get()
   static getDtoControllerAndServiceEntities = withDto(null, GetDtoControllerAndServiceEntitiesQueryDto, (req) => {

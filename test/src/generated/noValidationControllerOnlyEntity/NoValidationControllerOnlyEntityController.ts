@@ -1,6 +1,6 @@
 import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
 
-@prefix('no-validation-controller-only-entity')
+@prefix('no-validation-controller-only-entities')
 export default class NoValidationControllerOnlyEntityController {
   @get()
   static getNoValidationControllerOnlyEntities = async (req: VovkRequest<null, { search: string }>) => {

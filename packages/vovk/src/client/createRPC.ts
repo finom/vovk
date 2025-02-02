@@ -29,7 +29,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${queryStr ? '?' : ''}${queryStr}`;
 };
 
-export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
+const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   controllerSchema: VovkControllerSchema,
   segmentName?: string,
   options?: VovkClientOptions<OPTS>
@@ -114,3 +114,5 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
 
   return client;
 };
+
+export default createRPC;

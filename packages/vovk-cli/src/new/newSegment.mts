@@ -31,14 +31,11 @@ export default async function newSegment({
 export const runtime = 'edge';
 
 const controllers = {};
-const workers = {};
 
 export type Controllers = typeof controllers;
-export type Workers = typeof workers;
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
 ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
-  workers,
   controllers,
 });
 `,

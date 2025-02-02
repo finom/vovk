@@ -53,7 +53,6 @@ export default segmentSchema;`;
           emitSchema: false,
           segmentName,
           controllers: {},
-          workers: {},
         },
         skipIfExists: true,
       });

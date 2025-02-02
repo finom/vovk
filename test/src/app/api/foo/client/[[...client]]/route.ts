@@ -18,16 +18,11 @@ const controllers = {
   WithDtoClientControllerRPC: WithDtoClientController,
 };
 
-const workers = {};
-
 export type Controllers = typeof controllers;
-
-export type Workers = typeof workers;
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
   segmentName: 'foo/client',
   controllers,
-  workers,
   onError: (err, req) => {
     // eslint-disable-next-line no-console
     console.log('onError', err.message, req.url);

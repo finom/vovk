@@ -16,7 +16,6 @@ await describe('CLI new controller only', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -36,7 +35,6 @@ await describe('CLI new controller only', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -57,7 +55,6 @@ await describe('CLI new controller only', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -72,7 +69,6 @@ await describe('CLI new controller only', async () => {
       `initVovk({
         segmentName: 'foo',
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -93,7 +89,6 @@ await describe('CLI new controller only', async () => {
       `initVovk({
         segmentName: 'foo',
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -107,7 +102,6 @@ await describe('CLI new controller only', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -129,7 +123,6 @@ await describe('CLI new controller only', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -143,7 +136,6 @@ await describe('CLI new controller only', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -164,7 +156,6 @@ await describe('CLI new controller only', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -178,7 +169,6 @@ await describe('CLI new controller only', async () => {
       `const controllers = {};`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);
@@ -199,7 +189,6 @@ await describe('CLI new controller only', async () => {
       };`,
       `initVovk({
         emitSchema: true,
-        workers,
         controllers, 
       });`,
     ]);

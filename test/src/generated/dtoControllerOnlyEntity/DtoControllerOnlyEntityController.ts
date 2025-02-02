@@ -2,22 +2,22 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { IsString, IsIn } from 'class-validator';
 
-export class GetDtoControllerOnlyEntitiesQueryDto {
+class GetDtoControllerOnlyEntitiesQueryDto {
   @IsString()
   search: string;
 }
 
-export class UpdateDtoControllerOnlyEntityBodyDto {
+class UpdateDtoControllerOnlyEntityBodyDto {
   @IsIn(['bar', 'baz'])
   foo: 'bar' | 'baz';
 }
 
-export class UpdateDtoControllerOnlyEntityQueryDto {
+class UpdateDtoControllerOnlyEntityQueryDto {
   @IsString()
   q: string;
 }
 
-@prefix('dto-controller-only-entity')
+@prefix('dto-controller-only-entities')
 export default class DtoControllerOnlyEntityController {
   @get()
   static getDtoControllerOnlyEntities = withDto(null, GetDtoControllerOnlyEntitiesQueryDto, (req) => {

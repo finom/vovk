@@ -4,6 +4,5 @@ declare const segmentSchema: {
   '': VovkSchema;
   'foo/client': VovkSchema;
   generated: VovkSchema;
-  workers: VovkSchema;
 };
 export default segmentSchema;
