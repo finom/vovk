@@ -23,8 +23,16 @@ export default async function generate({
 } & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
   templates = templates ?? projectInfo.config.experimental_clientGenerateTemplateNames;
   const noClient = templates?.[0] === 'none';
-  const { config, cwd, log, validateOnClientImportPath, apiRoot, fetcherClientImportPath, schemaOutImportPath } =
-    projectInfo;
+  const {
+    config,
+    cwd,
+    log,
+    validateOnClientImportPath,
+    apiRoot,
+    fetcherClientImportPath,
+    createRPCImportPath,
+    schemaOutImportPath,
+  } = projectInfo;
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
 
   const templateFiles = getClientTemplates({ config, cwd, templateNames: templates });
@@ -46,6 +54,7 @@ export default async function generate({
     fetcherClientImportPath,
     schemaOutImportPath,
     validateOnClientImportPath,
+    createRPCImportPath,
     segments,
     segmentsSchema,
   };

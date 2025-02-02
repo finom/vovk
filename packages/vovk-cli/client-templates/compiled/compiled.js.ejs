@@ -1,11 +1,10 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
-const { createRPC, createWPC } = require('vovk');
 const { default: fetcher } = require('<%= fetcherClientImportPath %>');
+const { default: createRPC } = require('<%= createRPCImportPath %>');
 const schema = require('<%= schemaOutImportPath %>');
 
 const { default: validateOnClient = null } = <%- validateOnClientImportPath ? `require('${validateOnClientImportPath}')` : '{}'%>;
 const apiRoot = '<%= apiRoot %>';
-
 <% segments.forEach((segment) => {
     const segSchema = segmentsSchema[segment.segmentName];
     if (!segSchema || !segSchema.emitSchema) return;

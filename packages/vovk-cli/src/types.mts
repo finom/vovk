@@ -9,6 +9,7 @@ export type VovkEnv = {
   VOVK_SCHEMA_OUT_DIR?: string;
   VOVK_FETCHER_PATH?: string;
   VOVK_VALIDATE_ON_CLIENT_PATH?: string;
+  VOVK_CREATE_RPC_PATH?: string;
   VOVK_MODULES_DIR?: string;
   VOVK_ORIGIN?: string;
   VOVK_ROOT_ENTRY?: string;
@@ -26,6 +27,7 @@ export type VovkConfig = {
   schemaOutDir?: string;
   fetcherPath?: string;
   validateOnClientPath?: string | null;
+  createRPCPath?: string;
   modulesDir?: string;
   rootEntry?: string;
   origin?: string;

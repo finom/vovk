@@ -1,4 +1,6 @@
 import { ClientControllerRPC } from 'vovk-client';
+import { renderHook, act } from '@testing-library/react-hooks';
+
 import type ClientController from './ClientController';
 import {
   HttpStatus,
@@ -227,6 +229,47 @@ describe('Client with vovk-client', () => {
       name: 'postWithBodyAndQueryUsingReqVovk',
       query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
       body: { isBody: true },
+    });
+  });
+
+  it('Works with useQuery', async () => {
+    const { result } = renderHook(() => {
+      return ClientControllerRPC.postWithAll.useQuery({
+        queryKey: ['postWithAll'],
+        params: { hello: 'world' },
+        body: { isBody: true },
+        query: { simpleQueryParam: 'queryValue' },
+      });
+    });
+
+    await act(async () => {
+      await result.current;
+    });
+
+    expect(result.current.data satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll> | undefined).toEqual({
+      params: { hello: 'world' },
+      body: { isBody: true },
+      query: { simpleQueryParam: 'queryValue' },
+    });
+  });
+
+  it('Works with useMutation', async () => {
+    const { result } = renderHook(() => {
+      return ClientControllerRPC.postWithAll.useMutation();
+    });
+
+    await act(async () => {
+      await result.current.mutate({
+        params: { hello: 'world' },
+        body: { isBody: true },
+        query: { simpleQueryParam: 'queryValue' },
+      });
+    });
+
+    expect(result.current.data satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll> | undefined).toEqual({
+      params: { hello: 'world' },
+      body: { isBody: true },
+      query: { simpleQueryParam: 'queryValue' },
     });
   });
 });

@@ -1,0 +1,29 @@
+{
+  "name": "vovk-react-query",
+  "version": "0.0.0",
+  "description": "useQuery and useMutation hooks for Vovk.ts",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "tsc": "tsc --noEmit",
+    "npm-publish": "npm publish",
+    "ncu": "npm-check-updates -u"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finom/vovk.git"
+  },
+  "keywords": [
+    "reqct-query"
+  ],
+  "author": "Andrii Gubanov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/finom/vovk/issues"
+  },
+  "homepage": "https://github.com/finom/vovk#readme",
+  "peerDependencies": {
+    "vovk": "^3.0.0-draft.57",
+    "@tanstack/react-query": "^5.66.0"
+  }
+}

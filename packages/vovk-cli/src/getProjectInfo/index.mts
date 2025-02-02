@@ -21,7 +21,9 @@ export default async function getProjectInfo({
   const fetcherClientImportPath = config.fetcherPath.startsWith('.')
     ? path.relative(config.clientOutDir, config.fetcherPath)
     : config.fetcherPath;
-
+  const createRPCImportPath = config.createRPCPath.startsWith('.')
+    ? path.relative(config.clientOutDir, config.createRPCPath)
+    : config.createRPCPath;
   const validateOnClientImportPath = config.validateOnClientPath?.startsWith('.')
     ? path.relative(config.clientOutDir, config.validateOnClientPath)
     : config.validateOnClientPath;
@@ -44,6 +46,7 @@ export default async function getProjectInfo({
     srcRoot,
     schemaOutImportPath,
     fetcherClientImportPath,
+    createRPCImportPath,
     validateOnClientImportPath,
     config,
     log,

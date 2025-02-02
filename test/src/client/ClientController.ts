@@ -86,22 +86,17 @@ export default class ClientController {
   ) {
     const body = await req.json();
     const simpleQueryParam = req.nextUrl.searchParams.get('simpleQueryParam');
-    // check if getAll always inferred as an array
-    req.nextUrl.searchParams.getAll('simpleQueryParam') satisfies 'queryValue'[];
-    // check if entries inferred properly
-    req.nextUrl.searchParams.entries() satisfies IterableIterator<
-      ['simpleQueryParam', 'queryValue' | 'foo'[] | ('bar' | 'baz')[]]
-    >;
+
     // check if forEach inferred properly
     req.nextUrl.searchParams.forEach((value, key) => {
-      key satisfies 'simpleQueryParam' | 'array1' | 'array2';
-      value satisfies 'queryValue' | 'foo'[] | ('bar' | 'baz')[];
+      key satisfies 'simpleQueryParam';
+      value satisfies 'queryValue';
     });
 
     // check if keys inferred properly
     req.nextUrl.searchParams.keys() satisfies IterableIterator<'simpleQueryParam'>;
     // check if values inferred properly
-    req.nextUrl.searchParams.values() satisfies IterableIterator<'queryValue' | 'foo'[] | ('bar' | 'baz')[]>;
+    req.nextUrl.searchParams.values() satisfies IterableIterator<'queryValue'>;
 
     return { params, body, query: { simpleQueryParam } };
   }

@@ -2,6 +2,7 @@ import { createVovkApp } from './createVovkApp';
 import {
   HttpStatus as HttpStatus,
   HttpMethod as HttpMethod,
+  type KnownAny,
   type VovkErrorResponse,
   type VovkRequest,
   type VovkBody,
@@ -18,6 +19,7 @@ import {
   type VovkHandlerSchema,
 } from './types';
 import {
+  type VovkClient,
   type VovkClientOptions,
   type VovkClientFetcher,
   type VovkDefaultFetcherOptions,
@@ -31,6 +33,8 @@ import { generateStaticAPI } from './utils/generateStaticAPI';
 import { setClientValidatorsForHandler } from './utils/setClientValidatorsForHandler';
 
 export {
+  type KnownAny,
+  type VovkClient,
   type VovkClientFetcher,
   type VovkDefaultFetcherOptions,
   type VovkValidateOnClient,

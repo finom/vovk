@@ -14,10 +14,12 @@
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
   },
   "dependencies": {
+    "@testing-library/react-hooks": "^8.0.1",
     "class-transformer": "^0.5.1",
     "next": "^15.1.6",
     "react": "^19",
     "react-dom": "^19",
+    "reflect-metadata": "^0.2.2",
     "vovk-client": "^0.0.4-draft.14",
     "vovk-mapped-types": "^0.0.6"
   },

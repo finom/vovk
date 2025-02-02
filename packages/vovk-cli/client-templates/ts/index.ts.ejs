@@ -1,6 +1,7 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
-import { createRPC, createWPC, type VovkClientFetcher } from 'vovk';
+import type { VovkClientFetcher } from 'vovk';
 import fetcher from '<%= fetcherClientImportPath %>';
+import createRPC from '<%= createRPCImportPath %>';
 import schema from '<%= schemaOutImportPath %>';
 <% segments.forEach((segment, i) => {  %>
 import type { Controllers as Controllers<%= i %> } from "<%= segment.segmentImportPath %>";
