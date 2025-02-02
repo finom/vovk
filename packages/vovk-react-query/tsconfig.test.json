@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["test/*.mts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "noEmit": false
+  }
+}

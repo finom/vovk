@@ -1,12 +1,12 @@
 import { initVovk } from 'vovk';
 
-import ClientController from 'src/client/ClientController';
-import StreamingController from 'src/client/StreamingController';
-import StreamingGeneratorController from 'src/client/StreamingGeneratorController';
-import CostomSchemaController from 'src/client/CostomSchemaController';
-import WithZodClientController from 'src/client/WithZodClientController';
-import WithYupClientController from 'src/client/WithYupClientController';
-import WithDtoClientController from 'src/client/WithDtoClientController';
+import ClientController from '../../../../../client/ClientController';
+import StreamingController from '../../../../../client/StreamingController';
+import StreamingGeneratorController from '../../../../../client/StreamingGeneratorController';
+import CostomSchemaController from '../../../../../client/CostomSchemaController';
+import WithZodClientController from '../../../../../client/WithZodClientController';
+import WithYupClientController from '../../../../../client/WithYupClientController';
+import WithDtoClientController from '../../../../../client/WithDtoClientController';
 
 const controllers = {
   ClientControllerRPC: ClientController,

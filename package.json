@@ -14,7 +14,7 @@
     "test": "npm run build && npm run test:main && npm run test:cli",
     "unit": "cross-env PORT=3210 concurrently \"sleep 30 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "unit:watch": "cross-env PORT=3210 concurrently \"sleep 30 && npm run test:unit:watch\" \"npm run serve:unit\" --kill-others --success first",
-    "test:unit": "jest",
+    "test:unit": "NODE_ENV=test jest",
     "prettier": "prettier --write .",
     "test:unit:watch": "jest --watch",
     "serve:unit": "npm --prefix test run generate && npm --prefix test run build && npm --prefix test run start",
@@ -64,6 +64,8 @@
   "homepage": "https://github.com/finom/vovk#readme",
   "devDependencies": {
     "@eslint/compat": "^1.2.5",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.14",
     "@types/node": "^22.10.10",

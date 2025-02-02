@@ -1,29 +1,35 @@
 import {
   createRPC,
   HttpException,
+  type KnownAny,
   type VovkClientOptions,
   type VovkDefaultFetcherOptions,
   type VovkControllerSchema,
-  type KnownAny,
   type VovkClient,
   type VovkReturnType,
 } from 'vovk';
 
-import { useQuery, useMutation, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
+import { useQuery, useMutation, UseQueryOptions, UseMutationOptions, QueryClient } from '@tanstack/react-query';
 
 const withUseQuery = <T extends (...args: KnownAny[]) => KnownAny>(fn: T) => {
   return Object.assign(fn, {
-    useQuery: (options: UseQueryOptions<ReturnType<T>>) => {
-      return useQuery({
-        queryFn: fn,
-        ...options,
-      });
+    useQuery: (options: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
+      return useQuery(
+        {
+          queryFn: () => fn(options),
+          ...options,
+        },
+        queryClient
+      );
     },
-    useMutation: (options: UseMutationOptions<ReturnType<T>>) => {
-      return useMutation({
-        mutationFn: fn,
-        ...options,
-      });
+    useMutation: (options: UseMutationOptions<ReturnType<T>>, queryClient?: QueryClient) => {
+      return useMutation(
+        {
+          mutationFn: fn,
+          ...options,
+        },
+        queryClient
+      );
     },
   });
 };
@@ -39,10 +45,12 @@ export default function createRPCWithUseQuery<T, OPTS extends Record<string, Kno
     [Key in keyof VovkClient<T, OPTS>]: VovkClient<T, OPTS>[Key] & {
       useQuery: (
         options: Parameters<VovkClient<T, OPTS>[Key]>[0] &
-          Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn'>
+          Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn'>,
+        queryClient?: QueryClient
       ) => ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>;
       useMutation: (
-        options?: Omit<UseMutationOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'mutationFn'>
+        options?: Omit<UseMutationOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'mutationFn'>,
+        queryClient?: QueryClient
       ) => ReturnType<
         typeof useMutation<
           VovkReturnType<VovkClient<T, OPTS>[Key]>,

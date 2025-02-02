@@ -3,9 +3,9 @@ import type { VovkClientFetcher } from 'vovk';
 import fetcher from '<%= fetcherClientImportPath %>';
 import createRPC from '<%= createRPCImportPath %>';
 import schema from '<%= schemaOutImportPath %>';
-<% segments.forEach((segment, i) => {  %>
+<% segments.forEach((segment, i) => { if(Object.keys(segmentsSchema[segment.segmentName].controllers).length) { %>
 import type { Controllers as Controllers<%= i %> } from "<%= segment.segmentImportPath %>";
-<% }) %>
+<% }}) %>
 <% if (validateOnClientImportPath) { %>
 import validateOnClient from '<%= validateOnClientImportPath %>';
 <% } else { %>
@@ -14,11 +14,8 @@ const validateOnClient = undefined;
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 const apiRoot = '<%= apiRoot %>';
 
-<% segments.forEach((segment, i) => {
-    const segSchema = segmentsSchema[segment.segmentName];
-    if (!segSchema || !segSchema.emitSchema) return;
-%>
-  <% Object.keys(segSchema.controllers).forEach((key) => { %>
+<% segments.forEach((segment, i) => { %>
+  <% Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
 export const <%= key %> = createRPC<Controllers<%= i %>["<%= key %>"], Options>(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 

@@ -3,5 +3,8 @@
   "compilerOptions": {
     "noEmit": false
   },
-  "include": ["index.ts"]
+  "include": ["index.ts", "test/**/*.mts"],
+  "paths": {
+    "react/*": ["../../node_modules/react/*"]
+  }
 }

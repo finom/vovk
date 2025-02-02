@@ -4,10 +4,15 @@
   "description": "useQuery and useMutation hooks for Vovk.ts",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
     "tsc": "tsc --noEmit",
     "npm-publish": "npm publish",
-    "ncu": "npm-check-updates -u"
+    "ncu": "npm-check-updates -u",
+    "build-test": "rm -rf test_dist && tsc -P tsconfig.test.json",
+    "pre-test": "npm run build && npm run build-test",
+    "test-only": "npm run pre-test && node --test --test-only test/test/**/*.mjs",
+    "unit": "npm run pre-test && node --test --test-concurrency=1 test/*.mjs",
+    "test": "concurrently 'sleep 20 && npm run unit' 'npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
   },
   "repository": {
     "type": "git",
@@ -23,7 +28,13 @@
   },
   "homepage": "https://github.com/finom/vovk#readme",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.57",
-    "@tanstack/react-query": "^5.66.0"
+    "@tanstack/react-query": "^5.66.0",
+    "vovk": "^3.0.0-draft.57"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.2.0",
+    "@types/jsdom": "^21.1.7",
+    "jsdom": "^26.0.0",
+    "react": "^19.0.0"
   }
 }

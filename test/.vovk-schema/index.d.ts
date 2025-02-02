@@ -3,6 +3,6 @@ import type { VovkSchema } from 'vovk';
 declare const segmentSchema: {
   '': VovkSchema;
   'foo/client': VovkSchema;
-  generated: VovkSchema;
+  'generated': VovkSchema;
 };
 export default segmentSchema;

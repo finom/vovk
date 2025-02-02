@@ -5,11 +5,8 @@ const schema = require('<%= schemaOutImportPath %>');
 
 const { default: validateOnClient = null } = <%- validateOnClientImportPath ? `require('${validateOnClientImportPath}')` : '{}'%>;
 const apiRoot = '<%= apiRoot %>';
-<% segments.forEach((segment) => {
-    const segSchema = segmentsSchema[segment.segmentName];
-    if (!segSchema || !segSchema.emitSchema) return;
-%>
-  <% Object.keys(segSchema.controllers).forEach((key) => { %>
+<% segments.forEach((segment) => { %>
+  <% Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
 exports.<%= key %> = createRPC(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 
