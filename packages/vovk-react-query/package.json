@@ -1,6 +1,6 @@
 {
   "name": "vovk-react-query",
-  "version": "0.0.0",
+  "version": "0.0.1-draft.0",
   "description": "useQuery and useMutation hooks for Vovk.ts",
   "main": "index.js",
   "scripts": {

@@ -16,7 +16,7 @@
     "test-only": "npm run pre-test && node --test --test-only test_dist/test/**/*.mjs",
     "test": "npm run pre-test && node --test --test-concurrency=1 test_dist/test/**/*.mjs",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u",
+    "ncu": "npm-check-updates -u -x commander",
     "npm-publish": "npm publish"
   },
   "repository": {

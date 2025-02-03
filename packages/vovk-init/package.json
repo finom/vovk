@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u",
+    "ncu": "npm-check-updates -u -x commander",
     "npm-publish": "npm publish"
   },
   "repository": {
