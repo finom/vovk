@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.47",
+  "version": "0.0.1-draft.48",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -39,7 +39,7 @@
     "vovk": "^3.0.0-draft.57"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.2.3",
+    "@inquirer/prompts": "^7.3.1",
     "@npmcli/package-json": "^6.1.1",
     "chalk": "^5.4.1",
     "chokidar": "^4.0.3",

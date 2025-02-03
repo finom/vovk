@@ -63,12 +63,12 @@
   },
   "homepage": "https://github.com/finom/vovk#readme",
   "devDependencies": {
-    "@eslint/compat": "^1.2.5",
+    "@eslint/compat": "^1.2.6",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^29.5.14",
-    "@types/lodash": "^4.17.14",
-    "@types/node": "^22.10.10",
+    "@types/lodash": "^4.17.15",
+    "@types/node": "^22.13.0",
     "@types/supertest": "^6.0.2",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
@@ -86,9 +86,9 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "tsx": "^4.19.2",
-    "turbo": "^2.3.4",
+    "turbo": "^2.4.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.21.0"
+    "typescript-eslint": "^8.22.0"
   },
   "dependencies": {
     "yup": "^1.6.1"

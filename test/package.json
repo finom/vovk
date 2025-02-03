@@ -24,8 +24,8 @@
     "vovk-mapped-types": "^0.0.6"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.0",
-    "@types/node": "^22.10.10",
+    "@tailwindcss/postcss": "^4.0.3",
+    "@types/node": "^22.13.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
