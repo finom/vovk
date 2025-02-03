@@ -107,6 +107,7 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
     };
 
     handler.schema = handlerSchema;
+    handler.controllerSchema = schema;
 
     // @ts-expect-error TODO
     client[staticMethodName] = handler;

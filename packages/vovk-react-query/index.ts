@@ -18,6 +18,7 @@ const withUseQuery = <T extends ((arg: KnownAny) => KnownAny) & { schema: VovkHa
       return useQuery(
         {
           queryFn: () => fn(input),
+          // TODO pass controller info to queryKey
           queryKey: [fn.schema, input],
           ...options,
         },

@@ -6,6 +6,7 @@ import type {
   VovkControllerQuery,
   VovkControllerParams,
   VovkHandlerSchema,
+  VovkControllerSchema,
 } from '../types';
 import type { StreamJSONResponse } from '../StreamJSONResponse';
 import type { NextResponse } from 'next/server';
@@ -64,6 +65,7 @@ type ClientMethod<
     ? Promise<R>
     : StaticMethodReturnPromise<T>) & {
   schema: VovkHandlerSchema;
+  controllerSchema: VovkControllerSchema;
 };
 
 type OmitNever<T> = {
