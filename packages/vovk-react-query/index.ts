@@ -11,18 +11,18 @@ import {
 
 import { useQuery, useMutation, UseQueryOptions, UseMutationOptions, QueryClient } from '@tanstack/react-query';
 
-const withUseQuery = <T extends (...args: KnownAny[]) => KnownAny>(fn: T) => {
+const withUseQuery = <T extends (arg: KnownAny) => KnownAny>(fn: T) => {
   return Object.assign(fn, {
-    useQuery: (options: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
+    useQuery: (input: Parameters<T>[0], options: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
       return useQuery(
         {
-          queryFn: () => fn(options),
+          queryFn: () => fn(input),
           ...options,
         },
         queryClient
       );
     },
-    useMutation: (options: UseMutationOptions<ReturnType<T>>, queryClient?: QueryClient) => {
+    useMutation: (options?: UseMutationOptions<ReturnType<T>>, queryClient?: QueryClient) => {
       return useMutation(
         {
           mutationFn: fn,
@@ -44,8 +44,8 @@ export default function createRPCWithUseQuery<T, OPTS extends Record<string, Kno
   type ClientWithQuery = {
     [Key in keyof VovkClient<T, OPTS>]: VovkClient<T, OPTS>[Key] & {
       useQuery: (
-        options: Parameters<VovkClient<T, OPTS>[Key]>[0] &
-          Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn'>,
+        input: Parameters<VovkClient<T, OPTS>[Key]>[0],
+        options: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn'>,
         queryClient?: QueryClient
       ) => ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>;
       useMutation: (
