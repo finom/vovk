@@ -7,16 +7,18 @@ import {
   type VovkControllerSchema,
   type VovkClient,
   type VovkReturnType,
+  type VovkHandlerSchema,
 } from 'vovk';
 
 import { useQuery, useMutation, UseQueryOptions, UseMutationOptions, QueryClient } from '@tanstack/react-query';
 
-const withUseQuery = <T extends (arg: KnownAny) => KnownAny>(fn: T) => {
+const withUseQuery = <T extends ((arg: KnownAny) => KnownAny) & { schema: VovkHandlerSchema }>(fn: T) => {
   return Object.assign(fn, {
-    useQuery: (input: Parameters<T>[0], options: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
+    useQuery: (input: Parameters<T>[0], options?: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
       return useQuery(
         {
           queryFn: () => fn(input),
+          queryKey: [fn.schema, input],
           ...options,
         },
         queryClient
