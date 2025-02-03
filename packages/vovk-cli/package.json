@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.48",
+  "version": "0.0.1-draft.52",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -43,7 +43,7 @@
     "@npmcli/package-json": "^6.1.1",
     "chalk": "^5.4.1",
     "chokidar": "^4.0.3",
-    "commander": "^13.1.0",
+    "commander": "^12.1.0",
     "concurrently": "^9.1.2",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",

@@ -28,8 +28,8 @@
   },
   "homepage": "https://vovk.dev",
   "dependencies": {
-    "commander": "^13.1.0",
-    "vovk-cli": "^0.0.1-draft.48"
+    "commander": "^12.1.0",
+    "vovk-cli": "^0.0.1-draft.52"
   },
   "devDependencies": {
     "loglevel": "^1.9.2"
