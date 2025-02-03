@@ -12,14 +12,13 @@ import {
 
 import { useQuery, useMutation, UseQueryOptions, UseMutationOptions, QueryClient } from '@tanstack/react-query';
 
-const withUseQuery = <T extends ((arg: KnownAny) => KnownAny) & { schema: VovkHandlerSchema }>(fn: T) => {
+const withUseQuery = <T extends ((arg: KnownAny) => KnownAny) & { schema: VovkHandlerSchema; controllerSchema: VovkControllerSchema }>(fn: T) => {
   return Object.assign(fn, {
     useQuery: (input: Parameters<T>[0], options?: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
       return useQuery(
         {
           queryFn: () => fn(input),
-          // TODO pass controller info to queryKey
-          queryKey: [fn.schema, input],
+          queryKey: [fn.controllerSchema.prefix, fn.controllerSchema.controllerName, fn.schema, input],
           ...options,
         },
         queryClient
