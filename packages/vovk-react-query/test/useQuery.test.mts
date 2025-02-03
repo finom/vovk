@@ -1,17 +1,15 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { it, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { KnownAny, VovkReturnType } from 'vovk';
-import { renderHook, act } from '@testing-library/react';
+import { VovkReturnType } from 'vovk';
+import { renderHook, waitFor } from '@testing-library/react';
 import { ClientControllerRPC } from '../../../test/node_modules/.vovk-client/compiled.js';
 import { JSDOM } from 'jsdom';
 
 describe('useQuery', () => {
   it('Works with useQuery', async () => {
     const dom = new JSDOM();
-    // @ts-ignore
-    global.window = dom.window;
-    // @ts-ignore
+    global.window = dom.window as unknown as typeof window;
     global.document = dom.window.document;
 
     const queryClient = new QueryClient({
@@ -33,9 +31,9 @@ describe('useQuery', () => {
       );
     });
 
-    act(() => {});
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await waitFor(() => {
+      assert.equal(result.current.isSuccess, true);
+    });
 
     assert.deepEqual(result.current.data satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll> | undefined, {
       params: { hello: 'world' },

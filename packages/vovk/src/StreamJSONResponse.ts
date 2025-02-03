@@ -3,8 +3,7 @@ import './utils/shim';
 
 export class StreamJSONResponse<T> extends Response {
   public static defaultHeaders = {
-    'content-type': 'text/plain; charset=utf-8',
-    'x-vovk-stream': 'true',
+    'content-type': 'application/jsonl',
   };
 
   public isClosed = false;

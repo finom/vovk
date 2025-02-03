@@ -43,12 +43,14 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
     throw new HttpException(HttpStatus.NULL, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);
   }
 
-  if (response.headers.get('content-type')?.includes('application/json')) {
-    return defaultHandler(response);
+  const contentType = response.headers.get('content-type');
+
+  if (contentType?.includes('application/jsonl')) {
+    return defaultStreamHandler(response);
   }
 
-  if (response.headers.get('x-vovk-stream') === 'true') {
-    return defaultStreamHandler(response);
+  if (contentType?.includes('application/json')) {
+    return defaultHandler(response);
   }
 
   return response;

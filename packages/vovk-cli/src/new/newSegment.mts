@@ -47,7 +47,9 @@ ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
     await fs.writeFile(absoluteSegmentRoutePath, code);
   }
 
+  log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} created at ${absoluteSegmentRoutePath}.`);
+
   log.info(
-    `${formatLoggedSegmentName(segmentName, { upperFirst: true })} created at ${absoluteSegmentRoutePath}. Run ${chalkHighlightThing(`npx vovk n s c ${[segmentName, 'thing'].filter(Boolean).join('/')}`)} to create a new controller with service.`
+    `Run ${chalkHighlightThing(`npx vovk new service controller ${[segmentName, 'thing'].filter(Boolean).join('/')}`)} to create a new controller with a service at /modules/thing/ folder.`
   );
 }
