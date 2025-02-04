@@ -5,4 +5,5 @@ export type {
   VovkClientOptions,
   VovkDefaultFetcherOptions,
   VovkValidateOnClient,
+  VovkStreamAsyncIterable,
 } from './types';

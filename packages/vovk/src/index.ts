@@ -24,6 +24,7 @@ import {
   type VovkClientFetcher,
   type VovkDefaultFetcherOptions,
   type VovkValidateOnClient,
+  type VovkStreamAsyncIterable,
   createRPC,
 } from './client';
 import { HttpException } from './HttpException';
@@ -37,6 +38,7 @@ export {
   type VovkClient,
   type VovkClientFetcher,
   type VovkDefaultFetcherOptions,
+  type VovkStreamAsyncIterable,
   type VovkValidateOnClient,
   type VovkSchema,
   type VovkErrorResponse,

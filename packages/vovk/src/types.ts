@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import type { StreamJSONResponse } from './StreamJSONResponse';
-import { StreamAsyncIterator } from './client/types';
+import { VovkStreamAsyncIterable } from './client/types';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -124,7 +124,7 @@ export type VovkParams<T extends (...args: KnownAny[]) => unknown> = Parameters<
 
 export type VovkYieldType<T extends (...args: KnownAny[]) => unknown> = T extends (
   ...args: KnownAny[]
-) => Promise<StreamAsyncIterator<infer Y>>
+) => Promise<VovkStreamAsyncIterable<infer Y>>
   ? Y
   : never;
 

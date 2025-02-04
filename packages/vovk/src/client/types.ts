@@ -21,7 +21,7 @@ export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControlle
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
-export type StreamAsyncIterator<T> = {
+export type VovkStreamAsyncIterable<T> = {
   status: number;
   [Symbol.dispose](): Promise<void> | void;
   [Symbol.asyncDispose](): Promise<void> | void;
@@ -60,7 +60,7 @@ type ClientMethod<
   | StreamJSONResponse<infer U>
   | Iterator<infer U>
   | AsyncIterator<infer U>
-  ? Promise<StreamAsyncIterator<U>>
+  ? Promise<VovkStreamAsyncIterable<U>>
   : R extends object
     ? Promise<R>
     : StaticMethodReturnPromise<T>) & {
@@ -88,7 +88,7 @@ export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<str
       query: { [key: string]: string };
     }) => string;
     validate: (input: { body?: unknown; query?: unknown; endpoint: string }) => void | Promise<void>;
-    defaultStreamHandler: (response: Response) => Promise<StreamAsyncIterator<unknown>>;
+    defaultStreamHandler: (response: Response) => Promise<VovkStreamAsyncIterable<unknown>>;
     defaultHandler: (response: Response) => Promise<unknown>;
   },
   input: {

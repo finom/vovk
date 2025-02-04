@@ -8,6 +8,7 @@ import {
   type VovkClient,
   type VovkReturnType,
   type VovkHandlerSchema,
+  VovkStreamAsyncIterable,
 } from 'vovk';
 
 import {
@@ -83,7 +84,7 @@ export default function createRPCWithReactQuery<T, OPTS extends Record<string, K
         options?: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn' | 'queryKey'>,
         queryClient?: QueryClient
       ) => Omit<ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>, 'data'> & {
-        data: ReturnType<VovkClient<T, OPTS>[Key]> extends AsyncIterator<infer U>
+        data: ReturnType<VovkClient<T, OPTS>[Key]> extends VovkStreamAsyncIterable<infer U>
           ? U[]
           : ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>['data'];
       };
