@@ -25,7 +25,13 @@ const withUseQuery = <
             console.log('heck', fn, input, fn(input).then(console.log));
             return fn(input);
           },
-          queryKey: [fn.controllerSchema.prefix, fn.controllerSchema.controllerName, fn.schema, input],
+          queryKey: [
+            fn.controllerSchema.prefix,
+            fn.controllerSchema.controllerName,
+            fn.schema.path,
+            fn.schema.httpMethod,
+            input,
+          ],
           ...options,
         },
         queryClient
