@@ -1,9 +1,7 @@
 tsconfig.*
 .turbo
-*.ts
-!*.d.ts
-*.cts
-!*.d.cts
-*.mts
+index.cts
+index.mts
 !*.d.mts
 eslint.config.js
+test
