@@ -1,6 +1,6 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
-import { default as fetcher } from '<%= fetcherClientImportPath %>';
-import { default as createRPC } from '<%= createRPCImportPath %>';
+import fetcherImport from '<%= fetcherClientImportPath %>';
+import createRPC from '<%= createRPCImportPath %>';
 import schema from '<%= schemaOutImportPath %>';
 <% if (validateOnClientImportPath) { %>
 import validateOnClient from '<%= validateOnClientImportPath %>';
@@ -8,6 +8,7 @@ import validateOnClient from '<%= validateOnClientImportPath %>';
 const validateOnClient = undefined;
 <% } %>
 const apiRoot = '<%= apiRoot %>';
+const fetcher = fetcherImport.default || fetcherImport;
 
 <% segments.forEach((segment, i) => { %>
   <% Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
