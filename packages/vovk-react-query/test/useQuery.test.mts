@@ -3,7 +3,7 @@ import { it, describe, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { VovkReturnType } from 'vovk';
 import { renderHook, waitFor } from '@testing-library/react';
-import { ClientControllerRPC } from '../../../test/node_modules/.vovk-client/compiled.js';
+import { ClientControllerRPC } from '../../../test/node_modules/.vovk-client/main.cjs';
 import { JSDOM } from 'jsdom';
 import { createElement, ReactNode } from 'react';
 
@@ -39,14 +39,9 @@ describe('useQuery', () => {
       );
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log({ ...result.current });
-    await waitFor(
-      () => {
-        assert.equal(result.current.isSuccess, true);
-      },
-      { timeout: 10000 }
-    );
+    await waitFor(() => {
+      assert.equal(result.current.isSuccess, true);
+    });
 
     assert.deepEqual(result.current.data satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll> | undefined, {
       params: { hello: 'world' },
