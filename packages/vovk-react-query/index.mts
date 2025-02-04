@@ -41,7 +41,7 @@ const withUseQuery = <
             const result = await fn(input);
             const data = [];
 
-            if (result[Symbol.asyncIterator]) {
+            if (Symbol.asyncIterator in result) {
               for await (const chunk of result) {
                 data.push(chunk);
                 queryClient.setQueryData(queryKey, [...data]);
