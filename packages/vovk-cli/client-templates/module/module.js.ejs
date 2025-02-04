@@ -1,0 +1,20 @@
+<%- '// auto-generated\n/* eslint-disable */' %>
+import fetcher from '<%= fetcherClientImportPath %>';
+import createRPC from '<%= createRPCImportPath %>';
+import schema from '<%= schemaOutImportPath %>';
+<% if (validateOnClientImportPath) { %>
+import validateOnClient from '<%= validateOnClientImportPath %>';
+<% } else { %>
+const validateOnClient = undefined;
+<% } %>
+const apiRoot = '<%= apiRoot %>';
+
+<% segments.forEach((segment, i) => { %>
+  <% Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
+export const <%= key %> = createRPC(
+  schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
+  '<%= segment.segmentName %>', 
+  { fetcher, validateOnClient, defaultOptions: { apiRoot } }
+);
+  <% }) %>
+<% }) %>

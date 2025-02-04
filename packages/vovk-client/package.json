@@ -2,10 +2,19 @@
   "name": "vovk-client",
   "version": "0.0.4-draft.17",
   "description": "Vovk.ts Client",
-  "main": "index.js",
   "scripts": {
     "npm-publish": "npm publish"
   },
+  "main": "./index.cjs",
+  "module": "./index.mjs",
+  "types": "./index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.cjs"
+    }
+  },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git"
@@ -15,7 +24,6 @@
   ],
   "author": "Andrii Gubanov",
   "license": "MIT",
-  "types": "./index.d.ts",
   "bugs": {
     "url": "https://github.com/finom/vovk/issues"
   },
