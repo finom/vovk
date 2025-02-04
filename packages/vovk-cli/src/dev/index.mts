@@ -11,7 +11,7 @@ import once from 'lodash/once.js';
 import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
 import writeOneSchemaFile from './writeOneSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
-import ensureClient from './ensureClient.mjs';
+import ensureClient from '../generate/ensureClient.mjs';
 import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
 import generate from '../generate/index.mjs';
 import locateSegments, { type Segment } from '../locateSegments.mjs';
