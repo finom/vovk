@@ -25,7 +25,8 @@ export default function getClientTemplates({
     });
   const builtInTemplatesMap = {
     ts: ['index.ts.ejs'].map(mapper('ts')),
-    compiled: ['compiled.js.ejs', 'compiled.d.ts.ejs'].map(mapper('compiled')),
+    main: ['main.cjs.ejs', 'main.d.cts.ejs'].map(mapper('main')),
+    module: ['module.mjs.ejs', 'module.d.mts.ejs'].map(mapper('module')),
     python: ['__init__.py'].map(mapper('python')),
   };
 
