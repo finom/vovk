@@ -45,6 +45,8 @@ const withUseQuery = <
                 data.push(chunk);
                 queryClient.setQueryData(queryKey, [...data]);
               }
+
+              return data;
             }
 
             return result;
@@ -67,7 +69,7 @@ const withUseQuery = <
   });
 };
 
-export default function createRPCWithUseQuery<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
+export default function createRPCWithReactQuery<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   controllerSchema: VovkControllerSchema,
   segmentName?: string,
   options?: VovkClientOptions<OPTS>
