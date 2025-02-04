@@ -10,7 +10,13 @@ import {
   type VovkHandlerSchema,
 } from 'vovk';
 
-import { useQuery, useMutation, UseQueryOptions, UseMutationOptions, QueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  type UseQueryOptions,
+  type UseMutationOptions,
+  type QueryClient,
+} from '@tanstack/react-query';
 
 const withUseQuery = <
   T extends ((arg: KnownAny) => KnownAny) & { schema: VovkHandlerSchema; controllerSchema: VovkControllerSchema },
