@@ -1,1 +1,1 @@
-export * from '.vovk-client/main';
+export * from '.vovk-client/main.d.cts';
