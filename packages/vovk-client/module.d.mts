@@ -1,1 +1,1 @@
-export * from '.vovk-client/module.d.mts';
+export * from '../.vovk-client/module.d.mts';

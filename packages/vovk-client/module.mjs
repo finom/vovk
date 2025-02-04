@@ -1,2 +1,2 @@
-import main from '.vovk-client/module.mjs';
+import main from '../.vovk-client/module.mjs';
 export default main;
