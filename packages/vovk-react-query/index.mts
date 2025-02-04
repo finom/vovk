@@ -22,7 +22,7 @@ const withUseQuery = <
       return useQuery(
         {
           queryFn: () => {
-            console.log('heck', fn, input);
+            console.log('heck', fn, input, fn(input).then(console.log));
             return fn(input);
           },
           queryKey: [fn.controllerSchema.prefix, fn.controllerSchema.controllerName, fn.schema, input],
