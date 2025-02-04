@@ -92,10 +92,10 @@
   },
   "dependencies": {
     "vovk": "^3.0.0-draft.58",
-    "vovk-cli": "^0.0.1-draft.56",
-    "vovk-client": "^0.0.4-draft.24",
+    "vovk-cli": "^0.0.1-draft.62",
+    "vovk-client": "^0.0.4-draft.26",
     "vovk-dto": "^0.0.1-draft.17",
-    "vovk-react-query": "^0.0.1-draft.14",
+    "vovk-react-query": "^0.0.1-draft.25",
     "vovk-yup": "^0.0.1-draft.17",
     "vovk-zod": "^1.0.0-draft.18",
     "yup": "^1.6.1"
