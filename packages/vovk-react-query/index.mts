@@ -84,7 +84,7 @@ export default function createRPCWithReactQuery<T, OPTS extends Record<string, K
         options?: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn' | 'queryKey'>,
         queryClient?: QueryClient
       ) => Omit<ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>, 'data'> & {
-        data: ReturnType<VovkClient<T, OPTS>[Key]> extends VovkStreamAsyncIterable<infer U>
+        data: VovkReturnType<VovkClient<T, OPTS>[Key]> extends VovkStreamAsyncIterable<infer U>
           ? U[]
           : ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>['data'];
       };
