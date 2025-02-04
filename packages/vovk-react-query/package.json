@@ -2,18 +2,29 @@
   "name": "vovk-react-query",
   "version": "0.0.1-draft.4",
   "description": "useQuery and useMutation hooks for Vovk.ts",
-  "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
+    "build": "rm -rf dist tsconfig.build.tsbuildinfo && npm run build:cjs && npm run build:esm",
+    "build:esm": "tsc -P tsconfig.build.esm.json --module esnext",
+    "build:cjs": "cp index.mts index.cts && tsc -P tsconfig.build.cjs.json",
     "tsc": "tsc --noEmit",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u",
-    "build-test": "rm -rf test_dist && tsc -P tsconfig.test.json",
+    "build-test": "tsc -P tsconfig.test.json",
     "pre-test": "npm run build && npm run build-test",
     "test-only": "npm run pre-test && node --test --test-only test/test/**/*.mjs",
     "unit": "npm run pre-test && node --test --test-concurrency=1 test/*.mjs",
     "test": "concurrently 'sleep 20 && npm run unit' 'npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
   },
+  "main": "./index.cjs",
+  "module": "./index.mjs",
+  "types": "./index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.cjs"
+    }
+  },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git"

@@ -1,9 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "noEmit": false
+    "noEmit": false, 
   },
-  "include": ["index.ts", "test/**/*.mts"],
+  "include": ["index.mts", "test/**/*.mts"],
+  "exclude": ["*.d.mts"],
   "paths": {
     "react/*": ["../../node_modules/react/*"]
   }

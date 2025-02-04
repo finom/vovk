@@ -2,4 +2,6 @@
 !*.d.ts
 tsconfig.*
 .turbo
+*.cts
+*.mts
 eslint.config.js

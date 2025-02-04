@@ -13,7 +13,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "declaration": true,
     "noEmit": true,
     "paths": {
       "next/*": ["./test/node_modules/next/*"]
