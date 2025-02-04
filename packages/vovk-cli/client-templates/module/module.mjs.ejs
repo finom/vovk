@@ -1,6 +1,6 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
-import fetcher from '<%= fetcherClientImportPath %>';
-import createRPC from '<%= createRPCImportPath %>';
+import { default as fetcher } from '<%= fetcherClientImportPath %>';
+import { default as createRPC } from '<%= createRPCImportPath %>';
 import schema from '<%= schemaOutImportPath %>';
 <% if (validateOnClientImportPath) { %>
 import validateOnClient from '<%= validateOnClientImportPath %>';
