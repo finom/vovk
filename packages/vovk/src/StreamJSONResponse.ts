@@ -3,7 +3,7 @@ import './utils/shim';
 
 export class StreamJSONResponse<T> extends Response {
   public static defaultHeaders = {
-    'content-type': 'text/plain; charset=utf-8',
+    'content-type': 'text/plain; format=jsonlines',
   };
 
   public isClosed = false;
