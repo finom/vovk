@@ -31,7 +31,9 @@ const withUseQuery = <
             console.log('heck', fn, input);
 
             try {
-            console.log(fn(input).then(console.log).catch(console.error));
+              console.log('xxx');
+              console.log(fn(input).then(console.log).catch(console.error));
+              console.log('yyy') ;
             } catch (e) {
               console.error(e);
             }
