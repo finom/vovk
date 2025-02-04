@@ -10,8 +10,8 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
   const config: Required<VovkConfig> = {
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     validateOnClientPath: env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.validateOnClientPath ?? null,
-    fetcherPath: env.VOVK_FETCHER_PATH ?? conf.fetcherPath ?? 'vovk/dist/client/defaultFetcher',
-    createRPCPath: env.VOVK_CREATE_RPC_PATH ?? conf.createRPCPath ?? 'vovk/dist/client/createRPC',
+    fetcherPath: env.VOVK_FETCHER_PATH ?? conf.fetcherPath ?? 'vovk/dist/client/defaultFetcher.js',
+    createRPCPath: env.VOVK_CREATE_RPC_PATH ?? conf.createRPCPath ?? 'vovk/dist/client/createRPC.js',
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     clientOutDir: clientOutDir ?? env.VOVK_CLIENT_OUT_DIR ?? conf.clientOutDir ?? './node_modules/.vovk-client',
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
