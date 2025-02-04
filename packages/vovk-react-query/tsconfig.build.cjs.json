@@ -3,6 +3,7 @@
   "include": ["index.cts"],
   "compilerOptions": {
     "moduleResolution": "node",
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "declaration": true,
   }
 }

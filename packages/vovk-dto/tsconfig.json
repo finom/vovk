@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "include": ["*.ts"],
   "compilerOptions": {
-    "noEmit": false
+    "noEmit": false,
+    "declaration": true,
   }
 }

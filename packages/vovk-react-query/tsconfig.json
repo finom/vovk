@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "noEmit": false, 
+    "noEmit": false,
   },
   "include": ["index.mts", "test/**/*.mts"],
   "exclude": ["*.d.mts"],
