@@ -14,9 +14,10 @@ export default function getClientTemplates({
   config: Required<VovkConfig>;
   cwd: string;
   templateNames?: string[];
-}): ClientTemplate[] {
+}) {
   const templatesDir = path.join(import.meta.dirname, '../..', 'client-templates');
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
+
   const mapper =
     (dir: string) =>
     (name: string): ClientTemplate => ({
@@ -46,5 +47,5 @@ export default function getClientTemplates({
     [] as ClientTemplate[]
   );
 
-  return templateFiles;
+  return { clientOutDirAbsolutePath, templateFiles };
 }

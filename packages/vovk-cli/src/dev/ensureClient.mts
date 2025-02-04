@@ -1,34 +1,35 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
+import getClientTemplates from '../generate/getClientTemplates.mjs';
 
 export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
   const now = Date.now();
-  const clientoOutDirAbsolutePath = path.join(cwd, config.clientOutDir);
-  const dts = `// auto-generated
+
+  const { clientOutDirAbsolutePath, templateFiles } = getClientTemplates({
+    config,
+    cwd,
+    templateNames: config.experimental_clientGenerateTemplateNames,
+  });
+
+  const text = `// auto-generated
 // This is a temporary placeholder to avoid errors if client is imported before it's generated.
 // If you still see this text, the client is not generated yet because of an unknown problem.
 // Feel free to report an issue at https://github.com/finom/vovk/issues`;
-  const js = dts;
-  const ts = dts;
 
-  const localJsAbsolutePath = path.join(clientoOutDirAbsolutePath, 'compiled.js');
-  const localDtsAbsolutePath = path.join(clientoOutDirAbsolutePath, 'compiled.d.ts');
-  const localTsAbsolutePath = path.join(clientoOutDirAbsolutePath, 'index.ts');
-  const existingJs = await fs.readFile(localJsAbsolutePath, 'utf-8').catch(() => null);
-  const existingDts = await fs.readFile(localDtsAbsolutePath, 'utf-8').catch(() => null);
-  const existingTs = await fs.readFile(localTsAbsolutePath, 'utf-8').catch(() => null);
+  let written = false;
+  for (const { outPath } of templateFiles) {
+    const existing = await fs.readFile(outPath, 'utf-8').catch(() => null);
 
-  if (existingJs && existingDts && existingTs) {
-    return { written: false, path: clientoOutDirAbsolutePath };
+    if (!existing) {
+      await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
+      await fs.writeFile(outPath, text);
+      written = true;
+    }
   }
 
-  await fs.mkdir(clientoOutDirAbsolutePath, { recursive: true });
-  if (!existingJs) await fs.writeFile(localJsAbsolutePath, js);
-  if (!existingDts) await fs.writeFile(localDtsAbsolutePath, dts);
-  if (!existingTs) await fs.writeFile(localTsAbsolutePath, ts);
+  if (written) {
+    log.info(`Empty client files are generated in ${Date.now() - now}ms`);
+  }
 
-  log.info(`Empty client files are generated in ${Date.now() - now}ms`);
-
-  return { written: true, path: clientoOutDirAbsolutePath };
+  return { written, path: clientOutDirAbsolutePath };
 }

@@ -33,9 +33,8 @@ export default async function generate({
     createRPCImportPath,
     schemaOutImportPath,
   } = projectInfo;
-  const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
 
-  const templateFiles = getClientTemplates({ config, cwd, templateNames: templates });
+  const { clientOutDirAbsolutePath, templateFiles } = getClientTemplates({ config, cwd, templateNames: templates });
   // Ensure that each segment has a matching schema if it needs to be emitted:
   for (let i = 0; i < segments.length; i++) {
     const { segmentName } = segments[i];
