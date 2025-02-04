@@ -16,6 +16,7 @@ import {
   type UseQueryOptions,
   type UseMutationOptions,
   type QueryClient,
+  useQueryClient,
 } from '@tanstack/react-query';
 
 const withUseQuery = <
@@ -25,27 +26,30 @@ const withUseQuery = <
 ) => {
   return Object.assign(fn, {
     useQuery: (input: Parameters<T>[0], options?: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
+      queryClient = queryClient ?? useQueryClient();
+      const queryKey = [
+        fn.controllerSchema.prefix,
+        fn.controllerSchema.controllerName,
+        fn.schema.path,
+        fn.schema.httpMethod,
+        input,
+      ];
       return useQuery(
         {
-          queryFn: () => {
-            console.log('heck', fn, input);
+          queryFn: async () => {
+            const result = await fn(input);
+            const data = [];
 
-            try {
-              console.log('xxx');
-              console.log(fn(input).then(console.log).catch(console.error));
-              console.log('yyy') ;
-            } catch (e) {
-              console.error(e);
+            if (result[Symbol.asyncIterator]) {
+              for (const chunk of result) {
+                data.push(chunk);
+                queryClient.setQueryData(queryKey, [...data]);
+              }
             }
-            return fn(input);
+
+            return result;
           },
-          queryKey: [
-            fn.controllerSchema.prefix,
-            fn.controllerSchema.controllerName,
-            fn.schema.path,
-            fn.schema.httpMethod,
-            input,
-          ],
+          queryKey,
           ...options,
         },
         queryClient
@@ -76,7 +80,11 @@ export default function createRPCWithUseQuery<T, OPTS extends Record<string, Kno
         input: Parameters<VovkClient<T, OPTS>[Key]>[0],
         options?: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn' | 'queryKey'>,
         queryClient?: QueryClient
-      ) => ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>;
+      ) => Omit<ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>, 'data'> & {
+        data: ReturnType<VovkClient<T, OPTS>[Key]> extends AsyncIterator<infer U>
+          ? U[]
+          : ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>['data'];
+      };
       useMutation: (
         options?: Omit<UseMutationOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'mutationFn'>,
         queryClient?: QueryClient
