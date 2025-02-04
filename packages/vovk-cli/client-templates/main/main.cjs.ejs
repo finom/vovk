@@ -2,15 +2,14 @@
 const { default: fetcher } = require('<%= fetcherClientImportPath %>');
 const { default: createRPC } = require('<%= createRPCImportPath %>');
 const schema = require('<%= schemaOutImportPath %>');
-
 const { default: validateOnClient = null } = <%- validateOnClientImportPath ? `require('${validateOnClientImportPath}')` : '{}'%>;
 const apiRoot = '<%= apiRoot %>';
-<% segments.forEach((segment) => { %>
-  <% Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
+<% segments.forEach((segment) => { 
+  Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
 exports.<%= key %> = createRPC(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 
   { fetcher, validateOnClient, defaultOptions: { apiRoot } }
 );
-  <% }) %>
-<% }) %>
+  <% })
+}) %>

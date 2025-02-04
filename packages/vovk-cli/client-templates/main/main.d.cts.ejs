@@ -8,8 +8,8 @@ import type createRPC from '<%= createRPCImportPath %>';
   <% }}) %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 
-<% segments.forEach((segment, i) => { %>
-  <% Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
+<% segments.forEach((segment, i) => {
+  Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
 export const <%= key %>: ReturnType<typeof createRPC<Controllers<%= i %>["<%= key %>"], Options>>;
-  <% }) %>
-<% }) %>
+  <% }) 
+}) %>
