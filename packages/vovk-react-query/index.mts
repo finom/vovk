@@ -29,7 +29,12 @@ const withUseQuery = <
         {
           queryFn: () => {
             console.log('heck', fn, input);
+
+            try {
             console.log(fn(input).then(console.log).catch(console.error));
+            } catch (e) {
+              console.error(e);
+            }
             return fn(input);
           },
           queryKey: [
