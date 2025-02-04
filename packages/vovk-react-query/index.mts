@@ -39,17 +39,14 @@ const withUseQuery = <
         {
           queryFn: async () => {
             const result = await fn(input);
-            const data: unknown[] = [];
-
             if (Symbol.asyncIterator in result) {
               void (async () => {
                 for await (const chunk of result) {
-                  data.push(chunk);
-                  queryClient.setQueryData(queryKey, [...data]);
+                  queryClient.setQueryData(queryKey, (data: unknown[]) => [...data, chunk]);
                 }
               })();
 
-              return data;
+              return [];
             }
 
             return result;
