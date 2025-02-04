@@ -45,12 +45,14 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
 
   const contentType = response.headers.get('content-type');
 
-  if (contentType?.includes('application/jsonl')) {
-    return defaultStreamHandler(response);
+  
+
+  if (contentType?.startsWith('application/json')) {
+    return defaultHandler(response);
   }
 
-  if (contentType?.includes('application/json')) {
-    return defaultHandler(response);
+  if (contentType === 'text/plain; format=jsonlines') {
+    return defaultStreamHandler(response);
   }
 
   return response;
