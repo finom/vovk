@@ -1,7 +1,7 @@
 {
   "name": "vovk-client",
-  "version": "0.0.4-draft.18",
-  "description": "Vovk.ts Client",
+  "version": "0.0.4-draft.19",
+  "description": "Vovk.ts client",
   "scripts": {
     "npm-publish": "npm publish"
   },
@@ -10,7 +10,7 @@
   "types": "./index.d.mts",
   "exports": {
     ".": {
-      "import": "./index.mjs",
+      "import": "./module.mjs",
       "require": "./index.cjs"
     }
   },
