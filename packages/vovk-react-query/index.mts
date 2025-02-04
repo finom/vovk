@@ -17,7 +17,7 @@ const withUseQuery = <T extends ((arg: KnownAny) => KnownAny) & { schema: VovkHa
     useQuery: (input: Parameters<T>[0], options?: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
       return useQuery(
         {
-          queryFn: () => {console.log('heck'); return fn(input)},
+          queryFn: () => {console.log('heck', fn, input); return fn(input)},
           queryKey: [fn.controllerSchema.prefix, fn.controllerSchema.controllerName, fn.schema, input],
           ...options,
         },
