@@ -40,12 +40,13 @@
   "homepage": "https://github.com/finom/vovk#readme",
   "peerDependencies": {
     "@tanstack/react-query": "^5.66.0",
-    "vovk": "^3.0.0-draft.63",
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "vovk": "^3.0.0-draft.64"
   },
   "devDependencies": {
     "@testing-library/react": "^16.2.0",
     "@types/jsdom": "^21.1.7",
+    "@types/react": "^19.0.8",
     "jsdom": "^26.0.0",
     "react": "^19.0.0"
   }

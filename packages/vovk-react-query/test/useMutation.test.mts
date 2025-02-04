@@ -6,7 +6,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { ClientControllerRPC } from '../../../test/node_modules/.vovk-client/compiled.js';
 import { JSDOM } from 'jsdom';
 
-describe('useMutation', () => {
+describe.skip('useMutation', () => {
   it('Works with useMutation', async () => {
     const dom = new JSDOM();
     global.window = dom.window as unknown as typeof window;

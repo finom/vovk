@@ -19,7 +19,7 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
       // if HttpException is thrown, rethrow it
       if (e instanceof HttpException) throw e;
       // otherwise, throw HttpException with status 0
-      throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE);
+      throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE, { endpoint });
     }
   }
 
@@ -40,12 +40,10 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
     response = await fetch(endpoint, init);
   } catch (e) {
     // handle network errors
-    throw new HttpException(HttpStatus.NULL, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);
+    throw new HttpException(HttpStatus.NULL, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE, { endpoint });
   }
 
   const contentType = response.headers.get('content-type');
-
-  
 
   if (contentType?.startsWith('application/json')) {
     return defaultHandler(response);
