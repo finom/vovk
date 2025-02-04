@@ -1,9 +1,9 @@
 {
   "name": "vovk-react-query",
-  "version": "0.0.1-draft.9",
+  "version": "0.0.1-draft.10",
   "description": "useQuery and useMutation hooks for Vovk.ts",
   "scripts": {
-    "build": "rm -rf dist tsconfig.build.tsbuildinfo && npm run build:cjs && npm run build:esm",
+    "build": "rm *.tsbuildinfo && npm run build:cjs && npm run build:esm",
     "build:esm": "tsc -P tsconfig.build.esm.json --module esnext",
     "build:cjs": "cp index.mts index.cts && tsc -P tsconfig.build.cjs.json",
     "tsc": "tsc --noEmit",
