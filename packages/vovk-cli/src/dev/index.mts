@@ -177,6 +177,7 @@ export class VovkDev {
         callback();
       } else {
         log.info('Config file has been updated');
+        this.#generate();
       }
 
       isInitial = false;
@@ -436,7 +437,7 @@ export class VovkDev {
         log.info(`Ready in ${Date.now() - now}ms. Making initial requests for schemas in a moment...`);
       });
     } else {
-      log.info(`Ready in ${Date.now() - now}ms. Making initial requests for schemas in a moment...`);
+      log.info(`Ready in ${Date.now() - now}ms. Making requests for schemas in a moment...`);
     }
   }
 }

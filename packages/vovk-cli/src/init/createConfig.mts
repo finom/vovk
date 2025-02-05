@@ -9,11 +9,11 @@ import type { VovkConfig, InitOptions } from '../types.mjs';
 export default async function createConfig({
   root,
   log,
-  options: { validationLibrary, validateOnClient, channel, dryRun },
+  options: { validationLibrary, validateOnClient, reactQuery, channel, dryRun },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
-  options: Pick<InitOptions, 'validationLibrary' | 'validateOnClient' | 'channel' | 'dryRun'>;
+  options: Pick<InitOptions, 'validationLibrary' | 'validateOnClient' | 'reactQuery' | 'channel' | 'dryRun'>;
 }) {
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
@@ -30,7 +30,7 @@ export default async function createConfig({
 
   if (validationLibrary) {
     if (validateOnClient) {
-      config.validateOnClientPath = `${validationLibrary}/validateOnClient/index.js`;
+      config.validateOnClientPath = `${validationLibrary}/validateOnClient.js`;
     }
 
     try {
@@ -39,6 +39,10 @@ export default async function createConfig({
     } catch (error) {
       log.warn(`Failed to fetch validation library templates: ${(error as Error).message}`);
     }
+  }
+
+  if (reactQuery) {
+    config.createRPCPath = 'vovk-react-query';
   }
 
   config.templates = templates;

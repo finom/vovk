@@ -261,6 +261,24 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
+  await it('Works with --react-query', async () => {
+    await createNextApp();
+    await vovkInit('--yes --react-query');
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null, true));
+
+    await assertDeps({
+      dependencies: ['vovk', '@tanstack/react-query', 'vovk-react-query'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      generate: 'vovk generate',
+    });
+
+    await assertTsConfig();
+  });
+
   await it('Utilizes .config folder', async () => {
     await createNextApp();
     await runAtProjectDir('mkdir .config');

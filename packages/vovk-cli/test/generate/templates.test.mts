@@ -21,7 +21,7 @@ await describe.only('Client templates', async () => {
 
   const customTemplatesDir = path.join(import.meta.dirname, '../../../test_data/client-templates');
 
-  await it.only('Basic check', async () => {
+  await it('Basic check', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --template ${customTemplatesDir}/hello-world.js --out ${compiledClientFolderName}`
     );
@@ -41,15 +41,21 @@ await describe.only('Client templates', async () => {
   await it('Should use default templates', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --out ${compiledClientFolderName}`);
 
-    await assertDirFileList(compiledClientFolderName, ['index.ts', 'compiled.js', 'compiled.d.ts']);
+    await assertDirFileList(compiledClientFolderName, [
+      'index.ts',
+      'main.cjs',
+      'main.d.cts',
+      'module.mjs',
+      'module.d.mts',
+    ]);
   });
 
   await it('Should use default templates explicitly', async () => {
     await runAtProjectDir(
-      `../dist/index.mjs generate --template=compiled --template=ts --out ${compiledClientFolderName}`
+      `../dist/index.mjs generate --template=module --template=ts --out ${compiledClientFolderName}`
     );
 
-    await assertDirFileList(compiledClientFolderName, ['index.ts', 'compiled.js', 'compiled.d.ts']);
+    await assertDirFileList(compiledClientFolderName, ['index.ts', 'module.mjs', 'module.d.mts']);
   });
 
   await it('Generates files from ts and python template with full schema', async () => {
@@ -78,7 +84,7 @@ await describe.only('Client templates', async () => {
     );
 
     await assertFile(`${compiledClientFolderName}/compiled.js`, [
-      `const { default: fetcher } = require('vovk/dist/client/defaultFetcher')`,
+      `const { default: fetcher } = require('vovk/dist/client/defaultFetcher.js')`,
     ]);
     await assertFile(`${compiledClientFolderName}/compiled.d.ts`, [
       'import type { Controllers as Controllers0} from "../src/app/api/[[...vovk]]/route.ts";',
@@ -87,24 +93,24 @@ await describe.only('Client templates', async () => {
       'import type { Controllers as Controllers0} from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
 
-    await assertDirFileList(compiledClientFolderName, ['compiled.js', 'compiled.d.ts', 'custom.ts']);
+    await assertDirFileList(compiledClientFolderName, ['main.cjs', 'main.d.cts', 'custom.ts']);
   });
 
   await it('Generates files from multiple custom templates', async () => {
     await runAtProjectDir(
-      `../dist/index.mjs generate --template=compiled --template=${customTemplatesDir}/custom.ts.ejs --template ${customTemplatesDir}/hello-world.js --template=compiled --out ${compiledClientFolderName}`
+      `../dist/index.mjs generate --template=main --template=${customTemplatesDir}/custom.ts.ejs --template ${customTemplatesDir}/hello-world.js --template=main --out ${compiledClientFolderName}`
     );
 
-    await assertFile(`${compiledClientFolderName}/compiled.js`, [
-      `const { default: fetcher } = require('vovk/dist/client/defaultFetcher')`,
+    await assertFile(`${compiledClientFolderName}/main.cjs`, [
+      `const { default: fetcher } = require('vovk/dist/client/defaultFetcher.js')`,
     ]);
-    await assertFile(`${compiledClientFolderName}/compiled.d.ts`, [
+    await assertFile(`${compiledClientFolderName}/main.d.cts`, [
       'import type { Controllers as Controllers0} from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
       'import type { Controllers as Controllers0} from "../src/app/api/[[...vovk]]/route.ts";',
       '// Hello from custom.js.ejs',
     ]);
-    await assertDirFileList(compiledClientFolderName, ['compiled.js', 'compiled.d.ts', 'custom.ts', 'hello-world.js']);
+    await assertDirFileList(compiledClientFolderName, ['main.cjs', 'main.d.cts', 'custom.ts', 'hello-world.js']);
   });
 });

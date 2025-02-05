@@ -52,10 +52,15 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     );
   }
 
-  assertConfig.makeConfig = (validationLibrary: string | null) => ({
+  assertConfig.makeConfig = (validationLibrary: string | null, useReactQuery?: boolean) => ({
     ...(validationLibrary
       ? {
-          validateOnClientPath: `${validationLibrary}/validateOnClient`,
+          validateOnClientPath: `${validationLibrary}/validateOnClient.js`,
+        }
+      : {}),
+    ...(useReactQuery
+      ? {
+          createRPCPath: 'vovk-react-query',
         }
       : {}),
     templates: {
@@ -181,7 +186,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function vovkDevAndKill() {
-    return runAtProjectDir(`../dist/index.mjs dev --next-dev --exit`);
+    return runAtProjectDir(`../dist/index.mjs dev --next-dev --exit -- --turbo`);
   }
 
   return {

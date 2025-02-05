@@ -38,6 +38,7 @@ export class Init {
       updateScripts,
       validationLibrary,
       validateOnClient,
+      reactQuery,
       dryRun,
       channel,
     }: Omit<InitOptions, 'yes' | 'logLevel'>
@@ -61,6 +62,11 @@ export class Init {
           'vovk-dto': ['class-validator', 'class-transformer', 'vovk-mapped-types', 'reflect-metadata'],
         }[validationLibrary] ?? [])
       );
+    }
+
+    if (reactQuery) {
+      dependencies.push('vovk-react-query');
+      dependencies.push('@tanstack/react-query');
     }
 
     if (updateScripts) {
@@ -134,7 +140,7 @@ export class Init {
       const { configAbsolutePath } = await createConfig({
         root,
         log,
-        options: { validationLibrary, validateOnClient, channel, dryRun },
+        options: { validationLibrary, validateOnClient, reactQuery, channel, dryRun },
       });
 
       log.info('Config created successfully at ' + configAbsolutePath);
@@ -157,6 +163,7 @@ export class Init {
       updateScripts,
       validationLibrary,
       validateOnClient,
+      reactQuery,
       dryRun,
       channel,
     }: InitOptions
@@ -172,23 +179,20 @@ export class Init {
     const configPaths = await getConfigPaths({ cwd, relativePath: prefix });
 
     if (yes) {
-      return this.#init(
-        { configPaths, pkgJson },
-        {
-          useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
-          useYarn: useYarn ?? false,
-          usePnpm: usePnpm ?? false,
-          useBun: useBun ?? false,
-          skipInstall: skipInstall ?? false,
-          updateTsConfig: updateTsConfig ?? true,
-          updateScripts: updateScripts ?? 'implicit',
-          validationLibrary:
-            validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
-          validateOnClient: validateOnClient ?? true,
-          dryRun: dryRun ?? false,
-          channel: channel ?? 'latest',
-        }
-      );
+      return this.#init({ configPaths, pkgJson }, {
+        useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
+        useYarn: useYarn ?? false,
+        usePnpm: usePnpm ?? false,
+        useBun: useBun ?? false,
+        skipInstall: skipInstall ?? false,
+        updateTsConfig: updateTsConfig ?? true,
+        updateScripts: updateScripts ?? 'implicit',
+        validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
+        validateOnClient: validateOnClient ?? true,
+        reactQuery: reactQuery ?? false,
+        dryRun: dryRun ?? false,
+        channel: channel ?? 'latest',
+      } satisfies Required<Omit<InitOptions, 'yes' | 'logLevel'>>);
     }
 
     if (!(await getFileSystemEntryType(path.join(root, 'package.json')))) {
@@ -268,18 +272,24 @@ export class Init {
         ],
       }));
 
+    reactQuery =
+      reactQuery ??
+      (await confirm({
+        message: 'Do you want to use @tanstack/react-query for data fetching inside components?',
+      }));
+
     if (typeof updateTsConfig === 'undefined') {
       let shouldAsk = false;
 
       try {
         shouldAsk = !(await checkTSConfigForExperimentalDecorators(root));
       } catch (error) {
-        log.error(`Failed to check tsconfig.json for experimentalDecorators: ${(error as Error).message}`);
+        log.error(`Failed to check tsconfig.json for "experimentalDecorators": ${(error as Error).message}`);
       }
 
       if (shouldAsk) {
         updateTsConfig = await confirm({
-          message: 'Do you want to add experimentalDecorators to tsconfig.json?',
+          message: 'Do you want to add "experimentalDecorators" option to tsconfig.json?',
         });
       }
     }
@@ -296,6 +306,7 @@ export class Init {
         updateScripts,
         validationLibrary,
         validateOnClient,
+        reactQuery,
         dryRun,
         channel,
       }

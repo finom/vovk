@@ -31,10 +31,10 @@ program
   .command('dev')
   .alias('d')
   .description('start schema watcher (optional flag --next-dev to start it with Next.js)')
+  .argument('[nextArgs...]', 'extra arguments for the dev command')
   .option('--next-dev', 'start schema watcher and Next.js with automatic port allocation')
   .option('--exit', 'kill the processe when schema and client is generated')
-  .allowUnknownOption(true)
-  .action(async (options: DevOptions, command: Command) => {
+  .action(async (nextArgs: string[], options: DevOptions) => {
     const { nextDev, exit = false } = options;
     const portAttempts = 30;
     const PORT = !nextDev
@@ -55,7 +55,7 @@ program
       const { result } = concurrently(
         [
           {
-            command: `npx next dev ${command.args.join(' ')}`,
+            command: `npx next dev ${nextArgs.join(' ')}`,
             name: 'Next.js Development Server',
             env: { PORT } satisfies VovkEnv,
           },
@@ -88,7 +88,7 @@ program
 program
   .command('generate')
   .alias('g')
-  .description('Generate client')
+  .description('Generate RPC client from schema')
   .option('--out, --client-out-dir <path>', 'path to output directory')
   .option(
     '--template, --templates <templates...>',
