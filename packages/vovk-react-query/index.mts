@@ -8,16 +8,16 @@ import {
   type VovkClient,
   type VovkReturnType,
   type VovkHandlerSchema,
-  VovkStreamAsyncIterable,
+  type VovkStreamAsyncIterable,
 } from 'vovk';
 
 import {
   useQuery,
   useMutation,
+  useQueryClient,
   type UseQueryOptions,
   type UseMutationOptions,
   type QueryClient,
-  useQueryClient,
 } from '@tanstack/react-query';
 
 const withUseQuery = <

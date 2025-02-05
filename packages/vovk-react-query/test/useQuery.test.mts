@@ -3,14 +3,13 @@ import { it, describe, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { VovkReturnType } from 'vovk';
 import { renderHook, waitFor } from '@testing-library/react';
-import { ClientControllerRPC } from '../../../test/node_modules/.vovk-client/main.cjs';
+import { ClientControllerRPC } from '../../../test/node_modules/.vovk-client/module.mjs';
 import { JSDOM } from 'jsdom';
 import { createElement, ReactNode } from 'react';
 
 /**
 TODO:
 - stream
-- useQuery context
 - useMutation context
 - validation zod
 - validation yup
@@ -50,7 +49,7 @@ describe('useQuery', () => {
     });
   });
 
-  it.skip('Works with provider client', async () => {
+  it('Works with context client', async () => {
     const queryClient = new QueryClient();
 
     const wrapper = ({ children }: { children: ReactNode }) =>

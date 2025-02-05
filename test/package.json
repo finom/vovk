@@ -13,6 +13,7 @@
     "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --full-schema --template=python --full-schema --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
   },
+  "type": "module",
   "dependencies": {
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -20,7 +21,7 @@
     "react": "^19",
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
-    "vovk-client": "^0.0.4-draft.14",
+    "vovk-client": "^0.0.4-draft.26",
     "vovk-mapped-types": "^0.0.6"
   },
   "devDependencies": {

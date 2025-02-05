@@ -1,3 +1,5 @@
 *.d.ts
 *.js
+*.d.cts
+*.cjs
 !eslint.config.js

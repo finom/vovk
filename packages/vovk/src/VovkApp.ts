@@ -1,3 +1,4 @@
+import type { NextRequest } from 'next/server';
 import {
   HttpMethod,
   HttpStatus,
@@ -5,10 +6,10 @@ import {
   type VovkErrorResponse,
   type VovkController,
   type DecoratorOptions,
-  type VovkRequest,
   type KnownAny,
+  type VovkRequest,
 } from './types';
-import { HttpException as HttpException } from './HttpException';
+import { HttpException } from './HttpException';
 import { StreamJSONResponse } from './StreamJSONResponse';
 import reqQuery from './utils/reqQuery';
 import reqMeta from './utils/reqMeta';
@@ -42,25 +43,25 @@ export class VovkApp {
     OPTIONS: new Map(),
   };
 
-  GET = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+  GET = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
     this.#callMethod(HttpMethod.GET, req, await data.params);
 
-  POST = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+  POST = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
     this.#callMethod(HttpMethod.POST, req, await data.params);
 
-  PUT = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+  PUT = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
     this.#callMethod(HttpMethod.PUT, req, await data.params);
 
-  PATCH = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+  PATCH = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
     this.#callMethod(HttpMethod.PATCH, req, await data.params);
 
-  DELETE = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+  DELETE = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
     this.#callMethod(HttpMethod.DELETE, req, await data.params);
 
-  HEAD = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+  HEAD = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
     this.#callMethod(HttpMethod.HEAD, req, await data.params);
 
-  OPTIONS = async (req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) =>
+  OPTIONS = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
     this.#callMethod(HttpMethod.OPTIONS, req, await data.params);
 
   respond = (status: HttpStatus, body: unknown, options?: DecoratorOptions) => {
@@ -88,9 +89,10 @@ export class VovkApp {
 
   #callMethod = async (
     httpMethod: HttpMethod,
-    req: VovkRequest<KnownAny, KnownAny>,
+    nextReq: NextRequest,
     params: Record<string, string[]>
   ) => {
+    const req = nextReq as unknown as VovkRequest;
     const controllers = this.routes[httpMethod];
     const methodParams: Record<string, string> = {};
     const path = params[Object.keys(params)[0]];
@@ -178,7 +180,7 @@ export class VovkApp {
 
     req.vovk = {
       body: () => req.json(),
-      query: () => reqQuery(req),
+      query: () => reqQuery(req as VovkRequest),
       meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(req, meta),
       form: <T = KnownAny>() => reqForm<T>(req),
     };

@@ -1,3 +1,4 @@
+import type { NextRequest } from 'next/server';
 import { VovkApp as VovkApp } from './VovkApp';
 import {
   HttpMethod,
@@ -131,7 +132,7 @@ export function createVovkApp() {
       controller._onError = options?.onError;
     }
 
-    async function GET_DEV(req: VovkRequest, data: { params: Promise<Record<string, string[]>> }) {
+    async function GET_DEV(req: NextRequest, data: { params: Promise<Record<string, string[]>> }) {
       const params = await data.params;
       if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
         // Wait for schema to be set (it can be set after decorators are called with another setTimeout)

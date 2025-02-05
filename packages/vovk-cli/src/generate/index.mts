@@ -13,6 +13,7 @@ export default async function generate({
   projectInfo,
   segments,
   segmentsSchema,
+  forceNothingWrittenLog,
   templates,
   prettify: prettifyClient,
   fullSchema,
@@ -20,6 +21,7 @@ export default async function generate({
   projectInfo: ProjectInfo;
   segments: Segment[];
   segmentsSchema: Record<string, VovkSchema>;
+  forceNothingWrittenLog?: boolean;
 } & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
   templates = templates ?? projectInfo.config.experimental_clientGenerateTemplateNames;
   const noClient = templates?.[0] === 'none';
@@ -105,7 +107,8 @@ export default async function generate({
   }
 
   if (!anyNeedsWriting) {
-    log.debug(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
+    const logOrDebug = forceNothingWrittenLog ? log.info : log.debug;
+    logOrDebug(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
     return { written: false, path: clientOutDirAbsolutePath };
   }
 

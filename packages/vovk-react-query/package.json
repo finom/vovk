@@ -13,7 +13,7 @@
     "pre-test": "npm run build && npm run build-test",
     "test-only": "npm run pre-test && node --test --test-only test/test/**/*.mjs",
     "unit": "npm run pre-test && node --test --test-concurrency=1 test/*.mjs",
-    "test": "concurrently 'sleep 20 && npm run unit' 'npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
+    "test": "concurrently 'sleep 20 && npm run unit' 'npm run generate --prefix ../../test && npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
   },
   "main": "./index.cjs",
   "module": "./index.mjs",

@@ -7,13 +7,14 @@
     ".next/types/**/*.ts",
     "src/**/*.ts",
     "packages/**/*.ts",
-    "vovk.config.js",
-    "next.config.js",
-    "postcss.config.js"
+    "vovk.config.cjs",
+    "next.config.mjs",
+    "postcss.config.cjs"
   ],
   "compilerOptions": {
     "noEmit": true,
-    "module": "esnext",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "plugins": [
       {
         "name": "next"
@@ -26,6 +27,5 @@
       "vovk-validate-client-ajv/*": ["../packages/vovk-validate-client-ajv/*"],
       "next/*": ["./node_modules/next/*"]
     },
-    "moduleResolution": "node"
   }
 }

@@ -102,12 +102,20 @@ program
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments({ dir: apiDir, config });
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
-    const schemaImportUrl = pathToFileURL(path.join(schemaOutAbsolutePath, 'index.js')).href;
+    const schemaImportUrl = pathToFileURL(path.join(schemaOutAbsolutePath, 'index.cjs')).href;
     const { default: segmentsSchema } = (await import(schemaImportUrl)) as {
       default: Record<string, VovkSchema>;
     };
 
-    await generate({ projectInfo, segments, segmentsSchema, templates, prettify, fullSchema });
+    await generate({
+      projectInfo,
+      segments,
+      segmentsSchema,
+      templates,
+      prettify,
+      fullSchema,
+      forceNothingWrittenLog: true,
+    });
   });
 
 program

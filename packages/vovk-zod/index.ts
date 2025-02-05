@@ -1,21 +1,21 @@
-import { z } from 'zod';
+import z, { type ZodSchema } from 'zod';
 import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest } from 'vovk';
-import { default as zodToJsonSchema } from 'zod-to-json-schema';
+import zodToJsonSchema from 'zod-to-json-schema';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KnownAny = any;
 
 type VovkRequestWithOptionalZod<
-  ZOD_BODY extends z.ZodSchema | null = null,
-  ZOD_QUERY extends z.ZodSchema | null = null,
+  ZOD_BODY extends ZodSchema | null = null,
+  ZOD_QUERY extends ZodSchema | null = null,
 > = VovkRequest<
-  ZOD_BODY extends z.ZodSchema ? z.infer<ZOD_BODY> : never,
-  ZOD_QUERY extends z.ZodSchema ? z.infer<ZOD_QUERY> : undefined
+  ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : never,
+  ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined
 >;
 function withZod<
   T extends (req: REQ, params: KnownAny) => KnownAny,
-  ZOD_BODY extends z.ZodSchema<unknown> | null,
-  ZOD_QUERY extends z.ZodSchema<Record<string, KnownAny> | undefined> | null = z.ZodSchema<undefined>,
+  ZOD_BODY extends ZodSchema<unknown> | null,
+  ZOD_QUERY extends ZodSchema<Record<string, KnownAny> | undefined> | null = ZodSchema<undefined>,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
 >(
   bodyModel: ZOD_BODY,
@@ -24,14 +24,14 @@ function withZod<
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withZod<
   T extends (req: REQ, params: KnownAny) => KnownAny,
-  ZOD_BODY extends z.ZodSchema<unknown> | null,
-  ZOD_QUERY extends z.ZodSchema<Record<string, KnownAny> | undefined> | null = z.ZodSchema<undefined>,
+  ZOD_BODY extends ZodSchema<unknown> | null,
+  ZOD_QUERY extends ZodSchema<Record<string, KnownAny> | undefined> | null = ZodSchema<undefined>,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
 >(bodyModel: ZOD_BODY, givenHandler: T): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withZod<
   T extends (req: REQ, params: KnownAny) => KnownAny,
-  ZOD_BODY extends z.ZodSchema<unknown> | null,
-  ZOD_QUERY extends z.ZodSchema<Record<string, KnownAny> | undefined> | null = z.ZodSchema<undefined>,
+  ZOD_BODY extends ZodSchema<unknown> | null,
+  ZOD_QUERY extends ZodSchema<Record<string, KnownAny> | undefined> | null = ZodSchema<undefined>,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
 >(bodyModel: ZOD_BODY, queryModel: ZOD_QUERY | null | T, givenHandler?: T) {
   if (typeof queryModel === 'function') {
@@ -51,7 +51,7 @@ function withZod<
         );
       }
       // redeclare to add ability to call req.json() again
-      req.json = () => Promise.resolve(body as ZOD_BODY extends z.ZodSchema ? z.infer<ZOD_BODY> : never);
+      req.json = () => Promise.resolve(body as ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : never);
     }
 
     if (queryModel) {

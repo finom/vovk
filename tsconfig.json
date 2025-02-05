@@ -19,7 +19,7 @@
     }
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["packages/**/*.ts", "packages/**/*.mts", "scripts/*.ts", "*.js", "*.mjs", "test/*.js", "jest.config.mjs"],
+  "include": ["packages/**/*.ts", "packages/**/*.mts", "scripts/*.ts", "*.js", "*.mjs", "test/*.js", "jest.config.mjs", "test/vovk.config.cjs", "test/next.config.mjs", "test/postcss.config.cjs", "packages/vovk-dto/index.cts"],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"

@@ -30,7 +30,7 @@ export default async function createConfig({
 
   if (validationLibrary) {
     if (validateOnClient) {
-      config.validateOnClientPath = `${validationLibrary}/validateOnClient`;
+      config.validateOnClientPath = `${validationLibrary}/validateOnClient/index.js`;
     }
 
     try {
