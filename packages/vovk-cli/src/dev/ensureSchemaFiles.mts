@@ -30,8 +30,8 @@ ${segmentNames.map((segmentName) => `  '${segmentName}': VovkSchema;`).join('\n'
 };
 export default segmentSchema;`;
 
-  const jsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.cjs');
-  const dTsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.d.cts');
+  const jsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.js');
+  const dTsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.d.ts');
 
   const existingJs = await fs.readFile(jsAbsolutePath, 'utf-8').catch(() => null);
   const existingDTs = await fs.readFile(dTsAbsolutePath, 'utf-8').catch(() => null);

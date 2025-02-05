@@ -19,7 +19,7 @@ export default async function getProjectInfo({
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
   const schemaOutImportPath =
     path.relative(config.clientOutDir, config.schemaOutDir).replace(/\\/g, '/') + // windows fix
-    '/index.cjs';
+    '/index.js';
   const fetcherClientImportPath = config.fetcherPath.startsWith('.')
     ? path.relative(config.clientOutDir, config.fetcherPath)
     : config.fetcherPath;
