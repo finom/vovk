@@ -1,18 +1,18 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
-import fetcherImport from '<%= fetcherClientImportPath %>';
-import createRPCImport from '<%= createRPCImportPath %>';
-import schema from '<%= schemaOutImportPath %>';
-<% if (validateOnClientImportPath) { %>
-import validateOnClientImport from '<%= validateOnClientImportPath %>';
+import fetcherImport from '<%= template.imports.module.fetcher %>';
+import createRPCImport from '<%= template.imports.module.createRPC %>';
+import schema from '<%= template.imports.module.schema %>';
+<% if (template.imports.module.validateOnClient) { %>
+import validateOnClientImport from '<%= template.imports.module.validateOnClient %>';
 const validateOnClient = validateOnClientImport.default || validateOnClientImport;
 <% } else { %>
 const validateOnClient = undefined;
 <% } %>
-const apiRoot = '<%= apiRoot %>';
+const apiRoot = '<%= template.apiRoot %>';
 const fetcher = fetcherImport.default || fetcherImport;
 const createRPC = createRPCImport.default || createRPCImport;
-<% segments.forEach((segment, i) => {
-  Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
+<% template.segments.forEach((segment, i) => {
+  Object.keys(template.fullSchema[segment.segmentName].controllers).forEach((key) => { %>
 export const <%= key %> = createRPC(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 

@@ -19,16 +19,7 @@ export default async function getProjectInfo({
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
   const schemaOutImportPath =
     path.relative(config.clientOutDir, config.schemaOutDir).replace(/\\/g, '/') + // windows fix
-    '/index.js';
-  const fetcherClientImportPath = config.fetcherPath.startsWith('.')
-    ? path.relative(config.clientOutDir, config.fetcherPath)
-    : config.fetcherPath;
-  const createRPCImportPath = config.createRPCPath.startsWith('.')
-    ? path.relative(config.clientOutDir, config.createRPCPath)
-    : config.createRPCPath;
-  const validateOnClientImportPath = config.validateOnClientPath?.startsWith('.')
-    ? path.relative(config.clientOutDir, config.validateOnClientPath)
-    : config.validateOnClientPath;
+    '/index.cjs';
 
   const log = getLogger(config.logLevel);
 
@@ -40,17 +31,30 @@ export default async function getProjectInfo({
     log.error(`Error reading config file at ${configAbsolutePaths[0]}: ${error?.message ?? 'Unknown Error'}`);
   }
 
+  const getImportPath = (p: string) => (p.startsWith('.') ? path.relative(config.clientOutDir, p) : p);
+  const clientImports = {
+    schema: schemaOutImportPath,
+    fetcher: getImportPath(config.fetcherImport[0]),
+    createRPC: getImportPath(config.createRPCImport[0]),
+    validateOnClient: config.validateOnClientImport ? getImportPath(config.validateOnClientImport[0]) : null,
+    module: {
+      schema: schemaOutImportPath,
+      fetcher: getImportPath(config.fetcherImport[1] ?? config.fetcherImport[0]),
+      createRPC: getImportPath(config.createRPCImport[1] ?? config.createRPCImport[0]),
+      validateOnClient: config.validateOnClientImport
+        ? getImportPath(config.validateOnClientImport[1] ?? config.validateOnClientImport[0])
+        : null,
+    },
+  };
+
   return {
     cwd,
     port,
     apiRoot,
     apiDir,
     srcRoot,
-    schemaOutImportPath,
-    fetcherClientImportPath,
-    createRPCImportPath,
-    validateOnClientImportPath,
     config,
+    clientImports,
     log,
   };
 }

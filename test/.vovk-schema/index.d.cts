@@ -1,8 +1,8 @@
 // auto-generated
 import type { VovkSchema } from 'vovk';
-declare const segmentSchema: {
-  '': VovkSchema;
-  'foo/client': VovkSchema;
-  'generated': VovkSchema;
+declare const fullSchema: {
+  '': import('.json');
+  'foo/client': import('foo/client.json');
+  'generated': import('generated.json');
 };
-export default segmentSchema;
+export default fullSchema;

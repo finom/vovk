@@ -1,5 +1,5 @@
 import getUserConfig from './getUserConfig.mjs';
-import type { VovkConfig, VovkEnv } from '../types.mjs';
+import type { VovkEnv, VovkStrictConfig } from '../types.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 
 export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: string; cwd: string }) {
@@ -7,11 +7,17 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({ cwd });
   const conf = userConfig ?? {};
   const srcRoot = await getRelativeSrcRoot({ cwd });
-  const config: Required<VovkConfig> = {
+
+  const validateOnClientImport = env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.validateOnClientImport ?? null;
+  const fetcherImport = env.VOVK_FETCHER_PATH ?? conf.fetcherImport ?? 'vovk/dist/client/defaultFetcher.js';
+  const createRPCImport = env.VOVK_CREATE_RPC_PATH ?? conf.createRPCImport ?? 'vovk/dist/client/createRPC.js';
+
+  const config: VovkStrictConfig = {
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
-    validateOnClientPath: env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.validateOnClientPath ?? null,
-    fetcherPath: env.VOVK_FETCHER_PATH ?? conf.fetcherPath ?? 'vovk/dist/client/defaultFetcher.js',
-    createRPCPath: env.VOVK_CREATE_RPC_PATH ?? conf.createRPCPath ?? 'vovk/dist/client/createRPC.js',
+    validateOnClientImport:
+      typeof validateOnClientImport === 'string' ? [validateOnClientImport] : validateOnClientImport,
+    fetcherImport: typeof fetcherImport === 'string' ? [fetcherImport] : fetcherImport,
+    createRPCImport: typeof createRPCImport === 'string' ? [createRPCImport] : createRPCImport,
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     clientOutDir: clientOutDir ?? env.VOVK_CLIENT_OUT_DIR ?? conf.clientOutDir ?? './node_modules/.vovk-client',
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash

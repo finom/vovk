@@ -646,6 +646,20 @@
           }
         }
       }
+    },
+    "OpenApiControllerRPC": {
+      "controllerName": "OpenApiControllerRPC",
+      "originalControllerName": "OpenApiController",
+      "prefix": "openapi",
+      "handlers": {
+        "getSchema": {
+          "openapi": {
+            "summary": "Hello, World!"
+          },
+          "path": "",
+          "httpMethod": "GET"
+        }
+      }
     }
   }
 }

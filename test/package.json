@@ -31,6 +31,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint-config-next": "15.1.6",
+    "openapi3-ts": "^4.4.0",
     "postcss": "^8",
     "tailwind": "^4.0.0",
     "tailwindcss": "^4"

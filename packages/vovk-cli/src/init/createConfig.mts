@@ -30,7 +30,7 @@ export default async function createConfig({
 
   if (validationLibrary) {
     if (validateOnClient) {
-      config.validateOnClientPath = `${validationLibrary}/validateOnClient.js`;
+      config.validateOnClientImport = `${validationLibrary}/validateOnClient.js`;
     }
 
     try {
@@ -42,7 +42,7 @@ export default async function createConfig({
   }
 
   if (reactQuery) {
-    config.createRPCPath = 'vovk-react-query';
+    config.createRPCImport = 'vovk-react-query';
   }
 
   config.templates = templates;

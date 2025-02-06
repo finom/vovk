@@ -15,7 +15,6 @@ export default async function ensureSchemaFiles(
 ): Promise<void> {
   const now = Date.now();
   let hasChanged = false;
-  // Create index.js file
   const indexContent = `// auto-generated
 ${segmentNames
   .map((segmentName) => {
@@ -25,13 +24,13 @@ ${segmentNames
 
   const dTsContent = `// auto-generated
 import type { VovkSchema } from 'vovk';
-declare const segmentSchema: {
-${segmentNames.map((segmentName) => `  '${segmentName}': VovkSchema;`).join('\n')}
+declare const fullSchema: {
+${segmentNames.map((segmentName) => `  '${segmentName}': import('${segmentName}.json');`).join('\n')}
 };
-export default segmentSchema;`;
+export default fullSchema;`;
 
-  const jsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.js');
-  const dTsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.d.ts');
+  const jsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.cjs');
+  const dTsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.d.cts');
 
   const existingJs = await fs.readFile(jsAbsolutePath, 'utf-8').catch(() => null);
   const existingDTs = await fs.readFile(dTsAbsolutePath, 'utf-8').catch(() => null);

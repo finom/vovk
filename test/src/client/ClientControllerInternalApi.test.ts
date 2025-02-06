@@ -1,4 +1,4 @@
-import segmentsSchema from '../../.vovk-schema';
+import segmentsSchema from '../../.vovk-schema/index.cjs';
 import type ClientController from './ClientController';
 import { createRPC } from 'vovk';
 import { it, expect, describe } from '@jest/globals';

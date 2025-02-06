@@ -1,6 +1,6 @@
 import {
   createRPC,
-  HttpException,
+  type HttpException,
   type KnownAny,
   type VovkClientOptions,
   type VovkDefaultFetcherOptions,

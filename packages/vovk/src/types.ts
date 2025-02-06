@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server';
+import type { OperationObject } from 'openapi3-ts/oas31';
 import type { StreamJSONResponse } from './StreamJSONResponse';
 import { VovkStreamAsyncIterable } from './client/types';
 
@@ -10,6 +11,7 @@ export type VovkHandlerSchema = {
   path: string;
   httpMethod: HttpMethod;
   validation?: { query?: KnownAny; body?: KnownAny };
+  openapi?: OperationObject;
   custom?: Record<string, KnownAny>;
 };
 

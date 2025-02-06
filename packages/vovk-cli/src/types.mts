@@ -25,9 +25,9 @@ export type VovkEnv = {
 export type VovkConfig = {
   clientOutDir?: string;
   schemaOutDir?: string;
-  fetcherPath?: string;
-  validateOnClientPath?: string | null;
-  createRPCPath?: string;
+  fetcherImport?: string | string[];
+  validateOnClientImport?: string | string[] | null;
+  createRPCImport?: string | string[];
   modulesDir?: string;
   rootEntry?: string;
   origin?: string;
@@ -41,6 +41,14 @@ export type VovkConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
+};
+
+export type VovkStrictConfig = Required<
+  Omit<VovkConfig, 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport'>
+> & {
+  validateOnClientImport: string[] | null;
+  fetcherImport: string[];
+  createRPCImport: string[];
 };
 
 export type VovkModuleRenderResult = {

@@ -1,14 +1,14 @@
 
 <%- '// auto-generated\n/* eslint-disable */' %>
 import type { VovkClientFetcher } from 'vovk';
-import type fetcher from '<%= fetcherClientImportPath %>';
-import type createRPC from '<%= createRPCImportPath %>';
-<% segments.forEach((segment, i) => { if(Object.keys(segmentsSchema[segment.segmentName].controllers).length) { %>
+import type fetcher from '<%= template.imports.module.fetcher %>';
+import type createRPC from '<%= template.imports.module.createRPC %>';
+<% template.segments.forEach((segment, i) => { if(Object.keys(template.fullSchema[segment.segmentName].controllers).length) { %>
 import type { Controllers as Controllers<%= i %> } from "<%= segment.segmentImportPath %>";
 <% }}) %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-<% segments.forEach((segment, i) => { 
-  Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
+<% template.segments.forEach((segment, i) => { 
+  Object.keys(template.fullSchema[segment.segmentName].controllers).forEach((key) => { %>
 export const <%= key %>: ReturnType<typeof createRPC<Controllers<%= i %>["<%= key %>"], Options>>;
   <% }) 
 }) %>

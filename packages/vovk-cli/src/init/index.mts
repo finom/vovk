@@ -45,7 +45,7 @@ export class Init {
   ) {
     const { log, root } = this;
     const dependencies: string[] = ['vovk', 'vovk-client'];
-    const devDependencies: string[] = ['vovk-cli'];
+    const devDependencies: string[] = ['vovk-cli', 'openapi3-ts'];
 
     // delete older config files
     if (configPaths.length) {
@@ -189,7 +189,7 @@ export class Init {
         updateScripts: updateScripts ?? 'implicit',
         validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
         validateOnClient: validateOnClient ?? true,
-        reactQuery: reactQuery ?? false,
+        reactQuery: reactQuery ?? true,
         dryRun: dryRun ?? false,
         channel: channel ?? 'latest',
       } satisfies Required<Omit<InitOptions, 'yes' | 'logLevel'>>);
@@ -251,7 +251,7 @@ export class Init {
     updateScripts =
       updateScripts ??
       (await select({
-        message: 'Do you want to update package.json by adding "generate" and "dev" NPM scripts?',
+        message: 'Do you want to update package.json by adding "generate" and updating "dev" NPM scripts?',
         default: 'implicit',
         choices: [
           {
@@ -275,7 +275,7 @@ export class Init {
     reactQuery =
       reactQuery ??
       (await confirm({
-        message: 'Do you want to use @tanstack/react-query for data fetching inside components?',
+        message: 'Do you want to use @tanstack/react-query for data fetching at React components?',
       }));
 
     if (typeof updateTsConfig === 'undefined') {

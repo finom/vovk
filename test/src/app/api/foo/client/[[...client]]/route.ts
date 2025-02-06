@@ -7,6 +7,7 @@ import CostomSchemaController from '../../../../../client/CostomSchemaController
 import WithZodClientController from '../../../../../client/WithZodClientController';
 import WithYupClientController from '../../../../../client/WithYupClientController';
 import WithDtoClientController from '../../../../../client/WithDtoClientController';
+import OpenApiController from '../../../../../client/OpenApiController';
 
 const controllers = {
   ClientControllerRPC: ClientController,
@@ -16,6 +17,7 @@ const controllers = {
   WithZodClientControllerRPC: WithZodClientController,
   WithYupClientControllerRPC: WithYupClientController,
   WithDtoClientControllerRPC: WithDtoClientController,
+  OpenApiControllerRPC: OpenApiController,
 };
 
 export type Controllers = typeof controllers;

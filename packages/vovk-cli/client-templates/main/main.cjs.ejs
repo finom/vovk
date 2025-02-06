@@ -1,11 +1,11 @@
 <%- '// auto-generated\n/* eslint-disable */' %>
-const { default: fetcher } = require('<%= fetcherClientImportPath %>');
-const { default: createRPC } = require('<%= createRPCImportPath %>');
-const schema = require('<%= schemaOutImportPath %>');
-const { default: validateOnClient = null } = <%- validateOnClientImportPath ? `require('${validateOnClientImportPath}')` : '{}'%>;
-const apiRoot = '<%= apiRoot %>';
-<% segments.forEach((segment) => { 
-  Object.keys(segmentsSchema[segment.segmentName].controllers).forEach((key) => { %>
+const { default: fetcher } = require('<%= template.imports.fetcher %>');
+const { default: createRPC } = require('<%= template.imports.createRPC %>');
+const schema = require('<%= template.imports.schema %>');
+const { default: validateOnClient = null } = <%- template.imports.validateOnClient ? `require('${template.imports.validateOnClient}')` : '{}'%>;
+const apiRoot = '<%= template.apiRoot %>';
+<% template.segments.forEach((segment) => { 
+  Object.keys(template.fullSchema[segment.segmentName].controllers).forEach((key) => { %>
 exports.<%= key %> = createRPC(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 

@@ -1,9 +1,6 @@
 import * as Yup from 'yup';
-import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest } from 'vovk';
+import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 import { convertSchema } from '@sodaru/yup-to-json-schema';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KnownAny = any;
 
 type VovkRequestWithOptionalYup<
   YUP_BODY extends Yup.Schema<KnownAny> | null = null,

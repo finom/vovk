@@ -1,7 +1,7 @@
 import { it, expect, describe } from '@jest/globals';
-import segmentsSchema from '../../.vovk-schema';
+import segmentsSchema from '../../.vovk-schema/index.cjs';
 
-describe('Custom .vovk.json schema', () => {
+describe('Custom schema', () => {
   it('Should write custom schema', () => {
     expect(
       segmentsSchema['foo/client'].controllers.CostomSchemaControllerRPC.handlers.getWithCustomSchema.custom?.hello

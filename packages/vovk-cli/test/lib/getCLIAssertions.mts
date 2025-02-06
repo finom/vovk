@@ -55,12 +55,12 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   assertConfig.makeConfig = (validationLibrary: string | null, useReactQuery?: boolean) => ({
     ...(validationLibrary
       ? {
-          validateOnClientPath: `${validationLibrary}/validateOnClient.js`,
+          validateOnClientImport: `${validationLibrary}/validateOnClient.js`,
         }
       : {}),
     ...(useReactQuery
       ? {
-          createRPCPath: 'vovk-react-query',
+          createRPCImport: 'vovk-react-query',
         }
       : {}),
     templates: {

@@ -5,6 +5,7 @@ import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import prettify from '../utils/prettify.mjs';
+import chalk from 'chalk';
 
 export default async function newSegment({
   segmentName,
@@ -49,7 +50,8 @@ ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
 
   log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} created at ${absoluteSegmentRoutePath}.`);
 
+  const dir = chalk.cyanBright([segmentName, 'thing'].filter(Boolean).join('/'));
   log.info(
-    `Run ${chalkHighlightThing(`npx vovk new service controller ${[segmentName, 'thing'].filter(Boolean).join('/')}`)} to create a new controller with a service at /modules/thing/ folder.`
+    `Run ${chalkHighlightThing(`npx vovk new service controller ${dir}`)} to create a new controller with a service at modules/${dir} folder for this segment`
   );
 }

@@ -1,0 +1,1 @@
+export { openapi } from './openapi';

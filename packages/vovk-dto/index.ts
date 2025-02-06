@@ -1,9 +1,6 @@
 import { validate, type ValidationError } from 'class-validator';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
-import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest } from 'vovk';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KnownAny = any;
+import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 
 type VovkRequestWithOptionalDto<BODY extends object | null = null, QUERY extends object | null = null> = VovkRequest<
   BODY extends object ? BODY : never,
@@ -57,7 +54,6 @@ function withDto<
         );
       }
       // redeclare to add ability to call req.json() again
-      // @ts-ignore TODO: Suppress build error in ESM mode: Property 'json' does not exist on type 'EnhancedReq'.
       req.json = () => Promise.resolve(body as BODY extends object ? BODY : never);
       req.vovk.body = () => Promise.resolve(bodyInstance as BODY extends object ? BODY : never);
     }

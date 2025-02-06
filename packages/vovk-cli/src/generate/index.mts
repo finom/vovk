@@ -25,16 +25,7 @@ export default async function generate({
 } & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
   templates = templates ?? projectInfo.config.experimental_clientGenerateTemplateNames;
   const noClient = templates?.[0] === 'none';
-  const {
-    config,
-    cwd,
-    log,
-    validateOnClientImportPath,
-    apiRoot,
-    fetcherClientImportPath,
-    createRPCImportPath,
-    schemaOutImportPath,
-  } = projectInfo;
+  const { config, cwd, log, clientImports, apiRoot } = projectInfo;
 
   const { clientOutDirAbsolutePath, templateFiles } = getClientTemplates({ config, cwd, templateNames: templates });
   // Ensure that each segment has a matching schema if it needs to be emitted:
@@ -50,14 +41,11 @@ export default async function generate({
   const now = Date.now();
 
   // Data for the EJS templates:
-  const ejsData = {
+  const template = {
     apiRoot,
-    fetcherClientImportPath,
-    schemaOutImportPath,
-    validateOnClientImportPath,
-    createRPCImportPath,
+    imports: clientImports,
     segments,
-    segmentsSchema,
+    fullSchema: segmentsSchema,
   };
 
   // Process each template in parallel
@@ -69,7 +57,15 @@ export default async function generate({
           const templateContent = await fs.readFile(templatePath, 'utf-8');
 
           // Render the template
-          let rendered = templatePath.endsWith('.ejs') ? ejs.render(templateContent, ejsData) : templateContent;
+          let rendered = templatePath.endsWith('.ejs')
+            ? ejs.render(
+                templateContent,
+                { template },
+                {
+                  filename: templatePath,
+                }
+              )
+            : templateContent;
 
           // Optionally prettify
           if (prettifyClient || config.prettifyClient) {

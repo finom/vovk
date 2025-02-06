@@ -4,6 +4,6 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "module": "CommonJS",
-    "declaration": true,
+    "declaration": true
   }
 }

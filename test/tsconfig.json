@@ -26,6 +26,6 @@
       "vovk-cli/*": ["../packages/vovk-cli/*"],
       "vovk-validate-client-ajv/*": ["../packages/vovk-validate-client-ajv/*"],
       "next/*": ["./node_modules/next/*"]
-    },
+    }
   }
 }

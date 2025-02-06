@@ -1,9 +1,6 @@
 import z, { type ZodSchema } from 'zod';
-import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest } from 'vovk';
+import { setClientValidatorsForHandler, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 import zodToJsonSchema from 'zod-to-json-schema';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KnownAny = any;
 
 type VovkRequestWithOptionalZod<
   ZOD_BODY extends ZodSchema | null = null,

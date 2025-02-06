@@ -3,7 +3,7 @@
   "version": "0.0.1-draft.37",
   "description": "useQuery and useMutation hooks for Vovk.ts",
   "scripts": {
-    "build": "rm *.tsbuildinfo && npm run build:cjs && npm run build:esm",
+    "build": "rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
     "build:esm": "tsc -P tsconfig.build.esm.json --module esnext",
     "build:cjs": "cp index.mts index.cts && tsc -P tsconfig.build.cjs.json",
     "tsc": "tsc --noEmit",
