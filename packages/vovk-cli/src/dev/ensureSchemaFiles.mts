@@ -15,7 +15,7 @@ export default async function ensureSchemaFiles(
 ): Promise<void> {
   const now = Date.now();
   let hasChanged = false;
-  const indexContent = `// auto-generated
+  const jsContent = `// auto-generated
 ${segmentNames
   .map((segmentName) => {
     return `module.exports['${segmentName}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
@@ -23,24 +23,35 @@ ${segmentNames
   .join('\n')}`;
 
   const dTsContent = `// auto-generated
-import type { VovkSchema } from 'vovk';
 declare const fullSchema: {
 ${segmentNames.map((segmentName) => `  '${segmentName}': typeof import('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`).join('\n')}
 };
 export default fullSchema;`;
 
-  const jsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.cjs');
-  const dTsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.d.cts');
+  const tsContent = `// auto-generated
+${segmentNames.map((segmentName, i) => `import segment${i} from './${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
+const fullSchema = {
+${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i},`).join('\n')}
+};
+export default fullSchema;`;
+
+  const jsAbsolutePath = path.join(schemaOutAbsolutePath, 'main.cjs');
+  const dTsAbsolutePath = path.join(schemaOutAbsolutePath, 'main.d.cts');
+  const tsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.ts');
 
   const existingJs = await fs.readFile(jsAbsolutePath, 'utf-8').catch(() => null);
   const existingDTs = await fs.readFile(dTsAbsolutePath, 'utf-8').catch(() => null);
+  const existingTs = await fs.readFile(tsAbsolutePath, 'utf-8').catch(() => null);
 
   await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
-  if (existingJs !== indexContent) {
-    await fs.writeFile(jsAbsolutePath, indexContent);
+  if (existingJs !== jsContent) {
+    await fs.writeFile(jsAbsolutePath, jsContent);
   }
   if (existingDTs !== dTsContent) {
     await fs.writeFile(dTsAbsolutePath, dTsContent);
+  }
+  if (existingTs !== tsContent) {
+    await fs.writeFile(tsAbsolutePath, tsContent);
   }
 
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested)
