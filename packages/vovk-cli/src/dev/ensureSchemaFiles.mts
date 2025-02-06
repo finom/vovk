@@ -25,7 +25,7 @@ ${segmentNames
   const dTsContent = `// auto-generated
 import type { VovkSchema } from 'vovk';
 declare const fullSchema: {
-${segmentNames.map((segmentName) => `  '${segmentName}': import('${segmentName}.json');`).join('\n')}
+${segmentNames.map((segmentName) => `  '${segmentName}': typeof import('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`).join('\n')}
 };
 export default fullSchema;`;
 
