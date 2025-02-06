@@ -1,11 +1,8 @@
-import type { KnownAny, VovkController } from '../types';
+import type { KnownAny, VovkController, VovkHandlerSchema } from '../types';
 
-export function setClientValidatorsForHandler(
+export function setHandlerValidation(
   h: (...args: KnownAny[]) => KnownAny,
-  validation: {
-    body: unknown;
-    query: unknown;
-  }
+  validation: Pick<Exclude<VovkHandlerSchema['validation'], undefined>, 'body' | 'query' | 'output'>
 ) {
   return new Promise<void>((resolve) => {
     // the setTimeout is necessary to ensure that the _controller is already defined

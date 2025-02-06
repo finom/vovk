@@ -57,6 +57,7 @@
           "path": "",
           "httpMethod": "GET",
           "validation": {
+            "body": null,
             "query": {
               "type": "object",
               "properties": {
@@ -64,12 +65,11 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "output": null
           }
         },
         "updateZodControllerOnlyEntity": {
@@ -81,15 +81,10 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ],
+              "required": ["foo"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -100,12 +95,11 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "q"
-              ],
+              "required": ["q"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "output": null
           }
         },
         "createZodControllerOnlyEntity": {
@@ -127,6 +121,7 @@
           "path": "",
           "httpMethod": "GET",
           "validation": {
+            "body": null,
             "query": {
               "type": "object",
               "properties": {
@@ -134,12 +129,11 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "output": null
           }
         },
         "updateZodControllerAndServiceEntity": {
@@ -151,15 +145,10 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ],
+              "required": ["foo"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -170,12 +159,11 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "q"
-              ],
+              "required": ["q"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "output": null
           }
         },
         "createZodControllerAndServiceEntity": {
@@ -217,18 +205,11 @@
               "default": {},
               "properties": {
                 "foo": {
-                  "type": [
-                    "string"
-                  ],
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "type": ["string"],
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "type": "object",
@@ -280,18 +261,11 @@
               "default": {},
               "properties": {
                 "foo": {
-                  "type": [
-                    "string"
-                  ],
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "type": ["string"],
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "type": "object",
@@ -326,7 +300,8 @@
             "body": null,
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "updateDtoControllerOnlyEntity": {
@@ -338,7 +313,8 @@
             },
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "createDtoControllerOnlyEntity": {
@@ -363,7 +339,8 @@
             "body": null,
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "updateDtoControllerAndServiceEntity": {
@@ -375,7 +352,8 @@
             },
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "createDtoControllerAndServiceEntity": {

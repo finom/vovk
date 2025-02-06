@@ -158,10 +158,9 @@
                   "const": "body"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
+              "description": "This is a body",
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
             "query": {
@@ -172,12 +171,11 @@
                   "const": "query"
                 }
               },
-              "required": [
-                "hey"
-              ],
+              "required": ["hey"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "output": null
           }
         },
         "putWithBodyAndNullQuery": {
@@ -192,12 +190,12 @@
                   "const": "body"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "query": null,
+            "output": null
           }
         },
         "putWithBodyOnly": {
@@ -212,18 +210,19 @@
                   "const": "body"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "query": null,
+            "output": null
           }
         },
         "getWithQueryAndNullBody": {
           "httpMethod": "GET",
           "path": "get-with-query-and-null-body",
           "validation": {
+            "body": null,
             "query": {
               "type": "object",
               "properties": {
@@ -232,18 +231,18 @@
                   "const": "query"
                 }
               },
-              "required": [
-                "hey"
-              ],
+              "required": ["hey"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "output": null
           }
         },
         "getNestedQuery": {
           "path": "nested-query",
           "httpMethod": "GET",
           "validation": {
+            "body": null,
             "query": {
               "type": "object",
               "properties": {
@@ -295,42 +294,28 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": [
-                                  "deepKey"
-                                ],
+                                "required": ["deepKey"],
                                 "additionalProperties": false
                               }
                             },
-                            "required": [
-                              "foo"
-                            ],
+                            "required": ["foo"],
                             "additionalProperties": false
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ],
+                      "required": ["x", "arrOfObjects"],
                       "additionalProperties": false
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ],
+                  "required": ["f", "u", "d"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ],
+              "required": ["x", "y", "z"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "output": null
           }
         }
       }
@@ -350,14 +335,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -365,14 +346,10 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": [
-                    "query"
-                  ]
+                  "enum": ["query"]
                 }
               },
-              "required": [
-                "hey"
-              ]
+              "required": ["hey"]
             }
           }
         },
@@ -386,14 +363,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           }
         },
@@ -407,14 +380,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           }
         },
@@ -428,14 +397,10 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": [
-                    "query"
-                  ]
+                  "enum": ["query"]
                 }
               },
-              "required": [
-                "hey"
-              ]
+              "required": ["hey"]
             }
           }
         },
@@ -494,19 +459,13 @@
                                 "type": "string"
                               },
                               "nestedArr": {
-                                "type": [
-                                  "array",
-                                  "null"
-                                ],
+                                "type": ["array", "null"],
                                 "items": {
                                   "type": "string"
                                 }
                               },
                               "nestedObj": {
-                                "type": [
-                                  "object",
-                                  "null"
-                                ],
+                                "type": ["object", "null"],
                                 "default": {},
                                 "properties": {
                                   "deepKey": {
@@ -515,30 +474,17 @@
                                 }
                               }
                             },
-                            "required": [
-                              "foo"
-                            ]
+                            "required": ["foo"]
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ]
+                      "required": ["x", "arrOfObjects"]
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
+                  "required": ["f", "u", "d"]
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             }
           }
         }
@@ -558,7 +504,8 @@
             },
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "postWithBodyAndQueryTransformed": {
@@ -570,7 +517,8 @@
             },
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "putWithBodyAndNullQuery": {
@@ -580,7 +528,8 @@
             "body": {
               "isDTO": true
             },
-            "query": null
+            "query": null,
+            "output": null
           }
         },
         "putWithBodyOnly": {
@@ -590,7 +539,8 @@
             "body": {
               "isDTO": true
             },
-            "query": null
+            "query": null,
+            "output": null
           }
         },
         "getWithQueryAndNullBody": {
@@ -600,7 +550,8 @@
             "body": null,
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "postWithBodyAndQueryWithReqVovk": {
@@ -612,7 +563,8 @@
             },
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "getWithQueryArrayAndNullBody": {
@@ -622,7 +574,8 @@
             "body": null,
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         },
         "putWithMappedType": {
@@ -632,7 +585,8 @@
             "body": {
               "isDTO": true
             },
-            "query": null
+            "query": null,
+            "output": null
           }
         },
         "getNestedQuery": {
@@ -642,7 +596,8 @@
             "body": null,
             "query": {
               "isDTO": true
-            }
+            },
+            "output": null
           }
         }
       }

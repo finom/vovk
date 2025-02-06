@@ -6,7 +6,7 @@ import * as z from 'zod';
 export default class WithZodClientController {
   @post(':foo')
   static postWithBodyQueryAndParams = withZod(
-    z.object({ hello: z.literal('body') }),
+    z.object({ hello: z.literal('body') }).describe('This is a body'),
     z.object({ hey: z.literal('query') }),
     async (req, params: { foo: 'bar' }) => {
       const body = await req.json();

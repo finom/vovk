@@ -32,7 +32,7 @@ import { HttpException } from './HttpException';
 import { createDecorator } from './createDecorator';
 import { StreamJSONResponse } from './StreamJSONResponse';
 import { generateStaticAPI } from './utils/generateStaticAPI';
-import { setClientValidatorsForHandler } from './utils/setClientValidatorsForHandler';
+import { setHandlerValidation } from './utils/setHandlerValidation';
 
 export {
   type KnownAny,
@@ -65,7 +65,7 @@ export {
   createRPC,
   generateStaticAPI,
   openapi,
-  setClientValidatorsForHandler,
+  setHandlerValidation,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initVovk } = createVovkApp();
