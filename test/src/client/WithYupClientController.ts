@@ -1,4 +1,4 @@
-import { post, put, get, del, prefix } from 'vovk';
+import { post, put, get, del, prefix, openapi } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as Yup from 'yup';
 
@@ -74,6 +74,23 @@ export default class WithYupClientController {
     }),
     (req) => {
       return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
+    }
+  );
+
+  @openapi({
+    summary: 'This is a summary',
+  })
+  @get('output-and-openapi')
+  static outputWithOpenApi = withYup(
+    null,
+    Yup.object().shape({
+      hello: Yup.string().required(),
+    }),
+    Yup.object().shape({
+      hello: Yup.string().required(),
+    }),
+    (req) => {
+      return { hello: req.vovk.query().hello };
     }
   );
 }

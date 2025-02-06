@@ -11,7 +11,7 @@ export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
     templateNames: config.experimental_clientGenerateTemplateNames,
   });
 
-  const text = `// auto-generated
+  const text = `// auto-generated ${new Date().toISOString()}
 // This is a temporary placeholder to avoid errors if client is imported before it's generated.
 // If you still see this text, the client is not generated yet because of an unknown problem.
 // Feel free to report an issue at https://github.com/finom/vovk/issues`;

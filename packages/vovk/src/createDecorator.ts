@@ -18,12 +18,29 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
       const controller = target as VovkController;
 
       const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
-        _sourceMethod?: (...args: KnownAny) => KnownAny;
+        _sourceMethod?: ((...args: KnownAny) => KnownAny);
+        _onSettled?: (controller: VovkController) => void;
       };
       if (typeof originalMethod !== 'function') {
         throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
       }
       const sourceMethod = originalMethod._sourceMethod ?? originalMethod;
+
+      const method = function method(req: REQUEST, params?: unknown) {
+        const next: Next = async () => {
+          return (await originalMethod.call(controller, req, params)) as unknown;
+        };
+
+        return handler ? handler.call(controller, req, next, ...args) : next();
+      };
+
+      controller[propertyKey] = method;
+
+      method._controller = controller;
+      method._sourceMethod = sourceMethod;
+      // TODO define internal method type
+      (originalMethod as unknown as { _controller: VovkController })._controller = controller;
+      originalMethod?._onSettled?.(controller);
 
       const handlerSchema: VovkHandlerSchema | null = controller._handlers?.[propertyKey] ?? null;
       const initResultReturn = initHandler?.call(controller, ...args);
@@ -39,23 +56,6 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
           ...(initResult?.custom ? { custom: initResult.custom } : {}),
         },
       };
-
-      const method = function method(req: REQUEST, params?: unknown) {
-        const next: Next = async () => {
-          return (await originalMethod.call(controller, req, params)) as unknown;
-        };
-
-        return handler ? handler.call(controller, req, next, ...args) : next();
-      };
-
-      method._controller = controller;
-
-      // TODO define internal method type
-      (originalMethod as unknown as { _controller: VovkController })._controller = controller;
-
-      controller[propertyKey] = method;
-
-      method._sourceMethod = sourceMethod;
     };
   };
 }

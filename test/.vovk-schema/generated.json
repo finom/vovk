@@ -55,52 +55,11 @@
       "handlers": {
         "getZodControllerOnlyEntities": {
           "path": "",
-          "httpMethod": "GET",
-          "validation": {
-            "body": null,
-            "query": {
-              "type": "object",
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "required": ["search"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "output": null
-          }
+          "httpMethod": "GET"
         },
         "updateZodControllerOnlyEntity": {
           "path": ":id",
-          "httpMethod": "PUT",
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "foo": {
-                  "type": "string",
-                  "enum": ["bar", "baz"]
-                }
-              },
-              "required": ["foo"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "query": {
-              "type": "object",
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              },
-              "required": ["q"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "output": null
-          }
+          "httpMethod": "PUT"
         },
         "createZodControllerOnlyEntity": {
           "path": "",
@@ -119,52 +78,11 @@
       "handlers": {
         "getZodControllerAndServiceEntities": {
           "path": "",
-          "httpMethod": "GET",
-          "validation": {
-            "body": null,
-            "query": {
-              "type": "object",
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "required": ["search"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "output": null
-          }
+          "httpMethod": "GET"
         },
         "updateZodControllerAndServiceEntity": {
           "path": ":id",
-          "httpMethod": "PUT",
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "foo": {
-                  "type": "string",
-                  "enum": ["bar", "baz"]
-                }
-              },
-              "required": ["foo"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "query": {
-              "type": "object",
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              },
-              "required": ["q"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "output": null
-          }
+          "httpMethod": "PUT"
         },
         "createZodControllerAndServiceEntity": {
           "path": "",
@@ -183,44 +101,11 @@
       "handlers": {
         "getYupControllerOnlyEntities": {
           "path": "",
-          "httpMethod": "GET",
-          "validation": {
-            "query": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          "httpMethod": "GET"
         },
         "updateYupControllerOnlyEntity": {
           "path": ":id",
-          "httpMethod": "PUT",
-          "validation": {
-            "body": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
-                }
-              },
-              "required": ["foo"]
-            },
-            "query": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          "httpMethod": "PUT"
         },
         "createYupControllerOnlyEntity": {
           "path": "",
@@ -239,44 +124,11 @@
       "handlers": {
         "getYupControllerAndServiceEntities": {
           "path": "",
-          "httpMethod": "GET",
-          "validation": {
-            "query": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          "httpMethod": "GET"
         },
         "updateYupControllerAndServiceEntity": {
           "path": ":id",
-          "httpMethod": "PUT",
-          "validation": {
-            "body": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
-                }
-              },
-              "required": ["foo"]
-            },
-            "query": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          "httpMethod": "PUT"
         },
         "createYupControllerAndServiceEntity": {
           "path": "",
@@ -295,27 +147,11 @@
       "handlers": {
         "getDtoControllerOnlyEntities": {
           "path": "",
-          "httpMethod": "GET",
-          "validation": {
-            "body": null,
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "httpMethod": "GET"
         },
         "updateDtoControllerOnlyEntity": {
           "path": ":id",
-          "httpMethod": "PUT",
-          "validation": {
-            "body": {
-              "isDTO": true
-            },
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "httpMethod": "PUT"
         },
         "createDtoControllerOnlyEntity": {
           "path": "",
@@ -334,27 +170,11 @@
       "handlers": {
         "getDtoControllerAndServiceEntities": {
           "path": "",
-          "httpMethod": "GET",
-          "validation": {
-            "body": null,
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "httpMethod": "GET"
         },
         "updateDtoControllerAndServiceEntity": {
           "path": ":id",
-          "httpMethod": "PUT",
-          "validation": {
-            "body": {
-              "isDTO": true
-            },
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "httpMethod": "PUT"
         },
         "createDtoControllerAndServiceEntity": {
           "path": "",

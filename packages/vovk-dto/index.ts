@@ -13,39 +13,53 @@ function withDto<
   T extends (req: REQ, params: KnownAny) => OUTPUT,
   BODY extends object | null = null,
   QUERY extends object | null = null,
+  OUTPUT extends object | null = KnownAny,
   REQ extends VovkRequestWithOptionalDto<BODY, QUERY> = VovkRequestWithOptionalDto<BODY, QUERY>,
-  OUTPUT extends KnownAny = KnownAny,
+>(
+  bodyDto: ClassConstructor<BODY> | null,
+  queryDto: ClassConstructor<QUERY> | null,
+  outputDto: ClassConstructor<OUTPUT> | null,
+  givenHandler: T,
+): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+function withDto<
+  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  BODY extends object | null = null,
+  QUERY extends object | null = null,
+  OUTPUT extends object | null = KnownAny,
+  REQ extends VovkRequestWithOptionalDto<BODY, QUERY> = VovkRequestWithOptionalDto<BODY, QUERY>,
 >(
   bodyDto: ClassConstructor<BODY> | null,
   queryDto: ClassConstructor<QUERY> | null,
   givenHandler: T,
-  outputDto?: ClassConstructor<OUTPUT>
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withDto<
   T extends (req: REQ, params: KnownAny) => OUTPUT,
   BODY extends object | null = null,
   QUERY extends object | null = null,
+  OUTPUT extends object | null = KnownAny,
   REQ extends VovkRequestWithOptionalDto<BODY, QUERY> = VovkRequestWithOptionalDto<BODY, QUERY>,
-  OUTPUT extends KnownAny = KnownAny,
 >(
   bodyDto: ClassConstructor<BODY> | null,
   givenHandler: T,
-  outputDto?: ClassConstructor<OUTPUT>
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withDto<
   T extends (req: REQ, params: KnownAny) => OUTPUT,
   BODY extends object | null = null,
   QUERY extends object | null = null,
+  OUTPUT extends object | null = KnownAny,
   REQ extends VovkRequestWithOptionalDto<BODY, QUERY> = VovkRequestWithOptionalDto<BODY, QUERY>,
-  OUTPUT extends object | null = null,
 >(
   bodyDto: ClassConstructor<BODY> | null,
   queryDto: ClassConstructor<QUERY> | null | T,
-  givenHandler?: T | ClassConstructor<OUTPUT>,
-  outputDto?: ClassConstructor<OUTPUT>
+  outputDto?: ClassConstructor<OUTPUT> | null | T,
+  givenHandler?: T,
 ) {
-  if (queryDto && !isClass(queryDto)) {
-    return withDto<T, BODY, QUERY, REQ, OUTPUT>(bodyDto, null, queryDto as T, givenHandler as ClassConstructor<OUTPUT>);
+  if(typeof outputDto === 'function') {
+    return withDto<T, BODY, QUERY, OUTPUT, REQ>(bodyDto, queryDto as ClassConstructor<QUERY>, null, outputDto as T);
+  }
+
+  if(typeof queryDto === 'function') {
+    return withDto<T, BODY, QUERY, OUTPUT, REQ>(bodyDto, null, null, queryDto as T);
   }
 
   type EnhancedReq = Omit<REQ, 'vovk'> & {
@@ -56,7 +70,7 @@ function withDto<
   };
 
   const outputHandler = async (req: EnhancedReq, params: KnownAny): Promise<OUTPUT> => {
-    const output = await (givenHandler as T)(req as unknown as REQ, params);
+    const output = await givenHandler!(req as unknown as REQ, params);
     if (outputDto) {
       if (!output) {
         throw new HttpException(

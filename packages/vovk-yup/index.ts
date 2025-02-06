@@ -11,45 +11,64 @@ type VovkRequestWithOptionalYup<
 >;
 
 function withYup<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (
+    req: REQ,
+    params: KnownAny
+  ) => YUP_OUTPUT extends Yup.Schema<KnownAny> ? Yup.InferType<YUP_OUTPUT> : KnownAny,
   YUP_BODY extends Yup.Schema<KnownAny> | null,
-  YUP_QUERY extends Yup.Schema<KnownAny> | null = Yup.Schema<undefined>,
+  YUP_QUERY extends Yup.Schema<KnownAny> | null = null,
+  YUP_OUTPUT extends Yup.Schema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY> = VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY>,
-  OUTPUT extends KnownAny = KnownAny,
-  YUP_OUTPUT extends Yup.Schema<OUTPUT> = Yup.Schema<OUTPUT>,
 >(
   bodyModel: YUP_BODY,
   queryModel: YUP_QUERY | null,
+  outputModel: YUP_OUTPUT | null,
   givenHandler: T,
-  outputModel?: YUP_OUTPUT
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withYup<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (
+    req: REQ,
+    params: KnownAny
+  ) => YUP_OUTPUT extends Yup.Schema<KnownAny> ? Yup.InferType<YUP_OUTPUT> : KnownAny,
   YUP_BODY extends Yup.Schema<KnownAny> | null,
-  YUP_QUERY extends Yup.Schema<KnownAny> | null = Yup.Schema<undefined>,
+  YUP_QUERY extends Yup.Schema<KnownAny> | null = null,
+  YUP_OUTPUT extends Yup.Schema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY> = VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY>,
-  OUTPUT extends KnownAny = KnownAny,
-  YUP_OUTPUT extends Yup.Schema<OUTPUT> = Yup.Schema<OUTPUT>,
 >(
   bodyModel: YUP_BODY,
+  queryModel: YUP_QUERY,
   givenHandler: T,
-  outputModel?: YUP_OUTPUT
+): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+// without output model
+function withYup<
+  T extends (
+    req: REQ,
+    params: KnownAny
+  ) => YUP_OUTPUT extends Yup.Schema<KnownAny> ? Yup.InferType<YUP_OUTPUT> : KnownAny,
+  YUP_BODY extends Yup.Schema<KnownAny> | null,
+  YUP_QUERY extends Yup.Schema<KnownAny> | null = null,
+  YUP_OUTPUT extends Yup.Schema<KnownAny> | null = null,
+  REQ extends VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY> = VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY>,
+>(  
+  bodyModel: YUP_BODY,
+  givenHandler: T,
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withYup<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (
+    req: REQ,
+    params: KnownAny
+  ) => YUP_OUTPUT extends Yup.Schema<KnownAny> ? Yup.InferType<YUP_OUTPUT> : KnownAny,
   YUP_BODY extends Yup.Schema<KnownAny> | null,
-  YUP_QUERY extends Yup.Schema<KnownAny> | null = Yup.Schema<undefined>,
+  YUP_QUERY extends Yup.Schema<KnownAny> | null = null,
+  YUP_OUTPUT extends Yup.Schema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY> = VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY>,
-  OUTPUT extends KnownAny = KnownAny,
-  YUP_OUTPUT extends Yup.Schema<OUTPUT> = Yup.Schema<OUTPUT>,
->(bodyModel: YUP_BODY, queryModel: YUP_QUERY | null | T, givenHandler?: T | YUP_OUTPUT, outputModel?: YUP_OUTPUT) {
-  if (typeof queryModel === 'function') {
-    return withYup<T, YUP_BODY, YUP_QUERY, REQ, OUTPUT, YUP_OUTPUT>(
-      bodyModel,
-      null,
-      queryModel,
-      givenHandler as YUP_OUTPUT
-    );
+>(bodyModel: YUP_BODY, queryModel: YUP_QUERY | T, outputModel?: YUP_OUTPUT | T, givenHandler?: T) {
+  if (typeof outputModel === 'function') {
+    return withYup<T, YUP_BODY, YUP_QUERY, YUP_OUTPUT, REQ>(bodyModel, queryModel as YUP_QUERY, null, outputModel);
+  }
+
+  if(typeof queryModel === 'function') {
+    return withYup<T, YUP_BODY, YUP_QUERY, null, REQ>(bodyModel, null, null, queryModel as T);
   }
 
   const outputHandler = async (req: REQ, params: Parameters<T>[1]) => {

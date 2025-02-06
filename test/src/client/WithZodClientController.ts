@@ -1,4 +1,4 @@
-import { post, put, get, del, prefix } from 'vovk';
+import { post, put, get, del, prefix, openapi } from 'vovk';
 import { withZod } from 'vovk-zod';
 import * as z from 'zod';
 
@@ -62,4 +62,12 @@ export default class WithZodClientController {
       return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
     }
   );
+
+  @get('output-and-openapi')
+  @openapi({
+    summary: 'This is a summary',
+  })
+  static outputWithOpenApi = withZod(null, z.object({ hello: z.string() }), z.object({ hello: z.string() }), (req) => {
+    return { hello: req.vovk.query().hello };
+  });
 }

@@ -10,46 +10,53 @@ type VovkRequestWithOptionalZod<
   ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined
 >;
 function withZod<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
   ZOD_BODY extends ZodSchema<unknown> | null,
-  ZOD_QUERY extends ZodSchema<Record<string, KnownAny> | undefined> | null = ZodSchema<undefined>,
+  ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
+  ZOD_OUTPUT extends ZodSchema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
-  OUTPUT extends KnownAny = KnownAny,
-  ZOD_OUTPUT extends ZodSchema<OUTPUT> = ZodSchema<OUTPUT>,
+>(
+  bodyModel: ZOD_BODY,
+  queryModel: ZOD_QUERY | null,
+  outputModel: ZOD_OUTPUT | null,
+  givenHandler: T,
+): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+function withZod<
+  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
+  ZOD_BODY extends ZodSchema<unknown> | null,
+  ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
+  ZOD_OUTPUT extends ZodSchema<KnownAny> | null = null,
+  REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
 >(
   bodyModel: ZOD_BODY,
   queryModel: ZOD_QUERY | null,
   givenHandler: T,
-  outputModel?: ZOD_OUTPUT
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withZod<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
   ZOD_BODY extends ZodSchema<unknown> | null,
-  ZOD_QUERY extends ZodSchema<Record<string, KnownAny> | undefined> | null = ZodSchema<undefined>,
+  ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
+  ZOD_OUTPUT extends ZodSchema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
-  OUTPUT extends KnownAny = KnownAny,
-  ZOD_OUTPUT extends ZodSchema<OUTPUT> = ZodSchema<OUTPUT>,
 >(
   bodyModel: ZOD_BODY,
   givenHandler: T,
-  outputModel?: ZOD_OUTPUT
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withZod<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
   ZOD_BODY extends ZodSchema<unknown> | null,
-  ZOD_QUERY extends ZodSchema<Record<string, KnownAny> | undefined> | null = ZodSchema<undefined>,
+  ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
+  ZOD_OUTPUT extends ZodSchema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
-  OUTPUT extends KnownAny = KnownAny,
-  ZOD_OUTPUT extends ZodSchema<OUTPUT> = ZodSchema<OUTPUT>,
->(bodyModel: ZOD_BODY, queryModel: ZOD_QUERY | null | T, givenHandler?: T | ZOD_OUTPUT, outputModel?: ZOD_OUTPUT) {
-  if (queryModel && typeof queryModel === 'function') {
-    return withZod<T, ZOD_BODY, ZOD_QUERY, REQ>(
-      bodyModel,
-      null,
-      queryModel as unknown as T,
-      givenHandler as ZOD_OUTPUT
-    );
+>(bodyModel: ZOD_BODY, queryModel: ZOD_QUERY | null | T, outputModel?: ZOD_OUTPUT | T, givenHandler?: T) {
+  if (typeof outputModel === 'function') {
+    return withZod<T, ZOD_BODY, ZOD_QUERY, ZOD_OUTPUT, REQ>(bodyModel, queryModel as ZOD_QUERY, null, outputModel);
   }
+
+  if (typeof queryModel === 'function') {
+    return withZod<T, ZOD_BODY, ZOD_QUERY, null, REQ>(bodyModel, null, null, queryModel);
+  }
+ 
 
   const outputHandler = async (req: REQ, params: Parameters<T>[1]) => {
     const output = await (givenHandler as T)(req, params);

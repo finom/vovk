@@ -15,20 +15,20 @@ export default async function ensureSchemaFiles(
 ): Promise<void> {
   const now = Date.now();
   let hasChanged = false;
-  const jsContent = `// auto-generated
+  const jsContent = `// auto-generated ${new Date().toISOString()}
 ${segmentNames
   .map((segmentName) => {
     return `module.exports['${segmentName}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
   })
   .join('\n')}`;
 
-  const dTsContent = `// auto-generated
+  const dTsContent = `// auto-generated ${new Date().toISOString()}
 declare const fullSchema: {
 ${segmentNames.map((segmentName) => `  '${segmentName}': typeof import('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`).join('\n')}
 };
 export default fullSchema;`;
 
-  const tsContent = `// auto-generated
+  const tsContent = `// auto-generated ${new Date().toISOString()}
 ${segmentNames.map((segmentName, i) => `import segment${i} from './${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
 const fullSchema = {
 ${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i},`).join('\n')}

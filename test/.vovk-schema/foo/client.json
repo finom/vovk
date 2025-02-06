@@ -148,175 +148,92 @@
       "handlers": {
         "postWithBodyQueryAndParams": {
           "path": ":foo",
-          "httpMethod": "POST",
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "hello": {
-                  "type": "string",
-                  "const": "body"
-                }
-              },
-              "required": ["hello"],
-              "additionalProperties": false,
-              "description": "This is a body",
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "query": {
-              "type": "object",
-              "properties": {
-                "hey": {
-                  "type": "string",
-                  "const": "query"
-                }
-              },
-              "required": ["hey"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "output": null
-          }
+          "httpMethod": "POST"
         },
         "putWithBodyAndNullQuery": {
           "httpMethod": "PUT",
-          "path": "put-with-body-and-null-query",
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "hello": {
-                  "type": "string",
-                  "const": "body"
-                }
-              },
-              "required": ["hello"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "query": null,
-            "output": null
-          }
+          "path": "put-with-body-and-null-query"
         },
         "putWithBodyOnly": {
           "httpMethod": "DELETE",
-          "path": "put-with-body-only",
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "hello": {
-                  "type": "string",
-                  "const": "body"
-                }
-              },
-              "required": ["hello"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "query": null,
-            "output": null
-          }
+          "path": "put-with-body-only"
         },
         "getWithQueryAndNullBody": {
           "httpMethod": "GET",
-          "path": "get-with-query-and-null-body",
-          "validation": {
-            "body": null,
-            "query": {
-              "type": "object",
-              "properties": {
-                "hey": {
-                  "type": "string",
-                  "const": "query"
-                }
-              },
-              "required": ["hey"],
-              "additionalProperties": false,
-              "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "output": null
-          }
+          "path": "get-with-query-and-null-body"
         },
         "getNestedQuery": {
           "path": "nested-query",
-          "httpMethod": "GET",
+          "httpMethod": "GET"
+        },
+        "outputWithOpenApi": {
           "validation": {
             "body": null,
             "query": {
               "type": "object",
               "properties": {
-                "x": {
+                "hello": {
                   "type": "string"
-                },
-                "y": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "z": {
-                  "type": "object",
-                  "properties": {
-                    "f": {
-                      "type": "string"
-                    },
-                    "u": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "d": {
-                      "type": "object",
-                      "properties": {
-                        "x": {
-                          "type": "string"
-                        },
-                        "arrOfObjects": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "foo": {
-                                "type": "string"
-                              },
-                              "nestedArr": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "nestedObj": {
-                                "type": "object",
-                                "properties": {
-                                  "deepKey": {
-                                    "type": "string"
-                                  }
-                                },
-                                "required": ["deepKey"],
-                                "additionalProperties": false
-                              }
-                            },
-                            "required": ["foo"],
-                            "additionalProperties": false
-                          }
-                        }
-                      },
-                      "required": ["x", "arrOfObjects"],
-                      "additionalProperties": false
-                    }
-                  },
-                  "required": ["f", "u", "d"],
-                  "additionalProperties": false
                 }
               },
-              "required": ["x", "y", "z"],
+              "required": [
+                "hello"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null
-          }
+            "output": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            }
+          },
+          "openapi": {
+            "responses": {
+              "200": {
+                "description": "Success",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "hello": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "hello"
+                      ],
+                      "additionalProperties": false,
+                      "$schema": "http://json-schema.org/draft-07/schema#"
+                    }
+                  }
+                }
+              }
+            },
+            "parameters": [
+              {
+                "name": "hello",
+                "in": "query",
+                "description": "",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "summary": "This is a summary"
+          },
+          "path": "output-and-openapi",
+          "httpMethod": "GET"
         }
       }
     },
@@ -327,165 +244,87 @@
       "handlers": {
         "postWithBodyAndQuery": {
           "httpMethod": "POST",
-          "path": "post-with-body-and-query",
-          "validation": {
-            "body": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "hello": {
-                  "type": "string",
-                  "enum": ["body"]
-                }
-              },
-              "required": ["hello"]
-            },
-            "query": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "hey": {
-                  "type": "string",
-                  "enum": ["query"]
-                }
-              },
-              "required": ["hey"]
-            }
-          }
+          "path": "post-with-body-and-query"
         },
         "putWithBodyAndNullQuery": {
           "httpMethod": "PUT",
-          "path": "put-with-body-and-null-query",
-          "validation": {
-            "body": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "hello": {
-                  "type": "string",
-                  "enum": ["body"]
-                }
-              },
-              "required": ["hello"]
-            }
-          }
+          "path": "put-with-body-and-null-query"
         },
         "putWithBodyOnly": {
           "httpMethod": "DELETE",
-          "path": "put-with-body-only",
+          "path": "put-with-body-only"
+        },
+        "getWithQueryAndNullBody": {
+          "httpMethod": "GET",
+          "path": "get-with-query-and-null-body"
+        },
+        "getNestedQuery": {
+          "path": "nested-query",
+          "httpMethod": "GET"
+        },
+        "outputWithOpenApi": {
+          "path": "output-and-openapi",
+          "httpMethod": "GET",
           "validation": {
-            "body": {
+            "query": {
               "type": "object",
               "default": {},
               "properties": {
                 "hello": {
-                  "type": "string",
-                  "enum": ["body"]
+                  "type": "string"
                 }
               },
-              "required": ["hello"]
-            }
-          }
-        },
-        "getWithQueryAndNullBody": {
-          "httpMethod": "GET",
-          "path": "get-with-query-and-null-body",
-          "validation": {
-            "query": {
+              "required": [
+                "hello"
+              ]
+            },
+            "output": {
               "type": "object",
               "default": {},
               "properties": {
-                "hey": {
-                  "type": "string",
-                  "enum": ["query"]
-                }
-              },
-              "required": ["hey"]
-            }
-          }
-        },
-        "getNestedQuery": {
-          "path": "nested-query",
-          "httpMethod": "GET",
-          "validation": {
-            "query": {
-              "type": "object",
-              "default": {
-                "z": {
-                  "d": {}
-                }
-              },
-              "properties": {
-                "x": {
+                "hello": {
                   "type": "string"
-                },
-                "y": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "z": {
-                  "type": "object",
-                  "default": {
-                    "d": {}
-                  },
-                  "properties": {
-                    "f": {
-                      "type": "string"
-                    },
-                    "u": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "d": {
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "openapi": {
+            "responses": {
+              "200": {
+                "description": "Success",
+                "content": {
+                  "application/json": {
+                    "schema": {
                       "type": "object",
                       "default": {},
                       "properties": {
-                        "x": {
+                        "hello": {
                           "type": "string"
-                        },
-                        "arrOfObjects": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "default": {
-                              "nestedObj": {}
-                            },
-                            "properties": {
-                              "foo": {
-                                "type": "string"
-                              },
-                              "nestedArr": {
-                                "type": ["array", "null"],
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "nestedObj": {
-                                "type": ["object", "null"],
-                                "default": {},
-                                "properties": {
-                                  "deepKey": {
-                                    "type": "string"
-                                  }
-                                }
-                              }
-                            },
-                            "required": ["foo"]
-                          }
                         }
                       },
-                      "required": ["x", "arrOfObjects"]
+                      "required": [
+                        "hello"
+                      ]
                     }
-                  },
-                  "required": ["f", "u", "d"]
+                  }
                 }
-              },
-              "required": ["x", "y", "z"]
-            }
+              }
+            },
+            "parameters": [
+              {
+                "name": "hello",
+                "in": "query",
+                "description": "",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "summary": "This is a summary"
           }
         }
       }
@@ -497,108 +336,39 @@
       "handlers": {
         "postWithBodyQueryAndParams": {
           "path": "with-params/:param",
-          "httpMethod": "POST",
-          "validation": {
-            "body": {
-              "isDTO": true
-            },
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "httpMethod": "POST"
         },
         "postWithBodyAndQueryTransformed": {
           "httpMethod": "POST",
-          "path": "post-with-body-and-query-transformed",
-          "validation": {
-            "body": {
-              "isDTO": true
-            },
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "path": "post-with-body-and-query-transformed"
         },
         "putWithBodyAndNullQuery": {
           "httpMethod": "PUT",
-          "path": "put-with-body-and-null-query",
-          "validation": {
-            "body": {
-              "isDTO": true
-            },
-            "query": null,
-            "output": null
-          }
+          "path": "put-with-body-and-null-query"
         },
         "putWithBodyOnly": {
           "httpMethod": "DELETE",
-          "path": "put-with-body-only",
-          "validation": {
-            "body": {
-              "isDTO": true
-            },
-            "query": null,
-            "output": null
-          }
+          "path": "put-with-body-only"
         },
         "getWithQueryAndNullBody": {
           "httpMethod": "GET",
-          "path": "get-with-query-and-null-body",
-          "validation": {
-            "body": null,
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "path": "get-with-query-and-null-body"
         },
         "postWithBodyAndQueryWithReqVovk": {
           "httpMethod": "POST",
-          "path": "post-with-body-and-query-with-req-vovk",
-          "validation": {
-            "body": {
-              "isDTO": true
-            },
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "path": "post-with-body-and-query-with-req-vovk"
         },
         "getWithQueryArrayAndNullBody": {
           "httpMethod": "GET",
-          "path": "get-with-query-array-and-null-body",
-          "validation": {
-            "body": null,
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "path": "get-with-query-array-and-null-body"
         },
         "putWithMappedType": {
           "httpMethod": "PUT",
-          "path": "put-with-mapped-type",
-          "validation": {
-            "body": {
-              "isDTO": true
-            },
-            "query": null,
-            "output": null
-          }
+          "path": "put-with-mapped-type"
         },
         "getNestedQuery": {
           "path": "nested-query",
-          "httpMethod": "GET",
-          "validation": {
-            "body": null,
-            "query": {
-              "isDTO": true
-            },
-            "output": null
-          }
+          "httpMethod": "GET"
         }
       }
     },

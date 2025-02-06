@@ -1,4 +1,4 @@
-import { post, prefix, put, del, get } from 'vovk';
+import { post, prefix, put, del, get, openapi } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { Contains, IsArray, IsString, ArrayNotEmpty, ArrayMinSize, ValidateNested, IsOptional } from 'class-validator';
 import { plainToInstance, Type } from 'class-transformer';
@@ -42,6 +42,11 @@ class BodyComplexDto {
   world: 'world_body';
   @Contains('omit')
   omit: 'omit';
+}
+
+class OutputDto {
+  @Contains('hello')
+  hello: 'hello';
 }
 
 export class MappedDto extends OmitType(BodyComplexDto, ['omit'] as const) {}
@@ -167,5 +172,13 @@ export default class WithDtoClientController {
   @get('nested-query')
   static getNestedQuery = withDto(null, NestedExampleObjectDTO, (req) => {
     return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
+  });
+
+  @openapi({
+    summary: 'This is a summary',
+  })
+  @get('output-and-openapi')
+  static outputWithOpenApi = withDto(null, OutputDto, OutputDto, (req) => {
+    return { hello: req.vovk.query().hello };
   });
 }
