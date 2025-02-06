@@ -81,7 +81,7 @@ export type VovkClient<T, OPTS extends { [key: string]: KnownAny }> = OmitNever<
 export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
   options: {
     name: keyof T;
-    httpMethod: `${HttpMethod}`;
+    httpMethod: HttpMethod;
     getEndpoint: (data: {
       apiRoot: string;
       params: { [key: string]: string };

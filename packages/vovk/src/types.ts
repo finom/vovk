@@ -9,7 +9,7 @@ export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no
 
 export type VovkHandlerSchema = {
   path: string;
-  httpMethod: `${HttpMethod}`;
+  httpMethod: string; // HttpMethod type makes JSON incompatible with VovkHandlerSchema type
   validation?: { query?: KnownAny; body?: KnownAny };
   openapi?: OperationObject;
   custom?: Record<string, KnownAny>;

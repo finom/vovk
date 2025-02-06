@@ -4,6 +4,7 @@ import {
   type VovkControllerParams,
   type VovkControllerQuery,
   type KnownAny,
+  type HttpMethod,
 } from '../types';
 import { type VovkClientOptions, type VovkClient, type VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
@@ -77,7 +78,7 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
 
       const internalOptions: Parameters<typeof fetcher>[0] = {
         name: staticMethodName as keyof T,
-        httpMethod,
+        httpMethod: httpMethod as HttpMethod,
         getEndpoint,
         validate,
         defaultHandler,
