@@ -2,8 +2,6 @@ import { validate, type ValidationError } from 'class-validator';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
 import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 
-const isClass = (f: Function) => f.toString().startsWith('class ');
-
 type VovkRequestWithOptionalDto<BODY extends object | null = null, QUERY extends object | null = null> = VovkRequest<
   BODY extends object ? BODY : never,
   QUERY extends object ? QUERY : undefined
