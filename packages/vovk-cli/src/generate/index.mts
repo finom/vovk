@@ -77,13 +77,7 @@ export default async function generate({
 
           // Determine if we need to rewrite the file, ignore 1st line
           const needsWriting =
-            existingContent.split('\n').slice(1).join('\n') !== rendered.split('\n').slice(1).join('\n');
-
-            console.log({
-              outPath,
-              rendered,
-              needsWriting,
-            })
+            existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
 
           return {
             outPath,
