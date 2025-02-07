@@ -76,7 +76,8 @@ export default async function generate({
           const existingContent = await fs.readFile(outPath, 'utf-8').catch(() => '');
 
           // Determine if we need to rewrite the file
-          const needsWriting = existingContent !== rendered;
+          const needsWriting =
+            existingContent.split('\n').slice(1).join('\n') !== rendered.split('\n').slice(1).join('\n');
 
           return {
             outPath,

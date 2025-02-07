@@ -46,13 +46,13 @@ export default fullSchema;`;
   const existingTs = await fs.readFile(tsAbsolutePath, 'utf-8').catch(() => null);
 
   await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
-  if (existingJs !== jsContent) {
+  if (existingJs?.split('\n').slice(1).join('\n') !== jsContent.split('\n').slice(1).join('\n')) {
     await fs.writeFile(jsAbsolutePath, jsContent);
   }
-  if (existingDTs !== dTsContent) {
+  if (existingDTs?.split('\n').slice(1).join('\n') !== dTsContent.split('\n').slice(1).join('\n')) {
     await fs.writeFile(dTsAbsolutePath, dTsContent);
   }
-  if (existingTs !== tsContent) {
+  if (existingTs?.split('\n').slice(1).join('\n') !== tsContent.split('\n').slice(1).join('\n')) {
     await fs.writeFile(tsAbsolutePath, tsContent);
   }
 
