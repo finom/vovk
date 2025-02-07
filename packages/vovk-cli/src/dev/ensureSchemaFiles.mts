@@ -46,6 +46,7 @@ export default fullSchema;`;
   const existingTs = await fs.readFile(tsAbsolutePath, 'utf-8').catch(() => null);
 
   await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
+  // ignore 1st lines at the files
   if (existingJs?.split('\n').slice(1).join('\n') !== jsContent.split('\n').slice(1).join('\n')) {
     await fs.writeFile(jsAbsolutePath, jsContent);
   }

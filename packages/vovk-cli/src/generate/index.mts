@@ -75,9 +75,15 @@ export default async function generate({
           // Read existing file content to compare
           const existingContent = await fs.readFile(outPath, 'utf-8').catch(() => '');
 
-          // Determine if we need to rewrite the file
+          // Determine if we need to rewrite the file, ignore 1st line
           const needsWriting =
             existingContent.split('\n').slice(1).join('\n') !== rendered.split('\n').slice(1).join('\n');
+
+            console.log({
+              outPath,
+              rendered,
+              needsWriting,
+            })
 
           return {
             outPath,
