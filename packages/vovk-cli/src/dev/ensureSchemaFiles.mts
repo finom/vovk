@@ -23,15 +23,17 @@ ${segmentNames
   .join('\n')}`;
 
   const dTsContent = `// auto-generated ${new Date().toISOString()}
+import type { VovkSchema } from 'vovk';
 declare const fullSchema: {
-${segmentNames.map((segmentName) => `  '${segmentName}': typeof import('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`).join('\n')}
+${segmentNames.map((segmentName) => `  '${segmentName}': VovkSchema;`).join('\n')}
 };
 export default fullSchema;`;
 
   const tsContent = `// auto-generated ${new Date().toISOString()}
+import type { VovkSchema } from 'vovk';
 ${segmentNames.map((segmentName, i) => `import segment${i} from './${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
 const fullSchema = {
-${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i},`).join('\n')}
+${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i} as VovkSchema,`).join('\n')}
 };
 export default fullSchema;`;
 
