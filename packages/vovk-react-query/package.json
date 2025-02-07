@@ -41,7 +41,7 @@
   "peerDependencies": {
     "@tanstack/react-query": "^5.66.0",
     "react": "^19.0.0",
-    "vovk": "^3.0.0-draft.73"
+    "vovk": "^3.0.0-draft.74"
   },
   "devDependencies": {
     "@testing-library/react": "^16.2.0",

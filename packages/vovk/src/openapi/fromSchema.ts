@@ -22,12 +22,12 @@ export function fromSchema(
   }
 
   return {
+    ...extendWith,
     openapi: '3.1.0',
-    paths,
     info: extendWith?.info ?? {
       title: 'API',
       version: '1.0.0',
     },
-    ...extendWith,
+    paths,
   };
 }
