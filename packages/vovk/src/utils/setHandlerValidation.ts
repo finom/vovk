@@ -27,7 +27,7 @@ export async function setHandlerValidation(
     controller._handlers = {
       ...controller._handlers,
       [handlerName]: {
-        ...controller._handlers[handlerName],
+        ...controller._handlers?.[handlerName],
         validation,
       },
     };

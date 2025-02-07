@@ -1,4 +1,4 @@
-// auto-generated 2025-02-06T22:57:16.570Z
+// auto-generated 2025-02-07T10:10:36.972Z
 import segment0 from './_root.json';
 import segment1 from './foo/client.json';
 import segment2 from './generated.json';

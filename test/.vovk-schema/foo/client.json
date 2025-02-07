@@ -369,6 +369,18 @@
         "getNestedQuery": {
           "path": "nested-query",
           "httpMethod": "GET"
+        },
+        "outputWithOpenApi": {
+          "path": "output-and-openapi",
+          "httpMethod": "GET",
+          "validation": {
+            "body": null,
+            "query": null,
+            "output": null
+          },
+          "openapi": {
+            "summary": "This is a summary"
+          }
         }
       }
     },

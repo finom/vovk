@@ -1,4 +1,4 @@
-// auto-generated 2025-02-06T22:57:16.570Z
+// auto-generated 2025-02-07T10:10:36.971Z
 module.exports[''] = require('./_root.json');
 module.exports['foo/client'] = require('./foo/client.json');
 module.exports['generated'] = require('./generated.json');
