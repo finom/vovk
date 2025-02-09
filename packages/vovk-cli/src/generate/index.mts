@@ -128,7 +128,7 @@ export default async function generate({
   );
 
   log.info(
-    `Client generated from templates ${chalkHighlightThing(usedTemplateNames.map((s) => `"${s}"`).join(', '))}${unusedTemplateNames.length ? ` (files generated from templates ${chalkHighlightThing(unusedTemplateNames.map((s) => `"${s}"`).join(', '))} are up to date)` : ''} in ${Date.now() - now}ms`
+    `Client generated from template${usedTemplateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(usedTemplateNames.map((s) => `"${s}"`).join(', '))}${unusedTemplateNames.length ? ` (files generated from template${unusedTemplateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(unusedTemplateNames.map((s) => `"${s}"`).join(', '))} are up to date)` : ''} at ${clientOutDirAbsolutePath} in ${Date.now() - now}ms`
   );
   return { written: true, path: clientOutDirAbsolutePath };
 }
