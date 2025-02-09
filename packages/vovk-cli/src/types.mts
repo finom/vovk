@@ -95,4 +95,5 @@ export interface NewOptions {
   dir?: string;
   overwrite?: boolean;
   noSegmentUpdate?: boolean;
+  empty?: boolean;
 }

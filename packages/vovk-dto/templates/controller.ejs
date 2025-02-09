@@ -1,60 +1,57 @@
-<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
-<% var modulePascalNamePlural = pluralize(modulePascalName); %>
-<% var controllerName = modulePascalName + 'Controller'; %>
-<% var compiledName = modulePascalName + 'RPC'; %>
-<% var serviceName = modulePascalName + 'Service'; %>
-<% var prefix = pluralize(_.kebabCase(moduleName).toLowerCase()); %>
+<% const vars = { 
+  ControllerName: t.TheThing + 'Controller',
+  ServiceName = t.TheThing + 'Service',
+}; %>
 ---
-dir: <%= getModuleDirName(segmentName, moduleName) %>
-fileName: <%= controllerName + '.ts' %>
-sourceName: <%= controllerName %>
-compiledName: <%= compiledName %>
+dir: <%= t.defaultDir %>
+fileName: <%= vars.ControllerName + '.ts' %>
+sourceName: <%= vars.ControllerName %>
+compiledName: <%= t.TheThing + 'RPC' %>
 ---
-
 import { prefix, get, put, post, del } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { IsString, IsIn } from 'class-validator';
-<% if(withService) { %>
-import <%= serviceName %> from './<%= serviceName %>';
+<% if(t.withService) { %>
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
 <% } %>
 
-class Get<%= modulePascalNamePlural %>QueryDto {
+class Get<%= t.TheThings %>QueryDto {
   @IsString()
   search: string;
 }
 
-class Update<%= modulePascalName %>BodyDto {
+class Update<%= t.TheThing %>BodyDto {
   @IsIn(['bar', 'baz'])
   foo: 'bar' | 'baz';
 }
 
-class Update<%= modulePascalName %>QueryDto {
+class Update<%= t.TheThing %>QueryDto {
   @IsString()
   q: string;
 }
 
-@prefix('<%= prefix %>')
-export default class <%= controllerName %> {
+@prefix('<%= t['the-things'] %>')
+export default class <%= vars.ControllerName %> {
     @get()
-    static get<%= modulePascalNamePlural %> = withDto(null, Get<%= modulePascalNamePlural %>QueryDto, (req) => {
+    static get<%= t.TheThings %> = withDto(null, Get<%= t.TheThings %>QueryDto, (req) => {
         const { search } = req.vovk.query();
         <% if(withService) { %>
-        return <%= serviceName %>.get<%= modulePascalNamePlural %>(search);
+        return <%= ServiceName %>.get<%= modulePascalNamePlural %>(search);
         <% } else { %>
         return { results: [], search };
         <% } %>
     });
 
     @put(':id')
-    static update<%= modulePascalName %> = withDto(
-        Update<%= modulePascalName %>BodyDto,
-        Update<%= modulePascalName %>QueryDto,
+    static update<%= t.TheThing %> = withDto(
+        Update<%= t.TheThing %>BodyDto,
+        Update<%= t.TheThing %>QueryDto,
         async (req, params: { id: string }) => {
             const { id } = params;
             const body = await req.vovk.body();
             const { q } = req.vovk.query();
-            <% if(withService) { %>
-            return <%= serviceName %>.update<%= modulePascalName %>(id, q, body);
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.update<%= vars.modulePascalName %>(id, q, body);
             <% } else { %>
             return { id, body, q };
             <% } %>
@@ -62,12 +59,12 @@ export default class <%= controllerName %> {
     );
 
     @post()
-    static create<%= modulePascalName %> = () => {
+    static create<%= t.TheThing %> = () => {
         // ...
     };
 
     @del(':id')
-    static delete<%= modulePascalName %> = () => {
+    static delete<%= t.TheThing %> = () => {
         // ...
     };
 }

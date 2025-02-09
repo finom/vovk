@@ -31,6 +31,7 @@ export default async function newModule({
   templates: templatesFlag,
   noSegmentUpdate,
   overwrite,
+  empty,
 }: {
   what: string[];
   moduleNameWithOptionalSegment: string;
@@ -39,6 +40,7 @@ export default async function newModule({
   templates?: string[];
   noSegmentUpdate?: boolean;
   overwrite?: boolean;
+  empty?: boolean;
 }) {
   const { config, log, apiDir, cwd } = await getProjectInfo();
   let templates = config.templates as Required<typeof config.templates>;
@@ -90,6 +92,7 @@ export default async function newModule({
         ? path.resolve(cwd, templatePath)
         : path.resolve(cwd, './node_modules', templatePath);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
+
     const {
       dir: renderedDir,
       fileName,
@@ -102,6 +105,7 @@ export default async function newModule({
       withService: what.includes('service'),
       segmentName,
       moduleName,
+      empty,
     });
     const dir = dirFlag || renderedDir;
     if (!dir) {

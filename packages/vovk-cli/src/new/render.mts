@@ -14,12 +14,14 @@ export default async function render(
     withService,
     segmentName,
     moduleName,
+    empty,
   }: {
     cwd: string;
     config: VovkConfig;
     withService: boolean;
     segmentName: string;
     moduleName: string;
+    empty?: boolean;
   }
 ): Promise<VovkModuleRenderResult> {
   const getModuleDirName = (givenSegmentName: string, givenModuleName: string) =>
@@ -27,24 +29,48 @@ export default async function render(
       .filter(Boolean)
       .join('/');
 
-  const templateVars = {
-    // input
+  /*
+    <% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
+<% var modulePascalNamePlural = pluralize(modulePascalName); %>
+<% var controllerName = modulePascalName + 'Controller'; %>
+<% var compiledName = modulePascalName + 'RPC'; %>
+<% var serviceName = modulePascalName + 'Service'; %>
+<% var prefix = pluralize(_.kebabCase(moduleName).toLowerCase()); %>
+    */
+  const theThing = _.camelCase(moduleName);
+  const TheThing = _.upperFirst(theThing);
+  const the_thing = _.snakeCase(moduleName);
+  const THE_THING = _.toUpper(the_thing);
+  const the__thing = _.kebabCase(moduleName);
+
+  const template = {
+    // module name variations
+    moduleName,
+    theThing,
+    theThings: pluralize(theThing),
+    TheThing,
+    TheThings: pluralize(TheThing),
+    the_thing,
+    the_things: pluralize(the_thing),
+    THE_THING,
+    THE_THINGS: pluralize(THE_THING),
+    'the-thing': the__thing,
+    'the-things': pluralize(the__thing),
+
+    // data
     config,
     withService,
     segmentName,
-    moduleName,
-
-    // utils
-    getModuleDirName,
+    defaultDir: getModuleDirName(segmentName, theThing),
 
     // libraries
     _, // lodash
     pluralize,
   };
 
-  const parsed = matter((await ejs.render(codeTemplate, templateVars, { async: true })).trim());
+  const parsed = matter((await ejs.render(codeTemplate, { template }, { async: true })).trim());
   const { dir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
-  const code = parsed.content;
+  const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;
 
   return {
     dir,

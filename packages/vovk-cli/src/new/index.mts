@@ -4,7 +4,7 @@ import type { NewOptions } from '../types.mjs';
 
 export default async function newComponents(
   components: string[],
-  { dryRun, dir, templates, overwrite, noSegmentUpdate }: NewOptions
+  { dryRun, dir, templates, overwrite, noSegmentUpdate, empty }: NewOptions
 ) {
   if (components[0] === 'segment' || components[0] === 'segments') {
     // vovk new segment [segmentName]
@@ -39,6 +39,7 @@ export default async function newComponents(
       overwrite,
       noSegmentUpdate,
       dryRun,
+      empty,
     });
   }
 }

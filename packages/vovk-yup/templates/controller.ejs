@@ -1,37 +1,35 @@
-<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
-<% var modulePascalNamePlural = pluralize(modulePascalName); %>
-<% var controllerName = modulePascalName + 'Controller'; %>
-<% var compiledName = modulePascalName + 'RPC'; %>
-<% var serviceName = modulePascalName + 'Service'; %>
-<% var prefix = pluralize(_.kebabCase(moduleName).toLowerCase()); %>
+<% const vars = { 
+  ControllerName: t.TheThing + 'Controller',
+  ServiceName = t.TheThing + 'Service',
+}; %>
 ---
-dir: <%= getModuleDirName(segmentName, moduleName) %>
-fileName: <%= controllerName + '.ts' %>
-sourceName: <%= controllerName %>
-compiledName: <%= compiledName %>
+dir: <%= t.defaultDir %>
+fileName: <%= vars.ControllerName + '.ts' %>
+sourceName: <%= vars.ControllerName %>
+compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
 import { prefix, get, put, post, del } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
-<% if(withService) { %>
-import <%= serviceName %> from './<%= serviceName %>';
+<% if(t.withService) { %>
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
 <% } %>
 
-@prefix('<%= prefix %>')
-export default class <%= controllerName %> {
+@prefix('<%= t['the-things'] %>')
+export default class <%= vars.ControllerName %> {
     @get()
-    static get<%= modulePascalNamePlural %> = withYup(null, yup.object({ search: yup.string() }), (req) => {
+    static get<%= t.TheThings %> = withYup(null, yup.object({ search: yup.string() }), (req) => {
         const search = req.nextUrl.searchParams.get('search');
-        <% if(withService) { %>
-        return <%= serviceName %>.get<%= modulePascalNamePlural %>(search);
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
         <% } else { %>
         return { results: [], search };
         <% } %>
     });
 
     @put(':id')
-    static update<%= modulePascalName %> = withYup(
+    static update<%= t.TheThing %> = withYup(
         yup.object({
             foo: yup.mixed().oneOf(['bar', 'baz']).required(),
         }),
@@ -40,8 +38,8 @@ export default class <%= controllerName %> {
             const { id } = params;
             const body = await req.json();
             const q = req.nextUrl.searchParams.get('q');
-            <% if(withService) { %>
-            return <%= serviceName %>.update<%= modulePascalName %>(id, q, body);
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
             <% } else { %>
             return { id, body, q };
             <% } %>
@@ -49,12 +47,12 @@ export default class <%= controllerName %> {
     );
 
     @post()
-    static create<%= modulePascalName %> = () => {
+    static create<%= t.TheThing %> = () => {
         // ...
     };
 
     @del(':id')
-    static delete<%= modulePascalName %> = () => {
+    static delete<%= t.TheThing %> = () => {
         // ...
     };
 }
