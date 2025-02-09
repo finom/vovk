@@ -8,6 +8,7 @@ import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import prettify from '../utils/prettify.mjs';
 import { GenerateOptions } from '../types.mjs';
 import getClientTemplates from './getClientTemplates.mjs';
+import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 
 export default async function generate({
   projectInfo,
@@ -52,7 +53,7 @@ export default async function generate({
   const processedTemplates = noClient
     ? []
     : await Promise.all(
-        templateFiles.map(async ({ templatePath, outPath }) => {
+        templateFiles.map(async ({ templatePath, outPath, templateName }) => {
           // Read the EJS template
           const templateContent = await fs.readFile(templatePath, 'utf-8');
 
@@ -83,13 +84,15 @@ export default async function generate({
             outPath,
             rendered,
             needsWriting,
+            templateName,
           };
         })
       );
 
-  const anyNeedsWriting = processedTemplates.some(({ needsWriting }) => needsWriting);
+  const usedTemplateNames = processedTemplates.filter(({ needsWriting }) => needsWriting);
+  const unusedTemplateNames = processedTemplates.filter(({ needsWriting }) => !needsWriting);
 
-  if (fullSchema || anyNeedsWriting) {
+  if (fullSchema || usedTemplateNames.length > 0) {
     // Make sure the output directory exists
     await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
   }
@@ -103,7 +106,7 @@ export default async function generate({
     log.info(`Full schema has ben written to ${fullSchemaOutAbsolutePath}`);
   }
 
-  if (!anyNeedsWriting) {
+  if (usedTemplateNames.length === 0) {
     const logOrDebug = forceNothingWrittenLog ? log.info : log.debug;
     logOrDebug(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
     return { written: false, path: clientOutDirAbsolutePath };
@@ -119,6 +122,6 @@ export default async function generate({
     })
   );
 
-  log.info(`Client generated in ${Date.now() - now}ms`);
+  log.info(`Client generated from templates ${chalkHighlightThing(usedTemplateNames.join(', '))}${unusedTemplateNames.length ? ` (files generated from templates ${unusedTemplateNames.join(', ')} are up to date)` : ''} in ${Date.now() - now}ms`);
   return { written: true, path: clientOutDirAbsolutePath };
 }

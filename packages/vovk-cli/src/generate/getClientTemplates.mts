@@ -2,6 +2,7 @@ import path from 'node:path';
 import { VovkConfig } from '../types.mjs';
 
 interface ClientTemplate {
+  templateName: string;
   templatePath: string;
   outPath: string;
 }
@@ -21,6 +22,7 @@ export default function getClientTemplates({
   const mapper =
     (dir: string) =>
     (name: string): ClientTemplate => ({
+      templateName: name,
       templatePath: path.resolve(templatesDir, dir, name),
       outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
     });
@@ -39,6 +41,7 @@ export default function getClientTemplates({
       return [
         ...acc,
         {
+          templateName: template,
           templatePath: path.resolve(cwd, template),
           outPath: path.join(clientOutDirAbsolutePath, path.basename(template).replace('.ejs', '')),
         },
