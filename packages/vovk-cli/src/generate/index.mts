@@ -9,6 +9,7 @@ import prettify from '../utils/prettify.mjs';
 import { GenerateOptions } from '../types.mjs';
 import getClientTemplates from './getClientTemplates.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import uniq from 'lodash/uniq.js';
 
 export default async function generate({
   projectInfo,
@@ -89,8 +90,8 @@ export default async function generate({
         })
       );
 
-  const usedTemplateNames = processedTemplates.filter(({ needsWriting }) => needsWriting).map(({ templateName }) => templateName);
-  const unusedTemplateNames = processedTemplates.filter(({ needsWriting }) => !needsWriting).map(({ templateName }) => templateName);
+  const usedTemplateNames = uniq(processedTemplates.filter(({ needsWriting }) => needsWriting).map(({ templateName }) => templateName));
+  const unusedTemplateNames = uniq(processedTemplates.filter(({ needsWriting }) => !needsWriting).map(({ templateName }) => templateName));
 
   if (fullSchema || usedTemplateNames.length > 0) {
     // Make sure the output directory exists
