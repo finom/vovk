@@ -23,7 +23,7 @@ function withYup<
   bodyModel: YUP_BODY,
   queryModel: YUP_QUERY | null,
   outputModel: YUP_OUTPUT | null,
-  givenHandler: T,
+  givenHandler: T
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withYup<
   T extends (
@@ -34,11 +34,7 @@ function withYup<
   YUP_QUERY extends Yup.Schema<KnownAny> | null = null,
   YUP_OUTPUT extends Yup.Schema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY> = VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY>,
->(
-  bodyModel: YUP_BODY,
-  queryModel: YUP_QUERY,
-  givenHandler: T,
-): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+>(bodyModel: YUP_BODY, queryModel: YUP_QUERY, givenHandler: T): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 // without output model
 function withYup<
   T extends (
@@ -49,10 +45,7 @@ function withYup<
   YUP_QUERY extends Yup.Schema<KnownAny> | null = null,
   YUP_OUTPUT extends Yup.Schema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY> = VovkRequestWithOptionalYup<YUP_BODY, YUP_QUERY>,
->(  
-  bodyModel: YUP_BODY,
-  givenHandler: T,
-): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+>(bodyModel: YUP_BODY, givenHandler: T): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withYup<
   T extends (
     req: REQ,
@@ -67,7 +60,7 @@ function withYup<
     return withYup<T, YUP_BODY, YUP_QUERY, YUP_OUTPUT, REQ>(bodyModel, queryModel as YUP_QUERY, null, outputModel);
   }
 
-  if(typeof queryModel === 'function') {
+  if (typeof queryModel === 'function') {
     return withYup<T, YUP_BODY, YUP_QUERY, null, REQ>(bodyModel, null, null, queryModel as T);
   }
 

@@ -18,7 +18,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
       const controller = target as VovkController;
 
       const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
-        _sourceMethod?: ((...args: KnownAny) => KnownAny);
+        _sourceMethod?: (...args: KnownAny) => KnownAny;
         _onSettled?: (controller: VovkController) => void;
       };
       if (typeof originalMethod !== 'function') {

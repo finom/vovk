@@ -17,7 +17,7 @@ function withDto<
   bodyDto: ClassConstructor<BODY> | null,
   queryDto: ClassConstructor<QUERY> | null,
   outputDto: ClassConstructor<OUTPUT> | null,
-  givenHandler: T,
+  givenHandler: T
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withDto<
   T extends (req: REQ, params: KnownAny) => OUTPUT,
@@ -28,7 +28,7 @@ function withDto<
 >(
   bodyDto: ClassConstructor<BODY> | null,
   queryDto: ClassConstructor<QUERY> | null,
-  givenHandler: T,
+  givenHandler: T
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withDto<
   T extends (req: REQ, params: KnownAny) => OUTPUT,
@@ -36,10 +36,7 @@ function withDto<
   QUERY extends object | null = null,
   OUTPUT extends object | null = KnownAny,
   REQ extends VovkRequestWithOptionalDto<BODY, QUERY> = VovkRequestWithOptionalDto<BODY, QUERY>,
->(
-  bodyDto: ClassConstructor<BODY> | null,
-  givenHandler: T,
-): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+>(bodyDto: ClassConstructor<BODY> | null, givenHandler: T): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withDto<
   T extends (req: REQ, params: KnownAny) => OUTPUT,
   BODY extends object | null = null,
@@ -50,13 +47,13 @@ function withDto<
   bodyDto: ClassConstructor<BODY> | null,
   queryDto: ClassConstructor<QUERY> | null | T,
   outputDto?: ClassConstructor<OUTPUT> | null | T,
-  givenHandler?: T,
+  givenHandler?: T
 ) {
-  if(typeof outputDto === 'function') {
+  if (typeof outputDto === 'function') {
     return withDto<T, BODY, QUERY, OUTPUT, REQ>(bodyDto, queryDto as ClassConstructor<QUERY>, null, outputDto as T);
   }
 
-  if(typeof queryDto === 'function') {
+  if (typeof queryDto === 'function') {
     return withDto<T, BODY, QUERY, OUTPUT, REQ>(bodyDto, null, null, queryDto as T);
   }
 

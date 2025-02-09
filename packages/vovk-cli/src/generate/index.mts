@@ -90,8 +90,12 @@ export default async function generate({
         })
       );
 
-  const usedTemplateNames = uniq(processedTemplates.filter(({ needsWriting }) => needsWriting).map(({ templateName }) => templateName));
-  const unusedTemplateNames = uniq(processedTemplates.filter(({ needsWriting }) => !needsWriting).map(({ templateName }) => templateName));
+  const usedTemplateNames = uniq(
+    processedTemplates.filter(({ needsWriting }) => needsWriting).map(({ templateName }) => templateName)
+  );
+  const unusedTemplateNames = uniq(
+    processedTemplates.filter(({ needsWriting }) => !needsWriting).map(({ templateName }) => templateName)
+  );
 
   if (fullSchema || usedTemplateNames.length > 0) {
     // Make sure the output directory exists
@@ -123,6 +127,8 @@ export default async function generate({
     })
   );
 
-  log.info(`Client generated from templates ${chalkHighlightThing(usedTemplateNames.join(', '))}${unusedTemplateNames.length ? ` (files generated from templates ${unusedTemplateNames.join(', ')} are up to date)` : ''} in ${Date.now() - now}ms`);
+  log.info(
+    `Client generated from templates ${chalkHighlightThing(usedTemplateNames.map((s) => `"${s}"`).join(', '))}${unusedTemplateNames.length ? ` (files generated from templates ${chalkHighlightThing(unusedTemplateNames.map((s) => `"${s}"`).join(', '))} are up to date)` : ''} in ${Date.now() - now}ms`
+  );
   return { written: true, path: clientOutDirAbsolutePath };
 }

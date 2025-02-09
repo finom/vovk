@@ -5,6 +5,6 @@ import segment2 from './generated.json';
 const fullSchema = {
   '': segment0,
   'foo/client': segment1,
-  'generated': segment2,
+  generated: segment2,
 };
 export default fullSchema;

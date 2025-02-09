@@ -33,7 +33,9 @@ export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
   usedTemplateNames = uniq(usedTemplateNames);
 
   if (usedTemplateNames.length) {
-    log.info(`Placeholder client files ${chalkHighlightThing(usedTemplateNames.join(', '))} are generated at ${clientOutDirAbsolutePath} in ${Date.now() - now}ms`);
+    log.info(
+      `Placeholder client files ${chalkHighlightThing(usedTemplateNames.join(', '))} are generated at ${clientOutDirAbsolutePath} in ${Date.now() - now}ms`
+    );
   }
 
   return { written: !!usedTemplateNames.length, path: clientOutDirAbsolutePath };
