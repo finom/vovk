@@ -22,7 +22,7 @@ export default function getClientTemplates({
   const mapper =
     (dir: string) =>
     (name: string): ClientTemplate => ({
-      templateName: name,
+      templateName: dir,
       templatePath: path.resolve(templatesDir, dir, name),
       outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
     });
