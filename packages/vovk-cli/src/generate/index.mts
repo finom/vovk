@@ -89,8 +89,8 @@ export default async function generate({
         })
       );
 
-  const usedTemplateNames = processedTemplates.filter(({ needsWriting }) => needsWriting);
-  const unusedTemplateNames = processedTemplates.filter(({ needsWriting }) => !needsWriting);
+  const usedTemplateNames = processedTemplates.filter(({ needsWriting }) => needsWriting).map(({ templateName }) => templateName);
+  const unusedTemplateNames = processedTemplates.filter(({ needsWriting }) => !needsWriting).map(({ templateName }) => templateName);
 
   if (fullSchema || usedTemplateNames.length > 0) {
     // Make sure the output directory exists
