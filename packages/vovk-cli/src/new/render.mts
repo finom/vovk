@@ -43,7 +43,7 @@ export default async function render(
   const THE_THING = _.toUpper(the_thing);
   const the__thing = _.kebabCase(moduleName);
 
-  const template = {
+  const t = {
     // module name variations
     moduleName,
     theThing,
@@ -68,7 +68,7 @@ export default async function render(
     pluralize,
   };
 
-  const parsed = matter((await ejs.render(codeTemplate, { template }, { async: true })).trim());
+  const parsed = matter((await ejs.render(codeTemplate, { t }, { async: true })).trim());
   const { dir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
   const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;
 

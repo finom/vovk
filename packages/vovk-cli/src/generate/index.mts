@@ -43,7 +43,7 @@ export default async function generate({
   const now = Date.now();
 
   // Data for the EJS templates:
-  const template = {
+  const t = {
     apiRoot,
     imports: clientImports,
     segments,
@@ -62,7 +62,7 @@ export default async function generate({
           let rendered = templatePath.endsWith('.ejs')
             ? ejs.render(
                 templateContent,
-                { template },
+                { t },
                 {
                   filename: templatePath,
                 }

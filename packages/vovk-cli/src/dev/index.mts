@@ -6,7 +6,6 @@ import { Agent, setGlobalDispatcher } from 'undici';
 import keyBy from 'lodash/keyBy.js';
 import capitalize from 'lodash/capitalize.js';
 import debounce from 'lodash/debounce.js';
-import isEmpty from 'lodash/isEmpty.js';
 import once from 'lodash/once.js';
 import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
 import writeOneSchemaFile from './writeOneSchemaFile.mjs';
@@ -18,6 +17,7 @@ import locateSegments, { type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import type { VovkEnv } from '../types.mjs';
+import isSchemaEmpty from './isSchemaEmpty.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
@@ -349,7 +349,7 @@ export class VovkDev {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
         log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName)} has been updated in ${timeTook}ms`);
       }
-    } else if (schema && !isEmpty(schema.controllers)) {
+    } else if (schema && !isSchemaEmpty(schema)) {
       log.error(
         `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but "emitSchema" is false`
       );

@@ -1,21 +1,21 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
 import type { VovkClientFetcher } from 'vovk';
-import fetcher from '<%= template.imports.fetcher %>';
-import createRPC from '<%= template.imports.createRPC %>';
-import schema from '<%= template.imports.schema %>';
-<% template.segments.forEach((segment, i) => { if(Object.keys(template.fullSchema[segment.segmentName].controllers).length) { %>
+import fetcher from '<%= t.imports.fetcher %>';
+import createRPC from '<%= t.imports.createRPC %>';
+import schema from '<%= t.imports.schema %>';
+<% t.segments.forEach((segment, i) => { if(Object.keys(t.fullSchema[segment.segmentName].controllers).length) { %>
 import type { Controllers as Controllers<%= i %> } from "<%= segment.segmentImportPath %>";
 <% }}) %>
-<% if (template.imports.validateOnClient) { %>
-import validateOnClient from '<%= template.imports.validateOnClient %>';
+<% if (t.imports.validateOnClient) { %>
+import validateOnClient from '<%= t.imports.validateOnClient %>';
 <% } else { %>
 const validateOnClient = undefined;
 <% } %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-const apiRoot = '<%= template.apiRoot %>';
+const apiRoot = '<%= t.apiRoot %>';
 
-<% template.segments.forEach((segment, i) => { %>
-  <% Object.keys(template.fullSchema[segment.segmentName].controllers).forEach((key) => { %>
+<% t.segments.forEach((segment, i) => { %>
+  <% Object.keys(t.fullSchema[segment.segmentName].controllers).forEach((key) => { %>
 export const <%= key %> = createRPC<Controllers<%= i %>["<%= key %>"], Options>(
   schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
   '<%= segment.segmentName %>', 
