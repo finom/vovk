@@ -24,6 +24,8 @@ export type Controllers = typeof controllers;
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
   segmentName: 'foo/client',
+  exposeValidation: true,
+  emitSchema: true,
   controllers,
   onError: (err, req) => {
     // eslint-disable-next-line no-console

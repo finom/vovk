@@ -1,14 +1,15 @@
 import type { OperationObject } from 'openapi3-ts/oas31';
 import { createDecorator } from '../createDecorator';
 import { fromSchema } from './fromSchema';
+import type { KnownAny } from '../types';
 
 type OperationObjectWithCustomProperties = OperationObject & {
-  [key in `${'x' | 'X'}-${string}`]: any;
+  [key in `${'x' | 'X'}-${string}`]: KnownAny;
 };
 
 type SimpleJsonSchema = {
   type: 'object';
-  properties: Record<string, any>;
+  properties: Record<string, KnownAny>;
   required?: string[];
 };
 

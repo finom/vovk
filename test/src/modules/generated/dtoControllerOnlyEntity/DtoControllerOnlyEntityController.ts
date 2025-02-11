@@ -20,24 +20,27 @@ class UpdateDtoControllerOnlyEntityQueryDto {
 @prefix('dto-controller-only-entities')
 export default class DtoControllerOnlyEntityController {
   @get()
-  static getDtoControllerOnlyEntities = withDto(null, GetDtoControllerOnlyEntitiesQueryDto, (req) => {
-    const { search } = req.vovk.query();
+  static getDtoControllerOnlyEntities = withDto({
+    query: GetDtoControllerOnlyEntitiesQueryDto,
+    handle(req) {
+      const { search } = req.vovk.query();
 
-    return { results: [], search };
+      return { results: [], search };
+    },
   });
 
   @put(':id')
-  static updateDtoControllerOnlyEntity = withDto(
-    UpdateDtoControllerOnlyEntityBodyDto,
-    UpdateDtoControllerOnlyEntityQueryDto,
-    async (req, params: { id: string }) => {
+  static updateDtoControllerOnlyEntity = withDto({
+    body: UpdateDtoControllerOnlyEntityBodyDto,
+    query: UpdateDtoControllerOnlyEntityQueryDto,
+    async handle(req, params: { id: string }) {
       const { id } = params;
       const body = await req.vovk.body();
       const { q } = req.vovk.query();
 
       return { id, body, q };
-    }
-  );
+    },
+  });
 
   @post()
   static createDtoControllerOnlyEntity = () => {

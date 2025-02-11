@@ -15,6 +15,7 @@ export default async function render(
     segmentName,
     moduleName,
     empty,
+    templateFileName,
   }: {
     cwd: string;
     config: VovkConfig;
@@ -22,6 +23,7 @@ export default async function render(
     segmentName: string;
     moduleName: string;
     empty?: boolean;
+    templateFileName: string;
   }
 ): Promise<VovkModuleRenderResult> {
   const getModuleDirName = (givenSegmentName: string, givenModuleName: string) =>
@@ -68,7 +70,7 @@ export default async function render(
     pluralize,
   };
 
-  const parsed = matter((await ejs.render(codeTemplate, { t }, { async: true })).trim());
+  const parsed = matter((await ejs.render(codeTemplate, { t }, { async: true, filename: templateFileName })).trim());
   const { dir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
   const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;
 

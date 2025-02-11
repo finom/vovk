@@ -5,26 +5,29 @@ import * as yup from 'yup';
 @prefix('yup-controller-only-entities')
 export default class YupControllerOnlyEntityController {
   @get()
-  static getYupControllerOnlyEntities = withYup(null, yup.object({ search: yup.string() }), (req) => {
-    const search = req.nextUrl.searchParams.get('search');
+  static getYupControllerOnlyEntities = withYup({
+    query: yup.object({ search: yup.string() }),
+    handle(req) {
+      const search = req.nextUrl.searchParams.get('search');
 
-    return { results: [], search };
+      return { results: [], search };
+    },
   });
 
   @put(':id')
-  static updateYupControllerOnlyEntity = withYup(
-    yup.object({
+  static updateYupControllerOnlyEntity = withYup({
+    body: yup.object({
       foo: yup.mixed().oneOf(['bar', 'baz']).required(),
     }),
-    yup.object({ q: yup.string() }),
-    async (req, params: { id: string }) => {
+    query: yup.object({ q: yup.string() }),
+    async handle(req, params: { id: string }) {
       const { id } = params;
       const body = await req.json();
       const q = req.nextUrl.searchParams.get('q');
 
       return { id, body, q };
-    }
-  );
+    },
+  });
 
   @post()
   static createYupControllerOnlyEntity = () => {

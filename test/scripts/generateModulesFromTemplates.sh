@@ -12,3 +12,5 @@ chmod +x ../packages/vovk-cli/dist/index.mjs;
 # DTO
 ../packages/vovk-cli/dist/index.mjs n c generated/dtoControllerOnlyEntity -o --templates ../packages/vovk-dto/templates/controller.ejs;
 ../packages/vovk-cli/dist/index.mjs n c s generated/dtoControllerAndServiceEntity -o --templates ../packages/vovk-dto/templates/controller.ejs ../packages/vovk-cli/templates/service.ejs;
+
+echo "Generated files from templates"

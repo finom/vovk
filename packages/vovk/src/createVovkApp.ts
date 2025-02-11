@@ -46,22 +46,26 @@ export function createVovkApp() {
       const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
       vovkApp.routes[httpMethod].set(controller, methods);
 
+      const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
+        _controller: VovkController;
+        _sourceMethod?: ((...args: KnownAny) => KnownAny) & {
+          _getValidation?: (controller: VovkController) => VovkHandlerSchema['validation'];
+        };
+      };
+
+      originalMethod._controller = controller;
+      originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
+      const validation = originalMethod._sourceMethod._getValidation?.(controller);
+
       controller._handlers = {
         ...controller._handlers,
         [propertyKey]: {
+          ...(validation ? { validation } : {}),
           ...((controller._handlers ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
           path,
           httpMethod,
         },
       };
-
-      const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
-        _controller: VovkController;
-        _sourceMethod?: (...args: KnownAny) => KnownAny;
-      };
-
-      originalMethod._controller = controller;
-      originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
 
       methods[path] = controller[propertyKey] as RouteHandler;
       methods[path]._options = options;
@@ -135,8 +139,6 @@ export function createVovkApp() {
     async function GET_DEV(req: NextRequest, data: { params: Promise<Record<string, string[]>> }) {
       const params = await data.params;
       if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
-        // Wait for schema to be set (it can be set after decorators are called with another setTimeout)
-        await new Promise((resolve) => setTimeout(resolve, 10));
         const schema = getSchema(options);
         return vovkApp.respond(200, { schema });
       }

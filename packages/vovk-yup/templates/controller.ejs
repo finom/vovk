@@ -1,6 +1,6 @@
 <% const vars = { 
   ControllerName: t.TheThing + 'Controller',
-  ServiceName = t.TheThing + 'Service',
+  ServiceName: t.TheThing + 'Service',
 }; %>
 ---
 dir: <%= t.defaultDir %>
@@ -19,22 +19,25 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.ControllerName %> {
     @get()
-    static get<%= t.TheThings %> = withYup(null, yup.object({ search: yup.string() }), (req) => {
+    static get<%= t.TheThings %> = withYup({
+       query: yup.object({ search: yup.string() }), 
+       handle(req) {
         const search = req.nextUrl.searchParams.get('search');
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
         <% } else { %>
         return { results: [], search };
         <% } %>
+       }
     });
 
     @put(':id')
-    static update<%= t.TheThing %> = withYup(
-        yup.object({
+    static update<%= t.TheThing %> = withYup({
+        body: yup.object({
             foo: yup.mixed().oneOf(['bar', 'baz']).required(),
         }),
-        yup.object({ q: yup.string() }),
-        async (req, params: { id: string }) => {
+        query: yup.object({ q: yup.string() }),
+        async handle(req, params: { id: string }) {
             const { id } = params;
             const body = await req.json();
             const q = req.nextUrl.searchParams.get('q');
@@ -44,7 +47,7 @@ export default class <%= vars.ControllerName %> {
             return { id, body, q };
             <% } %>
         }
-    );
+    });
 
     @post()
     static create<%= t.TheThing %> = () => {

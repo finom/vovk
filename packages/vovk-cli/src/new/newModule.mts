@@ -106,6 +106,7 @@ export default async function newModule({
       segmentName,
       moduleName,
       empty,
+      templateFileName: templateAbsolutePath,
     });
     const dir = dirFlag || renderedDir;
     if (!dir) {

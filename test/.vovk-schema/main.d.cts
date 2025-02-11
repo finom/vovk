@@ -1,7 +1,8 @@
-// auto-generated 2025-02-07T10:10:36.972Z
+// auto-generated 2025-02-11T15:48:32.158Z
+import type { VovkSchema } from 'vovk';
 declare const fullSchema: {
-  '': typeof import('./_root.json');
-  'foo/client': typeof import('./foo/client.json');
-  generated: typeof import('./generated.json');
+  '': VovkSchema;
+  'foo/client': VovkSchema;
+  generated: VovkSchema;
 };
 export default fullSchema;

@@ -2,8 +2,8 @@ import { validate } from 'class-validator';
 import type { ClassConstructor } from 'class-transformer';
 import { HttpException, HttpStatus, type VovkValidateOnClient } from 'vovk';
 
-const validateOnClientDto: VovkValidateOnClient = async (input, validators) => {
-  if (validators.body && 'isDTO' in (validators.body as object)) {
+const validateOnClientDto: VovkValidateOnClient = async (input, validation) => {
+  if (validation.body && 'isDTO' in (validation.body as object)) {
     const bodyErrors = await validate(input.body as ClassConstructor<object>);
     if (bodyErrors.length > 0) {
       const err = bodyErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
@@ -19,7 +19,7 @@ const validateOnClientDto: VovkValidateOnClient = async (input, validators) => {
     }
   }
 
-  if (validators.query && 'isDTO' in (validators.query as object)) {
+  if (validation.query && 'isDTO' in (validation.query as object)) {
     const queryErrors = await validate(input.query as ClassConstructor<object>);
     if (queryErrors.length > 0) {
       const err = queryErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');

@@ -7,26 +7,29 @@ import YupControllerAndServiceEntityService from './YupControllerAndServiceEntit
 @prefix('yup-controller-and-service-entities')
 export default class YupControllerAndServiceEntityController {
   @get()
-  static getYupControllerAndServiceEntities = withYup(null, yup.object({ search: yup.string() }), (req) => {
-    const search = req.nextUrl.searchParams.get('search');
+  static getYupControllerAndServiceEntities = withYup({
+    query: yup.object({ search: yup.string() }),
+    handle(req) {
+      const search = req.nextUrl.searchParams.get('search');
 
-    return YupControllerAndServiceEntityService.getYupControllerAndServiceEntities(search);
+      return YupControllerAndServiceEntityService.getYupControllerAndServiceEntities(search);
+    },
   });
 
   @put(':id')
-  static updateYupControllerAndServiceEntity = withYup(
-    yup.object({
+  static updateYupControllerAndServiceEntity = withYup({
+    body: yup.object({
       foo: yup.mixed().oneOf(['bar', 'baz']).required(),
     }),
-    yup.object({ q: yup.string() }),
-    async (req, params: { id: string }) => {
+    query: yup.object({ q: yup.string() }),
+    async handle(req, params: { id: string }) {
       const { id } = params;
       const body = await req.json();
       const q = req.nextUrl.searchParams.get('q');
 
       return YupControllerAndServiceEntityService.updateYupControllerAndServiceEntity(id, q, body);
-    }
-  );
+    },
+  });
 
   @post()
   static createYupControllerAndServiceEntity = () => {

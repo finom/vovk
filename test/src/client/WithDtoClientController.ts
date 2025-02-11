@@ -118,67 +118,101 @@ export class NestedExampleObjectDTO {
 @prefix('with-dto')
 export default class WithDtoClientController {
   @post('with-params/:param')
-  static postWithBodyQueryAndParams = withDto(BodyDto, QueryDto, async (req, params: { param: 'foo' }) => {
-    const body = await req.json();
-    const hey = req.nextUrl.searchParams.get('hey');
-    return { body, query: { hey }, params };
+  static postWithBodyQueryAndParams = withDto({
+    body: BodyDto,
+    query: QueryDto,
+    handle: async (req, params: { param: 'foo' }) => {
+      const body = await req.json();
+      const hey = req.nextUrl.searchParams.get('hey');
+      return { body, query: { hey }, params };
+    },
   });
 
   @post.auto()
-  static postWithBodyAndQueryTransformed = withDto(BodyDto, QueryDto, async (req) => {
-    const { hello } = await req.json();
-    const hey = req.nextUrl.searchParams.get('hey');
-    return plainToInstance(ReturnDto, { hello, hey });
+  static postWithBodyAndQueryTransformed = withDto({
+    body: BodyDto,
+    query: QueryDto,
+    handle: async (req) => {
+      const { hello } = await req.json();
+      const hey = req.nextUrl.searchParams.get('hey');
+      return plainToInstance(ReturnDto, { hello, hey });
+    },
   });
 
   @put.auto()
-  static putWithBodyAndNullQuery = withDto(BodyDto, null, async (req) => {
-    const body = await req.json();
-    return { body };
+  static putWithBodyAndNullQuery = withDto({
+    body: BodyDto,
+    handle: async (req) => {
+      const body = await req.json();
+      return { body };
+    },
   });
 
   @del.auto()
-  static putWithBodyOnly = withDto(BodyDto, async (req) => {
-    const body = await req.json();
-    return { body };
+  static putWithBodyOnly = withDto({
+    body: BodyDto,
+    handle: async (req) => {
+      const body = await req.json();
+      return { body };
+    },
   });
 
   @get.auto()
-  static getWithQueryAndNullBody = withDto(null, QueryDto, (req) => {
-    const hey = req.nextUrl.searchParams.get('hey');
-    return { query: { hey } };
+  static getWithQueryAndNullBody = withDto({
+    query: QueryDto,
+    handle: (req) => {
+      const hey = req.nextUrl.searchParams.get('hey');
+      return { query: { hey } };
+    },
   });
 
   @post.auto()
-  static postWithBodyAndQueryWithReqVovk = withDto(BodyDto, QueryDto, async (req) => {
-    const body = await req.vovk.body();
-    const query = req.vovk.query();
-    const bodyInstanceOfDto = body instanceof BodyDto;
-    const queryInstanceOfDto = query instanceof QueryDto;
-    return { body, query, bodyInstanceOfDto, queryInstanceOfDto };
+  static postWithBodyAndQueryWithReqVovk = withDto({
+    body: BodyDto,
+    query: QueryDto,
+    handle: async (req) => {
+      const body = await req.vovk.body();
+      const query = req.vovk.query();
+      const bodyInstanceOfDto = body instanceof BodyDto;
+      const queryInstanceOfDto = query instanceof QueryDto;
+      return { body, query, bodyInstanceOfDto, queryInstanceOfDto };
+    },
   });
 
   @get.auto()
-  static getWithQueryArrayAndNullBody = withDto(null, QueryWithArrayDto, (req) => {
-    return { query: req.vovk.query() };
+  static getWithQueryArrayAndNullBody = withDto({
+    query: QueryWithArrayDto,
+    handle: (req) => {
+      return { query: req.vovk.query() };
+    },
   });
 
   @put.auto()
-  static putWithMappedType = withDto(MappedDto, async (req) => {
-    const body = await req.vovk.body();
-    return { body };
+  static putWithMappedType = withDto({
+    body: MappedDto,
+    handle: async (req) => {
+      const body = await req.vovk.body();
+      return { body };
+    },
   });
 
   @get('nested-query')
-  static getNestedQuery = withDto(null, NestedExampleObjectDTO, (req) => {
-    return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
+  static getNestedQuery = withDto({
+    query: NestedExampleObjectDTO,
+    handle: (req) => {
+      return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
+    },
   });
 
   @openapi({
     summary: 'This is a summary',
   })
   @get('output-and-openapi')
-  static outputWithOpenApi = withDto(null, OutputDto, OutputDto, (req) => {
-    return { hello: req.vovk.query().hello };
+  static outputWithOpenApi = withDto({
+    query: OutputDto,
+    output: OutputDto,
+    handle: (req) => {
+      return { hello: req.vovk.query().hello };
+    },
   });
 }

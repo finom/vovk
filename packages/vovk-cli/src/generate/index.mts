@@ -93,9 +93,6 @@ export default async function generate({
   const usedTemplateNames = uniq(
     processedTemplates.filter(({ needsWriting }) => needsWriting).map(({ templateName }) => templateName)
   );
-  const unusedTemplateNames = uniq(
-    processedTemplates.filter(({ needsWriting }) => !needsWriting).map(({ templateName }) => templateName)
-  );
 
   if (fullSchema || usedTemplateNames.length > 0) {
     // Make sure the output directory exists
@@ -128,7 +125,7 @@ export default async function generate({
   );
 
   log.info(
-    `Client generated from template${usedTemplateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(usedTemplateNames.map((s) => `"${s}"`).join(', '))}${unusedTemplateNames.length ? ` (${chalkHighlightThing(unusedTemplateNames.map((s) => `"${s}"`).join(', '))} ${unusedTemplateNames.length !== 1 ? 'are' : 'is'} up to date)` : ''} at ${clientOutDirAbsolutePath} in ${Date.now() - now}ms`
+    `Client generated from template${usedTemplateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(usedTemplateNames.map((s) => `"${s}"`).join(', '))} at ${clientOutDirAbsolutePath} in ${Date.now() - now}ms`
   );
   return { written: true, path: clientOutDirAbsolutePath };
 }

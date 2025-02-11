@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "ncu": "npm-check-updates -u && npm i",
-    "dev": "node ../packages/vovk-cli/dist/index.mjs dev --next-dev",
-    "dev-exit": "node ../packages/vovk-cli/dist/index.mjs dev --next-dev --exit",
+    "dev": "npm run generate-modules-from-templates && node ../packages/vovk-cli/dist/index.mjs dev --next-dev",
+    "dev-exit": "npm run generate-modules-from-templates && node ../packages/vovk-cli/dist/index.mjs dev --next-dev --exit",
     "build": "NODE_ENV=test next build",
     "start": "NODE_ENV=test next start",
     "lint": "next lint",

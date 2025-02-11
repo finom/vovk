@@ -1,12 +1,12 @@
 import { initVovk } from 'vovk';
-import NoValidationControllerOnlyEntityController from '../../../../generated/noValidationControllerOnlyEntity/NoValidationControllerOnlyEntityController';
-import NoValidationControllerAndServiceEntityController from '../../../../generated/noValidationControllerAndServiceEntity/NoValidationControllerAndServiceEntityController';
-import ZodControllerOnlyEntityController from '../../../../generated/zodControllerOnlyEntity/ZodControllerOnlyEntityController';
-import ZodControllerAndServiceEntityController from '../../../../generated/zodControllerAndServiceEntity/ZodControllerAndServiceEntityController';
-import YupControllerOnlyEntityController from '../../../../generated/yupControllerOnlyEntity/YupControllerOnlyEntityController';
-import YupControllerAndServiceEntityController from '../../../../generated/yupControllerAndServiceEntity/YupControllerAndServiceEntityController';
-import DtoControllerOnlyEntityController from '../../../../generated/dtoControllerOnlyEntity/DtoControllerOnlyEntityController';
-import DtoControllerAndServiceEntityController from '../../../../generated/dtoControllerAndServiceEntity/DtoControllerAndServiceEntityController';
+import NoValidationControllerOnlyEntityController from '../../../../modules/generated/noValidationControllerOnlyEntity/NoValidationControllerOnlyEntityController';
+import NoValidationControllerAndServiceEntityController from '../../../../modules/generated/noValidationControllerAndServiceEntity/NoValidationControllerAndServiceEntityController';
+import ZodControllerOnlyEntityController from '../../../../modules/generated/zodControllerOnlyEntity/ZodControllerOnlyEntityController';
+import ZodControllerAndServiceEntityController from '../../../../modules/generated/zodControllerAndServiceEntity/ZodControllerAndServiceEntityController';
+import YupControllerOnlyEntityController from '../../../../modules/generated/yupControllerOnlyEntity/YupControllerOnlyEntityController';
+import YupControllerAndServiceEntityController from '../../../../modules/generated/yupControllerAndServiceEntity/YupControllerAndServiceEntityController';
+import DtoControllerOnlyEntityController from '../../../../modules/generated/dtoControllerOnlyEntity/DtoControllerOnlyEntityController';
+import DtoControllerAndServiceEntityController from '../../../../modules/generated/dtoControllerAndServiceEntity/DtoControllerAndServiceEntityController';
 
 export const runtime = 'edge';
 

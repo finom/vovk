@@ -25,7 +25,8 @@ export default function getSchema(options: {
         ...(exposeValidation
           ? controller._handlers
           : Object.fromEntries(
-              Object.entries(controller._handlers ?? {}).map(([key, value]) => [key, { ...value, validation: {} }])
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
             )),
       },
     };

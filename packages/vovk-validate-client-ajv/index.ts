@@ -6,9 +6,9 @@ const ajv = new Ajv();
 
 addFormats(ajv);
 
-const validateOnClientAjv: VovkValidateOnClient = (input, validators) => {
-  if (validators.body) {
-    const isValid = ajv.validate(validators.body, input.body);
+const validateOnClientAjv: VovkValidateOnClient = (input, validation) => {
+  if (validation.body) {
+    const isValid = ajv.validate(validation.body, input.body);
 
     if (!isValid) {
       throw new HttpException(
@@ -19,8 +19,8 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validators) => {
     }
   }
 
-  if (validators.query) {
-    const isValid = ajv.validate(validators.query, input.query);
+  if (validation.query) {
+    const isValid = ajv.validate(validation.query, input.query);
 
     if (!isValid) {
       throw new HttpException(
