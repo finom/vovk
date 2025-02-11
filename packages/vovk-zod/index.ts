@@ -4,9 +4,9 @@ import zodToJsonSchema from 'zod-to-json-schema';
 
 function withZod<
   T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema<infer U> ? U | Promise<U> : KnownAny,
-  ZOD_BODY extends ZodSchema<unknown> | null = null,
-  ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
-  ZOD_OUTPUT extends ZodSchema<KnownAny> = KnownAny,
+  ZOD_BODY extends ZodSchema<KnownAny>,
+  ZOD_QUERY extends ZodSchema<KnownAny>,
+  ZOD_OUTPUT extends ZodSchema<KnownAny>,
   REQ extends VovkRequest<
     ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : never,
     ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined
