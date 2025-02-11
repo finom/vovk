@@ -2,15 +2,28 @@ import { validate, type ValidationError } from 'class-validator';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
 import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 
+/*
+  REQ extends VovkRequest<
+    ZOD_BODY extends ZodSchema<infer U> ? U : never,
+    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
+  > = VovkRequest<
+    ZOD_BODY extends ZodSchema<infer U> ? U : never,
+    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
+  >,
+*/
+
 function withDto<
-  T extends (req: REQ, params: PARAMS) => OUTPUT | Promise<OUTPUT>,
-  BODY extends object,
-  QUERY extends object,
-  OUTPUT extends object,
-  PARAMS extends Record<string, string>,
-  REQ extends VovkRequest<BODY extends object ? BODY : never, QUERY extends object ? QUERY : undefined> = VovkRequest<
-    BODY extends object ? BODY : never,
-    QUERY extends object ? QUERY : undefined
+  T extends (req: REQ, params?: PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>) => OUTPUT_DTO extends ClassConstructor<infer U> ? U | Promise<U> : KnownAny,
+  BODY_DTO extends  ClassConstructor<KnownAny>,
+  QUERY_DTO extends ClassConstructor<KnownAny>,
+  OUTPUT_DTO extends ClassConstructor<KnownAny>,
+  PARAMS_DTO extends ClassConstructor<KnownAny>,
+  REQ extends VovkRequest<
+    BODY_DTO extends ClassConstructor<infer U> ? U : never,
+    QUERY_DTO extends ClassConstructor<infer U> ? U : undefined
+  > = VovkRequest<
+    BODY_DTO extends ClassConstructor<infer U> ? U : never,
+    QUERY_DTO extends ClassConstructor<infer U> ? U : undefined
   >,
 >({
   body: bodyDto,
@@ -19,13 +32,13 @@ function withDto<
   output: outputDto,
   handle,
 }: {
-  body?: ClassConstructor<BODY>;
-  query?: ClassConstructor<QUERY>;
-  params?: ClassConstructor<PARAMS>;
-  output?: ClassConstructor<OUTPUT>;
+  body?: BODY_DTO;
+  query?: QUERY_DTO;
+  params?: PARAMS_DTO;
+  output?: OUTPUT_DTO;
   handle: T;
 }): T {
-  const outputHandler = async (req: REQ, params: PARAMS): Promise<OUTPUT> => {
+  const outputHandler = async (req: REQ, params: Parameters<T>[1]) => {
     const outputData = await handle(req, params);
     if (outputDto) {
       if (!outputData) {
@@ -63,8 +76,8 @@ function withDto<
         );
       }
       // redeclare to add ability to call req.json() again
-      req.json = () => Promise.resolve(bodyData as BODY extends object ? BODY : never);
-      req.vovk.body = () => Promise.resolve(bodyInstance as BODY extends object ? BODY : never);
+      req.json = () => Promise.resolve(bodyData as BODY_DTO extends ClassConstructor<infer U> ? U : never);
+      req.vovk.body = () => Promise.resolve(bodyInstance as BODY_DTO extends ClassConstructor<infer U> ? U : never);
     }
 
     if (queryDto) {
@@ -81,7 +94,7 @@ function withDto<
         );
       }
 
-      req.vovk.query = () => queryInstance as QUERY extends object ? QUERY : never;
+      req.vovk.query = () => queryInstance as QUERY_DTO extends ClassConstructor<infer U> ? U : never;
     }
 
     if (paramsDto) {
@@ -98,7 +111,6 @@ function withDto<
         );
       }
 
-      // @ts-expect-error TODO
       req.vovk.params = () => paramsInstance;
     }
 

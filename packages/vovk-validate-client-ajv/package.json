@@ -31,6 +31,6 @@
     "ajv": "^8.17.1"
   },
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.83"
+    "vovk": "^3.0.0-draft.84"
   }
 }
