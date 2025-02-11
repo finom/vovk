@@ -29,6 +29,6 @@
   },
   "dependencies": {
     "@sodaru/yup-to-json-schema": "^2.0.1",
-    "vovk-validate-client-ajv": "^0.0.0-draft.21"
+    "vovk-validate-client-ajv": "^0.0.0-draft.22"
   }
 }
