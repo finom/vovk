@@ -8,7 +8,7 @@ type VovkRequestWithOptionalDto<BODY extends object | null = null, QUERY extends
 >;
 
 function withDto<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (req: REQ, params: KnownAny) => OUTPUT | Promise<OUTPUT>,
   BODY extends object | null = null,
   QUERY extends object | null = null,
   OUTPUT extends object | null = KnownAny,
@@ -20,7 +20,7 @@ function withDto<
   givenHandler: T
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withDto<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (req: REQ, params: KnownAny) =>  OUTPUT | Promise<OUTPUT>,
   BODY extends object | null = null,
   QUERY extends object | null = null,
   OUTPUT extends object | null = KnownAny,
@@ -31,14 +31,14 @@ function withDto<
   givenHandler: T
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withDto<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (req: REQ, params: KnownAny) =>  OUTPUT | Promise<OUTPUT>,
   BODY extends object | null = null,
   QUERY extends object | null = null,
   OUTPUT extends object | null = KnownAny,
   REQ extends VovkRequestWithOptionalDto<BODY, QUERY> = VovkRequestWithOptionalDto<BODY, QUERY>,
 >(bodyDto: ClassConstructor<BODY> | null, givenHandler: T): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withDto<
-  T extends (req: REQ, params: KnownAny) => OUTPUT,
+  T extends (req: REQ, params: KnownAny) =>  OUTPUT | Promise<OUTPUT>,
   BODY extends object | null = null,
   QUERY extends object | null = null,
   OUTPUT extends object | null = KnownAny,

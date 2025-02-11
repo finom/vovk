@@ -9,8 +9,10 @@ type VovkRequestWithOptionalZod<
   ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : never,
   ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined
 >;
+
+type Handler<REQ, ZOD_OUTPUT> = (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> | Promise<z.infer<ZOD_OUTPUT>> : KnownAny;
 function withZod<
-  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
+  T extends Handler<REQ, ZOD_OUTPUT>,
   ZOD_BODY extends ZodSchema<unknown> | null,
   ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
   ZOD_OUTPUT extends ZodSchema<KnownAny> | null = null,
@@ -22,7 +24,7 @@ function withZod<
   givenHandler: T
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withZod<
-  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
+  T extends Handler<REQ, ZOD_OUTPUT>,
   ZOD_BODY extends ZodSchema<unknown> | null,
   ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
   ZOD_OUTPUT extends ZodSchema<KnownAny> | null = null,
@@ -33,14 +35,14 @@ function withZod<
   givenHandler: T
 ): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withZod<
-  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
+  T extends Handler<REQ, ZOD_OUTPUT>,
   ZOD_BODY extends ZodSchema<unknown> | null,
   ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
   ZOD_OUTPUT extends ZodSchema<KnownAny> | null = null,
   REQ extends VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY> = VovkRequestWithOptionalZod<ZOD_BODY, ZOD_QUERY>,
 >(bodyModel: ZOD_BODY, givenHandler: T): (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 function withZod<
-  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
+  T extends Handler<REQ, ZOD_OUTPUT | null>,
   ZOD_BODY extends ZodSchema<unknown> | null,
   ZOD_QUERY extends ZodSchema<KnownAny> | null = null,
   ZOD_OUTPUT extends ZodSchema<KnownAny> | null = null,
