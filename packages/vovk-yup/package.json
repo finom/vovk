@@ -1,6 +1,6 @@
 {
   "name": "vovk-yup",
-  "version": "0.0.1-draft.24",
+  "version": "0.0.1-draft.25",
   "description": "Yup validation for Vovk.js",
   "main": "index.js",
   "scripts": {
