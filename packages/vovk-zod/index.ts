@@ -8,11 +8,11 @@ function withZod<
   ZOD_QUERY extends ZodSchema<KnownAny>,
   ZOD_OUTPUT extends ZodSchema<KnownAny>,
   REQ extends VovkRequest<
-    ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : never,
-    ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined
+    ZOD_BODY extends ZodSchema<infer U> ? U : never,
+    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
   > = VovkRequest<
-    ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : never,
-    ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined
+  ZOD_BODY extends ZodSchema<infer U> ? U : never,
+  ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
   >,
 >({ body, query, output, handle }: { body?: ZOD_BODY; query?: ZOD_QUERY; output?: ZOD_OUTPUT; handle: T }): T {
   const outputHandler = async (req: REQ, params: Parameters<T>[1]) => {
