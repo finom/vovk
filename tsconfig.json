@@ -14,6 +14,7 @@
     "jsx": "preserve",
     "incremental": true,
     "noEmit": true,
+    "declaration": true,
     "paths": {
       "next/*": ["./test/node_modules/next/*"]
     }
