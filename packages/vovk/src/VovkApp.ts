@@ -179,6 +179,7 @@ export class VovkApp {
       query: () => reqQuery(req as VovkRequest),
       meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(req, meta),
       form: <T = KnownAny>() => reqForm<T>(req),
+      params: <T = KnownAny>() => methodParams as T,
     };
 
     try {

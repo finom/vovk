@@ -59,16 +59,38 @@ const openapiDecorator = createDecorator(null, (openAPIOperationObject: Operatio
       'type' in handlerSchema.validation.query &&
       'properties' in handlerSchema.validation.query
         ? {
-            parameters: Object.entries((handlerSchema.validation.query as SimpleJsonSchema).properties)
-              // .filter(([, propSchema]) => propSchema.type !== 'object')
-              .map(([propName, propSchema]) => ({
+            parameters: Object.entries((handlerSchema.validation.query as SimpleJsonSchema).properties).map(
+              ([propName, propSchema]) => ({
                 name: propName,
                 in: 'query',
                 description: propSchema.description || '',
                 required: handlerSchema.validation?.query.required
                   ? handlerSchema.validation.query.required.includes(propName)
                   : false,
-              })),
+                schema: {
+                  type: 'string',
+                },
+              })
+            ),
+          }
+        : {}),
+      ...(handlerSchema?.validation?.params &&
+      'type' in handlerSchema.validation.params &&
+      'properties' in handlerSchema.validation.params
+        ? {
+            parameters: Object.entries((handlerSchema.validation.params as SimpleJsonSchema).properties).map(
+              ([propName, propSchema]) => ({
+                name: propName,
+                in: 'path',
+                description: propSchema.description || '',
+                required: handlerSchema.validation?.params.required
+                  ? handlerSchema.validation.params.required.includes(propName)
+                  : false,
+                schema: {
+                  type: 'string',
+                },
+              })
+            ),
           }
         : {}),
       ...openAPIOperationObject,

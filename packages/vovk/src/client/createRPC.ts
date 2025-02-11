@@ -72,8 +72,21 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
       } & OPTS = {} as OPTS
     ) => {
       const fetcher = input.fetcher ?? settingsFetcher;
-      const validate = async ({ body, query, endpoint }: { body?: unknown; query?: unknown; endpoint: string }) => {
-        await (input.validateOnClient ?? options?.validateOnClient)?.({ body, query, endpoint }, validation ?? {});
+      const validate = async ({
+        body,
+        query,
+        params,
+        endpoint,
+      }: {
+        body?: unknown;
+        query?: unknown;
+        params?: unknown;
+        endpoint: string;
+      }) => {
+        await (input.validateOnClient ?? options?.validateOnClient)?.(
+          { body, query, params, endpoint },
+          validation ?? {}
+        );
       };
 
       const internalOptions: Parameters<typeof fetcher>[0] = {

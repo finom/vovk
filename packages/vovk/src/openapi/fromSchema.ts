@@ -13,7 +13,11 @@ export function fromSchema(
       for (const h of Object.values(c.handlers)) {
         if (h.openapi) {
           const path =
-            '/' + [apiRoot.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path].filter(Boolean).join('/');
+            '/' +
+            [apiRoot.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path]
+              .filter(Boolean)
+              .join('/')
+              .replace(/:([a-zA-Z0-9_]+)/g, '{$1}');
           paths[path] = paths[path] ?? {};
           paths[path][h.httpMethod.toLowerCase() as Lowercase<HttpMethod>] = { ...h.openapi };
         }

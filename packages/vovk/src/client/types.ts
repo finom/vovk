@@ -87,7 +87,7 @@ export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<str
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => string;
-    validate: (input: { body?: unknown; query?: unknown; endpoint: string }) => void | Promise<void>;
+    validate: (input: { body?: unknown; query?: unknown; params?: unknown; endpoint: string }) => void | Promise<void>;
     defaultStreamHandler: (response: Response) => Promise<VovkStreamAsyncIterable<unknown>>;
     defaultHandler: (response: Response) => Promise<unknown>;
   },
@@ -109,7 +109,7 @@ export interface VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'm
 }
 
 export type VovkValidateOnClient = (
-  input: { body?: unknown; query?: unknown; endpoint: string },
+  input: { body?: unknown; query?: unknown; params?: unknown; endpoint: string },
   validation: Exclude<VovkHandlerSchema['validation'], undefined>
 ) => void | Promise<void>;
 

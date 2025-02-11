@@ -3,18 +3,34 @@ import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type
 import zodToJsonSchema from 'zod-to-json-schema';
 
 function withZod<
-  T extends (req: REQ, params: KnownAny) => ZOD_OUTPUT extends ZodSchema<infer U> ? U | Promise<U> : KnownAny,
+  T extends (
+    req: REQ,
+    params: ZOD_PARAMS extends ZodSchema<infer U> ? U : Record<string, string>
+  ) => ZOD_OUTPUT extends ZodSchema<infer U> ? U | Promise<U> : KnownAny,
   ZOD_BODY extends ZodSchema<KnownAny>,
   ZOD_QUERY extends ZodSchema<KnownAny>,
   ZOD_OUTPUT extends ZodSchema<KnownAny>,
+  ZOD_PARAMS extends ZodSchema<KnownAny>,
   REQ extends VovkRequest<
     ZOD_BODY extends ZodSchema<infer U> ? U : never,
     ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
   > = VovkRequest<
-  ZOD_BODY extends ZodSchema<infer U> ? U : never,
-  ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
+    ZOD_BODY extends ZodSchema<infer U> ? U : never,
+    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
   >,
->({ body, query, output, handle }: { body?: ZOD_BODY; query?: ZOD_QUERY; output?: ZOD_OUTPUT; handle: T }): T {
+>({
+  body,
+  query,
+  params,
+  output,
+  handle,
+}: {
+  body?: ZOD_BODY;
+  query?: ZOD_QUERY;
+  params?: ZOD_PARAMS;
+  output?: ZOD_OUTPUT;
+  handle: T;
+}): T {
   const outputHandler = async (req: REQ, params: Parameters<T>[1]) => {
     const outputData = await handle(req, params);
     if (output) {
@@ -71,6 +87,21 @@ function withZod<
       }
     }
 
+    if (params) {
+      const paramsData = req.vovk.params();
+
+      try {
+        params.parse(paramsData);
+      } catch (e) {
+        const err = (e as z.ZodError).errors.map((er) => `${er.message} (${er.path.join('/')})`).join(', ');
+        throw new HttpException(
+          HttpStatus.BAD_REQUEST,
+          `Zod validation failed. Invalid request params on server for ${req.url}. ${err}`,
+          { params: paramsData }
+        );
+      }
+    }
+
     return outputHandler(req, params);
   };
 
@@ -78,6 +109,7 @@ function withZod<
     body: body ? zodToJsonSchema(body) : null,
     query: query ? zodToJsonSchema(query) : null,
     output: output ? zodToJsonSchema(output) : null,
+    params: params ? zodToJsonSchema(params) : null,
   });
 
   return resultHandler as T;

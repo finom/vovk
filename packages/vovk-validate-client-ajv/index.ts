@@ -14,7 +14,7 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation) => {
       throw new HttpException(
         HttpStatus.NULL,
         `Ajv validation failed. Invalid request body on client for ${input.endpoint}. ${ajv.errorsText()}`,
-        { body: input.body, endpoint: input.endpoint }
+        { body: input.body, endpoint: input.endpoint, errors: ajv.errors }
       );
     }
   }
@@ -26,7 +26,19 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation) => {
       throw new HttpException(
         HttpStatus.NULL,
         `Ajv validation failed. Invalid request query on client for ${input.endpoint}. ${ajv.errorsText()}`,
-        { query: input.query, endpoint: input.endpoint }
+        { query: input.query, endpoint: input.endpoint, errors: ajv.errors }
+      );
+    }
+  }
+
+  if (validation.params) {
+    const isValid = ajv.validate(validation.params, input.params);
+
+    if (!isValid) {
+      throw new HttpException(
+        HttpStatus.NULL,
+        `Ajv validation failed. Invalid request params on client for ${input.endpoint}. ${ajv.errorsText()}`,
+        { params: input.params, endpoint: input.endpoint, errors: ajv.errors }
       );
     }
   }

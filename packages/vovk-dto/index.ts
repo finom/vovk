@@ -3,35 +3,38 @@ import { plainToInstance, type ClassConstructor } from 'class-transformer';
 import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 
 function withDto<
-  T extends (req: REQ, params: KnownAny) => OUTPUT | Promise<OUTPUT>,
-  BODY extends object | null = null,
-  QUERY extends object | null = null,
-  OUTPUT extends object | null = KnownAny,
+  T extends (req: REQ, params: PARAMS) => OUTPUT | Promise<OUTPUT>,
+  BODY extends object,
+  QUERY extends object,
+  OUTPUT extends object,
+  PARAMS extends Record<string, string>,
   REQ extends VovkRequest<BODY extends object ? BODY : never, QUERY extends object ? QUERY : undefined> = VovkRequest<
     BODY extends object ? BODY : never,
     QUERY extends object ? QUERY : undefined
   >,
 >({
-  body,
-  query,
-  output,
+  body: bodyDto,
+  query: queryDto,
+  params: paramsDto,
+  output: outputDto,
   handle,
 }: {
   body?: ClassConstructor<BODY>;
   query?: ClassConstructor<QUERY>;
+  params?: ClassConstructor<PARAMS>;
   output?: ClassConstructor<OUTPUT>;
   handle: T;
 }): T {
-  const outputHandler = async (req: REQ, params: KnownAny): Promise<OUTPUT> => {
+  const outputHandler = async (req: REQ, params: PARAMS): Promise<OUTPUT> => {
     const outputData = await handle(req, params);
-    if (output) {
+    if (outputDto) {
       if (!outputData) {
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
           'Output is required. You probably forgot to return something from your handler.'
         );
       }
-      const outputInstance = plainToInstance(output, outputData);
+      const outputInstance = plainToInstance(outputDto, outputData);
       const outputErrors: ValidationError[] = await validate(outputInstance!);
 
       if (outputErrors.length > 0) {
@@ -47,9 +50,9 @@ function withDto<
   };
 
   const resultHandler = async (req: REQ, params: Parameters<T>[1]) => {
-    if (body) {
+    if (bodyDto) {
       const bodyData: unknown = await req.json();
-      const bodyInstance = plainToInstance(body, bodyData);
+      const bodyInstance = plainToInstance(bodyDto, bodyData);
       const bodyErrors: ValidationError[] = await validate(bodyInstance as object);
 
       if (bodyErrors.length > 0) {
@@ -64,9 +67,9 @@ function withDto<
       req.vovk.body = () => Promise.resolve(bodyInstance as BODY extends object ? BODY : never);
     }
 
-    if (query) {
+    if (queryDto) {
       const queryData = req.vovk.query();
-      const queryInstance = plainToInstance(query, queryData);
+      const queryInstance = plainToInstance(queryDto, queryData);
       const queryErrors: ValidationError[] = await validate(queryInstance as object);
 
       if (queryErrors.length > 0) {
@@ -81,13 +84,32 @@ function withDto<
       req.vovk.query = () => queryInstance as QUERY extends object ? QUERY : never;
     }
 
+    if (paramsDto) {
+      const paramsData = req.vovk.params();
+      const paramsInstance = plainToInstance(paramsDto, paramsData);
+      const paramsErrors: ValidationError[] = await validate(paramsInstance as object);
+
+      if (paramsErrors.length > 0) {
+        const err = paramsErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
+        throw new HttpException(
+          HttpStatus.BAD_REQUEST,
+          `Validation failed. Invalid request params on server for ${req.url}. ${err}`,
+          { params: paramsData }
+        );
+      }
+
+      // @ts-expect-error TODO
+      req.vovk.params = () => paramsInstance;
+    }
+
     return outputHandler(req, params);
   };
 
   void setHandlerValidation(resultHandler, {
-    body: body ? { isDTO: true } : null,
-    query: query ? { isDTO: true } : null,
-    output: output ? { isDTO: true } : null,
+    body: bodyDto ? { isDTO: true } : null,
+    query: queryDto ? { isDTO: true } : null,
+    output: outputDto ? { isDTO: true } : null,
+    params: paramsDto ? { isDTO: true } : null,
   });
 
   return resultHandler as T;
