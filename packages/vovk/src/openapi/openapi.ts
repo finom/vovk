@@ -68,9 +68,6 @@ const openapiDecorator = createDecorator(null, (openAPIOperationObject: Operatio
                 required: handlerSchema.validation?.query.required
                   ? handlerSchema.validation.query.required.includes(propName)
                   : false,
-                schema: {
-                  type: 'string',
-                },
               })),
           }
         : {}),
