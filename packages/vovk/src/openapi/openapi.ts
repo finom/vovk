@@ -60,7 +60,7 @@ const openapiDecorator = createDecorator(null, (openAPIOperationObject: Operatio
       'properties' in handlerSchema.validation.query
         ? {
             parameters: Object.entries((handlerSchema.validation.query as SimpleJsonSchema).properties)
-              .filter(([, propSchema]) => propSchema.type !== 'object')
+              // .filter(([, propSchema]) => propSchema.type !== 'object')
               .map(([propName, propSchema]) => ({
                 name: propName,
                 in: 'query',
