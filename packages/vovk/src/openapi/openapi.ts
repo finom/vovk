@@ -23,13 +23,10 @@ const openapiDecorator = createDecorator(null, (openAPIOperationObject: Operatio
             ([propName, propSchema]) => ({
               name: propName,
               in: 'query',
-              description: propSchema.description || '',
               required: handlerSchema.validation?.query.required
                 ? handlerSchema.validation.query.required.includes(propName)
                 : false,
-              schema: {
-                type: 'string',
-              },
+              schema: propSchema,
             })
           )
         : null;
@@ -42,13 +39,10 @@ const openapiDecorator = createDecorator(null, (openAPIOperationObject: Operatio
             ([propName, propSchema]) => ({
               name: propName,
               in: 'path',
-              description: propSchema.description || '',
               required: handlerSchema.validation?.params.required
                 ? handlerSchema.validation.params.required.includes(propName)
                 : false,
-              schema: {
-                type: 'string',
-              },
+              schema: propSchema,
             })
           )
         : null;
