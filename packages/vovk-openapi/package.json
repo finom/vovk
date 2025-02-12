@@ -1,8 +1,8 @@
 {
   "name": "vovk-openapi",
-  "version": "0.0.1-draft.0",
+  "version": "0.0.1-draft.1",
   "description": "OpenAPI decorator and tools for Vovk.ts",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "npm-publish": "npm publish",
