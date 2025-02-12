@@ -1,6 +1,7 @@
 import { validate, type ValidationError } from 'class-validator';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
 import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
+import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 
 /*
   REQ extends VovkRequest<
@@ -128,6 +129,9 @@ function withDto<
     output: output ? { isDTO: true } : null,
     params: params ? { isDTO: true } : null,
   });
+
+  const schemas = validationMetadatasToSchemas()
+  console.log(schemas)
 
   return resultHandler as T;
 }

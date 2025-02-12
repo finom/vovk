@@ -1,6 +1,6 @@
 {
   "name": "vovk-dto",
-  "version": "0.0.1-draft.26",
+  "version": "0.0.1-draft.27",
   "description": "Dto validation for Vovk.js",
   "main": "index.js",
   "scripts": {
@@ -25,8 +25,11 @@
   "author": "Andrii Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.86",
+    "class-transformer": "*",
     "class-validator": "*",
-    "class-transformer": "*"
+    "vovk": "^3.0.0-draft.86"
+  },
+  "dependencies": {
+    "class-validator-jsonschema": "^5.0.1"
   }
 }
