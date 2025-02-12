@@ -1,6 +1,6 @@
 import type { OperationObject } from 'openapi3-ts/oas31';
 import { createDecorator } from 'vovk';
-import { JSONSchemaFaker } from 'json-schema-faker';
+import JSONSchemaSampler from '@stoplight/json-schema-sampler';
 import { fromSchema } from './fromSchema';
 import type { KnownAny } from 'vovk/src/types';
 
@@ -21,10 +21,10 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
     const bodyValidation = handlerSchema?.validation?.body as SimpleJsonSchema | undefined;
     const paramsValidation = handlerSchema?.validation?.params as SimpleJsonSchema | undefined;
     const outputValidation = handlerSchema?.validation?.output as SimpleJsonSchema | undefined;
-    const queryFake = queryValidation && JSONSchemaFaker.generate(queryValidation);
-    const bodyFake = bodyValidation && JSONSchemaFaker.generate(bodyValidation);
-    const paramsFake = paramsValidation && JSONSchemaFaker.generate(paramsValidation);
-    const outputFake = outputValidation && JSONSchemaFaker.generate(outputValidation);
+    const queryFake = queryValidation && JSONSchemaSampler.sample(queryValidation);
+    const bodyFake = bodyValidation && JSONSchemaSampler.sample(bodyValidation);
+    const paramsFake = paramsValidation && JSONSchemaSampler.sample(paramsValidation);
+    const outputFake = outputValidation && JSONSchemaSampler.sample(outputValidation);
     const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
 
     const codeSample = `import { ${controllerSchema.controllerName} } from 'vovk-client';
