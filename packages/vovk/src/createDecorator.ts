@@ -12,7 +12,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
     | Omit<VovkHandlerSchema, 'path' | 'httpMethod'>
     | ((
         handlerSchema: VovkHandlerSchema | null,
-        options: { handlerName: string; controllerSchema: VovkControllerSchema }
+        options: { handlerName: string; }
       ) => Omit<Partial<VovkHandlerSchema>, 'path' | 'httpMethod'>)
     | null
     | undefined
@@ -50,7 +50,6 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
         typeof initResultReturn === 'function'
           ? initResultReturn(handlerSchema, {
               handlerName: propertyKey,
-              controllerSchema: getControllerSchema(controller, controller._controllerName ?? 'ERROR', true),
             })
           : initResultReturn;
 

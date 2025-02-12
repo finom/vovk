@@ -16,7 +16,7 @@ type SimpleJsonSchema = {
 };
 
 export const openapi = createDecorator(null, (openAPIOperationObject: OperationObjectWithCustomProperties = {}) => {
-  return (handlerSchema, { handlerName, controllerSchema }) => {
+  return (handlerSchema, { handlerName }) => {
     const queryValidation = handlerSchema?.validation?.query as SimpleJsonSchema | undefined;
     const bodyValidation = handlerSchema?.validation?.body as SimpleJsonSchema | undefined;
     const paramsValidation = handlerSchema?.validation?.params as SimpleJsonSchema | undefined;
@@ -26,14 +26,16 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
     const paramsFake = paramsValidation && sample(paramsValidation);
     const outputFake = outputValidation && sample(outputValidation);
     const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
+    const stringifyData = (data: KnownAny) => JSON.stringify(data, null, 2).replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
+      .split('\n').map((line) => line.padStart(2, ' ')).join('\n');
 
-    const codeSample = `import { ${controllerSchema.controllerName} } from 'vovk-client';
-    const response = await ${controllerSchema.controllerName}.${handlerName}(${
+    const codeSample = `import { MyRPC } from 'vovk-client';
+    const response = await MyRPC.${handlerName}(${
       hasArg
         ? ` {
-      ${queryFake ? `query: ${JSON.stringify(queryFake, null, 2)},` : ''}
-      ${bodyFake ? `body: ${JSON.stringify(bodyFake, null, 2)},` : ''}
-      ${paramsFake ? `params: ${JSON.stringify(paramsFake, null, 2)},` : ''}
+      ${queryFake ? `query: ${stringifyData(queryFake)},` : ''}
+      ${bodyFake ? `body: ${stringifyData(bodyFake)},` : ''}
+      ${paramsFake ? `params: ${stringifyData(paramsFake)},` : ''}
     }`
         : ''
     });
@@ -41,7 +43,7 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
       outputFake
         ? `
     /* 
-    ${JSON.stringify(outputFake, null, 2)}
+    ${stringifyData(outputFake)}
     */
     console.log(response);
     `
@@ -103,7 +105,7 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
           ? { parameters: [...(queryParameters || []), ...(pathParameters || [])] }
           : {}) as OperationObject['parameters']),
         'x-codeSamples': [{
-          label: 'TypeScript',
+          label: 'vovk-client',
           lang: 'typescript',
           source: codeSample,
         }],
