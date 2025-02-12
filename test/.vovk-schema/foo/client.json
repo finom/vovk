@@ -173,7 +173,8 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": ":foo",
           "httpMethod": "POST"
@@ -193,7 +194,8 @@
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
             "query": null,
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "PUT",
           "path": "put-with-body-and-null-query"
@@ -213,7 +215,8 @@
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
             "query": null,
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "DELETE",
           "path": "put-with-body-only"
@@ -233,7 +236,8 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "GET",
           "path": "get-with-query-and-null-body"
@@ -313,7 +317,8 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": "nested-query",
           "httpMethod": "GET"
@@ -342,12 +347,23 @@
               "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
             }
           },
           "openapi": {
             "summary": "This is a summary"
           },
-          "path": "output-and-openapi",
+          "path": "output-and-openapi/:id",
           "httpMethod": "GET"
         }
       }
@@ -568,7 +584,6 @@
               {
                 "name": "hello",
                 "in": "query",
-                "description": "",
                 "required": true,
                 "schema": {
                   "type": "string"
@@ -593,7 +608,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": "with-params/:param",
           "httpMethod": "POST"
@@ -606,7 +622,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "POST",
           "path": "post-with-body-and-query-transformed"
@@ -617,7 +634,8 @@
               "isDTO": true
             },
             "query": null,
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "PUT",
           "path": "put-with-body-and-null-query"
@@ -628,7 +646,8 @@
               "isDTO": true
             },
             "query": null,
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "DELETE",
           "path": "put-with-body-only"
@@ -639,7 +658,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "GET",
           "path": "get-with-query-and-null-body"
@@ -652,7 +672,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "POST",
           "path": "post-with-body-and-query-with-req-vovk"
@@ -663,7 +684,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "GET",
           "path": "get-with-query-array-and-null-body"
@@ -674,7 +696,8 @@
               "isDTO": true
             },
             "query": null,
-            "output": null
+            "output": null,
+            "params": null
           },
           "httpMethod": "PUT",
           "path": "put-with-mapped-type"
@@ -685,7 +708,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": "nested-query",
           "httpMethod": "GET"
@@ -698,7 +722,8 @@
             },
             "output": {
               "isDTO": true
-            }
+            },
+            "params": null
           },
           "path": "output-and-openapi",
           "httpMethod": "GET",

@@ -1,5 +1,21 @@
 import type { VovkSchema, VovkController, StaticClass } from '../types';
 
+export function getControllerSchema(controller: VovkController, controllerName: string, exposeValidation: boolean) {
+  return {
+    controllerName,
+    originalControllerName: controller.name,
+    prefix: controller._prefix ?? '',
+    handlers: {
+      ...(exposeValidation
+        ? controller._handlers
+        : Object.fromEntries(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
+          )),
+    },
+  };
+}
+
 export default function getSchema(options: {
   emitSchema?: boolean;
   segmentName?: string;
@@ -17,19 +33,7 @@ export default function getSchema(options: {
   if (!emitSchema) return schema;
 
   for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
-    schema.controllers[controllerName] = {
-      controllerName: controllerName,
-      originalControllerName: controller.name,
-      prefix: controller._prefix ?? '',
-      handlers: {
-        ...(exposeValidation
-          ? controller._handlers
-          : Object.fromEntries(
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
-            )),
-      },
-    };
+    schema.controllers[controllerName] = getControllerSchema(controller, controllerName, exposeValidation);
   }
 
   return schema;

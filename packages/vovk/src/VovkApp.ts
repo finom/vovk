@@ -118,12 +118,13 @@ export class VovkApp {
       const allMethodKeys = Object.keys(handlers);
 
       let methodKeys: string[] = [];
+      const pathStr = path.join('/');
 
       methodKeys = allMethodKeys
         // First, try to match literal routes exactly.
         .filter((p) => {
           if (p.includes(':')) return false; // Skip parameterized paths
-          return p === path.join('/');
+          return p === pathStr;
         });
 
       if (!methodKeys.length) {

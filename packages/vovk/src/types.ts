@@ -60,8 +60,11 @@ export type RouteHandler = ((
   _options?: DecoratorOptions;
 };
 
-export interface VovkRequest<BODY = undefined, QUERY extends object | undefined = undefined>
-  extends Omit<NextRequest, 'json' | 'nextUrl'> {
+export interface VovkRequest<
+  BODY extends KnownAny = null,
+  QUERY extends KnownAny = undefined,
+  PARAMS extends object = Record<string, string>,
+> extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<BODY>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
     searchParams: Omit<
@@ -88,7 +91,7 @@ export interface VovkRequest<BODY = undefined, QUERY extends object | undefined 
     query: () => QUERY;
     meta: <T = Record<KnownAny, KnownAny>>(meta?: T | null) => T;
     form: <T = KnownAny>() => Promise<T>;
-    params: <T extends Record<string, string> = Record<string, string>>() => T;
+    params: () => PARAMS;
   };
 }
 

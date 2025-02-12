@@ -2,6 +2,8 @@ import * as Yup from 'yup';
 import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 import { convertSchema } from '@sodaru/yup-to-json-schema';
 
+const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.errors.join(', ') ?? String(e);
+
 function withYup<
   T extends (req: REQ, params: KnownAny) => YUP_OUTPUT extends Yup.Schema<infer U> ? U | Promise<U> : KnownAny,
   YUP_BODY extends Yup.Schema<KnownAny>,
@@ -10,10 +12,12 @@ function withYup<
   YUP_PARAMS extends Yup.Schema<KnownAny>,
   REQ extends VovkRequest<
     YUP_BODY extends Yup.Schema<infer U> ? U : never,
-    YUP_QUERY extends Yup.Schema<infer U> ? U : undefined
+    YUP_QUERY extends Yup.Schema<infer U> ? U : undefined,
+    YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>
   > = VovkRequest<
     YUP_BODY extends Yup.Schema<infer U> ? U : never,
-    YUP_QUERY extends Yup.Schema<infer U> ? U : undefined
+    YUP_QUERY extends Yup.Schema<infer U> ? U : undefined,
+    YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>
   >,
 >({
   body,
@@ -28,8 +32,8 @@ function withYup<
   output?: YUP_OUTPUT;
   handle: T;
 }): T {
-  const outputHandler = async (req: REQ, params: Parameters<T>[1]) => {
-    const outputData = await handle(req, params);
+  const outputHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
+    const outputData = await handle(req, handlerParams);
     if (output) {
       if (!outputData) {
         throw new HttpException(
@@ -40,10 +44,9 @@ function withYup<
       try {
         await output.validate(outputData);
       } catch (e) {
-        const err = (e as Yup.ValidationError).errors.join(', ');
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          `Yup validation failed. Invalid response on server for ${req.url}. ${err}`,
+          `Yup validation failed. Invalid response on server for ${req.url}. ${getErrorText(e)}`,
           { output: outputData }
         );
       }
@@ -52,17 +55,16 @@ function withYup<
     return outputData;
   };
 
-  const resultHandler = async (req: REQ, params: Parameters<T>[1]) => {
+  const resultHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
     if (body) {
       const bodyData: unknown = await req.json();
 
       try {
         await body.validate(bodyData);
       } catch (e) {
-        const err = (e as Yup.ValidationError).errors.join(', ');
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Yup validation failed. Invalid request body on server for ${req.url}. ${err}`,
+          `Yup validation failed. Invalid request body on server for ${req.url}. ${getErrorText(e)}`,
           { body: bodyData }
         );
       }
@@ -77,10 +79,9 @@ function withYup<
       try {
         await query.validate(queryData);
       } catch (e) {
-        const err = (e as Yup.ValidationError).errors.join(', ');
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Yup validation failed. Invalid request query on server for ${req.url}. ${err}`
+          `Yup validation failed. Invalid request query on server for ${req.url}. ${getErrorText(e)}`
         );
       }
     }
@@ -91,15 +92,14 @@ function withYup<
       try {
         await params.validate(paramsData);
       } catch (e) {
-        const err = (e as Yup.ValidationError).errors.join(', ');
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Yup validation failed. Invalid request params on server for ${req.url}. ${err}`
+          `Yup validation failed. Invalid request params on server for ${req.url}. ${getErrorText(e)}`
         );
       }
     }
 
-    return outputHandler(req, params);
+    return outputHandler(req, handlerParams);
   };
 
   void setHandlerValidation(resultHandler, {

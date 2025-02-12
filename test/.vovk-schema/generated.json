@@ -67,7 +67,8 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -97,7 +98,8 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -131,7 +133,8 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -161,7 +164,8 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -299,7 +303,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -312,7 +317,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -338,7 +344,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -351,7 +358,8 @@
             "query": {
               "isDTO": true
             },
-            "output": null
+            "output": null,
+            "params": null
           },
           "path": ":id",
           "httpMethod": "PUT"

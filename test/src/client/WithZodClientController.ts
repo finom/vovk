@@ -71,12 +71,13 @@ export default class WithZodClientController {
     },
   });
 
-  @get('output-and-openapi')
+  @get('output-and-openapi/:id')
   @openapi({
     summary: 'This is a summary',
   })
   static outputWithOpenApi = withZod({
     query: z.object({ hello: z.string() }),
+    params: z.object({ id: z.string() }),
     output: z.object({ hello: z.string() }),
     handle: (req) => {
       return { hello: req.vovk.query().hello };

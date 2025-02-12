@@ -1,4 +1,5 @@
-import type { VovkHandlerSchema, KnownAny, VovkController, VovkRequest } from './types';
+import type { VovkHandlerSchema, KnownAny, VovkController, VovkRequest, VovkControllerSchema } from './types';
+import { getControllerSchema } from './utils/getSchema';
 
 type Next = () => Promise<unknown>;
 
@@ -9,7 +10,10 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
     ...args: ARGS
   ) =>
     | Omit<VovkHandlerSchema, 'path' | 'httpMethod'>
-    | ((handlerSchema: VovkHandlerSchema | null) => Omit<Partial<VovkHandlerSchema>, 'path' | 'httpMethod'>)
+    | ((
+        handlerSchema: VovkHandlerSchema | null,
+        options: { handlerName: string; controllerSchema: VovkControllerSchema }
+      ) => Omit<Partial<VovkHandlerSchema>, 'path' | 'httpMethod'>)
     | null
     | undefined
 ) {
@@ -42,7 +46,13 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
 
       const handlerSchema: VovkHandlerSchema | null = controller._handlers?.[propertyKey] ?? null;
       const initResultReturn = initHandler?.call(controller, ...args);
-      const initResult = typeof initResultReturn === 'function' ? initResultReturn(handlerSchema) : initResultReturn;
+      const initResult =
+        typeof initResultReturn === 'function'
+          ? initResultReturn(handlerSchema, {
+              handlerName: propertyKey,
+              controllerSchema: getControllerSchema(controller, controller._controllerName ?? 'ERROR', true),
+            })
+          : initResultReturn;
 
       controller._handlers = {
         ...controller._handlers,

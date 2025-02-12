@@ -2,6 +2,9 @@ import z, { type ZodSchema } from 'zod';
 import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 import zodToJsonSchema from 'zod-to-json-schema';
 
+const getErrorText = (e: unknown) =>
+  (e as z.ZodError).errors?.map((er) => `${er.message} (${er.path.join('/')})`).join(', ') ?? String(e);
+
 function withZod<
   T extends (
     req: REQ,
@@ -13,10 +16,12 @@ function withZod<
   ZOD_PARAMS extends ZodSchema<KnownAny>,
   REQ extends VovkRequest<
     ZOD_BODY extends ZodSchema<infer U> ? U : never,
-    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
+    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined,
+    ZOD_PARAMS extends ZodSchema<infer U> ? U : Record<string, string>
   > = VovkRequest<
     ZOD_BODY extends ZodSchema<infer U> ? U : never,
-    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
+    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined,
+    ZOD_PARAMS extends ZodSchema<infer U> ? U : Record<string, string>
   >,
 >({
   body,
@@ -30,9 +35,9 @@ function withZod<
   params?: ZOD_PARAMS;
   output?: ZOD_OUTPUT;
   handle: T;
-}): T {
-  const outputHandler = async (req: REQ, params: Parameters<T>[1]) => {
-    const outputData = await handle(req, params);
+}) {
+  const outputHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
+    const outputData = await handle(req, handlerParams);
     if (output) {
       if (!outputData) {
         throw new HttpException(
@@ -43,10 +48,9 @@ function withZod<
       try {
         output.parse(outputData);
       } catch (e) {
-        const err = (e as z.ZodError).errors.map((er) => `${er.message} (${er.path.join('/')})`).join(', ');
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          `Zod validation failed. Invalid response on server for ${req.url}. ${err}`,
+          `Zod validation failed. Invalid response on server for ${req.url}. ${getErrorText(e)}`,
           { output: outputData }
         );
       }
@@ -55,16 +59,15 @@ function withZod<
     return outputData;
   };
 
-  const resultHandler = async (req: REQ, params: Parameters<T>[1]) => {
+  const resultHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
     if (body) {
       const bodyData: unknown = await req.json();
       try {
         body.parse(bodyData);
       } catch (e) {
-        const err = (e as z.ZodError).errors.map((er) => `${er.message} (${er.path.join('/')})`).join(', ');
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid request body on server for ${req.url}. ${err}`,
+          `Zod validation failed. Invalid request body on server for ${req.url}. ${getErrorText(e)}`,
           { body: bodyData }
         );
       }
@@ -78,10 +81,9 @@ function withZod<
       try {
         query.parse(queryData);
       } catch (e) {
-        const err = (e as z.ZodError).errors.map((er) => `${er.message} (${er.path.join('/')})`).join(', ');
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid request query on server for ${req.url}. ${err}`,
+          `Zod validation failed. Invalid request query on server for ${req.url}. ${getErrorText(e)}`,
           { query: queryData }
         );
       }
@@ -93,16 +95,15 @@ function withZod<
       try {
         params.parse(paramsData);
       } catch (e) {
-        const err = (e as z.ZodError).errors.map((er) => `${er.message} (${er.path.join('/')})`).join(', ');
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid request params on server for ${req.url}. ${err}`,
+          `Zod validation failed. Invalid request params on server for ${req.url}. ${getErrorText(e)}`,
           { params: paramsData }
         );
       }
     }
 
-    return outputHandler(req, params);
+    return outputHandler(req, handlerParams);
   };
 
   void setHandlerValidation(resultHandler, {

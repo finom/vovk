@@ -1,4 +1,4 @@
-// auto-generated 2025-02-11T15:48:32.158Z
+// auto-generated 2025-02-11T20:33:49.169Z
 import type { VovkSchema } from 'vovk';
 import segment0 from './_root.json';
 import segment1 from './foo/client.json';

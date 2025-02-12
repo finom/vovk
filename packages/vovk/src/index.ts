@@ -27,7 +27,6 @@ import {
   type VovkStreamAsyncIterable,
   createRPC,
 } from './client';
-import { openapi } from './openapi';
 import { HttpException } from './HttpException';
 import { createDecorator } from './createDecorator';
 import { StreamJSONResponse } from './StreamJSONResponse';
@@ -64,7 +63,6 @@ export {
   createDecorator,
   createRPC,
   generateStaticAPI,
-  openapi,
   setHandlerValidation,
 };
 

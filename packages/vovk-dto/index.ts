@@ -13,23 +13,28 @@ import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type
 */
 
 function withDto<
-  T extends (req: REQ, params?: PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>) => OUTPUT_DTO extends ClassConstructor<infer U> ? U | Promise<U> : KnownAny,
-  BODY_DTO extends  ClassConstructor<KnownAny>,
+  T extends (
+    req: REQ,
+    params?: PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
+  ) => OUTPUT_DTO extends ClassConstructor<infer U> ? U | Promise<U> : KnownAny,
+  BODY_DTO extends ClassConstructor<KnownAny>,
   QUERY_DTO extends ClassConstructor<KnownAny>,
   OUTPUT_DTO extends ClassConstructor<KnownAny>,
   PARAMS_DTO extends ClassConstructor<KnownAny>,
   REQ extends VovkRequest<
     BODY_DTO extends ClassConstructor<infer U> ? U : never,
-    QUERY_DTO extends ClassConstructor<infer U> ? U : undefined
+    QUERY_DTO extends ClassConstructor<infer U> ? U : undefined,
+    PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
   > = VovkRequest<
     BODY_DTO extends ClassConstructor<infer U> ? U : never,
-    QUERY_DTO extends ClassConstructor<infer U> ? U : undefined
+    QUERY_DTO extends ClassConstructor<infer U> ? U : undefined,
+    PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
   >,
 >({
-  body: bodyDto,
-  query: queryDto,
-  params: paramsDto,
-  output: outputDto,
+  body,
+  query,
+  params,
+  output,
   handle,
 }: {
   body?: BODY_DTO;
@@ -38,16 +43,16 @@ function withDto<
   output?: OUTPUT_DTO;
   handle: T;
 }): T {
-  const outputHandler = async (req: REQ, params: Parameters<T>[1]) => {
-    const outputData = await handle(req, params);
-    if (outputDto) {
+  const outputHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
+    const outputData = await handle(req, handlerParams);
+    if (output) {
       if (!outputData) {
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
           'Output is required. You probably forgot to return something from your handler.'
         );
       }
-      const outputInstance = plainToInstance(outputDto, outputData);
+      const outputInstance = plainToInstance(output, outputData);
       const outputErrors: ValidationError[] = await validate(outputInstance!);
 
       if (outputErrors.length > 0) {
@@ -62,10 +67,10 @@ function withDto<
     return outputData;
   };
 
-  const resultHandler = async (req: REQ, params: Parameters<T>[1]) => {
-    if (bodyDto) {
+  const resultHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
+    if (body) {
       const bodyData: unknown = await req.json();
-      const bodyInstance = plainToInstance(bodyDto, bodyData);
+      const bodyInstance = plainToInstance(body, bodyData);
       const bodyErrors: ValidationError[] = await validate(bodyInstance as object);
 
       if (bodyErrors.length > 0) {
@@ -80,9 +85,9 @@ function withDto<
       req.vovk.body = () => Promise.resolve(bodyInstance as BODY_DTO extends ClassConstructor<infer U> ? U : never);
     }
 
-    if (queryDto) {
+    if (query) {
       const queryData = req.vovk.query();
-      const queryInstance = plainToInstance(queryDto, queryData);
+      const queryInstance = plainToInstance(query, queryData);
       const queryErrors: ValidationError[] = await validate(queryInstance as object);
 
       if (queryErrors.length > 0) {
@@ -97,9 +102,9 @@ function withDto<
       req.vovk.query = () => queryInstance as QUERY_DTO extends ClassConstructor<infer U> ? U : never;
     }
 
-    if (paramsDto) {
+    if (params) {
       const paramsData = req.vovk.params();
-      const paramsInstance = plainToInstance(paramsDto, paramsData);
+      const paramsInstance = plainToInstance(params, paramsData);
       const paramsErrors: ValidationError[] = await validate(paramsInstance as object);
 
       if (paramsErrors.length > 0) {
@@ -114,14 +119,14 @@ function withDto<
       req.vovk.params = () => paramsInstance;
     }
 
-    return outputHandler(req, params);
+    return outputHandler(req, handlerParams);
   };
 
   void setHandlerValidation(resultHandler, {
-    body: bodyDto ? { isDTO: true } : null,
-    query: queryDto ? { isDTO: true } : null,
-    output: outputDto ? { isDTO: true } : null,
-    params: paramsDto ? { isDTO: true } : null,
+    body: body ? { isDTO: true } : null,
+    query: query ? { isDTO: true } : null,
+    output: output ? { isDTO: true } : null,
+    params: params ? { isDTO: true } : null,
   });
 
   return resultHandler as T;

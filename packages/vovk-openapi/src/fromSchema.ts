@@ -1,5 +1,5 @@
 import type { OpenAPIObject, PathsObject } from 'openapi3-ts/oas31';
-import type { HttpMethod, VovkSchema } from '../types';
+import type { HttpMethod, VovkSchema } from 'vovk/src/types';
 
 export function fromSchema(
   apiRoot: string,
