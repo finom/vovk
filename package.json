@@ -91,13 +91,14 @@
     "typescript-eslint": "^8.22.0"
   },
   "dependencies": {
-    "vovk": "^3.0.0-draft.58",
-    "vovk-cli": "^0.0.1-draft.62",
-    "vovk-client": "^0.0.4-draft.26",
-    "vovk-dto": "^0.0.1-draft.17",
-    "vovk-react-query": "^0.0.1-draft.25",
-    "vovk-yup": "^0.0.1-draft.17",
-    "vovk-zod": "^1.0.0-draft.18",
+    "vovk": "^3.0.0-draft.86",
+    "vovk-cli": "^0.0.1-draft.97",
+    "vovk-client": "^0.0.4-draft.35",
+    "vovk-dto": "^0.0.1-draft.26",
+    "vovk-openapi": "^0.0.1-draft.6",
+    "vovk-react-query": "^0.0.1-draft.45",
+    "vovk-yup": "^0.0.1-draft.26",
+    "vovk-zod": "^1.0.0-draft.30",
     "yup": "^1.6.1"
   }
 }
