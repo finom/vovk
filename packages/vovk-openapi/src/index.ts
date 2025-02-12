@@ -26,17 +26,21 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
     const paramsFake = paramsValidation && sample(paramsValidation);
     const outputFake = outputValidation && sample(outputValidation);
     const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
-    const stringifyData = (data: KnownAny) => JSON.stringify(data, null, 2).replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
-      .split('\n').map((line, i) => i === 0 ? line : line.padStart(4, ' ')).join('\n');
+    const stringifyData = (data: KnownAny) =>
+      JSON.stringify(data, null, 2)
+        .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
+        .split('\n')
+        .map((line, i) => (i === 0 ? line : line.padStart(4, ' ')))
+        .join('\n');
 
     const codeSample = `import { MyRPC } from 'vovk-client';
 const response = await MyRPC.${handlerName}(${
       hasArg
         ? ` {
-      ${queryFake ? `query: ${stringifyData(queryFake)},` : ''}
-      ${bodyFake ? `body: ${stringifyData(bodyFake)},` : ''}
-      ${paramsFake ? `params: ${stringifyData(paramsFake)},` : ''}
-    }`
+    ${queryFake ? `query: ${stringifyData(queryFake)},` : ''}
+    ${bodyFake ? `body: ${stringifyData(bodyFake)},` : ''}
+    ${paramsFake ? `params: ${stringifyData(paramsFake)},` : ''}
+}`
         : ''
     });
     ${
@@ -104,11 +108,13 @@ console.log(response);
         ...((queryParameters || pathParameters
           ? { parameters: [...(queryParameters || []), ...(pathParameters || [])] }
           : {}) as OperationObject['parameters']),
-        'x-codeSamples': [{
-          label: 'vovk-client',
-          lang: 'typescript',
-          source: codeSample,
-        }],
+        'x-codeSamples': [
+          {
+            label: 'vovk-client',
+            lang: 'typescript',
+            source: codeSample,
+          },
+        ],
         ...openAPIOperationObject,
       },
     };
