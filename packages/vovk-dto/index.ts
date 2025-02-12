@@ -123,15 +123,23 @@ function withDto<
     return outputHandler(req, handlerParams);
   };
 
-  void setHandlerValidation(resultHandler, {
-    body: body ? { isDTO: true } : null,
-    query: query ? { isDTO: true } : null,
-    output: output ? { isDTO: true } : null,
-    params: params ? { isDTO: true } : null,
-  });
+  const schemas = validationMetadatasToSchemas();
 
-  const schemas = validationMetadatasToSchemas()
-  console.log(schemas)
+  const getSchema = (dto?: ClassConstructor<KnownAny>) => {
+    if(!dto) return null;
+    const schema = schemas[dto.name];
+    if (!schema) {
+      throw new Error(`Schema not found for ${dto.name}`);
+    }
+    return schema ? { ...schema, 'x-isDto': true } : null;
+  }
+
+  void setHandlerValidation(resultHandler, {
+    body: getSchema(body),
+    query: getSchema(query),
+    output: getSchema(output),
+    params: getSchema(params),
+  });
 
   return resultHandler as T;
 }

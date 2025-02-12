@@ -3,7 +3,7 @@ import type { ClassConstructor } from 'class-transformer';
 import { HttpException, HttpStatus, type VovkValidateOnClient } from 'vovk';
 
 const validateOnClientDto: VovkValidateOnClient = async (input, validation) => {
-  if (validation.body && 'isDTO' in (validation.body as object)) {
+  if (validation.body && 'x-isDto' in (validation.body as object)) {
     const bodyErrors = await validate(input.body as ClassConstructor<object>);
     if (bodyErrors.length > 0) {
       const err = bodyErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
@@ -19,7 +19,7 @@ const validateOnClientDto: VovkValidateOnClient = async (input, validation) => {
     }
   }
 
-  if (validation.query && 'isDTO' in (validation.query as object)) {
+  if (validation.query && 'x-isDto' in (validation.query as object)) {
     const queryErrors = await validate(input.query as ClassConstructor<object>);
     if (queryErrors.length > 0) {
       const err = queryErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
@@ -35,7 +35,7 @@ const validateOnClientDto: VovkValidateOnClient = async (input, validation) => {
     }
   }
 
-  if (validation.params && 'isDTO' in (validation.params as object)) {
+  if (validation.params && 'x-isDto' in (validation.params as object)) {
     const paramsErrors = await validate(input.params as ClassConstructor<object>);
     if (paramsErrors.length > 0) {
       const err = paramsErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
