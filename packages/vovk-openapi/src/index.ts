@@ -30,7 +30,7 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
       JSON.stringify(data, null, 2)
         .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
         .split('\n')
-        .map((line, i, a) => (i === 0 && 1 !== a.length - 1 ? line : line.padStart(6, ' ')))
+        .map((line, i, a) => (i === 0 && 1 !== a.length - 1 ? line : ' '.repeat(6) + line))
         .join('\n');
 
     const codeSample = `import { MyRPC } from 'vovk-client';
