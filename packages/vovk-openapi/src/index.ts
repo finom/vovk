@@ -102,7 +102,11 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
         ...((queryParameters || pathParameters
           ? { parameters: [...(queryParameters || []), ...(pathParameters || [])] }
           : {}) as OperationObject['parameters']),
-        'x-codeSample': codeSample,
+        'x-codeSamples': [{
+          label: 'TypeScript',
+          lang: 'typescript',
+          source: codeSample,
+        }],
         ...openAPIOperationObject,
       },
     };
