@@ -128,9 +128,6 @@ function withDto<
   const getSchema = (dto?: ClassConstructor<KnownAny>) => {
     if(!dto) return null;
     const schema = schemas[dto.name];
-    if (!schema) {
-      throw new Error(`Schema not found for ${dto.name}`);
-    }
     return schema ? { ...schema, 'x-isDto': true } : null;
   }
 
