@@ -26,11 +26,11 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
     const paramsFake = paramsValidation && sample(paramsValidation);
     const outputFake = outputValidation && sample(outputValidation);
     const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
-    const stringifyData = (data: KnownAny) =>
+    const stringifyData = (data: KnownAny, pad = 4) =>
       JSON.stringify(data, null, 2)
         .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
         .split('\n')
-        .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(4) + line : ' '.repeat(6) + line))
+        .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
         .join('\n');
 
     const codeSample = `import { MyRPC } from 'vovk-client';
@@ -46,10 +46,10 @@ const response = await MyRPC.${handlerName}(${
     ${
       outputFake
         ? `
-/* 
-${stringifyData(outputFake)}
-*/
 console.log(response);
+/* 
+${stringifyData(outputFake, 0)}
+*/
     `
         : ''
     }
