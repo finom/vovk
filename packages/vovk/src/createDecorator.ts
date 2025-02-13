@@ -1,5 +1,4 @@
-import type { VovkHandlerSchema, KnownAny, VovkController, VovkRequest, VovkControllerSchema } from './types';
-import { getControllerSchema } from './utils/getSchema';
+import type { VovkHandlerSchema, KnownAny, VovkController, VovkRequest } from './types';
 
 type Next = () => Promise<unknown>;
 
@@ -12,7 +11,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
     | Omit<VovkHandlerSchema, 'path' | 'httpMethod'>
     | ((
         handlerSchema: VovkHandlerSchema | null,
-        options: { handlerName: string; }
+        options: { handlerName: string }
       ) => Omit<Partial<VovkHandlerSchema>, 'path' | 'httpMethod'>)
     | null
     | undefined

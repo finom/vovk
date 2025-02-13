@@ -76,6 +76,18 @@ ${stringifyData(outputFake, 0)}
       ...handlerSchema,
       openapi: {
         ...handlerSchema?.openapi,
+        ...openAPIOperationObject,
+        ...((queryParameters || pathParameters
+          ? { parameters: openAPIOperationObject.parameters ?? [...(queryParameters || []), ...(pathParameters || [])] }
+          : {}) as OperationObject['parameters']),
+        'x-codeSamples': [
+          ...((openAPIOperationObject['x-codeSamples'] as []) ?? []),
+          {
+            label: 'vovk-client',
+            lang: 'typescript',
+            source: codeSample,
+          },
+        ],
         ...(outputValidation && 'type' in outputValidation && 'properties' in outputValidation
           ? {
               responses: {
@@ -87,13 +99,13 @@ ${stringifyData(outputFake, 0)}
                     },
                   },
                 },
-                ...openAPIOperationObject?.responses,
+                ...openAPIOperationObject.responses,
               },
             }
           : {}),
         ...(bodyValidation && 'type' in bodyValidation && 'properties' in bodyValidation
           ? {
-              requestBody: {
+              requestBody: openAPIOperationObject.requestBody ?? {
                 description: 'description' in bodyValidation ? bodyValidation.description : 'Request body',
                 required: true,
                 content: {
@@ -104,18 +116,6 @@ ${stringifyData(outputFake, 0)}
               },
             }
           : {}),
-        ...((queryParameters || pathParameters
-          ? { parameters: [...(queryParameters || []), ...(pathParameters || [])] }
-          : {}) as OperationObject['parameters']),
-        'x-codeSamples': [
-          ...((openAPIOperationObject['x-codeSamples'] as []) ?? []),
-          {
-            label: 'vovk-client',
-            lang: 'typescript',
-            source: codeSample,
-          },
-        ],
-        ...openAPIOperationObject,
       },
     };
   };

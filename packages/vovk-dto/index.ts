@@ -114,10 +114,10 @@ function withDto<
   };
 
   const getSchema = (dto?: ClassConstructor<KnownAny>) => {
-    if(!dto) return null;
+    if (!dto) return null;
     const schema = targetConstructorToSchema(dto);
     return schema ? { ...schema, 'x-isDto': true } : null;
-  }
+  };
 
   void setHandlerValidation(resultHandler, {
     body: getSchema(body),

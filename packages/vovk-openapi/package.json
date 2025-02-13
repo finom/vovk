@@ -1,6 +1,6 @@
 {
   "name": "vovk-openapi",
-  "version": "0.0.1-draft.19",
+  "version": "0.0.1-draft.20",
   "description": "OpenAPI decorator and tools for Vovk.ts",
   "main": "dist/index.js",
   "scripts": {
