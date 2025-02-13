@@ -26,8 +26,6 @@ export function fromSchema(
     }
   }
 
-  console.log('HttpStatus', HttpStatus, Object.keys(HttpStatus).map((k) => HttpStatus[k as unknown as HttpStatus]).filter(Boolean))
-
   return {
     ...extendWith,
     openapi: '3.1.0',
@@ -41,7 +39,7 @@ export function fromSchema(
         HttpStatus: {
           type: 'integer',
           description: 'HTTP status code',
-          enum: Object.keys(HttpStatus).map((k) => HttpStatus[k as unknown as HttpStatus]).filter(Boolean),
+          enum: Object.keys(HttpStatus).map((k) => HttpStatus[k as unknown as HttpStatus]).filter(Boolean).filter((v) => typeof v === 'number'),
         },
         VovkErrorResponse: {
           type: 'object',
