@@ -15,7 +15,7 @@ type SimpleJsonSchema = {
   required?: string[];
 };
 
-const stringifyData = (data: KnownAny, pad = 4) =>
+const stringifySample = (data: KnownAny, pad = 4) =>
   JSON.stringify(data, null, 2)
     .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
     .split('\n')
@@ -38,7 +38,7 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
 const response = await MyRPC.${handlerName}(${
       hasArg
         ? `{
-${paramsFake ? `    params: ${stringifyData(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifyData(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifyData(queryFake)},\n` : ''}}`
+${paramsFake ? `    params: ${stringifySample(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifySample(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifySample(queryFake)},\n` : ''}}`
         : ''
     });
     ${
@@ -46,7 +46,7 @@ ${paramsFake ? `    params: ${stringifyData(paramsFake)},\n` : ''}${bodyFake ? `
         ? `
 console.log(response);
 /* 
-${stringifyData(outputFake, 0)}
+${stringifySample(outputFake, 0)}
 */
     `
         : ''
