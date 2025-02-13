@@ -27,5 +27,8 @@
   "homepage": "https://vovk.dev",
   "peerDependencies": {
     "next": "*"
+  },
+  "optionalDependencies": {
+    "openapi3-ts": "*"
   }
 }

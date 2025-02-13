@@ -32,6 +32,29 @@ export function fromSchema(
       title: 'API',
       version: '1.0.0',
     },
+    components: extendWith?.components ?? {
+      schemas: {
+        VovkErrorResponse: {
+          type: 'object',
+          properties: {
+            cause: {},
+            statusCode: {
+              type: 'integer',
+            },
+            message: {
+              type: 'string',
+            },
+            isError: {
+              type: 'boolean',
+              const: true,
+            },
+          },
+          required: ['statusCode', 'message', 'isError'],
+          additionalProperties: false,
+        },
+      },
+      ...extendWith?.components,
+    },
     paths,
   };
 }
