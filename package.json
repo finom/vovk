@@ -89,16 +89,5 @@
     "turbo": "^2.4.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.22.0"
-  },
-  "dependencies": {
-    "vovk": "^3.0.0-draft.86",
-    "vovk-cli": "^0.0.1-draft.97",
-    "vovk-client": "^0.0.4-draft.35",
-    "vovk-dto": "^0.0.1-draft.26",
-    "vovk-openapi": "^0.0.1-draft.6",
-    "vovk-react-query": "^0.0.1-draft.45",
-    "vovk-yup": "^0.0.1-draft.26",
-    "vovk-zod": "^1.0.0-draft.30",
-    "yup": "^1.6.1"
   }
 }
