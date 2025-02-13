@@ -1,4 +1,5 @@
 import type { OpenAPIObject, PathsObject } from 'openapi3-ts/oas31';
+import { HttpStatus } from 'vovk';
 import type { HttpMethod, VovkSchema } from 'vovk/src/types';
 
 export function fromSchema(
@@ -35,6 +36,11 @@ export function fromSchema(
     components: {
       ...extendWith?.components,
       schemas: {
+        HttpStatus: {
+          type: 'integer',
+          description: 'HTTP status code',
+          enum: Object.values(HttpStatus),
+        },
         VovkErrorResponse: {
           type: 'object',
           description: 'Vovk error response',
@@ -43,8 +49,7 @@ export function fromSchema(
               description: 'Error cause of any shape',
             },
             statusCode: {
-              type: 'integer',
-              description: 'HTTP status code',
+              $ref: '#/components/schemas/HttpStatus',
             },
             message: {
               type: 'string',

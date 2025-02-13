@@ -1,8 +1,7 @@
 import type { OperationObject } from 'openapi3-ts/oas31';
-import { createDecorator } from 'vovk';
+import { createDecorator, type KnownAny } from 'vovk';
 import { sample } from '@stoplight/json-schema-sampler';
 import { fromSchema } from './fromSchema';
-import type { KnownAny } from 'vovk/src/types';
 import { error } from './error';
 
 type OperationObjectWithCustomProperties = OperationObject & {
