@@ -6,22 +6,15 @@ const getErrorText = (e: unknown) =>
   (e as z.ZodError).errors?.map((er) => `${er.message} (${er.path.join('/')})`).join(', ') ?? String(e);
 
 function withZod<
-  T extends (
-    req: REQ,
-    params: ZOD_PARAMS extends ZodSchema<infer U> ? U : Record<string, string>
-  ) => ZOD_OUTPUT extends ZodSchema<infer U> ? U | Promise<U> : KnownAny,
+  T extends (req: REQ, params: z.infer<ZOD_PARAMS>) => z.infer<ZOD_OUTPUT> | Promise<z.infer<ZOD_OUTPUT>>,
   ZOD_BODY extends ZodSchema<KnownAny>,
   ZOD_QUERY extends ZodSchema<KnownAny>,
   ZOD_OUTPUT extends ZodSchema<KnownAny>,
   ZOD_PARAMS extends ZodSchema<KnownAny>,
-  REQ extends VovkRequest<
-    ZOD_BODY extends ZodSchema<infer U> ? U : never,
-    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined,
-    ZOD_PARAMS extends ZodSchema<infer U> ? U : Record<string, string>
-  > = VovkRequest<
-    ZOD_BODY extends ZodSchema<infer U> ? U : never,
-    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined,
-    ZOD_PARAMS extends ZodSchema<infer U> ? U : Record<string, string>
+  REQ extends VovkRequest<z.infer<ZOD_BODY>, z.infer<ZOD_QUERY>, z.infer<ZOD_PARAMS>> = VovkRequest<
+    z.infer<ZOD_BODY>,
+    z.infer<ZOD_QUERY>,
+    z.infer<ZOD_PARAMS>
   >,
 >({
   body,
@@ -55,7 +48,6 @@ function withZod<
         );
       }
     }
-
     return outputData;
   };
 
@@ -71,13 +63,12 @@ function withZod<
           { body: bodyData }
         );
       }
-      // redeclare to add ability to call req.json() again
-      req.json = () => Promise.resolve(bodyData as ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : never);
+      // Redeclare req.json to allow subsequent calls to return the validated type.
+      req.json = () => Promise.resolve(bodyData as z.infer<ZOD_BODY>);
     }
 
     if (query) {
       const queryData = req.vovk.query();
-
       try {
         query.parse(queryData);
       } catch (e) {
@@ -91,7 +82,6 @@ function withZod<
 
     if (params) {
       const paramsData = req.vovk.params();
-
       try {
         params.parse(paramsData);
       } catch (e) {

@@ -6,6 +6,6 @@ import segment2 from './generated.json';
 const fullSchema = {
   '': segment0 as VovkSchema,
   'foo/client': segment1 as VovkSchema,
-  'generated': segment2 as VovkSchema,
+  generated: segment2 as VovkSchema,
 };
 export default fullSchema;
