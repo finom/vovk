@@ -26,8 +26,7 @@ export const error = createDecorator(null, (status: HttpStatus, message: string)
                           type: 'string',
                           enum: [
                             message,
-                            ...(handlerSchema?.openapi?.responses?.[status]?.content?.['application/json']?.schema
-                              ?.enum ?? []),
+                            ...(handlerSchema?.openapi?.responses?.[status]?.content?.['application/json']?.schema?.allOf?.[1]?.properties?.message?.enum ?? []),
                           ],
                         },
                       },
