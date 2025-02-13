@@ -1,17 +1,7 @@
 import { validate, type ValidationError } from 'class-validator';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
 import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
-import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
-
-/*
-  REQ extends VovkRequest<
-    ZOD_BODY extends ZodSchema<infer U> ? U : never,
-    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
-  > = VovkRequest<
-    ZOD_BODY extends ZodSchema<infer U> ? U : never,
-    ZOD_QUERY extends ZodSchema<infer U> ? U : undefined
-  >,
-*/
+import { targetConstructorToSchema } from 'class-validator-jsonschema';
 
 function withDto<
   T extends (
@@ -123,11 +113,9 @@ function withDto<
     return outputHandler(req, handlerParams);
   };
 
-  const schemas = validationMetadatasToSchemas();
-
   const getSchema = (dto?: ClassConstructor<KnownAny>) => {
     if(!dto) return null;
-    const schema = schemas[dto.name];
+    const schema = targetConstructorToSchema(dto);
     return schema ? { ...schema, 'x-isDto': true } : null;
   }
 
