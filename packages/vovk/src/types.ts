@@ -63,7 +63,7 @@ export type RouteHandler = ((
 export interface VovkRequest<
   BODY extends KnownAny = null,
   QUERY extends KnownAny = undefined,
-  PARAMS extends object = Record<string, string>,
+  PARAMS extends KnownAny = undefined,
 > extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<BODY>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
@@ -110,7 +110,9 @@ export type VovkControllerQuery<T extends (...args: KnownAny) => KnownAny> = Ret
   Parameters<T>[0]['vovk']['query']
 >;
 
-export type VovkControllerParams<T extends (...args: KnownAny) => KnownAny> = Parameters<T>[1];
+export type VovkControllerParams<T extends (...args: KnownAny) => KnownAny> = Parameters<T>[1] extends object
+  ? Parameters<T>[1]
+  : ReturnType<Parameters<T>[0]['vovk']['params']>;
 
 export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownAny>) => KnownAny> = T extends (
   ...args: KnownAny[]

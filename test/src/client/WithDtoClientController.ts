@@ -1,4 +1,5 @@
-import { post, prefix, put, del, get, openapi } from 'vovk';
+import { post, prefix, put, del, get } from 'vovk';
+import { openapi } from 'vovk-openapi';
 import { withDto } from 'vovk-dto';
 import { Contains, IsArray, IsString, ArrayNotEmpty, ArrayMinSize, ValidateNested, IsOptional } from 'class-validator';
 import { plainToInstance, Type } from 'class-transformer';

@@ -1,4 +1,5 @@
-import { post, put, get, del, prefix, openapi } from 'vovk';
+import { post, put, get, del, prefix } from 'vovk';
+import { openapi } from 'vovk-openapi';
 import { withYup } from 'vovk-yup';
 import * as Yup from 'yup';
 
