@@ -38,7 +38,7 @@ export const openapi = createDecorator(null, (openAPIOperationObject: OperationO
 const response = await MyRPC.${handlerName}(${
       hasArg
         ? `{
-    ${paramsFake ? `params: ${stringifyData(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifyData(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifyData(queryFake)},\n` : ''}}`
+${paramsFake ? `    params: ${stringifyData(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifyData(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifyData(queryFake)},\n` : ''}}`
         : ''
     });
     ${
