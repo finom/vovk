@@ -89,8 +89,8 @@ ${stringifySample(outputFake, 0)}
               }
             : {}) as OperationObject['parameters']),
           'x-codeSamples': [
-            ...handlerSchema?.openapi?.['x-codeSamples'],
-            ...openAPIOperationObject['x-codeSamples'],
+            ...((handlerSchema?.openapi?.['x-codeSamples'] as []) ?? []),
+            ...((openAPIOperationObject['x-codeSamples'] as []) ?? []),
             {
               label: 'vovk-client',
               lang: 'typescript',
