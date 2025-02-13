@@ -108,6 +108,7 @@ ${stringifyData(outputFake, 0)}
           ? { parameters: [...(queryParameters || []), ...(pathParameters || [])] }
           : {}) as OperationObject['parameters']),
         'x-codeSamples': [
+          ...((openAPIOperationObject['x-codeSamples'] as []) ?? []),
           {
             label: 'vovk-client',
             lang: 'typescript',
