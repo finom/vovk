@@ -46,18 +46,7 @@ export default fullSchema;`;
   const existingDTs = await fs.readFile(dTsAbsolutePath, 'utf-8').catch(() => null);
   const existingTs = await fs.readFile(tsAbsolutePath, 'utf-8').catch(() => null);
 
-  await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
-  // ignore 1st lines at the files
-  if (existingJs?.split('\n').slice(1).join('\n') !== jsContent.split('\n').slice(1).join('\n')) {
-    await fs.writeFile(jsAbsolutePath, jsContent);
-  }
-  if (existingDTs?.split('\n').slice(1).join('\n') !== dTsContent.split('\n').slice(1).join('\n')) {
-    await fs.writeFile(dTsAbsolutePath, dTsContent);
-  }
-  if (existingTs?.split('\n').slice(1).join('\n') !== tsContent.split('\n').slice(1).join('\n')) {
-    await fs.writeFile(tsAbsolutePath, tsContent);
-  }
-
+  await fs.mkdir(schemaJsonOutAbsolutePath, { recursive: true });
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
@@ -77,6 +66,17 @@ export default fullSchema;`;
       }
     })
   );
+
+  // ignore 1st lines at the files
+  if (existingJs?.split('\n').slice(1).join('\n') !== jsContent.split('\n').slice(1).join('\n')) {
+    await fs.writeFile(jsAbsolutePath, jsContent);
+  }
+  if (existingDTs?.split('\n').slice(1).join('\n') !== dTsContent.split('\n').slice(1).join('\n')) {
+    await fs.writeFile(dTsAbsolutePath, dTsContent);
+  }
+  if (existingTs?.split('\n').slice(1).join('\n') !== tsContent.split('\n').slice(1).join('\n')) {
+    await fs.writeFile(tsAbsolutePath, tsContent);
+  }
 
   // Recursive function to delete unnecessary JSON files and folders
   async function deleteUnnecessaryJsonFiles(dirPath: string): Promise<void> {
