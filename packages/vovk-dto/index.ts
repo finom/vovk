@@ -6,7 +6,7 @@ import { targetConstructorToSchema } from 'class-validator-jsonschema';
 function withDto<
   T extends (
     req: REQ,
-    params?: Record<string, string>
+    params?: PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
   ) => OUTPUT_DTO extends ClassConstructor<infer U> ? U | Promise<U> : KnownAny,
   BODY_DTO extends ClassConstructor<KnownAny>,
   QUERY_DTO extends ClassConstructor<KnownAny>,
