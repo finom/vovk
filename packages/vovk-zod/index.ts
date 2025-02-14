@@ -14,7 +14,7 @@ type VovkRequestZod<ZOD_BODY, ZOD_QUERY, ZOD_PARAMS> = VovkRequest<
 function withZod<
   T extends (
     req: REQ,
-    params: ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : Record<string, string>
+    params: Record<string, string>
   ) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> | Promise<z.infer<ZOD_OUTPUT>> : KnownAny,
   ZOD_BODY extends ZodSchema<KnownAny> | undefined = undefined,
   ZOD_QUERY extends ZodSchema<KnownAny> | undefined = undefined,
@@ -108,7 +108,7 @@ function withZod<
     params: params ? zodToJsonSchema(params) : null,
   });
 
-  return resultHandler as T;
+  return resultHandler as (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
 }
 
 export { withZod };
