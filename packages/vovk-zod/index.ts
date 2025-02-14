@@ -6,16 +6,14 @@ const getErrorText = (e: unknown) =>
   (e as z.ZodError).errors?.map((er) => `${er.message} (${er.path.join('/')})`).join(', ') ?? String(e);
 
 type VovkRequestZod<ZOD_BODY, ZOD_QUERY, ZOD_PARAMS> = VovkRequest<
-  ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : undefined,
-  ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined,
-  ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : undefined
->;
+ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : undefined,
+ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined,
+ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : undefined
+>
+
 
 function withZod<
-  T extends (
-    req: REQ,
-    params: Record<string, string>
-  ) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> | Promise<z.infer<ZOD_OUTPUT>> : KnownAny,
+  T extends (req: REQ, params: ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS>: Record<string, string>) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> | Promise<z.infer<ZOD_OUTPUT>> : KnownAny,
   ZOD_BODY extends ZodSchema<KnownAny> | undefined = undefined,
   ZOD_QUERY extends ZodSchema<KnownAny> | undefined = undefined,
   ZOD_OUTPUT extends ZodSchema<KnownAny> | undefined = undefined,
