@@ -33,6 +33,7 @@ describe('Errors', () => {
       message: 'ERROR3',
       statusCode: 418,
       isError: true,
+      cause: { some: 'problem' },
     } satisfies VovkErrorResponse);
   });
 });

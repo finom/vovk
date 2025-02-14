@@ -1,10 +1,276 @@
 import { it, expect, describe } from '@jest/globals';
 import { WithZodClientControllerRPC } from 'vovk-client';
-import { HttpException, type VovkReturnType, type VovkHandlerSchema } from 'vovk';
+import {
+  HttpException,
+  type VovkReturnType,
+  type VovkHandlerSchema,
+  VovkControllerYieldType,
+  VovkYieldType,
+} from 'vovk';
 import { NESTED_QUERY_EXAMPLE } from './ClientController';
+import type WithZodClientController from './WithZodClientController';
+
+/*
+Only body,
+  - Server
+  - Client
+    - For DTO: JSON Schema
+Only query,
+  - Server
+  - Client
+    - For DTO: JSON Schema
+Nested Query
+  - Server
+  - Client
+    - For DTO: JSON Schema
+Only params,
+  - Server
+  - Client
+    - For DTO: JSON Schema
+Only output,
+  - Server
+Streaming
+All (just OK) DONE
+handler.schema for All, use @openapi and @openapi.error
+*/
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
-  it('Should handle Zod server validation', async () => {
+  it('Should be OK', async () => {
+    const result = await WithZodClientControllerRPC.handleAll({
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'bar' },
+    });
+
+    expect(result satisfies { body: { hello: 'world' }; query: { search: 'value' } }).toEqual({
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'bar' },
+    });
+  });
+
+  it('Should handle nothitng', async () => {
+    let result = await WithZodClientControllerRPC.handleNothitng();
+    expect(result satisfies { nothing: 'here' }).toEqual({ nothing: 'here' });
+    result = await WithZodClientControllerRPC.handleNothitng({
+      // @ts-expect-error Expect error
+      body: { no: 'body' },
+    });
+    expect(result satisfies { nothing: 'here' }).toEqual({ nothing: 'here' });
+  });
+
+  it('Should handle body validation on server and client', async () => {
+    const result = await WithZodClientControllerRPC.handleBody({
+      body: { hello: 'world' },
+    });
+
+    expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
+
+    let { rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleBody({
+        body: {
+          hello: 'wrong' as 'world',
+        },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(
+      /Zod validation failed. Invalid request body on server for http:.*. Invalid literal value, expected "world" \(hello\)/
+    );
+    await rejects.toThrowError(HttpException);
+
+    ({ rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleBody({
+        body: {
+          hello: 'wrong' as 'world',
+        },
+      });
+    }));
+
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+    );
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle params validation on server and client', async () => {
+    const result = await WithZodClientControllerRPC.handleParams({
+      params: { foo: 'bar' },
+    });
+
+    expect(result satisfies { foo: 'bar' }).toEqual({ foo: 'bar' });
+
+    let { rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleParams({
+        params: {
+          foo: 'wrong' as 'bar',
+        },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(
+      /Zod validation failed. Invalid request params on server for http:.*\. Invalid literal value, expected "bar" \(foo\)/
+    );
+    await rejects.toThrowError(HttpException);
+
+    ({ rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleParams({
+        params: {
+          foo: 'wrong' as 'bar',
+        },
+      });
+    }));
+
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request params on client for http:.*\. data\/foo must be equal to constant/
+    );
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle query validation on server and client', async () => {
+    const result = await WithZodClientControllerRPC.handleQuery({
+      query: { search: 'value' },
+    });
+
+    expect(result satisfies { search: 'value' }).toEqual({ search: 'value' });
+
+    let { rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleQuery({
+        query: {
+          search: 'wrong' as 'value',
+        },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(
+      /Zod validation failed. Invalid request query on server for http:.*\. Invalid literal value, expected "value" \(search\)/
+    );
+    await rejects.toThrowError(HttpException);
+
+    ({ rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleQuery({
+        query: {
+          search: 'wrong' as 'value',
+        },
+      });
+    }));
+
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request query on client for http:.*\. data\/search must be equal to constant/
+    );
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle nested queries on server and client', async () => {
+    const result = await WithZodClientControllerRPC.handleNestedQuery({
+      query: NESTED_QUERY_EXAMPLE,
+    });
+
+    expect(result satisfies VovkReturnType<typeof WithZodClientControllerRPC.handleNestedQuery>).toEqual(
+      NESTED_QUERY_EXAMPLE
+    );
+
+    let { rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleNestedQuery({
+        query: {
+          ...NESTED_QUERY_EXAMPLE,
+          // @ts-expect-error Expect error
+          x: null,
+        },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Zod validation failed. Invalid request query on server for http:.*. Required \(x\)/);
+
+    ({ rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleNestedQuery({
+        query: {
+          ...NESTED_QUERY_EXAMPLE,
+          // @ts-expect-error Expect error
+          x: null,
+        },
+      });
+    }));
+
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request query on client for http:.*\. data\/x must be string/
+    );
+  });
+
+  it('Should handle output validation on server', async () => {
+    const result = await WithZodClientControllerRPC.handleOutput({
+      query: { helloOutput: 'world' },
+    });
+
+    expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
+
+    const { rejects } = expect(async () => {
+      await WithZodClientControllerRPC.handleOutput({
+        query: { helloOutput: 'wrong' },
+      });
+    });
+
+    await rejects.toThrow(
+      /Zod validation failed. Invalid response on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
+    );
+  });
+
+  it('Should handle stream', async () => {
+    const tokens = ['a', 'b', 'c', 'd'];
+    const expected = tokens.map((value) => ({ value }));
+    const expectedCollected: typeof expected = [];
+
+    using resp = await WithZodClientControllerRPC.handleStream({
+      query: { values: tokens },
+    });
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    null as unknown as VovkControllerYieldType<typeof WithZodClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithZodClientControllerRPC.handleStream> satisfies { value: string };
+
+    expect(expected).toEqual(expectedCollected);
+  });
+
+  it('Should store schema at handler.schema', async () => {
+    expect(WithZodClientControllerRPC.handleAll.schema satisfies VovkHandlerSchema).toEqual({
+      httpMethod: 'POST',
+      path: ':foo',
+      validation: {
+        body: {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          additionalProperties: false,
+          properties: {
+            hello: {
+              const: 'body',
+              type: 'string',
+            },
+          },
+          required: ['hello'],
+          type: 'object',
+        },
+        query: {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          additionalProperties: false,
+          properties: {
+            hey: {
+              const: 'query',
+              type: 'string',
+            },
+          },
+          required: ['hey'],
+          type: 'object',
+        },
+      },
+    });
+  });
+  /* it('Should handle Zod server validation', async () => {
     const result = await WithZodClientControllerRPC.postWithBodyQueryAndParams({
       body: { hello: 'body' },
       query: { hey: 'query' },
@@ -247,5 +513,5 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrow(
       /Ajv validation failed. Invalid request query on client for http:.*\. data\/x must be string/
     );
-  });
+  }); */
 });

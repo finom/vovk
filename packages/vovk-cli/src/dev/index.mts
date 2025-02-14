@@ -8,7 +8,7 @@ import capitalize from 'lodash/capitalize.js';
 import debounce from 'lodash/debounce.js';
 import once from 'lodash/once.js';
 import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
-import writeOneSchemaFile from './writeOneSchemaFile.mjs';
+import writeOneSchemaFile, { JSON_DIR_NAME } from './writeOneSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
 import ensureClient from '../generate/ensureClient.mjs';
 import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
@@ -326,7 +326,7 @@ export class VovkDev {
 
     log.debug(`Handling received schema from ${formatLoggedSegmentName(schema.segmentName)}`);
 
-    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
+    const schemaJsonOutAbsolutePath = path.join(cwd, config.schemaOutDir, JSON_DIR_NAME);
     const segment = this.#segments.find((s) => s.segmentName === schema.segmentName);
 
     if (!segment) {
@@ -338,7 +338,7 @@ export class VovkDev {
     if (schema.emitSchema) {
       const now = Date.now();
       const { diffResult } = await writeOneSchemaFile({
-        schemaOutAbsolutePath,
+        schemaJsonOutAbsolutePath,
         schema,
         skipIfExists: false,
       });

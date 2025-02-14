@@ -1,50 +1,57 @@
-import { post, put, get, del, prefix } from 'vovk';
+import { post, put, get, prefix, HttpStatus } from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
 import * as z from 'zod';
 
 @prefix('with-zod')
 export default class WithZodClientController {
-  @post(':foo')
-  static postWithBodyQueryAndParams = withZod({
-    body: z.object({ hello: z.literal('body') }).describe('This is a body'),
-    query: z.object({ hey: z.literal('query') }),
-    handle: async (req, params: { foo: 'bar' }) => {
+  @openapi({
+    summary: 'This is a summary',
+  })
+  @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  @post('all/:foo')
+  static handleAll = withZod({
+    body: z.object({ hello: z.literal('world') }),
+    query: z.object({ search: z.literal('value') }),
+    params: z.object({ foo: z.literal('bar') }),
+    output: z.object({
+      body: z.object({ hello: z.literal('world') }),
+      query: z.object({ search: z.literal('value') }),
+      params: z.object({ foo: z.literal('bar') }),
+    }),
+    handle: async (req, params) => {
       const body = await req.json();
-      const hey = req.nextUrl.searchParams.get('hey');
-      return { body, query: { hey }, params };
-    },
-  });
-
-  @put.auto()
-  static putWithBodyAndNullQuery = withZod({
-    body: z.object({ hello: z.literal('body') }),
-    handle: async (req) => {
-      const body = await req.json();
-      return { body };
-    },
-  });
-
-  @del.auto()
-  static putWithBodyOnly = withZod({
-    body: z.object({ hello: z.literal('body') }),
-    handle: async (req) => {
-      const body = await req.json();
-      return { body };
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, query: { search }, params };
     },
   });
 
   @get.auto()
-  static getWithQueryAndNullBody = withZod({
-    query: z.object({ hey: z.literal('query') }),
+  static handleQuery = withZod({
+    query: z.object({ search: z.literal('value') }),
     handle: (req) => {
-      const hey = req.nextUrl.searchParams.get('hey');
-      return { query: { hey } };
+      return req.vovk.query();
     },
   });
 
-  @get('nested-query')
-  static getNestedQuery = withZod({
+  @post.auto()
+  static handleBody = withZod({
+    body: z.object({ hello: z.literal('world') }),
+    handle: async (req) => {
+      return req.vovk.body();
+    },
+  });
+
+  @put('x/:foo/y')
+  static handleParams = withZod({
+    params: z.object({ foo: z.literal('bar') }),
+    handle: async (req) => {
+      return req.vovk.params();
+    },
+  });
+
+  @get.auto()
+  static handleNestedQuery = withZod({
     query: z.object({
       x: z.string(),
       y: z.array(z.string()),
@@ -68,20 +75,33 @@ export default class WithZodClientController {
       }),
     }),
     handle: (req) => {
-      return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
+      return req.vovk.query();
     },
   });
 
-  @get('output-and-openapi/:id')
-  @openapi({
-    summary: 'This is a summary',
-  })
-  static outputWithOpenApi = withZod({
-    query: z.object({ hello: z.string() }),
-    params: z.object({ id: z.string() }),
-    output: z.object({ hello: z.string() }),
-    handle: (req) => {
-      return { hello: req.vovk.query().hello };
+  @get.auto()
+  static handleOutput = withZod({
+    query: z.object({ helloOutput: z.string() }),
+    output: z.object({ hello: z.literal('world') }),
+    handle: async (req) => {
+      return { hello: req.vovk.query().helloOutput as 'world' };
+    },
+  });
+
+  @get.auto()
+  static handleStream = withZod({
+    query: z.object({ values: z.string().array() }),
+    async *handle(req) {
+      for (const value of req.vovk.query().values) {
+        yield { value };
+      }
+    },
+  });
+
+  @post.auto()
+  static handleNothitng = withZod({
+    handle: async () => {
+      return { nothing: 'here' } as const;
     },
   });
 }

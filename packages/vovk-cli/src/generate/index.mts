@@ -25,11 +25,11 @@ export default async function generate({
   segmentsSchema: Record<string, VovkSchema>;
   forceNothingWrittenLog?: boolean;
 } & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
-  templates = templates ?? projectInfo.config.experimental_clientGenerateTemplateNames;
+  const generateFrom = templates ?? projectInfo.config.generateFrom;
   const noClient = templates?.[0] === 'none';
   const { config, cwd, log, clientImports, apiRoot } = projectInfo;
 
-  const { clientOutDirAbsolutePath, templateFiles } = getClientTemplates({ config, cwd, templateNames: templates });
+  const { clientOutDirAbsolutePath, templateFiles } = getClientTemplates({ config, cwd, generateFrom });
   // Ensure that each segment has a matching schema if it needs to be emitted:
   for (let i = 0; i < segments.length; i++) {
     const { segmentName } = segments[i];
@@ -94,18 +94,34 @@ export default async function generate({
     processedTemplates.filter(({ needsWriting }) => needsWriting).map(({ templateName }) => templateName)
   );
 
-  if (fullSchema || usedTemplateNames.length > 0) {
+  let fullSchemaNames: string[] = [];
+
+  const DEFAULT_NAME = 'full-schema.json';
+
+  if (fullSchema) {
+    fullSchemaNames.push(typeof fullSchema === 'string' ? fullSchema : DEFAULT_NAME);
+    fullSchemaNames.push(
+      ...templateFiles
+        .filter(({ fullSchema }) => fullSchema)
+        .map(({ fullSchema }) => (typeof fullSchema === 'string' ? fullSchema : DEFAULT_NAME))
+    );
+  }
+
+  fullSchemaNames = uniq(fullSchemaNames);
+
+  if (fullSchemaNames.length || usedTemplateNames.length > 0) {
     // Make sure the output directory exists
     await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
   }
 
-  if (fullSchema) {
-    const fullSchemaOutAbsolutePath = path.resolve(
-      clientOutDirAbsolutePath,
-      typeof fullSchema === 'string' ? fullSchema : 'full-schema.json'
+  if (fullSchemaNames.length) {
+    await Promise.all(
+      fullSchemaNames.map(async (name) => {
+        const fullSchemaOutAbsolutePath = path.resolve(clientOutDirAbsolutePath, name);
+        await fs.writeFile(fullSchemaOutAbsolutePath, JSON.stringify(segmentsSchema, null, 2));
+        log.info(`Full schema has ben written to ${fullSchemaOutAbsolutePath}`);
+      })
     );
-    await fs.writeFile(fullSchemaOutAbsolutePath, JSON.stringify(segmentsSchema, null, 2));
-    log.info(`Full schema has ben written to ${fullSchemaOutAbsolutePath}`);
   }
 
   if (usedTemplateNames.length === 0) {

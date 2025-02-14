@@ -22,7 +22,8 @@ export default class ZodControllerAndServiceEntityController {
       foo: z.union([z.literal('bar'), z.literal('baz')]),
     }),
     query: z.object({ q: z.string() }),
-    async handle(req, params: { id: string }) {
+    params: z.object({ id: z.string() }),
+    async handle(req, params) {
       const { id } = params;
       const body = await req.json();
       const q = req.nextUrl.searchParams.get('q');

@@ -14,6 +14,6 @@ export default class ErrorController {
 
   @get('http-exception')
   static httpException() {
-    throw new HttpException(HttpStatus.I_AM_A_TEAPOT, 'ERROR3');
+    throw new HttpException(HttpStatus.I_AM_A_TEAPOT, 'ERROR3', { some: 'problem' });
   }
 }

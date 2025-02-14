@@ -5,17 +5,22 @@ import zodToJsonSchema from 'zod-to-json-schema';
 const getErrorText = (e: unknown) =>
   (e as z.ZodError).errors?.map((er) => `${er.message} (${er.path.join('/')})`).join(', ') ?? String(e);
 
+type VovkRequestZod<ZOD_BODY, ZOD_QUERY, ZOD_PARAMS> = VovkRequest<
+  ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : undefined,
+  ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined,
+  ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : undefined
+>;
+
 function withZod<
-  T extends (req: REQ, params: z.infer<ZOD_PARAMS>) => z.infer<ZOD_OUTPUT> | Promise<z.infer<ZOD_OUTPUT>>,
-  ZOD_BODY extends ZodSchema<KnownAny>,
-  ZOD_QUERY extends ZodSchema<KnownAny>,
-  ZOD_OUTPUT extends ZodSchema<KnownAny>,
-  ZOD_PARAMS extends ZodSchema<KnownAny>,
-  REQ extends VovkRequest<z.infer<ZOD_BODY>, z.infer<ZOD_QUERY>, z.infer<ZOD_PARAMS>> = VovkRequest<
-    z.infer<ZOD_BODY>,
-    z.infer<ZOD_QUERY>,
-    z.infer<ZOD_PARAMS>
-  >,
+  T extends (
+    req: REQ,
+    params: ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : Record<string, string>
+  ) => ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> | Promise<z.infer<ZOD_OUTPUT>> : KnownAny,
+  ZOD_BODY extends ZodSchema<KnownAny> | undefined = undefined,
+  ZOD_QUERY extends ZodSchema<KnownAny> | undefined = undefined,
+  ZOD_OUTPUT extends ZodSchema<KnownAny> | undefined = undefined,
+  ZOD_PARAMS extends ZodSchema<KnownAny> | undefined = undefined,
+  REQ extends VovkRequestZod<ZOD_BODY, ZOD_QUERY, ZOD_PARAMS> = VovkRequestZod<ZOD_BODY, ZOD_QUERY, ZOD_PARAMS>,
 >({
   body,
   query,
@@ -64,7 +69,7 @@ function withZod<
         );
       }
       // Redeclare req.json to allow subsequent calls to return the validated type.
-      req.json = () => Promise.resolve(bodyData as z.infer<ZOD_BODY>);
+      req.json = () => Promise.resolve(bodyData as KnownAny);
     }
 
     if (query) {

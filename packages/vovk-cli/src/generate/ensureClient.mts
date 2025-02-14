@@ -10,13 +10,13 @@ export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
   const { clientOutDirAbsolutePath, templateFiles } = getClientTemplates({
     config,
     cwd,
-    templateNames: config.experimental_clientGenerateTemplateNames,
+    generateFrom: config.generateFrom,
   });
 
   let usedTemplateNames: string[] = [];
 
   const text = `// auto-generated ${new Date().toISOString()}
-// This is a temporary placeholder to avoid errors if client is imported before it's generated.
+// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
 // If you still see this text, the client is not generated yet because of an unknown problem.
 // Feel free to report an issue at https://github.com/finom/vovk/issues`;
 
@@ -25,7 +25,7 @@ export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
 
     if (!existing) {
       await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
-      await fs.writeFile(outPath, text);
+      await fs.writeFile(outPath, outPath.endsWith('.py') ? text.replace(/\/\//g, '#') : text);
       usedTemplateNames.push(templateName);
     }
   }

@@ -22,6 +22,15 @@ export type VovkEnv = {
   __VOVK_EXIT__?: 'true' | 'false';
 };
 
+type GenerateFrom = (
+  | string
+  | {
+      templatePath: string;
+      outDir?: string;
+      templateName?: string;
+      fullSchema?: string | boolean;
+    }
+)[];
 export type VovkConfig = {
   clientOutDir?: string;
   schemaOutDir?: string;
@@ -35,7 +44,7 @@ export type VovkConfig = {
   logLevel?: LogLevelNames;
   prettifyClient?: boolean;
   devHttps?: boolean;
-  experimental_clientGenerateTemplateNames?: string[];
+  generateFrom?: GenerateFrom | ((value: GenerateFrom) => GenerateFrom);
   templates?: {
     service?: string;
     controller?: string;
@@ -44,11 +53,12 @@ export type VovkConfig = {
 };
 
 export type VovkStrictConfig = Required<
-  Omit<VovkConfig, 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport'>
+  Omit<VovkConfig, 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom'>
 > & {
   validateOnClientImport: string[] | null;
   fetcherImport: string[];
   createRPCImport: string[];
+  generateFrom: GenerateFrom;
 };
 
 export type VovkModuleRenderResult = {

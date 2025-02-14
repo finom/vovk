@@ -1,6 +1,5 @@
 import { createDecorator, HttpStatus } from 'vovk';
 import { fromSchema } from './fromSchema';
-import type { KnownAny } from 'vovk/src/types';
 
 export const error = createDecorator(null, (status: HttpStatus, message: string) => {
   return (handlerSchema) => {
@@ -26,13 +25,14 @@ export const error = createDecorator(null, (status: HttpStatus, message: string)
                           type: 'string',
                           enum: [
                             message,
-                            ...(handlerSchema?.openapi?.responses?.[status]?.content?.['application/json']?.schema?.allOf?.[1]?.properties?.message?.enum ?? []),
+                            ...(handlerSchema?.openapi?.responses?.[status]?.content?.['application/json']?.schema
+                              ?.allOf?.[1]?.properties?.message?.enum ?? []),
                           ],
                         },
                         statusCode: {
-                            type: 'integer',
-                            enum: [status],
-                        }
+                          type: 'integer',
+                          enum: [status],
+                        },
                       },
                     },
                   ],

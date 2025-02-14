@@ -11,6 +11,7 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
   const validateOnClientImport = env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.validateOnClientImport ?? null;
   const fetcherImport = env.VOVK_FETCHER_PATH ?? conf.fetcherImport ?? 'vovk/dist/client/defaultFetcher.js';
   const createRPCImport = env.VOVK_CREATE_RPC_PATH ?? conf.createRPCImport ?? 'vovk/dist/client/createRPC.js';
+  const defaultClientTemplates = ['ts', 'module', 'main'];
 
   const config: VovkStrictConfig = {
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
@@ -26,7 +27,10 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
     logLevel: env.VOVK_LOG_LEVEL ?? conf.logLevel ?? 'info',
     prettifyClient: (env.VOVK_PRETTIFY_CLIENT ? !!env.VOVK_PRETTIFY_CLIENT : null) ?? conf.prettifyClient ?? false,
     devHttps: (env.VOVK_DEV_HTTPS ? !!env.VOVK_DEV_HTTPS : null) ?? conf.devHttps ?? false,
-    experimental_clientGenerateTemplateNames: conf.experimental_clientGenerateTemplateNames ?? ['ts', 'module', 'main'],
+    generateFrom:
+      typeof conf.generateFrom === 'function'
+        ? conf.generateFrom(defaultClientTemplates)
+        : (conf.generateFrom ?? ['ts', 'module', 'main']),
     templates: {
       service: 'vovk-cli/templates/service.ejs',
       controller: 'vovk-cli/templates/controller.ejs',

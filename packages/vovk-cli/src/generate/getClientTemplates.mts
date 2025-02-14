@@ -1,20 +1,21 @@
 import path from 'node:path';
-import { VovkConfig } from '../types.mjs';
+import type { VovkStrictConfig } from '../types.mjs';
 
 interface ClientTemplate {
   templateName: string;
   templatePath: string;
   outPath: string;
+  fullSchema?: string | boolean;
 }
 
 export default function getClientTemplates({
   config,
   cwd,
-  templateNames = [],
+  generateFrom = [],
 }: {
-  config: Required<VovkConfig>;
+  config: VovkStrictConfig;
   cwd: string;
-  templateNames?: string[];
+  generateFrom?: VovkStrictConfig['generateFrom'];
 }) {
   const templatesDir = path.join(import.meta.dirname, '../..', 'client-templates');
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
@@ -33,8 +34,8 @@ export default function getClientTemplates({
     python: ['__init__.py'].map(mapper('python')),
   };
 
-  const templateFiles: ClientTemplate[] = (templateNames ?? config.experimental_clientGenerateTemplateNames).reduce(
-    (acc, template) => {
+  const templateFiles: ClientTemplate[] = (generateFrom ?? config.generateFrom).reduce((acc, template) => {
+    if (typeof template === 'string') {
       if (template in builtInTemplatesMap) {
         return [...acc, ...builtInTemplatesMap[template as 'ts']];
       }
@@ -46,9 +47,20 @@ export default function getClientTemplates({
           outPath: path.join(clientOutDirAbsolutePath, path.basename(template).replace('.ejs', '')),
         },
       ];
-    },
-    [] as ClientTemplate[]
-  );
+    }
+
+    const outDirAbsolutePath = template.outDir ? path.resolve(cwd, template.outDir) : clientOutDirAbsolutePath;
+
+    return [
+      ...acc,
+      {
+        templateName: template.templateName ?? template.templatePath,
+        templatePath: path.resolve(cwd, template.templatePath),
+        outPath: path.join(outDirAbsolutePath, path.basename(template.templatePath).replace('.ejs', '')),
+        fullSchema: template.fullSchema,
+      },
+    ];
+  }, [] as ClientTemplate[]);
 
   return { clientOutDirAbsolutePath, templateFiles };
 }

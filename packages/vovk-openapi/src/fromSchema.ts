@@ -39,7 +39,10 @@ export function fromSchema(
         HttpStatus: {
           type: 'integer',
           description: 'HTTP status code',
-          enum: Object.keys(HttpStatus).map((k) => HttpStatus[k as unknown as HttpStatus]).filter(Boolean).filter((v) => typeof v === 'number'),
+          enum: Object.keys(HttpStatus)
+            .map((k) => HttpStatus[k as unknown as HttpStatus])
+            .filter(Boolean)
+            .filter((v) => typeof v === 'number'),
         },
         VovkErrorResponse: {
           type: 'object',

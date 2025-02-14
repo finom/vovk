@@ -5,20 +5,21 @@ import diffSchema, { type DiffResult } from './diffSchema.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
 export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
+export const JSON_DIR_NAME = 'json';
 
 export default async function writeOneSchemaFile({
-  schemaOutAbsolutePath,
+  schemaJsonOutAbsolutePath,
   schema,
   skipIfExists = false,
 }: {
-  schemaOutAbsolutePath: string;
+  schemaJsonOutAbsolutePath: string;
   schema: VovkSchema;
   skipIfExists?: boolean;
 }): Promise<{
   isCreated: boolean;
   diffResult: DiffResult | null;
 }> {
-  const segmentPath = path.join(schemaOutAbsolutePath, `${schema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
+  const segmentPath = path.join(schemaJsonOutAbsolutePath, `${schema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
 
   if (skipIfExists && (await getFileSystemEntryType(segmentPath))) {
     try {

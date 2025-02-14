@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import debounce from 'lodash/debounce.js';
-import writeOneSchemaFile, { ROOT_SEGMENT_SCHEMA_NAME } from './writeOneSchemaFile.mjs';
+import writeOneSchemaFile, { JSON_DIR_NAME, ROOT_SEGMENT_SCHEMA_NAME } from './writeOneSchemaFile.mjs';
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 
@@ -15,10 +15,11 @@ export default async function ensureSchemaFiles(
 ): Promise<void> {
   const now = Date.now();
   let hasChanged = false;
+  const schemaJsonOutAbsolutePath = path.join(schemaOutAbsolutePath, JSON_DIR_NAME);
   const jsContent = `// auto-generated ${new Date().toISOString()}
 ${segmentNames
   .map((segmentName) => {
-    return `module.exports['${segmentName}'] = require('./${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
+    return `module.exports['${segmentName}'] = require('./${JSON_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
   })
   .join('\n')}`;
 
@@ -31,7 +32,7 @@ export default fullSchema;`;
 
   const tsContent = `// auto-generated ${new Date().toISOString()}
 import type { VovkSchema } from 'vovk';
-${segmentNames.map((segmentName, i) => `import segment${i} from './${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
+${segmentNames.map((segmentName, i) => `import segment${i} from './${JSON_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
 const fullSchema = {
 ${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i} as VovkSchema,`).join('\n')}
 };
@@ -61,7 +62,7 @@ export default fullSchema;`;
   await Promise.all(
     segmentNames.map(async (segmentName) => {
       const { isCreated } = await writeOneSchemaFile({
-        schemaOutAbsolutePath,
+        schemaJsonOutAbsolutePath,
         schema: {
           emitSchema: false,
           segmentName,
@@ -114,7 +115,7 @@ export default fullSchema;`;
   }
 
   // Start the recursive deletion from the root directory
-  await deleteUnnecessaryJsonFiles(schemaOutAbsolutePath);
+  await deleteUnnecessaryJsonFiles(schemaJsonOutAbsolutePath);
 
   if (hasChanged) projectInfo?.log.info(`Created empty schema files in ${Date.now() - now}ms`);
 }
