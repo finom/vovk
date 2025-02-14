@@ -51,7 +51,7 @@ export default fullSchema;`;
   await Promise.all(
     segmentNames.map(async (segmentName) => {
       const { isCreated } = await writeOneSchemaFile({
-        schemaJsonOutAbsolutePath,
+        schemaOutAbsolutePath,
         schema: {
           emitSchema: false,
           segmentName,

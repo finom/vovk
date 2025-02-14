@@ -8,18 +8,22 @@ export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
 export const JSON_DIR_NAME = 'json';
 
 export default async function writeOneSchemaFile({
-  schemaJsonOutAbsolutePath,
+  schemaOutAbsolutePath,
   schema,
   skipIfExists = false,
 }: {
-  schemaJsonOutAbsolutePath: string;
+  schemaOutAbsolutePath: string;
   schema: VovkSchema;
   skipIfExists?: boolean;
 }): Promise<{
   isCreated: boolean;
   diffResult: DiffResult | null;
 }> {
-  const segmentPath = path.join(schemaJsonOutAbsolutePath, `${schema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`);
+  const segmentPath = path.join(
+    schemaOutAbsolutePath,
+    JSON_DIR_NAME,
+    `${schema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`
+  );
 
   if (skipIfExists && (await getFileSystemEntryType(segmentPath))) {
     try {
