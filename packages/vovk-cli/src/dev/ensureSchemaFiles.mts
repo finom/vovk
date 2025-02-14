@@ -98,7 +98,7 @@ export default fullSchema;`;
             hasChanged = true;
           }
         } else if (entry.isFile() && entry.name.endsWith('.json')) {
-          const relativePath = path.relative(schemaOutAbsolutePath, absolutePath);
+          const relativePath = path.relative(schemaJsonOutAbsolutePath, absolutePath);
           const segmentName = relativePath.replace(/\\/g, '/').slice(0, -5); // Remove '.json' extension
 
           if (
