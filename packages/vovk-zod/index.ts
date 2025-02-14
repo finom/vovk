@@ -108,7 +108,7 @@ function withZod<
     params: params ? zodToJsonSchema(params) : null,
   });
 
-  return resultHandler as (req: REQ, params: Parameters<T>[1]) => ReturnType<T>;
+  return resultHandler;
 }
 
 export { withZod };
