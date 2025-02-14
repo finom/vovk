@@ -34,7 +34,7 @@ export default fullSchema;`;
 import type { VovkSchema } from 'vovk';
 ${segmentNames.map((segmentName, i) => `import segment${i} from './${JSON_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
 const fullSchema = {
-${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i} as VovkSchema,`).join('\n')}
+${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i} as unknown as VovkSchema,`).join('\n')}
 };
 export default fullSchema;`;
 
