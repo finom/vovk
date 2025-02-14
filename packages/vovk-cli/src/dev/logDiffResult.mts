@@ -33,7 +33,7 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
     });
   });
 
-  const LIMIT = diffNormalized.length < 12 ? diffNormalized.length : 10;
+  const LIMIT = diffNormalized.length < 17 ? diffNormalized.length : 15;
   const addedText = chalk.green('added');
   const removedText = chalk.red('removed');
   const changedText = chalk.cyan('changed');
