@@ -20,63 +20,74 @@ const toKebabCase = (str: string) =>
     .toLowerCase()
     .replace(/^-/, '');
 
+const assignSchema = ({
+  controller,
+  propertyKey,
+  path,
+  options,
+  httpMethod,
+  vovkApp,
+}: {
+  controller: VovkController;
+  propertyKey: string;
+  path: string;
+  options?: DecoratorOptions;
+  httpMethod: HttpMethod;
+  vovkApp: VovkApp;
+}) => {
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      'Decorators are intended for server-side use only. You have probably imported a controller on the client-side.'
+    );
+  }
+
+  if (!isClass(controller)) {
+    let decoratorName = httpMethod.toLowerCase();
+    if (decoratorName === 'delete') decoratorName = 'del';
+
+    throw new Error(
+      `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}().`
+    );
+  }
+
+  const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
+  vovkApp.routes[httpMethod].set(controller, methods);
+
+  const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
+    _controller: VovkController;
+    _sourceMethod?: ((...args: KnownAny) => KnownAny) & {
+      _getValidation?: (controller: VovkController) => VovkHandlerSchema['validation'];
+    };
+  };
+
+  originalMethod._controller = controller;
+  originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
+  const validation = originalMethod._sourceMethod._getValidation?.(controller);
+
+  controller._handlers = {
+    ...controller._handlers,
+    [propertyKey]: {
+      ...(validation ? { validation } : {}),
+      ...((controller._handlers ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
+      path,
+      httpMethod,
+    },
+  };
+
+  methods[path] = controller[propertyKey] as RouteHandler;
+  methods[path]._options = options;
+};
+
 export function createVovkApp() {
   const vovkApp = new VovkApp();
 
   const createHTTPDecorator = (httpMethod: HttpMethod) => {
-    const assignSchema = (
-      controller: VovkController,
-      propertyKey: string,
-      path: string,
-      options?: DecoratorOptions
-    ) => {
-      if (typeof window !== 'undefined') {
-        throw new Error(
-          'Decorators are intended for server-side use only. You have probably imported a controller on the client-side.'
-        );
-      }
-      if (!isClass(controller)) {
-        let decoratorName = httpMethod.toLowerCase();
-        if (decoratorName === 'delete') decoratorName = 'del';
-        throw new Error(
-          `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}.`
-        );
-      }
-
-      const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
-      vovkApp.routes[httpMethod].set(controller, methods);
-
-      const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
-        _controller: VovkController;
-        _sourceMethod?: ((...args: KnownAny) => KnownAny) & {
-          _getValidation?: (controller: VovkController) => VovkHandlerSchema['validation'];
-        };
-      };
-
-      originalMethod._controller = controller;
-      originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
-      const validation = originalMethod._sourceMethod._getValidation?.(controller);
-
-      controller._handlers = {
-        ...controller._handlers,
-        [propertyKey]: {
-          ...(validation ? { validation } : {}),
-          ...((controller._handlers ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
-          path,
-          httpMethod,
-        },
-      };
-
-      methods[path] = controller[propertyKey] as RouteHandler;
-      methods[path]._options = options;
-    };
-
     function decoratorCreator(givenPath = '', options?: DecoratorOptions) {
       const path = trimPath(givenPath);
 
       function decorator(givenTarget: KnownAny, propertyKey: string) {
-        const target = givenTarget as VovkController;
-        assignSchema(target, propertyKey, path, options);
+        const controller = givenTarget as VovkController;
+        assignSchema({ controller, propertyKey, path, options, httpMethod, vovkApp });
       }
 
       return decorator;
@@ -96,7 +107,7 @@ export function createVovkApp() {
           },
         };
 
-        assignSchema(controller, propertyKey, toKebabCase(propertyKey), options);
+        assignSchema({ controller, propertyKey, path: toKebabCase(propertyKey), options, httpMethod, vovkApp });
       }
 
       return decorator;

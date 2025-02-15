@@ -1,7 +1,8 @@
 import segmentsSchema from '../../.vovk-schema/index.cjs';
 import type ClientController from './ClientController';
 import { createRPC } from 'vovk';
-import { it, expect, describe } from '@jest/globals';
+import { it, describe } from 'node:test';
+import { deepStrictEqual } from 'node:assert';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -14,7 +15,7 @@ const defaultController = createRPC<typeof ClientController>(schema.ClientContro
 describe('Internal client API', () => {
   it('Should use default options', async () => {
     const result = await defaultController.getHelloWorldObjectLiteral();
-    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
   it('Should handle custom options', async () => {
@@ -22,6 +23,6 @@ describe('Internal client API', () => {
     const result = await noOptionsController.getHelloWorldObjectLiteral({
       apiRoot,
     });
-    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 });

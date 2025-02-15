@@ -20,9 +20,9 @@ export class VovkApp {
     if (!options) return {};
 
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
+      'access-control-allow-headers': 'content-type, authorization',
     };
 
     const headers = {
@@ -68,7 +68,7 @@ export class VovkApp {
     return new Response(JSON.stringify(body), {
       status,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
         ...VovkApp.getHeadersFromOptions(options),
       },
     });
@@ -87,12 +87,78 @@ export class VovkApp {
     );
   };
 
+  #getHandler = ({
+    handlers,
+    path,
+    params,
+  }: {
+    handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }>;
+    path: string[];
+    params: Record<string, string[]>;
+  }) => {
+    const methodParams: Record<string, string> = {};
+
+    if (Object.keys(params).length === 0) {
+      return { handler: handlers[''], methodParams };
+    }
+
+    const allMethodKeys = Object.keys(handlers);
+
+    let methodKeys: string[] = [];
+    const pathStr = path.join('/');
+
+    methodKeys = allMethodKeys
+      // First, try to match literal routes exactly.
+      .filter((p) => {
+        if (p.includes(':')) return false; // Skip parameterized paths
+        return p === pathStr;
+      });
+
+    if (!methodKeys.length) {
+      methodKeys = allMethodKeys.filter((p) => {
+        const routeSegments = p.split('/');
+        if (routeSegments.length !== path.length) return false;
+
+        for (let i = 0; i < routeSegments.length; i++) {
+          const routeSegment = routeSegments[i];
+          const pathSegment = path[i];
+
+          if (routeSegment.startsWith(':')) {
+            const parameter = routeSegment.slice(1);
+
+            if (parameter in methodParams) {
+              throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${parameter}" at ${p}`);
+            }
+
+            // If it's a parameterized segment, capture the parameter value.
+            methodParams[parameter] = pathSegment;
+          } else if (routeSegment !== pathSegment) {
+            // If it's a literal segment and it does not match the corresponding path segment, return false.
+            return false;
+          }
+        }
+
+        return true;
+      });
+    }
+
+    if (methodKeys.length > 1) {
+      throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Conflicting routes found: ${methodKeys.join(', ')}`);
+    }
+
+    const [methodKey] = methodKeys;
+
+    if (methodKey) {
+      return { handler: handlers[methodKey], methodParams };
+    }
+
+    return { handler: null, methodParams };
+  };
+
   #callMethod = async (httpMethod: HttpMethod, nextReq: NextRequest, params: Record<string, string[]>) => {
     const req = nextReq as unknown as VovkRequest;
     const controllers = this.routes[httpMethod];
-    const methodParams: Record<string, string> = {};
     const path = params[Object.keys(params)[0]];
-
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
     controllers.forEach((staticMethods, controller) => {
       const prefix = controller._prefix ?? '';
@@ -110,64 +176,7 @@ export class VovkApp {
       });
     });
 
-    const getHandler = () => {
-      if (Object.keys(params).length === 0) {
-        return handlers[''];
-      }
-
-      const allMethodKeys = Object.keys(handlers);
-
-      let methodKeys: string[] = [];
-      const pathStr = path.join('/');
-
-      methodKeys = allMethodKeys
-        // First, try to match literal routes exactly.
-        .filter((p) => {
-          if (p.includes(':')) return false; // Skip parameterized paths
-          return p === pathStr;
-        });
-
-      if (!methodKeys.length) {
-        methodKeys = allMethodKeys.filter((p) => {
-          const routeSegments = p.split('/');
-          if (routeSegments.length !== path.length) return false;
-
-          for (let i = 0; i < routeSegments.length; i++) {
-            const routeSegment = routeSegments[i];
-            const pathSegment = path[i];
-
-            if (routeSegment.startsWith(':')) {
-              const parameter = routeSegment.slice(1);
-
-              if (parameter in methodParams) {
-                throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${parameter}"`);
-              }
-
-              // If it's a parameterized segment, capture the parameter value.
-              methodParams[parameter] = pathSegment;
-            } else if (routeSegment !== pathSegment) {
-              // If it's a literal segment and it does not match the corresponding path segment, return false.
-              return false;
-            }
-          }
-          return true;
-        });
-      }
-
-      if (methodKeys.length > 1) {
-        throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Conflicting routes found: ${methodKeys.join(', ')}`);
-      }
-
-      const [methodKey] = methodKeys;
-
-      if (methodKey) {
-        return handlers[methodKey];
-      }
-
-      return null;
-    };
-
-    const handler = getHandler();
+    const { handler, methodParams } = this.#getHandler({ handlers, path, params });
 
     if (!handler) {
       return this.#respondWithError(HttpStatus.NOT_FOUND, `Route ${path.join('/')} is not found`);

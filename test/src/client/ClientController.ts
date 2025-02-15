@@ -1,30 +1,7 @@
 import { headers } from 'next/headers';
 import { HttpException, HttpStatus, VovkRequest, get, post, prefix } from 'vovk';
 import { NextResponse } from 'next/server';
-
-export const NESTED_QUERY_EXAMPLE = {
-  x: 'xx',
-  y: ['yy', 'uu'],
-  z: {
-    f: 'x',
-    u: ['uu', 'xx'],
-    d: {
-      x: 'ee',
-      arrOfObjects: [
-        {
-          foo: 'bar',
-          nestedArr: ['one', 'two', 'three'],
-        },
-        {
-          foo: 'baz',
-          nestedObj: {
-            deepKey: 'deepValue',
-          },
-        },
-      ],
-    },
-  },
-};
+import { NESTED_QUERY_EXAMPLE } from '../lib';
 
 @prefix('client')
 export default class ClientController {

@@ -2,7 +2,7 @@
 /** @type {import('vovk-cli').VovkConfig} */
 const vovkConfig = {
   modulesDir: './src/modules',
-  validateOnClientImport: 'vovk-zod/validateOnClient.js',
+  validateOnClientImport: '../packages/vovk-zod/validateOnClient.js',
   createRPCImport: ['../packages/vovk-react-query/index.cjs', '../packages/vovk-react-query/index.mjs'],
   schemaOutDir: './.vovk-schema',
   origin: `http://localhost:${process.env.PORT}`,

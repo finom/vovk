@@ -21,12 +21,10 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   query?: VovkControllerQuery<T>
 ) => {
   let result = endpoint;
+  const queryStr = query ? serializeQuery(query) : null;
   for (const [key, value] of Object.entries(params ?? {})) {
     result = result.replace(`:${key}`, value as string);
   }
-
-  const queryStr = query ? serializeQuery(query) : null;
-
   return `${result}${queryStr ? '?' : ''}${queryStr}`;
 };
 
@@ -83,10 +81,13 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
         params?: unknown;
         endpoint: string;
       }) => {
-        await (input.validateOnClient ?? options?.validateOnClient)?.(
-          { body, query, params, endpoint },
-          validation ?? {}
-        );
+        const validateOnClient = input.validateOnClient ?? options?.validateOnClient;
+        if (validateOnClient) {
+          if (typeof validateOnClient !== 'function') {
+            throw new Error('validateOnClient must be a function');
+          }
+          await validateOnClient({ body, query, params, endpoint }, validation ?? {});
+        }
       };
 
       const internalOptions: Parameters<typeof fetcher>[0] = {

@@ -1,6 +1,4 @@
 import { ClientControllerRPC } from 'vovk-client';
-
-import type ClientController from './ClientController';
 import {
   HttpStatus,
   type VovkBody,
@@ -12,57 +10,59 @@ import {
   type VovkControllerParams,
   type VovkControllerQuery,
   type VovkHandlerSchema,
-} from '../../../packages/vovk';
-import { it, expect, describe } from '@jest/globals';
-import { NESTED_QUERY_EXAMPLE } from './ClientController';
+} from 'vovk';
+import { it, describe } from 'node:test';
+import { deepStrictEqual } from 'node:assert';
+import type ClientController from './ClientController';
+import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Client with vovk-client', () => {
   it(`Should handle requests that return NextResponse.json`, async () => {
     const result = await ClientControllerRPC.getHelloWorldResponseObject();
-    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
   it(`Should handle object literals`, async () => {
     const result = await ClientControllerRPC.getHelloWorldObjectLiteral({
       apiRoot,
     });
-    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
   it(`Should handle requests that return NextResponse.json and are async`, async () => {
     const result = await ClientControllerRPC.getHelloWorldNextResponseObjectPromise();
-    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
   it(`Should handle requests that return raw Response.json and response is recognised as unknown`, async () => {
     const result = await ClientControllerRPC.getHelloWorldRawResponseObjectPromise();
-    expect(result satisfies unknown).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies unknown, { hello: 'world' });
   });
 
   it(`Should handle object literals and are async`, async () => {
     const result = await ClientControllerRPC.getHelloWorldObjectLiteralPromise();
-    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
   it('Should transform response using "transform" option with requests that return NextResponse.json', async () => {
     const result = await ClientControllerRPC.getHelloWorldResponseObject({
       transform: (response) => ({ ...response, transform: true }),
     });
-    expect(result satisfies { hello: string; transform: boolean }).toEqual({ hello: 'world', transform: true });
+    deepStrictEqual(result satisfies { hello: string; transform: boolean }, { hello: 'world', transform: true });
   });
 
   it('Should transform response using "transform" option with requests that return object literals', async () => {
     const result = await ClientControllerRPC.getHelloWorldObjectLiteral({
       transform: (response) => ({ ...response, transform: true }),
     });
-    expect(result satisfies { hello: string; transform: boolean }).toEqual({ hello: 'world', transform: true });
+    deepStrictEqual(result satisfies { hello: string; transform: boolean }, { hello: 'world', transform: true });
   });
 
   it('Should override type with client method generic', async () => {
     const result = await ClientControllerRPC.getHelloWorldResponseObject<{ override: true }>();
-    expect(result satisfies { override: true }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { override: true }, { hello: 'world' });
   });
 
   it('Should rethrow exceptions', async () => {
@@ -71,9 +71,9 @@ describe('Client with vovk-client', () => {
     } catch (e) {
       const err = e as VovkErrorResponse;
 
-      expect(err.statusCode).toEqual(HttpStatus.BAD_REQUEST);
-      expect(err.message).toEqual('This is an error');
-      expect(err.cause).toEqual({ theCause: 'This is the cause' });
+      deepStrictEqual(err.statusCode, HttpStatus.BAD_REQUEST);
+      deepStrictEqual(err.message, 'This is an error');
+      deepStrictEqual(err.cause, { theCause: 'This is the cause' });
     }
   });
 
@@ -81,7 +81,7 @@ describe('Client with vovk-client', () => {
     const result = await ClientControllerRPC.getHelloWorldResponseObject<{ hello: string; transform: boolean }>({
       transform: (response) => ({ ...response, transform: true }),
     });
-    expect(result satisfies { hello: string; transform: boolean }).toEqual({ hello: 'world', transform: true });
+    deepStrictEqual(result satisfies { hello: string; transform: boolean }, { hello: 'world', transform: true });
   });
 
   it(`Should handle headers`, async () => {
@@ -89,7 +89,7 @@ describe('Client with vovk-client', () => {
       apiRoot,
       headers: { 'x-test': 'world' },
     });
-    expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string | null }, { hello: 'world' });
   });
 
   it(`Should handle simple requests and return a normal array`, async () => {
@@ -97,23 +97,24 @@ describe('Client with vovk-client', () => {
       apiRoot,
       headers: { 'x-test': 'world' },
     });
-    expect(result satisfies { hello: string }[]).toEqual([{ hello: 'world' }]);
+    deepStrictEqual(result satisfies { hello: string }[], [{ hello: 'world' }]);
   });
 
   it(`Should handle simple requests and use empty generic`, async () => {
     const result = await ClientControllerRPC.getHelloWorldAndEmptyGeneric();
-    expect(result satisfies { hello: string | null }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string | null }, { hello: 'world' });
   });
 
   it(`Should handle simple requests with default options`, async () => {
     const result = await ClientControllerRPC.getHelloWorldObjectLiteralPromise();
-    expect(result satisfies { hello: string }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
   it('Should handle requests with params', async () => {
     const result = await ClientControllerRPC.getWithParams({
       params: { hello: 'world' },
     });
+
     // @ts-expect-error Expect error
     null as unknown as VovkBody<typeof ClientControllerRPC.getWithParams> satisfies { hello: 'world' };
     null as unknown as VovkBody<typeof ClientControllerRPC.getWithParams> satisfies undefined;
@@ -139,7 +140,7 @@ describe('Client with vovk-client', () => {
     // @ts-expect-error Expect error
     null as unknown as VovkControllerParams<typeof ClientController.getWithParams> satisfies { hello: 'foo' };
 
-    expect(result satisfies { hello: 'world' }).toEqual({ hello: 'world' });
+    deepStrictEqual(result satisfies { hello: 'world' }, { hello: 'world' });
   });
 
   it('Should handle requests with params, body and query', async () => {
@@ -158,7 +159,7 @@ describe('Client with vovk-client', () => {
     // @ts-expect-error Expect error
     null as unknown as VovkBody<typeof ClientControllerRPC.postWithAll> satisfies { hello: 'baz' };
 
-    expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll>).toEqual({
+    deepStrictEqual(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll>, {
       params: { hello: 'world' },
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue' },
@@ -166,7 +167,7 @@ describe('Client with vovk-client', () => {
   });
 
   it('Should store schema at handler.schema', async () => {
-    expect(ClientControllerRPC.postWithAll.schema satisfies VovkHandlerSchema).toEqual({
+    deepStrictEqual(ClientControllerRPC.postWithAll.schema satisfies VovkHandlerSchema, {
       httpMethod: 'POST',
       path: 'with-all/:hello',
     });
@@ -184,7 +185,7 @@ describe('Client with vovk-client', () => {
 
     null as unknown as VovkQuery<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies typeof query;
 
-    expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk>).toEqual({
+    deepStrictEqual(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithBodyAndQueryUsingReqVovk>, {
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
       meta: { isMeta1: true, isMeta2: true },
@@ -199,7 +200,7 @@ describe('Client with vovk-client', () => {
       body,
     });
 
-    expect(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithFormDataUsingReqVovk>).toEqual({
+    deepStrictEqual(result satisfies VovkReturnType<typeof ClientControllerRPC.postWithFormDataUsingReqVovk>, {
       field: 'value',
     });
   });
@@ -207,11 +208,13 @@ describe('Client with vovk-client', () => {
   it('Should handle nested queries', async () => {
     const { query, search } = await ClientControllerRPC.getNestedQuery({ query: NESTED_QUERY_EXAMPLE });
 
-    expect(query satisfies VovkReturnType<typeof ClientControllerRPC.getNestedQuery>['query']).toEqual(
+    deepStrictEqual(
+      query satisfies VovkReturnType<typeof ClientControllerRPC.getNestedQuery>['query'],
       NESTED_QUERY_EXAMPLE
     );
 
-    expect(search).toEqual(
+    deepStrictEqual(
+      search,
       '?x=xx&y[0]=yy&y[1]=uu&z[f]=x&z[u][0]=uu&z[u][1]=xx&z[d][x]=ee&z[d][arrOfObjects][0][foo]=bar&z[d][arrOfObjects][0][nestedArr][0]=one&z[d][arrOfObjects][0][nestedArr][1]=two&z[d][arrOfObjects][0][nestedArr][2]=three&z[d][arrOfObjects][1][foo]=baz&z[d][arrOfObjects][1][nestedObj][deepKey]=deepValue'
     );
   });
@@ -223,7 +226,7 @@ describe('Client with vovk-client', () => {
       fetcher: ({ name }, { query, body }) => ({ customFetcher: true, name, query, body }),
     });
 
-    expect(result).toEqual({
+    deepStrictEqual(result, {
       customFetcher: true,
       name: 'postWithBodyAndQueryUsingReqVovk',
       query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },

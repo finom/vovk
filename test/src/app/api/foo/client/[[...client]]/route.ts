@@ -3,7 +3,7 @@ import { initVovk } from 'vovk';
 import ClientController from '../../../../../client/ClientController';
 import StreamingController from '../../../../../client/StreamingController';
 import StreamingGeneratorController from '../../../../../client/StreamingGeneratorController';
-import CostomSchemaController from '../../../../../client/CostomSchemaController';
+import CustomSchemaController from '../../../../../client/CustomSchemaController';
 import WithZodClientController from '../../../../../client/WithZodClientController';
 import WithYupClientController from '../../../../../client/WithYupClientController';
 import WithDtoClientController from '../../../../../client/WithDtoClientController';
@@ -13,7 +13,7 @@ const controllers = {
   ClientControllerRPC: ClientController,
   StreamingControllerRPC: StreamingController,
   StreamingGeneratorControllerRPC: StreamingGeneratorController,
-  CostomSchemaControllerRPC: CostomSchemaController,
+  CustomSchemaControllerRPC: CustomSchemaController,
   WithZodClientControllerRPC: WithZodClientController,
   WithYupClientControllerRPC: WithYupClientController,
   WithDtoClientControllerRPC: WithDtoClientController,

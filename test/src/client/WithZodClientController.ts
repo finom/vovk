@@ -29,13 +29,13 @@ class WithZodClientService {
   }
 }
 
-@prefix('with-zod/:foo')
+@prefix('with-zod')
 export default class WithZodClientController {
   @openapi({
     summary: 'This is a summary',
   })
   @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
-  @post('all/:foo')
+  @post('all/:foo/:bar')
   static handleAll = withZod({
     body: z.object({ hello: z.literal('world') }),
     query: z.object({ search: z.literal('value') }),
@@ -75,7 +75,7 @@ export default class WithZodClientController {
     },
   });
 
-  @put('x/:bar/y')
+  @put('x/:foo/:bar/y')
   static handleParams = withZod({
     params: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
     handle: async (req) => {

@@ -1,5 +1,7 @@
+import { it, describe } from 'node:test';
+import { deepStrictEqual } from 'node:assert';
 import type { Token, default as StreamingController } from './StreamingController';
-import { expect, describe, it, xit } from '@jest/globals';
+import { expectPromise } from '../lib.ts';
 import { HttpException, type VovkYieldType, type VovkControllerYieldType } from 'vovk';
 import { StreamingControllerRPC } from 'vovk-client';
 
@@ -11,7 +13,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingControllerRPC.postWithStreaming({
+    const resp = await StreamingControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
       apiRoot,
@@ -24,7 +26,7 @@ describe('Streaming', () => {
     null as unknown as VovkControllerYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
-    expect(expected).toEqual(expectedCollected);
+    deepStrictEqual(expected, expectedCollected);
   });
 
   it('Should be able to cancel', async () => {
@@ -32,7 +34,7 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingControllerRPC.postWithStreaming({
+    const resp = await StreamingControllerRPC.postWithStreaming({
       body: tokens,
       query: { query: 'queryValue' },
       apiRoot,
@@ -49,7 +51,7 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
-    expect(expected).toEqual(expectedCollected);
+    deepStrictEqual(expected, expectedCollected);
   });
 
   it('Should be able to continue if disposable is not used', async () => {
@@ -82,37 +84,35 @@ describe('Streaming', () => {
 
     await resp.cancel();
 
-    expect(expected).toEqual(expectedCollected);
+    deepStrictEqual(expected, expectedCollected);
   });
 
   it('Should be able to dispose', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
-    let r;
 
-    {
-      using resp = await StreamingControllerRPC.postWithStreaming({
-        body: tokens,
-        query: { query: 'queryValue' },
-        apiRoot,
-      });
+    const resp = await StreamingControllerRPC.postWithStreaming({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
 
-      r = resp;
+    let count = 0;
 
-      let count = 0;
-
-      for await (const message of resp) {
-        expectedCollected.push(message);
-        if (++count === 2) break;
+    for await (const message of resp) {
+      expectedCollected.push(message);
+      if (++count === 2) {
+        await resp[Symbol.dispose]();
+        break;
       }
     }
 
-    for await (const message of r) {
+    for await (const message of resp) {
       expectedCollected.push(message);
     }
 
-    expect(expected).toEqual(expectedCollected);
+    deepStrictEqual(expected, expectedCollected);
   });
 
   it('Should handle immediate errors', async () => {
@@ -124,7 +124,7 @@ describe('Streaming', () => {
       apiRoot,
     });
 
-    await expect(() => respPromise).rejects.toThrowError(HttpException);
+    await expectPromise(() => respPromise).rejects.toThrowError(HttpException);
   });
 
   it('Should handle errors in the middle of stream', async () => {
@@ -132,19 +132,19 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingControllerRPC.postWithStreamingAndDelayedError({
+    const resp = await StreamingControllerRPC.postWithStreamingAndDelayedError({
       body: tokens,
       query: { query: 'queryValue' },
       apiRoot,
     });
 
-    await expect(async () => {
+    await expectPromise(async () => {
       for await (const message of resp) {
         expectedCollected.push(message);
       }
-    }).rejects.toThrowError(/velyka dupa/);
+    }).rejects.toThrow(/oh no/);
 
-    expect(expected).toEqual(expectedCollected);
+    deepStrictEqual(expected, expectedCollected);
   });
 
   it('Should handle custom errors in the middle of stream', async () => {
@@ -152,13 +152,12 @@ describe('Streaming', () => {
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
 
-    using resp = await StreamingControllerRPC.postWithStreamingAndDelayedCustomError({
+    const resp = await StreamingControllerRPC.postWithStreamingAndDelayedCustomError({
       body: tokens,
       query: { query: 'queryValue' },
       apiRoot,
     });
 
-    // TODO I don't know why rejects.toThrowError doesn't work here
     const call = async () => {
       try {
         for await (const message of resp) {
@@ -169,13 +168,13 @@ describe('Streaming', () => {
       }
     };
 
-    expect(await call()).toEqual({ customError: 'custom error' });
+    deepStrictEqual(await call(), { customError: 'custom error' });
 
-    expect(expected).toEqual(expectedCollected);
+    deepStrictEqual(expected, expectedCollected);
   });
 
   // TODO: Stream never ends if not using dispose. No error when using dispose. Need help here.
-  xit('Should handle unhandled errors in the middle of stream', async () => {
+  it.skip('Should handle unhandled errors in the middle of stream', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
@@ -186,12 +185,12 @@ describe('Streaming', () => {
       apiRoot,
     });
 
-    await expect(async () => {
+    await expectPromise(async () => {
       for await (const message of resp) {
         expectedCollected.push(message);
       }
     }).rejects.toThrow();
 
-    expect(expected).toEqual(expectedCollected);
+    deepStrictEqual(expected, expectedCollected);
   });
 });

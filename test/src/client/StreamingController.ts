@@ -46,7 +46,7 @@ export default class StreamingController {
     void (async () => {
       for (const token of body) {
         if (++count === 3) {
-          return response.throw('velyka dupa');
+          return response.throw('oh no');
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
         response.send({ ...token, query });
@@ -86,7 +86,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    using response = new StreamJSONResponse<Token>();
+    const response = new StreamJSONResponse<Token>();
 
     let count = 0;
     void (async () => {

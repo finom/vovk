@@ -1,17 +1,17 @@
 import { initVovk } from 'vovk';
-import trimControllers from '../../../controllers/TrimControllers';
-import InputController from '../../../controllers/InputController';
-import CustomDecoratorController from '../../../controllers/CustomDecoratorController';
-import AllDecoratorsController from '../../../controllers/AllDecoratorsController';
-import DuplicatedParameterController from '../../../controllers/DuplicatedParameterController';
-import ConflictingRoutesController from '../../../controllers/ConflictingRoutesController';
-import DesNotExistController from '../../../controllers/DesNotExistController';
-import ErrorController from '../../../controllers/ErrorController';
-import NextResponseController from '../../../controllers/NextResponseController';
-import HeadersController from '../../../controllers/HeadersController';
-import RedirectController from '../../../controllers/RedirectController';
-import MiscController from '../../../controllers/MiscController';
-import AutoDecoratorsController from '../../../controllers/AutoDecoratorsController';
+import trimControllers from '../../../core/TrimControllers';
+import InputController from '../../../core/InputController';
+import CustomDecoratorController from '../../../core/CustomDecoratorController';
+import AllDecoratorsController from '../../../core/AllDecoratorsController';
+import DuplicatedParameterController from '../../../core/DuplicatedParameterController';
+import ConflictingRoutesController from '../../../core/ConflictingRoutesController';
+import DesNotExistController from '../../../core/DesNotExistController';
+import ErrorController from '../../../core/ErrorController';
+import NextResponseController from '../../../core/NextResponseController';
+import HeadersController from '../../../core/HeadersController';
+import RedirectController from '../../../core/RedirectController';
+import AutoDecoratorsController from '../../../core/AutoDecoratorsController';
+import StaticApiController from '../../../core/StaticApiController';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
   emitSchema: false,
@@ -27,8 +27,8 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
     NextResponseController,
     HeadersController,
     RedirectController,
-    MiscController,
     AutoDecoratorsController,
+    StaticApiController,
   },
   onError: (err, req) => {
     // eslint-disable-next-line no-console

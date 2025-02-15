@@ -58,7 +58,7 @@ export default class StreamingGeneratorController {
     let count = 0;
     for (const token of body) {
       if (++count === 3) {
-        throw new Error('velyka dupa');
+        throw new Error('oh no');
       }
       await new Promise((resolve) => setTimeout(resolve, 200));
       yield { ...token, query };
