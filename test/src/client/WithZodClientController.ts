@@ -1,9 +1,35 @@
-import { post, put, get, prefix, HttpStatus } from 'vovk';
+import {
+  post,
+  put,
+  get,
+  prefix,
+  HttpStatus,
+  VovkControllerBody,
+  VovkControllerQuery,
+  VovkControllerParams,
+  VovkControllerOutput,
+} from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
 import * as z from 'zod';
 
-@prefix('with-zod')
+class WithZodClientService {
+  static handleAll({
+    body,
+    query,
+    params,
+    vovkParams,
+  }: {
+    body: VovkControllerBody<typeof WithZodClientController.handleAll>;
+    query: VovkControllerQuery<typeof WithZodClientController.handleAll>;
+    params: VovkControllerParams<typeof WithZodClientController.handleAll>;
+    vovkParams: VovkControllerParams<typeof WithZodClientController.handleAll>;
+  }) {
+    return { body, query, params, vovkParams };
+  }
+}
+
+@prefix('with-zod/:foo')
 export default class WithZodClientController {
   @openapi({
     summary: 'This is a summary',
@@ -13,16 +39,23 @@ export default class WithZodClientController {
   static handleAll = withZod({
     body: z.object({ hello: z.literal('world') }),
     query: z.object({ search: z.literal('value') }),
-    params: z.object({ foo: z.literal('bar') }),
+    params: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
     output: z.object({
       body: z.object({ hello: z.literal('world') }),
       query: z.object({ search: z.literal('value') }),
-      params: z.object({ foo: z.literal('bar') }),
+      params: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
+      vovkParams: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
     }),
-    handle: async (req, params) => {
+    handle: async (req, params): Promise<VovkControllerOutput<typeof WithZodClientController.handleAll>> => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
-      return { body, query: { search }, params };
+      const vovkParams = req.vovk.params();
+      return WithZodClientService.handleAll({
+        body,
+        query: { search },
+        params,
+        vovkParams,
+      });
     },
   });
 
@@ -42,9 +75,9 @@ export default class WithZodClientController {
     },
   });
 
-  @put('x/:foo/y')
+  @put('x/:bar/y')
   static handleParams = withZod({
-    params: z.object({ foo: z.literal('bar') }),
+    params: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
     handle: async (req) => {
       return req.vovk.params();
     },

@@ -1,4 +1,4 @@
-// auto-generated 2025-02-14T13:51:27.106Z
+// auto-generated 2025-02-15T15:27:22.302Z
 import type { VovkSchema } from 'vovk';
 declare const fullSchema: {
   '': VovkSchema;

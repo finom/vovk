@@ -124,6 +124,12 @@ export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownA
       ? Y
       : never;
 
+export type VovkControllerOutput<
+  T extends ((...args: KnownAny) => KnownAny) & {
+    __output?: KnownAny;
+  },
+> = T['__output'];
+
 export type VovkBody<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['body'];
 
 export type VovkQuery<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['query'];

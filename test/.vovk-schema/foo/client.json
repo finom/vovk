@@ -156,9 +156,7 @@
                   "const": "world"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -170,9 +168,7 @@
                   "const": "value"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -187,9 +183,7 @@
                       "const": "world"
                     }
                   },
-                  "required": [
-                    "hello"
-                  ],
+                  "required": ["hello"],
                   "additionalProperties": false
                 },
                 "query": {
@@ -200,9 +194,7 @@
                       "const": "value"
                     }
                   },
-                  "required": [
-                    "search"
-                  ],
+                  "required": ["search"],
                   "additionalProperties": false
                 },
                 "params": {
@@ -213,17 +205,11 @@
                       "const": "bar"
                     }
                   },
-                  "required": [
-                    "foo"
-                  ],
+                  "required": ["foo"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params"
-              ],
+              "required": ["body", "query", "params"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -235,9 +221,7 @@
                   "const": "bar"
                 }
               },
-              "required": [
-                "foo"
-              ],
+              "required": ["foo"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -261,9 +245,7 @@
                               "const": "world"
                             }
                           },
-                          "required": [
-                            "hello"
-                          ],
+                          "required": ["hello"],
                           "additionalProperties": false
                         },
                         "query": {
@@ -274,9 +256,7 @@
                               "const": "value"
                             }
                           },
-                          "required": [
-                            "search"
-                          ],
+                          "required": ["search"],
                           "additionalProperties": false
                         },
                         "params": {
@@ -287,17 +267,11 @@
                               "const": "bar"
                             }
                           },
-                          "required": [
-                            "foo"
-                          ],
+                          "required": ["foo"],
                           "additionalProperties": false
                         }
                       },
-                      "required": [
-                        "body",
-                        "query",
-                        "params"
-                      ],
+                      "required": ["body", "query", "params"],
                       "additionalProperties": false,
                       "$schema": "http://json-schema.org/draft-07/schema#"
                     }
@@ -318,15 +292,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -377,9 +347,7 @@
                         "const": "world"
                       }
                     },
-                    "required": [
-                      "hello"
-                    ],
+                    "required": ["hello"],
                     "additionalProperties": false,
                     "$schema": "http://json-schema.org/draft-07/schema#"
                   }
@@ -399,9 +367,7 @@
                   "const": "value"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -421,9 +387,7 @@
                   "const": "world"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -447,9 +411,7 @@
                   "const": "bar"
                 }
               },
-              "required": [
-                "foo"
-              ],
+              "required": ["foo"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -511,39 +473,24 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": [
-                                  "deepKey"
-                                ],
+                                "required": ["deepKey"],
                                 "additionalProperties": false
                               }
                             },
-                            "required": [
-                              "foo"
-                            ],
+                            "required": ["foo"],
                             "additionalProperties": false
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ],
+                      "required": ["x", "arrOfObjects"],
                       "additionalProperties": false
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ],
+                  "required": ["f", "u", "d"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ],
+              "required": ["x", "y", "z"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -563,9 +510,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "helloOutput"
-              ],
+              "required": ["helloOutput"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -577,9 +522,7 @@
                   "const": "world"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -601,9 +544,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ],
+              "required": ["values"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -638,14 +579,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -653,14 +590,10 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": [
-                    "query"
-                  ]
+                  "enum": ["query"]
                 }
               },
-              "required": [
-                "hey"
-              ]
+              "required": ["hey"]
             }
           },
           "httpMethod": "POST",
@@ -674,14 +607,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "PUT",
@@ -695,14 +624,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "body"
-                  ]
+                  "enum": ["body"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "DELETE",
@@ -716,14 +641,10 @@
               "properties": {
                 "hey": {
                   "type": "string",
-                  "enum": [
-                    "query"
-                  ]
+                  "enum": ["query"]
                 }
               },
-              "required": [
-                "hey"
-              ]
+              "required": ["hey"]
             }
           },
           "httpMethod": "GET",
@@ -782,19 +703,13 @@
                                 "type": "string"
                               },
                               "nestedArr": {
-                                "type": [
-                                  "array",
-                                  "null"
-                                ],
+                                "type": ["array", "null"],
                                 "items": {
                                   "type": "string"
                                 }
                               },
                               "nestedObj": {
-                                "type": [
-                                  "object",
-                                  "null"
-                                ],
+                                "type": ["object", "null"],
                                 "default": {},
                                 "properties": {
                                   "deepKey": {
@@ -803,30 +718,17 @@
                                 }
                               }
                             },
-                            "required": [
-                              "foo"
-                            ]
+                            "required": ["foo"]
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ]
+                      "required": ["x", "arrOfObjects"]
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
+                  "required": ["f", "u", "d"]
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             }
           },
           "path": "nested-query",
@@ -842,9 +744,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -854,9 +754,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "path": "output-and-openapi",
@@ -893,9 +791,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "hello"
-                    ]
+                    "required": ["hello"]
                   }
                 }
               }
@@ -919,9 +815,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-isDto": true
             },
             "query": {
@@ -932,9 +826,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hey"
-              ],
+              "required": ["hey"],
               "x-isDto": true
             },
             "output": null,
@@ -953,9 +845,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-isDto": true
             },
             "query": {
@@ -966,9 +856,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hey"
-              ],
+              "required": ["hey"],
               "x-isDto": true
             },
             "output": null,
@@ -987,9 +875,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-isDto": true
             },
             "query": null,
@@ -1009,9 +895,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-isDto": true
             },
             "query": null,
@@ -1032,9 +916,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hey"
-              ],
+              "required": ["hey"],
               "x-isDto": true
             },
             "output": null,
@@ -1053,9 +935,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-isDto": true
             },
             "query": {
@@ -1066,9 +946,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hey"
-              ],
+              "required": ["hey"],
               "x-isDto": true
             },
             "output": null,
@@ -1102,11 +980,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hey",
-                "array1",
-                "array2"
-              ],
+              "required": ["hey", "array1", "array2"],
               "x-isDto": true
             },
             "output": null,
@@ -1129,10 +1003,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello",
-                "world"
-              ],
+              "required": ["hello", "world"],
               "x-isDto": true
             },
             "query": null,
@@ -1159,11 +1030,7 @@
                 "z": {}
               },
               "type": "object",
-              "required": [
-                "x",
-                "y",
-                "z"
-              ],
+              "required": ["x", "y", "z"],
               "x-isDto": true
             },
             "output": null,
@@ -1183,9 +1050,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-isDto": true
             },
             "output": {
@@ -1196,9 +1061,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-isDto": true
             },
             "params": null
@@ -1238,9 +1101,7 @@
                         }
                       },
                       "type": "object",
-                      "required": [
-                        "hello"
-                      ],
+                      "required": ["hello"],
                       "x-isDto": true
                     }
                   }
