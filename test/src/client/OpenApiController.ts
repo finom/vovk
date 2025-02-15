@@ -1,6 +1,6 @@
 import { get, prefix } from 'vovk';
 import { openapi, fromSchema } from 'vovk-openapi';
-import fullSchema from '../../.vovk-schema/index.cjs';
+import fullSchema from '../../.vovk-schema/main.cjs';
 
 @prefix('openapi')
 export default class OpenApiController {

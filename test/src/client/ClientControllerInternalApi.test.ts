@@ -1,4 +1,4 @@
-import segmentsSchema from '../../.vovk-schema/index.cjs';
+import segmentsSchema from '../../.vovk-schema/main.cjs';
 import type ClientController from './ClientController';
 import { createRPC } from 'vovk';
 import { it, describe } from 'node:test';
