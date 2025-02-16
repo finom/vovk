@@ -59,7 +59,7 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
     return defaultHandler(response);
   }
 
-  if (contentType === 'text/plain; format=jsonlines') {
+  if (contentType?.startsWith('text/plain') && contentType.includes('x-format=jsonlines')) {
     return defaultStreamHandler(response);
   }
 

@@ -4,15 +4,16 @@ import {
   get,
   prefix,
   HttpStatus,
-  VovkControllerBody,
-  VovkControllerQuery,
-  VovkControllerParams,
-  VovkControllerOutput,
+  type VovkControllerBody,
+  type VovkControllerQuery,
+  type VovkControllerParams,
+  type VovkControllerOutput,
 } from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
 import * as z from 'zod';
 
+// check if the "circular" types don't error
 class WithZodClientService {
   static handleAll({
     body,
@@ -25,7 +26,7 @@ class WithZodClientService {
     params: VovkControllerParams<typeof WithZodClientController.handleAll>;
     vovkParams: VovkControllerParams<typeof WithZodClientController.handleAll>;
   }) {
-    return { body, query, params, vovkParams };
+    return { body, query, params, vovkParams } satisfies VovkControllerOutput<typeof WithZodClientController.handleAll>;
   }
 }
 
@@ -46,7 +47,7 @@ export default class WithZodClientController {
       params: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
       vovkParams: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
     }),
-    handle: async (req, params): Promise<VovkControllerOutput<typeof WithZodClientController.handleAll>> => {
+    handle: async (req, params) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
       const vovkParams = req.vovk.params();
