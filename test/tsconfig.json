@@ -37,6 +37,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "strictPropertyInitialization": false,
     "jsx": "preserve"
   },
   "exclude": ["node_modules"]

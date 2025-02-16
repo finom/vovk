@@ -80,7 +80,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Yup validation failed. Invalid request body on server for http:.*. Invalid literal value, expected "world" \(hello\)/
+      /Yup validation failed. Invalid request body on server for http:.*. hello must be one of the following values: world/
     );
     await rejects.toThrowError(HttpException);
 
@@ -93,7 +93,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to one of the allowed values/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -116,7 +116,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Yup validation failed. Invalid request params on server for http:.*\. Invalid literal value, expected "foo" \(foo\)/
+      /Yup validation failed. Invalid request params on server for http:.*\. foo must be one of the following values: foo/
     );
     await rejects.toThrowError(HttpException);
 
@@ -130,7 +130,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request params on client for http:.*\. data\/foo must be equal to constant/
+      /Ajv validation failed. Invalid request params on client for http:.*\. data\/foo must be equal to one of the allowed values/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -152,7 +152,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Yup validation failed. Invalid request query on server for http:.*\. Invalid literal value, expected "value" \(search\)/
+      /Yup validation failed. Invalid request query on server for http:.*\. search must be one of the following values: value/
     );
     await rejects.toThrowError(HttpException);
 
@@ -165,7 +165,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request query on client for http:.*\. data\/search must be equal to constant/
+      /Ajv validation failed. Invalid request query on client for http:.*\. data\/search must be equal to one of the allowed values/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -191,7 +191,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid request query on server for http:.*. Required \(x\)/);
+    await rejects.toThrow(/Yup validation failed. Invalid request query on server for http:.*. x is a required field/);
 
     ({ rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleNestedQuery({
@@ -222,7 +222,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Yup validation failed. Invalid response on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
+      /Yup validation failed. Invalid response on server for http:.*\. hello must be one of the following values: world/
     );
   });
 

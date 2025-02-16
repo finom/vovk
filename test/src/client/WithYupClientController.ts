@@ -101,7 +101,7 @@ export default class WithYupClientController {
                     nestedArr: yup.array().of(yup.string()).optional(),
                     nestedObj: yup
                       .object({
-                        deepKey: yup.string().required(),
+                        deepKey: yup.string().optional(),
                       })
                       .optional(),
                   })
