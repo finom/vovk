@@ -1,70 +1,109 @@
-import { post, put, get, del, prefix } from 'vovk';
+import {
+  post,
+  put,
+  get,
+  prefix,
+  HttpStatus,
+  type VovkControllerBody,
+  type VovkControllerQuery,
+  type VovkControllerParams,
+  type VovkControllerOutput,
+} from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withYup } from 'vovk-yup';
-import * as Yup from 'yup';
+import * as yup from 'yup';
+
+// check if the "circular" types don't error
+class WithYupClientService {
+  static handleAll({
+    body,
+    query,
+    params,
+    vovkParams,
+  }: {
+    body: VovkControllerBody<typeof WithYupClientController.handleAll>;
+    query: VovkControllerQuery<typeof WithYupClientController.handleAll>;
+    params: VovkControllerParams<typeof WithYupClientController.handleAll>;
+    vovkParams: VovkControllerParams<typeof WithYupClientController.handleAll>;
+  }) {
+    return { body, query, params, vovkParams } satisfies VovkControllerOutput<typeof WithYupClientController.handleAll>;
+  }
+}
 
 @prefix('with-yup')
 export default class WithYupClientController {
-  @post.auto()
-  static postWithBodyAndQuery = withYup({
-    body: Yup.object({ hello: Yup.string().oneOf(['body']).required() }),
-    query: Yup.object({ hey: Yup.string().oneOf(['query']).required() }),
-    handle: async (req) => {
+  @openapi({
+    summary: 'This is a summary',
+  })
+  @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  @post('all/:foo/:bar')
+  static handleAll = withYup({
+    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
+    output: yup.object({
+      body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+      query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+      params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
+      vovkParams: yup.object({
+        foo: yup.string().oneOf(['foo']).required(),
+        bar: yup.string().oneOf(['bar']).required(),
+      }),
+    }),
+    handle: async (req, params) => {
       const body = await req.json();
-      const hey = req.nextUrl.searchParams.get('hey');
-      return { body, query: { hey } };
-    },
-  });
-
-  @put.auto()
-  static putWithBodyAndNullQuery = withYup({
-    body: Yup.object({ hello: Yup.string().oneOf(['body']).required() }),
-    handle: async (req) => {
-      const body = await req.json();
-      return { body };
-    },
-  });
-
-  @del.auto()
-  static putWithBodyOnly = withYup({
-    body: Yup.object({ hello: Yup.string().oneOf(['body']).required() }),
-    handle: async (req) => {
-      const body = await req.json();
-      return { body };
+      const search = req.nextUrl.searchParams.get('search');
+      const vovkParams = req.vovk.params();
+      return WithYupClientService.handleAll({
+        body,
+        query: { search },
+        params,
+        vovkParams,
+      });
     },
   });
 
   @get.auto()
-  static getWithQueryAndNullBody = withYup({
-    query: Yup.object({ hey: Yup.string().oneOf(['query']).required() }),
-    handle: (req) => {
-      const hey = req.nextUrl.searchParams.get('hey');
-      return { query: { hey } };
-    },
+  static handleQuery = withYup({
+    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    handle: (req) => req.vovk.query(),
   });
 
-  @get('nested-query')
-  static getNestedQuery = withYup({
-    query: Yup.object().shape({
-      x: Yup.string().required(),
-      y: Yup.array().of(Yup.string().required()).required(),
-      z: Yup.object()
-        .shape({
-          f: Yup.string().required(),
-          u: Yup.array().of(Yup.string().required()).required(),
-          d: Yup.object()
-            .shape({
-              x: Yup.string().required(),
-              arrOfObjects: Yup.array()
+  @post.auto()
+  static handleBody = withYup({
+    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    handle: async (req) => req.vovk.body(),
+  });
+
+  @put('x/:foo/:bar/y')
+  static handleParams = withYup({
+    params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
+    handle: async (req) => req.vovk.params(),
+  });
+
+  @get.auto()
+  static handleNestedQuery = withYup({
+    query: yup.object({
+      x: yup.string().required(),
+      y: yup.array().of(yup.string().required()).required(),
+      z: yup
+        .object({
+          f: yup.string().required(),
+          u: yup.array().of(yup.string().required()).required(),
+          d: yup
+            .object({
+              x: yup.string().required(),
+              arrOfObjects: yup
+                .array()
                 .of(
-                  Yup.object().shape({
-                    foo: Yup.string().required(),
-                    nestedArr: Yup.array().of(Yup.string().required()).notRequired(),
-                    nestedObj: Yup.object()
-                      .shape({
-                        deepKey: Yup.string(),
+                  yup.object({
+                    foo: yup.string().required(),
+                    nestedArr: yup.array().of(yup.string()).optional(),
+                    nestedObj: yup
+                      .object({
+                        deepKey: yup.string().required(),
                       })
-                      .notRequired(),
+                      .optional(),
                   })
                 )
                 .required(),
@@ -73,24 +112,28 @@ export default class WithYupClientController {
         })
         .required(),
     }),
-    handle: (req) => {
-      return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
+    handle: (req) => req.vovk.query(),
+  });
+
+  @get.auto()
+  static handleOutput = withYup({
+    query: yup.object({ helloOutput: yup.string().required() }),
+    output: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    handle: async (req) => ({ hello: req.vovk.query().helloOutput as 'world' }),
+  });
+
+  @get.auto()
+  static handleStream = withYup({
+    query: yup.object({ values: yup.array().of(yup.string().required()).required() }),
+    async *handle(req) {
+      for (const value of req.vovk.query().values) {
+        yield { value };
+      }
     },
   });
 
-  @openapi({
-    summary: 'This is a summary',
-  })
-  @get('output-and-openapi')
-  static outputWithOpenApi = withYup({
-    body: Yup.object().shape({
-      hello: Yup.string().required(),
-    }),
-    query: Yup.object().shape({
-      hello: Yup.string().required(),
-    }),
-    handle: (req) => {
-      return { hello: req.vovk.query().hello };
-    },
+  @post.auto()
+  static handleNothitng = withYup({
+    handle: async () => ({ nothing: 'here' }) as const,
   });
 }

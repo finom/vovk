@@ -5,7 +5,7 @@ import { convertSchema } from '@sodaru/yup-to-json-schema';
 const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.errors.join(', ') ?? String(e);
 
 function withYup<
-  T extends (req: REQ, params: KnownAny) => YUP_OUTPUT extends Yup.Schema<infer U> ? U | Promise<U> : KnownAny,
+  T extends (req: REQ, params: YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>) => KnownAny,
   YUP_BODY extends Yup.Schema<KnownAny>,
   YUP_QUERY extends Yup.Schema<KnownAny>,
   YUP_OUTPUT extends Yup.Schema<KnownAny>,
