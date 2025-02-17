@@ -8,7 +8,7 @@ type Lang = keyof typeof ajvLocalize;
 export type VovkAjvConfig = {
   options?: Options;
   localize?: Lang;
-}
+};
 
 const validate = ({
   input,

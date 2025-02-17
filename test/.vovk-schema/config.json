@@ -1,36 +1,3 @@
 {
-  "emitConfig": [
-    "emitConfig",
-    "modulesDir",
-    "validateOnClientImport",
-    "fetcherImport",
-    "createRPCImport",
-    "schemaOutDir",
-    "clientOutDir",
-    "origin",
-    "rootEntry",
-    "rootSegmentModulesDirName",
-    "logLevel",
-    "prettifyClient",
-    "devHttps",
-    "generateFrom",
-    "templates"
-  ],
-  "modulesDir": "./src/modules",
-  "validateOnClientImport": ["../packages/vovk-zod/validateOnClient.js"],
-  "fetcherImport": ["vovk/dist/client/defaultFetcher.js"],
-  "createRPCImport": ["../packages/vovk-react-query/index.cjs", "../packages/vovk-react-query/index.mjs"],
-  "schemaOutDir": "./.vovk-schema",
-  "clientOutDir": "./node_modules/.vovk-client",
-  "origin": "http://localhost:3001",
-  "rootEntry": "api",
-  "rootSegmentModulesDirName": "",
-  "logLevel": "debug",
-  "prettifyClient": false,
-  "devHttps": false,
-  "generateFrom": ["ts", "module", "main"],
-  "templates": {
-    "service": "none",
-    "controller": "none"
-  }
+  "custom": {}
 }

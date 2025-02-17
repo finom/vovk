@@ -104,7 +104,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Zod validation failed. Invalid request body on server for http:.*. Invalid literal value, expected "world" \(hello\)/
+      /Dto validation failed. Invalid request body on server for http:.*. Invalid literal value, expected "world" \(hello\)/
     );
     await rejects.toThrowError(HttpException);
 
@@ -140,7 +140,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Zod validation failed. Invalid request params on server for http:.*\. Invalid literal value, expected "foo" \(foo\)/
+      /Dto validation failed. Invalid request params on server for http:.*\. Invalid literal value, expected "foo" \(foo\)/
     );
     await rejects.toThrowError(HttpException);
 
@@ -176,7 +176,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Zod validation failed. Invalid request query on server for http:.*\. Invalid literal value, expected "value" \(search\)/
+      /Dto validation failed. Invalid request query on server for http:.*\. Invalid literal value, expected "value" \(search\)/
     );
     await rejects.toThrowError(HttpException);
 
@@ -215,7 +215,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid request query on server for http:.*. Required \(x\)/);
+    await rejects.toThrow(/Dto validation failed. Invalid request query on server for http:.*. Required \(x\)/);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleNestedQuery({
@@ -246,7 +246,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Zod validation failed. Invalid response on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
+      /Dto validation failed. Invalid response on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
     );
   });
 

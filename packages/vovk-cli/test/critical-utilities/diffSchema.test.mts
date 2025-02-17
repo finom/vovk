@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import diffSchema from '../../src/dev/diffSegmentSchema.mjs';
-import type { HttpMethod as VovkHttpMethod, VovkSchema } from 'vovk';
+import type { HttpMethod as VovkHttpMethod, VovkSegmentSchema } from 'vovk';
 
 // got some problems importing it from "vovk"
 enum _HttpMethod {
@@ -18,7 +18,7 @@ const HttpMethod = _HttpMethod as unknown as typeof VovkHttpMethod;
 
 await describe('diffSchema', async () => {
   await it('Test case 1: No changes', () => {
-    const oldJson: VovkSchema = {
+    const oldJson: VovkSegmentSchema = {
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -35,7 +35,7 @@ await describe('diffSchema', async () => {
       },
     };
 
-    const newJson: VovkSchema = { ...oldJson };
+    const newJson: VovkSegmentSchema = { ...oldJson };
 
     const diff = diffSchema(oldJson, newJson);
 
@@ -49,7 +49,7 @@ await describe('diffSchema', async () => {
   });
 
   await it('Test case 2: Controllers added and removed', () => {
-    const oldJson: VovkSchema = {
+    const oldJson: VovkSegmentSchema = {
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -66,7 +66,7 @@ await describe('diffSchema', async () => {
       },
     };
 
-    const newJson: VovkSchema = {
+    const newJson: VovkSegmentSchema = {
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -95,7 +95,7 @@ await describe('diffSchema', async () => {
   });
 
   await it('Test case 3: Handlers added, removed, and changed', () => {
-    const oldJson: VovkSchema = {
+    const oldJson: VovkSegmentSchema = {
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -116,7 +116,7 @@ await describe('diffSchema', async () => {
       },
     };
 
-    const newJson: VovkSchema = {
+    const newJson: VovkSegmentSchema = {
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -160,7 +160,7 @@ await describe('diffSchema', async () => {
   });
 
   await it('Test case 4: Complex changes', () => {
-    const oldJson: VovkSchema = {
+    const oldJson: VovkSegmentSchema = {
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -177,7 +177,7 @@ await describe('diffSchema', async () => {
       },
     };
 
-    const newJson: VovkSchema = {
+    const newJson: VovkSegmentSchema = {
       emitSchema: true,
       segmentName: '',
       controllers: {
