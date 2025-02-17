@@ -14,7 +14,7 @@
     "zod",
     "ajv"
   ],
-  "author": "Andrii Gubanov",
+  "author": "Andrey Gubanov",
   "license": "MIT",
   "peerDependencies": {
     "vovk": "^3.0.0-draft.91",

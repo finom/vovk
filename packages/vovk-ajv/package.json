@@ -20,15 +20,16 @@
     "validation",
     "zod"
   ],
-  "author": "Andrii Gubanov",
+  "author": "Andrey Gubanov",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/finom/vovk/issues"
   },
   "homepage": "https://github.com/finom/vovk#readme",
   "dependencies": {
+    "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "ajv": "^8.17.1"
+    "ajv-i18n": "^4.2.0"
   },
   "peerDependencies": {
     "vovk": "^3.0.0-draft.91"
