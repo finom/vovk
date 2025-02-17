@@ -84,13 +84,7 @@ const validateOnClient: VovkValidateOnClient = (input, validation, fullSchema) =
 };
 
 const configure =
-  ({
-    options: givenOptions,
-    localize: givenLocalize,
-  }: {
-    options: Options;
-    localize: Lang;
-  }): VovkValidateOnClient =>
+  ({ options: givenOptions, localize: givenLocalize }: { options: Options; localize: Lang }): VovkValidateOnClient =>
   (input, validation, fullSchema) => {
     const { options, localize } = getConfig(fullSchema);
 
