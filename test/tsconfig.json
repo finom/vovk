@@ -26,7 +26,7 @@
     "paths": {
       "vovk/*": ["../packages/vovk/*"],
       "vovk-cli/*": ["../packages/vovk-cli/*"],
-      "vovk-validate-client-ajv/*": ["../packages/vovk-validate-client-ajv/*"],
+      "vovk-validate-client-ajv/*": ["../packages/vovk-ajv/*"],
       "next/*": ["./node_modules/next/*"]
     },
     "target": "ES2017",

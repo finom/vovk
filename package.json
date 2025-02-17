@@ -36,7 +36,7 @@
     "BREAKING-beta-major": "NPM_TAG=beta VERSION_TYPE=\"premajor --preid=beta\" npm run vpub",
     "draft": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub",
     "draft-notest": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub-notest",
-    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-init vovk-client vovk-react-query vovk-validate-client-ajv vovk-zod vovk-yup vovk-dto vovk-openapi; do PACKAGE=$PACKAGE npm run draft-notest; done",
+    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-init vovk-client vovk-react-query vovk-ajv vovk-zod vovk-yup vovk-dto vovk-openapi; do PACKAGE=$PACKAGE npm run draft-notest; done",
     "draft-patch": "NPM_TAG=draft VERSION_TYPE=\"prepatch --preid=draft\" npm run vpub",
     "draft-minor": "NPM_TAG=draft VERSION_TYPE=\"preminor --preid=draft\" npm run vpub"
   },
