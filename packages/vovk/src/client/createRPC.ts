@@ -87,7 +87,7 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');
           }
-          await validateOnClient({ body, query, params, endpoint }, validation ?? {});
+          await validateOnClient({ body, query, params, endpoint }, validation ?? {}, fullSchema);
         }
       };
 

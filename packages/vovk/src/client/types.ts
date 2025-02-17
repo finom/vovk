@@ -114,7 +114,8 @@ export interface VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'm
 
 export type VovkValidateOnClient = (
   input: { body?: unknown; query?: unknown; params?: unknown; endpoint: string },
-  validation: Exclude<VovkHandlerSchema['validation'], undefined>
+  validation: Exclude<VovkHandlerSchema['validation'], undefined>,
+  fullSchema: VovkFullSchema,
 ) => void | Promise<void>;
 
 export type VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
