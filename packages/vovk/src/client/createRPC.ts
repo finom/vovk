@@ -1,12 +1,12 @@
 import type {
-   ControllerStaticMethod,
-   VovkControllerParams,
-   VovkControllerQuery,
-   KnownAny,
-   HttpMethod,
+  ControllerStaticMethod,
+  VovkControllerParams,
+  VovkControllerQuery,
+  KnownAny,
+  HttpMethod,
   VovkFullSchema,
 } from '../types';
-import type {  VovkClientOptions,  VovkClient,  VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
+import type { VovkClientOptions, VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
 import defaultFetcher from './defaultFetcher';
 import { defaultHandler } from './defaultHandler';
@@ -35,10 +35,11 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
   const segmentSchema = fullSchema.segments[segmentName];
-  if(!segmentSchema) throw new Error(`Unable to create RPC object. Segment schema is missing. Check client template.`);
+  if (!segmentSchema) throw new Error(`Unable to create RPC object. Segment schema is missing. Check client template.`);
   const controllerSchema = fullSchema.segments[segmentName]?.controllers[controllerName];
   const client = {} as VovkClient<T, OPTS>;
-  if (!controllerSchema) throw new Error(`Unable to create RPC object. Controller schema is missing. Check client template.`);
+  if (!controllerSchema)
+    throw new Error(`Unable to create RPC object. Controller schema is missing. Check client template.`);
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
   const { fetcher: settingsFetcher = defaultFetcher } = options ?? {};
 

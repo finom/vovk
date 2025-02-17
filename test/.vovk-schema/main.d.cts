@@ -3,9 +3,9 @@ import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
 declare const fullSchema: {
   config: Partial<VovkStrictConfig>;
   segments: {
-  '': VovkSegmentSchema;
-  'foo/client': VovkSegmentSchema;
-  'generated': VovkSegmentSchema;
+    '': VovkSegmentSchema;
+    'foo/client': VovkSegmentSchema;
+    generated: VovkSegmentSchema;
   };
 };
 export default fullSchema;

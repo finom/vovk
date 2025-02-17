@@ -149,7 +149,7 @@ export type StreamAbortMessage = {
   reason: KnownAny;
 };
 
-// CLI types are moved here in order to be able to be able to build VovkFullSchema type that is used by the core 
+// CLI types are moved here in order to be able to be able to build VovkFullSchema type that is used by the core
 
 type LogLevelNames = 'trace' | 'debug' | 'info' | 'warn' | 'error';
 
@@ -205,7 +205,10 @@ export type VovkConfig = {
 };
 
 export type VovkStrictConfig = Required<
-  Omit<VovkConfig, 'emitConfig' | 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom' | 'custom'>
+  Omit<
+    VovkConfig,
+    'emitConfig' | 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom' | 'custom'
+  >
 > & {
   emitConfig: (keyof VovkStrictConfig)[];
   validateOnClientImport: string[] | null;
@@ -218,7 +221,7 @@ export type VovkStrictConfig = Required<
 export type VovkFullSchema = {
   config: Partial<VovkStrictConfig>;
   segments: Record<string, VovkSegmentSchema>;
-}
+};
 
 // Enums
 

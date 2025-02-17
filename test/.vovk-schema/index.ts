@@ -7,9 +7,9 @@ import segment2 from './segments/generated.json';
 const fullSchema = {
   config: config as unknown as Partial<VovkStrictConfig>,
   segments: {
-  '': segment0 as unknown as VovkSegmentSchema,
-  'foo/client': segment1 as unknown as VovkSegmentSchema,
-  'generated': segment2 as unknown as VovkSegmentSchema,
-  }
+    '': segment0 as unknown as VovkSegmentSchema,
+    'foo/client': segment1 as unknown as VovkSegmentSchema,
+    generated: segment2 as unknown as VovkSegmentSchema,
+  },
 };
 export default fullSchema;

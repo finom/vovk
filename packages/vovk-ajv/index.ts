@@ -1,16 +1,26 @@
-import Ajv from 'ajv';
-import { HttpException, HttpStatus, type VovkValidateOnClient } from 'vovk';
+import Ajv, { Options } from 'ajv';
+import { HttpException, HttpStatus, VovkFullSchema, type VovkValidateOnClient } from 'vovk';
 import addFormats from 'ajv-formats';
+import ajvLocalize from 'ajv-i18n';
 
-const ajv = new Ajv();
+type Lang = keyof typeof ajvLocalize;
 
-addFormats(ajv);
-
-const validateOnClientAjv: VovkValidateOnClient = (input, validation) => {
+const validate = ({
+  input,
+  validation,
+  ajv,
+  localize = 'en',
+}: {
+  input: Parameters<VovkValidateOnClient>[0];
+  validation: Parameters<VovkValidateOnClient>[1];
+  ajv: Ajv;
+  localize: Lang;
+}) => {
   if (validation.body) {
     const isValid = ajv.validate(validation.body, input.body);
 
     if (!isValid) {
+      ajvLocalize[localize](ajv.errors);
       throw new HttpException(
         HttpStatus.NULL,
         `Ajv validation failed. Invalid request body on client for ${input.endpoint}. ${ajv.errorsText()}`,
@@ -23,6 +33,7 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation) => {
     const isValid = ajv.validate(validation.query, input.query);
 
     if (!isValid) {
+      ajvLocalize[localize](ajv.errors);
       throw new HttpException(
         HttpStatus.NULL,
         `Ajv validation failed. Invalid request query on client for ${input.endpoint}. ${ajv.errorsText()}`,
@@ -35,6 +46,7 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation) => {
     const isValid = ajv.validate(validation.params, input.params);
 
     if (!isValid) {
+      ajvLocalize[localize](ajv.errors);
       throw new HttpException(
         HttpStatus.NULL,
         `Ajv validation failed. Invalid request params on client for ${input.endpoint}. ${ajv.errorsText()}`,
@@ -43,5 +55,52 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation) => {
     }
   }
 };
+
+const getConfig = (fullSchema: VovkFullSchema) => {
+  const config = fullSchema.config.custom as
+    | {
+        ajvOptions?: Options;
+        ajvLocalize?: Lang;
+      }
+    | undefined;
+
+  const options = config?.ajvOptions || {};
+  const localize = config?.ajvLocalize || 'en';
+
+  return { options, localize };
+};
+
+let ajvScope: Ajv | null = null;
+
+const validateOnClient: VovkValidateOnClient = (input, validation, fullSchema) => {
+  const { options, localize } = getConfig(fullSchema);
+
+  if (!ajvScope) {
+    ajvScope = new Ajv(options);
+    addFormats(ajvScope);
+  }
+
+  return validate({ input, validation, ajv: ajvScope, localize });
+};
+
+const configure =
+  ({
+    options: givenOptions,
+    localize: givenLocalize,
+  }: {
+    options: Options;
+    localize: Lang;
+  }): VovkValidateOnClient =>
+  (input, validation, fullSchema) => {
+    const { options, localize } = getConfig(fullSchema);
+
+    const ajv = new Ajv({ ...options, ...givenOptions });
+    addFormats(ajv);
+    return validate({ input, validation, ajv, localize: givenLocalize || localize });
+  };
+
+const validateOnClientAjv: typeof validateOnClient & { configure: typeof configure } = Object.assign(validateOnClient, {
+  configure,
+});
 
 export default validateOnClientAjv;
