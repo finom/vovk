@@ -182,7 +182,7 @@ type GenerateFrom = (
     }
 )[];
 export type VovkConfig = {
-  emitConfig?: boolean | string[];
+  emitConfig?: boolean | (keyof VovkStrictConfig)[];
   clientOutDir?: string;
   schemaOutDir?: string;
   fetcherImport?: string | string[];
@@ -201,16 +201,18 @@ export type VovkConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
+  custom?: Record<string, KnownAny>;
 };
 
 export type VovkStrictConfig = Required<
-  Omit<VovkConfig, 'emitConfig' | 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom'>
+  Omit<VovkConfig, 'emitConfig' | 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom' | 'custom'>
 > & {
-  emitConfig: string[];
+  emitConfig: (keyof VovkStrictConfig)[];
   validateOnClientImport: string[] | null;
   fetcherImport: string[];
   createRPCImport: string[];
   generateFrom: GenerateFrom;
+  custom: Record<string, KnownAny>;
 };
 
 export type VovkFullSchema = {

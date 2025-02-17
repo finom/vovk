@@ -35,7 +35,7 @@ import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
 declare const fullSchema: {
   config: Partial<VovkStrictConfig>;
   segments: {
-${segmentNames.map((segmentName) => `  '${segmentName}': VovkSegmentSchema;`).join('\n')}
+${segmentNames.map((segmentName) => `    '${segmentName}': VovkSegmentSchema;`).join('\n')}
   };
 };
 export default fullSchema;`;
@@ -47,7 +47,7 @@ ${segmentNames.map((segmentName, i) => `import segment${i} from './${SEGMENTS_SC
 const fullSchema = {
   config: config as unknown as Partial<VovkStrictConfig>,
   segments: {
-${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i} as unknown as VovkSegmentSchema,`).join('\n')}
+${segmentNames.map((segmentName, i) => `    '${segmentName}': segment${i} as unknown as VovkSegmentSchema,`).join('\n')}
   }
 };
 export default fullSchema;`;

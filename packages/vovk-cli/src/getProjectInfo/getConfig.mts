@@ -37,13 +37,16 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
       controller: 'vovk-cli/templates/controller.ejs',
       ...conf.templates,
     },
+    custom: conf.custom ?? {},
   };
 
-  if (typeof conf.emitConfig === 'undefined' || conf.emitConfig === true) {
-    config.emitConfig = Object.keys(config);
+  if (typeof conf.emitConfig === 'undefined') {
+    config.emitConfig = ['custom'];
+  } else if (conf.emitConfig === true) {
+    config.emitConfig = Object.keys(config) as (keyof VovkStrictConfig)[];
   } else if (Array.isArray(conf.emitConfig)) {
     config.emitConfig = conf.emitConfig;
-  }
+  } // else it's false and emitConfig already is []
 
   return { config, srcRoot, configAbsolutePaths, userConfig, error };
 }
