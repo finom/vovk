@@ -1,8 +1,8 @@
 
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
 import type { VovkClientFetcher } from 'vovk';
-import type fetcher from '<%= t.imports.module.fetcher %>';
-import type createRPC from '<%= t.imports.module.createRPC %>';
+import type { fetcher } from '<%= t.imports.module.fetcher %>';
+import type { createRPC } from '<%= t.imports.module.createRPC %>';
 <% Object.values(t.fullSchema.segments).forEach((segment, i) => { if(Object.keys(segment.controllers).length) { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
 <% }}) %>

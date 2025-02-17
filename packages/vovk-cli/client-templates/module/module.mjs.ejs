@@ -1,16 +1,13 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
-import fetcherImport from '<%= t.imports.module.fetcher %>';
-import createRPCImport from '<%= t.imports.module.createRPC %>';
+import { fetcher } from '<%= t.imports.module.fetcher %>';
+import { createRPC } from '<%= t.imports.module.createRPC %>';
 import fullSchema from '<%= t.imports.module.fullSchema %>';
 <% if (t.imports.module.validateOnClient) { %>
-import validateOnClientImport from '<%= t.imports.module.validateOnClient %>';
-const validateOnClient = validateOnClientImport.default || validateOnClientImport;
+import { validateOnClient } from '<%= t.imports.module.validateOnClient %>';
 <% } else { %>
 const validateOnClient = undefined;
 <% } %>
 const apiRoot = '<%= t.apiRoot %>';
-const fetcher = fetcherImport.default || fetcherImport;
-const createRPC = createRPCImport.default || createRPCImport;
 <% Object.values(t.fullSchema.segments).forEach((segment, i) => {
   Object.keys(segment.controllers).forEach((controllerName) => { %>
 export const <%= controllerName %> = createRPC(

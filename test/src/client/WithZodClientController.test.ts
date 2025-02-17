@@ -45,6 +45,8 @@ describe('Client validation with custon AJV options', () => {
 
     deepStrictEqual(result satisfies { hello: 'world' }, { hello: 'world' });
 
+    console.log({ validateOnClientAjv });
+
     const { rejects } = expectPromise(async () => {
       await WithZodClientControllerRPC.handleBody({
         body: {

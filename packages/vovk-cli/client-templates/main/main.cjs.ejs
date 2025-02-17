@@ -1,8 +1,8 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
-const { default: fetcher } = require('<%= t.imports.fetcher %>');
-const { default: createRPC } = require('<%= t.imports.createRPC %>');
+const { fetcher } = require('<%= t.imports.fetcher %>');
+const { createRPC } = require('<%= t.imports.createRPC %>');
 const fullSchema = require('<%= t.imports.fullSchema %>');
-const { default: validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
+const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
 const apiRoot = '<%= t.apiRoot %>';
 <% Object.values(t.fullSchema.segments).forEach((segment) => { 
   Object.keys(segment.controllers).forEach((controllerName) => { %>

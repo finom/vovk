@@ -72,7 +72,7 @@ const getConfig = (fullSchema: VovkFullSchema) => {
 
 let ajvScope: Ajv | null = null;
 
-const validateOnClient: VovkValidateOnClient = (input, validation, fullSchema) => {
+const validateOnClientAjv: VovkValidateOnClient = (input, validation, fullSchema) => {
   const { options, localize } = getConfig(fullSchema);
 
   if (!ajvScope) {
@@ -93,8 +93,6 @@ const configure =
     return validate({ input, validation, ajv, localize: givenLocalize || localize });
   };
 
-const validateOnClientAjv: typeof validateOnClient & { configure: typeof configure } = Object.assign(validateOnClient, {
+export const validateOnClient: typeof validateOnClientAjv & { configure: typeof configure } = Object.assign(validateOnClientAjv, {
   configure,
 });
-
-export default validateOnClientAjv;

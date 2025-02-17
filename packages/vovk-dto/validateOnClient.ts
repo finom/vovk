@@ -2,7 +2,7 @@ import { validate } from 'class-validator';
 import type { ClassConstructor } from 'class-transformer';
 import { HttpException, HttpStatus, type VovkValidateOnClient } from 'vovk';
 
-const validateOnClientDto: VovkValidateOnClient = async (input, validation) => {
+export const validateOnClient: VovkValidateOnClient = async (input, validation) => {
   if (validation.body && 'x-isDto' in (validation.body as object)) {
     const bodyErrors = await validate(input.body as ClassConstructor<object>);
     if (bodyErrors.length > 0) {
@@ -51,5 +51,3 @@ const validateOnClientDto: VovkValidateOnClient = async (input, validation) => {
     }
   }
 };
-
-export default validateOnClientDto;

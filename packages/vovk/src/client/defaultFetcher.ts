@@ -6,7 +6,7 @@ export const DEFAULT_ERROR_MESSAGE = 'Unknown error at the defaultFetcher';
 
 // defaultFetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
 // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
-const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
+export const fetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
   { httpMethod, getEndpoint, validate, defaultHandler, defaultStreamHandler },
   { params, query, body, apiRoot = '/api', ...options }
 ) => {
@@ -65,5 +65,3 @@ const defaultFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
 
   return response;
 };
-
-export default defaultFetcher;

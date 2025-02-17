@@ -8,7 +8,7 @@ import type {
 } from '../types';
 import type { VovkClientOptions, VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
-import defaultFetcher from './defaultFetcher';
+import { fetcher } from './defaultFetcher';
 import { defaultHandler } from './defaultHandler';
 import { defaultStreamHandler } from './defaultStreamHandler';
 import serializeQuery from '../utils/serializeQuery';
@@ -28,7 +28,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${queryStr ? '?' : ''}${queryStr}`;
 };
 
-const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
+export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   fullSchema: VovkFullSchema,
   segmentName: string,
   controllerName: string,
@@ -41,7 +41,7 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
   if (!controllerSchema)
     throw new Error(`Unable to create RPC object. Controller schema is missing. Check client template.`);
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
-  const { fetcher: settingsFetcher = defaultFetcher } = options ?? {};
+  const { fetcher: settingsFetcher = fetcher } = options ?? {};
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers)) {
     const { path, httpMethod, validation } = handlerSchema;
@@ -134,5 +134,3 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
 
   return client;
 };
-
-export default createRPC;
