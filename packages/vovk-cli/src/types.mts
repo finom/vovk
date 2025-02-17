@@ -33,7 +33,6 @@ export interface InitOptions {
   updateScripts?: 'implicit' | 'explicit';
   validationLibrary?: string | null;
   reactQuery?: boolean;
-  validateOnClient?: boolean;
   dryRun?: boolean;
   channel?: 'latest' | 'beta' | 'draft';
 }

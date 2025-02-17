@@ -37,15 +37,14 @@ export class Init {
       updateTsConfig,
       updateScripts,
       validationLibrary,
-      validateOnClient,
       reactQuery,
       dryRun,
       channel,
     }: Omit<InitOptions, 'yes' | 'logLevel'>
   ) {
     const { log, root } = this;
-    const dependencies: string[] = ['vovk', 'vovk-client'];
-    const devDependencies: string[] = ['vovk-cli', 'openapi3-ts'];
+    const dependencies: string[] = ['vovk', 'vovk-client', 'vovk-openapi'];
+    const devDependencies: string[] = ['vovk-cli'];
 
     // delete older config files
     if (configPaths.length) {
@@ -54,8 +53,9 @@ export class Init {
     }
 
     if (validationLibrary) {
-      dependencies.push(validationLibrary);
       dependencies.push(
+        validationLibrary,
+        'vovk-ajv',
         ...({
           'vovk-zod': ['zod'],
           'vovk-yup': ['yup'],
@@ -65,8 +65,7 @@ export class Init {
     }
 
     if (reactQuery) {
-      dependencies.push('vovk-react-query');
-      dependencies.push('@tanstack/react-query');
+      dependencies.push('vovk-react-query', '@tanstack/react-query');
     }
 
     if (updateScripts) {
@@ -140,7 +139,7 @@ export class Init {
       const { configAbsolutePath } = await createConfig({
         root,
         log,
-        options: { validationLibrary, validateOnClient, reactQuery, channel, dryRun },
+        options: { validationLibrary, reactQuery, channel, dryRun },
       });
 
       log.info('Config created successfully at ' + configAbsolutePath);
@@ -162,7 +161,6 @@ export class Init {
       updateTsConfig,
       updateScripts,
       validationLibrary,
-      validateOnClient,
       reactQuery,
       dryRun,
       channel,
@@ -188,7 +186,6 @@ export class Init {
         updateTsConfig: updateTsConfig ?? true,
         updateScripts: updateScripts ?? 'implicit',
         validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
-        validateOnClient: validateOnClient ?? true,
         reactQuery: reactQuery ?? true,
         dryRun: dryRun ?? false,
         channel: channel ?? 'latest',
@@ -239,14 +236,6 @@ export class Init {
               { name: 'None', value: null, description: 'Install validation library later' },
             ],
           })));
-
-    if (validationLibrary) {
-      validateOnClient =
-        validateOnClient ??
-        (await confirm({
-          message: 'Do you want to enable client validation?',
-        }));
-    }
 
     updateScripts =
       updateScripts ??
@@ -305,7 +294,6 @@ export class Init {
         updateTsConfig,
         updateScripts,
         validationLibrary,
-        validateOnClient,
         reactQuery,
         dryRun,
         channel,

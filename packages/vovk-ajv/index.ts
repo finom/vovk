@@ -5,6 +5,11 @@ import ajvLocalize from 'ajv-i18n';
 
 type Lang = keyof typeof ajvLocalize;
 
+export type VovkAjvConfig = {
+  options?: Options;
+  localize?: Lang;
+}
+
 const validate = ({
   input,
   validation,
@@ -57,15 +62,10 @@ const validate = ({
 };
 
 const getConfig = (fullSchema: VovkFullSchema) => {
-  const config = fullSchema.config.custom as
-    | {
-        ajvOptions?: Options;
-        ajvLocalize?: Lang;
-      }
-    | undefined;
+  const config = fullSchema.config.custom?.ajv as VovkAjvConfig | undefined;
 
-  const options = config?.ajvOptions || {};
-  const localize = config?.ajvLocalize || 'en';
+  const options = config?.options || {};
+  const localize = config?.localize || 'en';
 
   return { options, localize };
 };
@@ -84,7 +84,7 @@ const validateOnClient: VovkValidateOnClient = (input, validation, fullSchema) =
 };
 
 const configure =
-  ({ options: givenOptions, localize: givenLocalize }: { options: Options; localize: Lang }): VovkValidateOnClient =>
+  ({ options: givenOptions, localize: givenLocalize }: VovkAjvConfig): VovkValidateOnClient =>
   (input, validation, fullSchema) => {
     const { options, localize } = getConfig(fullSchema);
 

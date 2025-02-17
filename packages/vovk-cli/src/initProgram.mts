@@ -20,7 +20,6 @@ export default function initProgram(program: Command) {
       '--validation-library <library>',
       'validation library to use ("vovk-zod", "vovk-yup", "vovk-dto" or another); set to "none" to skip'
     )
-    .option('--validate-on-client', 'path to validateOnClient file')
     .option('--react-query', 'use @tanstack/react-query for data fetching inside components')
     .option('--channel <channel>', 'channel to use for fetching packages', 'latest')
     .option('--dry-run', 'do not write files to disk')

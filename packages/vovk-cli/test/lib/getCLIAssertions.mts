@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import { runScript } from './runScript.mjs';
 import path from 'node:path';
 import getUserConfig from '../../src/getProjectInfo/getUserConfig.mjs';
-import { VovkConfig } from '../../src/types.mjs';
+import type { VovkConfig } from 'vovk';
 import getFileSystemEntryType, { FileSystemEntryType } from '../../src/utils/getFileSystemEntryType.mjs';
 import checkTSConfigForExperimentalDecorators from '../../src/init/checkTSConfigForExperimentalDecorators.mjs';
 

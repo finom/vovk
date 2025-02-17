@@ -10,11 +10,11 @@ import type { InitOptions } from '../types.mjs';
 export default async function createConfig({
   root,
   log,
-  options: { validationLibrary, validateOnClient, reactQuery, channel, dryRun },
+  options: { validationLibrary, reactQuery, channel, dryRun },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
-  options: Pick<InitOptions, 'validationLibrary' | 'validateOnClient' | 'reactQuery' | 'channel' | 'dryRun'>;
+  options: Pick<InitOptions, 'validationLibrary' | 'reactQuery' | 'channel' | 'dryRun'>;
 }) {
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
@@ -30,9 +30,10 @@ export default async function createConfig({
   };
 
   if (validationLibrary) {
-    if (validateOnClient) {
-      config.validateOnClientImport = `${validationLibrary}/validateOnClient.js`;
-    }
+    config.validateOnClientImport =
+      {
+        'vovk-dto': `vovk-dto/validateOnClient.js`,
+      }[validationLibrary] ?? 'vovk-ajv';
 
     try {
       const validationTemplates = await getTemplateFilesFromPackage(validationLibrary, channel);

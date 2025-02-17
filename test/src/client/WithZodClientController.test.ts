@@ -1,6 +1,7 @@
 import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
 import { WithZodClientControllerRPC } from 'vovk-client';
+import validateOnClientAjv from 'vovk-ajv';
 import {
   HttpException,
   type VovkReturnType,
@@ -35,6 +36,35 @@ Streaming
 All (just OK) DONE
 handler.schema for All, use @openapi and @openapi.error
 */
+
+describe('Client validation with custon AJV options', () => {
+  it('Should handle body validation on client with localize and options', async () => {
+    const result = await WithZodClientControllerRPC.handleBody({
+      body: { hello: 'world' },
+    });
+
+    deepStrictEqual(result satisfies { hello: 'world' }, { hello: 'world' });
+
+    const { rejects } = expectPromise(async () => {
+      await WithZodClientControllerRPC.handleBody({
+        body: {
+          hello: 'wrong' as 'world',
+        },
+        validateOnClient: validateOnClientAjv.configure({
+          localize: 'de',
+          options: {
+            verbose: true,
+          },
+        }),
+      });
+    });
+
+    await rejects.toThrow(
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+    );
+    await rejects.toThrowError(HttpException);
+  });
+});
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
   it('Should be OK', async () => {
