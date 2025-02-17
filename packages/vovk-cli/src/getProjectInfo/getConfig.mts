@@ -9,8 +9,8 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
   const srcRoot = await getRelativeSrcRoot({ cwd });
 
   const validateOnClientImport = env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.validateOnClientImport ?? null;
-  const fetcherImport = env.VOVK_FETCHER_PATH ?? conf.fetcherImport ?? 'vovk/dist/client/defaultFetcher.js';
-  const createRPCImport = env.VOVK_CREATE_RPC_PATH ?? conf.createRPCImport ?? 'vovk/dist/client/createRPC.js';
+  const fetcherImport = env.VOVK_FETCHER_PATH ?? conf.fetcherImport ?? 'vovk';
+  const createRPCImport = env.VOVK_CREATE_RPC_PATH ?? conf.createRPCImport ?? 'vovk';
   const defaultClientTemplates = ['ts', 'module', 'main'];
 
   const config: VovkStrictConfig = {

@@ -1,4 +1,5 @@
-export { default as createRPC } from './createRPC';
+export { createRPC } from './createRPC';
+export { fetcher } from './fetcher';
 export type {
   VovkClient,
   VovkClientFetcher,

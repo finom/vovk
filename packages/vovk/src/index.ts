@@ -31,6 +31,7 @@ import {
   type VovkValidateOnClient,
   type VovkStreamAsyncIterable,
   createRPC,
+  fetcher,
 } from './client';
 import { HttpException } from './HttpException';
 import { createDecorator } from './createDecorator';
@@ -72,6 +73,7 @@ export {
   createVovkApp,
   createDecorator,
   createRPC,
+  fetcher,
   generateStaticAPI,
   setHandlerValidation,
 };

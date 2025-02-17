@@ -11,7 +11,7 @@ import {
 } from 'vovk';
 import type WithZodClientController from './WithZodClientController';
 import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
-import {
+import type {
   HandleAllBodyDto,
   HandleAllParamsDto,
   HandleAllQueryDto,

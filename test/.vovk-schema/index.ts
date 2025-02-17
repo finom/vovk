@@ -1,4 +1,4 @@
-// auto-generated 2025-02-17T22:18:30.546Z
+// auto-generated 2025-02-17T23:09:41.402Z
 import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
 import config from './config.json';
 import segment0 from './segments/_root.json';

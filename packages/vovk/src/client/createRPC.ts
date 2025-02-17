@@ -8,7 +8,7 @@ import type {
 } from '../types';
 import type { VovkClientOptions, VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
-import { fetcher } from './defaultFetcher';
+import { fetcher } from './fetcher';
 import { defaultHandler } from './defaultHandler';
 import { defaultStreamHandler } from './defaultStreamHandler';
 import serializeQuery from '../utils/serializeQuery';

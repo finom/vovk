@@ -78,6 +78,7 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation, fullSchema
   if (!ajvScope) {
     ajvScope = new Ajv(options);
     addFormats(ajvScope);
+    ajvScope.addKeyword('x-isDto');
   }
 
   return validate({ input, validation, ajv: ajvScope, localize });
@@ -90,9 +91,13 @@ const configure =
 
     const ajv = new Ajv({ ...options, ...givenOptions });
     addFormats(ajv);
+    ajv.addKeyword('x-isDto');
     return validate({ input, validation, ajv, localize: givenLocalize || localize });
   };
 
-export const validateOnClient: typeof validateOnClientAjv & { configure: typeof configure } = Object.assign(validateOnClientAjv, {
-  configure,
-});
+export const validateOnClient: typeof validateOnClientAjv & { configure: typeof configure } = Object.assign(
+  validateOnClientAjv,
+  {
+    configure,
+  }
+);

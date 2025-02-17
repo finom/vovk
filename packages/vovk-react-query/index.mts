@@ -1,5 +1,5 @@
 import {
-  createRPC,
+  createRPC as originalCreateRPC,
   type HttpException,
   type KnownAny,
   type VovkClientOptions,
@@ -10,6 +10,7 @@ import {
   type VovkHandlerSchema,
   type VovkStreamAsyncIterable,
   VovkFullSchema,
+  VovkSegmentSchema,
 } from 'vovk';
 
 import {
@@ -22,7 +23,12 @@ import {
 } from '@tanstack/react-query';
 
 const withUseQuery = <
-  T extends ((arg: KnownAny) => KnownAny) & { schema: VovkHandlerSchema; controllerSchema: VovkControllerSchema },
+  T extends ((arg: KnownAny) => KnownAny) & {
+    schema: VovkHandlerSchema;
+    controllerSchema: VovkControllerSchema;
+    segmentSchema: VovkSegmentSchema;
+    fullSchema: VovkFullSchema;
+  },
 >(
   fn: T
 ) => {
@@ -30,6 +36,7 @@ const withUseQuery = <
     useQuery: (input: Parameters<T>[0], options?: UseQueryOptions<ReturnType<T>>, queryClient?: QueryClient) => {
       queryClient = queryClient ?? useQueryClient();
       const queryKey = [
+        fn.segmentSchema.segmentName,
         fn.controllerSchema.prefix,
         fn.controllerSchema.controllerName,
         fn.schema.path,
@@ -70,14 +77,15 @@ const withUseQuery = <
   });
 };
 
-export default function createRPCWithReactQuery<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
+export function createRPC<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   fullSchema: VovkFullSchema,
   segmentName: string,
   controllerName: string,
   options?: VovkClientOptions<OPTS>
 ) {
-  const rpc = createRPC<T, OPTS>(fullSchema, segmentName, controllerName, options);
+  const rpc = originalCreateRPC<T, OPTS>(fullSchema, segmentName, controllerName, options);
 
+  // TODO Refactor
   type ClientWithQuery = {
     [Key in keyof VovkClient<T, OPTS>]: VovkClient<T, OPTS>[Key] & {
       useQuery: (

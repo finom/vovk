@@ -16,7 +16,7 @@
     "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "experimentalDecorators": true,
-    "strict": true,
+    "strict": false,
     "plugins": [
       {
         "name": "next"

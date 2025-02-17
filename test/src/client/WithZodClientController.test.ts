@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
 import { WithZodClientControllerRPC } from 'vovk-client';
-import validateOnClientAjv from 'vovk-ajv';
+import { validateOnClient as validateOnClientAjv } from 'vovk-ajv';
 import {
   HttpException,
   type VovkReturnType,
@@ -45,8 +45,6 @@ describe('Client validation with custon AJV options', () => {
 
     deepStrictEqual(result satisfies { hello: 'world' }, { hello: 'world' });
 
-    console.log({ validateOnClientAjv });
-
     const { rejects } = expectPromise(async () => {
       await WithZodClientControllerRPC.handleBody({
         body: {
@@ -62,7 +60,7 @@ describe('Client validation with custon AJV options', () => {
     });
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello muss gleich der Konstanten sein/
     );
     await rejects.toThrowError(HttpException);
   });
