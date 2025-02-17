@@ -7,9 +7,11 @@ import {
   type VovkHandlerSchema,
   type VovkControllerYieldType,
   type VovkYieldType,
+  type VovkControllerOutput,
 } from 'vovk';
-import type WithYupClientController from './WithYupClientController';
+import type WithDtoClientController from './WithDtoClientController';
 import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import type WithYupClientController from './WithYupClientController.ts';
 
 /*
 Only body,
@@ -48,7 +50,15 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       query: { search: 'value' },
       params: { foo: 'foo', bar: 'bar' },
       vovkParams: { foo: 'foo', bar: 'bar' },
-    } as const;
+    };
+
+    null as unknown as VovkReturnType<typeof WithYupClientControllerRPC.handleAll> satisfies typeof expected;
+    null as unknown as VovkControllerOutput<typeof WithYupClientController.handleAll> satisfies typeof expected;
+
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithYupClientController.handleAll> satisfies null;
+    // @ts-expect-error Expect error
+    null as unknown as VovkControllerOutput<typeof WithYupClientController.handleAll> satisfies null;
 
     deepStrictEqual(result satisfies typeof expected, expected);
   });
@@ -93,7 +103,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to one of the allowed values/
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to one of the allowed value/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -239,8 +249,8 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControllerYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
-    null as unknown as VovkYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
   });

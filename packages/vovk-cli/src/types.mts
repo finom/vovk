@@ -1,66 +1,5 @@
 import type { LogLevelNames } from 'loglevel';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type KnownAny = any;
-
-export type VovkEnv = {
-  PORT?: string;
-  VOVK_CLIENT_OUT_DIR?: string;
-  VOVK_SCHEMA_OUT_DIR?: string;
-  VOVK_FETCHER_PATH?: string;
-  VOVK_VALIDATE_ON_CLIENT_PATH?: string;
-  VOVK_CREATE_RPC_PATH?: string;
-  VOVK_MODULES_DIR?: string;
-  VOVK_ORIGIN?: string;
-  VOVK_ROOT_ENTRY?: string;
-  VOVK_API_ENTRY_POINT?: string;
-  VOVK_ROOT_SEGMENT_MODULES_DIR_NAME?: string;
-  VOVK_LOG_LEVEL?: LogLevelNames;
-  VOVK_PRETTIFY_CLIENT?: string;
-  VOVK_DEV_HTTPS?: string;
-  __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
-  __VOVK_EXIT__?: 'true' | 'false';
-};
-
-type GenerateFrom = (
-  | string
-  | {
-      templatePath: string;
-      outDir?: string;
-      templateName?: string;
-      fullSchema?: string | boolean;
-    }
-)[];
-export type VovkConfig = {
-  clientOutDir?: string;
-  schemaOutDir?: string;
-  fetcherImport?: string | string[];
-  validateOnClientImport?: string | string[] | null;
-  createRPCImport?: string | string[];
-  modulesDir?: string;
-  rootEntry?: string;
-  origin?: string;
-  rootSegmentModulesDirName?: string;
-  logLevel?: LogLevelNames;
-  prettifyClient?: boolean;
-  devHttps?: boolean;
-  generateFrom?: GenerateFrom | ((value: GenerateFrom) => GenerateFrom);
-  templates?: {
-    service?: string;
-    controller?: string;
-    [key: string]: string | undefined;
-  };
-};
-
-export type VovkStrictConfig = Required<
-  Omit<VovkConfig, 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom'>
-> & {
-  validateOnClientImport: string[] | null;
-  fetcherImport: string[];
-  createRPCImport: string[];
-  generateFrom: GenerateFrom;
-};
-
 export type VovkModuleRenderResult = {
   fileName: string;
   dir: string;
@@ -79,7 +18,7 @@ export interface GenerateOptions {
   clientOutDir?: string;
   templates?: string[];
   prettify?: boolean;
-  fullSchema?: string | boolean;
+  emitFullSchema?: string | boolean;
 }
 
 export interface InitOptions {

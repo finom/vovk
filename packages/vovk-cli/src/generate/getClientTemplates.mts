@@ -1,11 +1,11 @@
 import path from 'node:path';
-import type { VovkStrictConfig } from '../types.mjs';
+import type { VovkStrictConfig } from 'vovk';
 
 interface ClientTemplate {
   templateName: string;
   templatePath: string;
   outPath: string;
-  fullSchema?: string | boolean;
+  emitFullSchema?: string | boolean;
 }
 
 export default function getClientTemplates({

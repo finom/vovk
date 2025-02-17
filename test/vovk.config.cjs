@@ -1,5 +1,5 @@
 // @ts-check
-/** @type {import('vovk-cli').VovkConfig} */
+/** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
   modulesDir: './src/modules',
   validateOnClientImport: '../packages/vovk-zod/validateOnClient.js',

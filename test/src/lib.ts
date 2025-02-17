@@ -36,7 +36,6 @@ export function expectPromise(f: () => Promise<unknown>) {
       },
       toThrowError: async (cl: KnownAny) => {
         const error = await getError();
-        console.log('CL', cl);
         ok(cl ? error instanceof cl : error, `Expected error to be instance of ${cl}, got ${error}`);
       },
     },

@@ -31,7 +31,7 @@ function withYup<
   params?: YUP_PARAMS;
   output?: YUP_OUTPUT;
   handle: T;
-}): T {
+}) {
   const outputHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
     const outputData = await handle(req, handlerParams);
     if (output) {
@@ -109,7 +109,9 @@ function withYup<
     params: params ? convertSchema(params) : undefined,
   });
 
-  return resultHandler as T;
+  return resultHandler as T & {
+    __output: YUP_OUTPUT extends Yup.Schema<infer U> ? U : never;
+  };
 }
 
 export { withYup };

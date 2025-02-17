@@ -1,11 +1,15 @@
-// auto-generated 2025-02-16T14:53:09.874Z
-import type { VovkSchema } from 'vovk';
-import segment0 from './json/_root.json';
-import segment1 from './json/foo/client.json';
-import segment2 from './json/generated.json';
+// auto-generated 2025-02-17T16:58:47.355Z
+import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
+import config from './config.json';
+import segment0 from './segments/_root.json';
+import segment1 from './segments/foo/client.json';
+import segment2 from './segments/generated.json';
 const fullSchema = {
-  '': segment0 as unknown as VovkSchema,
-  'foo/client': segment1 as unknown as VovkSchema,
-  'generated': segment2 as unknown as VovkSchema,
+  config: config as unknown as Partial<VovkStrictConfig>,
+  segments: {
+  '': segment0 as unknown as VovkSegmentSchema,
+  'foo/client': segment1 as unknown as VovkSegmentSchema,
+  'generated': segment2 as unknown as VovkSegmentSchema,
+  }
 };
 export default fullSchema;

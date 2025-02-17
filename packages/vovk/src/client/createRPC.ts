@@ -1,12 +1,12 @@
-import {
-  type VovkControllerSchema,
-  type ControllerStaticMethod,
-  type VovkControllerParams,
-  type VovkControllerQuery,
-  type KnownAny,
-  type HttpMethod,
+import type {
+   ControllerStaticMethod,
+   VovkControllerParams,
+   VovkControllerQuery,
+   KnownAny,
+   HttpMethod,
+  VovkFullSchema,
 } from '../types';
-import { type VovkClientOptions, type VovkClient, type VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
+import type {  VovkClientOptions,  VovkClient,  VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
 import defaultFetcher from './defaultFetcher';
 import { defaultHandler } from './defaultHandler';
@@ -29,19 +29,20 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 };
 
 const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
-  controllerSchema: VovkControllerSchema,
-  segmentName?: string,
+  fullSchema: VovkFullSchema,
+  segmentName: string,
+  controllerName: string,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
-  const schema = controllerSchema as T & VovkControllerSchema;
+  const segmentSchema = fullSchema.segments[segmentName];
+  if(!segmentSchema) throw new Error(`Unable to create RPC object. Segment schema is missing. Check client template.`);
+  const controllerSchema = fullSchema.segments[segmentName]?.controllers[controllerName];
   const client = {} as VovkClient<T, OPTS>;
-  if (!schema) throw new Error(`Unable to clientize. Controller schema is not provided`);
-  if (!schema.handlers)
-    throw new Error(`Unable to clientize. No schema for controller ${String(schema?.controllerName)} provided`);
-  const controllerPrefix = trimPath(schema.prefix ?? '');
+  if (!controllerSchema) throw new Error(`Unable to create RPC object. Controller schema is missing. Check client template.`);
+  const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
   const { fetcher: settingsFetcher = defaultFetcher } = options ?? {};
 
-  for (const [staticMethodName, handlerSchema] of Object.entries(schema.handlers)) {
+  for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers)) {
     const { path, httpMethod, validation } = handlerSchema;
     const getEndpoint = ({
       apiRoot,
@@ -122,7 +123,9 @@ const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcher
     };
 
     handler.schema = handlerSchema;
-    handler.controllerSchema = schema;
+    handler.controllerSchema = controllerSchema;
+    handler.segmentSchema = segmentSchema;
+    handler.fullSchema = fullSchema;
 
     // @ts-expect-error TODO
     client[staticMethodName] = handler;

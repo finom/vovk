@@ -1266,13 +1266,15 @@
       "originalControllerName": "WithDtoClientController",
       "prefix": "with-dto",
       "handlers": {
-        "postWithBodyQueryAndParams": {
+        "handleAll": {
           "validation": {
             "body": {
               "properties": {
                 "hello": {
-                  "pattern": "body",
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                    "world"
+                  ]
                 }
               },
               "type": "object",
@@ -1283,114 +1285,200 @@
             },
             "query": {
               "properties": {
-                "hey": {
-                  "pattern": "query",
-                  "type": "string"
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
                 }
               },
               "type": "object",
               "required": [
-                "hey"
+                "search"
               ],
               "x-isDto": true
             },
-            "output": null,
-            "params": null
-          },
-          "path": "with-params/:param",
-          "httpMethod": "POST"
-        },
-        "postWithBodyAndQueryTransformed": {
-          "validation": {
-            "body": {
+            "output": {
               "properties": {
-                "hello": {
-                  "pattern": "body",
-                  "type": "string"
-                }
+                "body": {},
+                "query": {},
+                "params": {},
+                "vovkParams": {}
               },
               "type": "object",
               "required": [
-                "hello"
+                "body",
+                "query",
+                "params",
+                "vovkParams"
               ],
               "x-isDto": true
             },
-            "query": {
+            "params": {
               "properties": {
-                "hey": {
-                  "pattern": "query",
-                  "type": "string"
+                "foo": {
+                  "type": "string",
+                  "enum": [
+                    "foo"
+                  ]
+                },
+                "bar": {
+                  "type": "string",
+                  "enum": [
+                    "bar"
+                  ]
                 }
               },
               "type": "object",
               "required": [
-                "hey"
+                "foo",
+                "bar"
               ],
               "x-isDto": true
-            },
-            "output": null,
-            "params": null
+            }
           },
+          "path": "all/:foo/:bar",
           "httpMethod": "POST",
-          "path": "post-with-body-and-query-transformed"
-        },
-        "putWithBodyAndNullQuery": {
-          "validation": {
-            "body": {
-              "properties": {
-                "hello": {
-                  "pattern": "body",
-                  "type": "string"
+          "openapi": {
+            "responses": {
+              "200": {
+                "description": "Success",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "properties": {
+                        "body": {},
+                        "query": {},
+                        "params": {},
+                        "vovkParams": {}
+                      },
+                      "type": "object",
+                      "required": [
+                        "body",
+                        "query",
+                        "params",
+                        "vovkParams"
+                      ],
+                      "x-isDto": true
+                    }
+                  }
                 }
               },
-              "type": "object",
-              "required": [
-                "hello"
-              ],
-              "x-isDto": true
+              "400": {
+                "description": "400 response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/VovkErrorResponse"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "enum": [
+                                "This is a bad request"
+                              ]
+                            },
+                            "statusCode": {
+                              "type": "integer",
+                              "enum": [
+                                400
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             },
-            "query": null,
-            "output": null,
-            "params": null
-          },
-          "httpMethod": "PUT",
-          "path": "put-with-body-and-null-query"
-        },
-        "putWithBodyOnly": {
-          "validation": {
-            "body": {
-              "properties": {
-                "hello": {
-                  "pattern": "body",
-                  "type": "string"
+            "summary": "This is a summary",
+            "parameters": [
+              {
+                "name": "search",
+                "in": "query",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
                 }
               },
-              "type": "object",
-              "required": [
-                "hello"
-              ],
-              "x-isDto": true
-            },
-            "query": null,
-            "output": null,
-            "params": null
-          },
-          "httpMethod": "DELETE",
-          "path": "put-with-body-only"
+              {
+                "name": "foo",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "foo"
+                  ]
+                }
+              },
+              {
+                "name": "bar",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "bar"
+                  ]
+                }
+              }
+            ],
+            "x-codeSamples": [
+              {
+                "label": "vovk-client",
+                "lang": "typescript",
+                "source": "import { MyRPC } from 'vovk-client';\n\nconst response = await MyRPC.handleAll({\n    params: {\n        foo: \"foo\",\n        bar: \"bar\"\n    },\n    body: {\n        hello: \"world\"\n    },\n    query: {\n        search: \"value\"\n    },\n});\n    \nconsole.log(response);\n/* \n{\n    body: null,\n    query: null,\n    params: null,\n    vovkParams: null\n}\n*/\n    \n  "
+              }
+            ],
+            "requestBody": {
+              "description": "Request body",
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "properties": {
+                      "hello": {
+                        "type": "string",
+                        "enum": [
+                          "world"
+                        ]
+                      }
+                    },
+                    "type": "object",
+                    "required": [
+                      "hello"
+                    ],
+                    "x-isDto": true
+                  }
+                }
+              }
+            }
+          }
         },
-        "getWithQueryAndNullBody": {
+        "handleQuery": {
           "validation": {
             "body": null,
             "query": {
               "properties": {
-                "hey": {
-                  "pattern": "query",
-                  "type": "string"
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
                 }
               },
               "type": "object",
               "required": [
-                "hey"
+                "search"
               ],
               "x-isDto": true
             },
@@ -1398,15 +1486,17 @@
             "params": null
           },
           "httpMethod": "GET",
-          "path": "get-with-query-and-null-body"
+          "path": "handle-query"
         },
-        "postWithBodyAndQueryWithReqVovk": {
+        "handleBody": {
           "validation": {
             "body": {
               "properties": {
                 "hello": {
-                  "pattern": "body",
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                    "world"
+                  ]
                 }
               },
               "type": "object",
@@ -1415,91 +1505,45 @@
               ],
               "x-isDto": true
             },
-            "query": {
-              "properties": {
-                "hey": {
-                  "pattern": "query",
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": [
-                "hey"
-              ],
-              "x-isDto": true
-            },
-            "output": null,
-            "params": null
-          },
-          "httpMethod": "POST",
-          "path": "post-with-body-and-query-with-req-vovk"
-        },
-        "getWithQueryArrayAndNullBody": {
-          "validation": {
-            "body": null,
-            "query": {
-              "properties": {
-                "hey": {
-                  "pattern": "query",
-                  "type": "string"
-                },
-                "array1": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array",
-                  "minItems": 1
-                },
-                "array2": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array",
-                  "minItems": 2
-                }
-              },
-              "type": "object",
-              "required": [
-                "hey",
-                "array1",
-                "array2"
-              ],
-              "x-isDto": true
-            },
-            "output": null,
-            "params": null
-          },
-          "httpMethod": "GET",
-          "path": "get-with-query-array-and-null-body"
-        },
-        "putWithMappedType": {
-          "validation": {
-            "body": {
-              "properties": {
-                "hello": {
-                  "pattern": "hello_body",
-                  "type": "string"
-                },
-                "world": {
-                  "pattern": "world_body",
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": [
-                "hello",
-                "world"
-              ],
-              "x-isDto": true
-            },
             "query": null,
             "output": null,
             "params": null
           },
-          "httpMethod": "PUT",
-          "path": "put-with-mapped-type"
+          "httpMethod": "POST",
+          "path": "handle-body"
         },
-        "getNestedQuery": {
+        "handleParams": {
+          "validation": {
+            "body": null,
+            "query": null,
+            "output": null,
+            "params": {
+              "properties": {
+                "foo": {
+                  "type": "string",
+                  "enum": [
+                    "foo"
+                  ]
+                },
+                "bar": {
+                  "type": "string",
+                  "enum": [
+                    "bar"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "foo",
+                "bar"
+              ],
+              "x-isDto": true
+            }
+          },
+          "path": "x/:foo/:bar/y",
+          "httpMethod": "PUT"
+        },
+        "handleNestedQuery": {
           "validation": {
             "body": null,
             "query": {
@@ -1526,30 +1570,31 @@
             "output": null,
             "params": null
           },
-          "path": "nested-query",
-          "httpMethod": "GET"
+          "httpMethod": "GET",
+          "path": "handle-nested-query"
         },
-        "outputWithOpenApi": {
+        "handleOutput": {
           "validation": {
             "body": null,
             "query": {
               "properties": {
-                "hello": {
-                  "pattern": "hello",
+                "helloOutput": {
                   "type": "string"
                 }
               },
               "type": "object",
               "required": [
-                "hello"
+                "helloOutput"
               ],
               "x-isDto": true
             },
             "output": {
               "properties": {
                 "hello": {
-                  "pattern": "hello",
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                    "world"
+                  ]
                 }
               },
               "type": "object",
@@ -1560,51 +1605,42 @@
             },
             "params": null
           },
-          "path": "output-and-openapi",
           "httpMethod": "GET",
-          "openapi": {
-            "summary": "This is a summary",
-            "parameters": [
-              {
-                "name": "hello",
-                "in": "query",
-                "required": true,
-                "schema": {
-                  "pattern": "hello",
-                  "type": "string"
+          "path": "handle-output"
+        },
+        "handleStream": {
+          "validation": {
+            "body": null,
+            "query": {
+              "properties": {
+                "values": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 }
-              }
-            ],
-            "x-codeSamples": [
-              {
-                "label": "vovk-client",
-                "lang": "typescript",
-                "source": "import { MyRPC } from 'vovk-client';\n\nconst response = await MyRPC.outputWithOpenApi({\n    query: {\n        hello: \"string\"\n    },\n});\n    \nconsole.log(response);\n/* \n{\n    hello: \"string\"\n}\n*/\n    \n  "
-              }
-            ],
-            "responses": {
-              "200": {
-                "description": "Success",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "properties": {
-                        "hello": {
-                          "pattern": "hello",
-                          "type": "string"
-                        }
-                      },
-                      "type": "object",
-                      "required": [
-                        "hello"
-                      ],
-                      "x-isDto": true
-                    }
-                  }
-                }
-              }
-            }
-          }
+              },
+              "type": "object",
+              "required": [
+                "values"
+              ],
+              "x-isDto": true
+            },
+            "output": null,
+            "params": null
+          },
+          "httpMethod": "GET",
+          "path": "handle-stream"
+        },
+        "handleNothitng": {
+          "validation": {
+            "body": null,
+            "query": null,
+            "output": null,
+            "params": null
+          },
+          "httpMethod": "POST",
+          "path": "handle-nothitng"
         }
       }
     },

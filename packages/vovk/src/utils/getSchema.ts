@@ -1,4 +1,4 @@
-import type { VovkSchema, VovkController, StaticClass } from '../types';
+import type { VovkSegmentSchema, VovkController, StaticClass } from '../types';
 
 export function getControllerSchema(controller: VovkController, controllerName: string, exposeValidation: boolean) {
   return {
@@ -24,7 +24,7 @@ export default function getSchema(options: {
 }) {
   const exposeValidation = options?.exposeValidation ?? true;
   const emitSchema = options.emitSchema ?? true;
-  const schema: VovkSchema = {
+  const schema: VovkSegmentSchema = {
     emitSchema,
     segmentName: options.segmentName ?? '',
     controllers: {},

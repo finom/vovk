@@ -2,8 +2,9 @@ import ejs from 'ejs';
 import matter from 'gray-matter';
 import _ from 'lodash';
 import pluralize from 'pluralize';
+import type { VovkConfig } from 'vovk';
 import addCommonTerms from './addCommonTerms.mjs';
-import type { VovkConfig, VovkModuleRenderResult } from '../types.mjs';
+import type { VovkModuleRenderResult } from '../types.mjs';
 
 addCommonTerms();
 
@@ -31,14 +32,6 @@ export default async function render(
       .filter(Boolean)
       .join('/');
 
-  /*
-    <% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
-<% var modulePascalNamePlural = pluralize(modulePascalName); %>
-<% var controllerName = modulePascalName + 'Controller'; %>
-<% var compiledName = modulePascalName + 'RPC'; %>
-<% var serviceName = modulePascalName + 'Service'; %>
-<% var prefix = pluralize(_.kebabCase(moduleName).toLowerCase()); %>
-    */
   const theThing = _.camelCase(moduleName);
   const TheThing = _.upperFirst(theThing);
   const the_thing = _.snakeCase(moduleName);

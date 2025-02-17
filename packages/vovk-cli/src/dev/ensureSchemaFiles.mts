@@ -1,9 +1,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import debounce from 'lodash/debounce.js';
-import writeOneSchemaFile, { JSON_DIR_NAME, ROOT_SEGMENT_SCHEMA_NAME } from './writeOneSchemaFile.mjs';
+import writeOneSchemaFile, {
+  SEGMENTS_SCHEMA_DIR_NAME,
+  ROOT_SEGMENT_SCHEMA_NAME,
+} from './writeOneSegmentSchemaFile.mjs';
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
+import writeConfigJson from './writeConfigJson.mjs';
 
 /**
  * Ensure that the schema files are created to avoid any import errors.
@@ -15,26 +19,36 @@ export default async function ensureSchemaFiles(
 ): Promise<void> {
   const now = Date.now();
   let hasChanged = false;
-  const schemaJsonOutAbsolutePath = path.join(schemaOutAbsolutePath, JSON_DIR_NAME);
+  const schemaJsonOutAbsolutePath = path.join(schemaOutAbsolutePath, SEGMENTS_SCHEMA_DIR_NAME);
   const jsContent = `// auto-generated ${new Date().toISOString()}
+module.exports.config = require('./config.json');
+module.exports.segments = {
 ${segmentNames
   .map((segmentName) => {
-    return `module.exports['${segmentName}'] = require('./${JSON_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json');`;
+    return `  '${segmentName}': require('./${SEGMENTS_SCHEMA_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json'),`;
   })
-  .join('\n')}`;
+  .join('\n')}
+}`;
 
   const dTsContent = `// auto-generated ${new Date().toISOString()}
-import type { VovkSchema } from 'vovk';
+import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
 declare const fullSchema: {
-${segmentNames.map((segmentName) => `  '${segmentName}': VovkSchema;`).join('\n')}
+  config: Partial<VovkStrictConfig>;
+  segments: {
+${segmentNames.map((segmentName) => `  '${segmentName}': VovkSegmentSchema;`).join('\n')}
+  };
 };
 export default fullSchema;`;
 
   const tsContent = `// auto-generated ${new Date().toISOString()}
-import type { VovkSchema } from 'vovk';
-${segmentNames.map((segmentName, i) => `import segment${i} from './${JSON_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
+import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
+import config from './config.json';
+${segmentNames.map((segmentName, i) => `import segment${i} from './${SEGMENTS_SCHEMA_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
 const fullSchema = {
-${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i} as unknown as VovkSchema,`).join('\n')}
+  config: config as unknown as Partial<VovkStrictConfig>,
+  segments: {
+${segmentNames.map((segmentName, i) => `  '${segmentName}': segment${i} as unknown as VovkSegmentSchema,`).join('\n')}
+  }
 };
 export default fullSchema;`;
 
@@ -47,12 +61,14 @@ export default fullSchema;`;
   const existingTs = await fs.readFile(tsAbsolutePath, 'utf-8').catch(() => null);
 
   await fs.mkdir(schemaJsonOutAbsolutePath, { recursive: true });
+  await writeConfigJson(schemaOutAbsolutePath, projectInfo);
+
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
       const { isCreated } = await writeOneSchemaFile({
         schemaOutAbsolutePath,
-        schema: {
+        segmentSchema: {
           emitSchema: false,
           segmentName,
           controllers: {},

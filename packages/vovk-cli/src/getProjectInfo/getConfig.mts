@@ -1,5 +1,5 @@
+import type { VovkEnv, VovkStrictConfig } from 'vovk';
 import getUserConfig from './getUserConfig.mjs';
-import type { VovkEnv, VovkStrictConfig } from '../types.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 
 export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: string; cwd: string }) {
@@ -14,6 +14,7 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
   const defaultClientTemplates = ['ts', 'module', 'main'];
 
   const config: VovkStrictConfig = {
+    emitConfig: [],
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     validateOnClientImport:
       typeof validateOnClientImport === 'string' ? [validateOnClientImport] : validateOnClientImport,
@@ -37,6 +38,12 @@ export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: 
       ...conf.templates,
     },
   };
+
+  if (typeof conf.emitConfig === 'undefined' || conf.emitConfig === true) {
+    config.emitConfig = Object.keys(config);
+  } else if (Array.isArray(conf.emitConfig)) {
+    config.emitConfig = conf.emitConfig;
+  }
 
   return { config, srcRoot, configAbsolutePaths, userConfig, error };
 }

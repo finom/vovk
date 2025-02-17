@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import type { DiffResult } from './diffSchema.mjs';
+import type { DiffResult } from './diffSegmentSchema.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';

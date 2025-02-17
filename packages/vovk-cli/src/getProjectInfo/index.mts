@@ -33,12 +33,12 @@ export default async function getProjectInfo({
 
   const getImportPath = (p: string) => (p.startsWith('.') ? path.relative(config.clientOutDir, p) : p);
   const clientImports = {
-    schema: schemaOutImportPath,
+    fullSchema: schemaOutImportPath,
     fetcher: getImportPath(config.fetcherImport[0]),
     createRPC: getImportPath(config.createRPCImport[0]),
     validateOnClient: config.validateOnClientImport ? getImportPath(config.validateOnClientImport[0]) : null,
     module: {
-      schema: schemaOutImportPath,
+      fullSchema: schemaOutImportPath,
       fetcher: getImportPath(config.fetcherImport[1] ?? config.fetcherImport[0]),
       createRPC: getImportPath(config.createRPCImport[1] ?? config.createRPCImport[0]),
       validateOnClient: config.validateOnClientImport

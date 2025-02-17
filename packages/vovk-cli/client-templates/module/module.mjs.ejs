@@ -1,7 +1,7 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
 import fetcherImport from '<%= t.imports.module.fetcher %>';
 import createRPCImport from '<%= t.imports.module.createRPC %>';
-import schema from '<%= t.imports.module.schema %>';
+import fullSchema from '<%= t.imports.module.fullSchema %>';
 <% if (t.imports.module.validateOnClient) { %>
 import validateOnClientImport from '<%= t.imports.module.validateOnClient %>';
 const validateOnClient = validateOnClientImport.default || validateOnClientImport;
@@ -11,11 +11,10 @@ const validateOnClient = undefined;
 const apiRoot = '<%= t.apiRoot %>';
 const fetcher = fetcherImport.default || fetcherImport;
 const createRPC = createRPCImport.default || createRPCImport;
-<% t.segments.forEach((segment, i) => {
-  Object.keys(t.fullSchema[segment.segmentName].controllers).forEach((key) => { %>
-export const <%= key %> = createRPC(
-  schema['<%= segment.segmentName %>'].controllers.<%= key %>, 
-  '<%= segment.segmentName %>', 
+<% Object.values(t.fullSchema.segments).forEach((segment, i) => {
+  Object.keys(segment.controllers).forEach((controllerName) => { %>
+export const <%= controllerName %> = createRPC(
+  fullSchema, '<%= segment.segmentName %>', '<%= controllerName %>',
   { fetcher, validateOnClient, defaultOptions: { apiRoot } }
 );
 <% 

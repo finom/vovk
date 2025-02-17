@@ -5,17 +5,15 @@ import { pathToFileURL } from 'node:url';
 import 'dotenv/config';
 import { Command } from 'commander';
 import concurrently from 'concurrently';
-import type { VovkSchema } from 'vovk';
 import getAvailablePort from './utils/getAvailablePort.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
 import generate from './generate/index.mjs';
 import locateSegments from './locateSegments.mjs';
 import { VovkDev } from './dev/index.mjs';
 import newComponents from './new/index.mjs';
-import type { DevOptions, GenerateOptions, NewOptions, VovkConfig, VovkEnv } from './types.mjs';
+import type { DevOptions, GenerateOptions, NewOptions } from './types.mjs';
 import initProgram from './initProgram.mjs';
-
-export type { VovkConfig, VovkEnv };
+import type { VovkEnv, VovkFullSchema } from 'vovk';
 
 const program = new Command();
 
@@ -94,27 +92,27 @@ program
     '--template, --templates <templates...>',
     'client code templates ("ts", "compiled", "python", "none", a custom path)'
   )
-  .option('--full-schema [fileName]', 'generate client with full schema')
+  .option('--emit-full-schema, --full-schema [fileName]', 'generate client with full schema')
   .option('--prettify', 'prettify output files')
   .action(async (options: GenerateOptions) => {
-    const { clientOutDir, templates, prettify, fullSchema } = options;
+    const { clientOutDir, templates, prettify, emitFullSchema } = options;
     const projectInfo = await getProjectInfo({ clientOutDir });
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments({ dir: apiDir, config });
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const schemaImportUrl = pathToFileURL(path.join(schemaOutAbsolutePath, 'main.cjs')).href;
-    const { default: segmentsSchema } = (await import(schemaImportUrl)) as {
-      default: Record<string, VovkSchema>;
+    const { default: fullSchema } = (await import(schemaImportUrl)) as {
+      default: VovkFullSchema;
     };
 
     await generate({
       projectInfo,
       segments,
-      segmentsSchema,
+      fullSchema,
       templates,
       prettify,
-      fullSchema,
       forceNothingWrittenLog: true,
+      emitFullSchema,
     });
   });
 

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import diffSchema from '../../src/dev/diffSchema.mjs';
+import diffSchema from '../../src/dev/diffSegmentSchema.mjs';
 import type { HttpMethod as VovkHttpMethod, VovkSchema } from 'vovk';
 
 // got some problems importing it from "vovk"

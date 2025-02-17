@@ -7,6 +7,7 @@ import {
   type VovkHandlerSchema,
   type VovkControllerYieldType,
   type VovkYieldType,
+  type VovkControllerOutput,
 } from 'vovk';
 import type WithZodClientController from './WithZodClientController';
 import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
@@ -49,6 +50,14 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       params: { foo: 'foo', bar: 'bar' },
       vovkParams: { foo: 'foo', bar: 'bar' },
     } as const;
+
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleAll> satisfies typeof expected;
+    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies typeof expected;
+
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleAll> satisfies null;
+    // @ts-expect-error Expect error
+    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies null;
 
     deepStrictEqual(result satisfies typeof expected, expected);
   });

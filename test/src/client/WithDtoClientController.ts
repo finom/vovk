@@ -1,219 +1,138 @@
-import { post, prefix, put, del, get } from 'vovk';
+import {
+  post,
+  put,
+  get,
+  prefix,
+  HttpStatus,
+  type VovkControllerBody,
+  type VovkControllerQuery,
+  type VovkControllerParams,
+  type VovkControllerOutput,
+} from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withDto } from 'vovk-dto';
-import { Contains, IsArray, IsString, ArrayNotEmpty, ArrayMinSize, ValidateNested, IsOptional } from 'class-validator';
-import { plainToInstance, Type } from 'class-transformer';
-import { OmitType } from 'vovk-mapped-types';
+import {
+  HandleAllBodyDto,
+  HandleAllOutputDto,
+  HandleAllParamsDto,
+  HandleAllQueryDto,
+  HandleBodyBodyDto,
+  HandleNestedQueryDto,
+  HandleOutputOutputDto,
+  HandleOutputQueryDto,
+  HandleParamsDto,
+  HandleQueryQueryDto,
+  HandleStreamQueryDto,
+} from './WithDtoClientController.dto';
 
-export class BodyDto {
-  @Contains('body')
-  hello: 'body';
+class WithDtoClientService {
+  static handleAll({
+    body,
+    query,
+    params,
+    vovkParams,
+  }: {
+    body: VovkControllerBody<typeof WithDtoClientController.handleAll>;
+    query: VovkControllerQuery<typeof WithDtoClientController.handleAll>;
+    params: VovkControllerParams<typeof WithDtoClientController.handleAll>;
+    vovkParams: VovkControllerParams<typeof WithDtoClientController.handleAll>;
+  }) {
+    return {
+      body,
+      query,
+      params,
+      vovkParams,
+    } satisfies VovkControllerOutput<typeof WithDtoClientController.handleAll>;
+  }
 }
 
-export class QueryDto {
-  @Contains('query')
-  hey: 'query';
-}
-
-export class QueryWithArrayDto {
-  @Contains('query')
-  hey: 'query';
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsString({ each: true })
-  array1: 'foo'[];
-
-  @ArrayMinSize(2)
-  @IsArray()
-  @IsString({ each: true })
-  array2: ('bar' | 'baz')[];
-}
-
-export class ReturnDto {
-  @Contains('body')
-  hello: 'body';
-  @Contains('query')
-  hey: 'query';
-}
-
-class BodyComplexDto {
-  @Contains('hello_body')
-  hello: 'hello_body';
-  @Contains('world_body')
-  world: 'world_body';
-  @Contains('omit')
-  omit: 'omit';
-}
-
-class OutputDto {
-  @Contains('hello')
-  hello: 'hello';
-}
-
-export class MappedDto extends OmitType(BodyComplexDto, ['omit'] as const) {}
-
-// Sub-DTO for the nestedObj property
-// e.g. arrOfObjects[1].nestedObj = { deepKey: 'deepValue' }
-class NestedDeepObjDTO {
-  @IsString()
-  deepKey: string;
-}
-
-// Sub-DTO for each item inside z.d.arrOfObjects
-class NestedArrOfObjectsItemDTO {
-  @IsString()
-  foo: string;
-
-  // e.g. arrOfObjects[0].nestedArr = ['one', 'two', 'three']
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  nestedArr?: string[];
-
-  // e.g. arrOfObjects[1].nestedObj = { deepKey: 'deepValue' }
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => NestedDeepObjDTO)
-  nestedObj?: NestedDeepObjDTO;
-}
-
-// Sub-DTO for z.d, which contains the field x and arrOfObjects
-class NestedDDTO {
-  @IsString()
-  x: string;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => NestedArrOfObjectsItemDTO)
-  arrOfObjects: NestedArrOfObjectsItemDTO[];
-}
-
-// Sub-DTO for z, containing f, u, d
-class NestedZDTO {
-  @IsString()
-  f: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  u: string[];
-
-  @ValidateNested()
-  @Type(() => NestedDDTO)
-  d: NestedDDTO;
-}
-
-// The top-level DTO for your example object
-export class NestedExampleObjectDTO {
-  @IsString()
-  x: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  y: string[];
-
-  @ValidateNested()
-  @Type(() => NestedZDTO)
-  z: NestedZDTO;
-}
-
+/**
+ * -------------------------------------------------------------------------
+ *  Example controller updated to use withDto
+ * -------------------------------------------------------------------------
+ */
 @prefix('with-dto')
 export default class WithDtoClientController {
-  @post('with-params/:param')
-  static postWithBodyQueryAndParams = withDto({
-    body: BodyDto,
-    query: QueryDto,
-    handle: async (req, params: { param: 'foo' }) => {
-      const body = await req.json();
-      const hey = req.nextUrl.searchParams.get('hey');
-      return { body, query: { hey }, params };
-    },
-  });
-
-  @post.auto()
-  static postWithBodyAndQueryTransformed = withDto({
-    body: BodyDto,
-    query: QueryDto,
-    handle: async (req) => {
-      const { hello } = await req.json();
-      const hey = req.nextUrl.searchParams.get('hey');
-      return plainToInstance(ReturnDto, { hello, hey });
-    },
-  });
-
-  @put.auto()
-  static putWithBodyAndNullQuery = withDto({
-    body: BodyDto,
-    handle: async (req) => {
-      const body = await req.json();
-      return { body };
-    },
-  });
-
-  @del.auto()
-  static putWithBodyOnly = withDto({
-    body: BodyDto,
-    handle: async (req) => {
-      const body = await req.json();
-      return { body };
-    },
-  });
-
-  @get.auto()
-  static getWithQueryAndNullBody = withDto({
-    query: QueryDto,
-    handle: (req) => {
-      const hey = req.nextUrl.searchParams.get('hey');
-      return { query: { hey } };
-    },
-  });
-
-  @post.auto()
-  static postWithBodyAndQueryWithReqVovk = withDto({
-    body: BodyDto,
-    query: QueryDto,
-    handle: async (req) => {
-      const body = await req.vovk.body();
-      const query = req.vovk.query();
-      const bodyInstanceOfDto = body instanceof BodyDto;
-      const queryInstanceOfDto = query instanceof QueryDto;
-      return { body, query, bodyInstanceOfDto, queryInstanceOfDto };
-    },
-  });
-
-  @get.auto()
-  static getWithQueryArrayAndNullBody = withDto({
-    query: QueryWithArrayDto,
-    handle: (req) => {
-      return { query: req.vovk.query() };
-    },
-  });
-
-  @put.auto()
-  static putWithMappedType = withDto({
-    body: MappedDto,
-    handle: async (req) => {
-      const body = await req.vovk.body();
-      return { body };
-    },
-  });
-
-  @get('nested-query')
-  static getNestedQuery = withDto({
-    query: NestedExampleObjectDTO,
-    handle: (req) => {
-      return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
-    },
-  });
-
   @openapi({
     summary: 'This is a summary',
   })
-  @get('output-and-openapi')
-  static outputWithOpenApi = withDto({
-    query: OutputDto,
-    output: OutputDto,
+  @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  @post('all/:foo/:bar')
+  static handleAll = withDto({
+    body: HandleAllBodyDto,
+    query: HandleAllQueryDto,
+    params: HandleAllParamsDto,
+    output: HandleAllOutputDto,
+    handle: async (req, params) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      const vovkParams = req.vovk.params();
+      return WithDtoClientService.handleAll({
+        body,
+        query: { search },
+        params,
+        vovkParams,
+      });
+    },
+  });
+
+  @get.auto()
+  static handleQuery = withDto({
+    query: HandleQueryQueryDto,
     handle: (req) => {
-      return { hello: req.vovk.query().hello };
+      return req.vovk.query();
+    },
+  });
+
+  @post.auto()
+  static handleBody = withDto({
+    body: HandleBodyBodyDto,
+    handle: async (req) => {
+      return req.vovk.body();
+    },
+  });
+
+  @put('x/:foo/:bar/y')
+  static handleParams = withDto({
+    params: HandleParamsDto,
+    handle: async (req) => {
+      return req.vovk.params();
+    },
+  });
+
+  @get.auto()
+  static handleNestedQuery = withDto({
+    query: HandleNestedQueryDto,
+    handle: (req) => {
+      return req.vovk.query();
+    },
+  });
+
+  @get.auto()
+  static handleOutput = withDto({
+    query: HandleOutputQueryDto,
+    output: HandleOutputOutputDto,
+    handle: async (req) => {
+      // We expect the query.helloOutput to be "world" to match output shape
+      return { hello: req.vovk.query().helloOutput as 'world' };
+    },
+  });
+
+  @get.auto()
+  static handleStream = withDto({
+    query: HandleStreamQueryDto,
+    async *handle(req) {
+      for (const value of req.vovk.query().values) {
+        yield { value };
+      }
+    },
+  });
+
+  @post.auto()
+  static handleNothitng = withDto({
+    // no DTOs required here
+    handle: async () => {
+      return { nothing: 'here' } as const;
     },
   });
 }

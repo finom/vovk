@@ -1,4 +1,4 @@
-import type { VovkControllerSchema, VovkSchema } from 'vovk';
+import type { VovkControllerSchema, VovkSegmentSchema } from 'vovk';
 import isEqual from 'lodash/isEqual.js';
 
 interface HandlersDiff {
@@ -44,7 +44,7 @@ export function diffHandlers<T extends VovkControllerSchema['handlers']>(
   return { nameOfClass, added, removed, changed };
 }
 
-export function diffControllers<T extends VovkSchema['controllers']>(oldItems: T, newItems: T): ControllersDiff {
+export function diffControllers<T extends VovkSegmentSchema['controllers']>(oldItems: T, newItems: T): ControllersDiff {
   const added: string[] = [];
   const removed: string[] = [];
   const handlersDiff: HandlersDiff[] = [];
@@ -86,8 +86,11 @@ example output:
   }
 }
 */
-export default function diffSchema(oldJson: VovkSchema, newJson: VovkSchema): DiffResult {
+export default function diffSegmentSchema(oldJson: VovkSegmentSchema, newJson: VovkSegmentSchema): DiffResult {
   return {
-    controllers: diffControllers<VovkSchema['controllers']>(oldJson.controllers ?? {}, newJson.controllers ?? {}),
+    controllers: diffControllers<VovkSegmentSchema['controllers']>(
+      oldJson.controllers ?? {},
+      newJson.controllers ?? {}
+    ),
   };
 }

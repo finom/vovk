@@ -9,6 +9,7 @@ import {
   type VovkReturnType,
   type VovkHandlerSchema,
   type VovkStreamAsyncIterable,
+  VovkFullSchema,
 } from 'vovk';
 
 import {
@@ -70,11 +71,12 @@ const withUseQuery = <
 };
 
 export default function createRPCWithReactQuery<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
-  controllerSchema: VovkControllerSchema,
-  segmentName?: string,
+  fullSchema: VovkFullSchema,
+  segmentName: string,
+  controllerName: string,
   options?: VovkClientOptions<OPTS>
 ) {
-  const rpc = createRPC<T, OPTS>(controllerSchema, segmentName, options);
+  const rpc = createRPC<T, OPTS>(fullSchema, segmentName, controllerName, options);
 
   type ClientWithQuery = {
     [Key in keyof VovkClient<T, OPTS>]: VovkClient<T, OPTS>[Key] & {

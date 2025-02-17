@@ -4,10 +4,7 @@ import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type
 import { targetConstructorToSchema } from 'class-validator-jsonschema';
 
 function withDto<
-  T extends (
-    req: REQ,
-    params?: PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
-  ) => OUTPUT_DTO extends ClassConstructor<infer U> ? U | Promise<U> : KnownAny,
+  T extends (req: REQ, params: PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>) => KnownAny,
   BODY_DTO extends ClassConstructor<KnownAny>,
   QUERY_DTO extends ClassConstructor<KnownAny>,
   OUTPUT_DTO extends ClassConstructor<KnownAny>,
@@ -33,7 +30,7 @@ function withDto<
   params?: PARAMS_DTO;
   output?: OUTPUT_DTO;
   handle: T;
-}): T {
+}) {
   const outputHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
     const outputData = await handle(req, handlerParams);
     if (output) {
@@ -126,7 +123,9 @@ function withDto<
     params: getSchema(params),
   });
 
-  return resultHandler as T;
+  return resultHandler as T & {
+    __output: OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny;
+  };
 }
 
 export { withDto };

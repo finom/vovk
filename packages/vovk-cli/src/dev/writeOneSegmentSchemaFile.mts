@@ -1,19 +1,19 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import type { VovkSchema } from 'vovk';
-import diffSchema, { type DiffResult } from './diffSchema.mjs';
+import type { VovkSegmentSchema } from 'vovk';
+import diffSegmentSchema, { type DiffResult } from './diffSegmentSchema.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
 export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
-export const JSON_DIR_NAME = 'json';
+export const SEGMENTS_SCHEMA_DIR_NAME = 'segments';
 
-export default async function writeOneSchemaFile({
+export default async function writeOneSegmentSchemaFile({
   schemaOutAbsolutePath,
-  schema,
+  segmentSchema,
   skipIfExists = false,
 }: {
   schemaOutAbsolutePath: string;
-  schema: VovkSchema;
+  segmentSchema: VovkSegmentSchema;
   skipIfExists?: boolean;
 }): Promise<{
   isCreated: boolean;
@@ -21,8 +21,8 @@ export default async function writeOneSchemaFile({
 }> {
   const segmentPath = path.join(
     schemaOutAbsolutePath,
-    JSON_DIR_NAME,
-    `${schema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`
+    SEGMENTS_SCHEMA_DIR_NAME,
+    `${segmentSchema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`
   );
 
   if (skipIfExists && (await getFileSystemEntryType(segmentPath))) {
@@ -35,7 +35,7 @@ export default async function writeOneSchemaFile({
   }
 
   await fs.mkdir(path.dirname(segmentPath), { recursive: true });
-  const schemaStr = JSON.stringify(schema, null, 2);
+  const schemaStr = JSON.stringify(segmentSchema, null, 2);
   const existing = await fs.readFile(segmentPath, 'utf-8').catch(() => null);
   if (existing === schemaStr) {
     return { isCreated: false, diffResult: null };
@@ -43,7 +43,10 @@ export default async function writeOneSchemaFile({
   await fs.writeFile(segmentPath, schemaStr);
 
   if (existing) {
-    return { isCreated: false, diffResult: diffSchema(JSON.parse(existing) as VovkSchema, schema) };
+    return {
+      isCreated: false,
+      diffResult: diffSegmentSchema(JSON.parse(existing) as VovkSegmentSchema, segmentSchema),
+    };
   }
 
   return { isCreated: true, diffResult: null };

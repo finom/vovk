@@ -1,16 +1,16 @@
 import type { OpenAPIObject, PathsObject } from 'openapi3-ts/oas31';
 import { HttpStatus } from 'vovk';
-import type { HttpMethod, VovkSchema } from 'vovk/src/types';
+import type { HttpMethod, VovkFullSchema } from 'vovk/src/types';
 
 export function fromSchema(
   apiRoot: string,
-  vovkSchema: Record<string, VovkSchema>,
+  fullSchema: VovkFullSchema,
   extendWith?: Partial<OpenAPIObject>
 ): OpenAPIObject {
   const paths: PathsObject = {};
 
-  for (const [segmentName, schema] of Object.entries(vovkSchema)) {
-    for (const c of Object.values(schema.controllers)) {
+  for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments)) {
+    for (const c of Object.values(segmentSchema.controllers)) {
       for (const h of Object.values(c.handlers)) {
         if (h.openapi) {
           const path =

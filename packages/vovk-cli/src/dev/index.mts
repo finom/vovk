@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { VovkSchema } from 'vovk';
+import type { VovkEnv, VovkFullSchema, VovkSegmentSchema } from 'vovk';
 import * as chokidar from 'chokidar';
 import { Agent, setGlobalDispatcher } from 'undici';
 import keyBy from 'lodash/keyBy.js';
@@ -8,7 +8,7 @@ import capitalize from 'lodash/capitalize.js';
 import debounce from 'lodash/debounce.js';
 import once from 'lodash/once.js';
 import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
-import writeOneSchemaFile from './writeOneSchemaFile.mjs';
+import writeOneSegmentSchemaFile from './writeOneSegmentSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
 import ensureClient from '../generate/ensureClient.mjs';
 import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
@@ -16,15 +16,18 @@ import generate from '../generate/index.mjs';
 import locateSegments, { type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import type { VovkEnv } from '../types.mjs';
-import isSchemaEmpty from './isSchemaEmpty.mjs';
+import isSegmentSchemaEmpty from './isSegmentSchemaEmpty.mjs';
+import writeConfigJson from './writeConfigJson.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
 
   #segments: Segment[] = [];
 
-  #schemas: Record<string, VovkSchema> = {};
+  #fullSchema: VovkFullSchema = {
+    segments: {},
+    config: {},
+  };
 
   #isWatching = false;
 
@@ -173,12 +176,16 @@ export class VovkDev {
         new Promise((resolve) => this.#watchSegments(() => resolve(0))),
       ]);
 
+      const schemaOutAbsolutePath = path.join(cwd, this.#projectInfo.config.schemaOutDir);
+
       if (isInitial) {
         callback();
       } else {
         log.info('Config file has been updated');
         this.#generate();
       }
+
+      await writeConfigJson(schemaOutAbsolutePath, this.#projectInfo);
 
       isInitial = false;
     }, 1000);
@@ -244,14 +251,14 @@ export class VovkDev {
     const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
     if (importRegex.test(code) && namesOfClasses.length) {
       const affectedSegments = this.#segments.filter((s) => {
-        const schema = this.#schemas[s.segmentName];
-        if (!schema) return false;
+        const segmentSchema = this.#fullSchema.segments[s.segmentName];
+        if (!segmentSchema) return false;
         const controllersByOriginalName = keyBy(
-          schema.controllers,
-          'originalControllerName' satisfies keyof VovkSchema['controllers'][string]
+          segmentSchema.controllers,
+          'originalControllerName' satisfies keyof VovkSegmentSchema['controllers'][string]
         );
 
-        return namesOfClasses.some((name) => schema.controllers[name] || controllersByOriginalName[name]);
+        return namesOfClasses.some((name) => segmentSchema.controllers[name] || controllersByOriginalName[name]);
       });
 
       if (affectedSegments.length) {
@@ -290,14 +297,14 @@ export class VovkDev {
         return { isError: true };
       }
 
-      let schema: VovkSchema | null = null;
+      let segmentSchema: VovkSegmentSchema | null = null;
       try {
-        ({ schema } = (await resp.json()) as { schema: VovkSchema | null });
+        ({ schema: segmentSchema } = (await resp.json()) as { schema: VovkSegmentSchema | null });
       } catch (error) {
         log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error).message}`);
       }
 
-      await this.#handleSchema(schema);
+      await this.#handleSegmentSchema(segmentName, segmentSchema);
     } catch (error) {
       log.error(
         `Error requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}: ${(error as Error).message}`
@@ -311,35 +318,35 @@ export class VovkDev {
 
   #generate = debounce(
     () =>
-      generate({ projectInfo: this.#projectInfo, segments: this.#segments, segmentsSchema: this.#schemas }).then(
+      generate({ projectInfo: this.#projectInfo, segments: this.#segments, fullSchema: this.#fullSchema }).then(
         this.#onFirstTimeGenerate
       ),
     1000
   );
 
-  async #handleSchema(schema: VovkSchema | null) {
+  async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null) {
     const { log, config, cwd } = this.#projectInfo;
-    if (!schema) {
-      log.warn('Segment schema is null');
+    if (!segmentSchema) {
+      log.warn(`${formatLoggedSegmentName(segmentName)} schema is null`);
       return;
     }
 
-    log.debug(`Handling received schema from ${formatLoggedSegmentName(schema.segmentName)}`);
+    log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
 
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
-    const segment = this.#segments.find((s) => s.segmentName === schema.segmentName);
+    const segment = this.#segments.find((s) => s.segmentName === segmentName);
 
     if (!segment) {
-      log.warn(`Segment "${schema.segmentName}" not found`);
+      log.warn(`${formatLoggedSegmentName(segmentName)} not found`);
       return;
     }
 
-    this.#schemas[schema.segmentName] = schema;
-    if (schema.emitSchema) {
+    this.#fullSchema.segments[segmentName] = segmentSchema;
+    if (segmentSchema.emitSchema) {
       const now = Date.now();
-      const { diffResult } = await writeOneSchemaFile({
+      const { diffResult } = await writeOneSegmentSchemaFile({
         schemaOutAbsolutePath,
-        schema,
+        segmentSchema,
         skipIfExists: false,
       });
 
@@ -349,13 +356,13 @@ export class VovkDev {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
         log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName)} has been updated in ${timeTook}ms`);
       }
-    } else if (schema && !isSchemaEmpty(schema)) {
+    } else if (segmentSchema && !isSegmentSchemaEmpty(segmentSchema)) {
       log.error(
         `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but "emitSchema" is false`
       );
     }
 
-    if (this.#segments.every((s) => this.#schemas[s.segmentName])) {
+    if (this.#segments.every((s) => this.#fullSchema.segments[s.segmentName])) {
       log.debug(`All segments with "emitSchema" have schema.`);
       this.#generate();
     }

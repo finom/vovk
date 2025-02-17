@@ -1,4 +1,4 @@
-import { KnownAny } from '../types.mjs';
+import type { KnownAny } from 'vovk';
 
 export default function debounceWithArgs<Callback extends (...args: KnownAny[]) => KnownAny>(
   callback: Callback,

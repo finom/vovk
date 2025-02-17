@@ -1,7 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import ejs from 'ejs';
-import type { VovkSchema } from 'vovk';
+import type { VovkFullSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
@@ -14,17 +14,18 @@ import uniq from 'lodash/uniq.js';
 export default async function generate({
   projectInfo,
   segments,
-  segmentsSchema,
   forceNothingWrittenLog,
   templates,
   prettify: prettifyClient,
   fullSchema,
+  emitFullSchema,
 }: {
   projectInfo: ProjectInfo;
   segments: Segment[];
-  segmentsSchema: Record<string, VovkSchema>;
   forceNothingWrittenLog?: boolean;
-} & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchema'>): Promise<{ written: boolean; path: string }> {
+  fullSchema: VovkFullSchema;
+} & Pick<GenerateOptions, 'templates' | 'prettify' | 'emitFullSchema'>): Promise<{ written: boolean; path: string }> {
+  const segmentsSchema = fullSchema.segments;
   const generateFrom = templates ?? projectInfo.config.generateFrom;
   const noClient = templates?.[0] === 'none';
   const { config, cwd, log, clientImports, apiRoot } = projectInfo;
@@ -46,8 +47,7 @@ export default async function generate({
   const t = {
     apiRoot,
     imports: clientImports,
-    segments,
-    fullSchema: segmentsSchema,
+    fullSchema,
   };
 
   // Process each template in parallel
@@ -98,12 +98,12 @@ export default async function generate({
 
   const DEFAULT_NAME = 'full-schema.json';
 
-  if (fullSchema) {
+  if (emitFullSchema) {
     fullSchemaNames.push(typeof fullSchema === 'string' ? fullSchema : DEFAULT_NAME);
     fullSchemaNames.push(
       ...templateFiles
-        .filter(({ fullSchema }) => fullSchema)
-        .map(({ fullSchema }) => (typeof fullSchema === 'string' ? fullSchema : DEFAULT_NAME))
+        .filter(({ emitFullSchema }) => emitFullSchema)
+        .map(({ emitFullSchema }) => (typeof emitFullSchema === 'string' ? emitFullSchema : DEFAULT_NAME))
     );
   }
 

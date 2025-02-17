@@ -22,7 +22,7 @@ export type VovkControllerSchema = {
   handlers: Record<string, VovkHandlerSchema>;
 };
 
-export type VovkSchema = {
+export type VovkSegmentSchema = {
   emitSchema: boolean;
   segmentName: string;
   controllers: Record<string, VovkControllerSchema>;
@@ -148,6 +148,77 @@ export type StreamAbortMessage = {
   isError: true;
   reason: KnownAny;
 };
+
+// CLI types are moved here in order to be able to be able to build VovkFullSchema type that is used by the core 
+
+type LogLevelNames = 'trace' | 'debug' | 'info' | 'warn' | 'error';
+
+export type VovkEnv = {
+  PORT?: string;
+  VOVK_CLIENT_OUT_DIR?: string;
+  VOVK_SCHEMA_OUT_DIR?: string;
+  VOVK_FETCHER_PATH?: string;
+  VOVK_VALIDATE_ON_CLIENT_PATH?: string;
+  VOVK_CREATE_RPC_PATH?: string;
+  VOVK_MODULES_DIR?: string;
+  VOVK_ORIGIN?: string;
+  VOVK_ROOT_ENTRY?: string;
+  VOVK_API_ENTRY_POINT?: string;
+  VOVK_ROOT_SEGMENT_MODULES_DIR_NAME?: string;
+  VOVK_LOG_LEVEL?: LogLevelNames;
+  VOVK_PRETTIFY_CLIENT?: string;
+  VOVK_DEV_HTTPS?: string;
+  __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
+  __VOVK_EXIT__?: 'true' | 'false';
+};
+
+type GenerateFrom = (
+  | string
+  | {
+      templatePath: string;
+      outDir?: string;
+      templateName?: string;
+      fullSchema?: string | boolean;
+    }
+)[];
+export type VovkConfig = {
+  emitConfig?: boolean | string[];
+  clientOutDir?: string;
+  schemaOutDir?: string;
+  fetcherImport?: string | string[];
+  validateOnClientImport?: string | string[] | null;
+  createRPCImport?: string | string[];
+  modulesDir?: string;
+  rootEntry?: string;
+  origin?: string;
+  rootSegmentModulesDirName?: string;
+  logLevel?: LogLevelNames;
+  prettifyClient?: boolean;
+  devHttps?: boolean;
+  generateFrom?: GenerateFrom | ((value: GenerateFrom) => GenerateFrom);
+  templates?: {
+    service?: string;
+    controller?: string;
+    [key: string]: string | undefined;
+  };
+};
+
+export type VovkStrictConfig = Required<
+  Omit<VovkConfig, 'emitConfig' | 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom'>
+> & {
+  emitConfig: string[];
+  validateOnClientImport: string[] | null;
+  fetcherImport: string[];
+  createRPCImport: string[];
+  generateFrom: GenerateFrom;
+};
+
+export type VovkFullSchema = {
+  config: Partial<VovkStrictConfig>;
+  segments: Record<string, VovkSegmentSchema>;
+}
+
+// Enums
 
 export enum HttpMethod {
   GET = 'GET',
