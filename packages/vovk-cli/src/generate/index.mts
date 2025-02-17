@@ -48,6 +48,7 @@ export default async function generate({
     apiRoot,
     imports: clientImports,
     fullSchema,
+    segmentMeta: Object.fromEntries(segments.map(({ segmentName, ...s }) => [segmentName, s])),
   };
 
   // Process each template in parallel
