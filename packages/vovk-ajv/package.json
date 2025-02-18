@@ -28,6 +28,7 @@
   "homepage": "https://github.com/finom/vovk#readme",
   "dependencies": {
     "ajv": "^8.17.1",
+    "ajv-errors": "^3.0.0",
     "ajv-formats": "^3.0.1",
     "ajv-i18n": "^4.2.0"
   },

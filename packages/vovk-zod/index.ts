@@ -99,11 +99,13 @@ function withZod<
     return outputHandler(req, handlerParams);
   };
 
+  const options = { errorMessages: true };
+
   void setHandlerValidation(resultHandler, {
-    body: body ? zodToJsonSchema(body) : null,
-    query: query ? zodToJsonSchema(query) : null,
-    output: output ? zodToJsonSchema(output) : null,
-    params: params ? zodToJsonSchema(params) : null,
+    body: body ? zodToJsonSchema(body, options) : null,
+    query: query ? zodToJsonSchema(query, options) : null,
+    output: output ? zodToJsonSchema(output, options) : null,
+    params: params ? zodToJsonSchema(params, options) : null,
   });
 
   return resultHandler as T & {

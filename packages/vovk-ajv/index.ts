@@ -1,7 +1,8 @@
 import Ajv, { Options } from 'ajv';
 import { HttpException, HttpStatus, VovkFullSchema, type VovkValidateOnClient } from 'vovk';
-import addFormats from 'ajv-formats';
+import ajvFormats from 'ajv-formats';
 import ajvLocalize from 'ajv-i18n';
+import ajvErrors from 'ajv-errors';
 
 type Lang = keyof typeof ajvLocalize;
 
@@ -9,6 +10,14 @@ export type VovkAjvConfig = {
   options?: Options;
   localize?: Lang;
 };
+
+const createAjv = (options: Options) => {
+  const ajv = new Ajv({ allErrors: true, ...options });
+  ajvFormats(ajv);
+  ajvErrors(ajv);
+  ajv.addKeyword('x-isDto');
+  return ajv;
+}
 
 const validate = ({
   input,
@@ -76,9 +85,7 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation, fullSchema
   const { options, localize } = getConfig(fullSchema);
 
   if (!ajvScope) {
-    ajvScope = new Ajv(options);
-    addFormats(ajvScope);
-    ajvScope.addKeyword('x-isDto');
+    ajvScope = createAjv(options);
   }
 
   return validate({ input, validation, ajv: ajvScope, localize });
@@ -88,10 +95,8 @@ const configure =
   ({ options: givenOptions, localize: givenLocalize }: VovkAjvConfig): VovkValidateOnClient =>
   (input, validation, fullSchema) => {
     const { options, localize } = getConfig(fullSchema);
-
-    const ajv = new Ajv({ ...options, ...givenOptions });
-    addFormats(ajv);
-    ajv.addKeyword('x-isDto');
+    const ajv = createAjv(options);
+  
     return validate({ input, validation, ajv, localize: givenLocalize || localize });
   };
 
