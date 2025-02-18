@@ -3,7 +3,9 @@ import type { ClassConstructor } from 'class-transformer';
 import { HttpException, HttpStatus, type VovkValidateOnClient } from 'vovk';
 
 export const validateOnClient: VovkValidateOnClient = async (input, validation) => {
+  console.log('validation', validation);
   if (validation.body && 'x-isDto' in (validation.body as object)) {
+    console.log('input.body', input.body);
     const bodyErrors = await validate(input.body as ClassConstructor<object>);
     if (bodyErrors.length > 0) {
       const err = bodyErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');

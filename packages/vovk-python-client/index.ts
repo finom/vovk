@@ -1,4 +1,4 @@
-import { KnownAny } from 'vovk';
+import type { KnownAny } from 'vovk';
 
 // TODO TESTS
 
@@ -99,8 +99,7 @@ export function convertJSONSchemaToPythonType(
 
   if (schema.allOf) {
     const types = schema.allOf.map((s) => convertJSONSchemaToPythonType(s, definitions, seenRefs).pythonType);
-    // In Python, we'll create a new TypedDict that combines all the fields
-    result.pythonType = types.join(' & ');
+    result.pythonType = `Union[${types.join(', ')}]`;
     return result;
   }
 
@@ -124,9 +123,9 @@ export function convertJSONSchemaToPythonType(
       } else if (schema.format === 'time') {
         result.pythonType = 'time';
       } else if (schema.format === 'email') {
-        result.pythonType = 'str  # email format';
+        result.pythonType = 'str';
       } else if (schema.pattern) {
-        result.pythonType = 'str  # matches pattern: ' + schema.pattern;
+        result.pythonType = 'str';
       } else {
         result.pythonType = 'str';
       }

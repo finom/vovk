@@ -38,6 +38,9 @@
   "peerDependencies": {
     "vovk": "^3.0.0-draft.92"
   },
+  "optionalDependencies": {
+    "vovk-python-client": "*"
+  },
   "dependencies": {
     "@inquirer/prompts": "^7.3.1",
     "@npmcli/package-json": "^6.1.1",

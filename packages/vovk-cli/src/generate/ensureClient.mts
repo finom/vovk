@@ -3,6 +3,7 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getClientTemplates from './getClientTemplates.mjs';
 import uniq from 'lodash/uniq.js';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import path from 'node:path';
 
 export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
   const now = Date.now();
@@ -24,7 +25,7 @@ export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
     const existing = await fs.readFile(outPath, 'utf-8').catch(() => null);
 
     if (!existing) {
-      await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
+      await fs.mkdir(path.dirname(outPath), { recursive: true });
       await fs.writeFile(outPath, outPath.endsWith('.py') ? text.replace(/\/\//g, '#') : text);
       usedTemplateNames.push(templateName);
     }
@@ -38,5 +39,5 @@ export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
     );
   }
 
-  return { written: !!usedTemplateNames.length, path: clientOutDirAbsolutePath };
+  return { written: !!usedTemplateNames.length };
 }

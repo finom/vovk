@@ -14,7 +14,7 @@
     "test": "npm run build && npm run test:main && npm run test:cli",
     "unit": "cross-env PORT=3210 concurrently \"sleep 30 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
     "unit:watch": "cross-env PORT=3210 concurrently \"sleep 30 && npm run test:unit:watch\" \"npm run serve:unit\" --kill-others --success first",
-    "test:unit": "NODE_ENV=test node --experimental-strip-types --test --test-concurrency=1 ./test/**/*.test.ts",
+    "test:unit": "NODE_ENV=test node --experimental-strip-types --test --test-only --test-concurrency=1 ./test/**/*.test.ts",
     "prettier": "prettier --write .",
     "serve:unit": "npm --prefix test run generate && npm --prefix test run dev",
     "lint-nofix": "eslint .",

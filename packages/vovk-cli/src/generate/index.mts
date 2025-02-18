@@ -1,15 +1,16 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import ejs from 'ejs';
+import matter from 'gray-matter';
+import uniq from 'lodash/uniq.js';
 import type { VovkFullSchema } from 'vovk';
-import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import type { Segment } from '../locateSegments.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import prettify from '../utils/prettify.mjs';
-import { GenerateOptions } from '../types.mjs';
 import getClientTemplates from './getClientTemplates.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
-import uniq from 'lodash/uniq.js';
+import type { ProjectInfo } from '../getProjectInfo/index.mjs';
+import type { Segment } from '../locateSegments.mjs';
+import type { GenerateOptions } from '../types.mjs';
 
 export default async function generate({
   projectInfo,
@@ -56,13 +57,32 @@ export default async function generate({
     ? []
     : await Promise.all(
         templateFiles.map(async ({ templatePath, outPath, templateName }) => {
+          /*const parsed = matter((await ejs.render(codeTemplate, { t }, { async: true, filename: templateFileName })).trim());
+            const { dir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
+            const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;*/
           // Read the EJS template
           const templateContent = await fs.readFile(templatePath, 'utf-8');
+
+          const { data, content } = matter(templateContent) as {
+            data: {
+              imports?: string[];
+            };
+            content: string;
+          };
+
+          if (data.imports instanceof Array) {
+            for (const imp of data.imports) {
+              t.imports = {
+                ...t.imports,
+                [imp]: await import(imp),
+              };
+            }
+          }
 
           // Render the template
           let rendered = templatePath.endsWith('.ejs')
             ? ejs.render(
-                templateContent,
+                content,
                 { t },
                 {
                   filename: templatePath,
@@ -110,11 +130,6 @@ export default async function generate({
 
   fullSchemaNames = uniq(fullSchemaNames);
 
-  if (fullSchemaNames.length || usedTemplateNames.length > 0) {
-    // Make sure the output directory exists
-    await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
-  }
-
   if (fullSchemaNames.length) {
     await Promise.all(
       fullSchemaNames.map(async (name) => {
@@ -133,8 +148,9 @@ export default async function generate({
 
   // Write updated files where needed
   await Promise.all(
-    processedTemplates.map(({ outPath, rendered, needsWriting }) => {
+    processedTemplates.map(async ({ outPath, rendered, needsWriting }) => {
       if (needsWriting) {
+        await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
         return fs.writeFile(outPath, rendered);
       }
       return null;

@@ -16,7 +16,7 @@
     "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "experimentalDecorators": true,
-    "strict": false,
+    "strict": true,
     "plugins": [
       {
         "name": "next"
@@ -27,6 +27,7 @@
       "vovk/*": ["../packages/vovk/*"],
       "vovk-cli/*": ["../packages/vovk-cli/*"],
       "vovk-validate-client-ajv/*": ["../packages/vovk-ajv/*"],
+      "vovk-python-client/*": ["../packages/vovk-python-client/*"],
       "next/*": ["./node_modules/next/*"]
     },
     "target": "ES2017",

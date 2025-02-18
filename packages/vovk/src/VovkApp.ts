@@ -241,7 +241,7 @@ export class VovkApp {
       }
 
       if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
-        const statusCode = err.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
+        const statusCode = err.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
         return this.#respondWithError(statusCode, err.message, staticMethod._options, err.cause);
       }
 

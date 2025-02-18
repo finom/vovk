@@ -1,5 +1,8 @@
+---
+imports: ['vovk-python-client']
+---
 <% const vars = {
-    convertJSONSchemaToPythonType: require('vovk-python-client').convertJSONSchemaToPythonType,
+    convertJSONSchemaToPythonType: t.imports['vovk-python-client'].convertJSONSchemaToPythonType,
 }; %>
 <%- `# auto-generated ${new Date().toISOString()}` %>
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple
@@ -19,29 +22,29 @@ def _load_full_schema() -> dict:
         return json.load(f)
 full_schema = _load_full_schema()
 default_api_root = '<%= t.apiRoot %>';
-<% t.segments.forEach(({ segmentName }) => { 
-    Object.values(t.fullSchema[segmentName].controllers).forEach(({ prefix, handlers, controllerName }) => { %>
+<% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
+    Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
         class <%= controllerName %>:
 
        <% Object.entries(handlers).forEach(([handlerName, { validation, openapi, path, httpMethod }]) => { %>
           # <%= controllerName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
             @staticmethod
             def <%= handlerName %>(
-                body: <%= vars.convertJSONSchemaToPythonType(validation?.body) %>, 
-                query: <%= vars.convertJSONSchemaToPythonType(validation?.query) %>, 
-                params: Dict[string, string] | None = None,
+                body: <%- vars.convertJSONSchemaToPythonType(validation?.body).pythonType %>, 
+                query: <%- vars.convertJSONSchemaToPythonType(validation?.query).pythonType %>, 
+                params: <%- vars.convertJSONSchemaToPythonType(validation?.params).pythonType %>,
                 api_root: str | None = None
-            ) -> <%= vars.convertJSONSchemaToPythonType(validation?.output) %>:
+            ) -> <%- vars.convertJSONSchemaToPythonType(validation?.output).pythonType %>:
                 """
                 <%= openapi?.summary ?? 'No summary' %>
                 <%= openapi?.description ? `Description: ${openapi.description}` : '' %>
                 <%= validation?.body?.description ? `Body: ${validation?.body?.description}`: '' %>
                 <%= validation?.query?.description ? `Query: ${validation?.query?.description}`: '' %>
-                Returns: <%= validation?.output?.description || 'Any' %>
+                <%= validation?.output?.description ? `Returns: ${validation?.output?.description}`: '' %>
                 """
                 if api_root is None:
                     api_root = default_api_root
                 url = f"{api_root}/<%= segmentName %>/<%= prefix %>/<%= path %>"
         <% }) %>
-    }) 
-}) %>
+    <% }) %>
+<% }) %>

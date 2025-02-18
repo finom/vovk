@@ -44,9 +44,41 @@ All (just OK) DONE
 handler.schema for All, use @openapi and @openapi.error
 */
 
-describe('Validation with with vovk-dto and validateOnClient defined at settings', () => {
+describe.only('Validation with with vovk-dto and validateOnClient defined at settings', () => {
   it('Should be OK', async () => {
     const result = await WithDtoClientControllerRPC.handleAll({
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'foo', bar: 'bar' },
+    });
+
+    const expected = {
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'foo', bar: 'bar' },
+      vovkParams: { foo: 'foo', bar: 'bar' },
+    } as const;
+
+    type ExpectedType = {
+      body: HandleAllBodyDto;
+      query: HandleAllQueryDto;
+      params: HandleAllParamsDto;
+      vovkParams: HandleAllParamsDto;
+    };
+
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies ExpectedType;
+    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies typeof expected;
+
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies null;
+    // @ts-expect-error Expect error
+    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies null;
+
+    deepStrictEqual(result satisfies ExpectedType, expected);
+  });
+
+  it('Should transform response', async () => {
+    const result = await WithDtoClientControllerRPC.handleAllClient({
       body: { hello: 'world' },
       query: { search: 'value' },
       params: { foo: 'foo', bar: 'bar' },
@@ -97,27 +129,40 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     let { rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleBody({
         body: {
-          hello: 'wrong' as 'world',
+          hello: 'wrong',
         },
         disableClientValidation: true,
       });
     });
 
     await rejects.toThrow(
-      /Dto validation failed. Invalid request body on server for http:.*. Invalid literal value, expected "world" \(hello\)/
+      /Validation failed. Invalid request body on server for http:.*. hello must be equal to world/
     );
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleBody({
         body: {
-          hello: 'wrong' as 'world',
+          hello: 'wrong',
         },
       });
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to one of the allowed values/
+    );
+    await rejects.toThrowError(HttpException);
+
+    await ({ rejects } = expectPromise(async () => {
+      await WithDtoClientControllerRPC.handleBodyClient({
+        body: {
+          hello: 'wrong',
+        },
+      });
+    }));
+
+    await rejects.toThrow(
+      /Validation failed. Invalid request body on client for http:.*\. hello must be equal to world/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -139,9 +184,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(
-      /Dto validation failed. Invalid request params on server for http:.*\. Invalid literal value, expected "foo" \(foo\)/
-    );
+    await rejects.toThrow(/Validation failed. Invalid request params on server for http:.*\. foo must be equal to foo/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -154,9 +197,20 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request params on client for http:.*\. data\/foo must be equal to constant/
+      /Ajv validation failed. Invalid request params on client for http:.*\. data\/foo must be equal to one of the allowed values/
     );
     await rejects.toThrowError(HttpException);
+
+    ({ rejects } = expectPromise(async () => {
+      await WithDtoClientControllerRPC.handleParamsClient({
+        params: {
+          foo: 'wrong' as 'foo',
+          bar: 'bar',
+        },
+      });
+    }));
+
+    await rejects.toThrow(/Validation failed. Invalid request params on client for http:.*\. foo must be equal to foo/);
   });
 
   it('Should handle query validation on server and client', async () => {
@@ -176,7 +230,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Dto validation failed. Invalid request query on server for http:.*\. Invalid literal value, expected "value" \(search\)/
+      /Validation failed. Invalid request query on server for http:.*\. search must be equal to value/
     );
     await rejects.toThrowError(HttpException);
 
@@ -189,9 +243,21 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request query on client for http:.*\. data\/search must be equal to constant/
+      /Ajv validation failed. Invalid request query on client for http:.*\. data\/search must be equal to one of the allowed values/
     );
     await rejects.toThrowError(HttpException);
+
+    ({ rejects } = expectPromise(async () => {
+      await WithDtoClientControllerRPC.handleQueryClient({
+        query: {
+          search: 'wrong' as 'value',
+        },
+      });
+    }));
+
+    await rejects.toThrow(
+      /Validation failed. Invalid request query on client for http:.*\. search must be equal to value/
+    );
   });
 
   it('Should handle nested queries on server and client', async () => {
@@ -215,7 +281,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Dto validation failed. Invalid request query on server for http:.*. Required \(x\)/);
+    await rejects.toThrow(/Validation failed. Invalid request query on server for http:.*. x must be a string/);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleNestedQuery({
@@ -230,6 +296,18 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
     await rejects.toThrow(
       /Ajv validation failed. Invalid request query on client for http:.*\. data\/x must be string/
     );
+
+    ({ rejects } = expectPromise(async () => {
+      await WithDtoClientControllerRPC.handleNestedQueryClient({
+        query: {
+          ...NESTED_QUERY_EXAMPLE,
+          // @ts-expect-error Expect error
+          x: null,
+        },
+      });
+    }));
+
+    await rejects.toThrow(/Validation failed. Invalid request query on client for http:.*\. x must be a string/);
   });
 
   it('Should handle output validation on server', async () => {
@@ -245,9 +323,7 @@ describe('Validation with with vovk-dto and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(
-      /Dto validation failed. Invalid response on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
-    );
+    await rejects.toThrow(/Validation failed. Invalid response on server for http:.*\. hello must be equal to world/);
   });
 
   it('Should handle stream', async () => {

@@ -231,7 +231,6 @@ export class VovkDev {
     log.debug(
       `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
-
     await ensureClient(this.#projectInfo);
 
     // automatically watches segments and modules
