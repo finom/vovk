@@ -24,27 +24,25 @@ full_schema = _load_full_schema()
 default_api_root = '<%= t.apiRoot %>';
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
-        class <%= controllerName %>:
-
-       <% Object.entries(handlers).forEach(([handlerName, { validation, openapi, path, httpMethod }]) => { %>
-          # <%= controllerName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
-            @staticmethod
-            def <%= handlerName %>(
-                body: <%- vars.convertJSONSchemaToPythonType(validation?.body).pythonType %>, 
-                query: <%- vars.convertJSONSchemaToPythonType(validation?.query).pythonType %>, 
-                params: <%- vars.convertJSONSchemaToPythonType(validation?.params).pythonType %>,
-                api_root: str | None = None
-            ) -> <%- vars.convertJSONSchemaToPythonType(validation?.output).pythonType %>:
-                """
-                <%= openapi?.summary ?? 'No summary' %>
-                <%= openapi?.description ? `Description: ${openapi.description}` : '' %>
-                <%= validation?.body?.description ? `Body: ${validation?.body?.description}`: '' %>
-                <%= validation?.query?.description ? `Query: ${validation?.query?.description}`: '' %>
-                <%= validation?.output?.description ? `Returns: ${validation?.output?.description}`: '' %>
-                """
-                if api_root is None:
-                    api_root = default_api_root
-                url = f"{api_root}/<%= segmentName %>/<%= prefix %>/<%= path %>"
+class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerName, { validation, openapi, path, httpMethod }]) => { %>
+    # <%= controllerName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
+    @staticmethod
+    def <%= handlerName %>(
+        body: <%- vars.convertJSONSchemaToPythonType(validation?.body).pythonType %>, 
+        query: <%- vars.convertJSONSchemaToPythonType(validation?.query).pythonType %>, 
+        params: <%- vars.convertJSONSchemaToPythonType(validation?.params).pythonType %>,
+        api_root: str | None = None
+    ) -> <%- vars.convertJSONSchemaToPythonType(validation?.output).pythonType %>:
+        """
+        <%= openapi?.summary ?? 'No summary' %>
+        <%= openapi?.description ? `Description: ${openapi.description}` : '' %>
+        <%= validation?.body?.description ? `Body: ${validation?.body?.description}`: '' %>
+        <%= validation?.query?.description ? `Query: ${validation?.query?.description}`: '' %>
+        <%= validation?.output?.description ? `Returns: ${validation?.output?.description}`: '' %>
+        """
+        if api_root is None:
+            api_root = default_api_root
+        url = f"{api_root}/<%= segmentName %>/<%= prefix %>/<%= path %>"
         <% }) %>
     <% }) %>
 <% }) %>

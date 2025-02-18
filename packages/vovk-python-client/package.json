@@ -1,0 +1,26 @@
+{
+  "name": "vovk-python-client",
+  "version": "0.0.0",
+  "description": "Vovk.ts Python client",
+  "scripts": {
+    "build": "tsc",
+    "npm-publish": "npm publish",
+    "tsc": "tsc --noEmit",
+    "ncu": "npm-check-updates -u"
+  },
+  "main": "./index.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finom/vovk.git"
+  },
+  "keywords": [
+    "Vovk"
+  ],
+  "author": "Andrey Gubanov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/finom/vovk/issues"
+  },
+  "homepage": "https://github.com/finom/vovk#readme"
+}
