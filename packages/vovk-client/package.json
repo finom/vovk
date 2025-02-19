@@ -1,6 +1,6 @@
 {
   "name": "vovk-client",
-  "version": "0.0.4-draft.36",
+  "version": "0.0.4-draft.37",
   "description": "Vovk.ts client",
   "scripts": {
     "npm-publish": "npm publish"
