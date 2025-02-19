@@ -1,10 +1,12 @@
 import type { KnownAny, VovkController, VovkHandlerSchema } from '../types';
 
-export async function setHandlerValidation(
-  h: ((...args: KnownAny[]) => KnownAny) & { _getValidation?: (controller: VovkController) => void },
-  validation: Exclude<VovkHandlerSchema['validation'], undefined>
+export async function setHandlerSchema(
+  h: ((...args: KnownAny[]) => KnownAny) & {
+    _getSchema?: (controller: VovkController) => Omit<VovkHandlerSchema, 'httpMethod' | 'path'>;
+  },
+  schema: Omit<VovkHandlerSchema, 'httpMethod' | 'path'>
 ) {
-  h._getValidation = (controller) => {
+  h._getSchema = (controller) => {
     if (!controller) {
       throw new Error(
         'Error setting client validators. Controller not found. Did you forget to use an HTTP decorator?'
@@ -24,6 +26,6 @@ export async function setHandlerValidation(
       throw new Error('Error setting client validators. Handler not found.');
     }
 
-    return validation;
+    return schema;
   };
 }

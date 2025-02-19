@@ -1,5 +1,5 @@
 import Ajv, { Options } from 'ajv';
-import { HttpException, HttpStatus, VovkFullSchema, type VovkValidateOnClient } from 'vovk';
+import { HttpException, HttpStatus, KnownAny, VovkFullSchema, type VovkValidateOnClient } from 'vovk';
 import ajvFormats from 'ajv-formats';
 import ajvLocalize from 'ajv-i18n';
 import ajvErrors from 'ajv-errors';
@@ -17,9 +17,38 @@ const createAjv = (options: Options) => {
   ajvErrors(ajv);
   ajv.addKeyword('x-isDto');
   return ajv;
-}
+};
 
 const validate = ({
+  data,
+  schema,
+  ajv,
+  localize = 'en',
+  type,
+  endpoint,
+}: {
+  data: KnownAny;
+  schema: Parameters<VovkValidateOnClient>[1];
+  ajv: Ajv;
+  localize: Lang;
+  type: 'body' | 'query' | 'params';
+  endpoint: string;
+}) => {
+  if (data && schema) {
+    const isValid = ajv.validate(schema, data);
+
+    if (!isValid) {
+      ajvLocalize[localize](ajv.errors);
+      throw new HttpException(
+        HttpStatus.NULL,
+        `Ajv validation failed. Invalid ${type} on client for ${endpoint}. ${ajv.errorsText()}`,
+        { data, errors: ajv.errors }
+      );
+    }
+  }
+};
+
+const validateAll = ({
   input,
   validation,
   ajv,
@@ -30,44 +59,9 @@ const validate = ({
   ajv: Ajv;
   localize: Lang;
 }) => {
-  if (validation.body) {
-    const isValid = ajv.validate(validation.body, input.body);
-
-    if (!isValid) {
-      ajvLocalize[localize](ajv.errors);
-      throw new HttpException(
-        HttpStatus.NULL,
-        `Ajv validation failed. Invalid request body on client for ${input.endpoint}. ${ajv.errorsText()}`,
-        { body: input.body, endpoint: input.endpoint, errors: ajv.errors }
-      );
-    }
-  }
-
-  if (validation.query) {
-    const isValid = ajv.validate(validation.query, input.query);
-
-    if (!isValid) {
-      ajvLocalize[localize](ajv.errors);
-      throw new HttpException(
-        HttpStatus.NULL,
-        `Ajv validation failed. Invalid request query on client for ${input.endpoint}. ${ajv.errorsText()}`,
-        { query: input.query, endpoint: input.endpoint, errors: ajv.errors }
-      );
-    }
-  }
-
-  if (validation.params) {
-    const isValid = ajv.validate(validation.params, input.params);
-
-    if (!isValid) {
-      ajvLocalize[localize](ajv.errors);
-      throw new HttpException(
-        HttpStatus.NULL,
-        `Ajv validation failed. Invalid request params on client for ${input.endpoint}. ${ajv.errorsText()}`,
-        { params: input.params, endpoint: input.endpoint, errors: ajv.errors }
-      );
-    }
-  }
+  validate({ data: input.body, schema: validation.body, ajv, localize, endpoint: input.endpoint, type: 'body' });
+  validate({ data: input.query, schema: validation.query, ajv, localize, endpoint: input.endpoint, type: 'query' });
+  validate({ data: input.params, schema: validation.params, ajv, localize, endpoint: input.endpoint, type: 'params' });
 };
 
 const getConfig = (fullSchema: VovkFullSchema) => {
@@ -88,16 +82,21 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation, fullSchema
     ajvScope = createAjv(options);
   }
 
-  return validate({ input, validation, ajv: ajvScope, localize });
+  return validateAll({ input, validation, ajv: ajvScope, localize });
 };
 
 const configure =
   ({ options: givenOptions, localize: givenLocalize }: VovkAjvConfig): VovkValidateOnClient =>
   (input, validation, fullSchema) => {
     const { options, localize } = getConfig(fullSchema);
-    const ajv = createAjv(options);
-  
-    return validate({ input, validation, ajv, localize: givenLocalize || localize });
+    const ajv = createAjv({ ...options, ...givenOptions });
+
+    validateAll({
+      input,
+      validation,
+      ajv,
+      localize: givenLocalize || localize,
+    });
   };
 
 export const validateOnClient: typeof validateOnClientAjv & { configure: typeof configure } = Object.assign(

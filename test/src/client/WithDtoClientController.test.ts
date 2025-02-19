@@ -135,9 +135,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     });
 
-    await rejects.toThrow(
-      /Validation failed. Invalid request body on server for http:.*. hello must be equal to world/
-    );
+    await rejects.toThrow(/Validation failed. Invalid body on server for http:.*. hello must be equal to world/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -149,7 +147,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to one of the allowed values/
+      /Ajv validation failed. Invalid body on client for http:.*\. data\/hello must be equal to one of the allowed values/
     );
     await rejects.toThrowError(HttpException);
 
@@ -161,9 +159,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     }));
 
-    await rejects.toThrow(
-      /Validation failed. Invalid request body on client for http:.*\. hello must be equal to world/
-    );
+    await rejects.toThrow(/Validation failed. Invalid body on client for http:.*\. hello must be equal to world/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -184,7 +180,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid request params on server for http:.*\. foo must be equal to foo/);
+    await rejects.toThrow(/Validation failed. Invalid params on server for http:.*\. foo must be equal to foo/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -197,7 +193,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request params on client for http:.*\. data\/foo must be equal to one of the allowed values/
+      /Ajv validation failed. Invalid params on client for http:.*\. data\/foo must be equal to one of the allowed values/
     );
     await rejects.toThrowError(HttpException);
 
@@ -210,7 +206,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid request params on client for http:.*\. foo must be equal to foo/);
+    await rejects.toThrow(/Validation failed. Invalid params on client for http:.*\. foo must be equal to foo/);
   });
 
   it('Should handle query validation on server and client', async () => {
@@ -229,9 +225,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     });
 
-    await rejects.toThrow(
-      /Validation failed. Invalid request query on server for http:.*\. search must be equal to value/
-    );
+    await rejects.toThrow(/Validation failed. Invalid query on server for http:.*\. search must be equal to value/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -243,7 +237,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request query on client for http:.*\. data\/search must be equal to one of the allowed values/
+      /Ajv validation failed. Invalid query on client for http:.*\. data\/search must be equal to one of the allowed values/
     );
     await rejects.toThrowError(HttpException);
 
@@ -255,9 +249,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     }));
 
-    await rejects.toThrow(
-      /Validation failed. Invalid request query on client for http:.*\. search must be equal to value/
-    );
+    await rejects.toThrow(/Validation failed. Invalid query on client for http:.*\. search must be equal to value/);
   });
 
   it('Should handle nested queries on server and client', async () => {
@@ -281,7 +273,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid request query on server for http:.*. x must be a string/);
+    await rejects.toThrow(/Validation failed. Invalid query on server for http:.*. x must be a string/);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleNestedQuery({
@@ -293,9 +285,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     }));
 
-    await rejects.toThrow(
-      /Ajv validation failed. Invalid request query on client for http:.*\. data\/x must be string/
-    );
+    await rejects.toThrow(/Ajv validation failed. Invalid query on client for http:.*\. data\/x must be string/);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleNestedQueryClient({
@@ -307,7 +297,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid request query on client for http:.*\. x must be a string/);
+    await rejects.toThrow(/Validation failed. Invalid query on client for http:.*\. x must be a string/);
   });
 
   it('Should handle output validation on server', async () => {
@@ -323,7 +313,7 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid response on server for http:.*\. hello must be equal to world/);
+    await rejects.toThrow(/Validation failed. Invalid output on server for http:.*\. hello must be equal to world/);
   });
 
   it('Should handle stream', async () => {

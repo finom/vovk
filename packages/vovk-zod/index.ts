@@ -1,5 +1,5 @@
 import z, { type ZodSchema } from 'zod';
-import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
+import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 import zodToJsonSchema from 'zod-to-json-schema';
 
 const getErrorText = (e: unknown) =>
@@ -31,86 +31,37 @@ function withZod<
   output?: ZOD_OUTPUT;
   handle: T;
 }) {
-  const outputHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
-    const outputData = await handle(req, handlerParams);
-    if (output) {
-      if (!outputData) {
-        throw new HttpException(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          'Output is required. You probably forgot to return something from your handler.'
-        );
-      }
-      try {
-        output.parse(outputData);
-      } catch (e) {
-        throw new HttpException(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          `Zod validation failed. Invalid response on server for ${req.url}. ${getErrorText(e)}`,
-          { output: outputData }
-        );
-      }
-    }
+  return withValidation({
+    body,
+    query,
+    params,
+    output,
+    handle: handle as T & { __output: ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny },
+    getHandlerSchema: () => {
+      const getMethodSchema = (model?: ZodSchema<KnownAny>) =>
+        model ? zodToJsonSchema(model, { errorMessages: true }) : null;
 
-    return outputData;
-  };
-
-  const resultHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
-    if (body) {
-      const bodyData: unknown = await req.json();
+      return {
+        validation: {
+          body: getMethodSchema(body),
+          query: getMethodSchema(query),
+          output: getMethodSchema(output),
+          params: getMethodSchema(params),
+        },
+      };
+    },
+    validate: async (data, model, { type, req }) => {
       try {
-        body.parse(bodyData);
+        model.parse(data);
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid request body on server for ${req.url}. ${getErrorText(e)}`,
-          { body: bodyData }
+          `Zod validation failed. Invalid ${type} on server for ${req.url}. ${getErrorText(e)}`,
+          { [type]: data }
         );
       }
-      // Redeclare req.json to allow subsequent calls to return the validated type.
-      req.json = () => Promise.resolve(bodyData as KnownAny);
-    }
-
-    if (query) {
-      const queryData = req.vovk.query();
-      try {
-        query.parse(queryData);
-      } catch (e) {
-        throw new HttpException(
-          HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid request query on server for ${req.url}. ${getErrorText(e)}`,
-          { query: queryData }
-        );
-      }
-    }
-
-    if (params) {
-      const paramsData = req.vovk.params();
-      try {
-        params.parse(paramsData);
-      } catch (e) {
-        throw new HttpException(
-          HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid request params on server for ${req.url}. ${getErrorText(e)}`,
-          { params: paramsData }
-        );
-      }
-    }
-
-    return outputHandler(req, handlerParams);
-  };
-
-  const options = { errorMessages: true };
-
-  void setHandlerValidation(resultHandler, {
-    body: body ? zodToJsonSchema(body, options) : null,
-    query: query ? zodToJsonSchema(query, options) : null,
-    output: output ? zodToJsonSchema(output, options) : null,
-    params: params ? zodToJsonSchema(params, options) : null,
+    },
   });
-
-  return resultHandler as T & {
-    __output: ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny;
-  };
 }
 
 export { withZod };

@@ -56,18 +56,18 @@ const assignSchema = ({
   const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
     _controller: VovkController;
     _sourceMethod?: ((...args: KnownAny) => KnownAny) & {
-      _getValidation?: (controller: VovkController) => VovkHandlerSchema['validation'];
+      _getSchema?: (controller: VovkController) => VovkHandlerSchema;
     };
   };
 
   originalMethod._controller = controller;
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
-  const validation = originalMethod._sourceMethod._getValidation?.(controller);
+  const schema = originalMethod._sourceMethod._getSchema?.(controller);
 
   controller._handlers = {
     ...controller._handlers,
     [propertyKey]: {
-      ...(validation ? { validation } : {}),
+      ...schema,
       ...((controller._handlers ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
       path,
       httpMethod,

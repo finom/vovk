@@ -6,7 +6,8 @@ imports: ['vovk-python-client']
 }; %>
 <%- `# auto-generated ${new Date().toISOString()}` %>
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple
-from datetime import date, datetime, time
+import os
+import json
 
 # Optional but recommended if using Python 3.7+:
 from __future__ import annotations  # Enables forward references in type hints
@@ -21,24 +22,32 @@ def _load_full_schema() -> dict:
     with open(schema_path, "r", encoding="utf-8") as f:
         return json.load(f)
 full_schema = _load_full_schema()
-default_api_root = '<%= t.apiRoot %>';
+default_api_root = '<%= t.apiRoot %>'
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
 class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerName, { validation, openapi, path, httpMethod }]) => { %>
     # <%= controllerName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
+<%- ([
+        vars.convertJSONSchemaToPythonType({ schema: validation?.body, namespace: controllerName, className: `${handlerName}_Body`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.query, namespace: controllerName, className: `${handlerName}_Query`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.params, namespace: controllerName, className: `${handlerName}_Params`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.output, namespace: controllerName, className: `${handlerName}_Output`, pad: 4 }),
+    ]).filter(Boolean).join('\n') %>
     @staticmethod
     def <%= handlerName %>(
-        body: <%- vars.convertJSONSchemaToPythonType(validation?.body).pythonType %>, 
-        query: <%- vars.convertJSONSchemaToPythonType(validation?.query).pythonType %>, 
-        params: <%- vars.convertJSONSchemaToPythonType(validation?.params).pythonType %>,
+        body: <%= validation?.body ? `${controllerName}.${handlerName}_Body` : 'None' %>, 
+        query: <%= validation?.query ? `${controllerName}.${handlerName}_Query` : 'None' %>,
+        params: <%= validation?.params ? `${controllerName}.${handlerName}_Params` : 'None' %>,
         api_root: str | None = None
-    ) -> <%- vars.convertJSONSchemaToPythonType(validation?.output).pythonType %>:
-        """
-        <%= openapi?.summary ?? 'No summary' %>
-        <%= openapi?.description ? `Description: ${openapi.description}` : '' %>
-        <%= validation?.body?.description ? `Body: ${validation?.body?.description}`: '' %>
-        <%= validation?.query?.description ? `Query: ${validation?.query?.description}`: '' %>
-        <%= validation?.output?.description ? `Returns: ${validation?.output?.description}`: '' %>
+    ) -> <%= validation?.output ? `${controllerName}.${handlerName}_Output` : 'Any' %>:
+        """ 
+<%= ([
+                openapi?.summary ?? 'No summary',
+                openapi?.description ? `Description: ${openapi.description}` : '',
+                validation?.body?.description ? `Body: ${validation?.body?.description}`: '',
+                validation?.query?.description ? `Query: ${validation?.query?.description}`: '',
+                validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
+            ]).filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
         """
         if api_root is None:
             api_root = default_api_root

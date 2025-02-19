@@ -1,4 +1,4 @@
-// auto-generated 2025-02-18T10:01:57.308Z
+// auto-generated 2025-02-19T17:12:37.528Z
 import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
 import config from './config.json';
 import segment0 from './segments/_root.json';
@@ -9,7 +9,7 @@ const fullSchema = {
   segments: {
     '': segment0 as unknown as VovkSegmentSchema,
     'foo/client': segment1 as unknown as VovkSegmentSchema,
-    generated: segment2 as unknown as VovkSegmentSchema,
-  },
+    'generated': segment2 as unknown as VovkSegmentSchema,
+  }
 };
 export default fullSchema;

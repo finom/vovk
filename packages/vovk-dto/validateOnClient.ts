@@ -3,15 +3,13 @@ import type { ClassConstructor } from 'class-transformer';
 import { HttpException, HttpStatus, type VovkValidateOnClient } from 'vovk';
 
 export const validateOnClient: VovkValidateOnClient = async (input, validation) => {
-  console.log('validation', validation);
   if (validation.body && 'x-isDto' in (validation.body as object)) {
-    console.log('input.body', input.body);
     const bodyErrors = await validate(input.body as ClassConstructor<object>);
     if (bodyErrors.length > 0) {
       const err = bodyErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
       throw new HttpException(
         HttpStatus.NULL,
-        `Validation failed. Invalid request body on client for ${input.endpoint}. ${err}`,
+        `Validation failed. Invalid body on client for ${input.endpoint}. ${err}`,
         {
           body: input.body,
           validationErrors: bodyErrors,
@@ -27,7 +25,7 @@ export const validateOnClient: VovkValidateOnClient = async (input, validation) 
       const err = queryErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
       throw new HttpException(
         HttpStatus.NULL,
-        `Validation failed. Invalid request query on client for ${input.endpoint}. ${err}`,
+        `Validation failed. Invalid query on client for ${input.endpoint}. ${err}`,
         {
           query: input.query,
           validationErrors: queryErrors,
@@ -43,7 +41,7 @@ export const validateOnClient: VovkValidateOnClient = async (input, validation) 
       const err = paramsErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
       throw new HttpException(
         HttpStatus.NULL,
-        `Validation failed. Invalid request params on client for ${input.endpoint}. ${err}`,
+        `Validation failed. Invalid params on client for ${input.endpoint}. ${err}`,
         {
           params: input.params,
           validationErrors: paramsErrors,

@@ -1,6 +1,6 @@
 import { validate, type ValidationError } from 'class-validator';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
-import { setHandlerValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
+import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
 import { targetConstructorToSchema } from 'class-validator-jsonschema';
 
 function withDto<
@@ -31,101 +31,42 @@ function withDto<
   output?: OUTPUT_DTO;
   handle: T;
 }) {
-  const outputHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
-    const outputData = await handle(req, handlerParams);
-    if (output) {
-      if (!outputData) {
-        throw new HttpException(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          'Output is required. You probably forgot to return something from your handler.'
-        );
-      }
-      const outputInstance = plainToInstance(output, outputData);
-      const outputErrors: ValidationError[] = await validate(outputInstance!);
+  return withValidation({
+    body,
+    query,
+    params,
+    output,
+    handle: handle as T & { __output: OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny },
+    getHandlerSchema: () => {
+      const getMethodSchema = (dto?: ClassConstructor<KnownAny>) => {
+        const schema = dto ? targetConstructorToSchema(dto) : null;
+        return schema ? { 'x-isDto': true, ...schema } : null;
+      };
 
-      if (outputErrors.length > 0) {
-        const err = outputErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
-        throw new HttpException(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          `Validation failed. Invalid response on server for ${req.url}. ${err}`
-        );
-      }
-    }
+      return {
+        validation: {
+          body: getMethodSchema(body),
+          query: getMethodSchema(query),
+          output: getMethodSchema(output),
+          params: getMethodSchema(params),
+        },
+      };
+    },
+    validate: async (data, dto, { type, req }) => {
+      const instance = plainToInstance(dto, data);
+      const errors: ValidationError[] = await validate(instance as object);
 
-    return outputData;
-  };
-
-  const resultHandler = async (req: REQ, handlerParams: Parameters<T>[1]) => {
-    if (body) {
-      const bodyData: unknown = await req.json();
-      const bodyInstance = plainToInstance(body, bodyData);
-      const bodyErrors: ValidationError[] = await validate(bodyInstance as object);
-
-      if (bodyErrors.length > 0) {
-        const err = bodyErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
+      if (errors.length > 0) {
+        const err = errors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid request body on server for ${req.url}. ${err}`
-        );
-      }
-      // redeclare to add ability to call req.json() again
-      req.json = () => Promise.resolve(bodyData as BODY_DTO extends ClassConstructor<infer U> ? U : never);
-      req.vovk.body = () => Promise.resolve(bodyInstance as BODY_DTO extends ClassConstructor<infer U> ? U : never);
-    }
-
-    if (query) {
-      const queryData = req.vovk.query();
-      const queryInstance = plainToInstance(query, queryData);
-      const queryErrors: ValidationError[] = await validate(queryInstance as object);
-
-      if (queryErrors.length > 0) {
-        const err = queryErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
-        throw new HttpException(
-          HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid request query on server for ${req.url}. ${err}`,
-          { query: queryData }
+          `Validation failed. Invalid ${type} on server for ${req.url}. ${err}`
         );
       }
 
-      req.vovk.query = () => queryInstance as QUERY_DTO extends ClassConstructor<infer U> ? U : never;
-    }
-
-    if (params) {
-      const paramsData = req.vovk.params();
-      const paramsInstance = plainToInstance(params, paramsData);
-      const paramsErrors: ValidationError[] = await validate(paramsInstance as object);
-
-      if (paramsErrors.length > 0) {
-        const err = paramsErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
-        throw new HttpException(
-          HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid request params on server for ${req.url}. ${err}`,
-          { params: paramsData }
-        );
-      }
-
-      req.vovk.params = () => paramsInstance;
-    }
-
-    return outputHandler(req, handlerParams);
-  };
-
-  const getSchema = (dto?: ClassConstructor<KnownAny>) => {
-    if (!dto) return null;
-    const schema = targetConstructorToSchema(dto);
-    return schema ? { 'x-isDto': true, ...schema } : null;
-  };
-
-  void setHandlerValidation(resultHandler, {
-    body: getSchema(body),
-    query: getSchema(query),
-    output: getSchema(output),
-    params: getSchema(params),
+      return instance;
+    },
   });
-
-  return resultHandler as T & {
-    __output: OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny;
-  };
 }
 
 export { withDto };

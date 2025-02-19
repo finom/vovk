@@ -60,7 +60,7 @@ describe('Client validation with custon AJV options', () => {
     });
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello muss gleich der Konstanten sein/
+      /Ajv validation failed. Invalid body on client for http:.*\. data\/hello muss gleich der Konstanten sein/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -119,7 +119,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Zod validation failed. Invalid request body on server for http:.*. Invalid literal value, expected "world" \(hello\)/
+      /Zod validation failed. Invalid body on server for http:.*. Invalid literal value, expected "world" \(hello\)/
     );
     await rejects.toThrowError(HttpException);
 
@@ -132,7 +132,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request body on client for http:.*\. data\/hello must be equal to constant/
+      /Ajv validation failed. Invalid body on client for http:.*\. data\/hello must be equal to constant/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -155,7 +155,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Zod validation failed. Invalid request params on server for http:.*\. Invalid literal value, expected "foo" \(foo\)/
+      /Zod validation failed. Invalid params on server for http:.*\. Invalid literal value, expected "foo" \(foo\)/
     );
     await rejects.toThrowError(HttpException);
 
@@ -169,7 +169,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request params on client for http:.*\. data\/foo must be equal to constant/
+      /Ajv validation failed. Invalid params on client for http:.*\. data\/foo must be equal to constant/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -191,7 +191,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Zod validation failed. Invalid request query on server for http:.*\. Invalid literal value, expected "value" \(search\)/
+      /Zod validation failed. Invalid query on server for http:.*\. Invalid literal value, expected "value" \(search\)/
     );
     await rejects.toThrowError(HttpException);
 
@@ -204,7 +204,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid request query on client for http:.*\. data\/search must be equal to constant/
+      /Ajv validation failed. Invalid query on client for http:.*\. data\/search must be equal to constant/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -230,7 +230,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid request query on server for http:.*. Required \(x\)/);
+    await rejects.toThrow(/Zod validation failed. Invalid query on server for http:.*. Required \(x\)/);
 
     ({ rejects } = expectPromise(async () => {
       await WithZodClientControllerRPC.handleNestedQuery({
@@ -242,9 +242,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(
-      /Ajv validation failed. Invalid request query on client for http:.*\. data\/x must be string/
-    );
+    await rejects.toThrow(/Ajv validation failed. Invalid query on client for http:.*\. data\/x must be string/);
   });
 
   it('Should handle output validation on server', async () => {
@@ -261,7 +259,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
 
     await rejects.toThrow(
-      /Zod validation failed. Invalid response on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
+      /Zod validation failed. Invalid output on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
     );
   });
 
