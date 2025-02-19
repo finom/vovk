@@ -1,6 +1,6 @@
 {
   "name": "vovk-ajv",
-  "version": "0.0.0-draft.29",
+  "version": "0.0.0-draft.30",
   "description": "Local validation for JSON schemas for vovk-zod and other validation libraries for Vovk.ts",
   "main": "index.js",
   "scripts": {
