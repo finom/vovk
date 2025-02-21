@@ -1,4 +1,4 @@
-// auto-generated 2025-02-19T17:12:37.528Z
+// auto-generated 2025-02-20T12:48:31.902Z
 module.exports.config = require('./config.json');
 module.exports.segments = {
   '': require('./segments/_root.json'),

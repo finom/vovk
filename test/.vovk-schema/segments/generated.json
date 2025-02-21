@@ -70,7 +70,8 @@
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -120,7 +121,8 @@
               ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "iteration": null
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -157,7 +159,8 @@
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -207,7 +210,8 @@
               ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "iteration": null
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -240,7 +244,8 @@
               }
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -275,7 +280,8 @@
               }
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -308,7 +314,8 @@
               }
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -343,7 +350,8 @@
               }
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -379,7 +387,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -415,7 +424,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -451,7 +461,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": "",
           "httpMethod": "GET"
@@ -487,7 +498,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "path": ":id",
           "httpMethod": "PUT"

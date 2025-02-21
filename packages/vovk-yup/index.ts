@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
+import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny, VovkValidationType } from 'vovk';
 import { convertSchema } from '@sodaru/yup-to-json-schema';
 
 const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.errors.join(', ') ?? String(e);
@@ -8,8 +8,9 @@ function withYup<
   T extends (req: REQ, params: YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>) => KnownAny,
   YUP_BODY extends Yup.Schema<KnownAny>,
   YUP_QUERY extends Yup.Schema<KnownAny>,
-  YUP_OUTPUT extends Yup.Schema<KnownAny>,
   YUP_PARAMS extends Yup.Schema<KnownAny>,
+  YUP_OUTPUT extends Yup.Schema<KnownAny>,
+  YUP_ITERATION extends Yup.Schema<KnownAny>,
   REQ extends VovkRequest<
     YUP_BODY extends Yup.Schema<infer U> ? U : never,
     YUP_QUERY extends Yup.Schema<infer U> ? U : undefined,
@@ -24,29 +25,46 @@ function withYup<
   query,
   params,
   output,
+  iteration,
   handle,
+  skipServerSideValidation,
+  skipSchemaEmission,
+  validateEveryIteration,
 }: {
   body?: YUP_BODY;
   query?: YUP_QUERY;
   params?: YUP_PARAMS;
   output?: YUP_OUTPUT;
+  iteration?: YUP_ITERATION;
   handle: T;
+  skipServerSideValidation?: boolean | VovkValidationType[];
+  skipSchemaEmission?: boolean | VovkValidationType[];
+  validateEveryIteration?: boolean;
 }) {
   return withValidation({
     body,
     query,
     params,
     output,
-    handle: handle as T & { __output: YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny },
-    getHandlerSchema: () => {
-      const getMethodSchema = (model?: Yup.Schema<KnownAny>) => (model ? convertSchema(model) : null);
+    iteration,
+    skipServerSideValidation,
+    skipSchemaEmission,
+    validateEveryIteration,
+    handle: handle as T & {
+      __output: YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny;
+      __iteration: YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny;
+    },
+    getHandlerSchema: ({ skipSchemaEmissionKeys }) => {
+      const getMethodSchema = (key: VovkValidationType, model?: Yup.Schema<KnownAny>) =>
+        !skipSchemaEmissionKeys.includes(key) && model ? convertSchema(model) : null;
 
       return {
         validation: {
-          body: getMethodSchema(body),
-          query: getMethodSchema(query),
-          output: getMethodSchema(output),
-          params: getMethodSchema(params),
+          body: getMethodSchema('body', body),
+          query: getMethodSchema('query', query),
+          output: getMethodSchema('output', output),
+          params: getMethodSchema('params', params),
+          iteration: getMethodSchema('iteration', iteration),
         },
       };
     },

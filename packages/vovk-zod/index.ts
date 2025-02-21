@@ -1,5 +1,5 @@
 import z, { type ZodSchema } from 'zod';
-import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny } from 'vovk';
+import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny, VovkValidationType } from 'vovk';
 import zodToJsonSchema from 'zod-to-json-schema';
 
 const getErrorText = (e: unknown) =>
@@ -17,36 +17,53 @@ function withZod<
   ZOD_QUERY extends ZodSchema<KnownAny> | undefined = undefined,
   ZOD_OUTPUT extends ZodSchema<KnownAny> | undefined = undefined,
   ZOD_PARAMS extends ZodSchema<KnownAny> | undefined = undefined,
+  ZOD_ITERATION extends ZodSchema<KnownAny> | undefined = undefined,
   REQ extends VovkRequestZod<ZOD_BODY, ZOD_QUERY, ZOD_PARAMS> = VovkRequestZod<ZOD_BODY, ZOD_QUERY, ZOD_PARAMS>,
 >({
   body,
   query,
   params,
   output,
+  iteration,
   handle,
+  skipServerSideValidation,
+  skipSchemaEmission,
+  validateEveryIteration,
 }: {
   body?: ZOD_BODY;
   query?: ZOD_QUERY;
   params?: ZOD_PARAMS;
   output?: ZOD_OUTPUT;
+  iteration?: ZOD_ITERATION;
   handle: T;
+  skipServerSideValidation?: boolean | VovkValidationType[];
+  skipSchemaEmission?: boolean | VovkValidationType[];
+  validateEveryIteration?: boolean;
 }) {
   return withValidation({
     body,
     query,
     params,
     output,
-    handle: handle as T & { __output: ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny },
-    getHandlerSchema: () => {
-      const getMethodSchema = (model?: ZodSchema<KnownAny>) =>
-        model ? zodToJsonSchema(model, { errorMessages: true }) : null;
+    iteration,
+    skipServerSideValidation,
+    skipSchemaEmission,
+    validateEveryIteration,
+    handle: handle as T & {
+      __output: ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny;
+      __iteration: ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny;
+    },
+    getHandlerSchema: ({ skipSchemaEmissionKeys }) => {
+      const getMethodSchema = (key: VovkValidationType, model?: ZodSchema<KnownAny>) =>
+        !skipSchemaEmissionKeys.includes(key) && model ? zodToJsonSchema(model, { errorMessages: true }) : null;
 
       return {
         validation: {
-          body: getMethodSchema(body),
-          query: getMethodSchema(query),
-          output: getMethodSchema(output),
-          params: getMethodSchema(params),
+          body: getMethodSchema('body', body),
+          query: getMethodSchema('query', query),
+          output: getMethodSchema('output', output),
+          params: getMethodSchema('params', params),
+          iteration: getMethodSchema('iteration', iteration),
         },
       };
     },

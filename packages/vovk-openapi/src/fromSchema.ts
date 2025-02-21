@@ -66,7 +66,7 @@ ${stringifySample(outputFake, 0)}
           paths[path][h.httpMethod.toLowerCase() as Lowercase<HttpMethod>] = {
             ...h.openapi,
             'x-codeSamples': [
-              ...h.openapi['x-codeSamples'],
+              ...(h.openapi['x-codeSamples'] ?? []),
               {
                 label: 'vovk-client',
                 lang: 'typescript',

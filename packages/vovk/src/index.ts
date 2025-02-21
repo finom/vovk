@@ -22,6 +22,7 @@ import {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkEnv,
+  type VovkValidationType,
 } from './types';
 import {
   type VovkClient,
@@ -66,6 +67,7 @@ export {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkEnv,
+  type VovkValidationType,
   StreamJSONResponse,
   HttpException,
   HttpStatus,

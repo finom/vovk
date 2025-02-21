@@ -269,7 +269,8 @@
               ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "iteration": null
           },
           "path": "all/:foo/:bar",
           "httpMethod": "POST",
@@ -461,7 +462,8 @@
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-query"
@@ -484,7 +486,8 @@
             },
             "query": null,
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "POST",
           "path": "handle-body"
@@ -512,7 +515,8 @@
               ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            }
+            },
+            "iteration": null
           },
           "path": "x/:foo/:bar/y",
           "httpMethod": "PUT"
@@ -608,7 +612,8 @@
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-nested-query"
@@ -643,7 +648,8 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-output"
@@ -668,7 +674,8 @@
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-stream"
@@ -678,7 +685,8 @@
             "body": null,
             "query": null,
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "POST",
           "path": "handle-nothitng"
@@ -828,7 +836,8 @@
                 "foo",
                 "bar"
               ]
-            }
+            },
+            "iteration": null
           },
           "path": "all/:foo/:bar",
           "httpMethod": "POST",
@@ -1038,7 +1047,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-query"
@@ -1062,7 +1072,8 @@
             },
             "query": null,
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "POST",
           "path": "handle-body"
@@ -1093,7 +1104,8 @@
                 "foo",
                 "bar"
               ]
-            }
+            },
+            "iteration": null
           },
           "path": "x/:foo/:bar/y",
           "httpMethod": "PUT"
@@ -1193,7 +1205,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-nested-query"
@@ -1228,7 +1241,8 @@
                 "hello"
               ]
             },
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-output"
@@ -1252,7 +1266,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-stream"
@@ -1262,7 +1277,8 @@
             "body": null,
             "query": null,
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "POST",
           "path": "handle-nothitng"
@@ -1343,7 +1359,8 @@
                 "foo",
                 "bar"
               ]
-            }
+            },
+            "iteration": null
           },
           "path": "all/:foo/:bar",
           "httpMethod": "POST",
@@ -1488,7 +1505,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-query"
@@ -1516,7 +1534,8 @@
             },
             "query": null,
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "POST",
           "path": "handle-body"
@@ -1551,7 +1570,8 @@
                 "foo",
                 "bar"
               ]
-            }
+            },
+            "iteration": null
           },
           "path": "x/:foo/:bar/y",
           "httpMethod": "PUT"
@@ -1585,7 +1605,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-nested-query"
@@ -1624,7 +1645,8 @@
                 "hello"
               ]
             },
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-output"
@@ -1652,7 +1674,8 @@
               ]
             },
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "GET",
           "path": "handle-stream"
@@ -1662,7 +1685,8 @@
             "body": null,
             "query": null,
             "output": null,
-            "params": null
+            "params": null,
+            "iteration": null
           },
           "httpMethod": "POST",
           "path": "handle-nothitng"
