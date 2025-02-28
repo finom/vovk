@@ -1,11 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { it, describe, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { VovkReturnType } from 'vovk';
+import type { VovkReturnType } from 'vovk';
 import { renderHook, waitFor } from '@testing-library/react';
-import { ClientControllerRPC } from '../../../test/node_modules/.vovk-client/module.mjs';
+import { ClientControllerRPC } from '../../../test/node_modules/vovk-client/module.mjs';
 import { JSDOM } from 'jsdom';
-import { createElement, ReactNode } from 'react';
+import { createElement, type ReactNode } from 'react';
 
 /**
 TODO:

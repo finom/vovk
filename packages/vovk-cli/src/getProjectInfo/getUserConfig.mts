@@ -4,11 +4,13 @@ import getConfigAbsolutePaths from './getConfigAbsolutePaths.mjs';
 import importUncachedModule from './importUncachedModule.mjs';
 
 async function getUserConfig({
+  configPath: givenConfigPath,
   cwd,
 }: {
+  configPath?: string;
   cwd: string;
 }): Promise<{ userConfig: VovkConfig | null; configAbsolutePaths: string[]; error?: Error }> {
-  const configAbsolutePaths = await getConfigAbsolutePaths({ cwd });
+  const configAbsolutePaths = await getConfigAbsolutePaths({ configPath: givenConfigPath, cwd });
   let userConfig: VovkConfig;
 
   if (!configAbsolutePaths.length) {

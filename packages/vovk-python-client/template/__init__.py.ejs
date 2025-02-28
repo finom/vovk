@@ -8,6 +8,7 @@ imports: ['vovk-python-client']
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple
 import os
 import json
+from api_client import ApiClient
 
 # Optional but recommended if using Python 3.7+:
 from __future__ import annotations  # Enables forward references in type hints
@@ -22,7 +23,7 @@ def _load_full_schema() -> dict:
     with open(schema_path, "r", encoding="utf-8") as f:
         return json.load(f)
 full_schema = _load_full_schema()
-default_api_root = '<%= t.apiRoot %>'
+api_client = new ApiClient('<%= t.apiRoot %>')
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
 class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerName, { validation, openapi, path, httpMethod }]) => { %>
@@ -49,9 +50,15 @@ class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerName, 
                 validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
             ]).filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/<%= segmentName %>/<%= prefix %>/<%= path %>"
+        return api_client.request(
+            segment_name='<%= segmentName %>',
+            controller_name='<%= controllerName %>',
+            handler_name='<%= handlerName %>',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         <% }) %>
     <% }) %>
 <% }) %>

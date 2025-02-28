@@ -8,6 +8,7 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import prettify from '../utils/prettify.mjs';
+import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 
 function splitByLast(str: string, delimiter: string = '/'): [string, string] {
   const index = str.lastIndexOf(delimiter);
@@ -87,10 +88,7 @@ export default async function newModule({
 
   for (const type of what) {
     const templatePath = templates[type]!;
-    const templateAbsolutePath =
-      templatePath.startsWith('/') || templatePath.startsWith('.')
-        ? path.resolve(cwd, templatePath)
-        : path.resolve(cwd, './node_modules', templatePath);
+    const templateAbsolutePath = resolveAbsoluteModulePath(templatePath, cwd);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
 
     const {

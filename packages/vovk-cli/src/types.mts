@@ -19,6 +19,7 @@ export interface GenerateOptions {
   templates?: string[];
   prettify?: boolean;
   emitFullSchema?: string | boolean;
+  config?: string;
 }
 
 export interface InitOptions {

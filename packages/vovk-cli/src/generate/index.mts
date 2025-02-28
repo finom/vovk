@@ -31,7 +31,7 @@ export default async function generate({
   const noClient = templates?.[0] === 'none';
   const { config, cwd, log, clientImports, apiRoot } = projectInfo;
 
-  const { clientOutDirAbsolutePath, templateFiles } = getClientTemplates({ config, cwd, generateFrom });
+  const { clientOutDirAbsolutePath, templateFiles } = await getClientTemplates({ config, cwd, generateFrom });
   // Ensure that each segment has a matching schema if it needs to be emitted:
   for (let i = 0; i < segments.length; i++) {
     const { segmentName } = segments[i];

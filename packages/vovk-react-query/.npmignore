@@ -5,3 +5,4 @@ index.mts
 !*.d.mts
 eslint.config.js
 test
+vovk.config.test.mjs

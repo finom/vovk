@@ -14,6 +14,7 @@ import { StreamJSONResponse } from './StreamJSONResponse';
 import reqQuery from './utils/reqQuery';
 import reqMeta from './utils/reqMeta';
 import reqForm from './utils/reqForm';
+import { headers } from 'next/headers';
 
 export class VovkApp {
   private static getHeadersFromOptions(options?: DecoratorOptions) {
@@ -204,9 +205,8 @@ export class VovkApp {
             typeof (result as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
 
       if (isIterator && !(result instanceof Array)) {
-        const streamResponse = new StreamJSONResponse({
+        const streamResponse = new StreamJSONResponse(await headers(), {
           headers: {
-            ...StreamJSONResponse.defaultHeaders,
             ...VovkApp.getHeadersFromOptions(staticMethod._options),
           },
         });

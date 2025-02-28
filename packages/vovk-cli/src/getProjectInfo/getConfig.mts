@@ -2,9 +2,17 @@ import type { VovkEnv, VovkStrictConfig } from 'vovk';
 import getUserConfig from './getUserConfig.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 
-export default async function getConfig({ clientOutDir, cwd }: { clientOutDir?: string; cwd: string }) {
+export default async function getConfig({
+  clientOutDir,
+  configPath,
+  cwd,
+}: {
+  clientOutDir?: string;
+  configPath?: string;
+  cwd: string;
+}) {
   const env = process.env as VovkEnv;
-  const { configAbsolutePaths, error, userConfig } = await getUserConfig({ cwd });
+  const { configAbsolutePaths, error, userConfig } = await getUserConfig({ configPath, cwd });
   const conf = userConfig ?? {};
   const srcRoot = await getRelativeSrcRoot({ cwd });
 

@@ -3,9 +3,9 @@ import { it, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import type { VovkReturnType } from 'vovk';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { ClientControllerRPC } from '../../../test/node_modules/.vovk-client/main.cjs';
+import { ClientControllerRPC } from '../../../test/node_modules/vovk-client/module.mjs';
 import { JSDOM } from 'jsdom';
-import { createElement, ReactNode } from 'react';
+import { createElement, type ReactNode } from 'react';
 
 describe('useMutation', () => {
   it('Works with useMutation', async () => {

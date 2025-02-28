@@ -178,15 +178,15 @@ export type VovkEnv = {
   __VOVK_EXIT__?: 'true' | 'false';
 };
 
-type GenerateFrom = (
-  | string
-  | {
-      templatePath: string;
-      outDir?: string;
-      templateName?: string;
-      fullSchema?: string | boolean;
-    }
-)[];
+export type GenerateFromTemplate = {
+  templatePath: string;
+  outDir?: string;
+  templateName?: string;
+  fullSchema?: string | boolean;
+};
+
+type GenerateFrom = (string | GenerateFromTemplate)[];
+
 export type VovkConfig = {
   emitConfig?: boolean | (keyof VovkStrictConfig)[];
   clientOutDir?: string;

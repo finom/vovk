@@ -1,8 +1,9 @@
 
-# auto-generated 2025-02-20T12:48:39.388Z
+# auto-generated 2025-02-28T18:18:29.156Z
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple
 import os
 import json
+from api_client import ApiClient
 
 # Optional but recommended if using Python 3.7+:
 from __future__ import annotations  # Enables forward references in type hints
@@ -17,568 +18,11 @@ def _load_full_schema() -> dict:
     with open(schema_path, "r", encoding="utf-8") as f:
         return json.load(f)
 full_schema = _load_full_schema()
-default_api_root = 'http://localhost:3210/api'
-
-class NoValidationControllerOnlyEntityRPC: 
-    # NoValidationControllerOnlyEntityRPC.getNoValidationControllerOnlyEntities GET http://localhost:3210/api/generated/no-validation-controller-only-entities/
-
-    @staticmethod
-    def getNoValidationControllerOnlyEntities(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/no-validation-controller-only-entities/"
-        
-    # NoValidationControllerOnlyEntityRPC.updateNoValidationControllerOnlyEntity PUT http://localhost:3210/api/generated/no-validation-controller-only-entities/:id
-
-    @staticmethod
-    def updateNoValidationControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/no-validation-controller-only-entities/:id"
-        
-    # NoValidationControllerOnlyEntityRPC.createNoValidationControllerOnlyEntity POST http://localhost:3210/api/generated/no-validation-controller-only-entities/
-
-    @staticmethod
-    def createNoValidationControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/no-validation-controller-only-entities/"
-        
-    # NoValidationControllerOnlyEntityRPC.deleteNoValidationControllerOnlyEntity DELETE http://localhost:3210/api/generated/no-validation-controller-only-entities/:id
-
-    @staticmethod
-    def deleteNoValidationControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/no-validation-controller-only-entities/:id"
-        
-    
-class NoValidationControllerAndServiceEntityRPC: 
-    # NoValidationControllerAndServiceEntityRPC.getNoValidationControllerAndServiceEntities GET http://localhost:3210/api/generated/no-validation-controller-and-service-entities/
-
-    @staticmethod
-    def getNoValidationControllerAndServiceEntities(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/no-validation-controller-and-service-entities/"
-        
-    # NoValidationControllerAndServiceEntityRPC.updateNoValidationControllerAndServiceEntity PUT http://localhost:3210/api/generated/no-validation-controller-and-service-entities/:id
-
-    @staticmethod
-    def updateNoValidationControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/no-validation-controller-and-service-entities/:id"
-        
-    # NoValidationControllerAndServiceEntityRPC.createNoValidationControllerAndServiceEntity POST http://localhost:3210/api/generated/no-validation-controller-and-service-entities/
-
-    @staticmethod
-    def createNoValidationControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/no-validation-controller-and-service-entities/"
-        
-    # NoValidationControllerAndServiceEntityRPC.deleteNoValidationControllerAndServiceEntity DELETE http://localhost:3210/api/generated/no-validation-controller-and-service-entities/:id
-
-    @staticmethod
-    def deleteNoValidationControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/no-validation-controller-and-service-entities/:id"
-        
-    
-class ZodControllerOnlyEntityRPC: 
-    # ZodControllerOnlyEntityRPC.getZodControllerOnlyEntities GET http://localhost:3210/api/generated/zod-controller-only-entities/
-    class getZodControllerOnlyEntities_Query(TypedDict):
-        search: str
-    @staticmethod
-    def getZodControllerOnlyEntities(
-        body: None, 
-        query: ZodControllerOnlyEntityRPC.getZodControllerOnlyEntities_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/zod-controller-only-entities/"
-        
-    # ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity PUT http://localhost:3210/api/generated/zod-controller-only-entities/:id
-    class updateZodControllerOnlyEntity_Body(TypedDict):
-        foo: Literal["bar", "baz"]
-    class updateZodControllerOnlyEntity_Query(TypedDict):
-        q: str
-    class updateZodControllerOnlyEntity_Params(TypedDict):
-        id: str
-    @staticmethod
-    def updateZodControllerOnlyEntity(
-        body: ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity_Body, 
-        query: ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity_Query,
-        params: ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity_Params,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/zod-controller-only-entities/:id"
-        
-    # ZodControllerOnlyEntityRPC.createZodControllerOnlyEntity POST http://localhost:3210/api/generated/zod-controller-only-entities/
-
-    @staticmethod
-    def createZodControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/zod-controller-only-entities/"
-        
-    # ZodControllerOnlyEntityRPC.deleteZodControllerOnlyEntity DELETE http://localhost:3210/api/generated/zod-controller-only-entities/:id
-
-    @staticmethod
-    def deleteZodControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/zod-controller-only-entities/:id"
-        
-    
-class ZodControllerAndServiceEntityRPC: 
-    # ZodControllerAndServiceEntityRPC.getZodControllerAndServiceEntities GET http://localhost:3210/api/generated/zod-controller-and-service-entities/
-    class getZodControllerAndServiceEntities_Query(TypedDict):
-        search: str
-    @staticmethod
-    def getZodControllerAndServiceEntities(
-        body: None, 
-        query: ZodControllerAndServiceEntityRPC.getZodControllerAndServiceEntities_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/zod-controller-and-service-entities/"
-        
-    # ZodControllerAndServiceEntityRPC.updateZodControllerAndServiceEntity PUT http://localhost:3210/api/generated/zod-controller-and-service-entities/:id
-    class updateZodControllerAndServiceEntity_Body(TypedDict):
-        foo: Literal["bar", "baz"]
-    class updateZodControllerAndServiceEntity_Query(TypedDict):
-        q: str
-    class updateZodControllerAndServiceEntity_Params(TypedDict):
-        id: str
-    @staticmethod
-    def updateZodControllerAndServiceEntity(
-        body: ZodControllerAndServiceEntityRPC.updateZodControllerAndServiceEntity_Body, 
-        query: ZodControllerAndServiceEntityRPC.updateZodControllerAndServiceEntity_Query,
-        params: ZodControllerAndServiceEntityRPC.updateZodControllerAndServiceEntity_Params,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/zod-controller-and-service-entities/:id"
-        
-    # ZodControllerAndServiceEntityRPC.createZodControllerAndServiceEntity POST http://localhost:3210/api/generated/zod-controller-and-service-entities/
-
-    @staticmethod
-    def createZodControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/zod-controller-and-service-entities/"
-        
-    # ZodControllerAndServiceEntityRPC.deleteZodControllerAndServiceEntity DELETE http://localhost:3210/api/generated/zod-controller-and-service-entities/:id
-
-    @staticmethod
-    def deleteZodControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/zod-controller-and-service-entities/:id"
-        
-    
-class YupControllerOnlyEntityRPC: 
-    # YupControllerOnlyEntityRPC.getYupControllerOnlyEntities GET http://localhost:3210/api/generated/yup-controller-only-entities/
-    class getYupControllerOnlyEntities_Query(TypedDict):
-        search: Optional[str]
-    @staticmethod
-    def getYupControllerOnlyEntities(
-        body: None, 
-        query: YupControllerOnlyEntityRPC.getYupControllerOnlyEntities_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/yup-controller-only-entities/"
-        
-    # YupControllerOnlyEntityRPC.updateYupControllerOnlyEntity PUT http://localhost:3210/api/generated/yup-controller-only-entities/:id
-    class updateYupControllerOnlyEntity_Body(TypedDict):
-        foo: Literal["bar", "baz"]
-    class updateYupControllerOnlyEntity_Query(TypedDict):
-        q: Optional[str]
-    @staticmethod
-    def updateYupControllerOnlyEntity(
-        body: YupControllerOnlyEntityRPC.updateYupControllerOnlyEntity_Body, 
-        query: YupControllerOnlyEntityRPC.updateYupControllerOnlyEntity_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/yup-controller-only-entities/:id"
-        
-    # YupControllerOnlyEntityRPC.createYupControllerOnlyEntity POST http://localhost:3210/api/generated/yup-controller-only-entities/
-
-    @staticmethod
-    def createYupControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/yup-controller-only-entities/"
-        
-    # YupControllerOnlyEntityRPC.deleteYupControllerOnlyEntity DELETE http://localhost:3210/api/generated/yup-controller-only-entities/:id
-
-    @staticmethod
-    def deleteYupControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/yup-controller-only-entities/:id"
-        
-    
-class YupControllerAndServiceEntityRPC: 
-    # YupControllerAndServiceEntityRPC.getYupControllerAndServiceEntities GET http://localhost:3210/api/generated/yup-controller-and-service-entities/
-    class getYupControllerAndServiceEntities_Query(TypedDict):
-        search: Optional[str]
-    @staticmethod
-    def getYupControllerAndServiceEntities(
-        body: None, 
-        query: YupControllerAndServiceEntityRPC.getYupControllerAndServiceEntities_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/yup-controller-and-service-entities/"
-        
-    # YupControllerAndServiceEntityRPC.updateYupControllerAndServiceEntity PUT http://localhost:3210/api/generated/yup-controller-and-service-entities/:id
-    class updateYupControllerAndServiceEntity_Body(TypedDict):
-        foo: Literal["bar", "baz"]
-    class updateYupControllerAndServiceEntity_Query(TypedDict):
-        q: Optional[str]
-    @staticmethod
-    def updateYupControllerAndServiceEntity(
-        body: YupControllerAndServiceEntityRPC.updateYupControllerAndServiceEntity_Body, 
-        query: YupControllerAndServiceEntityRPC.updateYupControllerAndServiceEntity_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/yup-controller-and-service-entities/:id"
-        
-    # YupControllerAndServiceEntityRPC.createYupControllerAndServiceEntity POST http://localhost:3210/api/generated/yup-controller-and-service-entities/
-
-    @staticmethod
-    def createYupControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/yup-controller-and-service-entities/"
-        
-    # YupControllerAndServiceEntityRPC.deleteYupControllerAndServiceEntity DELETE http://localhost:3210/api/generated/yup-controller-and-service-entities/:id
-
-    @staticmethod
-    def deleteYupControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/yup-controller-and-service-entities/:id"
-        
-    
-class DtoControllerOnlyEntityRPC: 
-    # DtoControllerOnlyEntityRPC.getDtoControllerOnlyEntities GET http://localhost:3210/api/generated/dto-controller-only-entities/
-    class getDtoControllerOnlyEntities_Query(TypedDict):
-        search: str
-    @staticmethod
-    def getDtoControllerOnlyEntities(
-        body: None, 
-        query: DtoControllerOnlyEntityRPC.getDtoControllerOnlyEntities_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/dto-controller-only-entities/"
-        
-    # DtoControllerOnlyEntityRPC.updateDtoControllerOnlyEntity PUT http://localhost:3210/api/generated/dto-controller-only-entities/:id
-    class updateDtoControllerOnlyEntity_Body(TypedDict):
-        foo: Literal["bar", "baz"]
-    class updateDtoControllerOnlyEntity_Query(TypedDict):
-        q: str
-    @staticmethod
-    def updateDtoControllerOnlyEntity(
-        body: DtoControllerOnlyEntityRPC.updateDtoControllerOnlyEntity_Body, 
-        query: DtoControllerOnlyEntityRPC.updateDtoControllerOnlyEntity_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/dto-controller-only-entities/:id"
-        
-    # DtoControllerOnlyEntityRPC.createDtoControllerOnlyEntity POST http://localhost:3210/api/generated/dto-controller-only-entities/
-
-    @staticmethod
-    def createDtoControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/dto-controller-only-entities/"
-        
-    # DtoControllerOnlyEntityRPC.deleteDtoControllerOnlyEntity DELETE http://localhost:3210/api/generated/dto-controller-only-entities/:id
-
-    @staticmethod
-    def deleteDtoControllerOnlyEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/dto-controller-only-entities/:id"
-        
-    
-class DtoControllerAndServiceEntityRPC: 
-    # DtoControllerAndServiceEntityRPC.getDtoControllerAndServiceEntities GET http://localhost:3210/api/generated/dto-controller-and-service-entities/
-    class getDtoControllerAndServiceEntities_Query(TypedDict):
-        search: str
-    @staticmethod
-    def getDtoControllerAndServiceEntities(
-        body: None, 
-        query: DtoControllerAndServiceEntityRPC.getDtoControllerAndServiceEntities_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/dto-controller-and-service-entities/"
-        
-    # DtoControllerAndServiceEntityRPC.updateDtoControllerAndServiceEntity PUT http://localhost:3210/api/generated/dto-controller-and-service-entities/:id
-    class updateDtoControllerAndServiceEntity_Body(TypedDict):
-        foo: Literal["bar", "baz"]
-    class updateDtoControllerAndServiceEntity_Query(TypedDict):
-        q: str
-    @staticmethod
-    def updateDtoControllerAndServiceEntity(
-        body: DtoControllerAndServiceEntityRPC.updateDtoControllerAndServiceEntity_Body, 
-        query: DtoControllerAndServiceEntityRPC.updateDtoControllerAndServiceEntity_Query,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/dto-controller-and-service-entities/:id"
-        
-    # DtoControllerAndServiceEntityRPC.createDtoControllerAndServiceEntity POST http://localhost:3210/api/generated/dto-controller-and-service-entities/
-
-    @staticmethod
-    def createDtoControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/dto-controller-and-service-entities/"
-        
-    # DtoControllerAndServiceEntityRPC.deleteDtoControllerAndServiceEntity DELETE http://localhost:3210/api/generated/dto-controller-and-service-entities/:id
-
-    @staticmethod
-    def deleteDtoControllerAndServiceEntity(
-        body: None, 
-        query: None,
-        params: None,
-        api_root: str | None = None
-    ) -> Any:
-        """ 
-        No summary
-        """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/generated/dto-controller-and-service-entities/:id"
-        
-    
+api_client = new ApiClient('http://localhost:3000/api')
 
 
 class ClientControllerRPC: 
-    # ClientControllerRPC.getHelloWorldResponseObject GET http://localhost:3210/api/foo/client/client/get-hello-world-response-object
+    # ClientControllerRPC.getHelloWorldResponseObject GET http://localhost:3000/api/foo/client/client/get-hello-world-response-object
 
     @staticmethod
     def getHelloWorldResponseObject(
@@ -590,11 +34,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/get-hello-world-response-object"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getHelloWorldResponseObject',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getHelloWorldObjectLiteral GET http://localhost:3210/api/foo/client/client/get-hello-world-object-literal
+    # ClientControllerRPC.getHelloWorldObjectLiteral GET http://localhost:3000/api/foo/client/client/get-hello-world-object-literal
 
     @staticmethod
     def getHelloWorldObjectLiteral(
@@ -606,11 +56,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/get-hello-world-object-literal"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getHelloWorldObjectLiteral',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getHelloWorldNextResponseObjectPromise GET http://localhost:3210/api/foo/client/client/get-hello-world-next-response-object-promise
+    # ClientControllerRPC.getHelloWorldNextResponseObjectPromise GET http://localhost:3000/api/foo/client/client/get-hello-world-next-response-object-promise
 
     @staticmethod
     def getHelloWorldNextResponseObjectPromise(
@@ -622,11 +78,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/get-hello-world-next-response-object-promise"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getHelloWorldNextResponseObjectPromise',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getHelloWorldRawResponseObjectPromise GET http://localhost:3210/api/foo/client/client/get-hello-world-raw-response-object-promise
+    # ClientControllerRPC.getHelloWorldRawResponseObjectPromise GET http://localhost:3000/api/foo/client/client/get-hello-world-raw-response-object-promise
 
     @staticmethod
     def getHelloWorldRawResponseObjectPromise(
@@ -638,11 +100,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/get-hello-world-raw-response-object-promise"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getHelloWorldRawResponseObjectPromise',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getHelloWorldObjectLiteralPromise GET http://localhost:3210/api/foo/client/client/get-hello-world-object-literal-promise
+    # ClientControllerRPC.getHelloWorldObjectLiteralPromise GET http://localhost:3000/api/foo/client/client/get-hello-world-object-literal-promise
 
     @staticmethod
     def getHelloWorldObjectLiteralPromise(
@@ -654,11 +122,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/get-hello-world-object-literal-promise"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getHelloWorldObjectLiteralPromise',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getHelloWorldHeaders GET http://localhost:3210/api/foo/client/client/get-hello-world-headers
+    # ClientControllerRPC.getHelloWorldHeaders GET http://localhost:3000/api/foo/client/client/get-hello-world-headers
 
     @staticmethod
     def getHelloWorldHeaders(
@@ -670,11 +144,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/get-hello-world-headers"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getHelloWorldHeaders',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getHelloWorldArray GET http://localhost:3210/api/foo/client/client/get-hello-world-array
+    # ClientControllerRPC.getHelloWorldArray GET http://localhost:3000/api/foo/client/client/get-hello-world-array
 
     @staticmethod
     def getHelloWorldArray(
@@ -686,11 +166,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/get-hello-world-array"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getHelloWorldArray',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getHelloWorldAndEmptyGeneric GET http://localhost:3210/api/foo/client/client/get-hello-world-and-empty-generic
+    # ClientControllerRPC.getHelloWorldAndEmptyGeneric GET http://localhost:3000/api/foo/client/client/get-hello-world-and-empty-generic
 
     @staticmethod
     def getHelloWorldAndEmptyGeneric(
@@ -702,11 +188,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/get-hello-world-and-empty-generic"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getHelloWorldAndEmptyGeneric',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getWithParams GET http://localhost:3210/api/foo/client/client/with-params/:hello
+    # ClientControllerRPC.getWithParams GET http://localhost:3000/api/foo/client/client/with-params/:hello
 
     @staticmethod
     def getWithParams(
@@ -718,11 +210,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/with-params/:hello"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getWithParams',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.postWithAll POST http://localhost:3210/api/foo/client/client/with-all/:hello
+    # ClientControllerRPC.postWithAll POST http://localhost:3000/api/foo/client/client/with-all/:hello
 
     @staticmethod
     def postWithAll(
@@ -734,11 +232,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/with-all/:hello"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='postWithAll',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.postWithBodyAndQueryUsingReqVovk POST http://localhost:3210/api/foo/client/client/with-all-using-req-vovk
+    # ClientControllerRPC.postWithBodyAndQueryUsingReqVovk POST http://localhost:3000/api/foo/client/client/with-all-using-req-vovk
 
     @staticmethod
     def postWithBodyAndQueryUsingReqVovk(
@@ -750,11 +254,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/with-all-using-req-vovk"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='postWithBodyAndQueryUsingReqVovk',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getNestedQuery GET http://localhost:3210/api/foo/client/client/nested-query
+    # ClientControllerRPC.getNestedQuery GET http://localhost:3000/api/foo/client/client/nested-query
 
     @staticmethod
     def getNestedQuery(
@@ -766,11 +276,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/nested-query"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getNestedQuery',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.postWithFormDataUsingReqVovk POST http://localhost:3210/api/foo/client/client/form-data
+    # ClientControllerRPC.postWithFormDataUsingReqVovk POST http://localhost:3000/api/foo/client/client/form-data
 
     @staticmethod
     def postWithFormDataUsingReqVovk(
@@ -782,11 +298,17 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/form-data"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='postWithFormDataUsingReqVovk',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # ClientControllerRPC.getErrorResponse GET http://localhost:3210/api/foo/client/client/error
+    # ClientControllerRPC.getErrorResponse GET http://localhost:3000/api/foo/client/client/error
 
     @staticmethod
     def getErrorResponse(
@@ -798,13 +320,19 @@ class ClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/client/error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='ClientControllerRPC',
+            handler_name='getErrorResponse',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
     
 class StreamingControllerRPC: 
-    # StreamingControllerRPC.postWithStreaming POST http://localhost:3210/api/foo/client/streaming/post-with-streaming
+    # StreamingControllerRPC.postWithStreaming POST http://localhost:3000/api/foo/client/streaming/post-with-streaming
 
     @staticmethod
     def postWithStreaming(
@@ -816,11 +344,17 @@ class StreamingControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming/post-with-streaming"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingControllerRPC',
+            handler_name='postWithStreaming',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingControllerRPC.postWithStreamingAndImmediateError POST http://localhost:3210/api/foo/client/streaming/post-with-streaming-and-immediate-error
+    # StreamingControllerRPC.postWithStreamingAndImmediateError POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-immediate-error
 
     @staticmethod
     def postWithStreamingAndImmediateError(
@@ -832,11 +366,17 @@ class StreamingControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming/post-with-streaming-and-immediate-error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingControllerRPC',
+            handler_name='postWithStreamingAndImmediateError',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingControllerRPC.postWithStreamingAndDelayedError POST http://localhost:3210/api/foo/client/streaming/post-with-streaming-and-delayed-error
+    # StreamingControllerRPC.postWithStreamingAndDelayedError POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-error
 
     @staticmethod
     def postWithStreamingAndDelayedError(
@@ -848,11 +388,17 @@ class StreamingControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming/post-with-streaming-and-delayed-error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingControllerRPC',
+            handler_name='postWithStreamingAndDelayedError',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingControllerRPC.postWithStreamingAndDelayedCustomError POST http://localhost:3210/api/foo/client/streaming/post-with-streaming-and-delayed-custom-error
+    # StreamingControllerRPC.postWithStreamingAndDelayedCustomError POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-custom-error
 
     @staticmethod
     def postWithStreamingAndDelayedCustomError(
@@ -864,11 +410,17 @@ class StreamingControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming/post-with-streaming-and-delayed-custom-error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingControllerRPC',
+            handler_name='postWithStreamingAndDelayedCustomError',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingControllerRPC.postWithStreamingAndDelayedUnhandledError POST http://localhost:3210/api/foo/client/streaming/post-with-streaming-and-delayed-unhandled-error
+    # StreamingControllerRPC.postWithStreamingAndDelayedUnhandledError POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-unhandled-error
 
     @staticmethod
     def postWithStreamingAndDelayedUnhandledError(
@@ -880,13 +432,19 @@ class StreamingControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming/post-with-streaming-and-delayed-unhandled-error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingControllerRPC',
+            handler_name='postWithStreamingAndDelayedUnhandledError',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
     
 class StreamingGeneratorControllerRPC: 
-    # StreamingGeneratorControllerRPC.getWithStreaming GET http://localhost:3210/api/foo/client/streaming-generator/get-with-streaming
+    # StreamingGeneratorControllerRPC.getWithStreaming GET http://localhost:3000/api/foo/client/streaming-generator/get-with-streaming
 
     @staticmethod
     def getWithStreaming(
@@ -898,11 +456,17 @@ class StreamingGeneratorControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming-generator/get-with-streaming"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingGeneratorControllerRPC',
+            handler_name='getWithStreaming',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingGeneratorControllerRPC.postWithAsyncStreaming POST http://localhost:3210/api/foo/client/streaming-generator/post-with-async-streaming
+    # StreamingGeneratorControllerRPC.postWithAsyncStreaming POST http://localhost:3000/api/foo/client/streaming-generator/post-with-async-streaming
 
     @staticmethod
     def postWithAsyncStreaming(
@@ -914,11 +478,17 @@ class StreamingGeneratorControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming-generator/post-with-async-streaming"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingGeneratorControllerRPC',
+            handler_name='postWithAsyncStreaming',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingGeneratorControllerRPC.postWithStreaming POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming
+    # StreamingGeneratorControllerRPC.postWithStreaming POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming
 
     @staticmethod
     def postWithStreaming(
@@ -930,11 +500,17 @@ class StreamingGeneratorControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming-generator/post-with-streaming"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingGeneratorControllerRPC',
+            handler_name='postWithStreaming',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingGeneratorControllerRPC.postWithStreamingAndImmediateError POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming-and-immediate-error
+    # StreamingGeneratorControllerRPC.postWithStreamingAndImmediateError POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-immediate-error
 
     @staticmethod
     def postWithStreamingAndImmediateError(
@@ -946,11 +522,17 @@ class StreamingGeneratorControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming-generator/post-with-streaming-and-immediate-error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingGeneratorControllerRPC',
+            handler_name='postWithStreamingAndImmediateError',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingGeneratorControllerRPC.postWithStreamingAndDelayedError POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming-and-delayed-error
+    # StreamingGeneratorControllerRPC.postWithStreamingAndDelayedError POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-error
 
     @staticmethod
     def postWithStreamingAndDelayedError(
@@ -962,11 +544,17 @@ class StreamingGeneratorControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming-generator/post-with-streaming-and-delayed-error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingGeneratorControllerRPC',
+            handler_name='postWithStreamingAndDelayedError',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingGeneratorControllerRPC.postWithStreamingAndDelayedCustomError POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming-and-delayed-custom-error
+    # StreamingGeneratorControllerRPC.postWithStreamingAndDelayedCustomError POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-custom-error
 
     @staticmethod
     def postWithStreamingAndDelayedCustomError(
@@ -978,11 +566,17 @@ class StreamingGeneratorControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming-generator/post-with-streaming-and-delayed-custom-error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingGeneratorControllerRPC',
+            handler_name='postWithStreamingAndDelayedCustomError',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # StreamingGeneratorControllerRPC.postWithStreamingAndDelayedUnhandledError POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming-and-delayed-unhandled-error
+    # StreamingGeneratorControllerRPC.postWithStreamingAndDelayedUnhandledError POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-unhandled-error
 
     @staticmethod
     def postWithStreamingAndDelayedUnhandledError(
@@ -994,13 +588,19 @@ class StreamingGeneratorControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/streaming-generator/post-with-streaming-and-delayed-unhandled-error"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='StreamingGeneratorControllerRPC',
+            handler_name='postWithStreamingAndDelayedUnhandledError',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
     
 class CustomSchemaControllerRPC: 
-    # CustomSchemaControllerRPC.getWithCustomSchema GET http://localhost:3210/api/foo/client//get-with-custom-schema
+    # CustomSchemaControllerRPC.getWithCustomSchema GET http://localhost:3000/api/foo/client//get-with-custom-schema
 
     @staticmethod
     def getWithCustomSchema(
@@ -1012,13 +612,19 @@ class CustomSchemaControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client//get-with-custom-schema"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='CustomSchemaControllerRPC',
+            handler_name='getWithCustomSchema',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
     
 class WithZodClientControllerRPC: 
-    # WithZodClientControllerRPC.handleAll POST http://localhost:3210/api/foo/client/with-zod/all/:foo/:bar
+    # WithZodClientControllerRPC.handleAll POST http://localhost:3000/api/foo/client/with-zod/all/:foo/:bar
     class handleAll_Body(TypedDict):
         hello: str
     class handleAll_Query(TypedDict):
@@ -1051,11 +657,17 @@ class WithZodClientControllerRPC:
         """ 
         This is a summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-zod/all/:foo/:bar"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithZodClientControllerRPC',
+            handler_name='handleAll',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithZodClientControllerRPC.handleQuery GET http://localhost:3210/api/foo/client/with-zod/handle-query
+    # WithZodClientControllerRPC.handleQuery GET http://localhost:3000/api/foo/client/with-zod/handle-query
     class handleQuery_Query(TypedDict):
         search: str
     @staticmethod
@@ -1068,11 +680,17 @@ class WithZodClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-zod/handle-query"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithZodClientControllerRPC',
+            handler_name='handleQuery',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithZodClientControllerRPC.handleBody POST http://localhost:3210/api/foo/client/with-zod/handle-body
+    # WithZodClientControllerRPC.handleBody POST http://localhost:3000/api/foo/client/with-zod/handle-body
     class handleBody_Body(TypedDict):
         hello: str
     @staticmethod
@@ -1085,11 +703,17 @@ class WithZodClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-zod/handle-body"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithZodClientControllerRPC',
+            handler_name='handleBody',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithZodClientControllerRPC.handleParams PUT http://localhost:3210/api/foo/client/with-zod/x/:foo/:bar/y
+    # WithZodClientControllerRPC.handleParams PUT http://localhost:3000/api/foo/client/with-zod/x/:foo/:bar/y
     class handleParams_Params(TypedDict):
         foo: str
         bar: str
@@ -1103,11 +727,17 @@ class WithZodClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-zod/x/:foo/:bar/y"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithZodClientControllerRPC',
+            handler_name='handleParams',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithZodClientControllerRPC.handleNestedQuery GET http://localhost:3210/api/foo/client/with-zod/handle-nested-query
+    # WithZodClientControllerRPC.handleNestedQuery GET http://localhost:3000/api/foo/client/with-zod/handle-nested-query
     class handleNestedQuery_Query_z_d_arrOfObjects_items_nestedObj(TypedDict):
         deepKey: str
     class handleNestedQuery_Query_z_d_arrOfObjects_items(TypedDict):
@@ -1135,11 +765,17 @@ class WithZodClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-zod/handle-nested-query"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithZodClientControllerRPC',
+            handler_name='handleNestedQuery',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithZodClientControllerRPC.handleOutput GET http://localhost:3210/api/foo/client/with-zod/handle-output
+    # WithZodClientControllerRPC.handleOutput GET http://localhost:3000/api/foo/client/with-zod/handle-output
     class handleOutput_Query(TypedDict):
         helloOutput: str
     class handleOutput_Output(TypedDict):
@@ -1154,11 +790,17 @@ class WithZodClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-zod/handle-output"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithZodClientControllerRPC',
+            handler_name='handleOutput',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithZodClientControllerRPC.handleStream GET http://localhost:3210/api/foo/client/with-zod/handle-stream
+    # WithZodClientControllerRPC.handleStream GET http://localhost:3000/api/foo/client/with-zod/handle-stream
     class handleStream_Query(TypedDict):
         values: List[str]
     @staticmethod
@@ -1171,11 +813,17 @@ class WithZodClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-zod/handle-stream"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithZodClientControllerRPC',
+            handler_name='handleStream',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithZodClientControllerRPC.handleNothitng POST http://localhost:3210/api/foo/client/with-zod/handle-nothitng
+    # WithZodClientControllerRPC.handleNothitng POST http://localhost:3000/api/foo/client/with-zod/handle-nothitng
 
     @staticmethod
     def handleNothitng(
@@ -1187,13 +835,19 @@ class WithZodClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-zod/handle-nothitng"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithZodClientControllerRPC',
+            handler_name='handleNothitng',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
     
 class WithYupClientControllerRPC: 
-    # WithYupClientControllerRPC.handleAll POST http://localhost:3210/api/foo/client/with-yup/all/:foo/:bar
+    # WithYupClientControllerRPC.handleAll POST http://localhost:3000/api/foo/client/with-yup/all/:foo/:bar
     class handleAll_Body(TypedDict):
         hello: Literal["world"]
     class handleAll_Query(TypedDict):
@@ -1226,11 +880,17 @@ class WithYupClientControllerRPC:
         """ 
         This is a summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-yup/all/:foo/:bar"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithYupClientControllerRPC',
+            handler_name='handleAll',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithYupClientControllerRPC.handleQuery GET http://localhost:3210/api/foo/client/with-yup/handle-query
+    # WithYupClientControllerRPC.handleQuery GET http://localhost:3000/api/foo/client/with-yup/handle-query
     class handleQuery_Query(TypedDict):
         search: Literal["value"]
     @staticmethod
@@ -1243,11 +903,17 @@ class WithYupClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-yup/handle-query"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithYupClientControllerRPC',
+            handler_name='handleQuery',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithYupClientControllerRPC.handleBody POST http://localhost:3210/api/foo/client/with-yup/handle-body
+    # WithYupClientControllerRPC.handleBody POST http://localhost:3000/api/foo/client/with-yup/handle-body
     class handleBody_Body(TypedDict):
         hello: Literal["world"]
     @staticmethod
@@ -1260,11 +926,17 @@ class WithYupClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-yup/handle-body"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithYupClientControllerRPC',
+            handler_name='handleBody',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithYupClientControllerRPC.handleParams PUT http://localhost:3210/api/foo/client/with-yup/x/:foo/:bar/y
+    # WithYupClientControllerRPC.handleParams PUT http://localhost:3000/api/foo/client/with-yup/x/:foo/:bar/y
     class handleParams_Params(TypedDict):
         foo: Literal["foo"]
         bar: Literal["bar"]
@@ -1278,11 +950,17 @@ class WithYupClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-yup/x/:foo/:bar/y"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithYupClientControllerRPC',
+            handler_name='handleParams',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithYupClientControllerRPC.handleNestedQuery GET http://localhost:3210/api/foo/client/with-yup/handle-nested-query
+    # WithYupClientControllerRPC.handleNestedQuery GET http://localhost:3000/api/foo/client/with-yup/handle-nested-query
     class handleNestedQuery_Query_z_d_arrOfObjects_items_nestedObj(TypedDict):
         deepKey: Optional[str]
     class handleNestedQuery_Query_z_d_arrOfObjects_items(TypedDict):
@@ -1310,11 +988,17 @@ class WithYupClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-yup/handle-nested-query"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithYupClientControllerRPC',
+            handler_name='handleNestedQuery',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithYupClientControllerRPC.handleOutput GET http://localhost:3210/api/foo/client/with-yup/handle-output
+    # WithYupClientControllerRPC.handleOutput GET http://localhost:3000/api/foo/client/with-yup/handle-output
     class handleOutput_Query(TypedDict):
         helloOutput: str
     class handleOutput_Output(TypedDict):
@@ -1329,11 +1013,17 @@ class WithYupClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-yup/handle-output"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithYupClientControllerRPC',
+            handler_name='handleOutput',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithYupClientControllerRPC.handleStream GET http://localhost:3210/api/foo/client/with-yup/handle-stream
+    # WithYupClientControllerRPC.handleStream GET http://localhost:3000/api/foo/client/with-yup/handle-stream
     class handleStream_Query(TypedDict):
         values: List[str]
     @staticmethod
@@ -1346,11 +1036,17 @@ class WithYupClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-yup/handle-stream"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithYupClientControllerRPC',
+            handler_name='handleStream',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithYupClientControllerRPC.handleNothitng POST http://localhost:3210/api/foo/client/with-yup/handle-nothitng
+    # WithYupClientControllerRPC.handleNothitng POST http://localhost:3000/api/foo/client/with-yup/handle-nothitng
 
     @staticmethod
     def handleNothitng(
@@ -1362,13 +1058,19 @@ class WithYupClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-yup/handle-nothitng"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithYupClientControllerRPC',
+            handler_name='handleNothitng',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
     
 class WithDtoClientControllerRPC: 
-    # WithDtoClientControllerRPC.handleAll POST http://localhost:3210/api/foo/client/with-dto/all/:foo/:bar
+    # WithDtoClientControllerRPC.handleAll POST http://localhost:3000/api/foo/client/with-dto/all/:foo/:bar
     class handleAll_Body(TypedDict):
         hello: Literal["world"]
     class handleAll_Query(TypedDict):
@@ -1391,11 +1093,17 @@ class WithDtoClientControllerRPC:
         """ 
         This is a summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/all/:foo/:bar"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleAll',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleAllClient POST http://localhost:3210/api/foo/client/with-dto/all/:foo/:bar/client
+    # WithDtoClientControllerRPC.handleAllClient POST http://localhost:3000/api/foo/client/with-dto/all/:foo/:bar/client
 
     @staticmethod
     def handleAllClient(
@@ -1407,11 +1115,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/all/:foo/:bar/client"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleAllClient',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleQuery GET http://localhost:3210/api/foo/client/with-dto/handle-query
+    # WithDtoClientControllerRPC.handleQuery GET http://localhost:3000/api/foo/client/with-dto/handle-query
     class handleQuery_Query(TypedDict):
         search: Literal["value"]
     @staticmethod
@@ -1424,11 +1138,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-query"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleQuery',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleQueryClient GET http://localhost:3210/api/foo/client/with-dto/handle-query-client
+    # WithDtoClientControllerRPC.handleQueryClient GET http://localhost:3000/api/foo/client/with-dto/handle-query-client
 
     @staticmethod
     def handleQueryClient(
@@ -1440,11 +1160,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-query-client"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleQueryClient',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleBody POST http://localhost:3210/api/foo/client/with-dto/handle-body
+    # WithDtoClientControllerRPC.handleBody POST http://localhost:3000/api/foo/client/with-dto/handle-body
     class handleBody_Body(TypedDict):
         hello: Literal["world"]
     @staticmethod
@@ -1457,11 +1183,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-body"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleBody',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleBodyClient POST http://localhost:3210/api/foo/client/with-dto/handle-body-client
+    # WithDtoClientControllerRPC.handleBodyClient POST http://localhost:3000/api/foo/client/with-dto/handle-body-client
 
     @staticmethod
     def handleBodyClient(
@@ -1473,11 +1205,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-body-client"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleBodyClient',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleParams PUT http://localhost:3210/api/foo/client/with-dto/x/:foo/:bar/y
+    # WithDtoClientControllerRPC.handleParams PUT http://localhost:3000/api/foo/client/with-dto/x/:foo/:bar/y
     class handleParams_Params(TypedDict):
         foo: Literal["foo"]
         bar: Literal["bar"]
@@ -1491,11 +1229,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/x/:foo/:bar/y"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleParams',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleParamsClient PUT http://localhost:3210/api/foo/client/with-dto/x/:foo/:bar/y/client
+    # WithDtoClientControllerRPC.handleParamsClient PUT http://localhost:3000/api/foo/client/with-dto/x/:foo/:bar/y/client
 
     @staticmethod
     def handleParamsClient(
@@ -1507,11 +1251,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/x/:foo/:bar/y/client"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleParamsClient',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleNestedQuery GET http://localhost:3210/api/foo/client/with-dto/handle-nested-query
+    # WithDtoClientControllerRPC.handleNestedQuery GET http://localhost:3000/api/foo/client/with-dto/handle-nested-query
     class handleNestedQuery_Query(TypedDict):
         x: str
         y: List[str]
@@ -1526,11 +1276,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-nested-query"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleNestedQuery',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleNestedQueryClient GET http://localhost:3210/api/foo/client/with-dto/handle-nested-query-client
+    # WithDtoClientControllerRPC.handleNestedQueryClient GET http://localhost:3000/api/foo/client/with-dto/handle-nested-query-client
 
     @staticmethod
     def handleNestedQueryClient(
@@ -1542,11 +1298,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-nested-query-client"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleNestedQueryClient',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleOutput GET http://localhost:3210/api/foo/client/with-dto/handle-output
+    # WithDtoClientControllerRPC.handleOutput GET http://localhost:3000/api/foo/client/with-dto/handle-output
     class handleOutput_Query(TypedDict):
         helloOutput: str
     class handleOutput_Output(TypedDict):
@@ -1561,11 +1323,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-output"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleOutput',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleOutputClient GET http://localhost:3210/api/foo/client/with-dto/handle-output-client
+    # WithDtoClientControllerRPC.handleOutputClient GET http://localhost:3000/api/foo/client/with-dto/handle-output-client
 
     @staticmethod
     def handleOutputClient(
@@ -1577,11 +1345,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-output-client"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleOutputClient',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleStream GET http://localhost:3210/api/foo/client/with-dto/handle-stream
+    # WithDtoClientControllerRPC.handleStream GET http://localhost:3000/api/foo/client/with-dto/handle-stream
     class handleStream_Query(TypedDict):
         values: List[str]
     @staticmethod
@@ -1594,11 +1368,17 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-stream"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleStream',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
-    # WithDtoClientControllerRPC.handleNothitng POST http://localhost:3210/api/foo/client/with-dto/handle-nothitng
+    # WithDtoClientControllerRPC.handleNothitng POST http://localhost:3000/api/foo/client/with-dto/handle-nothitng
 
     @staticmethod
     def handleNothitng(
@@ -1610,13 +1390,19 @@ class WithDtoClientControllerRPC:
         """ 
         No summary
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/with-dto/handle-nothitng"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='WithDtoClientControllerRPC',
+            handler_name='handleNothitng',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
     
 class OpenApiControllerRPC: 
-    # OpenApiControllerRPC.getSchema GET http://localhost:3210/api/foo/client/openapi/
+    # OpenApiControllerRPC.getSchema GET http://localhost:3000/api/foo/client/openapi/
 
     @staticmethod
     def getSchema(
@@ -1628,9 +1414,764 @@ class OpenApiControllerRPC:
         """ 
         Hello, World!
         """
-        if api_root is None:
-            api_root = default_api_root
-        url = f"{api_root}/foo/client/openapi/"
+        return api_client.request(
+            segment_name='foo/client',
+            controller_name='OpenApiControllerRPC',
+            handler_name='getSchema',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    
+
+class NoValidationControllerOnlyEntityRPC: 
+    # NoValidationControllerOnlyEntityRPC.getNoValidationControllerOnlyEntities GET http://localhost:3000/api/generated/no-validation-controller-only-entities/
+
+    @staticmethod
+    def getNoValidationControllerOnlyEntities(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='NoValidationControllerOnlyEntityRPC',
+            handler_name='getNoValidationControllerOnlyEntities',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # NoValidationControllerOnlyEntityRPC.updateNoValidationControllerOnlyEntity PUT http://localhost:3000/api/generated/no-validation-controller-only-entities/:id
+
+    @staticmethod
+    def updateNoValidationControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='NoValidationControllerOnlyEntityRPC',
+            handler_name='updateNoValidationControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # NoValidationControllerOnlyEntityRPC.createNoValidationControllerOnlyEntity POST http://localhost:3000/api/generated/no-validation-controller-only-entities/
+
+    @staticmethod
+    def createNoValidationControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='NoValidationControllerOnlyEntityRPC',
+            handler_name='createNoValidationControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # NoValidationControllerOnlyEntityRPC.deleteNoValidationControllerOnlyEntity DELETE http://localhost:3000/api/generated/no-validation-controller-only-entities/:id
+
+    @staticmethod
+    def deleteNoValidationControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='NoValidationControllerOnlyEntityRPC',
+            handler_name='deleteNoValidationControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    
+class NoValidationControllerAndServiceEntityRPC: 
+    # NoValidationControllerAndServiceEntityRPC.getNoValidationControllerAndServiceEntities GET http://localhost:3000/api/generated/no-validation-controller-and-service-entities/
+
+    @staticmethod
+    def getNoValidationControllerAndServiceEntities(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='NoValidationControllerAndServiceEntityRPC',
+            handler_name='getNoValidationControllerAndServiceEntities',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # NoValidationControllerAndServiceEntityRPC.updateNoValidationControllerAndServiceEntity PUT http://localhost:3000/api/generated/no-validation-controller-and-service-entities/:id
+
+    @staticmethod
+    def updateNoValidationControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='NoValidationControllerAndServiceEntityRPC',
+            handler_name='updateNoValidationControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # NoValidationControllerAndServiceEntityRPC.createNoValidationControllerAndServiceEntity POST http://localhost:3000/api/generated/no-validation-controller-and-service-entities/
+
+    @staticmethod
+    def createNoValidationControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='NoValidationControllerAndServiceEntityRPC',
+            handler_name='createNoValidationControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # NoValidationControllerAndServiceEntityRPC.deleteNoValidationControllerAndServiceEntity DELETE http://localhost:3000/api/generated/no-validation-controller-and-service-entities/:id
+
+    @staticmethod
+    def deleteNoValidationControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='NoValidationControllerAndServiceEntityRPC',
+            handler_name='deleteNoValidationControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    
+class ZodControllerOnlyEntityRPC: 
+    # ZodControllerOnlyEntityRPC.getZodControllerOnlyEntities GET http://localhost:3000/api/generated/zod-controller-only-entities/
+    class getZodControllerOnlyEntities_Query(TypedDict):
+        search: str
+    @staticmethod
+    def getZodControllerOnlyEntities(
+        body: None, 
+        query: ZodControllerOnlyEntityRPC.getZodControllerOnlyEntities_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='ZodControllerOnlyEntityRPC',
+            handler_name='getZodControllerOnlyEntities',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity PUT http://localhost:3000/api/generated/zod-controller-only-entities/:id
+    class updateZodControllerOnlyEntity_Body(TypedDict):
+        foo: Literal["bar", "baz"]
+    class updateZodControllerOnlyEntity_Query(TypedDict):
+        q: str
+    class updateZodControllerOnlyEntity_Params(TypedDict):
+        id: str
+    @staticmethod
+    def updateZodControllerOnlyEntity(
+        body: ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity_Body, 
+        query: ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity_Query,
+        params: ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity_Params,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='ZodControllerOnlyEntityRPC',
+            handler_name='updateZodControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # ZodControllerOnlyEntityRPC.createZodControllerOnlyEntity POST http://localhost:3000/api/generated/zod-controller-only-entities/
+
+    @staticmethod
+    def createZodControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='ZodControllerOnlyEntityRPC',
+            handler_name='createZodControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # ZodControllerOnlyEntityRPC.deleteZodControllerOnlyEntity DELETE http://localhost:3000/api/generated/zod-controller-only-entities/:id
+
+    @staticmethod
+    def deleteZodControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='ZodControllerOnlyEntityRPC',
+            handler_name='deleteZodControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    
+class ZodControllerAndServiceEntityRPC: 
+    # ZodControllerAndServiceEntityRPC.getZodControllerAndServiceEntities GET http://localhost:3000/api/generated/zod-controller-and-service-entities/
+    class getZodControllerAndServiceEntities_Query(TypedDict):
+        search: str
+    @staticmethod
+    def getZodControllerAndServiceEntities(
+        body: None, 
+        query: ZodControllerAndServiceEntityRPC.getZodControllerAndServiceEntities_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='ZodControllerAndServiceEntityRPC',
+            handler_name='getZodControllerAndServiceEntities',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # ZodControllerAndServiceEntityRPC.updateZodControllerAndServiceEntity PUT http://localhost:3000/api/generated/zod-controller-and-service-entities/:id
+    class updateZodControllerAndServiceEntity_Body(TypedDict):
+        foo: Literal["bar", "baz"]
+    class updateZodControllerAndServiceEntity_Query(TypedDict):
+        q: str
+    class updateZodControllerAndServiceEntity_Params(TypedDict):
+        id: str
+    @staticmethod
+    def updateZodControllerAndServiceEntity(
+        body: ZodControllerAndServiceEntityRPC.updateZodControllerAndServiceEntity_Body, 
+        query: ZodControllerAndServiceEntityRPC.updateZodControllerAndServiceEntity_Query,
+        params: ZodControllerAndServiceEntityRPC.updateZodControllerAndServiceEntity_Params,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='ZodControllerAndServiceEntityRPC',
+            handler_name='updateZodControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # ZodControllerAndServiceEntityRPC.createZodControllerAndServiceEntity POST http://localhost:3000/api/generated/zod-controller-and-service-entities/
+
+    @staticmethod
+    def createZodControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='ZodControllerAndServiceEntityRPC',
+            handler_name='createZodControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # ZodControllerAndServiceEntityRPC.deleteZodControllerAndServiceEntity DELETE http://localhost:3000/api/generated/zod-controller-and-service-entities/:id
+
+    @staticmethod
+    def deleteZodControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='ZodControllerAndServiceEntityRPC',
+            handler_name='deleteZodControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    
+class YupControllerOnlyEntityRPC: 
+    # YupControllerOnlyEntityRPC.getYupControllerOnlyEntities GET http://localhost:3000/api/generated/yup-controller-only-entities/
+    class getYupControllerOnlyEntities_Query(TypedDict):
+        search: Optional[str]
+    @staticmethod
+    def getYupControllerOnlyEntities(
+        body: None, 
+        query: YupControllerOnlyEntityRPC.getYupControllerOnlyEntities_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='YupControllerOnlyEntityRPC',
+            handler_name='getYupControllerOnlyEntities',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # YupControllerOnlyEntityRPC.updateYupControllerOnlyEntity PUT http://localhost:3000/api/generated/yup-controller-only-entities/:id
+    class updateYupControllerOnlyEntity_Body(TypedDict):
+        foo: Literal["bar", "baz"]
+    class updateYupControllerOnlyEntity_Query(TypedDict):
+        q: Optional[str]
+    @staticmethod
+    def updateYupControllerOnlyEntity(
+        body: YupControllerOnlyEntityRPC.updateYupControllerOnlyEntity_Body, 
+        query: YupControllerOnlyEntityRPC.updateYupControllerOnlyEntity_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='YupControllerOnlyEntityRPC',
+            handler_name='updateYupControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # YupControllerOnlyEntityRPC.createYupControllerOnlyEntity POST http://localhost:3000/api/generated/yup-controller-only-entities/
+
+    @staticmethod
+    def createYupControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='YupControllerOnlyEntityRPC',
+            handler_name='createYupControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # YupControllerOnlyEntityRPC.deleteYupControllerOnlyEntity DELETE http://localhost:3000/api/generated/yup-controller-only-entities/:id
+
+    @staticmethod
+    def deleteYupControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='YupControllerOnlyEntityRPC',
+            handler_name='deleteYupControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    
+class YupControllerAndServiceEntityRPC: 
+    # YupControllerAndServiceEntityRPC.getYupControllerAndServiceEntities GET http://localhost:3000/api/generated/yup-controller-and-service-entities/
+    class getYupControllerAndServiceEntities_Query(TypedDict):
+        search: Optional[str]
+    @staticmethod
+    def getYupControllerAndServiceEntities(
+        body: None, 
+        query: YupControllerAndServiceEntityRPC.getYupControllerAndServiceEntities_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='YupControllerAndServiceEntityRPC',
+            handler_name='getYupControllerAndServiceEntities',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # YupControllerAndServiceEntityRPC.updateYupControllerAndServiceEntity PUT http://localhost:3000/api/generated/yup-controller-and-service-entities/:id
+    class updateYupControllerAndServiceEntity_Body(TypedDict):
+        foo: Literal["bar", "baz"]
+    class updateYupControllerAndServiceEntity_Query(TypedDict):
+        q: Optional[str]
+    @staticmethod
+    def updateYupControllerAndServiceEntity(
+        body: YupControllerAndServiceEntityRPC.updateYupControllerAndServiceEntity_Body, 
+        query: YupControllerAndServiceEntityRPC.updateYupControllerAndServiceEntity_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='YupControllerAndServiceEntityRPC',
+            handler_name='updateYupControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # YupControllerAndServiceEntityRPC.createYupControllerAndServiceEntity POST http://localhost:3000/api/generated/yup-controller-and-service-entities/
+
+    @staticmethod
+    def createYupControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='YupControllerAndServiceEntityRPC',
+            handler_name='createYupControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # YupControllerAndServiceEntityRPC.deleteYupControllerAndServiceEntity DELETE http://localhost:3000/api/generated/yup-controller-and-service-entities/:id
+
+    @staticmethod
+    def deleteYupControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='YupControllerAndServiceEntityRPC',
+            handler_name='deleteYupControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    
+class DtoControllerOnlyEntityRPC: 
+    # DtoControllerOnlyEntityRPC.getDtoControllerOnlyEntities GET http://localhost:3000/api/generated/dto-controller-only-entities/
+    class getDtoControllerOnlyEntities_Query(TypedDict):
+        search: str
+    @staticmethod
+    def getDtoControllerOnlyEntities(
+        body: None, 
+        query: DtoControllerOnlyEntityRPC.getDtoControllerOnlyEntities_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='DtoControllerOnlyEntityRPC',
+            handler_name='getDtoControllerOnlyEntities',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # DtoControllerOnlyEntityRPC.updateDtoControllerOnlyEntity PUT http://localhost:3000/api/generated/dto-controller-only-entities/:id
+    class updateDtoControllerOnlyEntity_Body(TypedDict):
+        foo: Literal["bar", "baz"]
+    class updateDtoControllerOnlyEntity_Query(TypedDict):
+        q: str
+    @staticmethod
+    def updateDtoControllerOnlyEntity(
+        body: DtoControllerOnlyEntityRPC.updateDtoControllerOnlyEntity_Body, 
+        query: DtoControllerOnlyEntityRPC.updateDtoControllerOnlyEntity_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='DtoControllerOnlyEntityRPC',
+            handler_name='updateDtoControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # DtoControllerOnlyEntityRPC.createDtoControllerOnlyEntity POST http://localhost:3000/api/generated/dto-controller-only-entities/
+
+    @staticmethod
+    def createDtoControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='DtoControllerOnlyEntityRPC',
+            handler_name='createDtoControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # DtoControllerOnlyEntityRPC.deleteDtoControllerOnlyEntity DELETE http://localhost:3000/api/generated/dto-controller-only-entities/:id
+
+    @staticmethod
+    def deleteDtoControllerOnlyEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='DtoControllerOnlyEntityRPC',
+            handler_name='deleteDtoControllerOnlyEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    
+class DtoControllerAndServiceEntityRPC: 
+    # DtoControllerAndServiceEntityRPC.getDtoControllerAndServiceEntities GET http://localhost:3000/api/generated/dto-controller-and-service-entities/
+    class getDtoControllerAndServiceEntities_Query(TypedDict):
+        search: str
+    @staticmethod
+    def getDtoControllerAndServiceEntities(
+        body: None, 
+        query: DtoControllerAndServiceEntityRPC.getDtoControllerAndServiceEntities_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='DtoControllerAndServiceEntityRPC',
+            handler_name='getDtoControllerAndServiceEntities',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # DtoControllerAndServiceEntityRPC.updateDtoControllerAndServiceEntity PUT http://localhost:3000/api/generated/dto-controller-and-service-entities/:id
+    class updateDtoControllerAndServiceEntity_Body(TypedDict):
+        foo: Literal["bar", "baz"]
+    class updateDtoControllerAndServiceEntity_Query(TypedDict):
+        q: str
+    @staticmethod
+    def updateDtoControllerAndServiceEntity(
+        body: DtoControllerAndServiceEntityRPC.updateDtoControllerAndServiceEntity_Body, 
+        query: DtoControllerAndServiceEntityRPC.updateDtoControllerAndServiceEntity_Query,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='DtoControllerAndServiceEntityRPC',
+            handler_name='updateDtoControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # DtoControllerAndServiceEntityRPC.createDtoControllerAndServiceEntity POST http://localhost:3000/api/generated/dto-controller-and-service-entities/
+
+    @staticmethod
+    def createDtoControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='DtoControllerAndServiceEntityRPC',
+            handler_name='createDtoControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
+        
+    # DtoControllerAndServiceEntityRPC.deleteDtoControllerAndServiceEntity DELETE http://localhost:3000/api/generated/dto-controller-and-service-entities/:id
+
+    @staticmethod
+    def deleteDtoControllerAndServiceEntity(
+        body: None, 
+        query: None,
+        params: None,
+        api_root: str | None = None
+    ) -> Any:
+        """ 
+        No summary
+        """
+        return api_client.request(
+            segment_name='generated',
+            controller_name='DtoControllerAndServiceEntityRPC',
+            handler_name='deleteDtoControllerAndServiceEntity',
+            body=body,
+            query=query,
+            params=params,
+            api_root=api_root
+        )
         
     
 

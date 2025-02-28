@@ -1,5 +1,7 @@
 import path from 'node:path';
+import { glob } from 'node:fs/promises';
 import type { VovkStrictConfig } from 'vovk';
+import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 
 interface ClientTemplate {
   templateName: string;
@@ -8,7 +10,7 @@ interface ClientTemplate {
   emitFullSchema?: string | boolean;
 }
 
-export default function getClientTemplates({
+export default async function getClientTemplates({
   config,
   cwd,
   generateFrom = [],
@@ -20,47 +22,64 @@ export default function getClientTemplates({
   const templatesDir = path.join(import.meta.dirname, '../..', 'client-templates');
   const clientOutDirAbsolutePath = path.resolve(cwd, config.clientOutDir);
 
-  const mapper =
-    (dir: string) =>
-    (name: string): ClientTemplate => ({
-      templateName: dir,
-      templatePath: path.resolve(templatesDir, dir, name),
-      outPath: path.join(clientOutDirAbsolutePath, name.replace('.ejs', '')),
-    });
-  const builtInTemplatesMap = {
-    ts: ['index.ts.ejs'].map(mapper('ts')),
-    main: ['main.cjs.ejs', 'main.d.cts.ejs'].map(mapper('main')),
-    module: ['module.mjs.ejs', 'module.d.mts.ejs'].map(mapper('module')),
-    python: ['__init__.py'].map(mapper('python')),
+  type GenerateFromStrict = Required<Exclude<VovkStrictConfig['generateFrom'][number], string>>;
+
+  const builtIn: Record<string, GenerateFromStrict> = {
+    ts: {
+      templateName: 'ts',
+      templatePath: path.resolve(templatesDir, 'ts', '*'),
+      outDir: clientOutDirAbsolutePath,
+      fullSchema: false,
+    },
+    main: {
+      templateName: 'main',
+      templatePath: path.resolve(templatesDir, 'main', '*'),
+      outDir: clientOutDirAbsolutePath,
+      fullSchema: false,
+    },
+    module: {
+      templateName: 'module',
+      templatePath: path.resolve(templatesDir, 'module', '*'),
+      outDir: clientOutDirAbsolutePath,
+      fullSchema: false,
+    },
   };
 
-  const templateFiles: ClientTemplate[] = (generateFrom ?? config.generateFrom).reduce((acc, template) => {
+  const generateFromStrict: GenerateFromStrict[] = generateFrom.map((template) => {
     if (typeof template === 'string') {
-      if (template in builtInTemplatesMap) {
-        return [...acc, ...builtInTemplatesMap[template as 'ts']];
+      if (template in builtIn) {
+        return builtIn[template as 'ts'];
       }
-      return [
-        ...acc,
-        {
-          templateName: template,
-          templatePath: path.resolve(cwd, template),
-          outPath: path.join(clientOutDirAbsolutePath, path.basename(template).replace('.ejs', '')),
-        },
-      ];
+      return {
+        templateName: template,
+        templatePath: resolveAbsoluteModulePath(template, cwd),
+        outDir: clientOutDirAbsolutePath,
+        fullSchema: false,
+      };
     }
 
-    const outDirAbsolutePath = template.outDir ? path.resolve(cwd, template.outDir) : clientOutDirAbsolutePath;
+    return {
+      templateName: template.templateName ?? template.templatePath,
+      templatePath: resolveAbsoluteModulePath(template.templatePath, cwd),
+      outDir: template.outDir ? path.resolve(cwd, template.outDir) : clientOutDirAbsolutePath,
+      fullSchema: template.fullSchema ?? false,
+    };
+  });
 
-    return [
-      ...acc,
-      {
-        templateName: template.templateName ?? template.templatePath,
-        templatePath: path.resolve(cwd, template.templatePath),
-        outPath: path.join(outDirAbsolutePath, path.basename(template.templatePath).replace('.ejs', '')),
-        fullSchema: template.fullSchema,
-      },
-    ];
-  }, [] as ClientTemplate[]);
+  const templateFiles: ClientTemplate[] = [];
+
+  for (const generateFromItem of generateFromStrict) {
+    const files = await glob(generateFromItem.templatePath);
+
+    for await (const templatePath of files) {
+      templateFiles.push({
+        templateName: generateFromItem.templateName,
+        templatePath,
+        outPath: path.join(generateFromItem.outDir, path.basename(templatePath).replace('.ejs', '')),
+        emitFullSchema: generateFromItem.fullSchema,
+      });
+    }
+  }
 
   return { clientOutDirAbsolutePath, templateFiles };
 }

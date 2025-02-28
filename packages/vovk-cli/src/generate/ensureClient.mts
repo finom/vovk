@@ -8,7 +8,7 @@ import path from 'node:path';
 export default async function ensureClient({ config, cwd, log }: ProjectInfo) {
   const now = Date.now();
 
-  const { clientOutDirAbsolutePath, templateFiles } = getClientTemplates({
+  const { clientOutDirAbsolutePath, templateFiles } = await getClientTemplates({
     config,
     cwd,
     generateFrom: config.generateFrom,

@@ -1,11 +1,8 @@
+import type { headers } from 'next/headers'
 import type { KnownAny, StreamAbortMessage } from './types';
 import './utils/shim';
 
 export class StreamJSONResponse<T> extends Response {
-  public static defaultHeaders = {
-    'content-type': 'text/plain; x-format=jsonlines',
-  };
-
   public isClosed = false;
 
   public controller?: ReadableStreamDefaultController;
@@ -14,7 +11,7 @@ export class StreamJSONResponse<T> extends Response {
 
   public readonly readableStream: ReadableStream;
 
-  constructor(init?: ResponseInit) {
+  constructor(requestHeaders: Awaited<ReturnType<typeof headers>>, init?: ResponseInit) {
     const encoder = new TextEncoder();
     let readableController: ReadableStreamDefaultController;
 
@@ -26,10 +23,20 @@ export class StreamJSONResponse<T> extends Response {
         readableController = controller;
       },
     });
+    
+
+    if(!requestHeaders) {
+      throw new Error('Request headers are required');
+    }
+
+    const accept = requestHeaders.get('accept');
 
     super(readableStream, {
       ...init,
-      headers: init?.headers ?? StreamJSONResponse.defaultHeaders,
+      headers: {
+        ...init?.headers,
+        'Content-Type': accept?.includes('application/jsonl') ? 'application/jsonl' : 'plain/text',
+      }
     });
 
     this.readableStream = readableStream;

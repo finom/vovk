@@ -94,9 +94,10 @@ program
   )
   .option('--emit-full-schema, --full-schema [fileName]', 'generate client with full schema')
   .option('--prettify', 'prettify output files')
+  .option('--config <config>', 'path to config file')
   .action(async (options: GenerateOptions) => {
-    const { clientOutDir, templates, prettify, emitFullSchema } = options;
-    const projectInfo = await getProjectInfo({ clientOutDir });
+    const { clientOutDir, templates, prettify, emitFullSchema, config: configPath } = options;
+    const projectInfo = await getProjectInfo({ clientOutDir, configPath });
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments({ dir: apiDir, config });
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);

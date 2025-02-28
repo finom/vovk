@@ -31,6 +31,10 @@ export const fetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
   const init: RequestInit = {
     method: httpMethod,
     ...options,
+    headers: {
+      ...options.headers,
+      accept: 'application/jsonl, application/json',
+    },
   };
 
   if (body instanceof FormData) {
