@@ -3,11 +3,13 @@ import { glob } from 'node:fs/promises';
 import type { VovkStrictConfig } from 'vovk';
 import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 
+export const DEFAULT_FULL_SCHEMA_FILE_NAME = 'full-schema.json';
+
 interface ClientTemplate {
   templateName: string;
   templatePath: string;
   outPath: string;
-  emitFullSchema?: string | boolean;
+  fullSchemaOutAbsolutePath: string | null;
 }
 
 export default async function getClientTemplates({
@@ -72,11 +74,17 @@ export default async function getClientTemplates({
     const files = await glob(generateFromItem.templatePath);
 
     for await (const templatePath of files) {
+      const fullSchemaOutAbsolutePath = generateFromItem.fullSchema
+        ? path.resolve(
+            generateFromItem.outDir,
+            generateFromItem.fullSchema === 'string' ? generateFromItem.fullSchema : DEFAULT_FULL_SCHEMA_FILE_NAME
+          )
+        : null;
       templateFiles.push({
         templateName: generateFromItem.templateName,
         templatePath,
         outPath: path.join(generateFromItem.outDir, path.basename(templatePath).replace('.ejs', '')),
-        emitFullSchema: generateFromItem.fullSchema,
+        fullSchemaOutAbsolutePath,
       });
     }
   }

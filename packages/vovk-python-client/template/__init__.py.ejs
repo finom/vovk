@@ -5,13 +5,11 @@ imports: ['vovk-python-client']
     convertJSONSchemaToPythonType: t.imports['vovk-python-client'].convertJSONSchemaToPythonType,
 }; %>
 <%- `# auto-generated ${new Date().toISOString()}` %>
+from __future__ import annotations  # Enables forward references in type hints
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple
 import os
 import json
-from api_client import ApiClient
-
-# Optional but recommended if using Python 3.7+:
-from __future__ import annotations  # Enables forward references in type hints
+from .api_client import ApiClient
 
 def _load_full_schema() -> dict:
     """
@@ -22,25 +20,29 @@ def _load_full_schema() -> dict:
     schema_path = os.path.join(current_dir, "full-schema.json")
     with open(schema_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
 full_schema = _load_full_schema()
-api_client = new ApiClient('<%= t.apiRoot %>')
+
+client = ApiClient('<%= t.apiRoot %>', full_schema)
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
 class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerName, { validation, openapi, path, httpMethod }]) => { %>
     # <%= controllerName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
 <%- ([
-        vars.convertJSONSchemaToPythonType({ schema: validation?.body, namespace: controllerName, className: `${handlerName}_Body`, pad: 4 }),
-        vars.convertJSONSchemaToPythonType({ schema: validation?.query, namespace: controllerName, className: `${handlerName}_Query`, pad: 4 }),
-        vars.convertJSONSchemaToPythonType({ schema: validation?.params, namespace: controllerName, className: `${handlerName}_Params`, pad: 4 }),
-        vars.convertJSONSchemaToPythonType({ schema: validation?.output, namespace: controllerName, className: `${handlerName}_Output`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.body, namespace: controllerName, className: `__${handlerName}_Body`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.query, namespace: controllerName, className: `__${handlerName}_Query`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.params, namespace: controllerName, className: `__${handlerName}_Params`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.output, namespace: controllerName, className: `__${handlerName}_Output`, pad: 4 }),
     ]).filter(Boolean).join('\n') %>
     @staticmethod
     def <%= handlerName %>(
-        body: <%= validation?.body ? `${controllerName}.${handlerName}_Body` : 'None' %>, 
-        query: <%= validation?.query ? `${controllerName}.${handlerName}_Query` : 'None' %>,
-        params: <%= validation?.params ? `${controllerName}.${handlerName}_Params` : 'None' %>,
-        api_root: str | None = None
-    ) -> <%= validation?.output ? `${controllerName}.${handlerName}_Output` : 'Any' %>:
+<%= [
+            validation?.body ? `body: ${controllerName}.__${handlerName}_Body,` : '', 
+            validation?.query ? `query: ${controllerName}.__${handlerName}_Query,` : '', 
+            validation?.params ? `params: ${controllerName}.__${handlerName}_Params,` : ''
+        ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
+        api_root: Optional[str] = None
+    ) -> <%= validation?.output ? `${controllerName}.__${handlerName}_Output` : 'Any' %>:
         """ 
 <%= ([
                 openapi?.summary ?? 'No summary',
@@ -50,13 +52,15 @@ class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerName, 
                 validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
             ]).filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
         """
-        return api_client.request(
+        return client.request(
             segment_name='<%= segmentName %>',
             controller_name='<%= controllerName %>',
             handler_name='<%= handlerName %>',
-            body=body,
-            query=query,
-            params=params,
+<%= [
+                validation?.body ? 'body=body,' : '', 
+                validation?.query ? 'query=query,' : '',
+                validation?.params ? 'params=params,' : ''
+            ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
             api_root=api_root
         )
         <% }) %>

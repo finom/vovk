@@ -1,4 +1,4 @@
-import type { headers } from 'next/headers'
+import type { headers } from 'next/headers';
 import type { KnownAny, StreamAbortMessage } from './types';
 import './utils/shim';
 
@@ -23,9 +23,8 @@ export class StreamJSONResponse<T> extends Response {
         readableController = controller;
       },
     });
-    
 
-    if(!requestHeaders) {
+    if (!requestHeaders) {
       throw new Error('Request headers are required');
     }
 
@@ -36,7 +35,7 @@ export class StreamJSONResponse<T> extends Response {
       headers: {
         ...init?.headers,
         'Content-Type': accept?.includes('application/jsonl') ? 'application/jsonl' : 'plain/text',
-      }
+      },
     });
 
     this.readableStream = readableStream;

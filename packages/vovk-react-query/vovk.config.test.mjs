@@ -7,6 +7,4 @@ const vovkConfig = {
   origin: `http://localhost:${process.env.PORT}`,
 };
 
-console.log(process.cwd());
-
 export default vovkConfig;

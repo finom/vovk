@@ -166,27 +166,29 @@ class ApiClient:
         segment_name: str,
         controller_name: str,
         handler_name: str,
-        api_root: str,
-        body: Optional[Dict[str, Any]] = None,
-        query: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None
-    ) -> Union[Dict[str, Any], Generator[Dict[str, Any], None, None]]:
+        api_root: Optional[str],
+        body: Optional[Any] = None,
+        query: Optional[Any] = None,
+        params: Optional[Any] = None
+    ) -> Any:
         """
         Make an API request based on a full schema and controller/handler
         configuration.
         """
         # Extract relevant information from the full schema
-        schema = self.full_schema.segments.get(segment_name, {})
-        controller = schema.controllers.get(controller_name, {})
-        handler = controller.handlers.get(handler_name, {})
+        schema = self.full_schema['segments'][segment_name]
+        controller = schema['controllers'][controller_name]
+        handlers = controller['handlers']
+        handler = handlers[handler_name]
+        prefix = controller['prefix']
+        handler_path = handler['path']
+        http_method = handler['httpMethod']
+        validation = handler.get('validation', {})
 
         api_root = api_root if api_root else self.api_root
 
-        url = '/'.join(filter(None, [api_root, segment_name, controller.prefix, handler.path]))
+        url = '/'.join(filter(None, [api_root, segment_name, prefix, handler_path]))
 
-        http_method = handler.get('httpMethod', None)
-        validation = handler.get('validation', None)
-        
         return self.make_api_request(
             url=url,
             http_method=http_method,
@@ -204,7 +206,7 @@ class ApiClient:
         query: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         validation: Optional[Dict[str, Any]] = None
-    ) -> Union[Dict[str, Any], Generator[Dict[str, Any], None, None]]:
+    ) -> Any:
         """
         Make an API request with optional validation and parameter handling.
         
@@ -289,7 +291,7 @@ class ApiClient:
         if 'application/jsonl' in content_type:
             return self._stream_jsonl(response)
         
-        elif 'application/jsonl' in content_type:
+        elif 'application/json' in content_type:
             return response.json()
         
         # Default to returning raw content if content type is not recognized

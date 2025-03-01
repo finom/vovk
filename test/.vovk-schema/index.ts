@@ -9,7 +9,7 @@ const fullSchema = {
   segments: {
     '': segment0 as unknown as VovkSegmentSchema,
     'foo/client': segment1 as unknown as VovkSegmentSchema,
-    'generated': segment2 as unknown as VovkSegmentSchema,
-  }
+    generated: segment2 as unknown as VovkSegmentSchema,
+  },
 };
 export default fullSchema;

@@ -5,7 +5,7 @@ declare const fullSchema: {
   segments: {
     '': VovkSegmentSchema;
     'foo/client': VovkSegmentSchema;
-    'generated': VovkSegmentSchema;
+    generated: VovkSegmentSchema;
   };
 };
 export default fullSchema;

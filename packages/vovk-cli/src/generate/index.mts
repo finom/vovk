@@ -6,7 +6,7 @@ import uniq from 'lodash/uniq.js';
 import type { VovkFullSchema } from 'vovk';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import prettify from '../utils/prettify.mjs';
-import getClientTemplates from './getClientTemplates.mjs';
+import getClientTemplates, { DEFAULT_FULL_SCHEMA_FILE_NAME } from './getClientTemplates.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { Segment } from '../locateSegments.mjs';
@@ -115,29 +115,33 @@ export default async function generate({
     processedTemplates.filter(({ needsWriting }) => needsWriting).map(({ templateName }) => templateName)
   );
 
-  let fullSchemaNames: string[] = [];
-
-  const DEFAULT_NAME = 'full-schema.json';
+  let schemaPaths = templateFiles
+    .map(({ fullSchemaOutAbsolutePath }) => fullSchemaOutAbsolutePath)
+    .filter(Boolean) as string[];
 
   if (emitFullSchema) {
-    fullSchemaNames.push(typeof fullSchema === 'string' ? fullSchema : DEFAULT_NAME);
-    fullSchemaNames.push(
-      ...templateFiles
-        .filter(({ emitFullSchema }) => emitFullSchema)
-        .map(({ emitFullSchema }) => (typeof emitFullSchema === 'string' ? emitFullSchema : DEFAULT_NAME))
-    );
+    const fullSchemaOutAbsolutePath = emitFullSchema
+      ? path.resolve(
+          clientOutDirAbsolutePath,
+          emitFullSchema === 'string' ? emitFullSchema : DEFAULT_FULL_SCHEMA_FILE_NAME
+        )
+      : null;
+    if (fullSchemaOutAbsolutePath) {
+      schemaPaths.push(fullSchemaOutAbsolutePath);
+    }
   }
 
-  fullSchemaNames = uniq(fullSchemaNames);
+  schemaPaths = uniq(schemaPaths);
 
-  if (fullSchemaNames.length) {
+  if (schemaPaths.length) {
     await Promise.all(
-      fullSchemaNames.map(async (name) => {
-        const fullSchemaOutAbsolutePath = path.resolve(clientOutDirAbsolutePath, name);
-        await fs.writeFile(fullSchemaOutAbsolutePath, JSON.stringify(segmentsSchema, null, 2));
-        log.info(`Full schema has ben written to ${fullSchemaOutAbsolutePath}`);
+      schemaPaths.map(async (fullSchemaOutAbsolutePath) => {
+        fs.mkdir(path.dirname(fullSchemaOutAbsolutePath), { recursive: true });
+        return fs.writeFile(fullSchemaOutAbsolutePath, JSON.stringify(fullSchema, null, 2));
       })
     );
+
+    log.info(`Full schema has been written to ${schemaPaths.map((s) => `"${s}"`).join(', ')}`);
   }
 
   if (usedTemplateNames.length === 0) {
@@ -150,7 +154,7 @@ export default async function generate({
   await Promise.all(
     processedTemplates.map(async ({ outPath, rendered, needsWriting }) => {
       if (needsWriting) {
-        await fs.mkdir(clientOutDirAbsolutePath, { recursive: true });
+        await fs.mkdir(path.dirname(outPath), { recursive: true });
         return fs.writeFile(outPath, rendered);
       }
       return null;
@@ -158,7 +162,7 @@ export default async function generate({
   );
 
   log.info(
-    `Client generated from template${usedTemplateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(usedTemplateNames.map((s) => `"${s}"`).join(', '))} at ${clientOutDirAbsolutePath} in ${Date.now() - now}ms`
+    `Client generated from template${usedTemplateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(usedTemplateNames.map((s) => `"${s}"`).join(', '))} in ${Date.now() - now}ms`
   );
   return { written: true, path: clientOutDirAbsolutePath };
 }

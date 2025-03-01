@@ -4,7 +4,7 @@
     "noEmit": false
   },
   "include": ["index.mts", "test/**/*.mts"],
-  "exclude": ["*.d.mts", "*.d.cts", "vovk.config.test.mjs"], 
+  "exclude": ["*.d.mts", "*.d.cts", "vovk.config.test.mjs"],
   "paths": {
     "react/*": ["../../node_modules/react/*"]
   }
