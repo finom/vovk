@@ -19,7 +19,7 @@ await describe.only('Client templates', async () => {
     await vovkDevAndKill();
   });
 
-  const customTemplatesDir = path.join(import.meta.dirname, '../../../test_data/client-templates');
+  const customTemplatesDir = path.join(import.meta.dirname, '../../../test/data/client-templates');
 
   await it('Basic check', async () => {
     await runAtProjectDir(
@@ -72,7 +72,7 @@ await describe.only('Client templates', async () => {
     );
 
     await assertFile(`${compiledClientFolderName}/index.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+      'import type { Controllers as Controllers0 } from "../dist/app/api/[[...vovk]]/route.ts";',
       "schema[''].controllers.UserRPC",
     ]);
     await assertDirFileList(compiledClientFolderName, ['index.ts']);
@@ -87,10 +87,10 @@ await describe.only('Client templates', async () => {
       `const { default: fetcher } = require('vovk/dist/client/defaultFetcher.js')`,
     ]);
     await assertFile(`${compiledClientFolderName}/main.d.cts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+      'import type { Controllers as Controllers0 } from "../dist/app/api/[[...vovk]]/route.ts";',
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+      'import type { Controllers as Controllers0 } from "../dist/app/api/[[...vovk]]/route.ts";',
     ]);
 
     await assertDirFileList(compiledClientFolderName, ['main.cjs', 'main.d.cts', 'custom.ts']);
@@ -105,10 +105,10 @@ await describe.only('Client templates', async () => {
       `const { default: fetcher } = require('vovk/dist/client/defaultFetcher.js')`,
     ]);
     await assertFile(`${compiledClientFolderName}/main.d.cts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+      'import type { Controllers as Controllers0 } from "../dist/app/api/[[...vovk]]/route.ts";',
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+      'import type { Controllers as Controllers0 } from "../dist/app/api/[[...vovk]]/route.ts";',
       '// Hello from custom.js.ejs',
     ]);
     await assertDirFileList(compiledClientFolderName, ['main.cjs', 'main.d.cts', 'custom.ts', 'hello-world.js']);

@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import { VovkSegmentSchema } from 'vovk';
+import type { VovkSegmentSchema } from 'vovk';
 import assert from 'node:assert';
 
 let dev: Promise<string> & {
@@ -14,7 +14,7 @@ await describe('CLI dev', async () => {
   const dir = 'tmp_test_dir';
   const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({ cwd, dir });
   const getSchema = async () =>
-    JSON.parse(await fs.readFile(path.join(cwd, dir, '.vovk-schema/_root.json'), 'utf8')) as VovkSegmentSchema;
+    JSON.parse(await fs.readFile(path.join(cwd, dir, '.vovk-schema/segments/_root.json'), 'utf8')) as VovkSegmentSchema;
 
   const devCommands = {
     Implicit: '../dist/index.mjs dev --next-dev',

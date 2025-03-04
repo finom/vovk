@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { it, describe } from 'node:test';
-import locateSegments from '../../../src/locateSegments.mts';
 import path from 'node:path';
+import locateSegments from '../../../dist/locateSegments.mjs';
 
 await describe('locateSegment', async () => {
   await it('Locates segments properly', async () => {

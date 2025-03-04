@@ -3,8 +3,8 @@ import { it, describe, beforeEach, afterEach, before } from 'node:test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import * as glob from 'glob';
-import ensureSchemaFiles from '../../../src/dev/ensureSchemaFiles.mts';
-import getProjectInfo, { type ProjectInfo } from '../../../src/getProjectInfo/index.mts';
+import ensureSchemaFiles from '../../../dist/dev/ensureSchemaFiles.mjs';
+import getProjectInfo, { type ProjectInfo } from '../../../dist/getProjectInfo/index.mjs';
 
 const tmpDir = path.join(process.cwd(), 'tmp');
 
@@ -44,19 +44,26 @@ await describe('ensureSchemaFiles', async () => {
     let files = glob.sync('**/*.json', { cwd: tmpDir });
     assert.deepStrictEqual(
       files.sort(),
-      ['segment1.json', 'segment2.json', 'folder1/segment3.json', 'folder2/segment4.json'].sort()
+      [
+        'config.json',
+        'segments/segment1.json',
+        'segments/segment2.json',
+        'segments/folder1/segment3.json',
+        'segments/folder2/segment4.json',
+      ].sort()
     );
 
-    // Check if index.js is created and has the correct content
-    const indexPath = path.join(tmpDir, 'index.js');
-    const expectedIndexContent = `// auto-generated
-module.exports['segment1'] = require('./segment1.json');
-module.exports['segment2'] = require('./segment2.json');
-module.exports['folder1/segment3'] = require('./folder1/segment3.json');
-module.exports['folder2/segment4'] = require('./folder2/segment4.json');`;
+    const indexPath = path.join(tmpDir, 'main.cjs');
+    const expectedIndexContent = `module.exports.config = require('./config.json');
+module.exports.segments = {
+  'segment1': require('./segments/segment1.json'),
+  'segment2': require('./segments/segment2.json'),
+  'folder1/segment3': require('./segments/folder1/segment3.json'),
+  'folder2/segment4': require('./segments/folder2/segment4.json'),
+}`;
 
     const indexContent = await fs.readFile(indexPath, 'utf-8');
-    assert.strictEqual(indexContent.trim(), expectedIndexContent.trim());
+    assert.strictEqual(indexContent.trim().split('\n').slice(1).join('\n'), expectedIndexContent.trim());
 
     // Update the segments list (segment2 and segment3 remain, segment1 and segment4 are removed, segment5 is added)
     const updatedSegments = ['segment2', 'folder1/segment3', 'segment5'];
@@ -66,7 +73,10 @@ module.exports['folder2/segment4'] = require('./folder2/segment4.json');`;
 
     // Check if files are updated correctly
     files = glob.sync('**/*.json', { cwd: tmpDir });
-    assert.deepStrictEqual(files.sort(), ['segment2.json', 'folder1/segment3.json', 'segment5.json'].sort());
+    assert.deepStrictEqual(
+      files.sort(),
+      ['config.json', 'segments/folder1/segment3.json', 'segments/segment2.json', 'segments/segment5.json'].sort()
+    );
 
     // Check if old files are removed
     const removedFiles = ['segment1.json', 'folder2/segment4.json'];
@@ -80,12 +90,14 @@ module.exports['folder2/segment4'] = require('./folder2/segment4.json');`;
     }
 
     // Check if the updated index.js file is correct
-    const updatedExpectedIndexContent = `// auto-generated
-module.exports['segment2'] = require('./segment2.json');
-module.exports['folder1/segment3'] = require('./folder1/segment3.json');
-module.exports['segment5'] = require('./segment5.json');`;
+    const updatedExpectedIndexContent = `module.exports.config = require('./config.json');
+module.exports.segments = {
+  'segment2': require('./segments/segment2.json'),
+  'folder1/segment3': require('./segments/folder1/segment3.json'),
+  'segment5': require('./segments/segment5.json'),
+}`;
 
     const updatedIndexContent = await fs.readFile(indexPath, 'utf-8');
-    assert.strictEqual(updatedIndexContent.trim(), updatedExpectedIndexContent.trim());
+    assert.strictEqual(updatedIndexContent.trim().split('\n').slice(1).join('\n'), updatedExpectedIndexContent.trim());
   });
 });
