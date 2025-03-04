@@ -208,13 +208,13 @@ export type VovkConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
-  custom?: Record<string, KnownAny>;
+  libs?: Record<string, KnownAny>;
 };
 
 export type VovkStrictConfig = Required<
   Omit<
     VovkConfig,
-    'emitConfig' | 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom' | 'custom'
+    'emitConfig' | 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom' | 'libs'
   >
 > & {
   emitConfig: (keyof VovkStrictConfig)[];
@@ -222,7 +222,7 @@ export type VovkStrictConfig = Required<
   fetcherImport: string[];
   createRPCImport: string[];
   generateFrom: GenerateFrom;
-  custom: Record<string, KnownAny>;
+  libs: Record<string, KnownAny>;
 };
 
 export type VovkFullSchema = {

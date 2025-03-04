@@ -45,11 +45,11 @@ export default async function getConfig({
       controller: 'vovk-cli/templates/controller.ejs',
       ...conf.templates,
     },
-    custom: conf.custom ?? {},
+    libs: conf.libs ?? {},
   };
 
   if (typeof conf.emitConfig === 'undefined') {
-    config.emitConfig = ['custom'];
+    config.emitConfig = ['libs'];
   } else if (conf.emitConfig === true) {
     config.emitConfig = Object.keys(config) as (keyof VovkStrictConfig)[];
   } else if (Array.isArray(conf.emitConfig)) {

@@ -65,7 +65,7 @@ const validateAll = ({
 };
 
 const getConfig = (fullSchema: VovkFullSchema) => {
-  const config = fullSchema.config.custom?.ajv as VovkAjvConfig | undefined;
+  const config = fullSchema.config.libs?.ajv as VovkAjvConfig | undefined;
 
   const options = config?.options || {};
   const localize = config?.localize || 'en';
