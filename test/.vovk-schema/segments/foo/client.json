@@ -831,7 +831,13 @@
                     "bar"
                   ]
                 }
-              }
+              },
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ]
             },
             "params": {
               "type": "object",
@@ -948,7 +954,13 @@
                             "bar"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "body",
+                        "query",
+                        "params",
+                        "vovkParams"
+                      ]
                     }
                   }
                 }
@@ -1285,7 +1297,24 @@
             },
             "output": null,
             "params": null,
-            "iteration": null
+            "iteration": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                  ]
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
           },
           "httpMethod": "GET",
           "path": "handle-stream"
@@ -1693,7 +1722,24 @@
             },
             "output": null,
             "params": null,
-            "iteration": null
+            "iteration": {
+              "x-isDto": true,
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "value"
+              ]
+            }
           },
           "httpMethod": "GET",
           "path": "handle-stream"

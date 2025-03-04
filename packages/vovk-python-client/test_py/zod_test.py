@@ -6,7 +6,7 @@ from generated_test_python_client import HttpException, WithZodClientControllerR
 def noop(*args: Any) -> None: # type: ignore
     pass
 
-class TestAPIClient(unittest.TestCase):
+class TestZod(unittest.TestCase):
     def test_ok(self) -> None:
         # Create an instance of the API client with the back-end URL
         data: WithZodClientControllerRPC.infer_handle_all_output = WithZodClientControllerRPC.handle_all(

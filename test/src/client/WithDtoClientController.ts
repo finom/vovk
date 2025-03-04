@@ -25,6 +25,7 @@ import {
   HandleParamsDto,
   HandleQueryQueryDto,
   HandleStreamQueryDto,
+  IterationDto,
 } from './WithDtoClientController.dto';
 import { WithDtoClientControllerRPC } from 'vovk-client';
 import { plainToInstance } from 'class-transformer';
@@ -51,11 +52,6 @@ class WithDtoClientService {
   }
 }
 
-/**
- * -------------------------------------------------------------------------
- *  Example controller updated to use withDto
- * -------------------------------------------------------------------------
- */
 @prefix('with-dto')
 export default class WithDtoClientController {
   @openapi({
@@ -197,6 +193,7 @@ export default class WithDtoClientController {
   @get.auto()
   static handleStream = withDto({
     query: HandleStreamQueryDto,
+    iteration: IterationDto,
     async *handle(req) {
       for (const value of req.vovk.query().values) {
         yield { value };

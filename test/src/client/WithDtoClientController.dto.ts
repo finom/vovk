@@ -1,4 +1,4 @@
-import { IsString, Equals, IsArray, IsOptional, ValidateNested } from 'class-validator';
+import { IsString, Equals, IsArray, IsOptional, ValidateNested, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -173,6 +173,11 @@ export class HandleStreamQueryDto {
 
 /**
  * -------------------------------------------------------------------------
- *  Service class
+ * DTOs for handleStream with iteration
  * -------------------------------------------------------------------------
- */
+ * */
+
+export class IterationDto {
+  @IsIn(['a', 'b', 'c', 'd'])
+  value: 'a' | 'b' | 'c' | 'd';
+}

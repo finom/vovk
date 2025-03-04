@@ -150,7 +150,7 @@ import jsonschema
 from typing import Dict, Optional, Any, Generator, Literal, List, TypedDict
 
 class HttpExceptionResponseBody(TypedDict):
-    cause: str
+    cause: Any
     statusCode: int
     message: str
     isError: bool
@@ -160,7 +160,7 @@ class HttpException(Exception):
         super().__init__(response_body['message'])
         self.message = response_body['message']
         self.status_code = response_body['statusCode']
-        self.cause = response_body['cause']
+        self.cause = 'cause' in response_body and response_body['cause']
 
 class ApiClient:
     def __init__(self, api_root: str, full_schema: Any):

@@ -42,13 +42,17 @@ export default class WithYupClientController {
     query: yup.object({ search: yup.string().oneOf(['value']).required() }),
     params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
     output: yup.object({
-      body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
-      query: yup.object({ search: yup.string().oneOf(['value']).required() }),
-      params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
-      vovkParams: yup.object({
-        foo: yup.string().oneOf(['foo']).required(),
-        bar: yup.string().oneOf(['bar']).required(),
-      }),
+      body: yup.object({ hello: yup.string().oneOf(['world']).required() }).required(),
+      query: yup.object({ search: yup.string().oneOf(['value']).required() }).required(),
+      params: yup
+        .object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() })
+        .required(),
+      vovkParams: yup
+        .object({
+          foo: yup.string().oneOf(['foo']).required(),
+          bar: yup.string().oneOf(['bar']).required(),
+        })
+        .required(),
     }),
     handle: async (req, params) => {
       const body = await req.json();
@@ -125,6 +129,7 @@ export default class WithYupClientController {
   @get.auto()
   static handleStream = withYup({
     query: yup.object({ values: yup.array().of(yup.string().required()).required() }),
+    iteration: yup.object({ value: yup.string().oneOf(['a', 'b', 'c', 'd']).required() }),
     async *handle(req) {
       for (const value of req.vovk.query().values) {
         yield { value };
