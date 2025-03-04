@@ -1,11 +1,11 @@
 import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
-import { runScript } from './runScript.mjs';
+import { runScript } from './runScript.mts';
 import path from 'node:path';
-import getUserConfig from '../../src/getProjectInfo/getUserConfig.mjs';
+import getUserConfig from '../../src/getProjectInfo/getUserConfig.mts';
 import type { VovkConfig } from 'vovk';
-import getFileSystemEntryType, { FileSystemEntryType } from '../../src/utils/getFileSystemEntryType.mjs';
-import checkTSConfigForExperimentalDecorators from '../../src/init/checkTSConfigForExperimentalDecorators.mjs';
+import getFileSystemEntryType, { FileSystemEntryType } from '../../src/utils/getFileSystemEntryType.mts';
+import checkTSConfigForExperimentalDecorators from '../../src/init/checkTSConfigForExperimentalDecorators.mts';
 
 export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);

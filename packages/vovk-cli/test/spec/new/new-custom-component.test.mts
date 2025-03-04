@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../lib/getCLIAssertions.mjs';
-import updateConfigProperty from '../lib/updateConfigProperty.mjs';
+import getCLIAssertions from '../../lib/getCLIAssertions.mts';
+import updateConfigProperty from '../../lib/updateConfigProperty.mts';
 
 await describe('Custom components', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');

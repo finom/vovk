@@ -22,7 +22,7 @@
     "build": "npm run rm-dist --prefix packages/vovk && npm run build --prefix packages/vovk && turbo run build --force --dangerously-disable-package-manager-check",
     "vpub-check-vars": "if [ -z \"$VERSION_TYPE\" ] || [ -z \"$PACKAGE\" ] || [ -z \"$NPM_TAG\" ]; then echo 'Error: some vars are not set'; exit 1; fi;",
     "vpub:version": "npm version --prefix ./packages/$PACKAGE $VERSION_TYPE --no-git-tag-version",
-    "vpub:bump-deps": "tsx ./scripts/bump-dependencies.ts",
+    "vpub:bump-deps": "node --experimental-strip-types ./scripts/bump-dependencies.ts",
     "vpub:build": "npm run build",
     "vpub:commit-and-publish": "if [ \"$PACKAGE\" != \"draft\" ]; then TAG=$PACKAGE-v$(node -p \"require('./packages/$PACKAGE/package.json').version\") && git commit -am \"$TAG\" && npm run --prefix ./packages/$PACKAGE npm-publish -- --tag=$NPM_TAG && git push && git push --tags; fi",
     "vpub": "npm run vpub-check-vars && npm t && npm-run-all -s vpub:*",
@@ -36,7 +36,7 @@
     "BREAKING-beta-major": "NPM_TAG=beta VERSION_TYPE=\"premajor --preid=beta\" npm run vpub",
     "draft": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub",
     "draft-notest": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub-notest",
-    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-init vovk-client vovk-react-query vovk-ajv vovk-zod vovk-yup vovk-dto vovk-openapi; do PACKAGE=$PACKAGE npm run draft-notest; done",
+    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-init vovk-client vovk-react-query vovk-ajv vovk-zod vovk-yup vovk-dto vovk-openapi vovk-python-client; do PACKAGE=$PACKAGE npm run draft-notest; done",
     "draft-patch": "NPM_TAG=draft VERSION_TYPE=\"prepatch --preid=draft\" npm run vpub",
     "draft-minor": "NPM_TAG=draft VERSION_TYPE=\"preminor --preid=draft\" npm run vpub"
   },
@@ -84,7 +84,6 @@
     "shx": "^0.3.4",
     "supertest": "^7.0.0",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.2",
     "turbo": "^2.4.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.22.0"

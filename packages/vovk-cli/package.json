@@ -11,10 +11,9 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
     "postbuild": "chmod +x ./dist/index.mjs",
-    "build-test": "rm -rf test_dist && tsc -P tsconfig.test.json",
-    "pre-test": "npm run build && npm run build-test",
-    "test-only": "npm run pre-test && node --test --test-only test_dist/test/**/*.mjs",
-    "test": "npm run pre-test && node --test --test-concurrency=1 test_dist/test/**/*.mjs",
+    "pre-test": "npm run build",
+    "test-only": "npm run pre-test && node --experimental-transform-types --experimental-strip-types --test --test-only test/spec/**/*.mts",
+    "test": "npm run pre-test && node --experimental-transform-types --experimental-strip-types --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",
     "ncu": "npm-check-updates -u -x commander",
     "npm-publish": "npm publish"

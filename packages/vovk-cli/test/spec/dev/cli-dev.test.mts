@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import getCLIAssertions from '../lib/getCLIAssertions.mjs';
+import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import { VovkSegmentSchema } from 'vovk';
 import assert from 'node:assert';
 

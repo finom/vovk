@@ -1,6 +1,6 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../lib/getCLIAssertions.mjs';
+import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import assert from 'node:assert';
 
 await describe('CLI new segment', async () => {

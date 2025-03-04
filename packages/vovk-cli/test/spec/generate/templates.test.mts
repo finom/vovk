@@ -1,6 +1,6 @@
 import { it, describe, beforeEach } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../lib/getCLIAssertions.mjs';
+import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 
 const compiledClientFolderName = 'client-from-template';
 
@@ -45,7 +45,7 @@ await describe.only('Client templates', async () => {
       'index.ts',
       'main.cjs',
       'main.d.cts',
-      'module.mjs',
+      'module.mts',
       'module.d.mts',
     ]);
   });
@@ -55,7 +55,7 @@ await describe.only('Client templates', async () => {
       `../dist/index.mjs generate --template=module --template=ts --out ${compiledClientFolderName}`
     );
 
-    await assertDirFileList(compiledClientFolderName, ['index.ts', 'module.mjs', 'module.d.mts']);
+    await assertDirFileList(compiledClientFolderName, ['index.ts', 'module.mts', 'module.d.mts']);
   });
 
   await it('Generates files from ts and python template with full schema', async () => {

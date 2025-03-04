@@ -2,8 +2,8 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import omit from 'lodash/omit.js';
-import getCLIAssertions from '../lib/getCLIAssertions.mjs';
-import { DOWN, ENTER } from '../lib/runScript.mjs';
+import getCLIAssertions from '../../lib/getCLIAssertions.mts';
+import { DOWN, ENTER } from '../../lib/runScript.mts';
 import { PackageJson } from 'type-fest';
 
 await describe('CLI init', async () => {
@@ -327,7 +327,7 @@ await describe('CLI init', async () => {
     await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 
     await vovkInit('--yes');
-    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('vovk-zod', true));
+    await assertConfig(['vovk.config.mts'], assertConfig.makeConfig('vovk-zod', true));
 
     await assertDeps({
       dependencies: [

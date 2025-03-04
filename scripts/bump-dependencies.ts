@@ -1,9 +1,7 @@
-#!/usr/bin/env ts-node
 /* eslint-disable no-console */
-
-import fs from 'fs';
-import path from 'path';
-import { execSync } from 'child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { execSync } from 'node:child_process';
 
 interface PackageJson {
   name: string;
