@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "3.0.0-draft.98",
+  "version": "3.0.0-draft.99",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
