@@ -34,7 +34,7 @@ export class StreamJSONResponse<T> extends Response {
       ...init,
       headers: {
         ...init?.headers,
-        'Content-Type': accept?.includes('application/jsonl') ? 'application/jsonl' : 'plain/text',
+        'Content-Type': accept?.includes('application/jsonl') ? 'application/jsonl' : 'text/plain',
       },
     });
 
