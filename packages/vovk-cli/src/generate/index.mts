@@ -45,20 +45,11 @@ export default async function generate({
 
   const now = Date.now();
 
-  // Data for the EJS templates:
-  const t = {
-    _, // lodash
-    apiRoot,
-    imports: clientImports,
-    fullSchema,
-    segmentMeta: Object.fromEntries(segments.map(({ segmentName, ...s }) => [segmentName, s])),
-  };
-
   // Process each template in parallel
   const processedTemplates = noClient
     ? []
     : await Promise.all(
-        templateFiles.map(async ({ templatePath, outPath, templateName }) => {
+        templateFiles.map(async ({ templatePath, outPath, templateName, origin }) => {
           /*const parsed = matter((await ejs.render(codeTemplate, { t }, { async: true, filename: templateFileName })).trim());
             const { dir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
             const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;*/
@@ -70,6 +61,15 @@ export default async function generate({
               imports?: string[];
             };
             content: string;
+          };
+
+          // Data for the EJS templates:
+          const t = {
+            _, // lodash
+            apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
+            imports: clientImports,
+            fullSchema,
+            segmentMeta: Object.fromEntries(segments.map(({ segmentName, ...s }) => [segmentName, s])),
           };
 
           if (data.imports instanceof Array) {

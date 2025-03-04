@@ -183,6 +183,7 @@ export type GenerateFromTemplate = {
   outDir?: string;
   templateName?: string;
   fullSchema?: string | boolean;
+  origin?: string | null;
 };
 
 type GenerateFrom = (string | GenerateFromTemplate)[];

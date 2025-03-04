@@ -10,6 +10,7 @@ interface ClientTemplate {
   templatePath: string;
   outPath: string;
   fullSchemaOutAbsolutePath: string | null;
+  origin?: string | null;
 }
 
 export default async function getClientTemplates({
@@ -29,21 +30,24 @@ export default async function getClientTemplates({
   const builtIn: Record<string, GenerateFromStrict> = {
     ts: {
       templateName: 'ts',
-      templatePath: path.resolve(templatesDir, 'ts', '*'),
+      templatePath: path.resolve(templatesDir, 'ts/*'),
       outDir: clientOutDirAbsolutePath,
       fullSchema: false,
+      origin: null,
     },
     main: {
       templateName: 'main',
-      templatePath: path.resolve(templatesDir, 'main', '*'),
+      templatePath: path.resolve(templatesDir, 'main/*'),
       outDir: clientOutDirAbsolutePath,
       fullSchema: false,
+      origin: null,
     },
     module: {
       templateName: 'module',
-      templatePath: path.resolve(templatesDir, 'module', '*'),
+      templatePath: path.resolve(templatesDir, 'module/*'),
       outDir: clientOutDirAbsolutePath,
       fullSchema: false,
+      origin: null,
     },
   };
 
@@ -57,6 +61,7 @@ export default async function getClientTemplates({
         templatePath: resolveAbsoluteModulePath(template, cwd),
         outDir: clientOutDirAbsolutePath,
         fullSchema: false,
+        origin: null,
       };
     }
 
@@ -65,6 +70,7 @@ export default async function getClientTemplates({
       templatePath: resolveAbsoluteModulePath(template.templatePath, cwd),
       outDir: template.outDir ? path.resolve(cwd, template.outDir) : clientOutDirAbsolutePath,
       fullSchema: template.fullSchema ?? false,
+      origin: template.origin ?? null,
     };
   });
 
@@ -85,6 +91,7 @@ export default async function getClientTemplates({
         templatePath,
         outPath: path.join(generateFromItem.outDir, path.basename(templatePath).replace('.ejs', '')),
         fullSchemaOutAbsolutePath,
+        origin: generateFromItem.origin,
       });
     }
   }
