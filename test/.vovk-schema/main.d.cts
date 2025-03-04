@@ -1,11 +1,11 @@
-// auto-generated 2025-02-20T12:48:31.902Z
+// auto-generated 2025-03-03T21:16:19.733Z
 import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
 declare const fullSchema: {
   config: Partial<VovkStrictConfig>;
   segments: {
     '': VovkSegmentSchema;
     'foo/client': VovkSegmentSchema;
-    generated: VovkSegmentSchema;
+    'generated': VovkSegmentSchema;
   };
 };
 export default fullSchema;

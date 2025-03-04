@@ -147,7 +147,20 @@ export const defaultStreamHandler = async (response: Response): Promise<VovkStre
 import json
 import requests
 import jsonschema
-from typing import Dict, Optional, Any, Generator, Union, Literal
+from typing import Dict, Optional, Any, Generator, Literal, List, TypedDict
+
+class HttpExceptionResponseBody(TypedDict):
+    cause: str
+    statusCode: int
+    message: str
+    isError: bool
+
+class HttpException(Exception):
+    def __init__(self, response_body: HttpExceptionResponseBody):
+        super().__init__(response_body['message'])
+        self.message = response_body['message']
+        self.status_code = response_body['statusCode']
+        self.cause = response_body['cause']
 
 class ApiClient:
     def __init__(self, api_root: str, full_schema: Any):
@@ -169,7 +182,8 @@ class ApiClient:
         api_root: Optional[str],
         body: Optional[Any] = None,
         query: Optional[Any] = None,
-        params: Optional[Any] = None
+        params: Optional[Any] = None,
+        disable_client_validation: bool = False
     ) -> Any:
         """
         Make an API request based on a full schema and controller/handler
@@ -195,7 +209,8 @@ class ApiClient:
             body=body,
             query=query,
             params=params,
-            validation=validation
+            validation=validation,
+            disable_client_validation=disable_client_validation
         )
         
     def make_api_request(
@@ -205,7 +220,8 @@ class ApiClient:
         body: Optional[Dict[str, Any]] = None,
         query: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
-        validation: Optional[Dict[str, Any]] = None
+        validation: Optional[Dict[str, Any]] = None,
+        disable_client_validation: bool = False
     ) -> Any:
         """
         Make an API request with optional validation and parameter handling.
@@ -231,21 +247,21 @@ class ApiClient:
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
         # Validate inputs if validation schema is provided
-        if validation:
+        if validation and not disable_client_validation:
             # Validate body
-            if 'body' in validation:
+            if validation['body']:
                 if body is None:
                     raise ValueError("Body is required for validation but not provided")
                 jsonschema.validate(instance=body, schema=validation['body'])
             
             # Validate query
-            if 'query' in validation:
+            if validation['query']:
                 if query is None:
                     raise ValueError("Query is required for validation but not provided")
                 jsonschema.validate(instance=query, schema=validation['query'])
             
             # Validate params
-            if 'params' in validation:
+            if validation['params']:
                 if params is None:
                     raise ValueError("Params are required for validation but not provided")
                 jsonschema.validate(instance=params, schema=validation['params'])
@@ -282,9 +298,6 @@ class ApiClient:
             stream=True  # Always stream for consistent handling
         )
         
-        # Check for errors
-        response.raise_for_status()
-        
         # Handle response based on content type
         content_type = response.headers.get('Content-Type', '')
         
@@ -292,12 +305,15 @@ class ApiClient:
             return self._stream_jsonl(response)
         
         elif 'application/json' in content_type:
-            return response.json()
+            result = response.json()
+            if 'isError' in result:
+                raise HttpException(result)
+            return result
         
         # Default to returning raw content if content type is not recognized
         return response.text
 
-    def _build_query_string(self, data: Any, prefix: str = '') -> str:
+    def _build_query_string(self, data: dict[str, Any], prefix: str = '') -> str:
         """
         Build a query string from a nested dictionary or list.
         Handles complex nested structures with the specified format.
@@ -309,14 +325,14 @@ class ApiClient:
         Returns:
             The formatted query string
         """
-        parts = []
+        parts: List[str] = []
         
-        if isinstance(data, dict):
+        if isinstance(data, dict): # type: ignore
             for key, value in data.items():
                 new_prefix = f"{prefix}[{key}]" if prefix else key
                 parts.append(self._build_query_string(value, new_prefix))
         
-        elif isinstance(data, list):
+        elif isinstance(data, list): # type: ignore
             for i, item in enumerate(data):
                 new_prefix = f"{prefix}[{i}]"
                 parts.append(self._build_query_string(item, new_prefix))
@@ -327,7 +343,7 @@ class ApiClient:
         
         return "&".join(parts)
 
-    def _stream_jsonl(self, response: requests.Response) -> Generator[Dict[str, Any], None, None]:
+    def _stream_jsonl_items(self, response: requests.Response) -> Generator[Dict[str, Any], None, None]:
         """
         Process a streaming JSONL response.
         Handles cases where lines might be split across response chunks.
@@ -365,3 +381,19 @@ class ApiClient:
             except json.JSONDecodeError:
                 # Skip malformed JSON
                 pass
+            
+    def _stream_jsonl(self, response: requests.Response) -> Generator[Dict[str, Any], None, None]:
+        """
+        Stream JSONL data from a response.
+        
+        Args:
+            response: The response object with a streaming JSONL body
+            
+        Yields:
+            Each parsed JSON object from the response
+        """
+        for item in self._stream_jsonl_items(response):
+            if 'isError' in item:
+                # TODO: include cause
+                raise Exception(item['reason'])
+            yield item

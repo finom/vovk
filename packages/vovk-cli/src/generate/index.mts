@@ -11,6 +11,7 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import type { GenerateOptions } from '../types.mjs';
+import _ from 'lodash';
 
 export default async function generate({
   projectInfo,
@@ -46,6 +47,7 @@ export default async function generate({
 
   // Data for the EJS templates:
   const t = {
+    _, // lodash
     apiRoot,
     imports: clientImports,
     fullSchema,

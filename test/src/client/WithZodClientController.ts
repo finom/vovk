@@ -125,6 +125,7 @@ export default class WithZodClientController {
   @get.auto()
   static handleStream = withZod({
     query: z.object({ values: z.string().array() }),
+    iteration: z.object({ value: z.union([z.literal('a'), z.literal('b'), z.literal('c'), z.literal('d')]) }),
     async *handle(req) {
       for (const value of req.vovk.query().values) {
         yield { value };
