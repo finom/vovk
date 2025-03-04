@@ -57,7 +57,7 @@ export const fetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
     });
   }
 
-  const contentType = response.headers.get('content-type');
+  const contentType = options.interpretAs ?? response.headers.get('content-type');
 
   if (contentType?.startsWith('application/jsonl')) {
     return defaultStreamHandler(response);

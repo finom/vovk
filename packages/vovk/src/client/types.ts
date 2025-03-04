@@ -110,6 +110,7 @@ export interface VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'm
   disableClientValidation?: boolean;
   validateOnClient?: VovkValidateOnClient;
   fetcher?: VovkClientFetcher;
+  interpretAs?: string;
 }
 
 export type VovkValidateOnClient = (
