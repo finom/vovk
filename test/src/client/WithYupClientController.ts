@@ -12,8 +12,8 @@ import {
 import { openapi } from 'vovk-openapi';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
-
-// check if the "circular" types don't error
+  
+// check if the "circular" types don't error 
 class WithYupClientService {
   static handleAll({
     body,
@@ -84,7 +84,7 @@ export default class WithYupClientController {
     params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
     handle: async (req) => req.vovk.params(),
   });
-
+  // todo:  sss ss ss 
   @get.auto()
   static handleNestedQuery = withYup({
     query: yup.object({

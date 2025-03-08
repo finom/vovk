@@ -10,13 +10,17 @@ type SimpleJsonSchema = {
   required?: string[];
 };
 
-const stringifySample = (data: KnownAny, pad = 4) =>
+const stringifyTsSample = (data: KnownAny, pad = 4) =>
   JSON.stringify(data, null, 2)
     .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
     .split('\n')
     .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
     .join('\n');
-
+const stringifyPySample = (data: KnownAny, pad = 4) =>
+  JSON.stringify(data, null, 2)
+.split('\n')
+    .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
+    .join('\n');
 export function fromSchema(
   apiRoot: string,
   fullSchema: VovkFullSchema,
@@ -25,7 +29,7 @@ export function fromSchema(
   const paths: PathsObject = {};
 
   for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments)) {
-    for (const c of Object.values(segmentSchema.controllers)) {
+    for (const [rpcName, c] of Object.entries(segmentSchema.controllers)) {
       for (const [handlerName, h] of Object.entries(c.handlers)) {
         if (h.openapi) {
           const queryValidation = h?.validation?.query as SimpleJsonSchema | undefined;
@@ -37,11 +41,12 @@ export function fromSchema(
           const paramsFake = paramsValidation && sample(paramsValidation);
           const outputFake = outputValidation && sample(outputValidation);
           const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
-          const codeSample = `import { MyRPC } from 'vovk-client';
-const response = await MyRPC.${handlerName}(${
+          const tsCodeSample = `import { ${rpcName} } from 'vovk-client';
+
+const response = await ${rpcName}.${handlerName}(${
             hasArg
               ? `{
-${paramsFake ? `    params: ${stringifySample(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifySample(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifySample(queryFake)},\n` : ''}}`
+${paramsFake ? `    params: ${stringifyTsSample(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifyTsSample(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifyTsSample(queryFake)},\n` : ''}}`
               : ''
           });
     ${
@@ -49,12 +54,21 @@ ${paramsFake ? `    params: ${stringifySample(paramsFake)},\n` : ''}${bodyFake ?
         ? `
 console.log(response);
 /* 
-${stringifySample(outputFake, 0)}
+${stringifyTsSample(outputFake, 0)}
 */
     `
         : ''
     }
   `;
+          const handlerNameSnake = handlerName
+          .replace(/[A-Z]/g, (letter, index) => index === 0 ? letter.toLowerCase() : '_' + letter.toLowerCase())
+          .toLowerCase();
+          const pyCodeSample = `from vovk_client import ${rpcName}
+
+response = ${rpcName}.${handlerNameSnake}(${hasArg ? `\n    params=${paramsFake ? stringifyPySample(paramsFake) : 'None'},\n` : ''}${bodyFake ? `    body=${stringifyPySample(bodyFake)},\n` : ''}${queryFake ? `    query=${stringifyPySample(queryFake)},\n` : ''})
+
+${outputFake ? `print(response)\n${JSON.stringify(outputFake, null, 2).split('\n').map(s => `# ${s}`).join('\n')}` : ''}
+`;
 
           const path =
             '/' +
@@ -68,9 +82,14 @@ ${stringifySample(outputFake, 0)}
             'x-codeSamples': [
               ...(h.openapi['x-codeSamples'] ?? []),
               {
-                label: 'vovk-client',
+                label: 'Typescript client',
                 lang: 'typescript',
-                source: codeSample,
+                source: tsCodeSample,
+              },
+              {
+                label: 'Python client',
+                lang: 'python',
+                source: pyCodeSample,
               },
             ],
           };
