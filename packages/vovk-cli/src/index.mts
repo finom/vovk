@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
 import 'dotenv/config';
 import { Command } from 'commander';
 import concurrently from 'concurrently';
@@ -13,7 +12,8 @@ import { VovkDev } from './dev/index.mjs';
 import newComponents from './new/index.mjs';
 import type { DevOptions, GenerateOptions, NewOptions } from './types.mjs';
 import initProgram from './initProgram.mjs';
-import type { VovkEnv, VovkFullSchema } from 'vovk';
+import type { VovkEnv } from 'vovk';
+import { getFullSchemaFromJSON } from './utils/getFullSchemaFromJSON.mjs';
 
 const program = new Command();
 
@@ -92,7 +92,7 @@ program
     '--template, --templates <templates...>',
     'client code templates ("ts", "compiled", "python", "none", a custom path)'
   )
-  .option('--emit-full-schema, --full-schema [fileName]', 'generate client with full schema')
+  .option('--emit-full-schema, --full-schema-json [fileName]', 'generate client with full schema')
   .option('--prettify', 'prettify output files')
   .option('--config <config>', 'path to config file')
   .action(async (options: GenerateOptions) => {
@@ -101,10 +101,7 @@ program
     const { cwd, config, apiDir } = projectInfo;
     const segments = await locateSegments({ dir: apiDir, config });
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
-    const schemaImportUrl = pathToFileURL(path.join(schemaOutAbsolutePath, 'main.cjs')).href;
-    const { default: fullSchema } = (await import(schemaImportUrl)) as {
-      default: VovkFullSchema;
-    };
+    const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
 
     await generate({
       projectInfo,

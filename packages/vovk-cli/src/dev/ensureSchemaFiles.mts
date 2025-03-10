@@ -20,45 +20,6 @@ export default async function ensureSchemaFiles(
   const now = Date.now();
   let hasChanged = false;
   const schemaJsonOutAbsolutePath = path.join(schemaOutAbsolutePath, SEGMENTS_SCHEMA_DIR_NAME);
-  const jsContent = `// auto-generated ${new Date().toISOString()}
-module.exports.config = require('./config.json');
-module.exports.segments = {
-${segmentNames
-  .map((segmentName) => {
-    return `  '${segmentName}': require('./${SEGMENTS_SCHEMA_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json'),`;
-  })
-  .join('\n')}
-}`;
-
-  const dTsContent = `// auto-generated ${new Date().toISOString()}
-import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
-declare const fullSchema: {
-  config: Partial<VovkStrictConfig>;
-  segments: {
-${segmentNames.map((segmentName) => `    '${segmentName}': VovkSegmentSchema;`).join('\n')}
-  };
-};
-export default fullSchema;`;
-
-  const tsContent = `// auto-generated ${new Date().toISOString()}
-import type { VovkSegmentSchema, VovkStrictConfig } from 'vovk';
-import config from './config.json';
-${segmentNames.map((segmentName, i) => `import segment${i} from './${SEGMENTS_SCHEMA_DIR_NAME}/${segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json';`).join('\n')}
-const fullSchema = {
-  config: config as unknown as Partial<VovkStrictConfig>,
-  segments: {
-${segmentNames.map((segmentName, i) => `    '${segmentName}': segment${i} as unknown as VovkSegmentSchema,`).join('\n')}
-  }
-};
-export default fullSchema;`;
-
-  const jsAbsolutePath = path.join(schemaOutAbsolutePath, 'main.cjs');
-  const dTsAbsolutePath = path.join(schemaOutAbsolutePath, 'main.d.cts');
-  const tsAbsolutePath = path.join(schemaOutAbsolutePath, 'index.ts');
-
-  const existingJs = await fs.readFile(jsAbsolutePath, 'utf-8').catch(() => null);
-  const existingDTs = await fs.readFile(dTsAbsolutePath, 'utf-8').catch(() => null);
-  const existingTs = await fs.readFile(tsAbsolutePath, 'utf-8').catch(() => null);
 
   await fs.mkdir(schemaJsonOutAbsolutePath, { recursive: true });
   await writeConfigJson(schemaOutAbsolutePath, projectInfo);
@@ -82,17 +43,6 @@ export default fullSchema;`;
       }
     })
   );
-
-  // ignore 1st lines at the files
-  if (existingJs?.split('\n').slice(1).join('\n') !== jsContent.split('\n').slice(1).join('\n')) {
-    await fs.writeFile(jsAbsolutePath, jsContent);
-  }
-  if (existingDTs?.split('\n').slice(1).join('\n') !== dTsContent.split('\n').slice(1).join('\n')) {
-    await fs.writeFile(dTsAbsolutePath, dTsContent);
-  }
-  if (existingTs?.split('\n').slice(1).join('\n') !== tsContent.split('\n').slice(1).join('\n')) {
-    await fs.writeFile(tsAbsolutePath, tsContent);
-  }
 
   // Recursive function to delete unnecessary JSON files and folders
   async function deleteUnnecessaryJsonFiles(dirPath: string): Promise<void> {

@@ -10,7 +10,7 @@
     "start": "NODE_ENV=test next start",
     "lint": "next lint",
     "generate": "node ../packages/vovk-cli/dist/index.mjs generate",
-    "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --full-schema --template=python --full-schema --out ./python",
+    "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --full-schema-json --template=python --full-schema-json --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
   },
   "type": "module",
@@ -21,7 +21,7 @@
     "react": "^19",
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
-    "vovk-client": "^0.0.4-draft.26",
+    "vovk-client": "^0.0.4-draft.60",
     "vovk-mapped-types": "^0.0.6"
   },
   "devDependencies": {

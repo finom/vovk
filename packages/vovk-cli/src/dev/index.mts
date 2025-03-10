@@ -7,7 +7,7 @@ import keyBy from 'lodash/keyBy.js';
 import capitalize from 'lodash/capitalize.js';
 import debounce from 'lodash/debounce.js';
 import once from 'lodash/once.js';
-import { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
+import ensureSchemaFiles, { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
 import writeOneSegmentSchemaFile from './writeOneSegmentSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
 import ensureClient from '../generate/ensureClient.mjs';
@@ -231,7 +231,6 @@ export class VovkDev {
     log.debug(
       `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
-    await ensureClient(this.#projectInfo);
 
     // automatically watches segments and modules
     this.#watchConfig(callback);
@@ -402,11 +401,13 @@ export class VovkDev {
 
     this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config });
 
-    await debouncedEnsureSchemaFiles(
+    await ensureSchemaFiles(
       this.#projectInfo,
       schemaOutAbsolutePath,
       this.#segments.map((s) => s.segmentName)
     );
+
+    await ensureClient(this.#projectInfo);
 
     const MAX_ATTEMPTS = 5;
     const DELAY = 5000;

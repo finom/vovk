@@ -12,6 +12,7 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import _ from 'lodash';
+import { ROOT_SEGMENT_SCHEMA_NAME, SEGMENTS_SCHEMA_DIR_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 export default async function generate({
   projectInfo,
@@ -45,6 +46,8 @@ export default async function generate({
 
   const now = Date.now();
 
+  const schemaOutDir = path.relative(config.clientOutDir, config.schemaOutDir).replace(/\\/g, '/'); // windows fix
+
   // Process each template in parallel
   const processedTemplates = noClient
     ? []
@@ -66,9 +69,12 @@ export default async function generate({
           // Data for the EJS templates:
           const t = {
             _, // lodash
+            ROOT_SEGMENT_SCHEMA_NAME,
+            SEGMENTS_SCHEMA_DIR_NAME,
             apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
             imports: clientImports,
             fullSchema,
+            schemaOutDir,
             segmentMeta: Object.fromEntries(segments.map(({ segmentName, ...s }) => [segmentName, s])),
           };
 

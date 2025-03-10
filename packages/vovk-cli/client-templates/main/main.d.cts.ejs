@@ -12,3 +12,4 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 export const <%= controllerName %>: ReturnType<typeof createRPC<Controllers<%= i %>["<%= controllerName %>"], Options>>;
   <% }) 
 }) %>
+export { fullSchema } from './fullSchema.cjs';

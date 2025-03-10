@@ -2,7 +2,7 @@
 import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from '<%= t.imports.fetcher %>';
 import { createRPC } from '<%= t.imports.createRPC %>';
-import fullSchema from '<%= t.imports.fullSchema %>';
+import { fullSchema } from './fullSchema.cjs';
 <% Object.values(t.fullSchema.segments).forEach((segment, i) => { if(Object.keys(segment.controllers).length) { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
 <% }}) %>
@@ -21,3 +21,4 @@ export const <%= controllerName %> = createRPC<Controllers<%= i %>["<%= controll
 );
   <% }) %>
 <% }) %>
+export { fullSchema };

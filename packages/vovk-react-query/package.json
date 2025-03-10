@@ -9,10 +9,10 @@
     "tsc": "tsc --noEmit",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u",
-    "pre-test": "npm run build",
+    "pre-test": "npm run generate --prefix ../../test && npm run build",
     "test-only": "npm run pre-test && node --experimental-strip-types --test --test-only test/test/**/*.mts",
     "unit": "npm run pre-test && node --experimental-strip-types --test --test-concurrency=1 test/*.mts",
-    "test": "concurrently 'sleep 20 && npm run unit' 'npm run generate --prefix ../../test -- --config=../packages/vovk-react-query/vovk.config.test.mjs && npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
+    "test": "concurrently 'sleep 20 && npm run unit' 'npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
   },
   "main": "./index.cjs",
   "module": "./index.mjs",

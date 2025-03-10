@@ -1,0 +1,13 @@
+<%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
+const config = require('./<%= t.schemaOutDir %>/config.json');
+const segments = {
+  <% Object.values(t.fullSchema.segments).forEach((segment) => { %>
+    '<%= segment.segmentName %>': require('./<%= t.schemaOutDir %>/<%= t.SEGMENTS_SCHEMA_DIR_NAME %>/<%= segment.segmentName || t.ROOT_SEGMENT_SCHEMA_NAME %>.json'),
+  <% }) %>
+};
+const fullSchema = {
+  config,
+  segments,
+};
+
+module.exports.fullSchema = fullSchema;

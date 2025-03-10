@@ -1,5 +1,5 @@
-import fullSchema from '../../.vovk-schema/main.cjs';
-import type ClientController from './ClientController';
+import { fullSchema } from 'vovk-client';
+import type ClientController from './ClientController.ts';
 import { createRPC } from 'vovk';
 import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';

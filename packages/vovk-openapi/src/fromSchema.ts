@@ -18,7 +18,7 @@ const stringifyTsSample = (data: KnownAny, pad = 4) =>
     .join('\n');
 const stringifyPySample = (data: KnownAny, pad = 4) =>
   JSON.stringify(data, null, 2)
-.split('\n')
+    .split('\n')
     .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
     .join('\n');
 export function fromSchema(
@@ -61,13 +61,20 @@ ${stringifyTsSample(outputFake, 0)}
     }
   `;
           const handlerNameSnake = handlerName
-          .replace(/[A-Z]/g, (letter, index) => index === 0 ? letter.toLowerCase() : '_' + letter.toLowerCase())
-          .toLowerCase();
+            .replace(/[A-Z]/g, (letter, index) => (index === 0 ? letter.toLowerCase() : '_' + letter.toLowerCase()))
+            .toLowerCase();
           const pyCodeSample = `from vovk_client import ${rpcName}
 
 response = ${rpcName}.${handlerNameSnake}(${hasArg ? `\n    params=${paramsFake ? stringifyPySample(paramsFake) : 'None'},\n` : ''}${bodyFake ? `    body=${stringifyPySample(bodyFake)},\n` : ''}${queryFake ? `    query=${stringifyPySample(queryFake)},\n` : ''})
 
-${outputFake ? `print(response)\n${JSON.stringify(outputFake, null, 2).split('\n').map(s => `# ${s}`).join('\n')}` : ''}
+${
+  outputFake
+    ? `print(response)\n${JSON.stringify(outputFake, null, 2)
+        .split('\n')
+        .map((s) => `# ${s}`)
+        .join('\n')}`
+    : ''
+}
 `;
 
           const path =

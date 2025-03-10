@@ -5,6 +5,6 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "noEmit": false,
-    "allowImportingTsExtensions": false,
+    "allowImportingTsExtensions": false
   }
 }

@@ -29,9 +29,18 @@ await describe.only('Client templates', async () => {
     await assertFile(`${compiledClientFolderName}/hello-world.js`, [`Hello, World!`]);
   });
 
+  await it('Should generate client with full schema only', async () => {
+    await runAtProjectDir(
+      `../dist/index.mjs generate --full-schema-json=full-schema.json --out ${compiledClientFolderName} --template=none`
+    );
+
+    await assertFile(`${compiledClientFolderName}/full-schema.json`, [`"emitSchema": true`]);
+    await assertDirFileList(compiledClientFolderName, ['full-schema.json']);
+  });
+
   await it('Should generate client with full schema only with a custom file name', async () => {
     await runAtProjectDir(
-      `../dist/index.mjs generate --full-schema=my-full-schema.json --out ${compiledClientFolderName} --template=none`
+      `../dist/index.mjs generate --full-schema-json=my-full-schema.json --out ${compiledClientFolderName} --template=none`
     );
 
     await assertFile(`${compiledClientFolderName}/my-full-schema.json`, [`"emitSchema": true`]);
@@ -55,15 +64,13 @@ await describe.only('Client templates', async () => {
       `../dist/index.mjs generate --template=module --template=ts --out ${compiledClientFolderName}`
     );
 
-    await assertDirFileList(compiledClientFolderName, ['index.ts', 'module.mts', 'module.d.mts']);
-  });
-
-  await it('Generates files from ts and python template with full schema', async () => {
-    await runAtProjectDir(
-      `../dist/index.mjs generate --full-schema --template=ts --template=python --out ${compiledClientFolderName}`
-    );
-
-    await assertDirFileList(compiledClientFolderName, ['index.ts', '__init__.py', 'full-schema.json']);
+    await assertDirFileList(compiledClientFolderName, [
+      'index.ts',
+      'module.mjs',
+      'module.d.mts',
+      'fullSchema.cjs',
+      'fullSchema.d.cts',
+    ]);
   });
 
   await it('Generates file from ts template but defines path as custom template', async () => {

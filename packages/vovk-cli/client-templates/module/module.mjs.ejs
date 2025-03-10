@@ -1,7 +1,7 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
 import { fetcher } from '<%= t.imports.module.fetcher %>';
 import { createRPC } from '<%= t.imports.module.createRPC %>';
-import fullSchema from '<%= t.imports.module.fullSchema %>';
+import { fullSchema } from './fullSchema.cjs';
 <% if (t.imports.module.validateOnClient) { %>
 import { validateOnClient } from '<%= t.imports.module.validateOnClient %>';
 <% } else { %>
@@ -18,3 +18,4 @@ export const <%= controllerName %> = createRPC(
   }); 
 });
 %>
+export { fullSchema };

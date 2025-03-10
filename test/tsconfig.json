@@ -12,7 +12,7 @@
   ],
   "compilerOptions": {
     "noEmit": true,
-    "module": "ESNext",
+    "module": "esnext",
     "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "experimentalDecorators": true,

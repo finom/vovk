@@ -49,6 +49,13 @@ export default async function getClientTemplates({
       fullSchema: false,
       origin: null,
     },
+    fullSchema: {
+      templateName: 'fullSchema',
+      templatePath: path.resolve(templatesDir, 'fullSchema/*'),
+      outDir: clientOutDirAbsolutePath,
+      fullSchema: false,
+      origin: null,
+    },
   };
 
   const generateFromStrict: GenerateFromStrict[] = generateFrom.map((template) => {
@@ -73,6 +80,10 @@ export default async function getClientTemplates({
       origin: template.origin ?? null,
     };
   });
+
+  if (['ts', 'main', 'module'].some((template) => generateFromStrict.some((item) => item.templateName === template))) {
+    generateFromStrict.push(builtIn.fullSchema);
+  }
 
   const templateFiles: ClientTemplate[] = [];
 

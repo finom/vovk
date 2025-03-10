@@ -1,3 +1,3 @@
 module.exports = {
-  ...require('.vovk-client/main.cjs'),
+  ...require('../.vovk-client/main.cjs'),
 };

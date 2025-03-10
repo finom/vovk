@@ -53,18 +53,6 @@ await describe('ensureSchemaFiles', async () => {
       ].sort()
     );
 
-    const indexPath = path.join(tmpDir, 'main.cjs');
-    const expectedIndexContent = `module.exports.config = require('./config.json');
-module.exports.segments = {
-  'segment1': require('./segments/segment1.json'),
-  'segment2': require('./segments/segment2.json'),
-  'folder1/segment3': require('./segments/folder1/segment3.json'),
-  'folder2/segment4': require('./segments/folder2/segment4.json'),
-}`;
-
-    const indexContent = await fs.readFile(indexPath, 'utf-8');
-    assert.strictEqual(indexContent.trim().split('\n').slice(1).join('\n'), expectedIndexContent.trim());
-
     // Update the segments list (segment2 and segment3 remain, segment1 and segment4 are removed, segment5 is added)
     const updatedSegments = ['segment2', 'folder1/segment3', 'segment5'];
 
@@ -88,16 +76,5 @@ module.exports.segments = {
         assert.strictEqual((error as NodeJS.ErrnoException).code, 'ENOENT');
       }
     }
-
-    // Check if the updated index.js file is correct
-    const updatedExpectedIndexContent = `module.exports.config = require('./config.json');
-module.exports.segments = {
-  'segment2': require('./segments/segment2.json'),
-  'folder1/segment3': require('./segments/folder1/segment3.json'),
-  'segment5': require('./segments/segment5.json'),
-}`;
-
-    const updatedIndexContent = await fs.readFile(indexPath, 'utf-8');
-    assert.strictEqual(updatedIndexContent.trim().split('\n').slice(1).join('\n'), updatedExpectedIndexContent.trim());
   });
 });

@@ -1,7 +1,7 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
 const { fetcher } = require('<%= t.imports.fetcher %>');
 const { createRPC } = require('<%= t.imports.createRPC %>');
-const fullSchema = require('<%= t.imports.fullSchema %>');
+const { fullSchema } = require('./fullSchema.cjs');
 const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
 const apiRoot = '<%= t.apiRoot %>';
 <% Object.values(t.fullSchema.segments).forEach((segment) => { 
@@ -12,3 +12,4 @@ exports.<%= controllerName %> = createRPC(
 );
   <% })
 }) %>
+exports.fullSchema = fullSchema;
