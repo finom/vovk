@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { VovkConfig } from 'vovk';
+import type { VovkStrictConfig } from 'vovk';
 import getFileSystemEntryType from './utils/getFileSystemEntryType.mjs';
 
 export type Segment = {
@@ -17,7 +17,7 @@ export default async function locateSegments({
 }: {
   dir: string;
   rootDir?: string;
-  config: Required<VovkConfig> | null;
+  config: VovkStrictConfig | null;
 }): Promise<Segment[]> {
   let results: Segment[] = [];
 

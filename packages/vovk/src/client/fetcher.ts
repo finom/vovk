@@ -30,10 +30,10 @@ export const fetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
 
   const init: RequestInit = {
     method: httpMethod,
-    ...options,
+    ...options.init,
     headers: {
-      ...options.headers,
       accept: 'application/jsonl, application/json',
+      ...options.init?.headers,
     },
   };
 

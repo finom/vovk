@@ -271,7 +271,7 @@ export class VovkDev {
         log.debug(`The class ${namesOfClasses.join(', ')} does not belong to any segment`);
       }
     } else {
-      log.debug(`The file does not contain any controller`);
+      log.debug(`The file ${filePath} does not contain any controller`);
     }
   };
 

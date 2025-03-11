@@ -2,7 +2,7 @@ import ejs from 'ejs';
 import matter from 'gray-matter';
 import _ from 'lodash';
 import pluralize from 'pluralize';
-import type { VovkConfig } from 'vovk';
+import type { VovkStrictConfig } from 'vovk';
 import addCommonTerms from './addCommonTerms.mjs';
 import type { VovkModuleRenderResult } from '../types.mjs';
 
@@ -19,7 +19,7 @@ export default async function render(
     templateFileName,
   }: {
     cwd: string;
-    config: VovkConfig;
+    config: VovkStrictConfig;
     withService: boolean;
     segmentName: string;
     moduleName: string;

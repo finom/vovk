@@ -31,7 +31,7 @@ await describe.only('Client templates', async () => {
 
   await it('Should generate client with full schema only', async () => {
     await runAtProjectDir(
-      `../dist/index.mjs generate --full-schema-json=full-schema.json --out ${compiledClientFolderName} --template=none`
+      `../dist/index.mjs generate --full-schema-json --out ${compiledClientFolderName} --template=none`
     );
 
     await assertFile(`${compiledClientFolderName}/full-schema.json`, [`"emitSchema": true`]);

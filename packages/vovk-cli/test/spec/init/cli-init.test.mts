@@ -511,7 +511,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and no validation', async () => {
     await createNextApp();
     await vovkInit('', { combo: ['N', ENTER, ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig('vovk-zod', true), 'validateOnClientImport'));
+    await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig('vovk-zod', true), 'imports'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-react-query', '@tanstack/react-query', 'vovk-client', 'vovk-openapi'],

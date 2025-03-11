@@ -35,14 +35,14 @@ export default async function getProjectInfo({
 
   const getImportPath = (p: string) => (p.startsWith('.') ? path.relative(config.clientOutDir, p) : p);
   const clientImports = {
-    fetcher: getImportPath(config.fetcherImport[0]),
-    createRPC: getImportPath(config.createRPCImport[0]),
-    validateOnClient: config.validateOnClientImport ? getImportPath(config.validateOnClientImport[0]) : null,
+    fetcher: getImportPath(config.imports.fetcher[0]),
+    createRPC: getImportPath(config.imports.createRPC[0]),
+    validateOnClient: config.imports.validateOnClient ? getImportPath(config.imports.validateOnClient[0]) : null,
     module: {
-      fetcher: getImportPath(config.fetcherImport[1] ?? config.fetcherImport[0]),
-      createRPC: getImportPath(config.createRPCImport[1] ?? config.createRPCImport[0]),
-      validateOnClient: config.validateOnClientImport
-        ? getImportPath(config.validateOnClientImport[1] ?? config.validateOnClientImport[0])
+      fetcher: getImportPath(config.imports.fetcher[1] ?? config.imports.fetcher[0]),
+      createRPC: getImportPath(config.imports.createRPC[1] ?? config.imports.createRPC[0]),
+      validateOnClient: config.imports.validateOnClient
+        ? getImportPath(config.imports.validateOnClient[1] ?? config.imports.validateOnClient[0])
         : null,
     },
   };

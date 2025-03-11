@@ -103,7 +103,7 @@ export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<str
 ) => KnownAny;
 
 // `RequestInit` is the type of options passed to fetch function
-export interface VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'method'> {
+export interface VovkDefaultFetcherOptions {
   reactNative?: { textStreaming: boolean };
   apiRoot?: string;
   segmentName?: string;
@@ -111,6 +111,7 @@ export interface VovkDefaultFetcherOptions extends Omit<RequestInit, 'body' | 'm
   validateOnClient?: VovkValidateOnClient;
   fetcher?: VovkClientFetcher;
   interpretAs?: string;
+  init?: Omit<RequestInit, 'body'> & { reactNative?: { textStreaming: boolean } };
 }
 
 export type VovkValidateOnClient = (

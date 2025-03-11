@@ -240,18 +240,18 @@ export class Init {
     updateScripts =
       updateScripts ??
       (await select({
-        message: 'Do you want to update package.json by adding "generate" and updating "dev" NPM scripts?',
+        message: 'Do you want to update "dev" NPM script at package.json?',
         default: 'implicit',
         choices: [
           {
             name: 'Yes, use "concurrently" implicitly',
             value: 'implicit' as const,
-            description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}`,
+            description: `The script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}`,
           },
           {
             name: 'Yes, use "concurrently" explicitly',
             value: 'explicit' as const,
-            description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}`,
+            description: `The script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}`,
           },
           {
             name: 'No',

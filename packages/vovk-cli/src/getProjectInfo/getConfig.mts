@@ -16,18 +16,20 @@ export default async function getConfig({
   const conf = userConfig ?? {};
   const srcRoot = await getRelativeSrcRoot({ cwd });
 
-  const validateOnClientImport = env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.validateOnClientImport ?? null;
-  const fetcherImport = env.VOVK_FETCHER_PATH ?? conf.fetcherImport ?? 'vovk';
-  const createRPCImport = env.VOVK_CREATE_RPC_PATH ?? conf.createRPCImport ?? 'vovk';
-  const defaultClientTemplates = ['ts', 'module', 'main'];
+  const validateOnClientImport = env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.imports?.validateOnClient ?? null;
+  const fetcherImport = env.VOVK_FETCHER_PATH ?? conf.imports?.fetcher ?? 'vovk';
+  const createRPCImport = env.VOVK_CREATE_RPC_PATH ?? conf.imports?.createRPC ?? 'vovk';
+  const defaultClientTemplates = ['module', 'main'];
 
   const config: VovkStrictConfig = {
     emitConfig: [],
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
-    validateOnClientImport:
-      typeof validateOnClientImport === 'string' ? [validateOnClientImport] : validateOnClientImport,
-    fetcherImport: typeof fetcherImport === 'string' ? [fetcherImport] : fetcherImport,
-    createRPCImport: typeof createRPCImport === 'string' ? [createRPCImport] : createRPCImport,
+    imports: {
+      fetcher: typeof fetcherImport === 'string' ? [fetcherImport] : fetcherImport,
+      validateOnClient:
+        typeof validateOnClientImport === 'string' ? [validateOnClientImport] : (validateOnClientImport ?? null),
+      createRPC: typeof createRPCImport === 'string' ? [createRPCImport, 'vovk'] : createRPCImport,
+    },
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     clientOutDir: clientOutDir ?? env.VOVK_CLIENT_OUT_DIR ?? conf.clientOutDir ?? './node_modules/.vovk-client',
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
@@ -39,7 +41,7 @@ export default async function getConfig({
     generateFrom:
       typeof conf.generateFrom === 'function'
         ? conf.generateFrom(defaultClientTemplates)
-        : (conf.generateFrom ?? ['ts', 'module', 'main']),
+        : (conf.generateFrom ?? defaultClientTemplates),
     templates: {
       service: 'vovk-cli/templates/service.ejs',
       controller: 'vovk-cli/templates/controller.ejs',

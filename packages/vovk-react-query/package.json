@@ -1,18 +1,19 @@
 {
   "name": "vovk-react-query",
-  "version": "0.0.1-draft.49",
+  "version": "0.0.1-draft.50",
   "description": "useQuery and useMutation hooks for Vovk.ts",
   "scripts": {
     "build": "rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
     "build:esm": "tsc -P tsconfig.build.esm.json --module esnext",
     "build:cjs": "cp index.mts index.cts && tsc -P tsconfig.build.cjs.json",
-    "tsc": "tsc --noEmit",
+    "tsc": "npm run generate-client && tsc --noEmit",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u",
-    "pre-test": "npm run generate --prefix ../../test && npm run build",
+    "generate-client": "npm run generate --prefix ../../test -- --config=../packages/vovk-react-query/vovk.config.test.mjs",
+    "pre-test": "npm run build && npm run build --prefix ../../test && npm run generate-client",
     "test-only": "npm run pre-test && node --experimental-strip-types --test --test-only test/test/**/*.mts",
     "unit": "npm run pre-test && node --experimental-strip-types --test --test-concurrency=1 test/*.mts",
-    "test": "concurrently 'sleep 20 && npm run unit' 'npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
+    "test": "npm run pre-test && concurrently 'sleep 5 && npm run unit' 'npm run start --prefix ../../test' --kill-others --success first"
   },
   "main": "./index.cjs",
   "module": "./index.mjs",
@@ -40,7 +41,7 @@
   "peerDependencies": {
     "@tanstack/react-query": "^5.66.0",
     "react": "^19.0.0",
-    "vovk": "^3.0.0-draft.107"
+    "vovk": "^3.0.0-draft.108"
   },
   "devDependencies": {
     "@testing-library/react": "^16.2.0",

@@ -192,9 +192,11 @@ export type VovkConfig = {
   emitConfig?: boolean | (keyof VovkStrictConfig)[];
   clientOutDir?: string;
   schemaOutDir?: string;
-  fetcherImport?: string | string[];
-  validateOnClientImport?: string | string[] | null;
-  createRPCImport?: string | string[];
+  imports?: {
+    fetcher?: string | [string, string] | [string];
+    validateOnClient?: string | [string, string] | [string];
+    createRPC?: string | [string, string] | [string];
+  };
   modulesDir?: string;
   rootEntry?: string;
   origin?: string;
@@ -211,16 +213,13 @@ export type VovkConfig = {
   libs?: Record<string, KnownAny>;
 };
 
-export type VovkStrictConfig = Required<
-  Omit<
-    VovkConfig,
-    'emitConfig' | 'validateOnClientImport' | 'fetcherImport' | 'createRPCImport' | 'generateFrom' | 'libs'
-  >
-> & {
+export type VovkStrictConfig = Required<Omit<VovkConfig, 'emitConfig' | 'generateFrom' | 'libs' | 'imports'>> & {
   emitConfig: (keyof VovkStrictConfig)[];
-  validateOnClientImport: string[] | null;
-  fetcherImport: string[];
-  createRPCImport: string[];
+  imports: {
+    fetcher: [string, string] | [string];
+    validateOnClient: [string, string] | [string] | null;
+    createRPC: [string, string] | [string];
+  };
   generateFrom: GenerateFrom;
   libs: Record<string, KnownAny>;
 };

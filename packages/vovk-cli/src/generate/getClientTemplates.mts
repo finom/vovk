@@ -82,7 +82,7 @@ export default async function getClientTemplates({
   });
 
   if (['ts', 'main', 'module'].some((template) => generateFromStrict.some((item) => item.templateName === template))) {
-    generateFromStrict.push(builtIn.fullSchema);
+    generateFromStrict.unshift(builtIn.fullSchema);
   }
 
   const templateFiles: ClientTemplate[] = [];

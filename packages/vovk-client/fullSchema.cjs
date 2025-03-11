@@ -1,3 +1,1 @@
-module.exports = {
-    ...require('../.vovk-client/fullSchema.cjs'),
-}
+module.exports = require('../.vovk-client/fullSchema.cjs').fullSchema ?? {};

@@ -30,7 +30,8 @@ export default async function createConfig({
   };
 
   if (validationLibrary) {
-    config.validateOnClientImport =
+    config.imports ??= {};
+    config.imports.validateOnClient =
       {
         'vovk-dto': `vovk-dto/validateOnClient.js`,
       }[validationLibrary] ?? 'vovk-ajv';
@@ -44,7 +45,8 @@ export default async function createConfig({
   }
 
   if (reactQuery) {
-    config.createRPCImport = 'vovk-react-query';
+    config.imports ??= {};
+    config.imports.createRPC = 'vovk-react-query';
   }
 
   config.templates = templates;

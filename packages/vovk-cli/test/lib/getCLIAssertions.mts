@@ -52,22 +52,26 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     );
   }
 
-  assertConfig.makeConfig = (validationLibrary: string | null, useReactQuery?: boolean) => ({
-    ...(validationLibrary
-      ? {
-          validateOnClientImport: `${validationLibrary}/validateOnClient.js`,
-        }
-      : {}),
-    ...(useReactQuery
-      ? {
-          createRPCImport: 'vovk-react-query',
-        }
-      : {}),
-    templates: {
-      controller: `${validationLibrary ?? 'vovk-cli'}/templates/controller.ejs`,
-      service: 'vovk-cli/templates/service.ejs',
-    },
-  });
+  assertConfig.makeConfig = (validationLibrary: string | null, useReactQuery?: boolean) => {
+    const config: VovkConfig = {
+      templates: {
+        controller: `${validationLibrary ?? 'vovk-cli'}/templates/controller.ejs`,
+        service: 'vovk-cli/templates/service.ejs',
+      },
+    };
+
+    if (validationLibrary) {
+      config.imports ??= {};
+      config.imports.validateOnClient =
+        validationLibrary === 'vovk-dto' ? `${validationLibrary}/validateOnClient.js` : 'vovk-ajv';
+    }
+
+    if (useReactQuery) {
+      config.imports ??= {};
+      config.imports.createRPC = 'vovk-react-query';
+    }
+    return config;
+  };
 
   async function assertDirExists(dirPath: string) {
     assert.strictEqual(
