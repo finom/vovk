@@ -1,16 +1,23 @@
 import path from 'node:path';
-import { glob } from 'node:fs/promises';
+import { glob } from 'glob';
 import type { VovkStrictConfig } from 'vovk';
 import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 
 export const DEFAULT_FULL_SCHEMA_FILE_NAME = 'full-schema.json';
 
-interface ClientTemplate {
+export interface ClientTemplate {
   templateName: string;
   templatePath: string;
-  outPath: string;
-  fullSchemaOutAbsolutePath: string | null;
+  outDir: string;
+  fullSchemaJSONFileName: string | null;
   origin?: string | null;
+}
+
+export enum BuiltInTemplateName {
+  ts = 'ts',
+  main = 'main',
+  module = 'module',
+  fullSchema = 'fullSchema',
 }
 
 export default async function getClientTemplates({
@@ -29,31 +36,31 @@ export default async function getClientTemplates({
 
   const builtIn: Record<string, GenerateFromStrict> = {
     ts: {
-      templateName: 'ts',
+      templateName: BuiltInTemplateName.ts,
       templatePath: path.resolve(templatesDir, 'ts/*'),
       outDir: clientOutDirAbsolutePath,
-      fullSchema: false,
+      fullSchemaJSON: false,
       origin: null,
     },
     main: {
-      templateName: 'main',
+      templateName: BuiltInTemplateName.main,
       templatePath: path.resolve(templatesDir, 'main/*'),
       outDir: clientOutDirAbsolutePath,
-      fullSchema: false,
+      fullSchemaJSON: false,
       origin: null,
     },
     module: {
-      templateName: 'module',
+      templateName: BuiltInTemplateName.module,
       templatePath: path.resolve(templatesDir, 'module/*'),
       outDir: clientOutDirAbsolutePath,
-      fullSchema: false,
+      fullSchemaJSON: false,
       origin: null,
     },
     fullSchema: {
-      templateName: 'fullSchema',
+      templateName: BuiltInTemplateName.fullSchema,
       templatePath: path.resolve(templatesDir, 'fullSchema/*'),
       outDir: clientOutDirAbsolutePath,
-      fullSchema: false,
+      fullSchemaJSON: false,
       origin: null,
     },
   };
@@ -67,7 +74,7 @@ export default async function getClientTemplates({
         templateName: template,
         templatePath: resolveAbsoluteModulePath(template, cwd),
         outDir: clientOutDirAbsolutePath,
-        fullSchema: false,
+        fullSchemaJSON: false,
         origin: null,
       };
     }
@@ -76,7 +83,7 @@ export default async function getClientTemplates({
       templateName: template.templateName ?? template.templatePath,
       templatePath: resolveAbsoluteModulePath(template.templatePath, cwd),
       outDir: template.outDir ? path.resolve(cwd, template.outDir) : clientOutDirAbsolutePath,
-      fullSchema: template.fullSchema ?? false,
+      fullSchemaJSON: template.fullSchemaJSON ?? false,
       origin: template.origin ?? null,
     };
   });
@@ -91,17 +98,15 @@ export default async function getClientTemplates({
     const files = await glob(generateFromItem.templatePath);
 
     for await (const templatePath of files) {
-      const fullSchemaOutAbsolutePath = generateFromItem.fullSchema
-        ? path.resolve(
-            generateFromItem.outDir,
-            generateFromItem.fullSchema === 'string' ? generateFromItem.fullSchema : DEFAULT_FULL_SCHEMA_FILE_NAME
-          )
-        : null;
       templateFiles.push({
         templateName: generateFromItem.templateName,
         templatePath,
-        outPath: path.join(generateFromItem.outDir, path.basename(templatePath).replace('.ejs', '')),
-        fullSchemaOutAbsolutePath,
+        outDir: generateFromItem.outDir,
+        fullSchemaJSONFileName: generateFromItem.fullSchemaJSON
+          ? generateFromItem.fullSchemaJSON === 'string'
+            ? generateFromItem.fullSchemaJSON
+            : DEFAULT_FULL_SCHEMA_FILE_NAME
+          : null,
         origin: generateFromItem.origin,
       });
     }

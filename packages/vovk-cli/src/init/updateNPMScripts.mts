@@ -16,9 +16,6 @@ export default async function updateNPMScripts(
   pkgJson.update({
     scripts: {
       ...pkgJson.content.scripts,
-      generate: pkgJson.content.scripts?.generate
-        ? `${pkgJson.content.scripts.generate} && vovk generate`
-        : 'vovk generate',
       dev: getDevScript(pkgJson, updateScriptsMode),
     },
   });

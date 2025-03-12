@@ -82,4 +82,6 @@ function withYup<
   });
 }
 
+withYup.formData = null as unknown as Yup.Schema<FormData>;
+
 export { withYup };

@@ -1,6 +1,9 @@
 import path from 'node:path';
 import getConfig from './getConfig.mjs';
 import getLogger from '../utils/getLogger.mjs';
+import locateSegments from '../locateSegments.mjs';
+import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import type { ClientImports } from '../generate/index.mjs';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
@@ -33,18 +36,57 @@ export default async function getProjectInfo({
     log.error(`Error reading config file at ${configAbsolutePaths[0]}: ${error?.message ?? 'Unknown Error'}`);
   }
 
-  const getImportPath = (p: string) => (p.startsWith('.') ? path.relative(config.clientOutDir, p) : p);
-  const clientImports = {
-    fetcher: getImportPath(config.imports.fetcher[0]),
-    createRPC: getImportPath(config.imports.createRPC[0]),
-    validateOnClient: config.imports.validateOnClient ? getImportPath(config.imports.validateOnClient[0]) : null,
-    module: {
-      fetcher: getImportPath(config.imports.fetcher[1] ?? config.imports.fetcher[0]),
-      createRPC: getImportPath(config.imports.createRPC[1] ?? config.imports.createRPC[0]),
-      validateOnClient: config.imports.validateOnClient
-        ? getImportPath(config.imports.validateOnClient[1] ?? config.imports.validateOnClient[0])
-        : null,
+  const getImportPath = (p: string, s = '') =>
+    p.startsWith('.') ? path.relative(path.join(config.clientOutDir, s), p) : p;
+
+  const apiDirAbsolutePath = path.join(cwd, apiDir);
+  const segments = await locateSegments({ dir: apiDirAbsolutePath, config });
+
+  // TODO Refactor
+  const clientImports: {
+    fullClient: ClientImports & { module: ClientImports };
+    schemaClient: Record<string, ClientImports & { module: ClientImports }>;
+  } = {
+    fullClient: {
+      fetcher: getImportPath(config.imports.fetcher[0]),
+      createRPC: getImportPath(config.imports.createRPC[0]),
+      validateOnClient: config.imports.validateOnClient ? getImportPath(config.imports.validateOnClient[0]) : null,
+      module: {
+        fetcher: getImportPath(config.imports.fetcher[1] ?? config.imports.fetcher[0]),
+        createRPC: getImportPath(config.imports.createRPC[1] ?? config.imports.createRPC[0]),
+        validateOnClient: config.imports.validateOnClient
+          ? getImportPath(config.imports.validateOnClient[1] ?? config.imports.validateOnClient[0])
+          : null,
+      },
     },
+    schemaClient: Object.fromEntries(
+      segments.map((segment) => [
+        segment.segmentName,
+        {
+          fetcher: getImportPath(config.imports.fetcher[0], segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME),
+          createRPC: getImportPath(config.imports.createRPC[0], segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME),
+          validateOnClient: config.imports.validateOnClient
+            ? getImportPath(config.imports.validateOnClient[0], segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME)
+            : null,
+          module: {
+            fetcher: getImportPath(
+              config.imports.fetcher[1] ?? config.imports.fetcher[0],
+              segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME
+            ),
+            createRPC: getImportPath(
+              config.imports.createRPC[1] ?? config.imports.createRPC[0],
+              segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME
+            ),
+            validateOnClient: config.imports.validateOnClient
+              ? getImportPath(
+                  config.imports.validateOnClient[1] ?? config.imports.validateOnClient[0],
+                  segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME
+                )
+              : null,
+          },
+        },
+      ])
+    ),
   };
 
   return {
@@ -56,5 +98,6 @@ export default async function getProjectInfo({
     config,
     clientImports,
     log,
+    segments,
   };
 }

@@ -7,13 +7,12 @@ import concurrently from 'concurrently';
 import getAvailablePort from './utils/getAvailablePort.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
 import generate from './generate/index.mjs';
-import locateSegments from './locateSegments.mjs';
 import { VovkDev } from './dev/index.mjs';
 import newComponents from './new/index.mjs';
 import type { DevOptions, GenerateOptions, NewOptions } from './types.mjs';
 import initProgram from './initProgram.mjs';
 import type { VovkEnv } from 'vovk';
-import { getFullSchemaFromJSON } from './utils/getFullSchemaFromJSON.mjs';
+import { getFullSchemaFromJSON } from './generate/getFullSchemaFromJSON.mjs';
 
 const program = new Command();
 
@@ -98,14 +97,12 @@ program
   .action(async (options: GenerateOptions) => {
     const { clientOutDir, templates, prettify, emitFullSchema, config: configPath } = options;
     const projectInfo = await getProjectInfo({ clientOutDir, configPath });
-    const { cwd, config, apiDir } = projectInfo;
-    const segments = await locateSegments({ dir: apiDir, config });
+    const { cwd, config } = projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
 
     await generate({
       projectInfo,
-      segments,
       fullSchema,
       templates,
       prettify,

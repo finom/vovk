@@ -1,7 +1,9 @@
-import { glob, readFile, access } from 'node:fs/promises';
-import * as path from 'node:path';
+import { readFile, access } from 'node:fs/promises';
+import path from 'node:path';
+import { glob } from 'glob';
 import type { VovkFullSchema } from 'vovk';
-import { ProjectInfo } from '../getProjectInfo/index.mjs';
+import type { ProjectInfo } from '../getProjectInfo/index.mjs';
+import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 export async function getFullSchemaFromJSON(
   schemaOutAbsolutePath: string,
@@ -44,7 +46,7 @@ export async function getFullSchemaFromJSON(
           .replace(/\\/g, '/'); // Normalize to forward slashes
 
         // Special case for _root.json
-        if (path.basename(filePath) === '_root.json' && path.dirname(filePath) === segmentsDir) {
+        if (path.basename(filePath) === `${ROOT_SEGMENT_SCHEMA_NAME}.json` && path.dirname(filePath) === segmentsDir) {
           relativePath = '';
         }
 
@@ -60,16 +62,3 @@ export async function getFullSchemaFromJSON(
 
   return result;
 }
-
-// Example usage:
-/*
-async function main() {
-  try {
-    const schema = await getSchemaFromJSON('/path/to/directory');
-    console.log(schema);
-  } catch (error) {
-    console.error('Error:', error);
-  }
-}
-main();
-*/

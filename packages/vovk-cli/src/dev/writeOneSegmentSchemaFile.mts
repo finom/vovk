@@ -4,7 +4,7 @@ import type { VovkSegmentSchema } from 'vovk';
 import diffSegmentSchema, { type DiffResult } from './diffSegmentSchema.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
-export const ROOT_SEGMENT_SCHEMA_NAME = '_root';
+export const ROOT_SEGMENT_SCHEMA_NAME = 'root';
 export const SEGMENTS_SCHEMA_DIR_NAME = 'segments';
 
 export default async function writeOneSegmentSchemaFile({

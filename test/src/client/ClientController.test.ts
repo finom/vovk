@@ -1,4 +1,4 @@
-import { ClientControllerRPC } from 'vovk-client';
+import { ClientControllerRPC } from '../../node_modules/.vovk-client/foo/client/module.mjs';
 import {
   HttpStatus,
   type VovkBody,
@@ -87,7 +87,7 @@ describe('Client with vovk-client', () => {
   it(`Should handle headers`, async () => {
     const result = await ClientControllerRPC.getHelloWorldHeaders({
       apiRoot,
-      headers: { 'x-test': 'world' },
+      init: { headers: { 'x-test': 'world' } },
     });
     deepStrictEqual(result satisfies { hello: string | null }, { hello: 'world' });
   });
@@ -95,7 +95,7 @@ describe('Client with vovk-client', () => {
   it(`Should handle simple requests and return a normal array`, async () => {
     const result = await ClientControllerRPC.getHelloWorldArray({
       apiRoot,
-      headers: { 'x-test': 'world' },
+      init: { headers: { 'x-test': 'world' } },
     });
     deepStrictEqual(result satisfies { hello: string }[], [{ hello: 'world' }]);
   });

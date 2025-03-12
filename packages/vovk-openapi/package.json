@@ -1,6 +1,6 @@
 {
   "name": "vovk-openapi",
-  "version": "0.0.1-draft.54",
+  "version": "0.0.1-draft.55",
   "description": "OpenAPI decorator and tools for Vovk.ts",
   "main": "dist/index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   "author": "Andrey Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.108"
+    "vovk": "^3.0.0-draft.109"
   },
   "dependencies": {
     "@stoplight/json-schema-sampler": "^0.3.0",
