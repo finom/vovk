@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import type { OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponse } from './StreamJSONResponse';
+import type { JSONLinesResponse } from './JSONLinesResponse';
 import { VovkStreamAsyncIterable } from './client/types';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
