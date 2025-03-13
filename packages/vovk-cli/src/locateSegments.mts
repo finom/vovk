@@ -9,7 +9,6 @@ export type Segment = {
   segmentImportPath: string;
 };
 
-// config: null is used for testing
 export default async function locateSegments({
   dir,
   rootDir,
@@ -17,7 +16,7 @@ export default async function locateSegments({
 }: {
   dir: string;
   rootDir?: string;
-  config: VovkStrictConfig | null;
+  config: VovkStrictConfig | null; // config: null is used for testing
 }): Promise<Segment[]> {
   let results: Segment[] = [];
 
@@ -39,7 +38,7 @@ export default async function locateSegments({
         if (await getFileSystemEntryType(routeFilePath)) {
           // Calculate the basePath relative to the root directory
           const segmentName = path.relative(rootDir, dir).replace(/\\/g, '/'); // windows fix
-          const segmentImportPath = path.relative(config?.clientOutDir ?? '.__', routeFilePath);
+          const segmentImportPath = path.relative(config?.clientOutDir ?? '.__error', routeFilePath);
           results.push({ routeFilePath, segmentName, segmentImportPath });
         }
       }

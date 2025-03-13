@@ -51,7 +51,6 @@ async function writeOneClientFile({
     typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '',
     path.basename(templatePath).replace('.ejs', '')
   );
-  const schemaOutDir = path.relative(config.clientOutDir, config.schemaOutDir).replace(/\\/g, '/'); // windows fix
 
   // Data for the EJS templates:
   const t = {
@@ -61,10 +60,13 @@ async function writeOneClientFile({
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports,
     fullSchema,
-    schemaOutDir,
+    schemaOutDir:
+      typeof segmentName === 'string'
+        ? path.relative(path.join(outDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME), config.schemaOutDir)
+        : path.relative(outDir, config.schemaOutDir),
     segmentMeta: Object.fromEntries(
-      segments.map(({ segmentName, routeFilePath, segmentImportPath }) => [
-        segmentName,
+      segments.map(({ segmentName: sName, routeFilePath, segmentImportPath }) => [
+        sName,
         {
           routeFilePath,
           segmentImportPath:

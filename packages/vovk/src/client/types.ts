@@ -10,7 +10,7 @@ import type {
   VovkSegmentSchema,
   VovkFullSchema,
 } from '../types';
-import type { StreamJSONResponse } from '../StreamJSONResponse';
+import type { JSONLinesResponse } from '../JSONLinesResponse';
 import type { NextResponse } from 'next/server';
 
 export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControllerBody<T> extends undefined | void
@@ -41,7 +41,7 @@ type StaticMethodReturn<T extends ControllerStaticMethod> =
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
 type ClientMethod<
-  T extends (...args: KnownAny[]) => void | object | StreamJSONResponse<STREAM> | Promise<StreamJSONResponse<STREAM>>,
+  T extends (...args: KnownAny[]) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>,
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = (<R>(
@@ -58,8 +58,8 @@ type ClientMethod<
       }
     > | void)
 ) => ReturnType<T> extends
-  | Promise<StreamJSONResponse<infer U>>
-  | StreamJSONResponse<infer U>
+  | Promise<JSONLinesResponse<infer U>>
+  | JSONLinesResponse<infer U>
   | Iterator<infer U>
   | AsyncIterator<infer U>
   ? Promise<VovkStreamAsyncIterable<U>>
@@ -104,7 +104,6 @@ export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<str
 
 // `RequestInit` is the type of options passed to fetch function
 export interface VovkDefaultFetcherOptions {
-  reactNative?: { textStreaming: boolean };
   apiRoot?: string;
   segmentName?: string;
   disableClientValidation?: boolean;

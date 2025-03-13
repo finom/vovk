@@ -36,7 +36,7 @@ import {
 } from './client';
 import { HttpException } from './HttpException';
 import { createDecorator } from './createDecorator';
-import { StreamJSONResponse } from './StreamJSONResponse';
+import { JSONLinesResponse } from './JSONLinesResponse';
 import { generateStaticAPI } from './utils/generateStaticAPI';
 import { withValidation } from './utils/withValidation';
 
@@ -68,7 +68,7 @@ export {
   type VovkStrictConfig,
   type VovkEnv,
   type VovkValidationType,
-  StreamJSONResponse,
+  JSONLinesResponse,
   HttpException,
   HttpStatus,
   HttpMethod,

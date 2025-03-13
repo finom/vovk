@@ -10,7 +10,7 @@ import {
   type VovkRequest,
 } from './types';
 import { HttpException } from './HttpException';
-import { StreamJSONResponse } from './StreamJSONResponse';
+import { JSONLinesResponse } from './JSONLinesResponse';
 import reqQuery from './utils/reqQuery';
 import reqMeta from './utils/reqMeta';
 import reqForm from './utils/reqForm';
@@ -205,7 +205,7 @@ export class VovkApp {
             typeof (result as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
 
       if (isIterator && !(result instanceof Array)) {
-        const streamResponse = new StreamJSONResponse(await headers(), {
+        const streamResponse = new JSONLinesResponse(await headers(), {
           headers: {
             ...VovkApp.getHeadersFromOptions(staticMethod._options),
           },

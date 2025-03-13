@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import type { OperationObject } from 'openapi3-ts/oas31';
-import type { StreamJSONResponse } from './StreamJSONResponse';
+import type { JSONLinesResponse } from './JSONLinesResponse';
 import { VovkStreamAsyncIterable } from './client/types';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -120,7 +120,7 @@ export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownA
   ? Y
   : T extends (...args: KnownAny[]) => Generator<infer Y, KnownAny, KnownAny>
     ? Y
-    : T extends (...args: KnownAny[]) => Promise<StreamJSONResponse<infer Y>> | StreamJSONResponse<infer Y>
+    : T extends (...args: KnownAny[]) => Promise<JSONLinesResponse<infer Y>> | JSONLinesResponse<infer Y>
       ? Y
       : never;
 
@@ -165,9 +165,9 @@ export type VovkEnv = {
   VOVK_EMIT_SEGMENT_CLIENT?: string;
   VOVK_CLIENT_OUT_DIR?: string;
   VOVK_SCHEMA_OUT_DIR?: string;
-  VOVK_FETCHER_PATH?: string;
-  VOVK_VALIDATE_ON_CLIENT_PATH?: string;
-  VOVK_CREATE_RPC_PATH?: string;
+  VOVK_IMPORTS_FETCHER?: string;
+  VOVK_IMPORTS_VALIDATE_ON_CLIENT?: string;
+  VOVK_IMPORTS_CREATE_RPC?: string;
   VOVK_MODULES_DIR?: string;
   VOVK_ORIGIN?: string;
   VOVK_ROOT_ENTRY?: string;

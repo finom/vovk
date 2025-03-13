@@ -16,9 +16,9 @@ export default async function getConfig({
   const conf = userConfig ?? {};
   const srcRoot = await getRelativeSrcRoot({ cwd });
 
-  const validateOnClientImport = env.VOVK_VALIDATE_ON_CLIENT_PATH ?? conf.imports?.validateOnClient ?? null;
-  const fetcherImport = env.VOVK_FETCHER_PATH ?? conf.imports?.fetcher ?? 'vovk';
-  const createRPCImport = env.VOVK_CREATE_RPC_PATH ?? conf.imports?.createRPC ?? 'vovk';
+  const validateOnClientImport = env.VOVK_IMPORTS_VALIDATE_ON_CLIENT ?? conf.imports?.validateOnClient ?? null;
+  const fetcherImport = env.VOVK_IMPORTS_FETCHER ?? conf.imports?.fetcher ?? 'vovk';
+  const createRPCImport = env.VOVK_IMPORTS_CREATE_RPC ?? conf.imports?.createRPC ?? 'vovk';
   const defaultClientTemplates = ['module', 'main'];
 
   const config: VovkStrictConfig = {

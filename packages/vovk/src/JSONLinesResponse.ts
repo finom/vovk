@@ -2,7 +2,7 @@ import type { headers } from 'next/headers';
 import type { KnownAny, StreamAbortMessage } from './types';
 import './utils/shim';
 
-export class StreamJSONResponse<T> extends Response {
+export class JSONLinesResponse<T> extends Response {
   public isClosed = false;
 
   public controller?: ReadableStreamDefaultController;
