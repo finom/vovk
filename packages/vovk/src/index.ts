@@ -36,7 +36,7 @@ import {
 } from './client';
 import { HttpException } from './HttpException';
 import { createDecorator } from './createDecorator';
-import { JSONLinesResponse } from './JSONLinesResponse';
+import { JSONLinesResponse } from './StreamJSONResponse';
 import { generateStaticAPI } from './utils/generateStaticAPI';
 import { withValidation } from './utils/withValidation';
 

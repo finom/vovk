@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.136",
+  "version": "0.0.1-draft.137",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,7 +35,7 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.110"
+    "vovk": "^3.0.0-draft.111"
   },
   "optionalDependencies": {
     "vovk-python-client": "*"

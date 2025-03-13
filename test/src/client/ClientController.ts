@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { HttpException, HttpStatus, VovkRequest, get, post, prefix } from 'vovk';
+import { HttpException, HttpStatus, JSONLinesResponse, VovkRequest, get, post, prefix } from 'vovk';
 import { NextResponse } from 'next/server';
 import { NESTED_QUERY_EXAMPLE } from '../lib';
 
@@ -113,5 +113,36 @@ export default class ClientController {
   @get('error')
   static getErrorResponse() {
     throw new HttpException(HttpStatus.BAD_REQUEST, 'This is an error', { theCause: 'This is the cause' });
+  }
+
+  @get('json-text')
+  static getJsonTextResponse() {
+    return new Response('{"hello": "world"}', {
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+    });
+  }
+
+  @get('jsonl')
+  static getJsonlResponse() {
+    return new Response('{"hello": "world1"}\n{"hello": "world2"}', {
+      headers: {
+        'Content-Type': 'application/jsonl',
+      },
+    }) as JSONLinesResponse<{
+      hello: string;
+    }>;
+  }
+
+  @get('jsonl-text')
+  static getJsonlTextResponse() {
+    return new Response('{"hello": "world1"}\n{"hello": "world2"}', {
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+    }) as JSONLinesResponse<{
+      hello: string;
+    }>;
   }
 }

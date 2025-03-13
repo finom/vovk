@@ -208,4 +208,15 @@ export default class WithDtoClientController {
       return { nothing: 'here' } as const;
     },
   });
+
+  @post.auto()
+  static handleFormData = withDto({
+    body: withDto.formData,
+    query: HandleQueryQueryDto,
+    handle: async (req) => {
+      const formData = await req.vovk.form<{ hello: 'world' }>();
+      const search = req.vovk.query().search;
+      return { formData, search };
+    },
+  });
 }

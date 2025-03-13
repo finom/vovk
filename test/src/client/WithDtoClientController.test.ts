@@ -44,7 +44,7 @@ All (just OK) DONE
 handler.schema for All, use @openapi and @openapi.error
 */
 
-describe.only('Validation with with vovk-dto and validateOnClient defined at settings', () => {
+describe('Validation with with vovk-dto', () => {
   it('Should be OK', async () => {
     const result = await WithDtoClientControllerRPC.handleAll({
       body: { hello: 'world' },
@@ -333,6 +333,26 @@ describe.only('Validation with with vovk-dto and validateOnClient defined at set
     null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should handle form data', async () => {
+    const formData = new FormData();
+    formData.append('hello', 'world');
+
+    const result = await WithDtoClientControllerRPC.handleFormData({
+      body: formData,
+      query: { search: 'value' },
+    });
+    const expected = {
+      formData: {
+        hello: 'world',
+      },
+      search: 'value',
+    };
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleFormData> satisfies typeof expected;
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleFormData> satisfies null;
+    deepStrictEqual(result satisfies typeof expected, expected);
   });
 
   it.skip('Should store schema at handler.schema', async () => {

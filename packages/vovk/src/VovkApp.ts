@@ -10,7 +10,7 @@ import {
   type VovkRequest,
 } from './types';
 import { HttpException } from './HttpException';
-import { JSONLinesResponse } from './JSONLinesResponse';
+import { JSONLinesResponse } from './StreamJSONResponse';
 import reqQuery from './utils/reqQuery';
 import reqMeta from './utils/reqMeta';
 import reqForm from './utils/reqForm';

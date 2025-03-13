@@ -253,6 +253,49 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     deepStrictEqual(expected, expectedCollected);
   });
 
+  /*
+  it('Should handle form data', async () => {
+      const formData = new FormData();
+      formData.append('hello', 'world');
+  
+      const result = await WithZodClientControllerRPC.handleFormData({
+        body: formData,
+        query: { search: 'foo' },
+      });
+      const expected = {
+        formData: {
+          hello: 'world',
+        },
+        search: 'foo',
+      } as const;
+      null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies typeof expected;
+      null as unknown as VovkControllerOutput<typeof WithZodClientController.handleFormData> satisfies typeof expected;
+      // @ts-expect-error Expect error
+      null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies null;
+      deepStrictEqual(result satisfies typeof expected, expected);
+    });
+    */
+
+  it('Should handle form data', async () => {
+    const formData = new FormData();
+    formData.append('hello', 'world');
+
+    const result = await WithYupClientControllerRPC.handleFormData({
+      body: formData,
+      query: { search: 'foo' },
+    });
+    const expected = {
+      formData: {
+        hello: 'world',
+      },
+      search: 'foo',
+    } as const;
+    null as unknown as VovkReturnType<typeof WithYupClientControllerRPC.handleFormData> satisfies typeof expected;
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithYupClientControllerRPC.handleFormData> satisfies null;
+    deepStrictEqual(result satisfies typeof expected, expected);
+  });
+
   it.skip('Should store schema at handler.schema', async () => {
     deepStrictEqual(WithYupClientControllerRPC.handleAll.schema satisfies VovkHandlerSchema, {
       httpMethod: 'POST',

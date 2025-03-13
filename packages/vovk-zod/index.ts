@@ -81,6 +81,6 @@ function withZod<
   });
 }
 
-withZod.formData = null as unknown as z.ZodType<FormData>
+withZod.formData = null as unknown as z.ZodType<FormData>;
 
 export { withZod };

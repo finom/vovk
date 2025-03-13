@@ -139,4 +139,15 @@ export default class WithZodClientController {
       return { nothing: 'here' } as const;
     },
   });
+
+  @post.auto()
+  static handleFormData = withZod({
+    body: withZod.formData,
+    query: z.object({ search: z.literal('foo') }),
+    handle: async (req) => {
+      const formData = await req.vovk.form<{ hello: 'world' }>();
+      const search = req.vovk.query().search;
+      return { formData, search };
+    },
+  });
 }

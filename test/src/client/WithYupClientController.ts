@@ -141,4 +141,15 @@ export default class WithYupClientController {
   static handleNothitng = withYup({
     handle: async () => ({ nothing: 'here' }) as const,
   });
+
+  @post.auto()
+  static handleFormData = withYup({
+    body: withYup.formData,
+    query: yup.object({ search: yup.string().oneOf(['foo']).required() }),
+    handle: async (req) => {
+      const formData = await req.vovk.form<{ hello: 'world' }>();
+      const search = req.vovk.query().search;
+      return { formData, search };
+    },
+  });
 }

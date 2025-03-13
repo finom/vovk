@@ -10,7 +10,7 @@ import type {
   VovkSegmentSchema,
   VovkFullSchema,
 } from '../types';
-import type { JSONLinesResponse } from '../JSONLinesResponse';
+import type { JSONLinesResponse } from '../StreamJSONResponse';
 import type { NextResponse } from 'next/server';
 
 export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControllerBody<T> extends undefined | void

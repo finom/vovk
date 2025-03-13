@@ -233,4 +233,38 @@ describe('Client with vovk-client', () => {
       body: { isBody: true },
     });
   });
+
+  it('Handles JSONL response', async () => {
+    const result = await ClientControllerRPC.getJsonlResponse({
+      apiRoot,
+    });
+    const expected = [{ hello: 'world1' }, { hello: 'world2' }];
+    const received: { hello: string }[] = [];
+    for await (const item of result) {
+      received.push(item);
+    }
+    deepStrictEqual(received, expected);
+  });
+
+  it('Uses interpretAs=application/jsonl', async () => {
+    const result = await ClientControllerRPC.getJsonlTextResponse({
+      apiRoot,
+      interpretAs: 'application/jsonl',
+    });
+    const expected = [{ hello: 'world1' }, { hello: 'world2' }];
+    const received: { hello: string }[] = [];
+    for await (const item of result) {
+      received.push(item);
+    }
+    deepStrictEqual(received, expected);
+  });
+
+  it('Uses interpretAs=application/json', async () => {
+    const result = await ClientControllerRPC.getJsonTextResponse({
+      apiRoot,
+      interpretAs: 'application/json',
+    });
+    const expected = { hello: 'world' };
+    deepStrictEqual(result, expected);
+  });
 });

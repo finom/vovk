@@ -86,6 +86,6 @@ function withDto<
   });
 }
 
-withDto.formData = null as unknown as typeof FormData
+withDto.formData = null as unknown as typeof FormData;
 
 export { withDto };

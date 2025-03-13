@@ -75,4 +75,6 @@ describe('useMutation', () => {
       query: { simpleQueryParam: 'queryValue' },
     });
   });
+
+  it.skip('Validates query on client', async () => {});
 });

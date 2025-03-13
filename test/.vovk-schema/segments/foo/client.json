@@ -62,6 +62,18 @@
         "getErrorResponse": {
           "path": "error",
           "httpMethod": "GET"
+        },
+        "getJsonTextResponse": {
+          "path": "json-text",
+          "httpMethod": "GET"
+        },
+        "getJsonlResponse": {
+          "path": "jsonl",
+          "httpMethod": "GET"
+        },
+        "getJsonlTextResponse": {
+          "path": "jsonl-text",
+          "httpMethod": "GET"
         }
       }
     },
@@ -708,6 +720,30 @@
           },
           "httpMethod": "POST",
           "path": "handle-nothitng"
+        },
+        "handleFormData": {
+          "validation": {
+            "body": null,
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "const": "foo"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "handle-form-data"
         }
       }
     },
@@ -1329,6 +1365,31 @@
           },
           "httpMethod": "POST",
           "path": "handle-nothitng"
+        },
+        "handleFormData": {
+          "validation": {
+            "body": null,
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "foo"
+                  ]
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "handle-form-data"
         }
       }
     },
@@ -1754,6 +1815,31 @@
           },
           "httpMethod": "POST",
           "path": "handle-nothitng"
+        },
+        "handleFormData": {
+          "validation": {
+            "body": null,
+            "query": {
+              "x-isDto": true,
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "handle-form-data"
         }
       }
     },
