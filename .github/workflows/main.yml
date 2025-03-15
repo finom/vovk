@@ -13,7 +13,7 @@ on:
 
 jobs:
   test:
-    if: "!startsWith(github.event.head_commit.message, 'v')"
+    if: "!startsWith(github.event.head_commit.message, 'v')" # Skip if commit message starts with 'v'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -31,11 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          python3 -m venv test/.venv
-          source test/.venv/bin/activate
           npm --prefix test ci
 
       - name: Run tests
-        run: |
-          source test/.venv/bin/activate
-          npm t
+        run: npm t
