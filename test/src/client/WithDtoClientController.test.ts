@@ -1,5 +1,5 @@
 import { it, describe } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithDtoClientControllerRPC } from 'vovk-client';
 import {
   HttpException,
@@ -9,7 +9,7 @@ import {
   type VovkYieldType,
   type VovkControllerOutput,
 } from 'vovk';
-import type WithZodClientController from './WithZodClientController';
+import type WithDtoClientController from './WithDtoClientController';
 import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type {
   HandleAllBodyDto,
@@ -57,7 +57,7 @@ describe('Validation with with vovk-dto', () => {
       query: { search: 'value' },
       params: { foo: 'foo', bar: 'bar' },
       vovkParams: { foo: 'foo', bar: 'bar' },
-    } as const;
+    };
 
     type ExpectedType = {
       body: HandleAllBodyDto;
@@ -67,12 +67,12 @@ describe('Validation with with vovk-dto', () => {
     };
 
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies ExpectedType;
-    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies typeof expected;
+    null as unknown as VovkControllerOutput<typeof WithDtoClientController.handleAll> satisfies typeof expected;
 
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies null;
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies null;
+    null as unknown as VovkControllerOutput<typeof WithDtoClientController.handleAll> satisfies null;
 
     deepStrictEqual(result satisfies ExpectedType, expected);
   });
@@ -89,7 +89,7 @@ describe('Validation with with vovk-dto', () => {
       query: { search: 'value' },
       params: { foo: 'foo', bar: 'bar' },
       vovkParams: { foo: 'foo', bar: 'bar' },
-    } as const;
+    };
 
     type ExpectedType = {
       body: HandleAllBodyDto;
@@ -99,12 +99,12 @@ describe('Validation with with vovk-dto', () => {
     };
 
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies ExpectedType;
-    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies typeof expected;
+    null as unknown as VovkControllerOutput<typeof WithDtoClientController.handleAll> satisfies typeof expected;
 
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies null;
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies null;
+    null as unknown as VovkControllerOutput<typeof WithDtoClientController.handleAll> satisfies null;
 
     deepStrictEqual(result satisfies ExpectedType, expected);
   });
@@ -329,10 +329,146 @@ describe('Validation with with vovk-dto', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControllerYieldType<typeof WithZodClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should handle stream first iteration validation', async () => {
+    const tokens = ['e', 'b', 'c', 'd'];
+    const expected: { value: string }[] = [];
+    const expectedCollected: typeof expected = [];
+
+    const { rejects } = expectPromise(async () => {
+      const resp = await WithDtoClientControllerRPC.handleStream({
+        query: { values: tokens },
+      });
+      for await (const message of resp) {
+        expectedCollected.push(message);
+      }
+    });
+    await rejects.toThrow(
+      /Validation failed. Invalid iteration #0 on server for http:.*\. value must be one of the following values: a, b, c, d/
+    );
+
+    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.handleStream> satisfies {
+      value: string;
+    };
+    null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies {
+      value: string;
+    };
+
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should ignore non-first iteration validation', async () => {
+    const tokens = ['a', 'b', 'e', 'd'];
+    const expected: { value: string }[] = tokens.map((value) => ({ value }));
+    const expectedCollected: typeof expected = [];
+    const resp = await WithDtoClientControllerRPC.handleStream({
+      query: { values: tokens },
+    });
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.handleStream> satisfies {
+      value: string;
+    };
+    null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies {
+      value: string;
+    };
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should handle every iteration validation', async () => {
+    const tokens = ['a', 'b', 'e', 'd'];
+    const expected: { value: string }[] = tokens.slice(0, 2).map((value) => ({ value }));
+    const expectedCollected: typeof expected = [];
+    const { rejects } = expectPromise(async () => {
+      const resp = await WithDtoClientControllerRPC.validateEveryIteration({
+        query: { values: tokens },
+      });
+      for await (const message of resp) {
+        expectedCollected.push(message);
+      }
+    });
+    await rejects.toThrow(
+      /Validation failed. Invalid iteration #2 on server for http:.*\. value must be one of the following values: a, b, c, d/
+    );
+    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.validateEveryIteration> satisfies {
+      value: string;
+    };
+    null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.validateEveryIteration> satisfies {
+      value: string;
+    };
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should skip server-side validation with boolean value', async () => {
+    const result = await WithDtoClientControllerRPC.disableServerSideValidationBool({
+      body: { hello: 'wrong' as 'world' },
+      query: { search: 'value' },
+      disableClientValidation: true,
+    });
+    deepStrictEqual(result satisfies { search: string; body: HandleBodyBodyDto }, {
+      search: 'value',
+      body: { hello: 'wrong' },
+    });
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.disableServerSideValidationBool> satisfies null;
+  });
+  it('Should skip server-side validation with string[] value', async () => {
+    const result = await WithDtoClientControllerRPC.disableServerSideValidationStrings({
+      body: { hello: 'wrong' as 'world' },
+      query: { search: 'value' },
+      disableClientValidation: true,
+    });
+    deepStrictEqual(result satisfies { search: string; body: HandleBodyBodyDto }, {
+      search: 'value',
+      body: { hello: 'wrong' },
+    });
+    const { rejects } = expectPromise(async () => {
+      await WithDtoClientControllerRPC.disableServerSideValidationStrings({
+        body: { hello: 'world' },
+        query: { search: 'wrong' as 'value' },
+        disableClientValidation: true,
+      });
+    });
+    await rejects.toThrow(/Validation failed. Invalid query on server for http:.*\. search must be equal to value/);
+    await rejects.toThrowError(HttpException);
+
+    null as unknown as VovkReturnType<
+      typeof WithDtoClientControllerRPC.disableServerSideValidationStrings
+      // @ts-expect-error Expect error
+    > satisfies null;
+  });
+
+  it('Should skip schema emission with boolean value', async () => {
+    const { rejects } = expectPromise(async () => {
+      await WithDtoClientControllerRPC.skipSchemaEmissionBool({
+        body: { hello: 'wrong' as 'world' },
+        query: { search: 'value' },
+      });
+    });
+    await rejects.toThrow(/Validation failed. Invalid body on server for http:.*\. hello must be equal to world/);
+    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, null);
+    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, null);
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.skipSchemaEmissionBool> satisfies null;
+  });
+  it('Should skip schema emission with string[] value', async () => {
+    const { rejects } = expectPromise(async () => {
+      await WithDtoClientControllerRPC.skipSchemaEmissionStrings({
+        body: { hello: 'wrong' as 'world' },
+        query: { search: 'value' },
+      });
+    });
+    await rejects.toThrow(/Validation failed. Invalid body on server for http:.*\. hello must be equal to world/);
+    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, null);
+    ok(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.skipSchemaEmissionStrings> satisfies null;
   });
 
   it('Should handle form data', async () => {

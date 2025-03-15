@@ -152,4 +152,61 @@ export default class WithYupClientController {
       return { formData, search };
     },
   });
+
+  @post.auto()
+  static disableServerSideValidationBool = withYup({
+    disableServerSideValidation: true,
+    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+  @post.auto()
+  static disableServerSideValidationStrings = withYup({
+    disableServerSideValidation: ['body'],
+    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+  @post.auto()
+  static skipSchemaEmissionBool = withYup({
+    skipSchemaEmission: true,
+    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+  @post.auto()
+  static skipSchemaEmissionStrings = withYup({
+    skipSchemaEmission: ['body'],
+    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+
+  @post.auto()
+  static validateEveryIteration = withYup({
+    validateEveryIteration: true,
+    query: yup.object({ values: yup.array().of(yup.string().required()).required() }),
+    iteration: yup.object({ value: yup.string().oneOf(['a', 'b', 'c', 'd']).required() }),
+    async *handle(req) {
+      for (const value of req.vovk.query().values) {
+        yield { value };
+      }
+    },
+  });
 }

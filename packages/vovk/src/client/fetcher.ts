@@ -11,6 +11,16 @@ export const fetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
   { params, query, body, apiRoot = '/api', ...options }
 ) => {
   const endpoint = getEndpoint({ apiRoot, params, query });
+  const unusedParams = new URL(endpoint).pathname.split('/').filter((segment) => segment.startsWith(':'));
+
+  if (unusedParams.length) {
+    throw new HttpException(HttpStatus.NULL, `Unused params: ${unusedParams.join(', ')} in ${endpoint}`, {
+      body,
+      query,
+      params,
+      endpoint,
+    });
+  }
 
   if (!options.disableClientValidation) {
     try {

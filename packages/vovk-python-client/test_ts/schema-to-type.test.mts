@@ -418,6 +418,7 @@ test('convertJSONSchemaToPythonType - error handling', async (t) => {
 
   await t.test('handles null schema', () => {
     const result = convertJSONSchemaToPythonType({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       schema: null as any,
       namespace: 'MyNamespace',
       className: 'NullSchema',

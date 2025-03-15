@@ -26,7 +26,7 @@ function withZod<
   output,
   iteration,
   handle,
-  skipServerSideValidation,
+  disableServerSideValidation,
   skipSchemaEmission,
   validateEveryIteration,
 }: {
@@ -36,7 +36,7 @@ function withZod<
   output?: ZOD_OUTPUT;
   iteration?: ZOD_ITERATION;
   handle: T;
-  skipServerSideValidation?: boolean | VovkValidationType[];
+  disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEveryIteration?: boolean;
 }) {
@@ -46,7 +46,7 @@ function withZod<
     params,
     output,
     iteration,
-    skipServerSideValidation,
+    disableServerSideValidation,
     skipSchemaEmission,
     validateEveryIteration,
     handle: handle as T & {
@@ -54,26 +54,26 @@ function withZod<
       __iteration: ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny;
     },
     getHandlerSchema: ({ skipSchemaEmissionKeys }) => {
-      const getMethodSchema = (key: VovkValidationType, model?: ZodSchema<KnownAny>) =>
+      const getSchema = (key: VovkValidationType, model?: ZodSchema<KnownAny>) =>
         !skipSchemaEmissionKeys.includes(key) && model ? zodToJsonSchema(model, { errorMessages: true }) : null;
 
       return {
         validation: {
-          body: getMethodSchema('body', body),
-          query: getMethodSchema('query', query),
-          output: getMethodSchema('output', output),
-          params: getMethodSchema('params', params),
-          iteration: getMethodSchema('iteration', iteration),
+          body: getSchema('body', body),
+          query: getSchema('query', query),
+          output: getSchema('output', output),
+          params: getSchema('params', params),
+          iteration: getSchema('iteration', iteration),
         },
       };
     },
-    validate: async (data, model, { type, req }) => {
+    validate: async (data, model, { type, req, i }) => {
       try {
         model.parse(data);
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid ${type} on server for ${req.url}. ${getErrorText(e)}`,
+          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
           { [type]: data }
         );
       }

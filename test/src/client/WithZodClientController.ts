@@ -150,4 +150,64 @@ export default class WithZodClientController {
       return { formData, search };
     },
   });
+
+  @post.auto()
+  static disableServerSideValidationBool = withZod({
+    disableServerSideValidation: true,
+    body: z.object({ hello: z.literal('world') }),
+    query: z.object({ search: z.literal('value') }),
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+
+  @post.auto()
+  static disableServerSideValidationStrings = withZod({
+    disableServerSideValidation: ['body'],
+    body: z.object({ hello: z.literal('world') }),
+    query: z.object({ search: z.literal('value') }),
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+
+  // skipSchemaEmission
+  @post.auto()
+  static skipSchemaEmissionBool = withZod({
+    skipSchemaEmission: true,
+    body: z.object({ hello: z.literal('world') }),
+    query: z.object({ search: z.literal('value') }),
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+  @post.auto()
+  static skipSchemaEmissionStrings = withZod({
+    skipSchemaEmission: ['body'],
+    body: z.object({ hello: z.literal('world') }),
+    query: z.object({ search: z.literal('value') }),
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+
+  @post.auto()
+  static validateEveryIteration = withZod({
+    validateEveryIteration: true,
+    query: z.object({ values: z.string().array() }),
+    iteration: z.object({ value: z.union([z.literal('a'), z.literal('b'), z.literal('c'), z.literal('d')]) }),
+    async *handle(req) {
+      for (const value of req.vovk.query().values) {
+        yield { value };
+      }
+    },
+  });
 }

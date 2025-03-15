@@ -744,6 +744,159 @@
           },
           "httpMethod": "POST",
           "path": "handle-form-data"
+        },
+        "disableServerSideValidationBool": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "const": "world"
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "const": "value"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-bool"
+        },
+        "disableServerSideValidationStrings": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "const": "world"
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "const": "value"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-strings"
+        },
+        "skipSchemaEmissionBool": {
+          "validation": {
+            "body": null,
+            "query": null,
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-bool"
+        },
+        "skipSchemaEmissionStrings": {
+          "validation": {
+            "body": null,
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "const": "value"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-strings"
+        },
+        "validateEveryIteration": {
+          "validation": {
+            "body": null,
+            "query": {
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "output": null,
+            "params": null,
+            "iteration": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                  ]
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            }
+          },
+          "httpMethod": "POST",
+          "path": "validate-every-iteration"
         }
       }
     },
@@ -1390,6 +1543,162 @@
           },
           "httpMethod": "POST",
           "path": "handle-form-data"
+        },
+        "disableServerSideValidationBool": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "enum": [
+                    "world"
+                  ]
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-bool"
+        },
+        "disableServerSideValidationStrings": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "enum": [
+                    "world"
+                  ]
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-strings"
+        },
+        "skipSchemaEmissionBool": {
+          "validation": {
+            "body": null,
+            "query": null,
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-bool"
+        },
+        "skipSchemaEmissionStrings": {
+          "validation": {
+            "body": null,
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-strings"
+        },
+        "validateEveryIteration": {
+          "validation": {
+            "body": null,
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                  ]
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "validate-every-iteration"
         }
       }
     },
@@ -1840,6 +2149,160 @@
           },
           "httpMethod": "POST",
           "path": "handle-form-data"
+        },
+        "disableServerSideValidationBool": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "enum": [
+                    "world"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "x-isDto": true,
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-bool"
+        },
+        "disableServerSideValidationStrings": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "enum": [
+                    "world"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "x-isDto": true,
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-strings"
+        },
+        "skipSchemaEmissionBool": {
+          "validation": {
+            "body": null,
+            "query": null,
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-bool"
+        },
+        "skipSchemaEmissionStrings": {
+          "validation": {
+            "body": null,
+            "query": {
+              "x-isDto": true,
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "enum": [
+                    "value"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": null
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-strings"
+        },
+        "validateEveryIteration": {
+          "validation": {
+            "body": null,
+            "query": {
+              "x-isDto": true,
+              "properties": {
+                "values": {
+                  "items": {},
+                  "type": "array"
+                }
+              },
+              "type": "object",
+              "required": [
+                "values"
+              ]
+            },
+            "output": null,
+            "params": null,
+            "iteration": {
+              "x-isDto": true,
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "validate-every-iteration"
         }
       }
     },

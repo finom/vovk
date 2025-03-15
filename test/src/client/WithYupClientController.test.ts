@@ -1,5 +1,5 @@
 import { it, describe } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithYupClientControllerRPC } from 'vovk-client';
 import {
   HttpException,
@@ -253,28 +253,126 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     deepStrictEqual(expected, expectedCollected);
   });
 
-  /*
-  it('Should handle form data', async () => {
-      const formData = new FormData();
-      formData.append('hello', 'world');
-  
-      const result = await WithZodClientControllerRPC.handleFormData({
-        body: formData,
-        query: { search: 'foo' },
+  it('Should handle stream first iteration validation', async () => {
+    const tokens = ['e', 'b', 'c', 'd'];
+    const expected: { value: string }[] = [];
+    const expectedCollected: typeof expected = [];
+
+    const { rejects } = expectPromise(async () => {
+      const resp = await WithYupClientControllerRPC.handleStream({
+        query: { values: tokens },
       });
-      const expected = {
-        formData: {
-          hello: 'world',
-        },
-        search: 'foo',
-      } as const;
-      null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies typeof expected;
-      null as unknown as VovkControllerOutput<typeof WithZodClientController.handleFormData> satisfies typeof expected;
-      // @ts-expect-error Expect error
-      null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies null;
-      deepStrictEqual(result satisfies typeof expected, expected);
+      for await (const message of resp) {
+        expectedCollected.push(message);
+      }
     });
-    */
+    await rejects.toThrow(
+      /Yup validation failed. Invalid iteration #0 on server for http:.*\. value must be one of the following values: a, b, c, d/
+    );
+
+    null as unknown as VovkControllerYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithYupClientControllerRPC.handleStream> satisfies { value: string };
+
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should ignore non-first iteration validation', async () => {
+    const tokens = ['a', 'b', 'e', 'd'];
+    const expected: { value: string }[] = tokens.map((value) => ({ value }));
+    const expectedCollected: typeof expected = [];
+    const resp = await WithYupClientControllerRPC.handleStream({
+      query: { values: tokens },
+    });
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+    null as unknown as VovkControllerYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithYupClientControllerRPC.handleStream> satisfies { value: string };
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should handle every iteration validation', async () => {
+    const tokens = ['a', 'b', 'e', 'd'];
+    const expected: { value: string }[] = tokens.slice(0, 2).map((value) => ({ value }));
+    const expectedCollected: typeof expected = [];
+    const { rejects } = expectPromise(async () => {
+      const resp = await WithYupClientControllerRPC.validateEveryIteration({
+        query: { values: tokens },
+      });
+      for await (const message of resp) {
+        expectedCollected.push(message);
+      }
+    });
+    await rejects.toThrow(
+      /Yup validation failed. Invalid iteration #2 on server for http:.*\. value must be one of the following values: a, b, c, d/
+    );
+    null as unknown as VovkControllerYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithYupClientControllerRPC.handleStream> satisfies { value: string };
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should skip server-side validation with boolean value', async () => {
+    const result = await WithYupClientControllerRPC.disableServerSideValidationBool({
+      body: { hello: 'wrong' as 'world' },
+      query: { search: 'value' },
+      disableClientValidation: true,
+    });
+    deepStrictEqual(result satisfies { search: 'value'; body: { hello: 'world' } }, {
+      search: 'value',
+      body: { hello: 'wrong' },
+    });
+  });
+
+  it('Should skip server-side validation with string[] value', async () => {
+    const result = await WithYupClientControllerRPC.disableServerSideValidationStrings({
+      body: { hello: 'wrong' as 'world' },
+      query: { search: 'value' },
+      disableClientValidation: true,
+    });
+    deepStrictEqual(result satisfies { search: 'value'; body: { hello: 'world' } }, {
+      search: 'value',
+      body: { hello: 'wrong' },
+    });
+    const { rejects } = expectPromise(async () => {
+      await WithYupClientControllerRPC.disableServerSideValidationStrings({
+        body: { hello: 'world' },
+        query: { search: 'wrong' as 'value' },
+        disableClientValidation: true,
+      });
+    });
+    await rejects.toThrow(
+      /Yup validation failed. Invalid query on server for http:.*\. search must be one of the following values: value/
+    );
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should skip schema emission with boolean value', async () => {
+    const { rejects } = expectPromise(async () => {
+      await WithYupClientControllerRPC.skipSchemaEmissionBool({
+        body: { hello: 'wrong' as 'world' },
+        query: { search: 'value' },
+      });
+    });
+    await rejects.toThrow(
+      /Yup validation failed. Invalid body on server for http:.*\. hello must be one of the following values: world/
+    );
+    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, null);
+    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, null);
+  });
+
+  it('Should skip schema emission with string[] value', async () => {
+    const { rejects } = expectPromise(async () => {
+      await WithYupClientControllerRPC.skipSchemaEmissionStrings({
+        body: { hello: 'wrong' as 'world' },
+        query: { search: 'value' },
+      });
+    });
+    await rejects.toThrow(
+      /Yup validation failed. Invalid body on server for http:.*\. hello must be one of the following values: world/
+    );
+    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, null);
+    ok(WithYupClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
+  });
 
   it('Should handle form data', async () => {
     const formData = new FormData();

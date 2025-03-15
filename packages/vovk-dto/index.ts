@@ -26,7 +26,7 @@ function withDto<
   output,
   iteration,
   handle,
-  skipServerSideValidation,
+  disableServerSideValidation,
   skipSchemaEmission,
   validateEveryIteration,
 }: {
@@ -36,7 +36,7 @@ function withDto<
   output?: OUTPUT_DTO;
   iteration?: ITERATION_DTO;
   handle: T;
-  skipServerSideValidation?: boolean | VovkValidationType[];
+  disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEveryIteration?: boolean;
 }) {
@@ -46,7 +46,7 @@ function withDto<
     params,
     output,
     iteration,
-    skipServerSideValidation,
+    disableServerSideValidation,
     skipSchemaEmission,
     validateEveryIteration,
     handle: handle as T & {
@@ -54,22 +54,22 @@ function withDto<
       __iteration: ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny;
     },
     getHandlerSchema: ({ skipSchemaEmissionKeys }) => {
-      const getMethodSchema = (key: VovkValidationType, dto?: ClassConstructor<KnownAny>) => {
+      const getSchema = (key: VovkValidationType, dto?: ClassConstructor<KnownAny>) => {
         const schema = !skipSchemaEmissionKeys.includes(key) && dto ? targetConstructorToSchema(dto) : null;
         return schema ? { 'x-isDto': true, ...schema } : null;
       };
 
       return {
         validation: {
-          body: getMethodSchema('body', body),
-          query: getMethodSchema('query', query),
-          output: getMethodSchema('output', output),
-          params: getMethodSchema('params', params),
-          iteration: getMethodSchema('iteration', iteration),
+          body: getSchema('body', body),
+          query: getSchema('query', query),
+          output: getSchema('output', output),
+          params: getSchema('params', params),
+          iteration: getSchema('iteration', iteration),
         },
       };
     },
-    validate: async (data, dto, { type, req, status }) => {
+    validate: async (data, dto, { type, req, status, i }) => {
       const instance = plainToInstance(dto, data);
       const errors: ValidationError[] = await validate(instance as object);
 
@@ -77,7 +77,7 @@ function withDto<
         const err = errors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
         throw new HttpException(
           status ?? HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid ${type} on server for ${req.url}. ${err}`
+          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${err}`
         );
       }
 

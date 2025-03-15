@@ -12,7 +12,7 @@ export function withValidation<
   OUTPUT_MODEL,
   ITERATION_MODEL,
 >({
-  skipServerSideValidation,
+  disableServerSideValidation,
   skipSchemaEmission,
   validateEveryIteration,
   body,
@@ -24,7 +24,7 @@ export function withValidation<
   getHandlerSchema,
   validate,
 }: {
-  skipServerSideValidation?: boolean | VovkValidationType[];
+  disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEveryIteration?: boolean;
   body?: BODY_MODEL;
@@ -43,15 +43,16 @@ export function withValidation<
       type: VovkValidationType;
       req: VovkRequest<KnownAny, KnownAny>;
       status?: number;
+      i?: number;
     }
   ) => KnownAny;
 }) {
-  const skipServerSideValidationKeys =
-    skipServerSideValidation === false
+  const disableServerSideValidationKeys =
+    disableServerSideValidation === false
       ? []
-      : skipServerSideValidation === true
+      : disableServerSideValidation === true
         ? validationTypes
-        : (skipServerSideValidation ?? []);
+        : (disableServerSideValidation ?? []);
   const skipSchemaEmissionKeys =
     skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
   const outputHandler = async (req: VovkRequest<KnownAny, KnownAny>, handlerParams: Parameters<T>[1]) => {
@@ -63,7 +64,7 @@ export function withValidation<
       );
     }
 
-    if (output && !skipServerSideValidationKeys.includes('output')) {
+    if (output && !disableServerSideValidationKeys.includes('output')) {
       if (!data) {
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
@@ -73,7 +74,7 @@ export function withValidation<
       await validate(data, output, { type: 'output', req });
     }
 
-    if (iteration && !skipServerSideValidationKeys.includes('iteration')) {
+    if (iteration && !disableServerSideValidationKeys.includes('iteration')) {
       // We assume `data` is an async iterable here; you might want to check that:
       if (!data || typeof data[Symbol.asyncIterator] !== 'function') {
         throw new HttpException(
@@ -87,7 +88,7 @@ export function withValidation<
         let i = 0;
         for await (const item of data) {
           if (validateEveryIteration || i === 0) {
-            await validate(item, iteration, { type: 'iteration', req, status: 200 });
+            await validate(item, iteration, { type: 'iteration', req, status: 200, i });
           }
           i++;
           yield item;
@@ -104,7 +105,7 @@ export function withValidation<
   };
 
   const resultHandler = async (req: VovkRequest<KnownAny, KnownAny>, handlerParams: Parameters<T>[1]) => {
-    if (body && !skipServerSideValidationKeys.includes('body')) {
+    if (body && !disableServerSideValidationKeys.includes('body')) {
       const data = await req.json();
       const instance = (await validate(data, body, { type: 'body', req })) ?? data;
 
@@ -113,13 +114,13 @@ export function withValidation<
       req.vovk.body = () => Promise.resolve(instance);
     }
 
-    if (query && !skipServerSideValidationKeys.includes('query')) {
+    if (query && !disableServerSideValidationKeys.includes('query')) {
       const data = req.vovk.query();
       const instance = (await validate(data, query, { type: 'query', req })) ?? data;
       req.vovk.query = () => instance;
     }
 
-    if (params && !skipServerSideValidationKeys.includes('params')) {
+    if (params && !disableServerSideValidationKeys.includes('params')) {
       const data = req.vovk.params();
       const instance = (await validate(data, params, { type: 'params', req })) ?? data;
       req.vovk.params = () => instance;

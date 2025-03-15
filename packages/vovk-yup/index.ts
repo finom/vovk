@@ -27,7 +27,7 @@ function withYup<
   output,
   iteration,
   handle,
-  skipServerSideValidation,
+  disableServerSideValidation,
   skipSchemaEmission,
   validateEveryIteration,
 }: {
@@ -37,7 +37,7 @@ function withYup<
   output?: YUP_OUTPUT;
   iteration?: YUP_ITERATION;
   handle: T;
-  skipServerSideValidation?: boolean | VovkValidationType[];
+  disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEveryIteration?: boolean;
 }) {
@@ -47,7 +47,7 @@ function withYup<
     params,
     output,
     iteration,
-    skipServerSideValidation,
+    disableServerSideValidation,
     skipSchemaEmission,
     validateEveryIteration,
     handle: handle as T & {
@@ -55,26 +55,26 @@ function withYup<
       __iteration: YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny;
     },
     getHandlerSchema: ({ skipSchemaEmissionKeys }) => {
-      const getMethodSchema = (key: VovkValidationType, model?: Yup.Schema<KnownAny>) =>
+      const getSchema = (key: VovkValidationType, model?: Yup.Schema<KnownAny>) =>
         !skipSchemaEmissionKeys.includes(key) && model ? convertSchema(model) : null;
 
       return {
         validation: {
-          body: getMethodSchema('body', body),
-          query: getMethodSchema('query', query),
-          output: getMethodSchema('output', output),
-          params: getMethodSchema('params', params),
-          iteration: getMethodSchema('iteration', iteration),
+          body: getSchema('body', body),
+          query: getSchema('query', query),
+          output: getSchema('output', output),
+          params: getSchema('params', params),
+          iteration: getSchema('iteration', iteration),
         },
       };
     },
-    validate: async (data, model, { type, req }) => {
+    validate: async (data, model, { type, req, i }) => {
       try {
         await model.validate(data);
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Yup validation failed. Invalid ${type} on server for ${req.url}. ${getErrorText(e)}`,
+          `Yup validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
           { [type]: data }
         );
       }

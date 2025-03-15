@@ -181,3 +181,13 @@ export class IterationDto {
   @IsIn(['a', 'b', 'c', 'd'])
   value: 'a' | 'b' | 'c' | 'd';
 }
+
+/**
+ * -------------------------------------------------------------------------
+ *  DTOs for values with a, b, c, d
+ * -------------------------------------------------------------------------
+ */
+export class QueryValuesDto {
+  @IsArray()
+  values: string[];
+}

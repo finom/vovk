@@ -26,6 +26,7 @@ import {
   HandleQueryQueryDto,
   HandleStreamQueryDto,
   IterationDto,
+  QueryValuesDto,
 } from './WithDtoClientController.dto';
 import { WithDtoClientControllerRPC } from 'vovk-client';
 import { plainToInstance } from 'class-transformer';
@@ -217,6 +218,63 @@ export default class WithDtoClientController {
       const formData = await req.vovk.form<{ hello: 'world' }>();
       const search = req.vovk.query().search;
       return { formData, search };
+    },
+  });
+
+  @post.auto()
+  static disableServerSideValidationBool = withDto({
+    disableServerSideValidation: true,
+    body: HandleBodyBodyDto,
+    query: HandleQueryQueryDto,
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+
+  @post.auto()
+  static disableServerSideValidationStrings = withDto({
+    disableServerSideValidation: ['body'],
+    body: HandleBodyBodyDto,
+    query: HandleQueryQueryDto,
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+  @post.auto()
+  static skipSchemaEmissionBool = withDto({
+    skipSchemaEmission: true,
+    body: HandleBodyBodyDto,
+    query: HandleQueryQueryDto,
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+  @post.auto()
+  static skipSchemaEmissionStrings = withDto({
+    skipSchemaEmission: ['body'],
+    body: HandleBodyBodyDto,
+    query: HandleQueryQueryDto,
+    handle: async (req) => {
+      const body = await req.json();
+      const search = req.nextUrl.searchParams.get('search');
+      return { body, search };
+    },
+  });
+  @post.auto()
+  static validateEveryIteration = withDto({
+    validateEveryIteration: true,
+    query: QueryValuesDto,
+    iteration: IterationDto,
+    async *handle(req) {
+      for (const value of req.vovk.query().values) {
+        yield { value };
+      }
     },
   });
 }
