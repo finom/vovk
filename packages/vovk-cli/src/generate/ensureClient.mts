@@ -41,6 +41,7 @@ export default async function ensureClient({ config, cwd, log, segments }: Proje
     config,
     cwd,
     generateFrom: config.generateFrom,
+    log,
   });
 
   const usedTemplateNames = new Set<string>();
@@ -53,6 +54,7 @@ export default async function ensureClient({ config, cwd, log, segments }: Proje
   await Promise.all(
     templateFiles.map(async (clientTemplate) => {
       const { templatePath, templateName, outDir } = clientTemplate;
+      if (!templatePath) return;
       const outPath = path.join(outDir, path.basename(templatePath).replace('.ejs', ''));
       if (config.emitFullClient) {
         await writeOnePlaceholder({

@@ -61,4 +61,24 @@ await describe('CLI new controller and service', async () => {
       });`,
     ]);
   });
+
+  await it('New --empty controller and service', async () => {
+    await createNextApp();
+    await vovkInit('--yes');
+    await runAtProjectDir('../dist/index.mjs new segment');
+    await runAtProjectDir('../dist/index.mjs new controller service user --empty');
+
+    await assertFile('src/modules/user/UserController.ts', [`export default class UserController {}`]);
+    await assertFile('src/modules/user/UserService.ts', [`export default class UserService {}`]);
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `import UserController from '../../../modules/user/UserController';`,
+      `const controllers = {
+        UserRPC: UserController,
+      };`,
+      `initVovk({
+        emitSchema: true,
+        controllers, 
+      });`,
+    ]);
+  });
 });

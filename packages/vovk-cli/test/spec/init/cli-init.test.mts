@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import omit from 'lodash/omit.js';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import { DOWN, ENTER } from '../../lib/runScript.mts';
-import { PackageJson } from 'type-fest';
+import type { PackageJson } from 'type-fest';
 
 await describe('CLI init', async () => {
   const dir = 'tmp_test_dir';
@@ -40,7 +40,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
       test: 'jest',
       build: 'next build',
     });
@@ -68,7 +67,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'next dev --turbopack',
-      generate: undefined,
     });
 
     await assertTsConfig(true);
@@ -91,7 +89,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -109,7 +106,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: "PORT=3000 concurrently 'next dev' 'vovk dev' --kill-others",
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -121,7 +117,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev -- --turbopack',
-      generate: 'vovk generate',
     });
   });
 
@@ -131,7 +126,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: "PORT=3000 concurrently 'next dev --turbopack' 'vovk dev' --kill-others",
-      generate: 'vovk generate',
     });
   });
 
@@ -147,7 +141,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -168,7 +161,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -194,7 +186,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -212,7 +203,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -230,7 +220,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -257,7 +246,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -284,7 +272,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -312,7 +299,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -327,7 +313,7 @@ await describe('CLI init', async () => {
     await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 
     await vovkInit('--yes');
-    await assertConfig(['vovk.config.mts'], assertConfig.makeConfig('vovk-zod', true));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('vovk-zod', true));
 
     await assertDeps({
       dependencies: [
@@ -345,7 +331,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -372,7 +357,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -390,7 +374,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -404,7 +387,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and no TSConfig update', async () => {
     await createNextApp();
-    await vovkInit('', { combo: [ENTER, ENTER, ENTER, ENTER, 'N', ENTER] });
+    await vovkInit('', { combo: [ENTER, ENTER, ENTER, 'N', ENTER] });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
 
     await assertDeps({
@@ -423,7 +406,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig(true);
@@ -450,7 +432,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -479,7 +460,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -502,7 +482,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -511,7 +490,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and no validation', async () => {
     await createNextApp();
     await vovkInit('', { combo: ['N', ENTER, ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig('vovk-zod', true), 'imports'));
+    await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig(null, true)));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-react-query', '@tanstack/react-query', 'vovk-client', 'vovk-openapi'],
@@ -525,7 +504,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -551,7 +529,6 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
-      generate: 'vovk generate',
     });
 
     await assertTsConfig();

@@ -46,8 +46,8 @@ export default async function getConfig({
         ? conf.generateFrom(defaultClientTemplates)
         : (conf.generateFrom ?? defaultClientTemplates),
     templates: {
-      service: 'vovk-cli/templates/service.ejs',
-      controller: 'vovk-cli/templates/controller.ejs',
+      service: 'vovk-cli/templates/service.ts.ejs',
+      controller: 'vovk-cli/templates/controller.ts.ejs',
       ...conf.templates,
     },
     libs: conf.libs ?? {},

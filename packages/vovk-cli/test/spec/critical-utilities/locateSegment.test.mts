@@ -2,11 +2,12 @@ import assert from 'node:assert';
 import { it, describe } from 'node:test';
 import path from 'node:path';
 import locateSegments from '../../../dist/locateSegments.mjs';
+import getLogger from '../../../dist/utils/getLogger.mjs';
 
 await describe('locateSegment', async () => {
   await it('Locates segments properly', async () => {
     const rootDirectory = path.join(import.meta.dirname, '../../data/segments');
-    const results = await locateSegments({ dir: rootDirectory, config: null });
+    const results = await locateSegments({ dir: rootDirectory, config: null, log: getLogger('debug') });
 
     const expectedResults = [
       {

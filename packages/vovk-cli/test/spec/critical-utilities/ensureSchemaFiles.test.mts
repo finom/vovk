@@ -11,7 +11,7 @@ const tmpDir = path.join(process.cwd(), 'tmp');
 // Helper function to clear and create a temporary directory
 async function setupTmpDir() {
   await cleanupTmpDir();
-  await fs.mkdir(path.join(tmpDir, 'app'), { recursive: true });
+  await fs.mkdir(path.join(tmpDir, 'app/api'), { recursive: true });
 }
 
 async function cleanupTmpDir() {

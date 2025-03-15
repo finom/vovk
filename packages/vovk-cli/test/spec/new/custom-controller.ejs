@@ -1,21 +1,20 @@
-<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
-<% var modulePascalNamePlural = pluralize(modulePascalName); %>
-<% var controllerName = modulePascalName + 'CustomController'; %>
-<% var compiledName = modulePascalName + 'RPC'; %>
-<% var serviceName = modulePascalName + 'Service'; %>
+<% const vars = { 
+  ControllerName: t.TheThing + 'Controller',
+  ServiceName: t.TheThing + 'Service',
+}; %>
 ---
-dir: <%= getModuleDirName(segmentName, moduleName) %>
-fileName: <%= controllerName + '.ts' %>
-sourceName: <%= controllerName %>
-compiledName: <%= compiledName %>
+dir: <%= t.defaultDir %>
+fileName: <%= vars.ControllerName + '.ts' %>
+sourceName: <%= vars.ControllerName %>
+compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
 import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
-<% if(withService) { %>
-import <%= serviceName %> from './<%= serviceName %>';
+<% if(t.withService) { %>
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
 <% } %>
 
-@prefix('<%= _.kebabCase(moduleName).toLowerCase() %>')
-
-// hello <%= moduleName %>
-export default class <%= controllerName %> {}
+@prefix('<%= t['the-things'] %>')
+export default class <%= vars.ControllerName %> {
+ // hello <%= t.theThing %>
+}

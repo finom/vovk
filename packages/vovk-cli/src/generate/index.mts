@@ -46,6 +46,9 @@ async function writeOneClientFile({
 }) {
   const { config, apiRoot, segments } = projectInfo;
   const { templatePath, outDir, origin } = clientTemplate;
+  if (!templatePath) {
+    throw new Error(`Template path is not defined for ${clientTemplate.templateName} but used at writeOneClientFile`);
+  }
   const outPath = path.join(
     outDir,
     typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '',
@@ -106,10 +109,11 @@ async function writeOneClientFile({
   }
 
   // Read existing file content to compare
-  const existingContent = await fs.readFile(outPath, 'utf-8').catch(() => '');
+  const existingContent = await fs.readFile(outPath, 'utf-8').catch(() => null);
 
   // Determine if we need to rewrite the file, ignore 1st line
   const needsWriting =
+    !existingContent ||
     existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
 
   if (needsWriting) {
@@ -126,18 +130,18 @@ export default async function generate({
   templates,
   prettify: prettifyClient = false,
   fullSchema,
-  emitFullSchema,
+  fullSchemaJson,
 }: {
   projectInfo: ProjectInfo;
   forceNothingWrittenLog?: boolean;
   fullSchema: VovkFullSchema;
-} & Pick<GenerateOptions, 'templates' | 'prettify' | 'emitFullSchema'>) {
+} & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchemaJson'>) {
   const now = Date.now();
   const generateFrom = templates ?? projectInfo.config.generateFrom;
   const noClient = templates?.[0] === 'none';
   const { config, cwd, log, clientImports, segments } = projectInfo;
 
-  const { clientOutDirAbsolutePath, templateFiles } = await getClientTemplates({ config, cwd, generateFrom });
+  const { clientOutDirAbsolutePath, templateFiles } = await getClientTemplates({ config, cwd, generateFrom, log });
   // Ensure that each segment has a matching schema if it needs to be emitted:
   for (let i = 0; i < segments.length; i++) {
     const { segmentName } = segments[i];
@@ -156,16 +160,18 @@ export default async function generate({
   await Promise.all(
     templateFiles.map(async (clientTemplate) => {
       const { templatePath, templateName, outDir, fullSchemaJSONFileName } = clientTemplate;
-      if (!noClient) {
+      if (!noClient && templatePath) {
         // Read the EJS template
         const templateContent = await fs.readFile(templatePath, 'utf-8');
 
-        const matterResult = matter(templateContent) as {
-          data: {
-            imports?: string[];
-          };
-          content: string;
-        };
+        const matterResult = templatePath.endsWith('.ejs')
+          ? (matter(templateContent) as {
+              data: {
+                imports?: string[];
+              };
+              content: string;
+            })
+          : { data: { imports: [] }, content: templateContent };
 
         if (config.emitFullClient) {
           const { written: isWritten } = await writeOneClientFile({
@@ -244,11 +250,11 @@ export default async function generate({
     })
   );
 
-  if (emitFullSchema) {
-    const fullSchemaOutAbsolutePath = emitFullSchema
+  if (fullSchemaJson) {
+    const fullSchemaOutAbsolutePath = fullSchemaJson
       ? path.resolve(
           clientOutDirAbsolutePath,
-          emitFullSchema === 'string' ? emitFullSchema : DEFAULT_FULL_SCHEMA_FILE_NAME
+          typeof fullSchemaJson === 'string' ? fullSchemaJson : DEFAULT_FULL_SCHEMA_FILE_NAME
         )
       : null;
     if (fullSchemaOutAbsolutePath) {
@@ -259,7 +265,7 @@ export default async function generate({
   if (fullSchemaOutAbsolutePaths.size) {
     await Promise.all(
       Array.from(fullSchemaOutAbsolutePaths.entries()).map(async ([segmentName, outPath]) => {
-        const schema = segmentName ? pickSegmentFullSchema(fullSchema, segmentName) : fullSchema;
+        const schema = typeof segmentName === 'string' ? pickSegmentFullSchema(fullSchema, segmentName) : fullSchema;
         await fs.mkdir(path.dirname(outPath), { recursive: true });
         await fs.writeFile(outPath, JSON.stringify(schema, null, 2));
       })

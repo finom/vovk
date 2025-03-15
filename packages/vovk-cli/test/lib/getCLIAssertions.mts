@@ -55,8 +55,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   assertConfig.makeConfig = (validationLibrary: string | null, useReactQuery?: boolean) => {
     const config: VovkConfig = {
       templates: {
-        controller: `${validationLibrary ?? 'vovk-cli'}/templates/controller.ejs`,
-        service: 'vovk-cli/templates/service.ejs',
+        controller: `${validationLibrary ?? 'vovk-cli'}/templates/controller.ts.ejs`,
+        service: 'vovk-cli/templates/service.ts.ejs',
       },
     };
 
@@ -152,31 +152,32 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
 
   async function assertFile(filePath: string, exp?: RegExp | string | RegExp[] | string[]) {
     let content;
+    const p = path.join(projectDir, filePath);
     try {
-      content = await fs.readFile(path.join(projectDir, filePath), 'utf-8');
+      content = await fs.readFile(p, 'utf-8');
     } catch {
-      assert.fail(`File ${filePath} does not exist`);
+      assert.fail(`File ${p} does not exist`);
     }
 
-    assert.ok(content, `File ${filePath} is empty`);
+    assert.ok(content, `File ${p} is empty`);
 
     if (exp) {
       if (typeof exp === 'string') {
         assert.ok(
           content.replace(/\s+/g, '').includes(exp.replace(/\s+/g, '')),
-          `File ${filePath} does not match the string "${exp}". Content: ${content}`
+          `File ${p} does not match the string "${exp}". Content: ${content}`
         );
       } else if (exp instanceof RegExp) {
-        assert.ok(exp.test(content), `File ${filePath} does not match the regex "${exp}". Content: ${content}`);
+        assert.ok(exp.test(content), `File ${p} does not match the regex "${exp}". Content: ${content}`);
       } else if (Array.isArray(exp)) {
         for (const e of exp) {
           if (typeof e === 'string') {
             assert.ok(
               content.replace(/\s+/g, '').includes(e.replace(/\s+/g, '')),
-              `File ${filePath} does not match the string "${e}". Content: ${content}`
+              `File ${p} does not match the string "${e}". Content: ${content}`
             );
           } else if (e instanceof RegExp) {
-            assert.ok(e.test(content), `File ${filePath} does not match the regex "${e}". Content: ${content}`);
+            assert.ok(e.test(content), `File ${p} does not match the regex "${e}". Content: ${content}`);
           }
         }
       }

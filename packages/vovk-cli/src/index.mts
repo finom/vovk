@@ -91,11 +91,11 @@ program
     '--template, --templates <templates...>',
     'client code templates ("ts", "compiled", "python", "none", a custom path)'
   )
-  .option('--emit-full-schema, --full-schema-json [fileName]', 'generate client with full schema')
+  .option('--full-schema-json [fileName]', 'generate client with full schema')
   .option('--prettify', 'prettify output files')
   .option('--config <config>', 'path to config file')
   .action(async (options: GenerateOptions) => {
-    const { clientOutDir, templates, prettify, emitFullSchema, config: configPath } = options;
+    const { clientOutDir, templates, prettify, fullSchemaJson, config: configPath } = options;
     const projectInfo = await getProjectInfo({ clientOutDir, configPath });
     const { cwd, config } = projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
@@ -107,7 +107,7 @@ program
       templates,
       prettify,
       forceNothingWrittenLog: true,
-      emitFullSchema,
+      fullSchemaJson,
     });
   });
 

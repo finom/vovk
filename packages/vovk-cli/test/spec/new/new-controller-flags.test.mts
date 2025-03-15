@@ -3,7 +3,7 @@ import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfigProperty from '../../lib/updateConfigProperty.mts';
 
-await describe('CLI new controller and flags', async () => {
+await describe.only('CLI new controller and flags', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
   const dir = 'tmp_test_dir';
   const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
@@ -22,17 +22,15 @@ await describe('CLI new controller and flags', async () => {
         controllers, 
       });`,
     ]);
-    await runAtProjectDir('../dist/index.mjs new controller megaUser --template=../test/new/custom-controller.ejs');
-
-    await assertFile(
-      'src/modules/megaUser/MegaUserCustomController.ts',
-      `// hello megaUser
-        export default class MegaUserCustomController {`
+    await runAtProjectDir(
+      '../dist/index.mjs new controller megaUser --template=../test/spec/new/custom-controller.ts.ejs'
     );
+
+    await assertFile('src/modules/megaUser/MegaUserController.ts', `// hello megaUser`);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import MegaUserCustomController from '../../../modules/megaUser/MegaUserCustomController';`,
+      `import MegaUserController from '../../../modules/megaUser/MegaUserController';`,
       `const controllers = {
-        MegaUserRPC: MegaUserCustomController,
+        MegaUserRPC: MegaUserController,
       };`,
       `initVovk({
         emitSchema: true,

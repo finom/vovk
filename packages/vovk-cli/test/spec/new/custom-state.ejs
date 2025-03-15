@@ -1,7 +1,13 @@
-<% var modulePascalName = _.upperFirst(_.camelCase(moduleName)); %>
+<% const vars = { 
+    StateName: t.TheThing + 'State',
+}; %>
 ---
-dir: <%= getModuleDirName(segmentName, moduleName) %>
-fileName: <%= modulePascalName + 'State.ts' %>
+dir: <%= t.defaultDir %>
+fileName: <%= vars.StateName + '.ts' %>
+sourceName: <%= vars.StateName %>
 ---
-
-// this is the custom "<%= modulePascalName %>" state
+  
+export default class <%= vars.StateName %> {
+  // hello <%= t.theThing %>
+  // this is the custom "<%= t.TheThing %>" state
+}

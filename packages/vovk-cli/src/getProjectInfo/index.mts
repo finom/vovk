@@ -40,7 +40,7 @@ export default async function getProjectInfo({
     p.startsWith('.') ? path.relative(path.join(config.clientOutDir, s), p) : p;
 
   const apiDirAbsolutePath = path.join(cwd, apiDir);
-  const segments = await locateSegments({ dir: apiDirAbsolutePath, config });
+  const segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
 
   // TODO Refactor
   const clientImports: {

@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import getFileSystemEntryType, { FileSystemEntryType } from './getFileSystemEntryType.mjs';
 
 /**
  * Removes all directories in a folder that aren't in the provided allowlist
@@ -26,6 +27,13 @@ async function removeUnlistedDirectories(folderPath: string, allowedDirs: string
  */
 async function processDirectory(basePath: string, relativePath: string, allowedDirs: string[]): Promise<void> {
   const currentDirPath = path.join(basePath, relativePath);
+
+  // check if the current path is a directory
+  const type = await getFileSystemEntryType(currentDirPath);
+  if (type !== FileSystemEntryType.DIRECTORY) {
+    // If it's not a directory, return early
+    return;
+  }
 
   // Read all entries in the current directory
   const entries = await fs.readdir(currentDirPath, { withFileTypes: true });

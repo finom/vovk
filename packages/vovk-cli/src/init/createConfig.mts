@@ -25,8 +25,8 @@ export default async function createConfig({
   const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
 
   const templates: VovkConfig['templates'] = {
-    controller: 'vovk-cli/templates/controller.ejs',
-    service: 'vovk-cli/templates/service.ejs',
+    controller: 'vovk-cli/templates/controller.ts.ejs',
+    service: 'vovk-cli/templates/service.ts.ejs',
   };
 
   if (validationLibrary) {

@@ -18,7 +18,7 @@ export interface GenerateOptions {
   clientOutDir?: string;
   templates?: string[];
   prettify?: boolean;
-  emitFullSchema?: string | boolean;
+  fullSchemaJson?: string | boolean;
   config?: string;
 }
 

@@ -81,7 +81,11 @@ export class VovkDev {
 
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
-        this.#projectInfo.segments = await locateSegments({ dir: apiDirAbsolutePath, config });
+        this.#projectInfo.segments = await locateSegments({
+          dir: apiDirAbsolutePath,
+          config,
+          log: this.#projectInfo.log,
+        });
         for (const { segmentName } of this.#projectInfo.segments) {
           void this.#requestSchema(segmentName);
         }
@@ -89,7 +93,11 @@ export class VovkDev {
 
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
-        this.#projectInfo.segments = await locateSegments({ dir: apiDirAbsolutePath, config });
+        this.#projectInfo.segments = await locateSegments({
+          dir: apiDirAbsolutePath,
+          config,
+          log: this.#projectInfo.log,
+        });
         for (const { segmentName } of this.#projectInfo.segments) {
           void this.#requestSchema(segmentName);
         }

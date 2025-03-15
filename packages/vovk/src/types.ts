@@ -181,7 +181,7 @@ export type VovkEnv = {
 };
 
 export type GenerateFromTemplate = {
-  templatePath: string;
+  templateGlob: string | null; // null is for full-schema.json generation only
   outDir?: string;
   templateName?: string;
   fullSchemaJSON?: string | boolean;

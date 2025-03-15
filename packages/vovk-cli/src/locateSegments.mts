@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { VovkStrictConfig } from 'vovk';
 import getFileSystemEntryType from './utils/getFileSystemEntryType.mjs';
+import type { ProjectInfo } from './getProjectInfo/index.mjs';
 
 export type Segment = {
   routeFilePath: string;
@@ -13,17 +14,25 @@ export default async function locateSegments({
   dir,
   rootDir,
   config,
+  log,
 }: {
   dir: string;
   rootDir?: string;
   config: VovkStrictConfig | null; // config: null is used for testing
+  log: ProjectInfo['log'];
 }): Promise<Segment[]> {
   let results: Segment[] = [];
 
   rootDir = rootDir ?? dir;
+  let list: string[] = [];
 
   // Read the contents of the directory
-  const list = await fs.readdir(dir);
+  try {
+    list = await fs.readdir(dir);
+  } catch {
+    // do nothing
+    return results;
+  }
 
   // Iterate through each item in the directory
   for (const file of list) {
@@ -44,7 +53,7 @@ export default async function locateSegments({
       }
 
       // Recursively search inside subdirectories
-      const subDirResults = await locateSegments({ dir: filePath, rootDir, config });
+      const subDirResults = await locateSegments({ dir: filePath, rootDir, config, log });
       results = results.concat(subDirResults);
     }
   }

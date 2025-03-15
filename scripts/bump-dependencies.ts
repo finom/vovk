@@ -15,6 +15,9 @@ interface PackageJson {
   peerDependencies?: {
     [key: string]: string;
   };
+  optionalDependencies?: {
+    [key: string]: string;
+  };
 }
 
 const cwd = process.cwd();
@@ -50,6 +53,11 @@ function updateDependencyVersions(packageName: string, newVersion: string): stri
 
       if (pkgJson.peerDependencies?.[packageName] && pkgJson.peerDependencies[packageName] !== versionValue) {
         pkgJson.peerDependencies[packageName] = versionValue;
+        updated = true;
+      }
+
+      if (pkgJson.optionalDependencies?.[packageName] && pkgJson.optionalDependencies[packageName] !== versionValue) {
+        pkgJson.optionalDependencies[packageName] = versionValue;
         updated = true;
       }
 

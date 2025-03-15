@@ -76,7 +76,7 @@ await describe('Custom components', async () => {
     await updateConfigProperty(
       path.join(cwd, dir, 'vovk.config.js'),
       ['templates', 'controller'],
-      '../test/new/custom-controller.ejs'
+      '../test/new/custom-controller.ts.ejs'
     );
     await runAtProjectDir('../dist/index.mjs new c state user');
 

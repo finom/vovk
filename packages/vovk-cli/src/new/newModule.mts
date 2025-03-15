@@ -3,7 +3,6 @@ import fs from 'node:fs/promises';
 import render from './render.mjs';
 import addClassToSegmentCode from './addClassToSegmentCode.mjs';
 import getProjectInfo from '../getProjectInfo/index.mjs';
-import locateSegments from '../locateSegments.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
@@ -43,7 +42,7 @@ export default async function newModule({
   overwrite?: boolean;
   empty?: boolean;
 }) {
-  const { config, log, apiDir, cwd } = await getProjectInfo();
+  const { config, log, cwd, segments } = await getProjectInfo();
   let templates = config.templates as Required<typeof config.templates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
   // replace c by controller, s by service, everything else keeps the same
@@ -77,7 +76,6 @@ export default async function newModule({
     }
   }
 
-  const segments = await locateSegments({ dir: apiDir, config });
   const segment = segments.find((s) => s.segmentName === segmentName);
 
   if (!segment) {
@@ -160,7 +158,7 @@ export default async function newModule({
       }
 
       log.info(
-        `Added ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
+        `Added${empty ? ' empty' : ''} ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
       );
     }
   }
