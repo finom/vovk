@@ -3,7 +3,7 @@ import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfigProperty from '../../lib/updateConfigProperty.mts';
 
-await describe.only('CLI new controller and flags', async () => {
+await describe('CLI new controller and flags', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
   const dir = 'tmp_test_dir';
   const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({

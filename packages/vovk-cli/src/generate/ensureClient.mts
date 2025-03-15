@@ -56,7 +56,7 @@ export default async function ensureClient({ config, cwd, log, segments }: Proje
       const { templatePath, templateName, outDir } = clientTemplate;
       if (!templatePath) return;
       const outPath = path.join(outDir, path.basename(templatePath).replace('.ejs', ''));
-      if (config.emitFullClient) {
+      if (config.generateFullClient) {
         await writeOnePlaceholder({
           outPath,
           defaultText,
@@ -65,7 +65,7 @@ export default async function ensureClient({ config, cwd, log, segments }: Proje
         });
       }
 
-      if (config.emitSegmentClient) {
+      if (config.generateSegmentClient) {
         // Generate client files for each segment
         await Promise.all(
           segments.map(async ({ segmentName }) => {

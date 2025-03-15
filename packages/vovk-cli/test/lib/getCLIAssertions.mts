@@ -137,7 +137,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function assertNotExists(filePath: string) {
-    assert.strictEqual(await getFileSystemEntryType(path.join(projectDir, filePath)), null, `File ${filePath} exists`);
+    const entryType = await getFileSystemEntryType(path.join(projectDir, filePath));
+    assert.strictEqual(entryType, null, `${entryType?.toLocaleLowerCase()} ${filePath} exists`);
   }
 
   async function assertTsConfig(opposite?: boolean) {
@@ -195,6 +196,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   return {
+    projectDir,
     runAtCWD,
     runAtProjectDir,
     createNextApp,

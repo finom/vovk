@@ -5,7 +5,7 @@ export default function updateConfigProperty(
   absolutePathToTheFile: string,
   pathToProperty: string[],
   newValue: KnownAny
-): void {
+) {
   const project = new Project({
     manipulationSettings: {
       quoteKind: QuoteKind.Single,
@@ -88,6 +88,8 @@ export default function updateConfigProperty(
   }
 
   sourceFile.saveSync();
+
+  return sourceFile.getFullText();
 }
 
 function writeInitializer(writer: CodeBlockWriter, value: KnownAny): void {

@@ -172,8 +172,7 @@ export default async function generate({
               content: string;
             })
           : { data: { imports: [] }, content: templateContent };
-
-        if (config.emitFullClient) {
+        if (config.generateFullClient) {
           const { written: isWritten } = await writeOneClientFile({
             projectInfo,
             clientTemplate,
@@ -192,9 +191,9 @@ export default async function generate({
           written ||= isWritten;
         }
 
-        // TODO Remove files if emitFullClient is false ???
+        // TODO Remove files if generateFullClient is false ???
 
-        if (config.emitSegmentClient) {
+        if (config.generateSegmentClient) {
           // Generate client files for each segment
           await Promise.all(
             segments.map(async ({ segmentName }) => {
@@ -230,14 +229,14 @@ export default async function generate({
         }
       }
 
-      if (config.emitFullClient) {
+      if (config.generateFullClient) {
         const fullSchemaOutAbsolutePath = fullSchemaJSONFileName ? path.resolve(outDir, fullSchemaJSONFileName) : null;
         if (fullSchemaOutAbsolutePath) {
           fullSchemaOutAbsolutePaths.set(null, fullSchemaOutAbsolutePath);
         }
       }
 
-      if (config.emitSegmentClient) {
+      if (config.generateSegmentClient) {
         segments.forEach(({ segmentName }) => {
           const fullSchemaOutAbsolutePath = fullSchemaJSONFileName
             ? path.resolve(outDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME, fullSchemaJSONFileName)

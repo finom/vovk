@@ -161,8 +161,8 @@ type LogLevelNames = 'trace' | 'debug' | 'info' | 'warn' | 'error';
 
 export type VovkEnv = {
   PORT?: string;
-  VOVK_EMIT_FULL_CLIENT?: string;
-  VOVK_EMIT_SEGMENT_CLIENT?: string;
+  VOVK_GENERATE_FULL_CLIENT?: string;
+  VOVK_GENERATE_SEGMENT_CLIENT?: string;
   VOVK_CLIENT_OUT_DIR?: string;
   VOVK_SCHEMA_OUT_DIR?: string;
   VOVK_IMPORTS_FETCHER?: string;
@@ -194,8 +194,8 @@ export type VovkConfig = {
   emitConfig?: boolean | (keyof VovkStrictConfig)[];
   clientOutDir?: string;
   schemaOutDir?: string;
-  emitFullClient?: boolean;
-  emitSegmentClient?: boolean;
+  generateFullClient?: boolean;
+  generateSegmentClient?: boolean;
   imports?: {
     fetcher?: string | [string, string] | [string];
     validateOnClient?: string | [string, string] | [string];

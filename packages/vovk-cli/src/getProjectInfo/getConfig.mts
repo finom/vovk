@@ -23,9 +23,12 @@ export default async function getConfig({
 
   const config: VovkStrictConfig = {
     emitConfig: [],
-    emitFullClient: 'VOVK_EMIT_FULL_CLIENT' in env ? !!env.VOVK_EMIT_FULL_CLIENT : (conf.emitFullClient ?? true),
-    emitSegmentClient:
-      'VOVK_EMIT_SEGMENT_CLIENT' in env ? !!env.VOVK_EMIT_SEGMENT_CLIENT : (conf.emitSegmentClient ?? false),
+    generateFullClient:
+      'VOVK_GENERATE_FULL_CLIENT' in env ? !!env.VOVK_GENERATE_FULL_CLIENT : (conf.generateFullClient ?? true),
+    generateSegmentClient:
+      'VOVK_GENERATE_SEGMENT_CLIENT' in env
+        ? !!env.VOVK_GENERATE_SEGMENT_CLIENT
+        : (conf.generateSegmentClient ?? false),
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     imports: {
       fetcher: typeof fetcherImport === 'string' ? [fetcherImport] : fetcherImport,
