@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { it, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import type { VovkReturnType } from 'vovk';
+import { HttpException, type VovkReturnType } from 'vovk';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { ClientControllerRPC } from '../../../test/node_modules/vovk-client/module.mjs';
+import { ClientControllerRPC, WithZodClientControllerRPC } from '../../../test/node_modules/vovk-client/module.mjs';
 import { JSDOM } from 'jsdom';
 import { createElement, type ReactNode } from 'react';
 
@@ -76,5 +76,51 @@ describe('useMutation', () => {
     });
   });
 
-  it.skip('Validates query on client', async () => {});
+  it('Validates on client', async () => {
+    const queryClient = new QueryClient();
+
+    const { result } = renderHook(() => {
+      return WithZodClientControllerRPC.handleBody.useMutation({}, queryClient);
+    });
+
+    await act(async () => {
+      await result.current.mutate({
+        body: { hello: 'wrong' as 'world' },
+      });
+    });
+    await waitFor(() => {
+      assert.ok(result.current.error);
+    });
+    assert.ok(
+      result.current.error?.message.match(
+        /Ajv validation failed\. Invalid body on client for http:\/\/.* data\/hello must be equal to constant/
+      )
+    );
+    assert.strictEqual(result.current.error?.statusCode, 0);
+    assert.ok(result.current.error instanceof HttpException);
+  });
+  it('Validates on server', async () => {
+    const queryClient = new QueryClient();
+
+    const { result } = renderHook(() => {
+      return WithZodClientControllerRPC.handleBody.useMutation({}, queryClient);
+    });
+
+    await act(async () => {
+      await result.current.mutate({
+        body: { hello: 'wrong' as 'world' },
+        disableClientValidation: true,
+      });
+    });
+    await waitFor(() => {
+      assert.ok(result.current.error);
+    });
+    assert.ok(
+      result.current.error?.message.match(
+        /Zod validation failed\. Invalid body on server for http:\/\/.* Invalid literal value, expected "world" \(hello\)/
+      )
+    );
+    assert.strictEqual(result.current.error?.statusCode, 400);
+    assert.ok(result.current.error instanceof HttpException);
+  });
 });

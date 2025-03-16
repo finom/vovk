@@ -22,11 +22,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-python@v5
         with:
             python-version: '3.13'
             cache: 'pip' # caching pip dependencies
       - run: pip install -r ./packages/vovk-python-client/requirements.txt
+
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
