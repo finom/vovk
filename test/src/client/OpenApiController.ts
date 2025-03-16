@@ -8,7 +8,7 @@ export default class OpenApiController {
   @openapi({
     summary: 'Hello, World!',
   })
-  @openapi.error(HttpStatus.I_AM_A_TEAPOT, 'I am a teapot')
+  @openapi.error(HttpStatus.I_AM_A_TEAPOT, 'I am a teapot error')
   static getFromSchema() {
     return fromSchema('api', fullSchema, {
       info: {

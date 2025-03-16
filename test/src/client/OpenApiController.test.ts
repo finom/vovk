@@ -21,5 +21,12 @@ describe('OpenAPI', () => {
       result.paths?.['/api/foo/client/openapi'].get?.responses?.[HttpStatus.I_AM_A_TEAPOT]?.description,
       `${HttpStatus.I_AM_A_TEAPOT} I am a teapot`
     );
+
+    strictEqual(
+      result.paths?.['/api/foo/client/openapi'].get?.responses?.[HttpStatus.I_AM_A_TEAPOT]?.content?.[
+        'application/json'
+      ]?.schema?.allOf?.[1]?.properties?.message?.enum?.[0],
+      'I am a teapot error'
+    );
   });
 });

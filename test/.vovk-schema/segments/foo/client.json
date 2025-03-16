@@ -2329,7 +2329,7 @@
                             "message": {
                               "type": "string",
                               "enum": [
-                                "I am a teapot"
+                                "I am a teapot error"
                               ]
                             },
                             "statusCode": {
