@@ -80,15 +80,15 @@ await describe('Custom components', async () => {
     );
     await runAtProjectDir('../dist/index.mjs new c state user');
 
-    await assertFile('src/modules/user/UserCustomController.ts', [
+    await assertFile('src/modules/user/UserController.ts', [
       `// hello user
-        export default class UserCustomController {}`,
+        export default class UserController {}`,
     ]);
     await assertFile('src/modules/user/UserState.ts', [`// this is the custom "User" state`]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import UserCustomController from '../../../modules/user/UserCustomController';`,
+      `import UserController from '../../../modules/user/UserController';`,
       `const controllers = {
-        UserRPC: UserCustomController,
+        UserRPC: UserController,
       };`,
       `initVovk({
         emitSchema: true,
