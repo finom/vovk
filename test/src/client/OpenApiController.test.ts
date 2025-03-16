@@ -1,24 +1,25 @@
 import { it, describe } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
-import type { OpenAPIObject } from 'openapi3-ts/oas31';
+import { deepStrictEqual, strictEqual } from 'node:assert';
 import { OpenApiControllerRPC } from 'vovk-client';
+import { HttpStatus } from 'vovk';
 
-describe('openapi decorator', () => {
-  it.skip(`Should write schema properly`, async () => {
-    const result = await OpenApiControllerRPC.getSchema();
-    deepStrictEqual(result satisfies OpenAPIObject, {
-      openapi: '3.1.0',
-      paths: {
-        '/api/foo/client/openapi': {
-          get: {
-            summary: 'Hello, World!',
-          },
-        },
-      },
-      info: {
-        title: 'API',
-        version: '1.0.0',
-      },
+describe('OpenAPI', () => {
+  it(`Should work`, async () => {
+    const result = await OpenApiControllerRPC.getFromSchema();
+
+    deepStrictEqual(result.info, {
+      title: 'Hello, OpenAPI!',
+      version: '1.0.0',
     });
+    deepStrictEqual(result.servers, [
+      {
+        url: 'http://localhost:3000',
+      },
+    ]);
+    strictEqual(result.paths?.['/api/foo/client/openapi'].get?.summary, 'Hello, World!');
+    strictEqual(
+      result.paths?.['/api/foo/client/openapi'].get?.responses?.[HttpStatus.I_AM_A_TEAPOT]?.description,
+      `${HttpStatus.I_AM_A_TEAPOT} I am a teapot`
+    );
   });
 });

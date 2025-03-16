@@ -1,4 +1,4 @@
-import { get, prefix } from 'vovk';
+import { get, HttpStatus, prefix } from 'vovk';
 import { openapi, fromSchema } from 'vovk-openapi';
 import { fullSchema } from 'vovk-client';
 
@@ -8,7 +8,18 @@ export default class OpenApiController {
   @openapi({
     summary: 'Hello, World!',
   })
-  static getSchema() {
-    return fromSchema('api', fullSchema);
+  @openapi.error(HttpStatus.I_AM_A_TEAPOT, 'I am a teapot')
+  static getFromSchema() {
+    return fromSchema('api', fullSchema, {
+      info: {
+        title: 'Hello, OpenAPI!',
+        version: '1.0.0',
+      },
+      servers: [
+        {
+          url: 'http://localhost:3000',
+        },
+      ],
+    });
   }
 }

@@ -371,7 +371,7 @@
                 }
               },
               "400": {
-                "description": "400 response",
+                "description": "400 Bad Request",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -1155,7 +1155,7 @@
                 }
               },
               "400": {
-                "description": "400 response",
+                "description": "400 Bad Request",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -1807,7 +1807,7 @@
                 }
               },
               "400": {
-                "description": "400 response",
+                "description": "400 Bad Request",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -2311,8 +2311,41 @@
       "originalControllerName": "OpenApiController",
       "prefix": "openapi",
       "handlers": {
-        "getSchema": {
+        "getFromSchema": {
           "openapi": {
+            "responses": {
+              "418": {
+                "description": "418 I am a teapot",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/VovkErrorResponse"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "enum": [
+                                "I am a teapot"
+                              ]
+                            },
+                            "statusCode": {
+                              "type": "integer",
+                              "enum": [
+                                418
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
             "summary": "Hello, World!"
           },
           "path": "",
