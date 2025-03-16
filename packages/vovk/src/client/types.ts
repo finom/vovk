@@ -105,7 +105,6 @@ export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<str
 // `RequestInit` is the type of options passed to fetch function
 export interface VovkDefaultFetcherOptions {
   apiRoot?: string;
-  segmentName?: string;
   disableClientValidation?: boolean;
   validateOnClient?: VovkValidateOnClient;
   fetcher?: VovkClientFetcher;

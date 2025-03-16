@@ -82,7 +82,7 @@ await describe('Custom components', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `// hello user
-        export default class UserController {}`,
+import { prefix, get, put, post, del, type VovkRequest } from 'vovk';`,
     ]);
     await assertFile('src/modules/user/UserState.ts', [`// this is the custom "User" state`]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [

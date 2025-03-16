@@ -8,7 +8,7 @@ fileName: <%= vars.ControllerName + '.ts' %>
 sourceName: <%= vars.ControllerName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
-
+// hello <%= t.theThing %>
 import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
