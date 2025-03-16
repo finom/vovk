@@ -25,7 +25,7 @@ await describe('Custom components', async () => {
     await updateConfigProperty(
       path.join(cwd, dir, 'vovk.config.js'),
       ['templates', 'state'],
-      '../test/new/custom-state.ejs'
+      '../test/new/custom-state.ts.ejs'
     );
     await runAtProjectDir('../dist/index.mjs new c state user');
 
@@ -71,7 +71,7 @@ await describe('Custom components', async () => {
     await updateConfigProperty(
       path.join(cwd, dir, 'vovk.config.js'),
       ['templates', 'state'],
-      '../test/new/custom-state.ejs'
+      '../test/new/custom-state.ts.ejs'
     );
     await updateConfigProperty(
       path.join(cwd, dir, 'vovk.config.js'),
