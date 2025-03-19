@@ -28,7 +28,7 @@ const enrichWithDescriptions = (jsonSchema: KnownAny, yupDescription: KnownAny) 
   // Handle oneOf, anyOf, allOf
   ['oneOf', 'anyOf', 'allOf'].forEach((combiner) => {
     if (jsonSchema[combiner] && Array.isArray(jsonSchema[combiner]) && yupDescription.oneOf) {
-      jsonSchema[combiner].forEach((subSchema: any, index: number) => {
+      jsonSchema[combiner].forEach((subSchema: KnownAny, index: number) => {
         if (yupDescription.oneOf[index]) {
           enrichWithDescriptions(subSchema, yupDescription.oneOf[index]);
         }
