@@ -168,9 +168,7 @@
                   "const": "world"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -182,9 +180,7 @@
                   "const": "value"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -199,9 +195,7 @@
                       "const": "world"
                     }
                   },
-                  "required": [
-                    "hello"
-                  ],
+                  "required": ["hello"],
                   "additionalProperties": false
                 },
                 "query": {
@@ -212,9 +206,7 @@
                       "const": "value"
                     }
                   },
-                  "required": [
-                    "search"
-                  ],
+                  "required": ["search"],
                   "additionalProperties": false
                 },
                 "params": {
@@ -229,10 +221,7 @@
                       "const": "bar"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
+                  "required": ["foo", "bar"],
                   "additionalProperties": false
                 },
                 "vovkParams": {
@@ -247,19 +236,11 @@
                       "const": "bar"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
+                  "required": ["foo", "bar"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ],
+              "required": ["body", "query", "params", "vovkParams"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -275,10 +256,7 @@
                   "const": "bar"
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ],
+              "required": ["foo", "bar"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -303,9 +281,7 @@
                               "const": "world"
                             }
                           },
-                          "required": [
-                            "hello"
-                          ],
+                          "required": ["hello"],
                           "additionalProperties": false
                         },
                         "query": {
@@ -316,9 +292,7 @@
                               "const": "value"
                             }
                           },
-                          "required": [
-                            "search"
-                          ],
+                          "required": ["search"],
                           "additionalProperties": false
                         },
                         "params": {
@@ -333,10 +307,7 @@
                               "const": "bar"
                             }
                           },
-                          "required": [
-                            "foo",
-                            "bar"
-                          ],
+                          "required": ["foo", "bar"],
                           "additionalProperties": false
                         },
                         "vovkParams": {
@@ -351,19 +322,11 @@
                               "const": "bar"
                             }
                           },
-                          "required": [
-                            "foo",
-                            "bar"
-                          ],
+                          "required": ["foo", "bar"],
                           "additionalProperties": false
                         }
                       },
-                      "required": [
-                        "body",
-                        "query",
-                        "params",
-                        "vovkParams"
-                      ],
+                      "required": ["body", "query", "params", "vovkParams"],
                       "additionalProperties": false,
                       "$schema": "http://json-schema.org/draft-07/schema#"
                     }
@@ -384,15 +347,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -445,9 +404,7 @@
                         "const": "world"
                       }
                     },
-                    "required": [
-                      "hello"
-                    ],
+                    "required": ["hello"],
                     "additionalProperties": false,
                     "$schema": "http://json-schema.org/draft-07/schema#"
                   }
@@ -467,9 +424,7 @@
                   "const": "value"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -490,9 +445,7 @@
                   "const": "world"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -521,10 +474,7 @@
                   "const": "bar"
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ],
+              "required": ["foo", "bar"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -587,39 +537,24 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": [
-                                  "deepKey"
-                                ],
+                                "required": ["deepKey"],
                                 "additionalProperties": false
                               }
                             },
-                            "required": [
-                              "foo"
-                            ],
+                            "required": ["foo"],
                             "additionalProperties": false
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ],
+                      "required": ["x", "arrOfObjects"],
                       "additionalProperties": false
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ],
+                  "required": ["f", "u", "d"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ],
+              "required": ["x", "y", "z"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -640,9 +575,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "helloOutput"
-              ],
+              "required": ["helloOutput"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -654,9 +587,7 @@
                   "const": "world"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -679,9 +610,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ],
+              "required": ["values"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -692,17 +621,10 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
-              "required": [
-                "value"
-              ],
+              "required": ["value"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -732,9 +654,7 @@
                   "const": "foo"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -755,9 +675,7 @@
                   "const": "world"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -769,9 +687,7 @@
                   "const": "value"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -792,9 +708,7 @@
                   "const": "world"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -806,9 +720,7 @@
                   "const": "value"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -841,9 +753,7 @@
                   "const": "value"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -867,9 +777,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ],
+              "required": ["values"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -880,17 +788,10 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
-              "required": [
-                "value"
-              ],
+              "required": ["value"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -913,14 +814,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -928,14 +825,10 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": {
               "type": "object",
@@ -952,14 +845,10 @@
                   "properties": {
                     "hello": {
                       "type": "string",
-                      "enum": [
-                        "world"
-                      ]
+                      "enum": ["world"]
                     }
                   },
-                  "required": [
-                    "hello"
-                  ]
+                  "required": ["hello"]
                 },
                 "query": {
                   "type": "object",
@@ -967,14 +856,10 @@
                   "properties": {
                     "search": {
                       "type": "string",
-                      "enum": [
-                        "value"
-                      ]
+                      "enum": ["value"]
                     }
                   },
-                  "required": [
-                    "search"
-                  ]
+                  "required": ["search"]
                 },
                 "params": {
                   "type": "object",
@@ -982,21 +867,14 @@
                   "properties": {
                     "foo": {
                       "type": "string",
-                      "enum": [
-                        "foo"
-                      ]
+                      "enum": ["foo"]
                     },
                     "bar": {
                       "type": "string",
-                      "enum": [
-                        "bar"
-                      ]
+                      "enum": ["bar"]
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -1004,29 +882,17 @@
                   "properties": {
                     "foo": {
                       "type": "string",
-                      "enum": [
-                        "foo"
-                      ]
+                      "enum": ["foo"]
                     },
                     "bar": {
                       "type": "string",
-                      "enum": [
-                        "bar"
-                      ]
+                      "enum": ["bar"]
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ]
+              "required": ["body", "query", "params", "vovkParams"]
             },
             "params": {
               "type": "object",
@@ -1034,21 +900,14 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "foo"
-                  ]
+                  "enum": ["foo"]
                 },
                 "bar": {
                   "type": "string",
-                  "enum": [
-                    "bar"
-                  ]
+                  "enum": ["bar"]
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "iteration": null
           },
@@ -1075,14 +934,10 @@
                           "properties": {
                             "hello": {
                               "type": "string",
-                              "enum": [
-                                "world"
-                              ]
+                              "enum": ["world"]
                             }
                           },
-                          "required": [
-                            "hello"
-                          ]
+                          "required": ["hello"]
                         },
                         "query": {
                           "type": "object",
@@ -1090,14 +945,10 @@
                           "properties": {
                             "search": {
                               "type": "string",
-                              "enum": [
-                                "value"
-                              ]
+                              "enum": ["value"]
                             }
                           },
-                          "required": [
-                            "search"
-                          ]
+                          "required": ["search"]
                         },
                         "params": {
                           "type": "object",
@@ -1105,21 +956,14 @@
                           "properties": {
                             "foo": {
                               "type": "string",
-                              "enum": [
-                                "foo"
-                              ]
+                              "enum": ["foo"]
                             },
                             "bar": {
                               "type": "string",
-                              "enum": [
-                                "bar"
-                              ]
+                              "enum": ["bar"]
                             }
                           },
-                          "required": [
-                            "foo",
-                            "bar"
-                          ]
+                          "required": ["foo", "bar"]
                         },
                         "vovkParams": {
                           "type": "object",
@@ -1127,29 +971,17 @@
                           "properties": {
                             "foo": {
                               "type": "string",
-                              "enum": [
-                                "foo"
-                              ]
+                              "enum": ["foo"]
                             },
                             "bar": {
                               "type": "string",
-                              "enum": [
-                                "bar"
-                              ]
+                              "enum": ["bar"]
                             }
                           },
-                          "required": [
-                            "foo",
-                            "bar"
-                          ]
+                          "required": ["foo", "bar"]
                         }
                       },
-                      "required": [
-                        "body",
-                        "query",
-                        "params",
-                        "vovkParams"
-                      ]
+                      "required": ["body", "query", "params", "vovkParams"]
                     }
                   }
                 }
@@ -1168,15 +1000,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -1194,9 +1022,7 @@
                 "required": true,
                 "schema": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
               {
@@ -1205,9 +1031,7 @@
                 "required": true,
                 "schema": {
                   "type": "string",
-                  "enum": [
-                    "foo"
-                  ]
+                  "enum": ["foo"]
                 }
               },
               {
@@ -1216,9 +1040,7 @@
                 "required": true,
                 "schema": {
                   "type": "string",
-                  "enum": [
-                    "bar"
-                  ]
+                  "enum": ["bar"]
                 }
               }
             ],
@@ -1233,14 +1055,10 @@
                     "properties": {
                       "hello": {
                         "type": "string",
-                        "enum": [
-                          "world"
-                        ]
+                        "enum": ["world"]
                       }
                     },
-                    "required": [
-                      "hello"
-                    ]
+                    "required": ["hello"]
                   }
                 }
               }
@@ -1256,14 +1074,10 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -1280,14 +1094,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": null,
             "output": null,
@@ -1308,21 +1118,14 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "foo"
-                  ]
+                  "enum": ["foo"]
                 },
                 "bar": {
                   "type": "string",
-                  "enum": [
-                    "bar"
-                  ]
+                  "enum": ["bar"]
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "iteration": null
           },
@@ -1398,30 +1201,17 @@
                                 }
                               }
                             },
-                            "required": [
-                              "foo"
-                            ]
+                            "required": ["foo"]
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ]
+                      "required": ["x", "arrOfObjects"]
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
+                  "required": ["f", "u", "d"]
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             },
             "output": null,
             "params": null,
@@ -1441,9 +1231,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "helloOutput"
-              ]
+              "required": ["helloOutput"]
             },
             "output": {
               "type": "object",
@@ -1451,14 +1239,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "params": null,
             "iteration": null
@@ -1480,9 +1264,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "output": null,
             "params": null,
@@ -1492,17 +1274,10 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "GET",
@@ -1528,14 +1303,10 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "foo"
-                  ]
+                  "enum": ["foo"]
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -1552,14 +1323,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -1567,14 +1334,10 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -1591,14 +1354,10 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -1606,14 +1365,10 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -1642,14 +1397,10 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -1672,9 +1423,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "output": null,
             "params": null,
@@ -1684,17 +1433,10 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "POST",
@@ -1714,30 +1456,22 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": {
               "x-isDto": true,
@@ -1748,34 +1482,22 @@
                 "vovkParams": {}
               },
               "type": "object",
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ]
+              "required": ["body", "query", "params", "vovkParams"]
             },
             "params": {
               "x-isDto": true,
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "foo"
-                  ]
+                  "enum": ["foo"]
                 },
                 "bar": {
                   "type": "string",
-                  "enum": [
-                    "bar"
-                  ]
+                  "enum": ["bar"]
                 }
               },
               "type": "object",
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "iteration": null
           },
@@ -1796,12 +1518,7 @@
                         "vovkParams": {}
                       },
                       "type": "object",
-                      "required": [
-                        "body",
-                        "query",
-                        "params",
-                        "vovkParams"
-                      ]
+                      "required": ["body", "query", "params", "vovkParams"]
                     }
                   }
                 }
@@ -1820,15 +1537,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -1846,9 +1559,7 @@
                 "required": true,
                 "schema": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
               {
@@ -1857,9 +1568,7 @@
                 "required": true,
                 "schema": {
                   "type": "string",
-                  "enum": [
-                    "foo"
-                  ]
+                  "enum": ["foo"]
                 }
               },
               {
@@ -1868,9 +1577,7 @@
                 "required": true,
                 "schema": {
                   "type": "string",
-                  "enum": [
-                    "bar"
-                  ]
+                  "enum": ["bar"]
                 }
               }
             ],
@@ -1884,15 +1591,11 @@
                     "properties": {
                       "hello": {
                         "type": "string",
-                        "enum": [
-                          "world"
-                        ]
+                        "enum": ["world"]
                       }
                     },
                     "type": "object",
-                    "required": [
-                      "hello"
-                    ]
+                    "required": ["hello"]
                   }
                 }
               }
@@ -1911,15 +1614,11 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -1939,15 +1638,11 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": null,
             "output": null,
@@ -1971,22 +1666,15 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "foo"
-                  ]
+                  "enum": ["foo"]
                 },
                 "bar": {
                   "type": "string",
-                  "enum": [
-                    "bar"
-                  ]
+                  "enum": ["bar"]
                 }
               },
               "type": "object",
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "iteration": null
           },
@@ -2015,11 +1703,7 @@
                 "z": {}
               },
               "type": "object",
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             },
             "output": null,
             "params": null,
@@ -2043,24 +1727,18 @@
                 }
               },
               "type": "object",
-              "required": [
-                "helloOutput"
-              ]
+              "required": ["helloOutput"]
             },
             "output": {
               "x-isDto": true,
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "params": null,
             "iteration": null
@@ -2086,9 +1764,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "output": null,
             "params": null,
@@ -2097,18 +1773,11 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
               "type": "object",
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "GET",
@@ -2133,15 +1802,11 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -2157,30 +1822,22 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -2196,30 +1853,22 @@
               "properties": {
                 "hello": {
                   "type": "string",
-                  "enum": [
-                    "world"
-                  ]
+                  "enum": ["world"]
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -2247,15 +1896,11 @@
               "properties": {
                 "search": {
                   "type": "string",
-                  "enum": [
-                    "value"
-                  ]
+                  "enum": ["value"]
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "output": null,
             "params": null,
@@ -2276,9 +1921,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "output": null,
             "params": null,
@@ -2287,18 +1930,11 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
               "type": "object",
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "POST",
@@ -2328,15 +1964,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "I am a teapot error"
-                              ]
+                              "enum": ["I am a teapot error"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                418
-                              ]
+                              "enum": [418]
                             }
                           }
                         }
