@@ -42,11 +42,7 @@ function withYup<
   YUP_PARAMS extends Yup.Schema<KnownAny>,
   YUP_OUTPUT extends Yup.Schema<KnownAny>,
   YUP_ITERATION extends Yup.Schema<KnownAny>,
-  REQ extends VovkRequest<
-    YUP_BODY extends Yup.Schema<infer U> ? U : never,
-    YUP_QUERY extends Yup.Schema<infer U> ? U : undefined,
-    YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>
-  > = VovkRequest<
+  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<
     YUP_BODY extends Yup.Schema<infer U> ? U : never,
     YUP_QUERY extends Yup.Schema<infer U> ? U : undefined,
     YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>
@@ -85,42 +81,24 @@ function withYup<
       __output: YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny;
       __iteration: YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny;
     },
-    getHandlerSchema: ({ skipSchemaEmissionKeys }) => {
-      const getSchema = (key: VovkValidationType, model?: Yup.Schema<KnownAny>) => {
-        const schema = !skipSchemaEmissionKeys.includes(key) && model ? convertSchema(model) : null;
-
-        if (schema) {
-          // Fix for default values with undefined keys
-          if (schema.default && typeof schema.default === 'object' && !Array.isArray(schema.default)) {
-            if (schema?.required) {
-              for (const key of schema.required) {
-                delete schema.default[key];
-              }
-            }
-
-            if (Object.keys(schema.default).length === 0) {
-              delete schema.default;
-            }
-          }
-
-          // Add descriptions recursively
-          if (model) {
-            enrichWithDescriptions(schema, model.describe());
+    getJSONSchemaFromModel: (model) => {
+      const schema = convertSchema(model);
+      // Fix for default values with undefined keys
+      if (schema.default && typeof schema.default === 'object' && !Array.isArray(schema.default)) {
+        if (schema?.required) {
+          for (const key of schema.required) {
+            delete schema.default[key];
           }
         }
 
-        return schema;
-      };
+        if (Object.keys(schema.default).length === 0) {
+          delete schema.default;
+        }
+      }
 
-      return {
-        validation: {
-          body: getSchema('body', body),
-          query: getSchema('query', query),
-          output: getSchema('output', output),
-          params: getSchema('params', params),
-          iteration: getSchema('iteration', iteration),
-        },
-      };
+      // Add descriptions recursively
+      enrichWithDescriptions(schema, model.describe());
+      return schema;
     },
     validate: async (data, model, { type, req, i }) => {
       try {

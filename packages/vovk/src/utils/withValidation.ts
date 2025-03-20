@@ -21,7 +21,7 @@ export function withValidation<
   output,
   iteration,
   handle,
-  getHandlerSchema,
+  getJSONSchemaFromModel,
   validate,
 }: {
   disableServerSideValidation?: boolean | VovkValidationType[];
@@ -33,9 +33,10 @@ export function withValidation<
   output?: OUTPUT_MODEL;
   iteration?: ITERATION_MODEL;
   handle: T;
-  getHandlerSchema?: (options: {
-    skipSchemaEmissionKeys: VovkValidationType[];
-  }) => Omit<VovkHandlerSchema, 'httpMethod' | 'path'>;
+  getJSONSchemaFromModel?: (
+    model: NonNullable<BODY_MODEL | QUERY_MODEL | PARAMS_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
+    meta: { type: VovkValidationType }
+  ) => KnownAny;
   validate: (
     data: KnownAny,
     model: NonNullable<BODY_MODEL | QUERY_MODEL | PARAMS_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
@@ -129,8 +130,24 @@ export function withValidation<
     return outputHandler(req, handlerParams);
   };
 
-  if (getHandlerSchema) {
-    setHandlerSchema(resultHandler, getHandlerSchema({ skipSchemaEmissionKeys }));
+  if (getJSONSchemaFromModel) {
+    const validation: VovkHandlerSchema['validation'] = {};
+    if (body && !skipSchemaEmissionKeys.includes('body')) {
+      validation.body = getJSONSchemaFromModel(body, { type: 'body' });
+    }
+    if (query && !skipSchemaEmissionKeys.includes('query')) {
+      validation.query = getJSONSchemaFromModel(query, { type: 'query' });
+    }
+    if (params && !skipSchemaEmissionKeys.includes('params')) {
+      validation.params = getJSONSchemaFromModel(params, { type: 'params' });
+    }
+    if (output && !skipSchemaEmissionKeys.includes('output')) {
+      validation.output = getJSONSchemaFromModel(output, { type: 'output' });
+    }
+    if (iteration && !skipSchemaEmissionKeys.includes('iteration')) {
+      validation.iteration = getJSONSchemaFromModel(iteration, { type: 'iteration' });
+    }
+    setHandlerSchema(resultHandler, { validation });
   }
 
   return resultHandler as T;

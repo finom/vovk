@@ -55,7 +55,6 @@
       "handlers": {
         "getZodControllerOnlyEntities": {
           "validation": {
-            "body": null,
             "query": {
               "type": "object",
               "properties": {
@@ -63,13 +62,12 @@
                   "type": "string"
                 }
               },
-              "required": ["search"],
+              "required": [
+                "search"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+            }
           },
           "path": "",
           "httpMethod": "GET"
@@ -81,10 +79,15 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"],
+              "required": [
+                "foo"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -95,11 +98,12 @@
                   "type": "string"
                 }
               },
-              "required": ["q"],
+              "required": [
+                "q"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null,
             "params": {
               "type": "object",
               "properties": {
@@ -107,11 +111,12 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "iteration": null
+            }
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -133,7 +138,6 @@
       "handlers": {
         "getZodControllerAndServiceEntities": {
           "validation": {
-            "body": null,
             "query": {
               "type": "object",
               "properties": {
@@ -141,13 +145,12 @@
                   "type": "string"
                 }
               },
-              "required": ["search"],
+              "required": [
+                "search"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+            }
           },
           "path": "",
           "httpMethod": "GET"
@@ -159,10 +162,15 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"],
+              "required": [
+                "foo"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
@@ -173,11 +181,12 @@
                   "type": "string"
                 }
               },
-              "required": ["q"],
+              "required": [
+                "q"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             },
-            "output": null,
             "params": {
               "type": "object",
               "properties": {
@@ -185,11 +194,12 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
-            },
-            "iteration": null
+            }
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -211,7 +221,6 @@
       "handlers": {
         "getYupControllerOnlyEntities": {
           "validation": {
-            "body": null,
             "query": {
               "type": "object",
               "default": {},
@@ -220,10 +229,7 @@
                   "type": "string"
                 }
               }
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+            }
           },
           "path": "",
           "httpMethod": "GET"
@@ -232,14 +238,20 @@
           "validation": {
             "body": {
               "type": "object",
-              "default": {},
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -249,10 +261,7 @@
                   "type": "string"
                 }
               }
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+            }
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -274,7 +283,6 @@
       "handlers": {
         "getYupControllerAndServiceEntities": {
           "validation": {
-            "body": null,
             "query": {
               "type": "object",
               "default": {},
@@ -283,10 +291,7 @@
                   "type": "string"
                 }
               }
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+            }
           },
           "path": "",
           "httpMethod": "GET"
@@ -295,14 +300,20 @@
           "validation": {
             "body": {
               "type": "object",
-              "default": {},
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -312,10 +323,7 @@
                   "type": "string"
                 }
               }
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+            }
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -337,7 +345,6 @@
       "handlers": {
         "getDtoControllerOnlyEntities": {
           "validation": {
-            "body": null,
             "query": {
               "x-isDto": true,
               "properties": {
@@ -346,11 +353,10 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+              "required": [
+                "search"
+              ]
+            }
           },
           "path": "",
           "httpMethod": "GET"
@@ -362,11 +368,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -376,11 +387,10 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+              "required": [
+                "q"
+              ]
+            }
           },
           "path": ":id",
           "httpMethod": "PUT"
@@ -402,7 +412,6 @@
       "handlers": {
         "getDtoControllerAndServiceEntities": {
           "validation": {
-            "body": null,
             "query": {
               "x-isDto": true,
               "properties": {
@@ -411,11 +420,10 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+              "required": [
+                "search"
+              ]
+            }
           },
           "path": "",
           "httpMethod": "GET"
@@ -427,11 +435,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -441,11 +454,10 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
-            },
-            "output": null,
-            "params": null,
-            "iteration": null
+              "required": [
+                "q"
+              ]
+            }
           },
           "path": ":id",
           "httpMethod": "PUT"

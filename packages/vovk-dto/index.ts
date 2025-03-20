@@ -10,11 +10,7 @@ function withDto<
   PARAMS_DTO extends ClassConstructor<KnownAny>,
   OUTPUT_DTO extends ClassConstructor<KnownAny>,
   ITERATION_DTO extends ClassConstructor<KnownAny>,
-  REQ extends VovkRequest<
-    BODY_DTO extends ClassConstructor<infer U> ? U : never,
-    QUERY_DTO extends ClassConstructor<infer U> ? U : undefined,
-    PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
-  > = VovkRequest<
+  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<
     BODY_DTO extends ClassConstructor<infer U> ? U : never,
     QUERY_DTO extends ClassConstructor<infer U> ? U : undefined,
     PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
@@ -53,22 +49,10 @@ function withDto<
       __output: OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny;
       __iteration: ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny;
     },
-    getHandlerSchema: ({ skipSchemaEmissionKeys }) => {
-      const getSchema = (key: VovkValidationType, dto?: ClassConstructor<KnownAny>) => {
-        const schema = !skipSchemaEmissionKeys.includes(key) && dto ? targetConstructorToSchema(dto) : null;
-        return schema ? { 'x-isDto': true, ...schema } : null;
-      };
-
-      return {
-        validation: {
-          body: getSchema('body', body),
-          query: getSchema('query', query),
-          output: getSchema('output', output),
-          params: getSchema('params', params),
-          iteration: getSchema('iteration', iteration),
-        },
-      };
-    },
+    getJSONSchemaFromModel: (dto) => ({
+      'x-isDto': true,
+      ...targetConstructorToSchema(dto),
+    }),
     validate: async (data, dto, { type, req, status, i }) => {
       const instance = plainToInstance(dto, data);
       const errors: ValidationError[] = await validate(instance as object);
