@@ -22,7 +22,7 @@
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
     "vovk-client": "^0.0.4-draft.60",
-    "dto-mapped-types": "^0.0.6"
+    "dto-mapped-types": "^0.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.3",
