@@ -8,3 +8,4 @@ tmp
 tmp_*
 .next
 .vscode
+.mypy_cache
