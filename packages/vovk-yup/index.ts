@@ -1,5 +1,12 @@
 import * as Yup from 'yup';
-import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny, VovkValidationType } from 'vovk';
+import {
+  withValidation,
+  HttpException,
+  HttpStatus,
+  type VovkRequest,
+  type KnownAny,
+  type VovkValidationType,
+} from 'vovk';
 import { convertSchema } from '@sodaru/yup-to-json-schema';
 
 const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.errors.join(', ') ?? String(e);

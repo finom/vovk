@@ -1,6 +1,13 @@
 import { validate, type ValidationError } from 'class-validator';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
-import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny, VovkValidationType } from 'vovk';
+import {
+  withValidation,
+  HttpException,
+  HttpStatus,
+  type VovkRequest,
+  type KnownAny,
+  type VovkValidationType,
+} from 'vovk';
 import { targetConstructorToSchema } from 'class-validator-jsonschema';
 
 function withDto<
