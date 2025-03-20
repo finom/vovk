@@ -6,12 +6,10 @@ const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.errors.join(', 
 
 // Helper function to recursively add descriptions
 const enrichWithDescriptions = (jsonSchema: KnownAny, yupDescription: KnownAny) => {
-  // Add description to current level if available
   if (yupDescription?.meta?.description && !jsonSchema.description) {
     jsonSchema.description = yupDescription.meta.description;
   }
 
-  // Handle object properties
   if (jsonSchema.properties && yupDescription.fields) {
     for (const [key, value] of Object.entries(jsonSchema.properties)) {
       if (yupDescription.fields[key]) {

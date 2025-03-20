@@ -1,5 +1,12 @@
 import z, { type ZodSchema } from 'zod';
-import { withValidation, HttpException, HttpStatus, type VovkRequest, type KnownAny, VovkValidationType } from 'vovk';
+import {
+  withValidation,
+  HttpException,
+  HttpStatus,
+  type VovkRequest,
+  type KnownAny,
+  type VovkValidationType,
+} from 'vovk';
 import zodToJsonSchema from 'zod-to-json-schema';
 
 const getErrorText = (e: unknown) =>

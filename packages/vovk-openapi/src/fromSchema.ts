@@ -1,4 +1,4 @@
-import type { OpenAPIObject, PathsObject } from 'openapi3-ts/oas31';
+import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
 import { HttpStatus } from 'vovk';
 import type { HttpMethod, KnownAny, VovkFullSchema } from 'vovk';
 import { sample } from '@stoplight/json-schema-sampler';
@@ -77,6 +77,26 @@ ${
 }
 `;
 
+          const queryParameters =
+            queryValidation && 'type' in queryValidation && 'properties' in queryValidation
+              ? Object.entries(queryValidation.properties).map(([propName, propSchema]) => ({
+                  name: propName,
+                  in: 'query',
+                  required: queryValidation.required ? queryValidation.required.includes(propName) : false,
+                  schema: propSchema,
+                }))
+              : null;
+
+          const pathParameters =
+            paramsValidation && 'type' in paramsValidation && 'properties' in paramsValidation
+              ? Object.entries(paramsValidation.properties).map(([propName, propSchema]) => ({
+                  name: propName,
+                  in: 'path',
+                  required: paramsValidation.required ? paramsValidation.required.includes(propName) : false,
+                  schema: propSchema,
+                }))
+              : null;
+
           const path =
             '/' +
             [apiRoot.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path]
@@ -99,6 +119,39 @@ ${
                 source: pyCodeSample,
               },
             ],
+            ...((queryParameters || pathParameters
+              ? {
+                  parameters: h.openapi.parameters ?? [...(queryParameters || []), ...(pathParameters || [])],
+                }
+              : {}) as OperationObject['parameters']),
+            ...(outputValidation && 'type' in outputValidation && 'properties' in outputValidation
+              ? {
+                  responses: {
+                    200: {
+                      description: 'description' in outputValidation ? outputValidation.description : 'Success',
+                      content: {
+                        'application/json': {
+                          schema: outputValidation,
+                        },
+                      },
+                    },
+                    ...h.openapi?.responses,
+                  },
+                }
+              : {}),
+            ...(bodyValidation && 'type' in bodyValidation && 'properties' in bodyValidation
+              ? {
+                  requestBody: h.openapi?.requestBody ?? {
+                    description: 'description' in bodyValidation ? bodyValidation.description : 'Request body',
+                    required: true,
+                    content: {
+                      'application/json': {
+                        schema: bodyValidation,
+                      },
+                    },
+                  },
+                }
+              : {}),
           };
         }
       }
