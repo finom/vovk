@@ -8,9 +8,26 @@ export default async function reqForm<T = KnownAny>(req: VovkRequest<KnownAny, K
   }
 
   const body = await req.formData();
-  const formData = Object.fromEntries(body.entries()) as T;
+  const formData: Record<string, string | File | File[]> = {};
+
+  for (const [key, value] of body.entries()) {
+    if (value instanceof File) {
+      // If this key already exists, convert to array or append to existing array
+      if (formData[key]) {
+        if (Array.isArray(formData[key])) {
+          (formData[key] as File[]).push(value);
+        } else {
+          formData[key] = [formData[key] as File, value];
+        }
+      } else {
+        formData[key] = value;
+      }
+    } else {
+      formData[key] = value.toString();
+    }
+  }
 
   formMap.set(req, formData);
 
-  return formData;
+  return formData as T;
 }
