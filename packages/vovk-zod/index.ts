@@ -19,7 +19,7 @@ function withZod<
   ZOD_OUTPUT extends ZodSchema<KnownAny> | undefined = undefined,
   ZOD_PARAMS extends ZodSchema<KnownAny> | undefined = undefined,
   ZOD_ITERATION extends ZodSchema<KnownAny> | undefined = undefined,
-  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<
+  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
     ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : undefined,
     ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined,
     ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : undefined

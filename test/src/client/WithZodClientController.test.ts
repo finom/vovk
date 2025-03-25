@@ -400,8 +400,8 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrow(
       /Zod validation failed. Invalid body on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
     );
-    strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, null);
-    strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, null);
+    strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
+    strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
   });
 
   it('Should skip schema emission with string[] value', async () => {
@@ -414,7 +414,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrow(
       /Zod validation failed. Invalid body on server for http:.*\. Invalid literal value, expected "world" \(hello\)/
     );
-    strictEqual(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, null);
+    strictEqual(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
   });
 

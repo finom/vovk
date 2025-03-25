@@ -1,4 +1,4 @@
-import { prefix, get, post, put, del, patch, head, options } from 'vovk';
+import { prefix, get, post, put, del, patch, head, options, VovkRequest } from 'vovk';
 
 @prefix('all-decorators')
 export default class AllDecoratorsController {
@@ -40,5 +40,15 @@ export default class AllDecoratorsController {
   @get('get-with-header', { headers: { 'x-decorator-header': 'hello' } })
   static getWithHeader() {
     return {};
+  }
+
+  @get('get-with-cors', { cors: true })
+  static getWithCors() {
+    return {};
+  }
+
+  @get('get-with-before', { before: (req) => req.vovk.meta({ before: true }) })
+  static getWithBefore(req: VovkRequest) {
+    return { before: req.vovk.meta<{ before: boolean }>().before };
   }
 }

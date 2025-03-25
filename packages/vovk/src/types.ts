@@ -51,6 +51,7 @@ export type VovkController = StaticClass &
 export type DecoratorOptions = {
   cors?: boolean;
   headers?: Record<string, string>;
+  before?: (this: VovkController, req: VovkRequest) => unknown;
 };
 
 export type RouteHandler = ((

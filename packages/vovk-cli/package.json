@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.141",
+  "version": "0.0.1-draft.142",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,13 +35,13 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.114"
+    "vovk": "^3.0.0-draft.115"
   },
   "optionalDependencies": {
-    "vovk-python-client": "^0.0.1-draft.10"
+    "vovk-python-client": "^0.0.1-draft.11"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.3.1",
+    "@inquirer/prompts": "^7.4.0",
     "@npmcli/package-json": "^6.1.1",
     "chalk": "^5.4.1",
     "chokidar": "^4.0.3",
@@ -56,10 +56,10 @@
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
     "pluralize": "^8.0.0",
-    "prettier": "^3.4.2",
+    "prettier": "^3.5.3",
     "tar-stream": "^3.1.7",
-    "ts-morph": "^25.0.0",
-    "undici": "^7.3.0"
+    "ts-morph": "^25.0.1",
+    "undici": "^7.5.0"
   },
   "devDependencies": {
     "@types/concat-stream": "^2.0.3",
@@ -68,8 +68,8 @@
     "@types/pluralize": "^0.0.33",
     "@types/tar-stream": "^3.1.3",
     "concat-stream": "^2.0.0",
-    "create-next-app": "^15.1.6",
+    "create-next-app": "^15.2.4",
     "node-pty": "^1.0.0",
-    "type-fest": "^4.37.0"
+    "type-fest": "^4.38.0"
   }
 }

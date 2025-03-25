@@ -452,8 +452,8 @@ describe('Validation with with vovk-dto', () => {
       });
     });
     await rejects.toThrow(/Validation failed. Invalid body on server for http:.*\. hello must be equal to world/);
-    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, null);
-    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, null);
+    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
+    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.skipSchemaEmissionBool> satisfies null;
   });
@@ -465,7 +465,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
     await rejects.toThrow(/Validation failed. Invalid body on server for http:.*\. hello must be equal to world/);
-    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, null);
+    strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.skipSchemaEmissionStrings> satisfies null;

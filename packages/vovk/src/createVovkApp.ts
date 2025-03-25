@@ -8,7 +8,7 @@ import {
   type DecoratorOptions,
   type VovkRequest,
   type StaticClass,
-  VovkHandlerSchema,
+  type VovkHandlerSchema,
 } from './types';
 import getSchema from './utils/getSchema';
 

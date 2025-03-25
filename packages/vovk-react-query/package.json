@@ -1,6 +1,6 @@
 {
   "name": "vovk-react-query",
-  "version": "0.0.1-draft.56",
+  "version": "0.0.1-draft.57",
   "description": "useQuery and useMutation hooks for Vovk.ts",
   "scripts": {
     "build": "rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
@@ -41,12 +41,12 @@
   "peerDependencies": {
     "@tanstack/react-query": "^5.66.0",
     "react": "^19.0.0",
-    "vovk": "^3.0.0-draft.114"
+    "vovk": "^3.0.0-draft.115"
   },
   "devDependencies": {
     "@testing-library/react": "^16.2.0",
     "@types/jsdom": "^21.1.7",
-    "@types/react": "^19.0.8",
+    "@types/react": "^19.0.12",
     "jsdom": "^26.0.0",
     "react": "^19.0.0"
   }

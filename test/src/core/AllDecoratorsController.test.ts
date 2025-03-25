@@ -1,5 +1,5 @@
 import { it, describe } from 'node:test';
-import { strictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert';
 import { request } from '../lib.ts';
 
 describe('All decorators', () => {
@@ -18,5 +18,19 @@ describe('All decorators', () => {
 
     strictEqual(response.status, 200);
     strictEqual(response.headers['x-decorator-header'], 'hello');
+  });
+
+  it('Should handle CORS', async () => {
+    const response = await request.get(`/all-decorators/get-with-cors`);
+
+    strictEqual(response.status, 200);
+    strictEqual(response.headers['access-control-allow-origin'], '*');
+  });
+
+  it('Should handle before', async () => {
+    const response = await request.get(`/all-decorators/get-with-before`);
+
+    strictEqual(response.status, 200);
+    deepStrictEqual(response.body, { before: true });
   });
 });

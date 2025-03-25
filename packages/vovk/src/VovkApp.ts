@@ -194,6 +194,7 @@ export class VovkApp {
     };
 
     try {
+      await staticMethod._options?.before?.call(controller, req);
       const result = await staticMethod.call(controller, req, methodParams);
 
       const isIterator =

@@ -49,7 +49,7 @@ function withYup<
   YUP_PARAMS extends Yup.Schema<KnownAny>,
   YUP_OUTPUT extends Yup.Schema<KnownAny>,
   YUP_ITERATION extends Yup.Schema<KnownAny>,
-  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<
+  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
     YUP_BODY extends Yup.Schema<infer U> ? U : never,
     YUP_QUERY extends Yup.Schema<infer U> ? U : undefined,
     YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>

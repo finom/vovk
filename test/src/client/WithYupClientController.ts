@@ -84,7 +84,6 @@ export default class WithYupClientController {
     params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
     handle: async (req) => req.vovk.params(),
   });
-  // todo:  sss ss ss
   @get.auto()
   static handleNestedQuery = withYup({
     query: yup.object({

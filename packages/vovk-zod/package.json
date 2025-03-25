@@ -1,6 +1,6 @@
 {
   "name": "vovk-zod",
-  "version": "1.0.0-draft.52",
+  "version": "1.0.0-draft.53",
   "description": "Zod validation for Vovk.ts",
   "main": "index.js",
   "scripts": {
@@ -17,11 +17,11 @@
   "author": "Andrii Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.114",
+    "vovk": "^3.0.0-draft.115",
     "zod": "*"
   },
   "dependencies": {
-    "zod-to-json-schema": "^3.24.1",
-    "vovk-validate-client-ajv": "^0.0.0-draft.26"
+    "zod-to-json-schema": "^3.24.5",
+    "vovk-validate-client-ajv": "^0.0.0-beta.3"
   }
 }

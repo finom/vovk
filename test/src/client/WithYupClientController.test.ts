@@ -356,8 +356,8 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     await rejects.toThrow(
       /Yup validation failed. Invalid body on server for http:.*\. hello must be one of the following values: world/
     );
-    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, null);
-    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, null);
+    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
+    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
   });
 
   it('Should skip schema emission with string[] value', async () => {
@@ -370,7 +370,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     await rejects.toThrow(
       /Yup validation failed. Invalid body on server for http:.*\. hello must be one of the following values: world/
     );
-    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, null);
+    strictEqual(WithYupClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithYupClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
   });
 

@@ -17,7 +17,7 @@ function withDto<
   PARAMS_DTO extends ClassConstructor<KnownAny>,
   OUTPUT_DTO extends ClassConstructor<KnownAny>,
   ITERATION_DTO extends ClassConstructor<KnownAny>,
-  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<
+  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
     BODY_DTO extends ClassConstructor<infer U> ? U : never,
     QUERY_DTO extends ClassConstructor<infer U> ? U : undefined,
     PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
