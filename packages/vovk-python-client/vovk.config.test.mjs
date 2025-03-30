@@ -6,7 +6,7 @@ const vovkConfig = {
     ...generateFrom,
     {
       outDir: '../packages/vovk-python-client/test_py/generated_test_python_client',
-      templatePath: '../packages/vovk-python-client/template/*',
+      templateGlob: '../packages/vovk-python-client/template/*',
       templateName: 'py',
       fullSchema: true,
     },

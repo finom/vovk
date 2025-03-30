@@ -1,6 +1,6 @@
 {
   "name": "vovk-python-client",
-  "version": "0.0.1-draft.11",
+  "version": "0.0.1-draft.12",
   "description": "Vovk.ts Python client",
   "scripts": {
     "build": "tsc",
@@ -13,7 +13,8 @@
     "install:py": "python3 -m pip install -r requirements.txt",
     "unit:py": "python3 -m unittest discover -s test_py -p '*.py'",
     "unit:ts": "npm run pre-test && node --experimental-strip-types --test --test-concurrency=1 test_ts/*.mts",
-    "test": "npm run unit:ts && concurrently 'sleep 20 && npm run unit:py' 'npm run generate --prefix ../../test -- --config=../packages/vovk-python-client/vovk.config.test.mjs && npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
+    "generate": "npm run generate --prefix ../../test -- --config=../packages/vovk-python-client/vovk.config.test.mjs",
+    "test": "npm run unit:ts && concurrently 'sleep 20 && npm run unit:py' 'npm run generate && npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
   },
   "main": "./index.js",
   "type": "module",

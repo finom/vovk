@@ -1,48 +1,5 @@
 import type { KnownAny } from 'vovk';
 
-// TODO TESTS
-
-/*
-Prompt: 
-Write me a TypeScript function that accepts JSON schema, namespace and class name and returns a python type.
-
-The function should be run recursively and return either a primitive type or a complex type like a class or a union of classes.
-Consider different formats, enums, arrays, objects, etc. Consider oneOf, anyOf, allOf, etc. Cosider that typing imports are available to the generated code: "from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple".
-
-Example: 
-
-const type = convertJSONSchemaToPythonType({
-  schema: {
-    type: 'object',
-    properties: {
-      x: {
-        type: 'object',
-        properties: {
-          y: {
-            type: 'object',
-            properties: {
-              num: { type: 'integer' }
-            }
-          }
-        }
-      }
-    }
-  },
-  namespace: 'WithZodClientControllerRPC',
-  className: 'Body',
-});
-
-As the result we should get the following text:
-
-class Body_x_y(TypedDict):
-    num: int
-class Body_x(TypedDict):
-    y: WithZodClientControllerRPC.Body_y
-class (TypedDict):
-    x: WithZodClientControllerRPC.Body_x
-
-Where Body is the type we're attempting to build (it can also be a primitive). 
-*/
 interface JSONSchema {
   type?: string | string[];
   enum?: KnownAny[];
