@@ -7,11 +7,11 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import { BuiltInTemplateName } from '../getProjectInfo/getConfig.mjs';
 
-export const DEFAULT_FULL_SCHEMA_FILE_NAME = 'full-schema.json';
+const DEFAULT_FULL_SCHEMA_FILE_NAME = 'full-schema.json';
 
 export interface ClientTemplateFile {
   templateName: string;
-  templatePath: string | null; // null is for full-schema.json only
+  templatePath: string | null; // null is for full schema JSON only
   outDir: string;
   fullSchemaJSONFileName: string | null;
   origin?: string | null;

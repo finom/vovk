@@ -24,7 +24,7 @@ export default async function createConfig({
     .then((content) => (JSON.parse(content) as { type: 'module' }).type === 'module');
   const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
 
-  const templates: VovkConfig['moduleTemplates'] = {
+  const moduleTemplates: VovkConfig['moduleTemplates'] = {
     controller: 'vovk-cli/module-templates/controller.ts.ejs',
     service: 'vovk-cli/module-templates/service.ts.ejs',
   };
@@ -38,7 +38,7 @@ export default async function createConfig({
 
     try {
       const validationTemplates = await getTemplateFilesFromPackage(validationLibrary, channel);
-      Object.assign(templates, validationTemplates);
+      Object.assign(moduleTemplates, validationTemplates);
     } catch (error) {
       log.warn(`Failed to fetch validation library templates: ${(error as Error).message}`);
     }
@@ -49,7 +49,7 @@ export default async function createConfig({
     config.imports.createRPC = 'vovk-react-query';
   }
 
-  config.moduleTemplates = templates;
+  config.moduleTemplates = moduleTemplates;
 
   const configStr = await prettify(
     `/** @type {import('vovk-cli').VovkConfig} */

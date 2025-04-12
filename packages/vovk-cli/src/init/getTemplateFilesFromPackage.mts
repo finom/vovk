@@ -31,9 +31,11 @@ export default async function getTemplateFilesFromPackage(
   const templateFiles = await extractTemplatesFromTarball(tarballBuffer);
 
   const entries = templateFiles
-    .filter((fileName) => fileName.startsWith('templates/') && !fileName.endsWith('/') && fileName.endsWith('.ts.ejs'))
+    .filter(
+      (fileName) => fileName.startsWith('module-templates/') && !fileName.endsWith('/') && fileName.endsWith('.ts.ejs')
+    )
     .map((fileName) => [
-      fileName.substring('templates/'.length).replace(/\.ts\.ejs$/, ''),
+      fileName.substring('module-templates/'.length).replace(/\.ts\.ejs$/, ''),
       `${packageName}/${fileName}`,
     ]);
 
@@ -52,8 +54,8 @@ function extractTemplatesFromTarball(tarballBuffer: Buffer): Promise<string[]> {
 
     extract.on('entry', (header: Headers, stream: Readable, next: () => void) => {
       const filePath = header.name;
-      // Check if the file is in the 'templates' folder
-      if (filePath.startsWith('package/templates/')) {
+      // Check if the file is in the 'module-templates' folder
+      if (filePath.startsWith('package/module-templates/')) {
         files.push(filePath.replace('package/', ''));
       }
       stream.on('end', () => next());
