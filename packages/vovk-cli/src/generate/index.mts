@@ -13,6 +13,7 @@ import type { GenerateOptions } from '../types.mjs';
 import { ROOT_SEGMENT_SCHEMA_NAME, SEGMENTS_SCHEMA_DIR_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import pickSegmentFullSchema from '../utils/pickSegmentFullSchema.mjs';
 import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
+import type { PackageJson } from 'type-fest';
 
 export type ClientImports = {
   fetcher: string;
@@ -29,6 +30,8 @@ async function writeOneClientFile({
   imports,
   templateContent,
   matterResult: { data, content },
+  package: packageJson,
+  isEnsuringClient,
 }: {
   projectInfo: ProjectInfo;
   clientTemplate: ClientTemplateFile;
@@ -43,6 +46,8 @@ async function writeOneClientFile({
     };
     content: string;
   };
+  package: PackageJson;
+  isEnsuringClient: boolean;
 }) {
   const { config, apiRoot, segments } = projectInfo;
   const { templatePath, outDir, origin } = clientTemplate;
@@ -55,9 +60,15 @@ async function writeOneClientFile({
     path.basename(templatePath).replace('.ejs', '')
   );
 
+  let placeholder = `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
+// If you still see this text, the client is not generated yet because of an unknown problem.
+// Feel free to report an issue at https://github.com/finom/vovk/issues`;
+  placeholder = outPath.endsWith('.py') ? placeholder.replace(/\/\//g, '#') : placeholder;
+
   // Data for the EJS templates:
   const t = {
     _, // lodash
+    package: packageJson,
     ROOT_SEGMENT_SCHEMA_NAME,
     SEGMENTS_SCHEMA_DIR_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
@@ -108,13 +119,18 @@ async function writeOneClientFile({
     rendered = await prettify(rendered, outPath);
   }
 
+  if (isEnsuringClient) {
+    rendered = rendered + `\n\n${placeholder}`;
+  }
+
   // Read existing file content to compare
   const existingContent = await fs.readFile(outPath, 'utf-8').catch(() => null);
 
   // Determine if we need to rewrite the file, ignore 1st line
-  const needsWriting =
-    !existingContent ||
-    existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
+  const needsWriting = isEnsuringClient
+    ? !!existingContent
+    : !existingContent ||
+      existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
 
   if (needsWriting) {
     await fs.mkdir(path.dirname(outPath), { recursive: true });
@@ -125,6 +141,7 @@ async function writeOneClientFile({
 }
 
 export default async function generate({
+  isEnsuringClient = false,
   projectInfo,
   forceNothingWrittenLog,
   generateFrom: givenGenerateFrom,
@@ -132,6 +149,7 @@ export default async function generate({
   fullSchema,
   fullSchemaJson,
 }: {
+  isEnsuringClient?: boolean;
   projectInfo: ProjectInfo;
   forceNothingWrittenLog?: boolean;
   fullSchema: VovkFullSchema;
@@ -158,7 +176,7 @@ export default async function generate({
   // Process each template in parallel
   await Promise.all(
     templateFiles.map(async (clientTemplate) => {
-      const { templatePath, templateName, outDir, fullSchemaJSONFileName } = clientTemplate;
+      const { templatePath, templateName, outDir, fullSchemaJSONFileName, package: packageJson } = clientTemplate;
       if (templatePath) {
         // Read the EJS template
         const templateContent = await fs.readFile(templatePath, 'utf-8');
@@ -181,6 +199,8 @@ export default async function generate({
             imports: clientImports.fullClient,
             templateContent,
             matterResult,
+            package: packageJson,
+            isEnsuringClient,
           });
 
           if (isWritten) {
@@ -209,6 +229,8 @@ export default async function generate({
                 imports: clientImports.schemaClient[segmentName],
                 templateContent,
                 matterResult,
+                package: packageJson,
+                isEnsuringClient,
               });
 
               if (isWritten) {
@@ -265,14 +287,24 @@ export default async function generate({
   }
 
   if (written) {
-    log.info(
-      `Client generated from template${usedTemplateNames.size !== 1 ? 's' : ''} ${chalkHighlightThing(
-        Array.from(usedTemplateNames)
-          .map((s) => `"${s}"`)
-          .join(', ')
-      )} in ${Date.now() - now}ms`
-    );
-  } else {
+    if (isEnsuringClient) {
+      log.info(
+        `Empty client generated from template${usedTemplateNames.size !== 1 ? 's' : ''} ${chalkHighlightThing(
+          Array.from(usedTemplateNames)
+            .map((s) => `"${s}"`)
+            .join(', ')
+        )} in ${Date.now() - now}ms`
+      );
+    } else {
+      log.info(
+        `Client generated from template${usedTemplateNames.size !== 1 ? 's' : ''} ${chalkHighlightThing(
+          Array.from(usedTemplateNames)
+            .map((s) => `"${s}"`)
+            .join(', ')
+        )} in ${Date.now() - now}ms`
+      );
+    }
+  } else if (!isEnsuringClient) {
     const logOrDebug = forceNothingWrittenLog ? log.info : log.debug;
     logOrDebug(`Client is up to date and doesn't need to be regenerated (${Date.now() - now}ms)`);
   }

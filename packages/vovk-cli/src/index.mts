@@ -87,10 +87,7 @@ program
   .alias('g')
   .description('Generate RPC client from schema')
   .option('--out, --client-out-dir <path>', 'path to output directory')
-  .option(
-    '--from, --generate-from <templates...>',
-    'client code templates ("ts", "compiled", "python", "none", a custom path)'
-  )
+  .option('--from, --generate-from <templates...>', 'client template names')
   .option('--full-schema-json [fileName]', 'generate client with full schema')
   .option('--prettify', 'prettify output files')
   .option('--config <config>', 'path to config file')

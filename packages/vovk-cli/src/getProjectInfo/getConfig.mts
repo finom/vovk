@@ -1,8 +1,9 @@
 import path from 'node:path';
+import fs from 'node:fs/promises';
 import type { VovkEnv, VovkStrictConfig } from 'vovk';
-import { PackageJson } from 'type-fest';
 import getUserConfig from './getUserConfig.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
+import { pick } from 'lodash';
 
 const templatesDir = path.join(import.meta.dirname, '../..', 'client-templates');
 
@@ -11,8 +12,8 @@ export enum BuiltInTemplateName {
   main = 'main',
   module = 'module',
   fullSchema = 'fullSchema',
+  package = 'package',
   none = 'none',
-  // TODO 'package' = 'package',
 }
 
 const getTemplateDefs = (
@@ -24,32 +25,44 @@ const getTemplateDefs = (
     [BuiltInTemplateName.ts]: {
       templatePath: path.resolve(templatesDir, 'ts/'),
       clientOutDir: clientOutDirAbsolutePath,
-      fullSchemaJSON: false,
+      fullSchemaJson: false,
       origin: null,
+      package: {},
     },
     [BuiltInTemplateName.main]: {
       templatePath: path.resolve(templatesDir, 'main/'),
       clientOutDir: clientOutDirAbsolutePath,
-      fullSchemaJSON: false,
+      fullSchemaJson: false,
       origin: null,
+      package: {},
     },
     [BuiltInTemplateName.module]: {
       templatePath: path.resolve(templatesDir, 'module/'),
       clientOutDir: clientOutDirAbsolutePath,
-      fullSchemaJSON: false,
+      fullSchemaJson: false,
       origin: null,
+      package: {},
     },
     [BuiltInTemplateName.fullSchema]: {
       templatePath: path.resolve(templatesDir, 'fullSchema/'),
       clientOutDir: clientOutDirAbsolutePath,
-      fullSchemaJSON: false,
+      fullSchemaJson: false,
       origin: null,
+      package: {},
+    },
+    [BuiltInTemplateName.package]: {
+      templatePath: path.resolve(templatesDir, 'package/'),
+      clientOutDir: clientOutDirAbsolutePath,
+      fullSchemaJson: false,
+      origin: null,
+      package: {},
     },
     [BuiltInTemplateName.none]: {
       templatePath: null,
       clientOutDir: clientOutDirAbsolutePath,
-      fullSchemaJSON: false,
+      fullSchemaJson: false,
       origin: null,
+      package: {},
     },
   };
 
@@ -85,6 +98,17 @@ export default async function getConfig({
   cwd: string;
 }) {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({ configPath, cwd });
+  const originalPackageJson = pick(JSON.parse(await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')), [
+    'name',
+    'version',
+    'description',
+    'author',
+    'license',
+    'repository',
+    'homepage',
+    'bugs',
+    'keywords',
+  ]);
   const conf = userConfig ?? {};
   const env = process.env as VovkEnv;
   const clientOutDir =
@@ -128,6 +152,10 @@ export default async function getConfig({
       ...conf.moduleTemplates,
     },
     libs: conf.libs ?? {},
+    package: {
+      ...originalPackageJson,
+      ...conf.package,
+    },
   };
 
   if (typeof conf.emitConfig === 'undefined') {

@@ -1,9 +1,11 @@
 import path from 'node:path';
 import { glob } from 'glob';
 import type { VovkStrictConfig } from 'vovk';
+import type { PackageJson } from 'type-fest';
 import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mts';
+import { BuiltInTemplateName } from '../getProjectInfo/getConfig.mts';
 
 export const DEFAULT_FULL_SCHEMA_FILE_NAME = 'full-schema.json';
 
@@ -13,6 +15,7 @@ export interface ClientTemplateFile {
   outDir: string;
   fullSchemaJSONFileName: string | null;
   origin?: string | null;
+  package: PackageJson;
 }
 
 export default async function getClientTemplateFiles({
@@ -41,16 +44,23 @@ export default async function getClientTemplateFiles({
 
   const templateFiles: ClientTemplateFile[] = [];
 
+  if (fullSchemaJson && !usedTemplateDefs[BuiltInTemplateName.none]) {
+    usedTemplateDefs[BuiltInTemplateName.none] = {
+      templatePath: null,
+      clientOutDir: config.clientOutDir,
+      fullSchemaJson,
+    };
+  }
+
   for (const [templateName, templateDef] of Object.entries(usedTemplateDefs)) {
-    const fullSchemaJsonValue = fullSchemaJson ?? templateDef.fullSchemaJSON;
-    const fullSchemaJSONFileName = fullSchemaJsonValue
-      ? fullSchemaJsonValue === 'string'
-        ? fullSchemaJsonValue
+    const fullSchemaJSONFileName = templateDef.fullSchemaJson
+      ? templateDef.fullSchemaJson === 'string'
+        ? templateDef.fullSchemaJson
         : DEFAULT_FULL_SCHEMA_FILE_NAME
       : null;
+    const packageJson = Object.assign({}, config.package, templateDef.package);
 
-    const outDirRoot = path.resolve(cwd, templateDef.clientOutDir ?? config.clientOutDir);
-    // const outDir = TODO: concat outDirRoot with relative dir!, consider [PACKAGE_NAME] folder
+    const outDir = path.resolve(cwd, templateDef.clientOutDir ?? config.clientOutDir);
 
     if (templateDef.templatePath) {
       const templateAbsolutePath = resolveAbsoluteModulePath(templateDef.templatePath, cwd);
@@ -75,18 +85,22 @@ export default async function getClientTemplateFiles({
         templateFiles.push({
           templateName,
           templatePath: filePath,
-          outDir: outDirRoot,
+          outDir: path
+            .join(outDir, path.relative(templateAbsolutePath, filePath))
+            .replace('[PACKAGE_NAME]', packageJson.name ?? 'my-package-name'),
           fullSchemaJSONFileName,
           origin: templateDef.origin,
+          package: packageJson as PackageJson,
         });
       }
     } else {
       templateFiles.push({
         templateName,
         templatePath: null,
-        outDir: outDirRoot,
+        outDir,
         fullSchemaJSONFileName,
         origin: templateDef.origin,
+        package: packageJson as PackageJson,
       });
     }
 

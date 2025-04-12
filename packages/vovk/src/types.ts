@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import type { OperationObject } from 'openapi3-ts/oas31';
+import type { PackageJson } from 'type-fest';
 import type { JSONLinesResponse } from './JSONLinesResponse';
 import { VovkStreamAsyncIterable } from './client/types';
 
@@ -186,8 +187,9 @@ export type ClientTemplateDef = {
   templatePath: string | null; // null is for full-schema.json generation only
   clientOutDir?: string;
   // templateName?: string; TODO Delete
-  fullSchemaJSON?: string | boolean;
+  fullSchemaJson?: string | boolean;
   origin?: string | null;
+  package?: PackageJson;
 };
 
 export type VovkConfig = {
@@ -215,6 +217,7 @@ export type VovkConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
+  package?: PackageJson;
   libs?: Record<string, KnownAny>;
 };
 
