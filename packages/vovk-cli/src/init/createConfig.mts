@@ -24,9 +24,9 @@ export default async function createConfig({
     .then((content) => (JSON.parse(content) as { type: 'module' }).type === 'module');
   const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
 
-  const templates: VovkConfig['templates'] = {
-    controller: 'vovk-cli/templates/controller.ts.ejs',
-    service: 'vovk-cli/templates/service.ts.ejs',
+  const templates: VovkConfig['moduleTemplates'] = {
+    controller: 'vovk-cli/module-templates/controller.ts.ejs',
+    service: 'vovk-cli/module-templates/service.ts.ejs',
   };
 
   if (validationLibrary) {
@@ -49,7 +49,7 @@ export default async function createConfig({
     config.imports.createRPC = 'vovk-react-query';
   }
 
-  config.templates = templates;
+  config.moduleTemplates = templates;
 
   const configStr = await prettify(
     `/** @type {import('vovk-cli').VovkConfig} */
