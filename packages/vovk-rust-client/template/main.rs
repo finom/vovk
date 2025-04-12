@@ -24,7 +24,7 @@ pub mod ZodControllerOnlyEntityRPC {
 
     #[derive(Debug, Serialize, Deserialize)]
     pub struct UpdateZodControllerOnlyEntityParams {
-        pub id: String, 
+        pub id: String,
     }
 
     // Return type definition
