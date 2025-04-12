@@ -16,7 +16,7 @@ export interface DevOptions {
 
 export interface GenerateOptions {
   clientOutDir?: string;
-  templates?: string[];
+  generateFrom?: string[];
   prettify?: boolean;
   fullSchemaJson?: string | boolean;
   config?: string;

@@ -1,0 +1,34 @@
+{
+  "name": "vovk-rust-client",
+  "version": "0.0.0",
+  "description": "Vovk.ts Rust client",
+  "scripts": {
+    "build": "tsc",
+    "npm-publish": "npm publish",
+    "tsc": "tsc --noEmit",
+    "ncu": "npm-check-updates -u",
+    "pre-test": "npm run build",
+    "test-only": "npm run pre-test && node --experimental-strip-types --test --test-only test/test/**/*.mts",
+    "unit": "npm run pre-test && node --experimental-strip-types --test --test-concurrency=1 test/*.mts",
+    "install:py": "python3 -m pip install -r requirements.txt",
+    "unit:py": "python3 -m unittest discover -s test_py -p '*.py'",
+    "unit:ts": "npm run pre-test && node --experimental-strip-types --test --test-concurrency=1 test_ts/*.mts",
+    "generate": "npm run generate --prefix ../../test -- --config=../packages/vovk-python-client/vovk.config.test.mjs",
+    "test": "npm run unit:ts && concurrently 'sleep 20 && npm run unit:py' 'npm run generate && npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
+  },
+  "main": "./index.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finom/vovk.git"
+  },
+  "keywords": [
+    "Vovk"
+  ],
+  "author": "Andrey Gubanov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/finom/vovk/issues"
+  },
+  "homepage": "https://github.com/finom/vovk#readme"
+}

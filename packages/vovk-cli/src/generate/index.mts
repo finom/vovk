@@ -6,7 +6,7 @@ import _ from 'lodash';
 import type { VovkFullSchema } from 'vovk';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import prettify from '../utils/prettify.mjs';
-import getClientTemplates, { ClientTemplate, DEFAULT_FULL_SCHEMA_FILE_NAME } from './getClientTemplates.mjs';
+import getClientTemplateFiles, { type ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
@@ -31,7 +31,7 @@ async function writeOneClientFile({
   matterResult: { data, content },
 }: {
   projectInfo: ProjectInfo;
-  clientTemplate: ClientTemplate;
+  clientTemplate: ClientTemplateFile;
   fullSchema: VovkFullSchema;
   prettifyClient: boolean;
   segmentName: string | null; // null for full cllient
@@ -127,7 +127,7 @@ async function writeOneClientFile({
 export default async function generate({
   projectInfo,
   forceNothingWrittenLog,
-  templates,
+  generateFrom: givenGenerateFrom,
   prettify: prettifyClient = false,
   fullSchema,
   fullSchemaJson,
@@ -135,13 +135,12 @@ export default async function generate({
   projectInfo: ProjectInfo;
   forceNothingWrittenLog?: boolean;
   fullSchema: VovkFullSchema;
-} & Pick<GenerateOptions, 'templates' | 'prettify' | 'fullSchemaJson'>) {
+} & Pick<GenerateOptions, 'generateFrom' | 'prettify' | 'fullSchemaJson'>) {
   const now = Date.now();
-  const generateFrom = templates ?? projectInfo.config.generateFrom;
-  const noClient = templates?.[0] === 'none';
   const { config, cwd, log, clientImports, segments } = projectInfo;
+  const generateFrom = givenGenerateFrom ?? config.generateFrom;
 
-  const { clientOutDirAbsolutePath, templateFiles } = await getClientTemplates({ config, cwd, generateFrom, log });
+  const templateFiles = await getClientTemplateFiles({ config, cwd, generateFrom, fullSchemaJson, log });
   // Ensure that each segment has a matching schema if it needs to be emitted:
   for (let i = 0; i < segments.length; i++) {
     const { segmentName } = segments[i];
@@ -160,7 +159,7 @@ export default async function generate({
   await Promise.all(
     templateFiles.map(async (clientTemplate) => {
       const { templatePath, templateName, outDir, fullSchemaJSONFileName } = clientTemplate;
-      if (!noClient && templatePath) {
+      if (templatePath) {
         // Read the EJS template
         const templateContent = await fs.readFile(templatePath, 'utf-8');
 
@@ -248,18 +247,6 @@ export default async function generate({
       }
     })
   );
-
-  if (fullSchemaJson) {
-    const fullSchemaOutAbsolutePath = fullSchemaJson
-      ? path.resolve(
-          clientOutDirAbsolutePath,
-          typeof fullSchemaJson === 'string' ? fullSchemaJson : DEFAULT_FULL_SCHEMA_FILE_NAME
-        )
-      : null;
-    if (fullSchemaOutAbsolutePath) {
-      fullSchemaOutAbsolutePaths.set(null, fullSchemaOutAbsolutePath);
-    }
-  }
 
   if (fullSchemaOutAbsolutePaths.size) {
     await Promise.all(

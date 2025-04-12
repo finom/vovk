@@ -88,14 +88,14 @@ program
   .description('Generate RPC client from schema')
   .option('--out, --client-out-dir <path>', 'path to output directory')
   .option(
-    '--template, --templates <templates...>',
+    '--from, --generate-from <templates...>',
     'client code templates ("ts", "compiled", "python", "none", a custom path)'
   )
   .option('--full-schema-json [fileName]', 'generate client with full schema')
   .option('--prettify', 'prettify output files')
   .option('--config <config>', 'path to config file')
   .action(async (options: GenerateOptions) => {
-    const { clientOutDir, templates, prettify, fullSchemaJson, config: configPath } = options;
+    const { clientOutDir, generateFrom, prettify, fullSchemaJson, config: configPath } = options;
     const projectInfo = await getProjectInfo({ clientOutDir, configPath });
     const { cwd, config } = projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
@@ -104,7 +104,7 @@ program
     await generate({
       projectInfo,
       fullSchema,
-      templates,
+      generateFrom,
       prettify,
       forceNothingWrittenLog: true,
       fullSchemaJson,

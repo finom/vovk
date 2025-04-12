@@ -1,10 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import getClientTemplates, { BuiltInTemplateName } from './getClientTemplates.mjs';
+import getClientTemplates from './getClientTemplateFiles.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { BuiltInTemplateName } from '../getProjectInfo/getConfig.mts';
 
+// TODO: add hidden --test-placeholder flag to "generate"
 async function writeOnePlaceholder({
   outPath,
   defaultText,
@@ -23,6 +25,7 @@ async function writeOnePlaceholder({
     await fs.mkdir(path.dirname(outPath), { recursive: true });
     // a workaround that prevents compilation error when client is not yet generated but back-end imports fullSchema
     if (Object.keys(BuiltInTemplateName).includes(templateName)) {
+      // TODO: consider other file types
       if (outPath.endsWith('.cjs')) {
         text += '\nmodule.exports.fullSchema = {};';
       } else {
@@ -37,10 +40,11 @@ async function writeOnePlaceholder({
 export default async function ensureClient({ config, cwd, log, segments }: ProjectInfo) {
   const now = Date.now();
 
-  const { clientOutDirAbsolutePath, templateFiles } = await getClientTemplates({
+  const templateFiles = await getClientTemplates({
     config,
     cwd,
     generateFrom: config.generateFrom,
+    fullSchemaJson: undefined,
     log,
   });
 
@@ -93,7 +97,7 @@ export default async function ensureClient({ config, cwd, log, segments }: Proje
         Array.from(usedTemplateNames)
           .map((s) => `"${s}"`)
           .join(', ')
-      )} are generated at ${clientOutDirAbsolutePath} in ${Date.now() - now}ms`
+      )} are generated in ${Date.now() - now}ms`
     );
   }
 

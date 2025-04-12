@@ -43,7 +43,7 @@ export default async function newModule({
   empty?: boolean;
 }) {
   const { config, log, cwd, segments } = await getProjectInfo();
-  let templates = config.templates as Required<typeof config.templates>;
+  let templates = config.moduleTemplates as Required<typeof config.moduleTemplates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
   // replace c by controller, s by service, everything else keeps the same
   what = what.map((s) => {

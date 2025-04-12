@@ -181,15 +181,14 @@ export type VovkEnv = {
   __VOVK_EXIT__?: 'true' | 'false';
 };
 
-export type GenerateFromTemplate = {
-  templateGlob: string | null; // null is for full-schema.json generation only
-  outDir?: string;
-  templateName?: string;
+export type ClientTemplateDef = {
+  extends?: 'main' | 'module' | 'ts' | 'package' | 'fullSchema';
+  templatePath: string | null; // null is for full-schema.json generation only
+  clientOutDir?: string;
+  // templateName?: string; TODO Delete
   fullSchemaJSON?: string | boolean;
   origin?: string | null;
 };
-
-type GenerateFrom = (string | GenerateFromTemplate)[];
 
 export type VovkConfig = {
   emitConfig?: boolean | (keyof VovkStrictConfig)[];
@@ -209,8 +208,9 @@ export type VovkConfig = {
   logLevel?: LogLevelNames;
   prettifyClient?: boolean;
   devHttps?: boolean;
-  generateFrom?: GenerateFrom | ((value: GenerateFrom) => GenerateFrom);
-  templates?: {
+  generateFrom?: string[];
+  clientTemplateDefs?: Record<string, ClientTemplateDef>;
+  moduleTemplates?: {
     service?: string;
     controller?: string;
     [key: string]: string | undefined;
@@ -218,14 +218,13 @@ export type VovkConfig = {
   libs?: Record<string, KnownAny>;
 };
 
-export type VovkStrictConfig = Required<Omit<VovkConfig, 'emitConfig' | 'generateFrom' | 'libs' | 'imports'>> & {
+export type VovkStrictConfig = Required<Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports'>> & {
   emitConfig: (keyof VovkStrictConfig)[];
   imports: {
     fetcher: [string, string] | [string];
     validateOnClient: [string, string] | [string] | null;
     createRPC: [string, string] | [string];
   };
-  generateFrom: GenerateFrom;
   libs: Record<string, KnownAny>;
 };
 
