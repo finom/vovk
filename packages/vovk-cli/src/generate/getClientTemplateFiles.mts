@@ -4,8 +4,8 @@ import type { VovkStrictConfig } from 'vovk';
 import type { PackageJson } from 'type-fest';
 import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mts';
-import { BuiltInTemplateName } from '../getProjectInfo/getConfig.mts';
+import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
+import { BuiltInTemplateName } from '../getProjectInfo/getConfig.mjs';
 
 export const DEFAULT_FULL_SCHEMA_FILE_NAME = 'full-schema.json';
 
