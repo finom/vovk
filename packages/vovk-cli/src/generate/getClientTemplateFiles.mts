@@ -13,6 +13,7 @@ export interface ClientTemplateFile {
   templateName: string;
   templatePath: string | null; // null is for full schema JSON only
   outDir: string;
+  relativeDir: string;
   fullSchemaJSONFileName: string | null;
   origin?: string | null;
   package: PackageJson;
@@ -72,7 +73,7 @@ export default async function getClientTemplateFiles({
       if (entryType === FileSystemEntryType.FILE) {
         files = [templateAbsolutePath];
       } else {
-        const globPath = path.join(templateAbsolutePath, '*');
+        const globPath = path.join(templateAbsolutePath, '**/*.*');
         files = await glob(globPath);
       }
 
@@ -85,8 +86,9 @@ export default async function getClientTemplateFiles({
         templateFiles.push({
           templateName,
           templatePath: filePath,
-          outDir: path
-            .join(outDir, path.relative(templateAbsolutePath, filePath))
+          outDir,
+          relativeDir: path
+            .relative(templateAbsolutePath, path.dirname(filePath))
             .replace('[PACKAGE_NAME]', packageJson.name ?? 'my-package-name'),
           fullSchemaJSONFileName,
           origin: templateDef.origin,
@@ -98,6 +100,7 @@ export default async function getClientTemplateFiles({
         templateName,
         templatePath: null,
         outDir,
+        relativeDir: '',
         fullSchemaJSONFileName,
         origin: templateDef.origin,
         package: packageJson as PackageJson,

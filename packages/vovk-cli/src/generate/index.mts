@@ -14,6 +14,7 @@ import { ROOT_SEGMENT_SCHEMA_NAME, SEGMENTS_SCHEMA_DIR_NAME } from '../dev/write
 import pickSegmentFullSchema from '../utils/pickSegmentFullSchema.mjs';
 import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
 import type { PackageJson } from 'type-fest';
+import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
 export type ClientImports = {
   fetcher: string;
@@ -50,13 +51,14 @@ async function writeOneClientFile({
   isEnsuringClient: boolean;
 }) {
   const { config, apiRoot, segments } = projectInfo;
-  const { templatePath, outDir, origin } = clientTemplate;
+  const { templatePath, outDir, origin, relativeDir } = clientTemplate;
   if (!templatePath) {
     throw new Error(`Template path is not defined for ${clientTemplate.templateName} but used at writeOneClientFile`);
   }
   const outPath = path.join(
     outDir,
     typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '',
+    relativeDir,
     path.basename(templatePath).replace('.ejs', '')
   );
 
@@ -134,7 +136,7 @@ async function writeOneClientFile({
 
   if (needsWriting) {
     await fs.mkdir(path.dirname(outPath), { recursive: true });
-    await fs.writeFile(outPath, rendered);
+    await fs.writeFile(outPath, rendered, 'utf-8');
   }
 
   return { written: needsWriting };
@@ -240,13 +242,6 @@ export default async function generate({
               written ||= isWritten;
             })
           );
-
-          await removeUnlistedDirectories(
-            outDir,
-            segments.map(({ segmentName }) => segmentName || ROOT_SEGMENT_SCHEMA_NAME)
-          );
-        } else {
-          await removeUnlistedDirectories(outDir, []);
         }
       }
 
@@ -270,6 +265,26 @@ export default async function generate({
     })
   );
 
+  const outDirs = new Set<string>(templateFiles.map(({ outDir }) => outDir));
+
+  // Remove unlisted directories in the output directory
+  await Promise.all(
+    Array.from(outDirs).map(async (outDir) => {
+      const allRelativePaths = templateFiles
+        .filter(({ outDir: tOutDir }) => tOutDir === outDir)
+        .map(({ relativeDir }) => relativeDir)
+        .filter(Boolean);
+      if (config.generateSegmentClient) {
+        await removeUnlistedDirectories(
+          outDir,
+          segments.map(({ segmentName }) => segmentName || ROOT_SEGMENT_SCHEMA_NAME).concat(allRelativePaths)
+        );
+      } else {
+        await removeUnlistedDirectories(outDir, allRelativePaths);
+      }
+    })
+  );
+
   if (fullSchemaOutAbsolutePaths.size) {
     await Promise.all(
       Array.from(fullSchemaOutAbsolutePaths.entries()).map(async ([segmentName, outPath]) => {
@@ -280,7 +295,7 @@ export default async function generate({
     );
 
     log.info(
-      `Full schema has been written to ${Array.from(fullSchemaOutAbsolutePaths)
+      `Full schema has been written to ${Array.from(fullSchemaOutAbsolutePaths.values())
         .map((s) => `"${s}"`)
         .join(', ')}`
     );

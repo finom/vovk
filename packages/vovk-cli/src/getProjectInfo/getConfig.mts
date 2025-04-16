@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import type { VovkEnv, VovkStrictConfig } from 'vovk';
 import getUserConfig from './getUserConfig.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
-import { pick } from 'lodash';
+import pick from 'lodash/pick.js';
 
 const templatesDir = path.join(import.meta.dirname, '../..', 'client-templates');
 

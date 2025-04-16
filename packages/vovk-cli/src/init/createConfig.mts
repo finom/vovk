@@ -52,7 +52,8 @@ export default async function createConfig({
   config.moduleTemplates = moduleTemplates;
 
   const configStr = await prettify(
-    `/** @type {import('vovk-cli').VovkConfig} */
+    `// @ts-check
+/** @type {import('vovk-cli').VovkConfig} */
 const config = ${JSON.stringify(config, null, 2)};
 ${isModule ? '\nexport default config;' : 'module.exports = config;'}`,
     configAbsolutePath

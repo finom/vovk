@@ -3,14 +3,13 @@ import type { KnownAny } from 'vovk';
 interface JSONSchema {
   type?: string | string[];
   enum?: KnownAny[];
-  items?: JSONSchema | JSONSchema[];
+  items?: JSONSchema;
   properties?: { [key: string]: JSONSchema };
   required?: string[];
   oneOf?: JSONSchema[];
   anyOf?: JSONSchema[];
   allOf?: JSONSchema[];
   format?: string;
-  // add additional fields as needed (e.g., $ref, definitions, etc.)
 }
 
 interface ConvertOptions {

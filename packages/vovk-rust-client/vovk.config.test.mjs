@@ -1,16 +1,22 @@
+// @ts-check
 /** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
   logLevel: 'debug',
   origin: `http://localhost:${process.env.PORT}`,
-  generateFrom: (generateFrom) => [
-    ...generateFrom,
-    {
-      outDir: '../packages/vovk-python-client/test_py/generated_test_python_client',
-      templateGlob: '../packages/vovk-python-client/template/*',
-      templateName: 'py',
-      fullSchema: true,
+  clientTemplateDefs: {
+    rust: {
+      clientOutDir: '../packages/vovk-rust-client/test_rust/generated_rust_client',
+      templatePath: '../packages/vovk-rust-client/template/',
+      fullSchemaJson: true,
+      package: {
+        name: 'generated_rust_client',
+        version: '0.1.0',
+        license: 'MIT',
+        description: 'Vovk Rust Client',
+      },
     },
-  ],
+  },
+  generateFrom: ['rust'],
 };
 
 export default vovkConfig;

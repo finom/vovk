@@ -1,224 +1,140 @@
 import type { KnownAny } from 'vovk';
 
-interface Context {
-  typeMap: Map<KnownAny, string>; // Maps schema objects to Rust type names
-  counter: number; // For generating unique type names
-  definitions: string[]; // Collects type definitions
+interface JSONSchema {
+  type?: string | string[];
+  enum?: KnownAny[];
+  items?: JSONSchema;
+  properties?: { [key: string]: JSONSchema };
+  required?: string[];
+  oneOf?: JSONSchema[];
+  anyOf?: JSONSchema[];
+  allOf?: JSONSchema[];
+  format?: string;
 }
 
-function generateRustTypes(schema: KnownAny): string {
-  const ctx: Context = { typeMap: new Map(), counter: 0, definitions: [] };
-
-  // Process definitions section if present
-  if (schema.definitions) {
-    for (const [defName, defSchema] of Object.entries(schema.definitions)) {
-      const rustTypeName = pascalCase(defName);
-      ctx.typeMap.set(defSchema, rustTypeName);
-      const typeDef = convertSchemaToRustTypeDef(defSchema, ctx, rustTypeName);
-      ctx.definitions.push(typeDef);
-    }
-  }
-
-  // Generate the main type
-  const mainType = convertJSONSchemaToRustType(schema, ctx);
-  let output = ctx.definitions.join('\n\n');
-  output += output ? `\n\ntype MainType = ${mainType};` : `type MainType = ${mainType};`;
-  return output;
+// Interface for conversion options
+interface ConvertOptions {
+  schema: JSONSchema;
+  structName: string;
+  pad: number; // Number of spaces for indentation
 }
 
-/** Converts a JSON schema to a Rust type string, handling all cases. */
-function convertJSONSchemaToRustType(schema: KnownAny, ctx: Context): string {
-  // Avoid reprocessing the same schema object
-  if (ctx.typeMap.has(schema)) {
-    return ctx.typeMap.get(schema)!;
-  }
-
-  let typeStr: string;
-
-  // Handle schema reference
-  if (schema.$ref) {
-    const path = schema.$ref.split('/'); // e.g., "#/definitions/Address"
-    let target = schema;
-    for (const part of path.slice(1)) {
-      // Skip the "#"
-      target = target[part];
-    }
-    if (ctx.typeMap.has(target)) {
-      return ctx.typeMap.get(target)!;
-    }
-    throw new Error(`Definition not found for $ref: ${schema.$ref}`);
-  }
-
-  // Normalize "type" array to "anyOf"
-  if (Array.isArray(schema.type)) {
-    const subSchemas = schema.type.map((t: string) => ({ type: t }));
-    return convertJSONSchemaToRustType({ anyOf: subSchemas }, ctx);
-  }
-
-  // Handle "const" literals
-  if ('const' in schema) {
-    const value = schema.const;
-    if (typeof value === 'string') typeStr = 'String';
-    else if (typeof value === 'number') typeStr = Number.isInteger(value) ? 'i64' : 'f64';
-    else if (typeof value === 'boolean') typeStr = 'bool';
-    else typeStr = 'serde_json::Value'; // Fallback for complex literals
-    return typeStr;
-  }
-
-  // Handle specific types
-  if (schema.type) {
-    switch (schema.type) {
-      case 'string':
-        typeStr = handleStringFormat(schema.format);
-        break;
-      case 'number':
-        typeStr = 'f64'; // Default to f64, constraints handled at runtime
-        break;
-      case 'integer':
-        typeStr = 'i64';
-        break;
-      case 'boolean':
-        typeStr = 'bool';
-        break;
-      case 'array': {
-        const itemType = schema.items ? convertJSONSchemaToRustType(schema.items, ctx) : 'serde_json::Value';
-        typeStr = `Vec<${itemType}>`;
-        break;
-      }
-      case 'object':
-        typeStr = handleObject(schema, ctx);
-        break;
-      case 'null':
-        typeStr = '()'; // Unit type for null, typically wrapped in Option elsewhere
-        break;
-      default:
-        typeStr = 'serde_json::Value';
-    }
-  }
-  // Handle enums
-  else if (schema.enum) {
-    typeStr = handleEnum(schema, ctx);
-  }
-  // Handle unions
-  else if (schema.anyOf || schema.oneOf) {
-    typeStr = handleUnion(schema.anyOf || schema.oneOf, ctx);
-  }
-  // Fallback for unspecified types
-  else {
-    typeStr = 'serde_json::Value';
-  }
-
-  return typeStr;
+// Result type for the conversion function
+interface ConversionResult {
+  typeExpr: string; // Rust type expression (e.g., "String", "Vec<i64>")
+  definitions: string[]; // List of type definitions (structs, enums)
 }
 
-/** Generates a type definition for named types (structs, enums). */
-function convertSchemaToRustTypeDef(schema: KnownAny, ctx: Context, typeName: string): string {
-  if (schema.type === 'object') {
-    const fields = Object.entries(schema.properties || {})
-      .map(([key, propSchema]) => {
-        const propType = convertJSONSchemaToRustType(propSchema, ctx);
-        const isRequired = schema.required && schema.required.includes(key);
-        return `${key}: ${isRequired ? propType : `Option<${propType}>`},`;
-      })
-      .join('\n');
-    return `struct ${typeName} {\n${fields}\n}`;
-  } else if (schema.enum) {
-    const variants = schema.enum
-      .map((val: KnownAny) => {
-        const variantName = pascalCase(String(val));
-        return `#[serde(rename = "${val}")]\n${variantName},`;
-      })
-      .join('\n');
-    return `#[derive(Serialize, Deserialize)]\nenum ${typeName} {\n${variants}\n}`;
-  } else if (schema.anyOf || schema.oneOf) {
-    const subSchemas = schema.anyOf || schema.oneOf;
-    const variants = subSchemas
-      .map((subSchema: KnownAny, index: number) => {
-        const subType = convertJSONSchemaToRustType(subSchema, ctx);
-        return subSchema.type === 'null' ? 'Null,' : `Variant${index}(${subType}),`;
-      })
-      .join('\n');
-    return `#[derive(Serialize, Deserialize)]\n#[serde(untagged)]\nenum ${typeName} {\n${variants}\n}`;
-  } else {
-    const typeStr = convertJSONSchemaToRustType(schema, ctx);
-    return `type ${typeName} = ${typeStr};`;
-  }
-}
-
-/** Handles string formats by mapping to appropriate Rust types. */
-function handleStringFormat(format?: string): string {
-  switch (format) {
-    case 'date-time':
-      return 'chrono::DateTime<chrono::Utc>'; // Requires chrono crate
-    case 'email':
-    case 'uri':
-    case 'uuid':
-      return 'String'; // Use String with runtime validation
-    default:
-      return 'String';
-  }
-}
-
-/** Handles object schemas by generating a struct. */
-function handleObject(schema: KnownAny, ctx: Context): string {
-  const typeName = generateTypeName(ctx);
-  ctx.typeMap.set(schema, typeName);
-  const typeDef = convertSchemaToRustTypeDef(schema, ctx, typeName);
-  ctx.definitions.push(typeDef);
-  return typeName;
-}
-
-/** Handles enums by generating an enum with variants. */
-function handleEnum(schema: KnownAny, ctx: Context): string {
-  const typeName = generateTypeName(ctx);
-  ctx.typeMap.set(schema, typeName);
-  const typeDef = convertSchemaToRustTypeDef(schema, ctx, typeName);
-  ctx.definitions.push(typeDef);
-  return typeName;
-}
-
-/** Handles unions by generating an enum with variants. */
-function handleUnion(subSchemas: KnownAny[], ctx: Context): string {
-  const typeName = generateTypeName(ctx);
-  ctx.typeMap.set(subSchemas, typeName); // Use subSchemas as key to avoid conflicts
-  const typeDef = convertSchemaToRustTypeDef({ anyOf: subSchemas }, ctx, typeName);
-  ctx.definitions.push(typeDef);
-  return typeName;
-}
-
-/** Generates a unique type name. */
-function generateTypeName(ctx: Context): string {
-  ctx.counter += 1;
-  return `Type${ctx.counter}`;
-}
-
-/** Converts a string to PascalCase. */
-function pascalCase(str: string): string {
+// Helper function to convert snake_case to CamelCase
+function toCamelCase(str: string): string {
   return str
-    .split(/[-_]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
 }
 
-// Example usage
-const schema = {
-  definitions: {
-    address: {
-      type: 'object',
-      properties: {
-        street: { type: 'string' },
-        city: { type: 'string' },
-      },
-    },
-  },
-  type: 'object',
-  properties: {
-    name: { type: ['string', 'null'] },
-    age: { type: 'integer' },
-    status: { enum: ['active', 'inactive'] },
-    address: { $ref: '#/definitions/address' },
-  },
-  required: ['name'],
-};
+// Recursive function to convert schema to Rust types
+function convertSchema(schema: JSONSchema, prefix: string): ConversionResult {
+  // Handle null or undefined schema
+  if (!schema || !schema.type) {
+    return { typeExpr: '()', definitions: [] }; // Unit type as fallback
+  }
 
-console.log(generateRustTypes(schema));
+  const indent = ' '.repeat(4);
+
+  // Primitive types
+  if (schema.type === 'string') {
+    return { typeExpr: 'String', definitions: [] };
+  } else if (schema.type === 'number') {
+    return { typeExpr: 'f64', definitions: [] };
+  } else if (schema.type === 'integer') {
+    return { typeExpr: 'i64', definitions: [] };
+  } else if (schema.type === 'boolean') {
+    return { typeExpr: 'bool', definitions: [] };
+  }
+  // Array type
+  else if (schema.type === 'array') {
+    if (!schema.items) {
+      throw new Error("Array schema must specify 'items'");
+    }
+    const itemResult = convertSchema(schema.items, prefix);
+    return {
+      typeExpr: `Vec<${itemResult.typeExpr}>`,
+      definitions: itemResult.definitions,
+    };
+  }
+  // Object type (convert to Rust struct)
+  else if (schema.type === 'object') {
+    const structName = prefix;
+    const fields: string[] = [];
+    let allDefinitions: string[] = [];
+
+    const required = schema.required || [];
+
+    for (const [propName, propSchema] of Object.entries(schema.properties || {})) {
+      const fieldPrefix = prefix + toCamelCase(propName);
+      const fieldResult = convertSchema(propSchema, fieldPrefix);
+      const fieldType = fieldResult.typeExpr;
+      const isRequired = required.includes(propName);
+      const rustFieldType = isRequired ? fieldType : `Option<${fieldType}>`;
+      fields.push(`${indent}pub ${propName}: ${rustFieldType},`);
+      allDefinitions = allDefinitions.concat(fieldResult.definitions);
+    }
+
+    const structDef = `
+#[derive(Debug, Serialize, Deserialize)]
+#[allow(non_snake_case)]
+pub struct ${structName} {
+${fields.join('\n')}
+}`.trim();
+
+    return {
+      typeExpr: structName,
+      definitions: [structDef, ...allDefinitions],
+    };
+  }
+  // Enum type
+  else if (schema.enum) {
+    const enumName = prefix;
+    const variants = schema.enum.map((value) => {
+      // Use the value directly as a string, assuming it's a valid identifier
+      // In a production scenario, sanitize if necessary
+      return `${indent}${value.toString()},`;
+    });
+
+    const enumDef = `
+#[derive(Debug, Serialize, Deserialize)]
+#[allow(non_camel_case_types)]
+pub enum ${enumName} {
+${variants.join('\n')}
+}`.trim();
+
+    return {
+      typeExpr: enumName,
+      definitions: [enumDef],
+    };
+  }
+  // Unsupported type
+  else {
+    throw new Error(`Unsupported schema type: ${schema.type}`);
+  }
+}
+
+// Main function to convert JSON schema to Rust type definition
+export function convertJSONSchemaToRustType(options: ConvertOptions): string {
+  const { schema, structName, pad } = options;
+
+  if (!schema) {
+    return '';
+  }
+
+  const result = convertSchema(schema, structName);
+  return result.definitions
+    .map((definition) =>
+      definition
+        .split('\n')
+        .map((line) => `${' '.repeat(pad)}${line}`)
+        .join('\n')
+    )
+    .join('\n\n');
+}
