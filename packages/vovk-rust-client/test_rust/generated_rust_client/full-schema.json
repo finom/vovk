@@ -1,0 +1,2290 @@
+{
+  "config": {
+    "libs": {}
+  },
+  "segments": {
+    "": {
+      "emitSchema": false,
+      "segmentName": "",
+      "controllers": {}
+    },
+    "generated": {
+      "emitSchema": true,
+      "segmentName": "generated",
+      "controllers": {
+        "NoValidationControllerOnlyEntityRPC": {
+          "controllerName": "NoValidationControllerOnlyEntityRPC",
+          "originalControllerName": "NoValidationControllerOnlyEntityController",
+          "prefix": "no-validation-controller-only-entities",
+          "handlers": {
+            "getNoValidationControllerOnlyEntities": {
+              "path": "",
+              "httpMethod": "GET"
+            },
+            "updateNoValidationControllerOnlyEntity": {
+              "path": ":id",
+              "httpMethod": "PUT"
+            },
+            "createNoValidationControllerOnlyEntity": {
+              "path": "",
+              "httpMethod": "POST"
+            },
+            "deleteNoValidationControllerOnlyEntity": {
+              "path": ":id",
+              "httpMethod": "DELETE"
+            }
+          }
+        },
+        "NoValidationControllerAndServiceEntityRPC": {
+          "controllerName": "NoValidationControllerAndServiceEntityRPC",
+          "originalControllerName": "NoValidationControllerAndServiceEntityController",
+          "prefix": "no-validation-controller-and-service-entities",
+          "handlers": {
+            "getNoValidationControllerAndServiceEntities": {
+              "path": "",
+              "httpMethod": "GET"
+            },
+            "updateNoValidationControllerAndServiceEntity": {
+              "path": ":id",
+              "httpMethod": "PUT"
+            },
+            "createNoValidationControllerAndServiceEntity": {
+              "path": "",
+              "httpMethod": "POST"
+            },
+            "deleteNoValidationControllerAndServiceEntity": {
+              "path": ":id",
+              "httpMethod": "DELETE"
+            }
+          }
+        },
+        "ZodControllerOnlyEntityRPC": {
+          "controllerName": "ZodControllerOnlyEntityRPC",
+          "originalControllerName": "ZodControllerOnlyEntityController",
+          "prefix": "zod-controller-only-entities",
+          "handlers": {
+            "getZodControllerOnlyEntities": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "path": "",
+              "httpMethod": "GET"
+            },
+            "updateZodControllerOnlyEntity": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "enum": [
+                        "bar",
+                        "baz"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "foo"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "q": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "q"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "path": ":id",
+              "httpMethod": "PUT"
+            },
+            "createZodControllerOnlyEntity": {
+              "path": "",
+              "httpMethod": "POST"
+            },
+            "deleteZodControllerOnlyEntity": {
+              "path": ":id",
+              "httpMethod": "DELETE"
+            }
+          }
+        },
+        "ZodControllerAndServiceEntityRPC": {
+          "controllerName": "ZodControllerAndServiceEntityRPC",
+          "originalControllerName": "ZodControllerAndServiceEntityController",
+          "prefix": "zod-controller-and-service-entities",
+          "handlers": {
+            "getZodControllerAndServiceEntities": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "path": "",
+              "httpMethod": "GET"
+            },
+            "updateZodControllerAndServiceEntity": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "enum": [
+                        "bar",
+                        "baz"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "foo"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "q": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "q"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "path": ":id",
+              "httpMethod": "PUT"
+            },
+            "createZodControllerAndServiceEntity": {
+              "path": "",
+              "httpMethod": "POST"
+            },
+            "deleteZodControllerAndServiceEntity": {
+              "path": ":id",
+              "httpMethod": "DELETE"
+            }
+          }
+        },
+        "YupControllerOnlyEntityRPC": {
+          "controllerName": "YupControllerOnlyEntityRPC",
+          "originalControllerName": "YupControllerOnlyEntityController",
+          "prefix": "yup-controller-only-entities",
+          "handlers": {
+            "getYupControllerOnlyEntities": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "path": "",
+              "httpMethod": "GET"
+            },
+            "updateYupControllerOnlyEntity": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": [
+                        "string"
+                      ],
+                      "enum": [
+                        "bar",
+                        "baz"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "foo"
+                  ]
+                },
+                "query": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "q": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "path": ":id",
+              "httpMethod": "PUT"
+            },
+            "createYupControllerOnlyEntity": {
+              "path": "",
+              "httpMethod": "POST"
+            },
+            "deleteYupControllerOnlyEntity": {
+              "path": ":id",
+              "httpMethod": "DELETE"
+            }
+          }
+        },
+        "YupControllerAndServiceEntityRPC": {
+          "controllerName": "YupControllerAndServiceEntityRPC",
+          "originalControllerName": "YupControllerAndServiceEntityController",
+          "prefix": "yup-controller-and-service-entities",
+          "handlers": {
+            "getYupControllerAndServiceEntities": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "path": "",
+              "httpMethod": "GET"
+            },
+            "updateYupControllerAndServiceEntity": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": [
+                        "string"
+                      ],
+                      "enum": [
+                        "bar",
+                        "baz"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "foo"
+                  ]
+                },
+                "query": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "q": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "path": ":id",
+              "httpMethod": "PUT"
+            },
+            "createYupControllerAndServiceEntity": {
+              "path": "",
+              "httpMethod": "POST"
+            },
+            "deleteYupControllerAndServiceEntity": {
+              "path": ":id",
+              "httpMethod": "DELETE"
+            }
+          }
+        },
+        "DtoControllerOnlyEntityRPC": {
+          "controllerName": "DtoControllerOnlyEntityRPC",
+          "originalControllerName": "DtoControllerOnlyEntityController",
+          "prefix": "dto-controller-only-entities",
+          "handlers": {
+            "getDtoControllerOnlyEntities": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "path": "",
+              "httpMethod": "GET"
+            },
+            "updateDtoControllerOnlyEntity": {
+              "validation": {
+                "body": {
+                  "x-isDto": true,
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "enum": [
+                        "bar",
+                        "baz"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "foo"
+                  ]
+                },
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "q": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "q"
+                  ]
+                }
+              },
+              "path": ":id",
+              "httpMethod": "PUT"
+            },
+            "createDtoControllerOnlyEntity": {
+              "path": "",
+              "httpMethod": "POST"
+            },
+            "deleteDtoControllerOnlyEntity": {
+              "path": ":id",
+              "httpMethod": "DELETE"
+            }
+          }
+        },
+        "DtoControllerAndServiceEntityRPC": {
+          "controllerName": "DtoControllerAndServiceEntityRPC",
+          "originalControllerName": "DtoControllerAndServiceEntityController",
+          "prefix": "dto-controller-and-service-entities",
+          "handlers": {
+            "getDtoControllerAndServiceEntities": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "path": "",
+              "httpMethod": "GET"
+            },
+            "updateDtoControllerAndServiceEntity": {
+              "validation": {
+                "body": {
+                  "x-isDto": true,
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "enum": [
+                        "bar",
+                        "baz"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "foo"
+                  ]
+                },
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "q": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "q"
+                  ]
+                }
+              },
+              "path": ":id",
+              "httpMethod": "PUT"
+            },
+            "createDtoControllerAndServiceEntity": {
+              "path": "",
+              "httpMethod": "POST"
+            },
+            "deleteDtoControllerAndServiceEntity": {
+              "path": ":id",
+              "httpMethod": "DELETE"
+            }
+          }
+        }
+      }
+    },
+    "foo/client": {
+      "emitSchema": true,
+      "segmentName": "foo/client",
+      "controllers": {
+        "ClientControllerRPC": {
+          "controllerName": "ClientControllerRPC",
+          "originalControllerName": "ClientController",
+          "prefix": "client",
+          "handlers": {
+            "getHelloWorldResponseObject": {
+              "httpMethod": "GET",
+              "path": "get-hello-world-response-object"
+            },
+            "getHelloWorldObjectLiteral": {
+              "httpMethod": "GET",
+              "path": "get-hello-world-object-literal"
+            },
+            "getHelloWorldNextResponseObjectPromise": {
+              "httpMethod": "GET",
+              "path": "get-hello-world-next-response-object-promise"
+            },
+            "getHelloWorldRawResponseObjectPromise": {
+              "httpMethod": "GET",
+              "path": "get-hello-world-raw-response-object-promise"
+            },
+            "getHelloWorldObjectLiteralPromise": {
+              "httpMethod": "GET",
+              "path": "get-hello-world-object-literal-promise"
+            },
+            "getHelloWorldHeaders": {
+              "httpMethod": "GET",
+              "path": "get-hello-world-headers"
+            },
+            "getHelloWorldArray": {
+              "httpMethod": "GET",
+              "path": "get-hello-world-array"
+            },
+            "getHelloWorldAndEmptyGeneric": {
+              "httpMethod": "GET",
+              "path": "get-hello-world-and-empty-generic"
+            },
+            "getWithParams": {
+              "path": "with-params/:hello",
+              "httpMethod": "GET"
+            },
+            "postWithAll": {
+              "path": "with-all/:hello",
+              "httpMethod": "POST"
+            },
+            "postWithBodyAndQueryUsingReqVovk": {
+              "path": "with-all-using-req-vovk",
+              "httpMethod": "POST"
+            },
+            "getNestedQuery": {
+              "path": "nested-query",
+              "httpMethod": "GET"
+            },
+            "postWithFormDataUsingReqVovk": {
+              "path": "form-data",
+              "httpMethod": "POST"
+            },
+            "getErrorResponse": {
+              "path": "error",
+              "httpMethod": "GET"
+            },
+            "getJsonTextResponse": {
+              "path": "json-text",
+              "httpMethod": "GET"
+            },
+            "getJsonlResponse": {
+              "path": "jsonl",
+              "httpMethod": "GET"
+            },
+            "getJsonlTextResponse": {
+              "path": "jsonl-text",
+              "httpMethod": "GET"
+            }
+          }
+        },
+        "StreamingControllerRPC": {
+          "controllerName": "StreamingControllerRPC",
+          "originalControllerName": "StreamingController",
+          "prefix": "streaming",
+          "handlers": {
+            "postWithStreaming": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming"
+            },
+            "postWithStreamingAndImmediateError": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming-and-immediate-error"
+            },
+            "postWithStreamingAndDelayedError": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming-and-delayed-error"
+            },
+            "postWithStreamingAndDelayedCustomError": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming-and-delayed-custom-error"
+            },
+            "postWithStreamingAndDelayedUnhandledError": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming-and-delayed-unhandled-error"
+            }
+          }
+        },
+        "StreamingGeneratorControllerRPC": {
+          "controllerName": "StreamingGeneratorControllerRPC",
+          "originalControllerName": "StreamingGeneratorController",
+          "prefix": "streaming-generator",
+          "handlers": {
+            "getWithStreaming": {
+              "httpMethod": "GET",
+              "path": "get-with-streaming"
+            },
+            "postWithAsyncStreaming": {
+              "httpMethod": "POST",
+              "path": "post-with-async-streaming"
+            },
+            "postWithStreaming": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming"
+            },
+            "postWithStreamingAndImmediateError": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming-and-immediate-error"
+            },
+            "postWithStreamingAndDelayedError": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming-and-delayed-error"
+            },
+            "postWithStreamingAndDelayedCustomError": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming-and-delayed-custom-error"
+            },
+            "postWithStreamingAndDelayedUnhandledError": {
+              "httpMethod": "POST",
+              "path": "post-with-streaming-and-delayed-unhandled-error"
+            }
+          }
+        },
+        "CustomSchemaControllerRPC": {
+          "controllerName": "CustomSchemaControllerRPC",
+          "originalControllerName": "CustomSchemaController",
+          "prefix": "",
+          "handlers": {
+            "getWithCustomSchema": {
+              "custom": {
+                "hello": "world"
+              },
+              "httpMethod": "GET",
+              "path": "get-with-custom-schema"
+            }
+          }
+        },
+        "WithZodClientControllerRPC": {
+          "controllerName": "WithZodClientControllerRPC",
+          "originalControllerName": "WithZodClientController",
+          "prefix": "with-zod",
+          "handlers": {
+            "handleAll": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "const": "world"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "const": "value"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "const": "foo"
+                    },
+                    "bar": {
+                      "type": "string",
+                      "const": "bar"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "output": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "object",
+                      "properties": {
+                        "hello": {
+                          "type": "string",
+                          "const": "world"
+                        }
+                      },
+                      "required": [
+                        "hello"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "query": {
+                      "type": "object",
+                      "properties": {
+                        "search": {
+                          "type": "string",
+                          "const": "value"
+                        }
+                      },
+                      "required": [
+                        "search"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": "string",
+                          "const": "foo"
+                        },
+                        "bar": {
+                          "type": "string",
+                          "const": "bar"
+                        }
+                      },
+                      "required": [
+                        "foo",
+                        "bar"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "vovkParams": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": "string",
+                          "const": "foo"
+                        },
+                        "bar": {
+                          "type": "string",
+                          "const": "bar"
+                        }
+                      },
+                      "required": [
+                        "foo",
+                        "bar"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "body",
+                    "query",
+                    "params",
+                    "vovkParams"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "path": "all/:foo/:bar",
+              "httpMethod": "POST",
+              "openapi": {
+                "responses": {
+                  "400": {
+                    "description": "400 Bad Request",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "allOf": [
+                            {
+                              "$ref": "#/components/schemas/VovkErrorResponse"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "message": {
+                                  "type": "string",
+                                  "enum": [
+                                    "This is a bad request"
+                                  ]
+                                },
+                                "statusCode": {
+                                  "type": "integer",
+                                  "enum": [
+                                    400
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "summary": "This is a summary"
+              }
+            },
+            "handleQuery": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "const": "value"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-query"
+            },
+            "handleBody": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "const": "world"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "POST",
+              "path": "handle-body"
+            },
+            "handleParams": {
+              "validation": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "const": "foo"
+                    },
+                    "bar": {
+                      "type": "string",
+                      "const": "bar"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "path": "x/:foo/:bar/y",
+              "httpMethod": "PUT"
+            },
+            "handleNestedQuery": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "z": {
+                      "type": "object",
+                      "properties": {
+                        "f": {
+                          "type": "string"
+                        },
+                        "u": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "d": {
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "string"
+                            },
+                            "arrOfObjects": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "foo": {
+                                    "type": "string"
+                                  },
+                                  "nestedArr": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "nestedObj": {
+                                    "type": "object",
+                                    "properties": {
+                                      "deepKey": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "deepKey"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "foo"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "arrOfObjects"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "f",
+                        "u",
+                        "d"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y",
+                    "z"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-nested-query"
+            },
+            "handleOutput": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "helloOutput": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "helloOutput"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "output": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "const": "world"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-output"
+            },
+            "handleStream": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "values"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "iteration": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-stream"
+            },
+            "handleNothitng": {
+              "validation": {},
+              "httpMethod": "POST",
+              "path": "handle-nothitng"
+            },
+            "handleFormData": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "const": "foo"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "POST",
+              "path": "handle-form-data"
+            },
+            "disableServerSideValidationBool": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "const": "world"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "const": "value"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "POST",
+              "path": "disable-server-side-validation-bool"
+            },
+            "disableServerSideValidationStrings": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "const": "world"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "const": "value"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "POST",
+              "path": "disable-server-side-validation-strings"
+            },
+            "skipSchemaEmissionBool": {
+              "validation": {},
+              "httpMethod": "POST",
+              "path": "skip-schema-emission-bool"
+            },
+            "skipSchemaEmissionStrings": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "const": "value"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "POST",
+              "path": "skip-schema-emission-strings"
+            },
+            "validateEveryIteration": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "values"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                },
+                "iteration": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ],
+                  "additionalProperties": false,
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              },
+              "httpMethod": "POST",
+              "path": "validate-every-iteration"
+            }
+          }
+        },
+        "WithYupClientControllerRPC": {
+          "controllerName": "WithYupClientControllerRPC",
+          "originalControllerName": "WithYupClientController",
+          "prefix": "with-yup",
+          "handlers": {
+            "handleAll": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ]
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "enum": [
+                        "foo"
+                      ]
+                    },
+                    "bar": {
+                      "type": "string",
+                      "enum": [
+                        "bar"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                },
+                "output": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "object",
+                      "default": {},
+                      "properties": {
+                        "hello": {
+                          "type": "string",
+                          "enum": [
+                            "world"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hello"
+                      ]
+                    },
+                    "query": {
+                      "type": "object",
+                      "default": {},
+                      "properties": {
+                        "search": {
+                          "type": "string",
+                          "enum": [
+                            "value"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "search"
+                      ]
+                    },
+                    "params": {
+                      "type": "object",
+                      "default": {},
+                      "properties": {
+                        "foo": {
+                          "type": "string",
+                          "enum": [
+                            "foo"
+                          ]
+                        },
+                        "bar": {
+                          "type": "string",
+                          "enum": [
+                            "bar"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "foo",
+                        "bar"
+                      ]
+                    },
+                    "vovkParams": {
+                      "type": "object",
+                      "default": {},
+                      "properties": {
+                        "foo": {
+                          "type": "string",
+                          "enum": [
+                            "foo"
+                          ]
+                        },
+                        "bar": {
+                          "type": "string",
+                          "enum": [
+                            "bar"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "foo",
+                        "bar"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "body",
+                    "query",
+                    "params",
+                    "vovkParams"
+                  ]
+                }
+              },
+              "path": "all/:foo/:bar",
+              "httpMethod": "POST",
+              "openapi": {
+                "responses": {
+                  "400": {
+                    "description": "400 Bad Request",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "allOf": [
+                            {
+                              "$ref": "#/components/schemas/VovkErrorResponse"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "message": {
+                                  "type": "string",
+                                  "enum": [
+                                    "This is a bad request"
+                                  ]
+                                },
+                                "statusCode": {
+                                  "type": "integer",
+                                  "enum": [
+                                    400
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "summary": "This is a summary"
+              }
+            },
+            "handleQuery": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-query"
+            },
+            "handleBody": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "handle-body"
+            },
+            "handleParams": {
+              "validation": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "enum": [
+                        "foo"
+                      ]
+                    },
+                    "bar": {
+                      "type": "string",
+                      "enum": [
+                        "bar"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                }
+              },
+              "path": "x/:foo/:bar/y",
+              "httpMethod": "PUT"
+            },
+            "handleNestedQuery": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "z": {
+                      "type": "object",
+                      "default": {
+                        "d": {}
+                      },
+                      "properties": {
+                        "f": {
+                          "type": "string"
+                        },
+                        "u": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "d": {
+                          "type": "object",
+                          "default": {},
+                          "properties": {
+                            "x": {
+                              "type": "string"
+                            },
+                            "arrOfObjects": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "default": {
+                                  "nestedObj": {}
+                                },
+                                "properties": {
+                                  "foo": {
+                                    "type": "string"
+                                  },
+                                  "nestedArr": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "nestedObj": {
+                                    "type": "object",
+                                    "default": {},
+                                    "properties": {
+                                      "deepKey": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "foo"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "arrOfObjects"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "f",
+                        "u",
+                        "d"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y",
+                    "z"
+                  ]
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-nested-query"
+            },
+            "handleOutput": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "helloOutput": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "helloOutput"
+                  ]
+                },
+                "output": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ]
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-output"
+            },
+            "handleStream": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "values"
+                  ]
+                },
+                "iteration": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ]
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-stream"
+            },
+            "handleNothitng": {
+              "validation": {},
+              "httpMethod": "POST",
+              "path": "handle-nothitng"
+            },
+            "handleFormData": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "foo"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "handle-form-data"
+            },
+            "disableServerSideValidationBool": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "disable-server-side-validation-bool"
+            },
+            "disableServerSideValidationStrings": {
+              "validation": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "disable-server-side-validation-strings"
+            },
+            "skipSchemaEmissionBool": {
+              "validation": {},
+              "httpMethod": "POST",
+              "path": "skip-schema-emission-bool"
+            },
+            "skipSchemaEmissionStrings": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "skip-schema-emission-strings"
+            },
+            "validateEveryIteration": {
+              "validation": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "values"
+                  ]
+                },
+                "iteration": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "validate-every-iteration"
+            }
+          }
+        },
+        "WithDtoClientControllerRPC": {
+          "controllerName": "WithDtoClientControllerRPC",
+          "originalControllerName": "WithDtoClientController",
+          "prefix": "with-dto",
+          "handlers": {
+            "handleAll": {
+              "validation": {
+                "body": {
+                  "x-isDto": true,
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                },
+                "params": {
+                  "x-isDto": true,
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "enum": [
+                        "foo"
+                      ]
+                    },
+                    "bar": {
+                      "type": "string",
+                      "enum": [
+                        "bar"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                },
+                "output": {
+                  "x-isDto": true,
+                  "properties": {
+                    "body": {},
+                    "query": {},
+                    "params": {},
+                    "vovkParams": {}
+                  },
+                  "type": "object",
+                  "required": [
+                    "body",
+                    "query",
+                    "params",
+                    "vovkParams"
+                  ]
+                }
+              },
+              "path": "all/:foo/:bar",
+              "httpMethod": "POST",
+              "openapi": {
+                "responses": {
+                  "400": {
+                    "description": "400 Bad Request",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "allOf": [
+                            {
+                              "$ref": "#/components/schemas/VovkErrorResponse"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "message": {
+                                  "type": "string",
+                                  "enum": [
+                                    "This is a bad request"
+                                  ]
+                                },
+                                "statusCode": {
+                                  "type": "integer",
+                                  "enum": [
+                                    400
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "summary": "This is a summary"
+              }
+            },
+            "handleAllClient": {
+              "path": "all/:foo/:bar/client",
+              "httpMethod": "POST"
+            },
+            "handleQuery": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-query"
+            },
+            "handleQueryClient": {
+              "httpMethod": "GET",
+              "path": "handle-query-client"
+            },
+            "handleBody": {
+              "validation": {
+                "body": {
+                  "x-isDto": true,
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "hello"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "handle-body"
+            },
+            "handleBodyClient": {
+              "httpMethod": "POST",
+              "path": "handle-body-client"
+            },
+            "handleParams": {
+              "validation": {
+                "params": {
+                  "x-isDto": true,
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "enum": [
+                        "foo"
+                      ]
+                    },
+                    "bar": {
+                      "type": "string",
+                      "enum": [
+                        "bar"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                }
+              },
+              "path": "x/:foo/:bar/y",
+              "httpMethod": "PUT"
+            },
+            "handleParamsClient": {
+              "path": "x/:foo/:bar/y/client",
+              "httpMethod": "PUT"
+            },
+            "handleNestedQuery": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "z": {}
+                  },
+                  "type": "object",
+                  "required": [
+                    "x",
+                    "y",
+                    "z"
+                  ]
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-nested-query"
+            },
+            "handleNestedQueryClient": {
+              "httpMethod": "GET",
+              "path": "handle-nested-query-client"
+            },
+            "handleOutput": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "helloOutput": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "helloOutput"
+                  ]
+                },
+                "output": {
+                  "x-isDto": true,
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "hello"
+                  ]
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-output"
+            },
+            "handleOutputClient": {
+              "httpMethod": "GET",
+              "path": "handle-output-client"
+            },
+            "handleStream": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "values": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "values"
+                  ]
+                },
+                "iteration": {
+                  "x-isDto": true,
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ]
+                }
+              },
+              "httpMethod": "GET",
+              "path": "handle-stream"
+            },
+            "handleNothitng": {
+              "validation": {},
+              "httpMethod": "POST",
+              "path": "handle-nothitng"
+            },
+            "handleFormData": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "handle-form-data"
+            },
+            "disableServerSideValidationBool": {
+              "validation": {
+                "body": {
+                  "x-isDto": true,
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "disable-server-side-validation-bool"
+            },
+            "disableServerSideValidationStrings": {
+              "validation": {
+                "body": {
+                  "x-isDto": true,
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "enum": [
+                        "world"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "disable-server-side-validation-strings"
+            },
+            "skipSchemaEmissionBool": {
+              "validation": {},
+              "httpMethod": "POST",
+              "path": "skip-schema-emission-bool"
+            },
+            "skipSchemaEmissionStrings": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "enum": [
+                        "value"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "skip-schema-emission-strings"
+            },
+            "validateEveryIteration": {
+              "validation": {
+                "query": {
+                  "x-isDto": true,
+                  "properties": {
+                    "values": {
+                      "items": {},
+                      "type": "array"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "values"
+                  ]
+                },
+                "iteration": {
+                  "x-isDto": true,
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ]
+                }
+              },
+              "httpMethod": "POST",
+              "path": "validate-every-iteration"
+            }
+          }
+        },
+        "OpenApiControllerRPC": {
+          "controllerName": "OpenApiControllerRPC",
+          "originalControllerName": "OpenApiController",
+          "prefix": "openapi",
+          "handlers": {
+            "getFromSchema": {
+              "openapi": {
+                "responses": {
+                  "418": {
+                    "description": "418 I am a teapot",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "allOf": [
+                            {
+                              "$ref": "#/components/schemas/VovkErrorResponse"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "message": {
+                                  "type": "string",
+                                  "enum": [
+                                    "I am a teapot error"
+                                  ]
+                                },
+                                "statusCode": {
+                                  "type": "integer",
+                                  "enum": [
+                                    418
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "summary": "Hello, World!"
+              },
+              "path": "",
+              "httpMethod": "GET"
+            }
+          }
+        }
+      }
+    }
+  }
+}
