@@ -14,7 +14,6 @@ import { ROOT_SEGMENT_SCHEMA_NAME, SEGMENTS_SCHEMA_DIR_NAME } from '../dev/write
 import pickSegmentFullSchema from '../utils/pickSegmentFullSchema.mjs';
 import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
 import type { PackageJson } from 'type-fest';
-import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
 export type ClientImports = {
   fetcher: string;

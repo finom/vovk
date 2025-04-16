@@ -11,7 +11,7 @@ const vovkConfig = {
   origin: `http://localhost:${process.env.PORT}`,
   rootEntry: 'api',
   logLevel: 'debug',
-  templates: {
+  moduleTemplates: {
     service: 'none',
     controller: 'none',
   },

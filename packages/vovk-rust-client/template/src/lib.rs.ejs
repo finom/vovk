@@ -35,11 +35,14 @@ pub mod <%= t._.snakeCase(controllerName) %> {
             ]).filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
     */
     pub fn <%= handlerName %>( 
-<%= [
+        body: <%- validation?.body ? `${handlerNameCapitalized}Body` : '()' %>,
+        query: <%- validation?.query ? `${handlerNameCapitalized}Query` : '()' %>,
+        params: <%- validation?.params ? `${handlerNameCapitalized}Params` : '()' %>,
+<%= /* [
             validation?.body ? `body: ${handlerNameCapitalized}Body,` : '', 
             validation?.query ? `query: ${handlerNameCapitalized}Query,` : '', 
             validation?.params ? `params: ${handlerNameCapitalized}Params,` : ''
-        ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
+        ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') */ %>
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> <%- validation?.output ? `Result<ApiResponse<${handlerNameCapitalized}Output>, Box<dyn serde::ser::StdError>>` : validation?.iteration ? `Box<dyn Iterator<Item = ${handlerNameCapitalized}Iteration>>` : 'Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>' %>{
@@ -56,11 +59,14 @@ pub mod <%= t._.snakeCase(controllerName) %> {
             "<%= segmentName %>",
             "<%= controllerName %>",
             "<%= handlerNameOriginal %>",
-<%- [
+            Some(&body),
+            Some(&query),
+            Some(&params),
+<%= /*
     validation?.body ? 'Some(&body),' : 'None,',
     validation?.query ? 'Some(&query),' : 'None,',
     validation?.params ? 'Some(&params),' : 'None,',
-].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n') %>
+].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n')  */ %>
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -93,6 +99,9 @@ pub mod <%= t._.snakeCase(controllerName) %> {
     <% }) %>
 
 <% }) %>
+
+
+
 /*
 // Placeholder for the client module
 mod client {

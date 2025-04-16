@@ -1,5 +1,5 @@
 
-// auto-generated 2025-04-16T10:37:20.164Z
+// auto-generated 2025-04-16T16:25:36.491Z
 mod http_request;
 mod read_full_schema;
 
@@ -16,6 +16,9 @@ pub mod no_validation_controller_only_entity_rpc {
         No summary
     */
     pub fn get_no_validation_controller_only_entities( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -31,9 +34,10 @@ pub mod no_validation_controller_only_entity_rpc {
             "generated",
             "NoValidationControllerOnlyEntityRPC",
             "getNoValidationControllerOnlyEntities",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -49,6 +53,9 @@ pub mod no_validation_controller_only_entity_rpc {
         No summary
     */
     pub fn update_no_validation_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -64,9 +71,10 @@ pub mod no_validation_controller_only_entity_rpc {
             "generated",
             "NoValidationControllerOnlyEntityRPC",
             "updateNoValidationControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -82,6 +90,9 @@ pub mod no_validation_controller_only_entity_rpc {
         No summary
     */
     pub fn create_no_validation_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -97,9 +108,10 @@ pub mod no_validation_controller_only_entity_rpc {
             "generated",
             "NoValidationControllerOnlyEntityRPC",
             "createNoValidationControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -115,6 +127,9 @@ pub mod no_validation_controller_only_entity_rpc {
         No summary
     */
     pub fn delete_no_validation_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -130,9 +145,10 @@ pub mod no_validation_controller_only_entity_rpc {
             "generated",
             "NoValidationControllerOnlyEntityRPC",
             "deleteNoValidationControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -154,6 +170,9 @@ pub mod no_validation_controller_and_service_entity_rpc {
         No summary
     */
     pub fn get_no_validation_controller_and_service_entities( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -169,9 +188,10 @@ pub mod no_validation_controller_and_service_entity_rpc {
             "generated",
             "NoValidationControllerAndServiceEntityRPC",
             "getNoValidationControllerAndServiceEntities",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -187,6 +207,9 @@ pub mod no_validation_controller_and_service_entity_rpc {
         No summary
     */
     pub fn update_no_validation_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -202,9 +225,10 @@ pub mod no_validation_controller_and_service_entity_rpc {
             "generated",
             "NoValidationControllerAndServiceEntityRPC",
             "updateNoValidationControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -220,6 +244,9 @@ pub mod no_validation_controller_and_service_entity_rpc {
         No summary
     */
     pub fn create_no_validation_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -235,9 +262,10 @@ pub mod no_validation_controller_and_service_entity_rpc {
             "generated",
             "NoValidationControllerAndServiceEntityRPC",
             "createNoValidationControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -253,6 +281,9 @@ pub mod no_validation_controller_and_service_entity_rpc {
         No summary
     */
     pub fn delete_no_validation_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -268,9 +299,10 @@ pub mod no_validation_controller_and_service_entity_rpc {
             "generated",
             "NoValidationControllerAndServiceEntityRPC",
             "deleteNoValidationControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -296,7 +328,10 @@ pub mod zod_controller_only_entity_rpc {
         No summary
     */
     pub fn get_zod_controller_only_entities( 
+        body: (),
         query: GetZodControllerOnlyEntitiesQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -311,9 +346,10 @@ pub mod zod_controller_only_entity_rpc {
             "generated",
             "ZodControllerOnlyEntityRPC",
             "getZodControllerOnlyEntities",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -346,6 +382,7 @@ pub mod zod_controller_only_entity_rpc {
         body: UpdateZodControllerOnlyEntityBody,
         query: UpdateZodControllerOnlyEntityQuery,
         params: UpdateZodControllerOnlyEntityParams,
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -363,6 +400,7 @@ pub mod zod_controller_only_entity_rpc {
             Some(&body),
             Some(&query),
             Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -378,6 +416,9 @@ pub mod zod_controller_only_entity_rpc {
         No summary
     */
     pub fn create_zod_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -393,9 +434,10 @@ pub mod zod_controller_only_entity_rpc {
             "generated",
             "ZodControllerOnlyEntityRPC",
             "createZodControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -411,6 +453,9 @@ pub mod zod_controller_only_entity_rpc {
         No summary
     */
     pub fn delete_zod_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -426,9 +471,10 @@ pub mod zod_controller_only_entity_rpc {
             "generated",
             "ZodControllerOnlyEntityRPC",
             "deleteZodControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -454,7 +500,10 @@ pub mod zod_controller_and_service_entity_rpc {
         No summary
     */
     pub fn get_zod_controller_and_service_entities( 
+        body: (),
         query: GetZodControllerAndServiceEntitiesQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -469,9 +518,10 @@ pub mod zod_controller_and_service_entity_rpc {
             "generated",
             "ZodControllerAndServiceEntityRPC",
             "getZodControllerAndServiceEntities",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -504,6 +554,7 @@ pub mod zod_controller_and_service_entity_rpc {
         body: UpdateZodControllerAndServiceEntityBody,
         query: UpdateZodControllerAndServiceEntityQuery,
         params: UpdateZodControllerAndServiceEntityParams,
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -521,6 +572,7 @@ pub mod zod_controller_and_service_entity_rpc {
             Some(&body),
             Some(&query),
             Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -536,6 +588,9 @@ pub mod zod_controller_and_service_entity_rpc {
         No summary
     */
     pub fn create_zod_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -551,9 +606,10 @@ pub mod zod_controller_and_service_entity_rpc {
             "generated",
             "ZodControllerAndServiceEntityRPC",
             "createZodControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -569,6 +625,9 @@ pub mod zod_controller_and_service_entity_rpc {
         No summary
     */
     pub fn delete_zod_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -584,9 +643,10 @@ pub mod zod_controller_and_service_entity_rpc {
             "generated",
             "ZodControllerAndServiceEntityRPC",
             "deleteZodControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -612,7 +672,10 @@ pub mod yup_controller_only_entity_rpc {
         No summary
     */
     pub fn get_yup_controller_only_entities( 
+        body: (),
         query: GetYupControllerOnlyEntitiesQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -627,9 +690,10 @@ pub mod yup_controller_only_entity_rpc {
             "generated",
             "YupControllerOnlyEntityRPC",
             "getYupControllerOnlyEntities",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -663,6 +727,8 @@ pub mod yup_controller_only_entity_rpc {
     pub fn update_yup_controller_only_entity( 
         body: UpdateYupControllerOnlyEntityBody,
         query: UpdateYupControllerOnlyEntityQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -679,7 +745,8 @@ pub mod yup_controller_only_entity_rpc {
             "updateYupControllerOnlyEntity",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -695,6 +762,9 @@ pub mod yup_controller_only_entity_rpc {
         No summary
     */
     pub fn create_yup_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -710,9 +780,10 @@ pub mod yup_controller_only_entity_rpc {
             "generated",
             "YupControllerOnlyEntityRPC",
             "createYupControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -728,6 +799,9 @@ pub mod yup_controller_only_entity_rpc {
         No summary
     */
     pub fn delete_yup_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -743,9 +817,10 @@ pub mod yup_controller_only_entity_rpc {
             "generated",
             "YupControllerOnlyEntityRPC",
             "deleteYupControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -771,7 +846,10 @@ pub mod yup_controller_and_service_entity_rpc {
         No summary
     */
     pub fn get_yup_controller_and_service_entities( 
+        body: (),
         query: GetYupControllerAndServiceEntitiesQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -786,9 +864,10 @@ pub mod yup_controller_and_service_entity_rpc {
             "generated",
             "YupControllerAndServiceEntityRPC",
             "getYupControllerAndServiceEntities",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -822,6 +901,8 @@ pub mod yup_controller_and_service_entity_rpc {
     pub fn update_yup_controller_and_service_entity( 
         body: UpdateYupControllerAndServiceEntityBody,
         query: UpdateYupControllerAndServiceEntityQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -838,7 +919,8 @@ pub mod yup_controller_and_service_entity_rpc {
             "updateYupControllerAndServiceEntity",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -854,6 +936,9 @@ pub mod yup_controller_and_service_entity_rpc {
         No summary
     */
     pub fn create_yup_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -869,9 +954,10 @@ pub mod yup_controller_and_service_entity_rpc {
             "generated",
             "YupControllerAndServiceEntityRPC",
             "createYupControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -887,6 +973,9 @@ pub mod yup_controller_and_service_entity_rpc {
         No summary
     */
     pub fn delete_yup_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -902,9 +991,10 @@ pub mod yup_controller_and_service_entity_rpc {
             "generated",
             "YupControllerAndServiceEntityRPC",
             "deleteYupControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -930,7 +1020,10 @@ pub mod dto_controller_only_entity_rpc {
         No summary
     */
     pub fn get_dto_controller_only_entities( 
+        body: (),
         query: GetDtoControllerOnlyEntitiesQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -945,9 +1038,10 @@ pub mod dto_controller_only_entity_rpc {
             "generated",
             "DtoControllerOnlyEntityRPC",
             "getDtoControllerOnlyEntities",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -974,6 +1068,8 @@ pub mod dto_controller_only_entity_rpc {
     pub fn update_dto_controller_only_entity( 
         body: UpdateDtoControllerOnlyEntityBody,
         query: UpdateDtoControllerOnlyEntityQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -990,7 +1086,8 @@ pub mod dto_controller_only_entity_rpc {
             "updateDtoControllerOnlyEntity",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1006,6 +1103,9 @@ pub mod dto_controller_only_entity_rpc {
         No summary
     */
     pub fn create_dto_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1021,9 +1121,10 @@ pub mod dto_controller_only_entity_rpc {
             "generated",
             "DtoControllerOnlyEntityRPC",
             "createDtoControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1039,6 +1140,9 @@ pub mod dto_controller_only_entity_rpc {
         No summary
     */
     pub fn delete_dto_controller_only_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1054,9 +1158,10 @@ pub mod dto_controller_only_entity_rpc {
             "generated",
             "DtoControllerOnlyEntityRPC",
             "deleteDtoControllerOnlyEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1082,7 +1187,10 @@ pub mod dto_controller_and_service_entity_rpc {
         No summary
     */
     pub fn get_dto_controller_and_service_entities( 
+        body: (),
         query: GetDtoControllerAndServiceEntitiesQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -1097,9 +1205,10 @@ pub mod dto_controller_and_service_entity_rpc {
             "generated",
             "DtoControllerAndServiceEntityRPC",
             "getDtoControllerAndServiceEntities",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1126,6 +1235,8 @@ pub mod dto_controller_and_service_entity_rpc {
     pub fn update_dto_controller_and_service_entity( 
         body: UpdateDtoControllerAndServiceEntityBody,
         query: UpdateDtoControllerAndServiceEntityQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -1142,7 +1253,8 @@ pub mod dto_controller_and_service_entity_rpc {
             "updateDtoControllerAndServiceEntity",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1158,6 +1270,9 @@ pub mod dto_controller_and_service_entity_rpc {
         No summary
     */
     pub fn create_dto_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1173,9 +1288,10 @@ pub mod dto_controller_and_service_entity_rpc {
             "generated",
             "DtoControllerAndServiceEntityRPC",
             "createDtoControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1191,6 +1307,9 @@ pub mod dto_controller_and_service_entity_rpc {
         No summary
     */
     pub fn delete_dto_controller_and_service_entity( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1206,9 +1325,10 @@ pub mod dto_controller_and_service_entity_rpc {
             "generated",
             "DtoControllerAndServiceEntityRPC",
             "deleteDtoControllerAndServiceEntity",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1232,6 +1352,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_hello_world_response_object( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1247,9 +1370,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getHelloWorldResponseObject",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1265,6 +1389,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_hello_world_object_literal( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1280,9 +1407,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getHelloWorldObjectLiteral",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1298,6 +1426,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_hello_world_next_response_object_promise( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1313,9 +1444,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getHelloWorldNextResponseObjectPromise",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1331,6 +1463,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_hello_world_raw_response_object_promise( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1346,9 +1481,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getHelloWorldRawResponseObjectPromise",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1364,6 +1500,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_hello_world_object_literal_promise( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1379,9 +1518,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getHelloWorldObjectLiteralPromise",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1397,6 +1537,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_hello_world_headers( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1412,9 +1555,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getHelloWorldHeaders",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1430,6 +1574,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_hello_world_array( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1445,9 +1592,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getHelloWorldArray",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1463,6 +1611,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_hello_world_and_empty_generic( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1478,9 +1629,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getHelloWorldAndEmptyGeneric",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1496,6 +1648,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_with_params( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1511,9 +1666,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getWithParams",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1529,6 +1685,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn post_with_all( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1544,9 +1703,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "postWithAll",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1562,6 +1722,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn post_with_body_and_query_using_req_vovk( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1577,9 +1740,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "postWithBodyAndQueryUsingReqVovk",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1595,6 +1759,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_nested_query( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1610,9 +1777,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getNestedQuery",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1628,6 +1796,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn post_with_form_data_using_req_vovk( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1643,9 +1814,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "postWithFormDataUsingReqVovk",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1661,6 +1833,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_error_response( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1676,9 +1851,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getErrorResponse",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1694,6 +1870,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_json_text_response( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1709,9 +1888,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getJsonTextResponse",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1727,6 +1907,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_jsonl_response( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1742,9 +1925,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getJsonlResponse",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1760,6 +1944,9 @@ pub mod client_controller_rpc {
         No summary
     */
     pub fn get_jsonl_text_response( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1775,9 +1962,10 @@ pub mod client_controller_rpc {
             "foo/client",
             "ClientControllerRPC",
             "getJsonlTextResponse",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1799,6 +1987,9 @@ pub mod streaming_controller_rpc {
         No summary
     */
     pub fn post_with_streaming( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1814,9 +2005,10 @@ pub mod streaming_controller_rpc {
             "foo/client",
             "StreamingControllerRPC",
             "postWithStreaming",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1832,6 +2024,9 @@ pub mod streaming_controller_rpc {
         No summary
     */
     pub fn post_with_streaming_and_immediate_error( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1847,9 +2042,10 @@ pub mod streaming_controller_rpc {
             "foo/client",
             "StreamingControllerRPC",
             "postWithStreamingAndImmediateError",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1865,6 +2061,9 @@ pub mod streaming_controller_rpc {
         No summary
     */
     pub fn post_with_streaming_and_delayed_error( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1880,9 +2079,10 @@ pub mod streaming_controller_rpc {
             "foo/client",
             "StreamingControllerRPC",
             "postWithStreamingAndDelayedError",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1898,6 +2098,9 @@ pub mod streaming_controller_rpc {
         No summary
     */
     pub fn post_with_streaming_and_delayed_custom_error( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1913,9 +2116,10 @@ pub mod streaming_controller_rpc {
             "foo/client",
             "StreamingControllerRPC",
             "postWithStreamingAndDelayedCustomError",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1931,6 +2135,9 @@ pub mod streaming_controller_rpc {
         No summary
     */
     pub fn post_with_streaming_and_delayed_unhandled_error( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1946,9 +2153,10 @@ pub mod streaming_controller_rpc {
             "foo/client",
             "StreamingControllerRPC",
             "postWithStreamingAndDelayedUnhandledError",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -1970,6 +2178,9 @@ pub mod streaming_generator_controller_rpc {
         No summary
     */
     pub fn get_with_streaming( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -1985,9 +2196,10 @@ pub mod streaming_generator_controller_rpc {
             "foo/client",
             "StreamingGeneratorControllerRPC",
             "getWithStreaming",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2003,6 +2215,9 @@ pub mod streaming_generator_controller_rpc {
         No summary
     */
     pub fn post_with_async_streaming( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2018,9 +2233,10 @@ pub mod streaming_generator_controller_rpc {
             "foo/client",
             "StreamingGeneratorControllerRPC",
             "postWithAsyncStreaming",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2036,6 +2252,9 @@ pub mod streaming_generator_controller_rpc {
         No summary
     */
     pub fn post_with_streaming( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2051,9 +2270,10 @@ pub mod streaming_generator_controller_rpc {
             "foo/client",
             "StreamingGeneratorControllerRPC",
             "postWithStreaming",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2069,6 +2289,9 @@ pub mod streaming_generator_controller_rpc {
         No summary
     */
     pub fn post_with_streaming_and_immediate_error( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2084,9 +2307,10 @@ pub mod streaming_generator_controller_rpc {
             "foo/client",
             "StreamingGeneratorControllerRPC",
             "postWithStreamingAndImmediateError",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2102,6 +2326,9 @@ pub mod streaming_generator_controller_rpc {
         No summary
     */
     pub fn post_with_streaming_and_delayed_error( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2117,9 +2344,10 @@ pub mod streaming_generator_controller_rpc {
             "foo/client",
             "StreamingGeneratorControllerRPC",
             "postWithStreamingAndDelayedError",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2135,6 +2363,9 @@ pub mod streaming_generator_controller_rpc {
         No summary
     */
     pub fn post_with_streaming_and_delayed_custom_error( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2150,9 +2381,10 @@ pub mod streaming_generator_controller_rpc {
             "foo/client",
             "StreamingGeneratorControllerRPC",
             "postWithStreamingAndDelayedCustomError",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2168,6 +2400,9 @@ pub mod streaming_generator_controller_rpc {
         No summary
     */
     pub fn post_with_streaming_and_delayed_unhandled_error( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2183,9 +2418,10 @@ pub mod streaming_generator_controller_rpc {
             "foo/client",
             "StreamingGeneratorControllerRPC",
             "postWithStreamingAndDelayedUnhandledError",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2207,6 +2443,9 @@ pub mod custom_schema_controller_rpc {
         No summary
     */
     pub fn get_with_custom_schema( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2222,9 +2461,10 @@ pub mod custom_schema_controller_rpc {
             "foo/client",
             "CustomSchemaControllerRPC",
             "getWithCustomSchema",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2298,6 +2538,7 @@ pub mod with_zod_client_controller_rpc {
         body: HandleAllBody,
         query: HandleAllQuery,
         params: HandleAllParams,
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<HandleAllOutput>, Box<dyn serde::ser::StdError>>{
@@ -2315,6 +2556,7 @@ pub mod with_zod_client_controller_rpc {
             Some(&body),
             Some(&query),
             Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2334,7 +2576,10 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn handle_query( 
+        body: (),
         query: HandleQueryQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -2349,9 +2594,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "handleQuery",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2372,6 +2618,9 @@ pub mod with_zod_client_controller_rpc {
     */
     pub fn handle_body( 
         body: HandleBodyBody,
+        query: (),
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -2387,8 +2636,9 @@ pub mod with_zod_client_controller_rpc {
             "WithZodClientControllerRPC",
             "handleBody",
             Some(&body),
-            None,
-            None,
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2409,7 +2659,10 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn handle_params( 
+        body: (),
+        query: (),
         params: HandleParamsParams,
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -2424,9 +2677,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "handleParams",
-            None,
-            None,
+            Some(&body),
+            Some(&query),
             Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2477,7 +2731,10 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn handle_nested_query( 
+        body: (),
         query: HandleNestedQueryQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -2492,9 +2749,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "handleNestedQuery",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2519,7 +2777,10 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn handle_output( 
+        body: (),
         query: HandleOutputQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<HandleOutputOutput>, Box<dyn serde::ser::StdError>>{
@@ -2534,9 +2795,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "handleOutput",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2561,7 +2823,10 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn handle_stream( 
+        body: (),
         query: HandleStreamQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Box<dyn Iterator<Item = HandleStreamIteration>>{
@@ -2576,9 +2841,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "handleStream",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2611,6 +2877,9 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn handle_nothitng( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2626,9 +2895,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "handleNothitng",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2648,7 +2918,10 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn handle_form_data( 
+        body: (),
         query: HandleFormDataQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -2663,9 +2936,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "handleFormData",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2692,6 +2966,8 @@ pub mod with_zod_client_controller_rpc {
     pub fn disable_server_side_validation_bool( 
         body: DisableServerSideValidationBoolBody,
         query: DisableServerSideValidationBoolQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -2708,7 +2984,8 @@ pub mod with_zod_client_controller_rpc {
             "disableServerSideValidationBool",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2735,6 +3012,8 @@ pub mod with_zod_client_controller_rpc {
     pub fn disable_server_side_validation_strings( 
         body: DisableServerSideValidationStringsBody,
         query: DisableServerSideValidationStringsQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -2751,7 +3030,8 @@ pub mod with_zod_client_controller_rpc {
             "disableServerSideValidationStrings",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2767,6 +3047,9 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn skip_schema_emission_bool( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -2782,9 +3065,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "skipSchemaEmissionBool",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2804,7 +3088,10 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn skip_schema_emission_strings( 
+        body: (),
         query: SkipSchemaEmissionStringsQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -2819,9 +3106,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "skipSchemaEmissionStrings",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2846,7 +3134,10 @@ pub mod with_zod_client_controller_rpc {
         No summary
     */
     pub fn validate_every_iteration( 
+        body: (),
         query: ValidateEveryIterationQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Box<dyn Iterator<Item = ValidateEveryIterationIteration>>{
@@ -2861,9 +3152,10 @@ pub mod with_zod_client_controller_rpc {
             "foo/client",
             "WithZodClientControllerRPC",
             "validateEveryIteration",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2954,6 +3246,7 @@ pub mod with_yup_client_controller_rpc {
         body: HandleAllBody,
         query: HandleAllQuery,
         params: HandleAllParams,
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<HandleAllOutput>, Box<dyn serde::ser::StdError>>{
@@ -2971,6 +3264,7 @@ pub mod with_yup_client_controller_rpc {
             Some(&body),
             Some(&query),
             Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -2990,7 +3284,10 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn handle_query( 
+        body: (),
         query: HandleQueryQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3005,9 +3302,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "handleQuery",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3028,6 +3326,9 @@ pub mod with_yup_client_controller_rpc {
     */
     pub fn handle_body( 
         body: HandleBodyBody,
+        query: (),
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3043,8 +3344,9 @@ pub mod with_yup_client_controller_rpc {
             "WithYupClientControllerRPC",
             "handleBody",
             Some(&body),
-            None,
-            None,
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3065,7 +3367,10 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn handle_params( 
+        body: (),
+        query: (),
         params: HandleParamsParams,
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3080,9 +3385,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "handleParams",
-            None,
-            None,
+            Some(&body),
+            Some(&query),
             Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3133,7 +3439,10 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn handle_nested_query( 
+        body: (),
         query: HandleNestedQueryQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3148,9 +3457,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "handleNestedQuery",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3175,7 +3485,10 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn handle_output( 
+        body: (),
         query: HandleOutputQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<HandleOutputOutput>, Box<dyn serde::ser::StdError>>{
@@ -3190,9 +3503,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "handleOutput",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3217,7 +3531,10 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn handle_stream( 
+        body: (),
         query: HandleStreamQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Box<dyn Iterator<Item = HandleStreamIteration>>{
@@ -3232,9 +3549,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "handleStream",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3267,6 +3585,9 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn handle_nothitng( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -3282,9 +3603,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "handleNothitng",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3304,7 +3626,10 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn handle_form_data( 
+        body: (),
         query: HandleFormDataQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3319,9 +3644,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "handleFormData",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3348,6 +3674,8 @@ pub mod with_yup_client_controller_rpc {
     pub fn disable_server_side_validation_bool( 
         body: DisableServerSideValidationBoolBody,
         query: DisableServerSideValidationBoolQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3364,7 +3692,8 @@ pub mod with_yup_client_controller_rpc {
             "disableServerSideValidationBool",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3391,6 +3720,8 @@ pub mod with_yup_client_controller_rpc {
     pub fn disable_server_side_validation_strings( 
         body: DisableServerSideValidationStringsBody,
         query: DisableServerSideValidationStringsQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3407,7 +3738,8 @@ pub mod with_yup_client_controller_rpc {
             "disableServerSideValidationStrings",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3423,6 +3755,9 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn skip_schema_emission_bool( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -3438,9 +3773,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "skipSchemaEmissionBool",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3460,7 +3796,10 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn skip_schema_emission_strings( 
+        body: (),
         query: SkipSchemaEmissionStringsQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3475,9 +3814,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "skipSchemaEmissionStrings",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3502,7 +3842,10 @@ pub mod with_yup_client_controller_rpc {
         No summary
     */
     pub fn validate_every_iteration( 
+        body: (),
         query: ValidateEveryIterationQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Box<dyn Iterator<Item = ValidateEveryIterationIteration>>{
@@ -3517,9 +3860,10 @@ pub mod with_yup_client_controller_rpc {
             "foo/client",
             "WithYupClientControllerRPC",
             "validateEveryIteration",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3584,6 +3928,7 @@ pub mod with_dto_client_controller_rpc {
         body: HandleAllBody,
         query: HandleAllQuery,
         params: HandleAllParams,
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<HandleAllOutput>, Box<dyn serde::ser::StdError>>{
@@ -3601,6 +3946,7 @@ pub mod with_dto_client_controller_rpc {
             Some(&body),
             Some(&query),
             Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3616,6 +3962,9 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_all_client( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -3631,9 +3980,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleAllClient",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3653,7 +4003,10 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_query( 
+        body: (),
         query: HandleQueryQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3668,9 +4021,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleQuery",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3686,6 +4040,9 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_query_client( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -3701,9 +4058,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleQueryClient",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3724,6 +4082,9 @@ pub mod with_dto_client_controller_rpc {
     */
     pub fn handle_body( 
         body: HandleBodyBody,
+        query: (),
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3739,8 +4100,9 @@ pub mod with_dto_client_controller_rpc {
             "WithDtoClientControllerRPC",
             "handleBody",
             Some(&body),
-            None,
-            None,
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3756,6 +4118,9 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_body_client( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -3771,9 +4136,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleBodyClient",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3794,7 +4160,10 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_params( 
+        body: (),
+        query: (),
         params: HandleParamsParams,
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3809,9 +4178,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleParams",
-            None,
-            None,
+            Some(&body),
+            Some(&query),
             Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3827,6 +4197,9 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_params_client( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -3842,9 +4215,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleParamsClient",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3866,7 +4240,10 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_nested_query( 
+        body: (),
         query: HandleNestedQueryQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -3881,9 +4258,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleNestedQuery",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3899,6 +4277,9 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_nested_query_client( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -3914,9 +4295,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleNestedQueryClient",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3941,7 +4323,10 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_output( 
+        body: (),
         query: HandleOutputQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<HandleOutputOutput>, Box<dyn serde::ser::StdError>>{
@@ -3956,9 +4341,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleOutput",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -3974,6 +4360,9 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_output_client( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -3989,9 +4378,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleOutputClient",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4016,7 +4406,10 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_stream( 
+        body: (),
         query: HandleStreamQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Box<dyn Iterator<Item = HandleStreamIteration>>{
@@ -4031,9 +4424,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleStream",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4066,6 +4460,9 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_nothitng( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -4081,9 +4478,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleNothitng",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4103,7 +4501,10 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn handle_form_data( 
+        body: (),
         query: HandleFormDataQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -4118,9 +4519,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "handleFormData",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4147,6 +4549,8 @@ pub mod with_dto_client_controller_rpc {
     pub fn disable_server_side_validation_bool( 
         body: DisableServerSideValidationBoolBody,
         query: DisableServerSideValidationBoolQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -4163,7 +4567,8 @@ pub mod with_dto_client_controller_rpc {
             "disableServerSideValidationBool",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4190,6 +4595,8 @@ pub mod with_dto_client_controller_rpc {
     pub fn disable_server_side_validation_strings( 
         body: DisableServerSideValidationStringsBody,
         query: DisableServerSideValidationStringsQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -4206,7 +4613,8 @@ pub mod with_dto_client_controller_rpc {
             "disableServerSideValidationStrings",
             Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4222,6 +4630,9 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn skip_schema_emission_bool( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -4237,9 +4648,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "skipSchemaEmissionBool",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4259,7 +4671,10 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn skip_schema_emission_strings( 
+        body: (),
         query: SkipSchemaEmissionStringsQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
@@ -4274,9 +4689,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "skipSchemaEmissionStrings",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4301,7 +4717,10 @@ pub mod with_dto_client_controller_rpc {
         No summary
     */
     pub fn validate_every_iteration( 
+        body: (),
         query: ValidateEveryIterationQuery,
+        params: (),
+
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
     ) -> Box<dyn Iterator<Item = ValidateEveryIterationIteration>>{
@@ -4316,9 +4735,10 @@ pub mod with_dto_client_controller_rpc {
             "foo/client",
             "WithDtoClientControllerRPC",
             "validateEveryIteration",
-            None,
+            Some(&body),
             Some(&query),
-            None,
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4357,6 +4777,9 @@ pub mod open_api_controller_rpc {
         Hello, World!
     */
     pub fn get_from_schema( 
+        body: (),
+        query: (),
+        params: (),
 
         api_root: Option<&str>,
         disable_client_validation: Option<bool>,
@@ -4372,9 +4795,10 @@ pub mod open_api_controller_rpc {
             "foo/client",
             "OpenApiControllerRPC",
             "getFromSchema",
-            None,
-            None,
-            None,
+            Some(&body),
+            Some(&query),
+            Some(&params),
+
             api_root,
             disable_client_validation.unwrap_or(false),
         );
@@ -4386,6 +4810,9 @@ pub mod open_api_controller_rpc {
         
 }
     
+
+
+
 
 
 /*

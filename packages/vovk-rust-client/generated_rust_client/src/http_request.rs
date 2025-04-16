@@ -34,7 +34,7 @@ pub enum ApiResponse<T> {
 
 // Load the full schema only once using lazy initialization
 static FULL_SCHEMA: Lazy<Result<Value, Box<dyn Error + Send + Sync>>> = Lazy::new(|| {
-    read_full_schema::read_full_schema("full-schema.json")
+    read_full_schema::read_full_schema()
         .map(|schema| serde_json::to_value(schema).expect("Failed to convert schema to Value"))
         .map_err(|e| Box::<dyn Error + Send + Sync>::from(format!("Failed to read schema: {}", e)))
 });

@@ -55,9 +55,9 @@ export default async function getClientTemplateFiles({
 
   for (const [templateName, templateDef] of Object.entries(usedTemplateDefs)) {
     const fullSchemaJSONFileName = templateDef.fullSchemaJson
-      ? templateDef.fullSchemaJson === 'string'
-        ? templateDef.fullSchemaJson
-        : DEFAULT_FULL_SCHEMA_FILE_NAME
+      ? typeof templateDef.fullSchemaJson === 'boolean'
+        ? DEFAULT_FULL_SCHEMA_FILE_NAME
+        : templateDef.fullSchemaJson
       : null;
     const packageJson = Object.assign({}, config.package, templateDef.package);
 

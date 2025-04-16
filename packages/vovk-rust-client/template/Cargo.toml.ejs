@@ -1,5 +1,5 @@
 [package]
-name = "<%= t.package.name %>"
+name = "<%= t.package.name.replace(/-/g, '_') %>"
 version = "<%= t.package.version %>"
 edition = "2021"
 

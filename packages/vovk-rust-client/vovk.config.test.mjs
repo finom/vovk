@@ -5,9 +5,9 @@ const vovkConfig = {
   origin: `http://localhost:${process.env.PORT}`,
   clientTemplateDefs: {
     rust: {
-      clientOutDir: '../packages/vovk-rust-client/test_rust/generated_rust_client',
+      clientOutDir: '../packages/vovk-rust-client/generated_rust_client',
       templatePath: '../packages/vovk-rust-client/template/',
-      fullSchemaJson: true,
+      fullSchemaJson: './data/full-schema.json',
       package: {
         name: 'generated_rust_client',
         version: '0.1.0',
