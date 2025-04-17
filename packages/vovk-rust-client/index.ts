@@ -10,6 +10,8 @@ interface JSONSchema {
   anyOf?: JSONSchema[];
   allOf?: JSONSchema[];
   format?: string;
+  definitions?: Record<string, JSONSchema>;
+  $ref?: string; // Added support for $ref
 }
 
 // Interface for conversion options
@@ -17,6 +19,8 @@ interface ConvertOptions {
   schema: JSONSchema;
   structName: string;
   pad: number; // Number of spaces for indentation
+  definitions?: Record<string, JSONSchema>; // Added for storing schema definitions
+  processedDefs?: Set<string>; // Track processed definitions to avoid duplicates
 }
 
 // Result type for the conversion function
@@ -33,8 +37,53 @@ function toCamelCase(str: string): string {
     .join('');
 }
 
+// Helper to extract name from reference
+function getRefName(ref: string): string {
+  const parts = ref.split('/');
+  return parts[parts.length - 1];
+}
+
+// Get the Rust type name for a ref
+function getRefTypeName(ref: string): string {
+  return `${toCamelCase(getRefName(ref))}`;
+}
+
 // Recursive function to convert schema to Rust types
-function convertSchema(schema: JSONSchema, prefix: string): ConversionResult {
+function convertSchema(schema: JSONSchema, prefix: string, options: ConvertOptions): ConversionResult {
+  // Handle reference before checking for null/undefined
+  if (schema.$ref) {
+    const refName = getRefName(schema.$ref);
+    const refTypeName = getRefTypeName(schema.$ref);
+
+    // If definitions are provided and the ref exists in definitions
+    if (options.definitions && options.definitions[refName]) {
+      // Check if we need to process this definition
+      if (options.processedDefs && !options.processedDefs.has(refName)) {
+        // Process the definition and mark it as processed
+        const refSchema = options.definitions[refName];
+        const result = convertSchema(refSchema, refTypeName, options);
+        options.processedDefs.add(refName);
+
+        return {
+          typeExpr: refTypeName,
+          definitions: result.definitions,
+        };
+      }
+
+      // Definition already processed, just reference it
+      return {
+        typeExpr: refTypeName,
+        definitions: [],
+      };
+    }
+
+    // If we couldn't resolve the ref, use serde_json::Value instead
+    return {
+      typeExpr: 'serde_json::Value',
+      definitions: [],
+    };
+  }
+
   // Handle null or undefined schema
   if (!schema || !schema.type) {
     return { typeExpr: '()', definitions: [] }; // Unit type as fallback
@@ -57,7 +106,7 @@ function convertSchema(schema: JSONSchema, prefix: string): ConversionResult {
     if (!schema.items) {
       throw new Error("Array schema must specify 'items'");
     }
-    const itemResult = convertSchema(schema.items, prefix);
+    const itemResult = convertSchema(schema.items, prefix, options);
     return {
       typeExpr: `Vec<${itemResult.typeExpr}>`,
       definitions: itemResult.definitions,
@@ -73,7 +122,7 @@ function convertSchema(schema: JSONSchema, prefix: string): ConversionResult {
 
     for (const [propName, propSchema] of Object.entries(schema.properties || {})) {
       const fieldPrefix = prefix + toCamelCase(propName);
-      const fieldResult = convertSchema(propSchema, fieldPrefix);
+      const fieldResult = convertSchema(propSchema, fieldPrefix, options);
       const fieldType = fieldResult.typeExpr;
       const isRequired = required.includes(propName);
       const rustFieldType = isRequired ? fieldType : `Option<${fieldType}>`;
@@ -128,8 +177,35 @@ export function convertJSONSchemaToRustType(options: ConvertOptions): string {
     return '';
   }
 
-  const result = convertSchema(schema, structName);
-  return result.definitions
+  // Extract definitions from the schema if present
+  if (schema.definitions && !options.definitions) {
+    options.definitions = schema.definitions as Record<string, JSONSchema>;
+  }
+
+  // Initialize set to track processed definitions
+  const processedDefs = new Set<string>();
+  options.processedDefs = processedDefs;
+
+  // Process all definitions first to create Ref types
+  const definitionTypes: string[] = [];
+  if (options.definitions) {
+    for (const [defName, defSchema] of Object.entries(options.definitions)) {
+      if (!processedDefs.has(defName)) {
+        const refTypeName = `${toCamelCase(defName)}`;
+        const result = convertSchema(defSchema, refTypeName, options);
+        definitionTypes.push(...result.definitions);
+        processedDefs.add(defName);
+      }
+    }
+  }
+
+  // Then process the main schema
+  const result = convertSchema(schema, structName, options);
+
+  // Combine all definitions
+  const allDefinitions = [...definitionTypes, ...result.definitions];
+
+  return allDefinitions
     .map((definition) =>
       definition
         .split('\n')

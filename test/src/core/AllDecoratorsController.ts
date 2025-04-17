@@ -1,4 +1,4 @@
-import { prefix, get, post, put, del, patch, head, options, VovkRequest } from 'vovk';
+import { prefix, get, post, put, del, patch, head, options, type VovkRequest } from 'vovk';
 
 @prefix('all-decorators')
 export default class AllDecoratorsController {

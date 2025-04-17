@@ -1,5 +1,5 @@
 
-// auto-generated 2025-04-17T16:41:31.611Z
+// auto-generated 2025-04-17T20:27:35.875Z
 mod http_request;
 mod read_full_schema;
 
@@ -3667,11 +3667,30 @@ pub mod with_dto_client_controller_rpc {
     }
     #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
+    pub struct HandleAllBodyDto {
+        pub hello: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    #[allow(non_snake_case)]
+    pub struct HandleAllQueryDto {
+        pub search: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    #[allow(non_snake_case)]
+    pub struct HandleAllParamsDto {
+        pub foo: String,
+        pub bar: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    #[allow(non_snake_case)]
     pub struct HandleAllOutput {
-        pub body: (),
-        pub query: (),
-        pub params: (),
-        pub vovkParams: (),
+        pub body: HandleAllBodyDto,
+        pub query: HandleAllQueryDto,
+        pub params: HandleAllParamsDto,
+        pub vovkParams: HandleAllParamsDto,
     }
     /** 
         This is a summary
@@ -3967,10 +3986,25 @@ pub mod with_dto_client_controller_rpc {
     // WithDtoClientControllerRPC.handle_nested_query GET http://localhost:3000/api/foo/client/with-dto/handle-nested-query
     #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
+    pub struct ZDto {
+        pub f: String,
+        pub u: Vec<String>,
+        pub d: DDto,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    #[allow(non_snake_case)]
+    pub struct DDto {
+        pub x: String,
+        pub arrOfObjects: Vec<serde_json::Value>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    #[allow(non_snake_case)]
     pub struct HandleNestedQueryQuery {
         pub x: String,
         pub y: Vec<String>,
-        pub z: (),
+        pub z: ZDto,
     }
     /** 
         No summary

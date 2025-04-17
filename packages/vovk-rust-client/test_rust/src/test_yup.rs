@@ -1,7 +1,7 @@
 // In your source file (e.g., lib.rs or main.rs)
 #[cfg(test)]
-pub mod test_zod {
-    use generated_rust_client::with_zod_client_controller_rpc;
+pub mod test_yup {
+    use generated_rust_client::with_yup_client_controller_rpc;
      
     // #[ignore = "needs external database"] | #[should_panic(expected = "Invalid input")]
 
@@ -9,14 +9,14 @@ pub mod test_zod {
     #[test]
     fn test_ok() {
         // Create an instance of the API client with the back-end URL
-        let data:with_zod_client_controller_rpc::HandleAllOutput = with_zod_client_controller_rpc::handle_all(
-            with_zod_client_controller_rpc::HandleAllBody {
+        let data:with_yup_client_controller_rpc::HandleAllOutput = with_yup_client_controller_rpc::handle_all(
+            with_yup_client_controller_rpc::HandleAllBody {
                 hello: "world".to_string(),
             },
-            with_zod_client_controller_rpc::HandleAllQuery {
+            with_yup_client_controller_rpc::HandleAllQuery {
                 search: "value".to_string(),
             },
-            with_zod_client_controller_rpc::HandleAllParams {
+            with_yup_client_controller_rpc::HandleAllParams {
                 foo: "foo".to_string(),
                 bar: "bar".to_string(),
             },
@@ -36,24 +36,24 @@ pub mod test_zod {
         
         // Check types
         #[allow(unused_variables)]
-        let _body: generated_rust_client::with_zod_client_controller_rpc::HandleAllOutputBody = data.body;
+        let _body: generated_rust_client::with_yup_client_controller_rpc::HandleAllOutputBody = data.body;
 
         #[allow(unused_variables)]
-        let _query: generated_rust_client::with_zod_client_controller_rpc::HandleAllOutputQuery = data.query;
+        let _query: generated_rust_client::with_yup_client_controller_rpc::HandleAllOutputQuery = data.query;
 
         #[allow(unused_variables)]
-        let _params:generated_rust_client::with_zod_client_controller_rpc::HandleAllOutputParams = data.params;
+        let _params:generated_rust_client::with_yup_client_controller_rpc::HandleAllOutputParams = data.params;
 
         #[allow(unused_variables)]
-        let _vovk_params:  generated_rust_client::with_zod_client_controller_rpc::HandleAllOutputVovkParams = data.vovkParams;
+        let _vovk_params:  generated_rust_client::with_yup_client_controller_rpc::HandleAllOutputVovkParams = data.vovkParams;
     }
     
     // test body validation
     #[test]
     fn test_body() {
         // Test successful body validation
-        let data = with_zod_client_controller_rpc::handle_body(
-            with_zod_client_controller_rpc::HandleBodyBody {
+        let data = with_yup_client_controller_rpc::handle_body(
+            with_yup_client_controller_rpc::HandleBodyBody {
                 hello: "world".to_string(),
             },
             (),
@@ -65,7 +65,7 @@ pub mod test_zod {
         assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"hello": "world"}));
 
         // Test client-side validation error
-        let result = with_zod_client_controller_rpc::handle_body(
+        let result = with_yup_client_controller_rpc::handle_body(
             serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),
             (),
             (),
@@ -75,7 +75,7 @@ pub mod test_zod {
         
         assert!(result.is_err());
         
-        let result = with_zod_client_controller_rpc::handle_body(
+        let result = with_yup_client_controller_rpc::handle_body(
             serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),
             (),
             (),
@@ -84,16 +84,16 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Yup validation failed"));
     }
     
     // test query validation
     #[test]
     fn test_query() {
         // Test successful query validation
-        let data = with_zod_client_controller_rpc::handle_query(
+        let data = with_yup_client_controller_rpc::handle_query(
             (),
-            with_zod_client_controller_rpc::HandleQueryQuery {
+            with_yup_client_controller_rpc::HandleQueryQuery {
                 search: "value".to_string(),
             },
             (),
@@ -104,7 +104,7 @@ pub mod test_zod {
        assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"search": "value"}));
 
         // Test client-side validation error
-        let result = with_zod_client_controller_rpc::handle_query(
+        let result = with_yup_client_controller_rpc::handle_query(
             (),
             serde_json::from_value(serde_json::json!({"search": "valuex"})).unwrap(),
             (),
@@ -114,7 +114,7 @@ pub mod test_zod {
           
         assert!(result.is_err());
         
-        let result = with_zod_client_controller_rpc::handle_query(
+        let result = with_yup_client_controller_rpc::handle_query(
             (),
             serde_json::from_value(serde_json::json!({"search": "valuex"})).unwrap(),
             (),
@@ -123,17 +123,17 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Yup validation failed"));
     }
     
     // test params validation
     #[test]
     fn test_params() {
         // Test successful params validation
-        let data = with_zod_client_controller_rpc::handle_params(
+        let data = with_yup_client_controller_rpc::handle_params(
             (),
             (),
-            with_zod_client_controller_rpc::HandleParamsParams {
+            with_yup_client_controller_rpc::HandleParamsParams {
                 foo: "foo".to_string(),
                 bar: "bar".to_string(),
             },
@@ -144,7 +144,7 @@ pub mod test_zod {
         assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"foo": "foo", "bar": "bar"}));
 
         // Test client-side validation error
-        let result = with_zod_client_controller_rpc::handle_params(
+        let result = with_yup_client_controller_rpc::handle_params(
             (),
             (),
             serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "barx"})).unwrap(),
@@ -154,7 +154,7 @@ pub mod test_zod {
         
         assert!(result.is_err());
         
-        let result = with_zod_client_controller_rpc::handle_params(
+        let result = with_yup_client_controller_rpc::handle_params(
             (),
             (),
             serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "barx"})).unwrap(),
@@ -163,16 +163,16 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Yup validation failed"));
     }
     
     // test output validation
     #[test]
     fn test_output() {
         // Test successful output validation
-        let data = with_zod_client_controller_rpc::handle_output(
+        let data = with_yup_client_controller_rpc::handle_output(
             (),
-            with_zod_client_controller_rpc::HandleOutputQuery {
+            with_yup_client_controller_rpc::HandleOutputQuery {
                 helloOutput: "world".to_string(),
             },
             (),
@@ -183,9 +183,9 @@ pub mod test_zod {
         assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"hello": "world"}));
 
         // Test server-side output validation error
-        let result = with_zod_client_controller_rpc::handle_output(
+        let result = with_yup_client_controller_rpc::handle_output(
             (),
-            with_zod_client_controller_rpc::HandleOutputQuery {
+            with_yup_client_controller_rpc::HandleOutputQuery {
                 helloOutput: "worldx".to_string(),
             },
             (),
@@ -194,7 +194,7 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Yup validation failed"));
     }
     
     // test streaming
@@ -203,9 +203,9 @@ pub mod test_zod {
         // Test successful streaming
         let values = vec!["a", "b", "c", "d"];
         
-        let stream: Box<dyn Iterator<Item = with_zod_client_controller_rpc::HandleStreamIteration>> = with_zod_client_controller_rpc::handle_stream(
+        let stream: Box<dyn Iterator<Item = with_yup_client_controller_rpc::HandleStreamIteration>> = with_yup_client_controller_rpc::handle_stream(
             (),
-            with_zod_client_controller_rpc::HandleStreamQuery {
+            with_yup_client_controller_rpc::HandleStreamQuery {
                 values: values.iter().map(|s| s.to_string()).collect(),
             },
             (),
@@ -222,16 +222,16 @@ pub mod test_zod {
         
         // Test streaming error
         let error_values = vec!["e", "f", "g", "h"];
-        let error_stream = with_zod_client_controller_rpc::handle_stream(
+        let error_stream = with_yup_client_controller_rpc::handle_stream(
             (),
-            with_zod_client_controller_rpc::HandleStreamQuery {
+            with_yup_client_controller_rpc::HandleStreamQuery {
                 values: error_values.iter().map(|s| s.to_string()).collect(),
             },
             (),
             None,
             false,
         );
-        // Iterate through the error_stream and expect it to fail with Zod validation error
+        // Iterate through the error_stream and expect it to fail with Yup validation error
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             for (i, _) in error_stream.enumerate() {
                 println!("Item {} processed", i);

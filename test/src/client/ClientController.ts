@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { HttpException, HttpStatus, JSONLinesResponse, VovkRequest, get, post, prefix } from 'vovk';
+import { HttpException, HttpStatus, JSONLinesResponse, type VovkRequest, get, post, prefix } from 'vovk';
 import { NextResponse } from 'next/server';
 import { NESTED_QUERY_EXAMPLE } from '../lib';
 

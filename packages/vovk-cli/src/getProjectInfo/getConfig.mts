@@ -20,7 +20,7 @@ const getTemplateDefs = (
   clientOutDirAbsolutePath: string,
   userTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {}
 ): VovkStrictConfig['clientTemplateDefs'] => {
-  const result: VovkStrictConfig['clientTemplateDefs'] = {};
+  const defs: VovkStrictConfig['clientTemplateDefs'] = {};
   const builtInDefs: VovkStrictConfig['clientTemplateDefs'] = {
     [BuiltInTemplateName.ts]: {
       templatePath: path.resolve(templatesDir, 'ts/'),
@@ -75,17 +75,17 @@ const getTemplateDefs = (
           throw new Error(`Unknown template extends: ${templateDef.extends}`);
         }
 
-        result[name] = {
+        defs[name] = {
           ...builtIn,
           ...templateDef,
         };
       }
     } else {
-      result[name] = templateDef;
+      defs[name] = templateDef;
     }
   }
 
-  return result;
+  return { ...builtInDefs, ...defs };
 };
 
 export default async function getConfig({

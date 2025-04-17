@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { VovkRequest, post, prefix } from 'vovk';
+import { type VovkRequest, post, prefix } from 'vovk';
 import { JSONLinesResponse } from 'vovk';
 
 export type Token = { token: string; query: 'queryValue' };
