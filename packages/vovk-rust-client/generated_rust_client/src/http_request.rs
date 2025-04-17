@@ -15,22 +15,17 @@ use once_cell::sync::Lazy;
 struct HttpException {
     message: String,
     status_code: i32,
+    #[allow(dead_code)]
     cause: Option<Value>,
 }
 
 impl fmt::Display for HttpException {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.message)
+        write!(f, "[Status: {}] {}", self.status_code, self.message)
     }
 }
 
 impl Error for HttpException {}
-
-// Enum to represent the API response, which can be a single value or a stream
-pub enum ApiResponse<T> {
-    Single(T),
-    Stream(Box<dyn Iterator<Item = Result<T, Box<dyn Error>>>>),
-}
 
 // Load the full schema only once using lazy initialization
 static FULL_SCHEMA: Lazy<Result<Value, Box<dyn Error + Send + Sync>>> = Lazy::new(|| {
@@ -39,8 +34,8 @@ static FULL_SCHEMA: Lazy<Result<Value, Box<dyn Error + Send + Sync>>> = Lazy::ne
         .map_err(|e| Box::<dyn Error + Send + Sync>::from(format!("Failed to read schema: {}", e)))
 });
 
-// The main request function - now generic over all parameter types
-pub fn http_request<T, B, Q, P>(
+// Private helper function for request preparation
+fn prepare_request<B, Q, P>(
     default_api_root: &str,
     segment_name: &str,
     controller_name: &str,
@@ -50,9 +45,8 @@ pub fn http_request<T, B, Q, P>(
     params: Option<&P>,
     api_root: Option<&str>,
     disable_client_validation: bool,
-) -> Result<ApiResponse<T>, Box<dyn Error>> 
-where 
-    T: DeserializeOwned + 'static,
+) -> Result<(reqwest::blocking::RequestBuilder, String), Box<dyn Error>>
+where
     B: Serialize + ?Sized,
     Q: Serialize + ?Sized,
     P: Serialize + ?Sized,
@@ -170,8 +164,6 @@ where
                     return Err(format!("Param {} must be a string", key).into());
                 }
             }
-        } else {
-            return Err("Params must be an object".into());
         }
     }
 
@@ -207,14 +199,50 @@ where
         _ => return Err("Invalid HTTP method".into()),
     };
 
-    // Build and send the HTTP request
+    // Build the HTTP request
     let client = Client::new();
     let mut request = client.request(method, &url).headers(headers);
     if let Some(body_val) = body_value {
         request = request.json(&body_val);
     }
-    let response = request.send()?;
+    
+    Ok((request, http_method.to_string()))
+}
 
+// Main request function for regular (non-streaming) responses
+pub fn http_request<T, B, Q, P>(
+    default_api_root: &str,
+    segment_name: &str,
+    controller_name: &str,
+    handler_name: &str,
+    body: Option<&B>,
+    query: Option<&Q>,
+    params: Option<&P>,
+    api_root: Option<&str>,
+    disable_client_validation: bool,
+) -> Result<T, Box<dyn Error>> 
+where 
+    T: DeserializeOwned + 'static,
+    B: Serialize + ?Sized,
+    Q: Serialize + ?Sized,
+    P: Serialize + ?Sized,
+{
+    // Prepare the request using the helper function
+    let (request, _) = prepare_request(
+        default_api_root,
+        segment_name,
+        controller_name,
+        handler_name,
+        body,
+        query,
+        params,
+        api_root,
+        disable_client_validation
+    )?;
+    
+    // Send the request
+    let response = request.send()?;
+    
     // Handle the response based on Content-Type
     let content_type = response
         .headers()
@@ -222,33 +250,6 @@ where
         .and_then(|v| v.to_str().ok());
     
     match content_type {
-        Some(ct) if ct.contains("application/jsonl") => {
-            let json_stream = JsonlStream {
-                reader: std::io::BufReader::new(response),
-                buffer: String::new(),
-            };
-            
-            let typed_stream = json_stream.map(|result| {
-                result.and_then(|value| {
-                    if value.get("isError").is_some() {
-                        let message = value["reason"]
-                            .as_str()
-                            .unwrap_or("Unknown error")
-                            .to_string();
-                        Err(Box::new(HttpException {
-                            message,
-                            status_code: 0,
-                            cause: None,
-                        }) as Box<dyn Error>)
-                    } else {
-                        serde_json::from_value::<T>(value)
-                            .map_err(|e| Box::new(e) as Box<dyn Error>)
-                    }
-                })
-            });
-            
-            Ok(ApiResponse::Stream(Box::new(typed_stream)))
-        }
         Some(ct) if ct.contains("application/json") => {
             let value: Value = response.json()?;
             if value.get("isError").is_some() {
@@ -266,14 +267,83 @@ where
             }
             
             let typed_value = serde_json::from_value::<T>(value)?;
-            Ok(ApiResponse::Single(typed_value))
+            Ok(typed_value)
         }
         _ => {
             let text = response.text()?;
             let typed_value = serde_json::from_str::<T>(&text)?;
-            Ok(ApiResponse::Single(typed_value))
+            Ok(typed_value)
         }
     }
+}
+
+// Request function specifically for streaming responses
+pub fn http_request_stream<T, B, Q, P>(
+    default_api_root: &str,
+    segment_name: &str,
+    controller_name: &str,
+    handler_name: &str,
+    body: Option<&B>,
+    query: Option<&Q>,
+    params: Option<&P>,
+    api_root: Option<&str>,
+    disable_client_validation: bool,
+) -> Box<dyn Iterator<Item = T>> 
+where 
+    T: DeserializeOwned + 'static,
+    B: Serialize + ?Sized,
+    Q: Serialize + ?Sized,
+    P: Serialize + ?Sized,
+{
+    // Prepare the request using the helper function
+    let (request, _) = match prepare_request(
+        default_api_root,
+        segment_name,
+        controller_name,
+        handler_name,
+        body,
+        query,
+        params,
+        api_root,
+        disable_client_validation
+    ) {
+        Ok(req) => req,
+        Err(e) => panic!("{}", e),
+    };
+    
+    // Send the request
+    let response = match request.send() {
+        Ok(res) => res,
+        Err(e) => panic!("{}", e),
+    };
+    
+    // Create the streaming iterator
+    let json_stream = JsonlStream {
+        reader: std::io::BufReader::new(response),
+        buffer: String::new(),
+    };
+    
+    let typed_stream = json_stream.map(|result| {
+        match result {
+            Ok(value) => {
+                if value.get("isError").is_some() {
+                    let message = value["message"]
+                        .as_str()
+                        .unwrap_or("Unknown error")
+                        .to_string();
+                    panic!("{}", message);
+                } else {
+                    match serde_json::from_value::<T>(value) {
+                        Ok(typed_value) => typed_value,
+                        Err(e) => panic!("{}", e),
+                    }
+                }
+            },
+            Err(e) => panic!("{}", e),
+        }
+    });
+    
+    Box::new(typed_stream)
 }
 
 // Helper function to build query strings from nested JSON

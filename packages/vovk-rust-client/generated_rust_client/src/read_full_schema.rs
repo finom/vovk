@@ -86,34 +86,3 @@ pub fn read_full_schema() -> Result<VovkFullSchema, Box<dyn std::error::Error>> 
      
     Ok(schema)
 }
-
-/// Helper function to get a specific segment from the full schema
-pub fn get_segment<'a>(schema: &'a VovkFullSchema, segment_name: &str) -> Option<&'a VovkSchema> {
-    schema.segments.get(segment_name)
-}
-
-/// Helper function to get the root segment from the full schema
-pub fn get_root_segment<'a>(schema: &'a VovkFullSchema) -> Option<&'a VovkSchema> {
-    schema.segments.get("root")
-}
-
-/// Helper function to extract all controller names from all segments
-pub fn get_all_controllers<'a>(schema: &'a VovkFullSchema) -> Vec<(&'a str, &'a str, &'a ControllerSchema)> {
-    let mut controllers = Vec::new();
-    
-    for (segment_name, segment) in &schema.segments {
-        for (controller_name, controller) in &segment.controllers {
-            controllers.push((segment_name.as_str(), controller_name.as_str(), controller));
-        }
-    }
-    
-    controllers
-}
-
-/// Optional helper function to read schema from a custom path
-pub fn read_schema_from_path(path: &Path) -> Result<VovkFullSchema, Box<dyn std::error::Error>> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    let schema: VovkFullSchema = serde_json::from_reader(reader)?;
-    Ok(schema)
-}

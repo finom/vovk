@@ -11,7 +11,7 @@ mod read_full_schema;
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
 pub mod <%= t._.snakeCase(controllerName) %> {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
     const handlerName = t._.snakeCase(handlerNameOriginal); 
@@ -44,12 +44,12 @@ pub mod <%= t._.snakeCase(controllerName) %> {
             validation?.params ? `params: ${handlerNameCapitalized}Params,` : ''
         ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') */ %>
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> <%- validation?.output ? `Result<ApiResponse<${handlerNameCapitalized}Output>, Box<dyn serde::ser::StdError>>` : validation?.iteration ? `Box<dyn Iterator<Item = ${handlerNameCapitalized}Iteration>>` : 'Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>' %>{
+        disable_client_validation: bool,
+    ) -> <%- validation?.output ? `Result<${handlerNameCapitalized}Output, Box<dyn serde::ser::StdError>>` : validation?.iteration ? `Box<dyn Iterator<Item = ${handlerNameCapitalized}Iteration>>` : 'Result<serde_json::Value, Box<dyn serde::ser::StdError>>' %>{
         
-        let result = http_request::<
+        let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
             <%- [
-                validation?.output ? `${handlerNameCapitalized}Output` : validation?.iteration ? `serde_json::Value` : 'serde_json::Value',
+                validation?.output ? `${handlerNameCapitalized}Output` : validation?.iteration ? `${handlerNameCapitalized}Iteration` : 'serde_json::Value',
                 validation?.body ? `${handlerNameCapitalized}Body` : '()',
                 validation?.query ? `${handlerNameCapitalized}Query` : '()',
                 validation?.params ? `${handlerNameCapitalized}Params` : '()'
@@ -68,31 +68,10 @@ pub mod <%= t._.snakeCase(controllerName) %> {
     validation?.params ? 'Some(&params),' : 'None,',
 ].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n')  */ %>
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        <% if (validation?.iteration) { %>
-        match result {
-            Ok(ApiResponse::Stream(stream)) => {
-                // Map the stream of Results to <%= handlerNameCapitalized %>Iteration objects
-                Box::new(stream.filter_map(|item| {
-                    match item {
-                        Ok(value) => {
-                            match serde_json::from_value::<<%= handlerNameCapitalized %>Iteration>(value) {
-                                Ok(iteration) => Some(iteration),
-                                Err(_) => None,
-                            }
-                        },
-                        Err(_) => None,
-                    }
-                }))
-            },
-            // In case of single response or error, return empty iterator
-            _ => Box::new(std::iter::empty())
-        }
-        <% } else { %>
-            result
-        <% } %>
+        result
     }
         <% }) %>
 }
@@ -100,202 +79,3 @@ pub mod <%= t._.snakeCase(controllerName) %> {
 
 <% }) %>
 
-
-
-/*
-// Placeholder for the client module
-mod client {
-    use super::*;
-    use super::ZodControllerOnlyEntityRPC::*;
-    
-    pub fn request<B, Q, P>(
-        segment_name: &str,
-        controller_name: &str,
-        handler_name: &str,
-        body: B,
-        query: Q,
-        params: P,
-        api_root: Option<String>,
-        disable_client_validation: bool,
-    ) -> UpdateZodControllerOnlyEntityResponse {
-        // Create a specific mock response instead of using Default
-        UpdateZodControllerOnlyEntityResponse {
-            id: "123".to_string(),
-            foo: FooOption::bar,  // Using a specific value instead of default
-            updated_at: "2025-03-31T16:56:29Z".to_string(),
-            success: true,
-        }
-    }
-}
-
-
-use serde::{Deserialize, Serialize};
-
-// Define types in a module
-pub mod ZodControllerOnlyEntityRPC {
-    use super::*;
-
-    // Enum with lowercase variants
-   
-   /*// Input type definitions
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UpdateZodControllerOnlyEntityBody {
-        pub foo: UpdateZodControllerOnlyEntityBodyFoo,
-    }
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UpdateZodControllerOnlyEntityQuery {
-        pub q: String,
-    }
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UpdateZodControllerOnlyEntityParams {
-        pub id: String,
-    }*/
-
-    // Return type definition
-
-    
-Write me a function called convertJSONSchemaToRustType(jsonSchema) in TypeScript that accepts JSON schema and returns Rust type definition.
-The function should take a schema object as input and return a string representing the Rust type definition.
-The function should handle different types of JSON schema, including nested objects and arrays.
-The function should also handle optional properties and default values.
-The function should be able to convert JSON schema to Rust types, including structs, enums, and primitive types.
-Nested structures should be converted to Rust structs, and named after the JSON schema property names and the root type name.
-consider that nested structures are prefixed with the root type name, deeply nested structures are prefixed with the root type name and the parent type name, and so on.
-
-interface ConvertOptions {
-  schema: JSONSchema;
-  structName: string;
-  pad: number; // number of spaces to pad the output
-}
-
-export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
-  const { schema, structName } = options; // structName is the name of the struct to be generated
-
-  if (!schema) return '';
-
-  // ...
-}
-
-const types = convertJSONSchemaToPythonType({ schema: validation.body, structName: 'UpdateZodControllerOnlyEntityResponse', pad: 4 }),
-
-
-    
-    
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub enum UpdateZodControllerOnlyEntityResponseFoo {
-        bar,
-        baz,
-    }
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UpdateZodControllerOnlyEntityResponse {
-        pub id: String,
-        pub foo: UpdateZodControllerOnlyEntityResponseFoo,
-        pub updated_at: String,
-        pub success: bool,
-    }
-
-    /// No summary
-    pub fn update_zod_controller_only_entity(
-        body: UpdateZodControllerOnlyEntityBody,
-        query: UpdateZodControllerOnlyEntityQuery,
-        params: UpdateZodControllerOnlyEntityParams,
-        api_root: Option<String>,
-        disable_client_validation: bool,
-    ) -> UpdateZodControllerOnlyEntityResponse {
-        // In a real implementation, you would call a client library
-        request(
-            "generated",
-            "ZodControllerOnlyEntityRPC",
-            "updateZodControllerOnlyEntity",
-            body,
-            query,
-            params,
-            api_root,
-            disable_client_validation,
-        )
-    }
-}
-
-// Placeholder for the client module
-mod client {
-    use super::*;
-    use super::ZodControllerOnlyEntityRPC::*;
-    
-    pub fn request<B, Q, P>(
-        segment_name: &str,
-        controller_name: &str,
-        handler_name: &str,
-        body: B,
-        query: Q,
-        params: P,
-        api_root: Option<String>,
-        disable_client_validation: bool,
-    ) -> UpdateZodControllerOnlyEntityResponse {
-        // Create a specific mock response instead of using Default
-        UpdateZodControllerOnlyEntityResponse {
-            id: "123".to_string(),
-            foo: FooOption::bar,  // Using a specific value instead of default
-            updated_at: "2025-03-31T16:56:29Z".to_string(),
-            success: true,
-        }
-    }
-}
-
-// Example of usage
-fn example_usage() {
-    use ZodControllerOnlyEntityRPC::*;
-    
-    let body = UpdateZodControllerOnlyEntityBody {
-        foo: FooOption::bar,
-    };
-    
-    let query = UpdateZodControllerOnlyEntityQuery {
-        q: "search term".to_string(),
-    };
-    
-    let params = UpdateZodControllerOnlyEntityParams {
-        id: "123".to_string(),
-    };
-    
-    let response = update_zod_controller_only_entity(
-        body,
-        query,
-        params,
-        Some("http://localhost:3000/api".to_string()),
-        false
-    );
-    
-    println!("Updated entity with id: {}", response.id);
-}
-// use serde::{Serialize, Deserialize};
-/ *
-convertJSONSchemaToRustType({ schema: validation.body, namespace: controllerName, structName: 'UpdateZodControllerOnlyEntityResponse', pad: 4 }),
-
-    #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Hash)]
-    pub enum UpdateZodControllerOnlyEntityResponseFoo {
-        bar,
-        baz,
-    }
-
-    // Nested structure definition
-    #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Hash)]
-    pub struct UpdateZodControllerOnlyEntityResponseNested {
-        pub field1: String,
-        pub field2: i32,
-        pub enabled: bool,
-    }
-
-    #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Hash)]
-    pub struct UpdateZodControllerOnlyEntityResponse {
-        pub id: String,
-        pub foo: UpdateZodControllerOnlyEntityResponseFoo,
-        pub nested: UpdateZodControllerOnlyEntityResponseNested,
-        pub updated_at: String,
-        pub success: bool,
-    }
-
-*/

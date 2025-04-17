@@ -1,5 +1,5 @@
 
-// auto-generated 2025-04-16T16:25:36.491Z
+// auto-generated 2025-04-17T16:41:31.611Z
 mod http_request;
 mod read_full_schema;
 
@@ -7,7 +7,7 @@ mod read_full_schema;
 
 
 pub mod no_validation_controller_only_entity_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // NoValidationControllerOnlyEntityRPC.get_no_validation_controller_only_entities GET http://localhost:3000/api/generated/no-validation-controller-only-entities/
@@ -21,8 +21,8 @@ pub mod no_validation_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -39,12 +39,10 @@ pub mod no_validation_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // NoValidationControllerOnlyEntityRPC.update_no_validation_controller_only_entity PUT http://localhost:3000/api/generated/no-validation-controller-only-entities/:id
@@ -58,8 +56,8 @@ pub mod no_validation_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -76,12 +74,10 @@ pub mod no_validation_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // NoValidationControllerOnlyEntityRPC.create_no_validation_controller_only_entity POST http://localhost:3000/api/generated/no-validation-controller-only-entities/
@@ -95,8 +91,8 @@ pub mod no_validation_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -113,12 +109,10 @@ pub mod no_validation_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // NoValidationControllerOnlyEntityRPC.delete_no_validation_controller_only_entity DELETE http://localhost:3000/api/generated/no-validation-controller-only-entities/:id
@@ -132,8 +126,8 @@ pub mod no_validation_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -150,18 +144,16 @@ pub mod no_validation_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod no_validation_controller_and_service_entity_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // NoValidationControllerAndServiceEntityRPC.get_no_validation_controller_and_service_entities GET http://localhost:3000/api/generated/no-validation-controller-and-service-entities/
@@ -175,8 +167,8 @@ pub mod no_validation_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -193,12 +185,10 @@ pub mod no_validation_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // NoValidationControllerAndServiceEntityRPC.update_no_validation_controller_and_service_entity PUT http://localhost:3000/api/generated/no-validation-controller-and-service-entities/:id
@@ -212,8 +202,8 @@ pub mod no_validation_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -230,12 +220,10 @@ pub mod no_validation_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // NoValidationControllerAndServiceEntityRPC.create_no_validation_controller_and_service_entity POST http://localhost:3000/api/generated/no-validation-controller-and-service-entities/
@@ -249,8 +237,8 @@ pub mod no_validation_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -267,12 +255,10 @@ pub mod no_validation_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // NoValidationControllerAndServiceEntityRPC.delete_no_validation_controller_and_service_entity DELETE http://localhost:3000/api/generated/no-validation-controller-and-service-entities/:id
@@ -286,8 +272,8 @@ pub mod no_validation_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -304,22 +290,20 @@ pub mod no_validation_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod zod_controller_only_entity_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // ZodControllerOnlyEntityRPC.get_zod_controller_only_entities GET http://localhost:3000/api/generated/zod-controller-only-entities/
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct GetZodControllerOnlyEntitiesQuery {
         pub search: String,
@@ -333,8 +317,8 @@ pub mod zod_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -351,26 +335,24 @@ pub mod zod_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ZodControllerOnlyEntityRPC.update_zod_controller_only_entity PUT http://localhost:3000/api/generated/zod-controller-only-entities/:id
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateZodControllerOnlyEntityBody {
         pub foo: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateZodControllerOnlyEntityQuery {
         pub q: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateZodControllerOnlyEntityParams {
         pub id: String,
@@ -384,8 +366,8 @@ pub mod zod_controller_only_entity_rpc {
         params: UpdateZodControllerOnlyEntityParams,
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -402,12 +384,10 @@ pub mod zod_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ZodControllerOnlyEntityRPC.create_zod_controller_only_entity POST http://localhost:3000/api/generated/zod-controller-only-entities/
@@ -421,8 +401,8 @@ pub mod zod_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -439,12 +419,10 @@ pub mod zod_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ZodControllerOnlyEntityRPC.delete_zod_controller_only_entity DELETE http://localhost:3000/api/generated/zod-controller-only-entities/:id
@@ -458,8 +436,8 @@ pub mod zod_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -476,22 +454,20 @@ pub mod zod_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod zod_controller_and_service_entity_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // ZodControllerAndServiceEntityRPC.get_zod_controller_and_service_entities GET http://localhost:3000/api/generated/zod-controller-and-service-entities/
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct GetZodControllerAndServiceEntitiesQuery {
         pub search: String,
@@ -505,8 +481,8 @@ pub mod zod_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -523,26 +499,24 @@ pub mod zod_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ZodControllerAndServiceEntityRPC.update_zod_controller_and_service_entity PUT http://localhost:3000/api/generated/zod-controller-and-service-entities/:id
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateZodControllerAndServiceEntityBody {
         pub foo: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateZodControllerAndServiceEntityQuery {
         pub q: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateZodControllerAndServiceEntityParams {
         pub id: String,
@@ -556,8 +530,8 @@ pub mod zod_controller_and_service_entity_rpc {
         params: UpdateZodControllerAndServiceEntityParams,
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -574,12 +548,10 @@ pub mod zod_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ZodControllerAndServiceEntityRPC.create_zod_controller_and_service_entity POST http://localhost:3000/api/generated/zod-controller-and-service-entities/
@@ -593,8 +565,8 @@ pub mod zod_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -611,12 +583,10 @@ pub mod zod_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ZodControllerAndServiceEntityRPC.delete_zod_controller_and_service_entity DELETE http://localhost:3000/api/generated/zod-controller-and-service-entities/:id
@@ -630,8 +600,8 @@ pub mod zod_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -648,22 +618,20 @@ pub mod zod_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod yup_controller_only_entity_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // YupControllerOnlyEntityRPC.get_yup_controller_only_entities GET http://localhost:3000/api/generated/yup-controller-only-entities/
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct GetYupControllerOnlyEntitiesQuery {
         pub search: Option<String>,
@@ -677,8 +645,8 @@ pub mod yup_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -695,28 +663,26 @@ pub mod yup_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // YupControllerOnlyEntityRPC.update_yup_controller_only_entity PUT http://localhost:3000/api/generated/yup-controller-only-entities/:id
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateYupControllerOnlyEntityBody {
         pub foo: UpdateYupControllerOnlyEntityBodyFoo,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_camel_case_types)]
     pub enum UpdateYupControllerOnlyEntityBodyFoo {
         bar,
         baz,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateYupControllerOnlyEntityQuery {
         pub q: Option<String>,
@@ -730,8 +696,8 @@ pub mod yup_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -748,12 +714,10 @@ pub mod yup_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // YupControllerOnlyEntityRPC.create_yup_controller_only_entity POST http://localhost:3000/api/generated/yup-controller-only-entities/
@@ -767,8 +731,8 @@ pub mod yup_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -785,12 +749,10 @@ pub mod yup_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // YupControllerOnlyEntityRPC.delete_yup_controller_only_entity DELETE http://localhost:3000/api/generated/yup-controller-only-entities/:id
@@ -804,8 +766,8 @@ pub mod yup_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -822,22 +784,20 @@ pub mod yup_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod yup_controller_and_service_entity_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // YupControllerAndServiceEntityRPC.get_yup_controller_and_service_entities GET http://localhost:3000/api/generated/yup-controller-and-service-entities/
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct GetYupControllerAndServiceEntitiesQuery {
         pub search: Option<String>,
@@ -851,8 +811,8 @@ pub mod yup_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -869,28 +829,26 @@ pub mod yup_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // YupControllerAndServiceEntityRPC.update_yup_controller_and_service_entity PUT http://localhost:3000/api/generated/yup-controller-and-service-entities/:id
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateYupControllerAndServiceEntityBody {
         pub foo: UpdateYupControllerAndServiceEntityBodyFoo,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_camel_case_types)]
     pub enum UpdateYupControllerAndServiceEntityBodyFoo {
         bar,
         baz,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateYupControllerAndServiceEntityQuery {
         pub q: Option<String>,
@@ -904,8 +862,8 @@ pub mod yup_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -922,12 +880,10 @@ pub mod yup_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // YupControllerAndServiceEntityRPC.create_yup_controller_and_service_entity POST http://localhost:3000/api/generated/yup-controller-and-service-entities/
@@ -941,8 +897,8 @@ pub mod yup_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -959,12 +915,10 @@ pub mod yup_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // YupControllerAndServiceEntityRPC.delete_yup_controller_and_service_entity DELETE http://localhost:3000/api/generated/yup-controller-and-service-entities/:id
@@ -978,8 +932,8 @@ pub mod yup_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -996,22 +950,20 @@ pub mod yup_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod dto_controller_only_entity_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // DtoControllerOnlyEntityRPC.get_dto_controller_only_entities GET http://localhost:3000/api/generated/dto-controller-only-entities/
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct GetDtoControllerOnlyEntitiesQuery {
         pub search: String,
@@ -1025,8 +977,8 @@ pub mod dto_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1043,21 +995,19 @@ pub mod dto_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // DtoControllerOnlyEntityRPC.update_dto_controller_only_entity PUT http://localhost:3000/api/generated/dto-controller-only-entities/:id
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateDtoControllerOnlyEntityBody {
         pub foo: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateDtoControllerOnlyEntityQuery {
         pub q: String,
@@ -1071,8 +1021,8 @@ pub mod dto_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1089,12 +1039,10 @@ pub mod dto_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // DtoControllerOnlyEntityRPC.create_dto_controller_only_entity POST http://localhost:3000/api/generated/dto-controller-only-entities/
@@ -1108,8 +1056,8 @@ pub mod dto_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1126,12 +1074,10 @@ pub mod dto_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // DtoControllerOnlyEntityRPC.delete_dto_controller_only_entity DELETE http://localhost:3000/api/generated/dto-controller-only-entities/:id
@@ -1145,8 +1091,8 @@ pub mod dto_controller_only_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1163,22 +1109,20 @@ pub mod dto_controller_only_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod dto_controller_and_service_entity_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // DtoControllerAndServiceEntityRPC.get_dto_controller_and_service_entities GET http://localhost:3000/api/generated/dto-controller-and-service-entities/
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct GetDtoControllerAndServiceEntitiesQuery {
         pub search: String,
@@ -1192,8 +1136,8 @@ pub mod dto_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1210,21 +1154,19 @@ pub mod dto_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // DtoControllerAndServiceEntityRPC.update_dto_controller_and_service_entity PUT http://localhost:3000/api/generated/dto-controller-and-service-entities/:id
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateDtoControllerAndServiceEntityBody {
         pub foo: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct UpdateDtoControllerAndServiceEntityQuery {
         pub q: String,
@@ -1238,8 +1180,8 @@ pub mod dto_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1256,12 +1198,10 @@ pub mod dto_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // DtoControllerAndServiceEntityRPC.create_dto_controller_and_service_entity POST http://localhost:3000/api/generated/dto-controller-and-service-entities/
@@ -1275,8 +1215,8 @@ pub mod dto_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1293,12 +1233,10 @@ pub mod dto_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // DtoControllerAndServiceEntityRPC.delete_dto_controller_and_service_entity DELETE http://localhost:3000/api/generated/dto-controller-and-service-entities/:id
@@ -1312,8 +1250,8 @@ pub mod dto_controller_and_service_entity_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1330,12 +1268,10 @@ pub mod dto_controller_and_service_entity_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
@@ -1343,7 +1279,7 @@ pub mod dto_controller_and_service_entity_rpc {
 
 
 pub mod client_controller_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // ClientControllerRPC.get_hello_world_response_object GET http://localhost:3000/api/foo/client/client/get-hello-world-response-object
@@ -1357,8 +1293,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1375,12 +1311,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_hello_world_object_literal GET http://localhost:3000/api/foo/client/client/get-hello-world-object-literal
@@ -1394,8 +1328,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1412,12 +1346,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_hello_world_next_response_object_promise GET http://localhost:3000/api/foo/client/client/get-hello-world-next-response-object-promise
@@ -1431,8 +1363,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1449,12 +1381,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_hello_world_raw_response_object_promise GET http://localhost:3000/api/foo/client/client/get-hello-world-raw-response-object-promise
@@ -1468,8 +1398,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1486,12 +1416,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_hello_world_object_literal_promise GET http://localhost:3000/api/foo/client/client/get-hello-world-object-literal-promise
@@ -1505,8 +1433,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1523,12 +1451,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_hello_world_headers GET http://localhost:3000/api/foo/client/client/get-hello-world-headers
@@ -1542,8 +1468,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1560,12 +1486,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_hello_world_array GET http://localhost:3000/api/foo/client/client/get-hello-world-array
@@ -1579,8 +1503,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1597,12 +1521,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_hello_world_and_empty_generic GET http://localhost:3000/api/foo/client/client/get-hello-world-and-empty-generic
@@ -1616,8 +1538,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1634,12 +1556,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_with_params GET http://localhost:3000/api/foo/client/client/with-params/:hello
@@ -1653,8 +1573,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1671,12 +1591,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.post_with_all POST http://localhost:3000/api/foo/client/client/with-all/:hello
@@ -1690,8 +1608,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1708,12 +1626,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.post_with_body_and_query_using_req_vovk POST http://localhost:3000/api/foo/client/client/with-all-using-req-vovk
@@ -1727,8 +1643,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1745,12 +1661,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_nested_query GET http://localhost:3000/api/foo/client/client/nested-query
@@ -1764,8 +1678,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1782,12 +1696,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.post_with_form_data_using_req_vovk POST http://localhost:3000/api/foo/client/client/form-data
@@ -1801,8 +1713,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1819,12 +1731,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_error_response GET http://localhost:3000/api/foo/client/client/error
@@ -1838,8 +1748,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1856,12 +1766,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_json_text_response GET http://localhost:3000/api/foo/client/client/json-text
@@ -1875,8 +1783,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1893,12 +1801,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_jsonl_response GET http://localhost:3000/api/foo/client/client/jsonl
@@ -1912,8 +1818,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1930,12 +1836,10 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // ClientControllerRPC.get_jsonl_text_response GET http://localhost:3000/api/foo/client/client/jsonl-text
@@ -1949,8 +1853,8 @@ pub mod client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -1967,18 +1871,16 @@ pub mod client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod streaming_controller_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // StreamingControllerRPC.post_with_streaming POST http://localhost:3000/api/foo/client/streaming/post-with-streaming
@@ -1992,8 +1894,8 @@ pub mod streaming_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2010,12 +1912,10 @@ pub mod streaming_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingControllerRPC.post_with_streaming_and_immediate_error POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-immediate-error
@@ -2029,8 +1929,8 @@ pub mod streaming_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2047,12 +1947,10 @@ pub mod streaming_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingControllerRPC.post_with_streaming_and_delayed_error POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-error
@@ -2066,8 +1964,8 @@ pub mod streaming_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2084,12 +1982,10 @@ pub mod streaming_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingControllerRPC.post_with_streaming_and_delayed_custom_error POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-custom-error
@@ -2103,8 +1999,8 @@ pub mod streaming_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2121,12 +2017,10 @@ pub mod streaming_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingControllerRPC.post_with_streaming_and_delayed_unhandled_error POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-unhandled-error
@@ -2140,8 +2034,8 @@ pub mod streaming_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2158,18 +2052,16 @@ pub mod streaming_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod streaming_generator_controller_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // StreamingGeneratorControllerRPC.get_with_streaming GET http://localhost:3000/api/foo/client/streaming-generator/get-with-streaming
@@ -2183,8 +2075,8 @@ pub mod streaming_generator_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2201,12 +2093,10 @@ pub mod streaming_generator_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingGeneratorControllerRPC.post_with_async_streaming POST http://localhost:3000/api/foo/client/streaming-generator/post-with-async-streaming
@@ -2220,8 +2110,8 @@ pub mod streaming_generator_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2238,12 +2128,10 @@ pub mod streaming_generator_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingGeneratorControllerRPC.post_with_streaming POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming
@@ -2257,8 +2145,8 @@ pub mod streaming_generator_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2275,12 +2163,10 @@ pub mod streaming_generator_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingGeneratorControllerRPC.post_with_streaming_and_immediate_error POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-immediate-error
@@ -2294,8 +2180,8 @@ pub mod streaming_generator_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2312,12 +2198,10 @@ pub mod streaming_generator_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingGeneratorControllerRPC.post_with_streaming_and_delayed_error POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-error
@@ -2331,8 +2215,8 @@ pub mod streaming_generator_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2349,12 +2233,10 @@ pub mod streaming_generator_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingGeneratorControllerRPC.post_with_streaming_and_delayed_custom_error POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-custom-error
@@ -2368,8 +2250,8 @@ pub mod streaming_generator_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2386,12 +2268,10 @@ pub mod streaming_generator_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // StreamingGeneratorControllerRPC.post_with_streaming_and_delayed_unhandled_error POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-unhandled-error
@@ -2405,8 +2285,8 @@ pub mod streaming_generator_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2423,18 +2303,16 @@ pub mod streaming_generator_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod custom_schema_controller_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // CustomSchemaControllerRPC.get_with_custom_schema GET http://localhost:3000/api/foo/client//get-with-custom-schema
@@ -2448,8 +2326,8 @@ pub mod custom_schema_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2466,38 +2344,36 @@ pub mod custom_schema_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
     
 pub mod with_zod_client_controller_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // WithZodClientControllerRPC.handle_all POST http://localhost:3000/api/foo/client/with-zod/all/:foo/:bar
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllQuery {
         pub search: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllParams {
         pub foo: String,
         pub bar: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutput {
         pub body: HandleAllOutputBody,
@@ -2506,26 +2382,26 @@ pub mod with_zod_client_controller_rpc {
         pub vovkParams: HandleAllOutputVovkParams,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutputBody {
         pub hello: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutputQuery {
         pub search: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutputParams {
         pub foo: String,
         pub bar: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutputVovkParams {
         pub foo: String,
@@ -2540,8 +2416,8 @@ pub mod with_zod_client_controller_rpc {
         params: HandleAllParams,
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<HandleAllOutput>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<HandleAllOutput, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         HandleAllOutput,
@@ -2558,16 +2434,14 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.handle_query GET http://localhost:3000/api/foo/client/with-zod/handle-query
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleQueryQuery {
         pub search: String,
@@ -2581,8 +2455,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2599,16 +2473,14 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.handle_body POST http://localhost:3000/api/foo/client/with-zod/handle-body
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleBodyBody {
         pub hello: String,
@@ -2622,8 +2494,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2640,16 +2512,14 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.handle_params PUT http://localhost:3000/api/foo/client/with-zod/x/:foo/:bar/y
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleParamsParams {
         pub foo: String,
@@ -2664,8 +2534,8 @@ pub mod with_zod_client_controller_rpc {
         params: HandleParamsParams,
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2682,16 +2552,14 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.handle_nested_query GET http://localhost:3000/api/foo/client/with-zod/handle-nested-query
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQuery {
         pub x: String,
@@ -2699,7 +2567,7 @@ pub mod with_zod_client_controller_rpc {
         pub z: HandleNestedQueryQueryZ,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQueryZ {
         pub f: String,
@@ -2707,14 +2575,14 @@ pub mod with_zod_client_controller_rpc {
         pub d: HandleNestedQueryQueryZD,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQueryZD {
         pub x: String,
         pub arrOfObjects: Vec<HandleNestedQueryQueryZDArrOfObjects>,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQueryZDArrOfObjects {
         pub foo: String,
@@ -2722,7 +2590,7 @@ pub mod with_zod_client_controller_rpc {
         pub nestedObj: Option<HandleNestedQueryQueryZDArrOfObjectsNestedObj>,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQueryZDArrOfObjectsNestedObj {
         pub deepKey: String,
@@ -2736,8 +2604,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2754,21 +2622,19 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.handle_output GET http://localhost:3000/api/foo/client/with-zod/handle-output
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleOutputQuery {
         pub helloOutput: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleOutputOutput {
         pub hello: String,
@@ -2782,8 +2648,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<HandleOutputOutput>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<HandleOutputOutput, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         HandleOutputOutput,
@@ -2800,21 +2666,19 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.handle_stream GET http://localhost:3000/api/foo/client/with-zod/handle-stream
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleStreamQuery {
         pub values: Vec<String>,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleStreamIteration {
         pub value: String,
@@ -2828,11 +2692,11 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
+        disable_client_validation: bool,
     ) -> Box<dyn Iterator<Item = HandleStreamIteration>>{
         
-        let result = http_request::<
-                        serde_json::Value,
+        let result = http_request_stream::<
+                        HandleStreamIteration,
             (),
             HandleStreamQuery,
             ()
@@ -2846,29 +2710,10 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-        match result {
-            Ok(ApiResponse::Stream(stream)) => {
-                // Map the stream of Results to HandleStreamIteration objects
-                Box::new(stream.filter_map(|item| {
-                    match item {
-                        Ok(value) => {
-                            match serde_json::from_value::<HandleStreamIteration>(value) {
-                                Ok(iteration) => Some(iteration),
-                                Err(_) => None,
-                            }
-                        },
-                        Err(_) => None,
-                    }
-                }))
-            },
-            // In case of single response or error, return empty iterator
-            _ => Box::new(std::iter::empty())
-        }
-        
+        result
     }
         
     // WithZodClientControllerRPC.handle_nothitng POST http://localhost:3000/api/foo/client/with-zod/handle-nothitng
@@ -2882,8 +2727,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2900,16 +2745,14 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.handle_form_data POST http://localhost:3000/api/foo/client/with-zod/handle-form-data
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleFormDataQuery {
         pub search: String,
@@ -2923,8 +2766,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2941,21 +2784,19 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.disable_server_side_validation_bool POST http://localhost:3000/api/foo/client/with-zod/disable-server-side-validation-bool
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationBoolBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationBoolQuery {
         pub search: String,
@@ -2969,8 +2810,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -2987,21 +2828,19 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.disable_server_side_validation_strings POST http://localhost:3000/api/foo/client/with-zod/disable-server-side-validation-strings
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationStringsBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationStringsQuery {
         pub search: String,
@@ -3015,8 +2854,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3033,12 +2872,10 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.skip_schema_emission_bool POST http://localhost:3000/api/foo/client/with-zod/skip-schema-emission-bool
@@ -3052,8 +2889,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3070,16 +2907,14 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.skip_schema_emission_strings POST http://localhost:3000/api/foo/client/with-zod/skip-schema-emission-strings
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct SkipSchemaEmissionStringsQuery {
         pub search: String,
@@ -3093,8 +2928,8 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3111,21 +2946,19 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithZodClientControllerRPC.validate_every_iteration POST http://localhost:3000/api/foo/client/with-zod/validate-every-iteration
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct ValidateEveryIterationQuery {
         pub values: Vec<String>,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct ValidateEveryIterationIteration {
         pub value: String,
@@ -3139,11 +2972,11 @@ pub mod with_zod_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
+        disable_client_validation: bool,
     ) -> Box<dyn Iterator<Item = ValidateEveryIterationIteration>>{
         
-        let result = http_request::<
-                        serde_json::Value,
+        let result = http_request_stream::<
+                        ValidateEveryIterationIteration,
             (),
             ValidateEveryIterationQuery,
             ()
@@ -3157,55 +2990,36 @@ pub mod with_zod_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-        match result {
-            Ok(ApiResponse::Stream(stream)) => {
-                // Map the stream of Results to ValidateEveryIterationIteration objects
-                Box::new(stream.filter_map(|item| {
-                    match item {
-                        Ok(value) => {
-                            match serde_json::from_value::<ValidateEveryIterationIteration>(value) {
-                                Ok(iteration) => Some(iteration),
-                                Err(_) => None,
-                            }
-                        },
-                        Err(_) => None,
-                    }
-                }))
-            },
-            // In case of single response or error, return empty iterator
-            _ => Box::new(std::iter::empty())
-        }
-        
+        result
     }
         
 }
     
 pub mod with_yup_client_controller_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // WithYupClientControllerRPC.handle_all POST http://localhost:3000/api/foo/client/with-yup/all/:foo/:bar
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllQuery {
         pub search: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllParams {
         pub foo: String,
         pub bar: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutput {
         pub body: HandleAllOutputBody,
@@ -3214,26 +3028,26 @@ pub mod with_yup_client_controller_rpc {
         pub vovkParams: HandleAllOutputVovkParams,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutputBody {
         pub hello: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutputQuery {
         pub search: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutputParams {
         pub foo: String,
         pub bar: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutputVovkParams {
         pub foo: String,
@@ -3248,8 +3062,8 @@ pub mod with_yup_client_controller_rpc {
         params: HandleAllParams,
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<HandleAllOutput>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<HandleAllOutput, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         HandleAllOutput,
@@ -3266,16 +3080,14 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.handle_query GET http://localhost:3000/api/foo/client/with-yup/handle-query
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleQueryQuery {
         pub search: String,
@@ -3289,8 +3101,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3307,16 +3119,14 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.handle_body POST http://localhost:3000/api/foo/client/with-yup/handle-body
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleBodyBody {
         pub hello: String,
@@ -3330,8 +3140,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3348,16 +3158,14 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.handle_params PUT http://localhost:3000/api/foo/client/with-yup/x/:foo/:bar/y
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleParamsParams {
         pub foo: String,
@@ -3372,8 +3180,8 @@ pub mod with_yup_client_controller_rpc {
         params: HandleParamsParams,
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3390,16 +3198,14 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.handle_nested_query GET http://localhost:3000/api/foo/client/with-yup/handle-nested-query
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQuery {
         pub x: String,
@@ -3407,7 +3213,7 @@ pub mod with_yup_client_controller_rpc {
         pub z: HandleNestedQueryQueryZ,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQueryZ {
         pub f: String,
@@ -3415,14 +3221,14 @@ pub mod with_yup_client_controller_rpc {
         pub d: HandleNestedQueryQueryZD,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQueryZD {
         pub x: String,
         pub arrOfObjects: Vec<HandleNestedQueryQueryZDArrOfObjects>,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQueryZDArrOfObjects {
         pub foo: String,
@@ -3430,7 +3236,7 @@ pub mod with_yup_client_controller_rpc {
         pub nestedObj: Option<HandleNestedQueryQueryZDArrOfObjectsNestedObj>,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQueryZDArrOfObjectsNestedObj {
         pub deepKey: Option<String>,
@@ -3444,8 +3250,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3462,21 +3268,19 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.handle_output GET http://localhost:3000/api/foo/client/with-yup/handle-output
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleOutputQuery {
         pub helloOutput: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleOutputOutput {
         pub hello: String,
@@ -3490,8 +3294,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<HandleOutputOutput>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<HandleOutputOutput, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         HandleOutputOutput,
@@ -3508,21 +3312,19 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.handle_stream GET http://localhost:3000/api/foo/client/with-yup/handle-stream
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleStreamQuery {
         pub values: Vec<String>,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleStreamIteration {
         pub value: String,
@@ -3536,11 +3338,11 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
+        disable_client_validation: bool,
     ) -> Box<dyn Iterator<Item = HandleStreamIteration>>{
         
-        let result = http_request::<
-                        serde_json::Value,
+        let result = http_request_stream::<
+                        HandleStreamIteration,
             (),
             HandleStreamQuery,
             ()
@@ -3554,29 +3356,10 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-        match result {
-            Ok(ApiResponse::Stream(stream)) => {
-                // Map the stream of Results to HandleStreamIteration objects
-                Box::new(stream.filter_map(|item| {
-                    match item {
-                        Ok(value) => {
-                            match serde_json::from_value::<HandleStreamIteration>(value) {
-                                Ok(iteration) => Some(iteration),
-                                Err(_) => None,
-                            }
-                        },
-                        Err(_) => None,
-                    }
-                }))
-            },
-            // In case of single response or error, return empty iterator
-            _ => Box::new(std::iter::empty())
-        }
-        
+        result
     }
         
     // WithYupClientControllerRPC.handle_nothitng POST http://localhost:3000/api/foo/client/with-yup/handle-nothitng
@@ -3590,8 +3373,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3608,16 +3391,14 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.handle_form_data POST http://localhost:3000/api/foo/client/with-yup/handle-form-data
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleFormDataQuery {
         pub search: String,
@@ -3631,8 +3412,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3649,21 +3430,19 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.disable_server_side_validation_bool POST http://localhost:3000/api/foo/client/with-yup/disable-server-side-validation-bool
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationBoolBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationBoolQuery {
         pub search: String,
@@ -3677,8 +3456,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3695,21 +3474,19 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.disable_server_side_validation_strings POST http://localhost:3000/api/foo/client/with-yup/disable-server-side-validation-strings
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationStringsBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationStringsQuery {
         pub search: String,
@@ -3723,8 +3500,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3741,12 +3518,10 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.skip_schema_emission_bool POST http://localhost:3000/api/foo/client/with-yup/skip-schema-emission-bool
@@ -3760,8 +3535,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3778,16 +3553,14 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.skip_schema_emission_strings POST http://localhost:3000/api/foo/client/with-yup/skip-schema-emission-strings
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct SkipSchemaEmissionStringsQuery {
         pub search: String,
@@ -3801,8 +3574,8 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3819,21 +3592,19 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithYupClientControllerRPC.validate_every_iteration POST http://localhost:3000/api/foo/client/with-yup/validate-every-iteration
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct ValidateEveryIterationQuery {
         pub values: Vec<String>,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct ValidateEveryIterationIteration {
         pub value: String,
@@ -3847,11 +3618,11 @@ pub mod with_yup_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
+        disable_client_validation: bool,
     ) -> Box<dyn Iterator<Item = ValidateEveryIterationIteration>>{
         
-        let result = http_request::<
-                        serde_json::Value,
+        let result = http_request_stream::<
+                        ValidateEveryIterationIteration,
             (),
             ValidateEveryIterationQuery,
             ()
@@ -3865,55 +3636,36 @@ pub mod with_yup_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-        match result {
-            Ok(ApiResponse::Stream(stream)) => {
-                // Map the stream of Results to ValidateEveryIterationIteration objects
-                Box::new(stream.filter_map(|item| {
-                    match item {
-                        Ok(value) => {
-                            match serde_json::from_value::<ValidateEveryIterationIteration>(value) {
-                                Ok(iteration) => Some(iteration),
-                                Err(_) => None,
-                            }
-                        },
-                        Err(_) => None,
-                    }
-                }))
-            },
-            // In case of single response or error, return empty iterator
-            _ => Box::new(std::iter::empty())
-        }
-        
+        result
     }
         
 }
     
 pub mod with_dto_client_controller_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // WithDtoClientControllerRPC.handle_all POST http://localhost:3000/api/foo/client/with-dto/all/:foo/:bar
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllQuery {
         pub search: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllParams {
         pub foo: String,
         pub bar: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleAllOutput {
         pub body: (),
@@ -3930,8 +3682,8 @@ pub mod with_dto_client_controller_rpc {
         params: HandleAllParams,
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<HandleAllOutput>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<HandleAllOutput, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         HandleAllOutput,
@@ -3948,12 +3700,10 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_all_client POST http://localhost:3000/api/foo/client/with-dto/all/:foo/:bar/client
@@ -3967,8 +3717,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -3985,16 +3735,14 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_query GET http://localhost:3000/api/foo/client/with-dto/handle-query
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleQueryQuery {
         pub search: String,
@@ -4008,8 +3756,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4026,12 +3774,10 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_query_client GET http://localhost:3000/api/foo/client/with-dto/handle-query-client
@@ -4045,8 +3791,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4063,16 +3809,14 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_body POST http://localhost:3000/api/foo/client/with-dto/handle-body
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleBodyBody {
         pub hello: String,
@@ -4086,8 +3830,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4104,12 +3848,10 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_body_client POST http://localhost:3000/api/foo/client/with-dto/handle-body-client
@@ -4123,8 +3865,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4141,16 +3883,14 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_params PUT http://localhost:3000/api/foo/client/with-dto/x/:foo/:bar/y
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleParamsParams {
         pub foo: String,
@@ -4165,8 +3905,8 @@ pub mod with_dto_client_controller_rpc {
         params: HandleParamsParams,
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4183,12 +3923,10 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_params_client PUT http://localhost:3000/api/foo/client/with-dto/x/:foo/:bar/y/client
@@ -4202,8 +3940,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4220,16 +3958,14 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_nested_query GET http://localhost:3000/api/foo/client/with-dto/handle-nested-query
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleNestedQueryQuery {
         pub x: String,
@@ -4245,8 +3981,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4263,12 +3999,10 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_nested_query_client GET http://localhost:3000/api/foo/client/with-dto/handle-nested-query-client
@@ -4282,8 +4016,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4300,21 +4034,19 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_output GET http://localhost:3000/api/foo/client/with-dto/handle-output
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleOutputQuery {
         pub helloOutput: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleOutputOutput {
         pub hello: String,
@@ -4328,8 +4060,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<HandleOutputOutput>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<HandleOutputOutput, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         HandleOutputOutput,
@@ -4346,12 +4078,10 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_output_client GET http://localhost:3000/api/foo/client/with-dto/handle-output-client
@@ -4365,8 +4095,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4383,21 +4113,19 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_stream GET http://localhost:3000/api/foo/client/with-dto/handle-stream
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleStreamQuery {
         pub values: Vec<String>,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleStreamIteration {
         pub value: String,
@@ -4411,11 +4139,11 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
+        disable_client_validation: bool,
     ) -> Box<dyn Iterator<Item = HandleStreamIteration>>{
         
-        let result = http_request::<
-                        serde_json::Value,
+        let result = http_request_stream::<
+                        HandleStreamIteration,
             (),
             HandleStreamQuery,
             ()
@@ -4429,29 +4157,10 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-        match result {
-            Ok(ApiResponse::Stream(stream)) => {
-                // Map the stream of Results to HandleStreamIteration objects
-                Box::new(stream.filter_map(|item| {
-                    match item {
-                        Ok(value) => {
-                            match serde_json::from_value::<HandleStreamIteration>(value) {
-                                Ok(iteration) => Some(iteration),
-                                Err(_) => None,
-                            }
-                        },
-                        Err(_) => None,
-                    }
-                }))
-            },
-            // In case of single response or error, return empty iterator
-            _ => Box::new(std::iter::empty())
-        }
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_nothitng POST http://localhost:3000/api/foo/client/with-dto/handle-nothitng
@@ -4465,8 +4174,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4483,16 +4192,14 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.handle_form_data POST http://localhost:3000/api/foo/client/with-dto/handle-form-data
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct HandleFormDataQuery {
         pub search: String,
@@ -4506,8 +4213,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4524,21 +4231,19 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.disable_server_side_validation_bool POST http://localhost:3000/api/foo/client/with-dto/disable-server-side-validation-bool
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationBoolBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationBoolQuery {
         pub search: String,
@@ -4552,8 +4257,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4570,21 +4275,19 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.disable_server_side_validation_strings POST http://localhost:3000/api/foo/client/with-dto/disable-server-side-validation-strings
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationStringsBody {
         pub hello: String,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct DisableServerSideValidationStringsQuery {
         pub search: String,
@@ -4598,8 +4301,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4616,12 +4319,10 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.skip_schema_emission_bool POST http://localhost:3000/api/foo/client/with-dto/skip-schema-emission-bool
@@ -4635,8 +4336,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4653,16 +4354,14 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.skip_schema_emission_strings POST http://localhost:3000/api/foo/client/with-dto/skip-schema-emission-strings
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct SkipSchemaEmissionStringsQuery {
         pub search: String,
@@ -4676,8 +4375,8 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4694,21 +4393,19 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
     // WithDtoClientControllerRPC.validate_every_iteration POST http://localhost:3000/api/foo/client/with-dto/validate-every-iteration
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct ValidateEveryIterationQuery {
         pub values: Vec<()>,
     }
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     #[allow(non_snake_case)]
     pub struct ValidateEveryIterationIteration {
         pub value: String,
@@ -4722,11 +4419,11 @@ pub mod with_dto_client_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
+        disable_client_validation: bool,
     ) -> Box<dyn Iterator<Item = ValidateEveryIterationIteration>>{
         
-        let result = http_request::<
-                        serde_json::Value,
+        let result = http_request_stream::<
+                        ValidateEveryIterationIteration,
             (),
             ValidateEveryIterationQuery,
             ()
@@ -4740,35 +4437,16 @@ pub mod with_dto_client_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-        match result {
-            Ok(ApiResponse::Stream(stream)) => {
-                // Map the stream of Results to ValidateEveryIterationIteration objects
-                Box::new(stream.filter_map(|item| {
-                    match item {
-                        Ok(value) => {
-                            match serde_json::from_value::<ValidateEveryIterationIteration>(value) {
-                                Ok(iteration) => Some(iteration),
-                                Err(_) => None,
-                            }
-                        },
-                        Err(_) => None,
-                    }
-                }))
-            },
-            // In case of single response or error, return empty iterator
-            _ => Box::new(std::iter::empty())
-        }
-        
+        result
     }
         
 }
     
 pub mod open_api_controller_rpc {
-    pub use crate::http_request::{http_request, ApiResponse};
+    pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 
     // OpenApiControllerRPC.get_from_schema GET http://localhost:3000/api/foo/client/openapi/
@@ -4782,8 +4460,8 @@ pub mod open_api_controller_rpc {
         params: (),
 
         api_root: Option<&str>,
-        disable_client_validation: Option<bool>,
-    ) -> Result<ApiResponse<serde_json::Value>, Box<dyn serde::ser::StdError>>{
+        disable_client_validation: bool,
+    ) -> Result<serde_json::Value, Box<dyn serde::ser::StdError>>{
         
         let result = http_request::<
                         serde_json::Value,
@@ -4800,12 +4478,10 @@ pub mod open_api_controller_rpc {
             Some(&params),
 
             api_root,
-            disable_client_validation.unwrap_or(false),
+            disable_client_validation,
         );
 
-        
-            result
-        
+        result
     }
         
 }
@@ -4813,202 +4489,3 @@ pub mod open_api_controller_rpc {
 
 
 
-
-
-/*
-// Placeholder for the client module
-mod client {
-    use super::*;
-    use super::ZodControllerOnlyEntityRPC::*;
-    
-    pub fn request<B, Q, P>(
-        segment_name: &str,
-        controller_name: &str,
-        handler_name: &str,
-        body: B,
-        query: Q,
-        params: P,
-        api_root: Option<String>,
-        disable_client_validation: bool,
-    ) -> UpdateZodControllerOnlyEntityResponse {
-        // Create a specific mock response instead of using Default
-        UpdateZodControllerOnlyEntityResponse {
-            id: "123".to_string(),
-            foo: FooOption::bar,  // Using a specific value instead of default
-            updated_at: "2025-03-31T16:56:29Z".to_string(),
-            success: true,
-        }
-    }
-}
-
-
-use serde::{Deserialize, Serialize};
-
-// Define types in a module
-pub mod ZodControllerOnlyEntityRPC {
-    use super::*;
-
-    // Enum with lowercase variants
-   
-   /*// Input type definitions
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UpdateZodControllerOnlyEntityBody {
-        pub foo: UpdateZodControllerOnlyEntityBodyFoo,
-    }
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UpdateZodControllerOnlyEntityQuery {
-        pub q: String,
-    }
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UpdateZodControllerOnlyEntityParams {
-        pub id: String,
-    }*/
-
-    // Return type definition
-
-    
-Write me a function called convertJSONSchemaToRustType(jsonSchema) in TypeScript that accepts JSON schema and returns Rust type definition.
-The function should take a schema object as input and return a string representing the Rust type definition.
-The function should handle different types of JSON schema, including nested objects and arrays.
-The function should also handle optional properties and default values.
-The function should be able to convert JSON schema to Rust types, including structs, enums, and primitive types.
-Nested structures should be converted to Rust structs, and named after the JSON schema property names and the root type name.
-consider that nested structures are prefixed with the root type name, deeply nested structures are prefixed with the root type name and the parent type name, and so on.
-
-interface ConvertOptions {
-  schema: JSONSchema;
-  structName: string;
-  pad: number; // number of spaces to pad the output
-}
-
-export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
-  const { schema, structName } = options; // structName is the name of the struct to be generated
-
-  if (!schema) return '';
-
-  // ...
-}
-
-const types = convertJSONSchemaToPythonType({ schema: validation.body, structName: 'UpdateZodControllerOnlyEntityResponse', pad: 4 }),
-
-
-    
-    
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub enum UpdateZodControllerOnlyEntityResponseFoo {
-        bar,
-        baz,
-    }
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UpdateZodControllerOnlyEntityResponse {
-        pub id: String,
-        pub foo: UpdateZodControllerOnlyEntityResponseFoo,
-        pub updated_at: String,
-        pub success: bool,
-    }
-
-    /// No summary
-    pub fn update_zod_controller_only_entity(
-        body: UpdateZodControllerOnlyEntityBody,
-        query: UpdateZodControllerOnlyEntityQuery,
-        params: UpdateZodControllerOnlyEntityParams,
-        api_root: Option<String>,
-        disable_client_validation: bool,
-    ) -> UpdateZodControllerOnlyEntityResponse {
-        // In a real implementation, you would call a client library
-        request(
-            "generated",
-            "ZodControllerOnlyEntityRPC",
-            "updateZodControllerOnlyEntity",
-            body,
-            query,
-            params,
-            api_root,
-            disable_client_validation,
-        )
-    }
-}
-
-// Placeholder for the client module
-mod client {
-    use super::*;
-    use super::ZodControllerOnlyEntityRPC::*;
-    
-    pub fn request<B, Q, P>(
-        segment_name: &str,
-        controller_name: &str,
-        handler_name: &str,
-        body: B,
-        query: Q,
-        params: P,
-        api_root: Option<String>,
-        disable_client_validation: bool,
-    ) -> UpdateZodControllerOnlyEntityResponse {
-        // Create a specific mock response instead of using Default
-        UpdateZodControllerOnlyEntityResponse {
-            id: "123".to_string(),
-            foo: FooOption::bar,  // Using a specific value instead of default
-            updated_at: "2025-03-31T16:56:29Z".to_string(),
-            success: true,
-        }
-    }
-}
-
-// Example of usage
-fn example_usage() {
-    use ZodControllerOnlyEntityRPC::*;
-    
-    let body = UpdateZodControllerOnlyEntityBody {
-        foo: FooOption::bar,
-    };
-    
-    let query = UpdateZodControllerOnlyEntityQuery {
-        q: "search term".to_string(),
-    };
-    
-    let params = UpdateZodControllerOnlyEntityParams {
-        id: "123".to_string(),
-    };
-    
-    let response = update_zod_controller_only_entity(
-        body,
-        query,
-        params,
-        Some("http://localhost:3000/api".to_string()),
-        false
-    );
-    
-    println!("Updated entity with id: {}", response.id);
-}
-// use serde::{Serialize, Deserialize};
-/ *
-convertJSONSchemaToRustType({ schema: validation.body, namespace: controllerName, structName: 'UpdateZodControllerOnlyEntityResponse', pad: 4 }),
-
-    #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Hash)]
-    pub enum UpdateZodControllerOnlyEntityResponseFoo {
-        bar,
-        baz,
-    }
-
-    // Nested structure definition
-    #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Hash)]
-    pub struct UpdateZodControllerOnlyEntityResponseNested {
-        pub field1: String,
-        pub field2: i32,
-        pub enabled: bool,
-    }
-
-    #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Hash)]
-    pub struct UpdateZodControllerOnlyEntityResponse {
-        pub id: String,
-        pub foo: UpdateZodControllerOnlyEntityResponseFoo,
-        pub nested: UpdateZodControllerOnlyEntityResponseNested,
-        pub updated_at: String,
-        pub success: bool,
-    }
-
-*/

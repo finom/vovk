@@ -82,7 +82,7 @@ function convertSchema(schema: JSONSchema, prefix: string): ConversionResult {
     }
 
     const structDef = `
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[allow(non_snake_case)]
 pub struct ${structName} {
 ${fields.join('\n')}
@@ -103,7 +103,7 @@ ${fields.join('\n')}
     });
 
     const enumDef = `
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[allow(non_camel_case_types)]
 pub enum ${enumName} {
 ${variants.join('\n')}
