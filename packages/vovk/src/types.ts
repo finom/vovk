@@ -13,7 +13,7 @@ export type VovkHandlerSchema = {
   httpMethod: string; // HttpMethod type makes JSON incompatible with VovkHandlerSchema type
   validation?: { query?: KnownAny; body?: KnownAny; params?: KnownAny; output?: KnownAny; iteration?: KnownAny };
   openapi?: OperationObject;
-  custom?: Record<string, KnownAny>;
+  misc?: Record<string, KnownAny>;
 };
 
 export type VovkControllerSchema = {

@@ -4,8 +4,8 @@ const custom = createDecorator(null, (hello: 'world') => {
   return (handlerSchema) => {
     return {
       ...handlerSchema,
-      custom: {
-        ...handlerSchema?.custom,
+      misc: {
+        ...handlerSchema?.misc,
         hello,
       },
     };

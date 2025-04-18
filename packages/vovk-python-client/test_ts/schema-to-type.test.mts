@@ -238,13 +238,13 @@ test('convertJSONSchemaToPythonType - complex objects', async (t) => {
       pad: 0,
     });
 
-    const expected = `class Person_address(TypedDict):
+    const expected = `class __Person_address(TypedDict):
     street: str
     city: str
     zipCode: Optional[str]
 class Person(TypedDict):
     name: str
-    address: MyNamespace.Person_address`;
+    address: MyNamespace.__Person_address`;
 
     assert.equal(result, expected);
   });
@@ -278,13 +278,13 @@ class Person(TypedDict):
       pad: 0,
     });
 
-    const expected = `class Person_friends_items(TypedDict):
+    const expected = `class __Person_friends_items(TypedDict):
     name: str
     age: Optional[int]
 class Person(TypedDict):
     name: str
     tags: Optional[List[str]]
-    friends: Optional[List[MyNamespace.Person_friends_items]]`;
+    friends: Optional[List[MyNamespace.__Person_friends_items]]`;
 
     assert.equal(result, expected);
   });
@@ -381,24 +381,24 @@ test('convertJSONSchemaToPythonType - complex nesting', async (t) => {
       pad: 2,
     });
 
-    const expected = `  class Response_user_profile_personal(TypedDict):
+    const expected = `  class __Response_user_profile_personal(TypedDict):
       name: str
       age: Optional[int]
-  class Response_user_profile_preferences(TypedDict):
+  class __Response_user_profile_preferences(TypedDict):
       theme: Optional[Literal["light", "dark"]]
       notifications: Optional[bool]
-  class Response_user_profile(TypedDict):
-      personal: Optional[API.Response_user_profile_personal]
-      preferences: Optional[API.Response_user_profile_preferences]
-  class Response_user_posts_items(TypedDict):
+  class __Response_user_profile(TypedDict):
+      personal: Optional[API.__Response_user_profile_personal]
+      preferences: Optional[API.__Response_user_profile_preferences]
+  class __Response_user_posts_items(TypedDict):
       title: str
       content: str
       tags: Optional[List[str]]
-  class Response_user(TypedDict):
-      profile: Optional[API.Response_user_profile]
-      posts: Optional[List[API.Response_user_posts_items]]
+  class __Response_user(TypedDict):
+      profile: Optional[API.__Response_user_profile]
+      posts: Optional[List[API.__Response_user_posts_items]]
   class Response(TypedDict):
-      user: Optional[API.Response_user]`;
+      user: Optional[API.__Response_user]`;
 
     assert.equal(result, expected);
   });
@@ -506,30 +506,30 @@ test('convertJSONSchemaToPythonType - real-world examples', async (t) => {
       pad: 0,
     });
 
-    const expected = `class Response_data_users_items_meta(TypedDict):
+    const expected = `class __Response_data_users_items_meta(TypedDict):
     pass
-class Response_data_users_items(TypedDict):
+class __Response_data_users_items(TypedDict):
     id: str
     name: str
     email: str
     role: Optional[Literal["admin", "user", "guest"]]
-    meta: Optional[API.Response_data_users_items_meta]
-class Response_data_pagination(TypedDict):
+    meta: Optional[API.__Response_data_users_items_meta]
+class __Response_data_pagination(TypedDict):
     page: int
     totalPages: int
     nextPage: Optional[Union[int, None]]
     prevPage: Optional[Union[int, None]]
-class Response_data(TypedDict):
-    users: List[API.Response_data_users_items]
-    pagination: Optional[API.Response_data_pagination]
-class Response_error(TypedDict):
+class __Response_data(TypedDict):
+    users: List[API.__Response_data_users_items]
+    pagination: Optional[API.__Response_data_pagination]
+class __Response_error(TypedDict):
     message: str
     details: Optional[List[str]]
 class Response(TypedDict):
     status: Literal["success", "error"]
     code: int
-    data: Optional[API.Response_data]
-    error: Optional[API.Response_error]`;
+    data: Optional[API.__Response_data]
+    error: Optional[API.__Response_error]`;
 
     assert.equal(result, expected);
   });
@@ -628,42 +628,42 @@ class Response(TypedDict):
       pad: 0,
     });
 
-    const expected = `class AppConfig_serverConfig_corsOptions_anyOf_1(TypedDict):
+    const expected = `class __AppConfig_serverConfig_corsOptions_anyOf_1(TypedDict):
     origin: Optional[Union[str, List[str]]]
     methods: Optional[List[str]]
     allowHeaders: Optional[List[str]]
-class AppConfig_serverConfig(TypedDict):
+class __AppConfig_serverConfig(TypedDict):
     host: str
     port: int
     ssl: Optional[bool]
-    corsOptions: Optional[Union[bool, Config.AppConfig_serverConfig_corsOptions_anyOf_1]]
-class AppConfig_database_credentials(TypedDict):
+    corsOptions: Optional[Union[bool, Config.__AppConfig_serverConfig_corsOptions_anyOf_1]]
+class __AppConfig_database_credentials(TypedDict):
     user: str
     password: str
     host: str
     port: Optional[int]
-class AppConfig_database(TypedDict):
+class __AppConfig_database(TypedDict):
     type: Literal["mysql", "postgres", "mongodb"]
     name: str
-    credentials: Config.AppConfig_database_credentials
-class AppConfig_features_auth_providers_items_config(TypedDict):
+    credentials: Config.__AppConfig_database_credentials
+class __AppConfig_features_auth_providers_items_config(TypedDict):
     pass
-class AppConfig_features_auth_providers_items(TypedDict):
+class __AppConfig_features_auth_providers_items(TypedDict):
     name: str
-    config: Optional[Config.AppConfig_features_auth_providers_items_config]
-class AppConfig_features_auth(TypedDict):
+    config: Optional[Config.__AppConfig_features_auth_providers_items_config]
+class __AppConfig_features_auth(TypedDict):
     enabled: Optional[bool]
-    providers: Optional[List[Config.AppConfig_features_auth_providers_items]]
-class AppConfig_features_caching(TypedDict):
+    providers: Optional[List[Config.__AppConfig_features_auth_providers_items]]
+class __AppConfig_features_caching(TypedDict):
     strategy: Optional[Literal["memory", "redis"]]
     ttl: Optional[int]
-class AppConfig_features(TypedDict):
-    auth: Optional[Config.AppConfig_features_auth]
-    caching: Optional[Config.AppConfig_features_caching]
+class __AppConfig_features(TypedDict):
+    auth: Optional[Config.__AppConfig_features_auth]
+    caching: Optional[Config.__AppConfig_features_caching]
 class AppConfig(TypedDict):
-    serverConfig: Config.AppConfig_serverConfig
-    database: Config.AppConfig_database
-    features: Optional[Config.AppConfig_features]`;
+    serverConfig: Config.__AppConfig_serverConfig
+    database: Config.__AppConfig_database
+    features: Optional[Config.__AppConfig_features]`;
 
     assert.equal(result, expected);
   });

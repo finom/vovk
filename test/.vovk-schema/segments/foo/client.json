@@ -145,7 +145,7 @@
       "prefix": "",
       "handlers": {
         "getWithCustomSchema": {
-          "custom": {
+          "misc": {
             "hello": "world"
           },
           "httpMethod": "GET",

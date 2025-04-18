@@ -3,7 +3,7 @@ import type { KnownAny } from 'vovk';
 interface JSONSchema {
   type?: string | string[];
   enum?: KnownAny[];
-  items?: JSONSchema;
+  items?: JSONSchema | JSONSchema[];
   properties?: { [key: string]: JSONSchema };
   required?: string[];
   oneOf?: JSONSchema[];
@@ -148,11 +148,10 @@ export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
             return seenObjects.get(s)!;
           }
 
-          // Generate a new class name. For example, if the user gave us "Body" as top-level,
-          // and we're inside a property named "x", we might call this "Body_x".
-          // `propNameForParent` is something like "Body_x_y", so let's use that as the class name.
-          // But to keep references consistent, we fully qualify as namespace + '.' + className.
-          const newClassName = propNameForParent;
+          // Generate a new class name. For the top-level class, use className as-is.
+          // For nested classes, prefix with double underscore to indicate private classes.
+          const isTopLevel = propNameForParent === className;
+          const newClassName = isTopLevel ? className : `__${propNameForParent}`;
           const fullyQualifiedName = `${namespace}.${newClassName}`;
 
           // Mark this schema as seen
@@ -171,8 +170,9 @@ export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
           } else {
             for (const [propName, propSchema] of Object.entries(props)) {
               const isRequired = required.has(propName);
-              // Build the child type
-              const childPropType = buildType(propSchema, `${propNameForParent}_${propName}`);
+              // Build the child type, using the parent name without prefix for path construction
+              const childPropPath = `${propNameForParent}_${propName}`;
+              const childPropType = buildType(propSchema, childPropPath);
               // If it's not required, we do "Optional[<type>]"
               const finalType = isRequired ? childPropType : `Optional[${childPropType}]`;
               lines.push(`    ${propName}: ${finalType}`);
