@@ -89,7 +89,7 @@ export default async function getClientTemplateFiles({
           outDir,
           relativeDir: path
             .relative(templateAbsolutePath, path.dirname(filePath))
-            .replace('[PACKAGE_NAME]', packageJson.name ?? 'my-package-name'),
+            .replace('[package_name]', packageJson.name ?? 'my-package-name'),
           fullSchemaJSONFileName,
           origin: templateDef.origin,
           package: packageJson as PackageJson,

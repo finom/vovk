@@ -7,7 +7,12 @@ const vovkConfig = {
     py: {
       clientOutDir: '../packages/vovk-python-client/test_py/generated_test_python_client',
       templatePath: '../packages/vovk-python-client/template/',
-      fullSchemaJson: true,
+      fullSchemaJson: './data/full-schema.json',
+      package: {
+        name: 'generated_python_client',
+        version: '0.0.1',
+        description: 'Test Python client', 
+      }
     },
   },
   generateFrom: ['py'],

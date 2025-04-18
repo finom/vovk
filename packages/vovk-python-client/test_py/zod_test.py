@@ -1,7 +1,7 @@
 import unittest
 from typing import Any, Generator
 from jsonschema import ValidationError
-from generated_test_python_client import HttpException, WithZodClientControllerRPC
+from generated_test_python_client.src.generated_python_client import HttpException, WithZodClientControllerRPC
 
 def noop(*args: Any) -> None: # type: ignore
     pass
@@ -114,7 +114,7 @@ class TestZod(unittest.TestCase):
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Zod validation failed\. Invalid iteration on server for http://\S+\. Invalid input \(value\)")
+        self.assertRegex(str(context.exception), r"Zod validation failed\. Invalid iteration #0 on server for http://\S+\. Invalid input \(value\)")
 
 
 if __name__ == "__main__":

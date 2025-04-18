@@ -103,19 +103,19 @@ class ApiClient:
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
             # Validate body
-            if validation['body']:
+            if validation.get('body'):
                 if body is None:
                     raise ValueError("Body is required for validation but not provided")
                 jsonschema.validate(instance=body, schema=validation['body'])
             
             # Validate query
-            if validation['query']:
+            if validation.get('query'):
                 if query is None:
                     raise ValueError("Query is required for validation but not provided")
                 jsonschema.validate(instance=query, schema=validation['query'])
             
             # Validate params
-            if validation['params']:
+            if validation.get('params'):
                 if params is None:
                     raise ValueError("Params are required for validation but not provided")
                 jsonschema.validate(instance=params, schema=validation['params'])

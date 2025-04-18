@@ -1,7 +1,7 @@
 import unittest
 from typing import Any, Generator
 from jsonschema import ValidationError
-from generated_test_python_client import HttpException, WithDtoClientControllerRPC
+from generated_test_python_client.src.generated_python_client import HttpException, WithDtoClientControllerRPC
 
 def noop(*args: Any) -> None: # type: ignore
     pass
@@ -114,7 +114,7 @@ class TestDto(unittest.TestCase):
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration on server for http://\S+\. value must be one of the following values: a, b, c, d")
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0 on server for http://\S+\. value must be one of the following values: a, b, c, d")
 
 
 if __name__ == "__main__":
