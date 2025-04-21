@@ -7,6 +7,27 @@ import pick from 'lodash/pick.js';
 
 const templatesDir = path.join(import.meta.dirname, '../..', 'client-templates');
 
+const getDependenciesFromImports = (imports: VovkStrictConfig['imports']) => {
+  const getDependency = (importName: string) => {
+    const importParts = importName.split('/');
+    const importPath = importParts[0];
+    if (!importPath.startsWith('.') && !importPath.startsWith('/') && !importPath.startsWith('@')) {
+      return importPath;
+    }
+    return null;
+  };
+  const dependencies = new Set<string>();
+  for (const imp of Object.values(imports)) {
+    for (const importName of imp ?? []) {
+      const dependency = getDependency(importName);
+      if (dependency) {
+        dependencies.add(dependency);
+      }
+    }
+  }
+  return Array.from(dependencies);
+};
+
 export enum BuiltInTemplateName {
   ts = 'ts',
   main = 'main',
@@ -98,11 +119,13 @@ export default async function getConfig({
   cwd: string;
 }) {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({ configPath, cwd });
-  const originalPackageJson = pick(JSON.parse(await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')), [
+  const fullPackageJson = JSON.parse(await fs.readFile(path.join(cwd, 'package.json'), 'utf-8'));
+  const pickedPackageJson = pick(fullPackageJson, [
     'name',
     'version',
     'description',
     'author',
+    'contributors',
     'license',
     'repository',
     'homepage',
@@ -121,9 +144,20 @@ export default async function getConfig({
   const validateOnClientImport = env.VOVK_IMPORTS_VALIDATE_ON_CLIENT ?? conf.imports?.validateOnClient ?? null;
   const fetcherImport = env.VOVK_IMPORTS_FETCHER ?? conf.imports?.fetcher ?? 'vovk';
   const createRPCImport = env.VOVK_IMPORTS_CREATE_RPC ?? conf.imports?.createRPC ?? 'vovk';
+
+  const imports = {
+    fetcher: typeof fetcherImport === 'string' ? ([fetcherImport] as [string]) : fetcherImport,
+    validateOnClient:
+      typeof validateOnClientImport === 'string'
+        ? ([validateOnClientImport] as [string])
+        : (validateOnClientImport ?? null),
+    createRPC: typeof createRPCImport === 'string' ? ([createRPCImport, 'vovk'] as [string, string]) : createRPCImport,
+  };
+
   const config: VovkStrictConfig = {
     clientOutDir,
     clientTemplateDefs,
+    imports,
     emitConfig: [],
     generateFullClient:
       'VOVK_GENERATE_FULL_CLIENT' in env ? !!env.VOVK_GENERATE_FULL_CLIENT : (conf.generateFullClient ?? true),
@@ -132,12 +166,6 @@ export default async function getConfig({
         ? !!env.VOVK_GENERATE_SEGMENT_CLIENT
         : (conf.generateSegmentClient ?? false),
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
-    imports: {
-      fetcher: typeof fetcherImport === 'string' ? [fetcherImport] : fetcherImport,
-      validateOnClient:
-        typeof validateOnClientImport === 'string' ? [validateOnClientImport] : (validateOnClientImport ?? null),
-      createRPC: typeof createRPCImport === 'string' ? [createRPCImport, 'vovk'] : createRPCImport,
-    },
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',
@@ -153,8 +181,14 @@ export default async function getConfig({
     },
     libs: conf.libs ?? {},
     package: {
-      ...originalPackageJson,
+      ...pickedPackageJson,
       ...conf.package,
+      dependencies: {
+        ...conf.package?.dependencies,
+        ...Object.fromEntries(
+          getDependenciesFromImports(imports).map((dep) => [dep, fullPackageJson.dependencies?.[dep] ?? 'latest'])
+        ),
+      },
     },
   };
 

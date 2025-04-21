@@ -31,6 +31,7 @@ export default async function ensureSchemaFiles(
         schemaOutAbsolutePath,
         segmentSchema: {
           emitSchema: false,
+          segmentRootEndpoint: null,
           segmentName,
           controllers: {},
         },

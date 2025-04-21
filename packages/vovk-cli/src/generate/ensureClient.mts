@@ -7,6 +7,7 @@ const getEmptySegmentRecordSchema = (segments: ProjectInfo['segments']) => {
   for (const { segmentName } of segments) {
     result[segmentName] = {
       segmentName,
+      segmentRootEndpoint: null,
       emitSchema: false,
       controllers: {},
     };

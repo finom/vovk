@@ -1,0 +1,6 @@
+{
+  "emitSchema": false,
+  "segmentRootEndpoint": null,
+  "segmentName": "overridden-segment-root-endpoint",
+  "controllers": {}
+}

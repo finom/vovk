@@ -84,11 +84,11 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
         endpoint: string;
       }) => {
         const validateOnClient = input.validateOnClient ?? options?.validateOnClient;
-        if (validateOnClient) {
+        if (validateOnClient && validation) {
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');
           }
-          await validateOnClient({ body, query, params, endpoint }, validation ?? {}, fullSchema);
+          await validateOnClient({ body, query, params, endpoint }, validation, fullSchema);
         }
       };
 

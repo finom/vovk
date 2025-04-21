@@ -1,6 +1,7 @@
 {
   "emitSchema": true,
   "segmentName": "foo/client",
+  "segmentRootEndpoint": null,
   "controllers": {
     "ClientControllerRPC": {
       "controllerName": "ClientControllerRPC",

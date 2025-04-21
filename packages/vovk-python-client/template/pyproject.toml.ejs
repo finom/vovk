@@ -7,9 +7,27 @@ name = "<%= t.package.name.replace(/-/g, '_') %>"
 version = "<%= t.package.version %>"
 description = "<%= t.package.description %>"
 requires-python = ">=3.7"
-license = {text = "MIT"}
+license = {text = "<%= t.package.license || 'UNLICENSED' %>"}
+<% if (t.package.keywords && t.package.keywords.length) { %>
+keywords = [<%= t.package.keywords.map(keyword => `"${keyword}"`).join(', ') %>]
+<% } %>
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+<% if (t.package.author) { %>
+    <% if (typeof t.package.author === 'string') { %>
+    {name = "<%= t.package.author %>"},
+    <% } else { %>
+    {name = "<%= t.package.author.name %>"<% if (t.package.author.email) { %>, email = "<%= t.package.author.email %>"<% } %>},
+    <% } %>
+<% } %>
+<% if (t.package.contributors && t.package.contributors.length) { %>
+    <% t.package.contributors.forEach(contributor => { %>
+    <% if (typeof contributor === 'string') { %>
+    {name = "<%= contributor %>"},
+    <% } else { %>
+    {name = "<%= contributor.name %>"<% if (contributor.email) { %>, email = "<%= contributor.email %>"<% } %>},
+    <% } %>
+    <% }); %>
+<% } %>
 ]
 dependencies = [
     "requests",
@@ -21,3 +39,17 @@ dev = [
     "types-requests",
     "types-jsonschema",
 ]
+
+<% if (t.package.repository || t.package.homepage || t.package.bugs) { %>
+[project.urls]
+<% if (t.package.homepage) { %>
+"Homepage" = "<%= t.package.homepage %>"
+<% } %>
+<% if (t.package.repository) { %>
+"Source" = "<%= typeof t.package.repository === 'string' ? t.package.repository : t.package.repository.url %>"
+<% } %>
+<% if (t.package.bugs) { %>
+"Issues" = "<%= typeof t.package.bugs === 'string' ? t.package.bugs : t.package.bugs.url %>"
+<% } %>
+<% } %>
+

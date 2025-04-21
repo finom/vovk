@@ -1,6 +1,7 @@
 {
   "emitSchema": true,
   "segmentName": "generated",
+  "segmentRootEndpoint": null,
   "controllers": {
     "NoValidationControllerOnlyEntityRPC": {
       "controllerName": "NoValidationControllerOnlyEntityRPC",

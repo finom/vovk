@@ -11,8 +11,8 @@ const vovkConfig = {
       package: {
         name: 'generated_python_client',
         version: '0.0.1',
-        description: 'Test Python client', 
-      }
+        description: 'Test Python client',
+      },
     },
   },
   generateFrom: ['py'],
