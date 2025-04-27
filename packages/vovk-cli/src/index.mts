@@ -86,14 +86,14 @@ program
   .command('generate')
   .alias('g')
   .description('Generate RPC client from schema')
-  .option('--out, --client-out-dir <path>', 'path to output directory')
-  .option('--from, --generate-from <templates...>', 'client template names')
-  .option('--full-schema-json [fileName]', 'generate client with full schema')
+  .option('--out, --full-client-out <path>', 'path to output directory for full client')
+  .option('--from, --full-client-from <templates...>', 'client template names for full client')
+  .option('--segment-client-out <path>', 'path to output directory for segment client')
+  .option('--segment-client-from <templates...>', 'client template names for segment client')
   .option('--prettify', 'prettify output files')
   .option('--config <config>', 'path to config file')
-  .action(async (options: GenerateOptions) => {
-    const { clientOutDir, generateFrom, prettify, fullSchemaJson, config: configPath } = options;
-    const projectInfo = await getProjectInfo({ clientOutDir, configPath });
+  .action(async (cliOptions: GenerateOptions) => {
+    const projectInfo = await getProjectInfo({ cliOptions });
     const { cwd, config } = projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
@@ -101,10 +101,8 @@ program
     await generate({
       projectInfo,
       fullSchema,
-      generateFrom,
-      prettify,
       forceNothingWrittenLog: true,
-      fullSchemaJson,
+      cliOptions,
     });
   });
 

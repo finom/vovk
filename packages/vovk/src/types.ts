@@ -162,10 +162,8 @@ export type StreamAbortMessage = {
 type LogLevelNames = 'trace' | 'debug' | 'info' | 'warn' | 'error';
 
 export type VovkEnv = {
+  // TODO: cover fromTemplates and outDir for segmentedClient and fullClient
   PORT?: string;
-  VOVK_GENERATE_FULL_CLIENT?: string;
-  VOVK_GENERATE_SEGMENT_CLIENT?: string;
-  VOVK_CLIENT_OUT_DIR?: string;
   VOVK_SCHEMA_OUT_DIR?: string;
   VOVK_IMPORTS_FETCHER?: string;
   VOVK_IMPORTS_VALIDATE_ON_CLIENT?: string;
@@ -182,22 +180,70 @@ export type VovkEnv = {
   __VOVK_EXIT__?: 'true' | 'false';
 };
 
-export type ClientTemplateDef = {
-  extends?: 'main' | 'module' | 'ts' | 'package' | 'fullSchema';
-  templatePath: string | null; // null is for full-schema.json generation only
-  clientOutDir?: string;
-  // templateName?: string; TODO Delete
-  fullSchemaJson?: string | boolean;
-  origin?: string | null;
+/* TODO delete
+segmentedClient: {
+        excludeSegments: ['foo', 'bar'],
+        fromTemplates: ['ts', 'package'],
+        outDir: './src/lib/api/segmentClient/',
+        packages: {
+          root: {
+            name: 'pkg-root',
+          },
+          foo: {
+            name: 'pkg-foo',
+          },
+          bar: {
+            name: 'pkg-bar',
+          },
+        }
+      },
+      fullClient: {
+        includeSegments: ['foo', 'bar'],
+        fromTemplates: ['ts', 'package'],
+        outDir: './src/lib/api/fullClient/',
+        package: {
+          name: 'pkg-root',
+        }
+      },
+      */
+
+type ClientConfigCommon = {
+  enabled: boolean;
+  fromTemplates: string[];
+} & (
+  | {
+      excludeSegments?: never;
+      includeSegments?: string[];
+    }
+  | {
+      excludeSegments?: string[];
+      includeSegments?: never;
+    }
+);
+
+type ClientConfigFull = ClientConfigCommon & {
+  outDir: string;
   package?: PackageJson;
+};
+type ClientConfigSegmented = ClientConfigCommon & {
+  outDir: string;
+  packages?: Record<string, PackageJson>;
+};
+
+export type ClientTemplateDef = {
+  extends?: 'main' | 'module' | 'ts' | 'package' | 'fullSchema' | 'fullSchemaJson' | string;
+  templatePath: string;
+  origin?: string | null;
+  fullClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
+  segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
+  requires?: Record<string, string>;
 };
 
 export type VovkConfig = {
   emitConfig?: boolean | (keyof VovkStrictConfig)[];
-  clientOutDir?: string;
   schemaOutDir?: string;
-  generateFullClient?: boolean;
-  generateSegmentClient?: boolean;
+  fullClient?: ClientConfigFull;
+  segmentedClient?: ClientConfigSegmented;
   imports?: {
     fetcher?: string | [string, string] | [string];
     validateOnClient?: string | [string, string] | [string];
@@ -210,14 +256,12 @@ export type VovkConfig = {
   logLevel?: LogLevelNames;
   prettifyClient?: boolean;
   devHttps?: boolean;
-  generateFrom?: string[];
   clientTemplateDefs?: Record<string, ClientTemplateDef>;
   moduleTemplates?: {
     service?: string;
     controller?: string;
     [key: string]: string | undefined;
   };
-  package?: PackageJson;
   libs?: Record<string, KnownAny>;
 };
 

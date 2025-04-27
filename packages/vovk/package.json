@@ -30,6 +30,7 @@
     "next": "*"
   },
   "optionalDependencies": {
-    "openapi3-ts": "*"
+    "openapi3-ts": "*",
+    "type-fest": "*"
   }
 }

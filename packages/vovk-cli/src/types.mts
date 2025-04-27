@@ -15,11 +15,12 @@ export interface DevOptions {
 }
 
 export interface GenerateOptions {
-  clientOutDir?: string;
-  generateFrom?: string[];
   prettify?: boolean;
-  fullSchemaJson?: string | boolean;
   config?: string;
+  fullClientFrom?: string[];
+  fullClientOut?: string;
+  segmentedClientFrom?: string[];
+  segmentedClientOut?: string;
 }
 
 export interface InitOptions {
@@ -45,4 +46,9 @@ export interface NewOptions {
   overwrite?: boolean;
   noSegmentUpdate?: boolean;
   empty?: boolean;
+}
+
+export enum ClientGenerateType {
+  FULL = 'FULL',
+  SEGMENTED = 'SEGMENTED',
 }

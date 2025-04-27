@@ -60,11 +60,11 @@ function withDto<
       __iteration: ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny;
     },
     getJSONSchemaFromModel: (dto) => {
-      const schema = ({
+      const schema = {
         'x-isDto': true,
         definitions: {} as Record<string, any>,
         ...targetConstructorToSchema(dto),
-      })
+      };
 
       // get all $refs from the schema recursively
       const getRefs = (schema: any, refs: string[] = []) => {
@@ -89,7 +89,7 @@ function withDto<
         }
       }
       return schema;
-   },
+    },
     validate: async (data, dto, { type, req, status, i }) => {
       const instance = plainToInstance(dto, data);
       const errors: ValidationError[] = await validate(instance as object);
