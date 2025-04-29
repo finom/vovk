@@ -14,7 +14,7 @@ export function withValidation<
 >({
   disableServerSideValidation,
   skipSchemaEmission,
-  validateEveryIteration,
+  validateEachIteration,
   body,
   query,
   params,
@@ -26,7 +26,7 @@ export function withValidation<
 }: {
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
-  validateEveryIteration?: boolean;
+  validateEachIteration?: boolean;
   body?: BODY_MODEL;
   query?: QUERY_MODEL;
   params?: PARAMS_MODEL;
@@ -88,17 +88,17 @@ export function withValidation<
       return (async function* () {
         let i = 0;
         for await (const item of data) {
-          if (validateEveryIteration || i === 0) {
+          if (validateEachIteration || i === 0) {
             await validate(item, iteration, { type: 'iteration', req, status: 200, i });
           }
           i++;
           yield item;
         }
       })();
-    } else if (validateEveryIteration) {
+    } else if (validateEachIteration) {
       throw new HttpException(
         HttpStatus.INTERNAL_SERVER_ERROR,
-        'validateEveryIteration is set but iteration is not defined.'
+        'validateEachIteration is set but iteration is not defined.'
       );
     }
 

@@ -5,17 +5,24 @@ const vovkConfig = {
   origin: `http://localhost:${process.env.PORT}`,
   clientTemplateDefs: {
     py: {
-      clientOutDir: '../packages/vovk-python-client/test_py/generated_test_python_client',
       templatePath: '../packages/vovk-python-client/template/',
-      fullSchemaJson: './data/full-schema.json',
-      package: {
-        name: 'generated_python_client',
-        version: '0.0.1',
-        description: 'Test Python client',
+      requires: {
+        fullSchemaJson: './data',
+      },
+      fullClient: {
+        outDir: '../packages/vovk-python-client/test_py/generated_test_python_client',
+        package: {
+          name: 'generated_python_client',
+          version: '0.0.1',
+          license: 'MIT',
+          description: 'Vovk Python Client',
+        },
       },
     },
   },
-  generateFrom: ['py'],
+  fullClient: {
+    fromTemplates: ['py'],
+  },
 };
 
 export default vovkConfig;

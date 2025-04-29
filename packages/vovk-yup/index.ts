@@ -63,7 +63,7 @@ function withYup<
   handle,
   disableServerSideValidation,
   skipSchemaEmission,
-  validateEveryIteration,
+  validateEachIteration,
 }: {
   body?: YUP_BODY;
   query?: YUP_QUERY;
@@ -73,7 +73,7 @@ function withYup<
   handle: T;
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
-  validateEveryIteration?: boolean;
+  validateEachIteration?: boolean;
 }) {
   return withValidation({
     body,
@@ -83,7 +83,7 @@ function withYup<
     iteration,
     disableServerSideValidation,
     skipSchemaEmission,
-    validateEveryIteration,
+    validateEachIteration,
     handle: handle as T & {
       __output: YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny;
       __iteration: YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny;

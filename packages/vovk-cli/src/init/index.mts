@@ -282,7 +282,7 @@ export class Init {
       let shouldAsk = false;
 
       try {
-        shouldAsk = !(await checkTSConfigForExperimentalDecorators(root));
+        shouldAsk = !(await checkTSConfigForExperimentalDecorators(root)); // TODO also check for emitDecoratorMetadata when vovk-dto is used
       } catch (error) {
         log.error(`Failed to check tsconfig.json for "experimentalDecorators": ${(error as Error).message}`);
       }

@@ -30,25 +30,26 @@ client = ApiClient('<%= t.apiRoot %>', full_schema)
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
 class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
+    const handlerNameOriginalCapitalized = handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1);
     const handlerName = t._.snakeCase(handlerNameOriginal); %>
     # <%= controllerName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
 <%- ([
-        vars.convertJSONSchemaToPythonType({ schema: validation?.body, namespace: controllerName, className: `infer_${handlerName}_body`, pad: 4 }),
-        vars.convertJSONSchemaToPythonType({ schema: validation?.query, namespace: controllerName, className: `infer_${handlerName}_query`, pad: 4 }),
-        vars.convertJSONSchemaToPythonType({ schema: validation?.params, namespace: controllerName, className: `infer_${handlerName}_params`, pad: 4 }),
-        vars.convertJSONSchemaToPythonType({ schema: validation?.output, namespace: controllerName, className: `infer_${handlerName}_output`, pad: 4 }),
-        vars.convertJSONSchemaToPythonType({ schema: validation?.iteration, namespace: controllerName, className: `infer_${handlerName}_iteration`, pad: 4 })
+        vars.convertJSONSchemaToPythonType({ schema: validation?.body, namespace: controllerName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.query, namespace: controllerName, className: `${handlerNameOriginalCapitalized}Query`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.params, namespace: controllerName, className: `${handlerNameOriginalCapitalized}Params`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.output, namespace: controllerName, className: `${handlerNameOriginalCapitalized}Output`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.iteration, namespace: controllerName, className: `${handlerNameOriginalCapitalized}Iteration`, pad: 4 })
     ]).filter(Boolean).join('\n') %>
     @staticmethod
     def <%= handlerName %>(
 <%= [
-            validation?.body ? `body: ${controllerName}.infer_${handlerName}_body,` : '', 
-            validation?.query ? `query: ${controllerName}.infer_${handlerName}_query,` : '', 
-            validation?.params ? `params: ${controllerName}.infer_${handlerName}_params,` : ''
+            validation?.body ? `body: ${controllerName}.${handlerNameOriginalCapitalized}Body,` : '', 
+            validation?.query ? `query: ${controllerName}.${handlerNameOriginalCapitalized}Query,` : '', 
+            validation?.params ? `params: ${controllerName}.${handlerNameOriginalCapitalized}Params,` : ''
         ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
         api_root: Optional[str] = None,
         disable_client_validation: bool = False
-    ) -> <%= validation?.output ? `${controllerName}.infer_${handlerName}_output` : validation?.iteration ? `Generator[${controllerName}.infer_${handlerName}_iteration, None, None]` : 'Any' %>:
+    ) -> <%= validation?.output ? `${controllerName}.${handlerNameOriginalCapitalized}Output` : validation?.iteration ? `Generator[${controllerName}.${handlerNameOriginalCapitalized}Iteration, None, None]` : 'Any' %>:
         """ 
 <%= ([
                 openapi?.summary ?? 'No summary',

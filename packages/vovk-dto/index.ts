@@ -31,7 +31,7 @@ function withDto<
   handle,
   disableServerSideValidation,
   skipSchemaEmission,
-  validateEveryIteration,
+  validateEachIteration,
 }: {
   body?: BODY_DTO;
   query?: QUERY_DTO;
@@ -41,7 +41,7 @@ function withDto<
   handle: T;
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
-  validateEveryIteration?: boolean;
+  validateEachIteration?: boolean;
 }) {
   const schemas = validationMetadatasToSchemas();
 
@@ -53,7 +53,7 @@ function withDto<
     iteration,
     disableServerSideValidation,
     skipSchemaEmission,
-    validateEveryIteration,
+    validateEachIteration,
     handle: handle as T & {
       __output: OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny;
       __iteration: ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny;

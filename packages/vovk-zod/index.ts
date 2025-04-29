@@ -33,7 +33,7 @@ function withZod<
   handle,
   disableServerSideValidation,
   skipSchemaEmission,
-  validateEveryIteration,
+  validateEachIteration,
 }: {
   body?: ZOD_BODY;
   query?: ZOD_QUERY;
@@ -43,7 +43,7 @@ function withZod<
   handle: T;
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
-  validateEveryIteration?: boolean;
+  validateEachIteration?: boolean;
 }) {
   return withValidation({
     body,
@@ -53,7 +53,7 @@ function withZod<
     iteration,
     disableServerSideValidation,
     skipSchemaEmission,
-    validateEveryIteration,
+    validateEachIteration,
     handle: handle as T & {
       __output: ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny;
       __iteration: ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny;
