@@ -82,8 +82,19 @@ export class Init {
 
     if (updateTsConfig) {
       try {
-        if (!dryRun) await updateTypeScriptConfig(root);
-        log.info('Added "experimentalDecorators" to tsconfig.json');
+        const compilerOptions: Record<string, true> = {
+          experimentalDecorators: true,
+        };
+
+        if (validationLibrary === 'vovk-dto') {
+          compilerOptions.emitDecoratorMetadata = true;
+        }
+        if (!dryRun) await updateTypeScriptConfig(root, compilerOptions);
+        log.info(
+          `Added ${Object.keys(compilerOptions)
+            .map((k) => `"${k}"`)
+            .join(' and ')} to tsconfig.json`
+        );
       } catch (error) {
         log.error(`Failed to update tsconfig.json: ${(error as Error).message}`);
       }
@@ -277,8 +288,12 @@ export class Init {
       }
 
       if (shouldAsk) {
+        const keys = ['experimentalDecorators'];
+        if (validationLibrary === 'vovk-dto') {
+          keys.push('emitDecoratorMetadata');
+        }
         updateTsConfig = await confirm({
-          message: 'Do you want to add "experimentalDecorators" option to tsconfig.json?',
+          message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')}} to tsconfig.json?`,
         });
       }
     }
