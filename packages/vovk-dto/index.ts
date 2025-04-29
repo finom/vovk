@@ -8,7 +8,7 @@ import {
   type KnownAny,
   type VovkValidationType,
 } from 'vovk';
-import { targetConstructorToSchema, validationMetadatasToSchemas } from 'class-validator-jsonschema';
+import { validationMetadatasToSchemas, targetConstructorToSchema } from 'class-validator-jsonschema';
 
 function withDto<
   T extends (req: REQ, params: PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>) => KnownAny,
@@ -45,7 +45,6 @@ function withDto<
 }) {
   const schemas = validationMetadatasToSchemas();
 
-  // console.log('schemas', schemas)
   return withValidation({
     body,
     query,
@@ -71,6 +70,9 @@ function withDto<
         if (schema.$ref) {
           refs.push(schema.$ref);
         }
+        if(schema.items?.$ref) {
+          refs.push(schema.items.$ref);
+        }
         if (schema.properties) {
           for (const key in schema.properties) {
             getRefs(schema.properties[key], refs);
@@ -88,6 +90,7 @@ function withDto<
           refs.push(...getRefs(storageDefinition));
         }
       }
+
       return schema;
     },
     validate: async (data, dto, { type, req, status, i }) => {

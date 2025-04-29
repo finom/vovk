@@ -1,5 +1,6 @@
 import { IsString, Equals, IsArray, IsOptional, ValidateNested, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
+import { JSONSchema } from 'class-validator-jsonschema';
 
 /**
  * -------------------------------------------------------------------------
@@ -114,7 +115,12 @@ export class DDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ArrOfObjectsDto)
+  @JSONSchema({
+    items: {
+      $ref: '#/definitions/ArrOfObjectsDto',
+    },
+  })
+  // @Type(() => ArrOfObjectsDto)
   arrOfObjects: ArrOfObjectsDto[];
 }
 

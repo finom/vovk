@@ -2,7 +2,7 @@
 imports: ['vovk-rust-client']
 ---
 <% const vars = {
-    convertJSONSchemaToRustType: t.imports['vovk-rust-client'].convertJSONSchemaToRustType,
+    convertJSONSchemasToRustTypes: t.imports['vovk-rust-client'].convertJSONSchemasToRustTypes,
 }; %>
 <%- `// auto-generated ${new Date().toISOString()}` %>
 mod http_request;
@@ -14,17 +14,22 @@ pub mod <%= t._.snakeCase(controllerName) %> {
     pub use crate::http_request::{http_request, http_request_stream};
     pub use serde::{Deserialize, Serialize};
 <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
-    const handlerName = t._.snakeCase(handlerNameOriginal); 
-    const handlerNameCapitalized = handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1);
+    const handlerName = t._.snakeCase(handlerNameOriginal);
     %>
     // <%= controllerName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
-<%- ([
-        vars.convertJSONSchemaToRustType({ schema: validation?.body, structName: `${handlerNameCapitalized}Body`, pad: 4 }),
-        vars.convertJSONSchemaToRustType({ schema: validation?.query, structName: `${handlerNameCapitalized}Query`, pad: 4 }),
-        vars.convertJSONSchemaToRustType({ schema: validation?.params, structName: `${handlerNameCapitalized}Params`, pad: 4 }),
-        vars.convertJSONSchemaToRustType({ schema: validation?.output, structName: `${handlerNameCapitalized}Output`, pad: 4 }),
-        vars.convertJSONSchemaToRustType({ schema: validation?.iteration, structName: `${handlerNameCapitalized}Iteration`, pad: 4 })
-    ]).filter(Boolean).join('\n') %>
+<%- 
+vars.convertJSONSchemasToRustTypes({ 
+    schemas: {
+        body: validation?.body,
+        query: validation?.query,
+        params: validation?.params,
+        output: validation?.output,
+        iteration: validation?.iteration
+    }, 
+    rootName: handlerName, 
+    pad: 4 
+})
+%>
     /** 
 <%= ([
                 openapi?.summary ?? 'No summary',
@@ -35,24 +40,18 @@ pub mod <%= t._.snakeCase(controllerName) %> {
             ]).filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
     */
     pub fn <%= handlerName %>( 
-        body: <%- validation?.body ? `${handlerNameCapitalized}Body` : '()' %>,
-        query: <%- validation?.query ? `${handlerNameCapitalized}Query` : '()' %>,
-        params: <%- validation?.params ? `${handlerNameCapitalized}Params` : '()' %>,
-<%= /* [
-            validation?.body ? `body: ${handlerNameCapitalized}Body,` : '', 
-            validation?.query ? `query: ${handlerNameCapitalized}Query,` : '', 
-            validation?.params ? `params: ${handlerNameCapitalized}Params,` : ''
-        ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') */ %>
+        body: <%- validation?.body ? `${handlerName}_::body` : '()' %>,
+        query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
+        params: <%- validation?.params ? `${handlerName}_::params` : '()' %>,
         api_root: Option<&str>,
         disable_client_validation: bool,
-    ) -> <%- validation?.output ? `Result<${handlerNameCapitalized}Output, Box<dyn serde::ser::StdError>>` : validation?.iteration ? `Box<dyn Iterator<Item = ${handlerNameCapitalized}Iteration>>` : 'Result<serde_json::Value, Box<dyn serde::ser::StdError>>' %>{
-        
+    ) -> <%- validation?.output ? `Result<${handlerName}_::output, Box<dyn serde::ser::StdError>>` : validation?.iteration ? `Box<dyn Iterator<Item = ${handlerName}_::iteration>>` : 'Result<serde_json::Value, Box<dyn serde::ser::StdError>>' %>{
         let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
-            <%- [
-                validation?.output ? `${handlerNameCapitalized}Output` : validation?.iteration ? `${handlerNameCapitalized}Iteration` : 'serde_json::Value',
-                validation?.body ? `${handlerNameCapitalized}Body` : '()',
-                validation?.query ? `${handlerNameCapitalized}Query` : '()',
-                validation?.params ? `${handlerNameCapitalized}Params` : '()'
+<%- [
+                validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
+                validation?.body ? `${handlerName}_::body` : '()',
+                validation?.query ? `${handlerName}_::query` : '()',
+                validation?.params ? `${handlerName}_::params` : '()'
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
         >(
             "<%= t.apiRoot %>",
@@ -62,11 +61,6 @@ pub mod <%= t._.snakeCase(controllerName) %> {
             Some(&body),
             Some(&query),
             Some(&params),
-<%= /*
-    validation?.body ? 'Some(&body),' : 'None,',
-    validation?.query ? 'Some(&query),' : 'None,',
-    validation?.params ? 'Some(&params),' : 'None,',
-].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n')  */ %>
             api_root,
             disable_client_validation,
         );

@@ -47,8 +47,3 @@ export interface NewOptions {
   noSegmentUpdate?: boolean;
   empty?: boolean;
 }
-
-export enum ClientGenerateType {
-  FULL = 'FULL',
-  SEGMENTED = 'SEGMENTED',
-}

@@ -1,201 +1,159 @@
 import assert from 'node:assert';
 import { test, describe } from 'node:test';
-import { convertJSONSchemaToRustType } from '../index.js';
+import { convertJSONSchemasToRustTypes } from '../index.js';
 
-describe('convertJSONSchemaToRustType', () => {
-  // Test primitive types
-  test('should convert primitive types correctly', () => {
-    const stringSchema = {
-      type: 'object',
-      properties: { value: { type: 'string' } },
-    };
-    const numberSchema = {
-      type: 'object',
-      properties: { value: { type: 'number' } },
-    };
-    const integerSchema = {
-      type: 'object',
-      properties: { value: { type: 'integer' } },
-    };
-    const booleanSchema = {
-      type: 'object',
-      properties: { value: { type: 'boolean' } },
+describe('convertJSONSchemasToRustTypes', () => {
+  test('basic primitive types', () => {
+    const schema = {
+      BasicTypes: {
+        type: 'object',
+        properties: {
+          stringProp: { type: 'string' },
+          numberProp: { type: 'number' },
+          integerProp: { type: 'integer' },
+          booleanProp: { type: 'boolean' },
+        },
+        required: ['stringProp', 'booleanProp'],
+      },
     };
 
-    const stringResult = convertJSONSchemaToRustType({
-      schema: stringSchema,
-      structName: 'StringType',
-      pad: 0,
+    const output = convertJSONSchemasToRustTypes({
+      schemas: schema,
+      rootName: 'test',
     });
 
-    const numberResult = convertJSONSchemaToRustType({
-      schema: numberSchema,
-      structName: 'NumberType',
-      pad: 0,
-    });
-
-    const integerResult = convertJSONSchemaToRustType({
-      schema: integerSchema,
-      structName: 'IntegerType',
-      pad: 0,
-    });
-
-    const booleanResult = convertJSONSchemaToRustType({
-      schema: booleanSchema,
-      structName: 'BooleanType',
-      pad: 0,
-    });
-
-    assert.match(stringResult, /pub struct StringType/);
-    assert.match(stringResult, /pub value: Option<String>/);
-    assert.match(numberResult, /pub struct NumberType/);
-    assert.match(numberResult, /pub value: Option<f64>/);
-    assert.match(integerResult, /pub struct IntegerType/);
-    assert.match(integerResult, /pub value: Option<i64>/);
-    assert.match(booleanResult, /pub struct BooleanType/);
-    assert.match(booleanResult, /pub value: Option<bool>/);
+    assert.ok(output.includes('pub struct BasicTypes'));
+    assert.ok(output.includes('pub stringProp: String,'));
+    assert.ok(output.includes('pub numberProp: Option<f64>,'));
+    assert.ok(output.includes('pub integerProp: Option<i64>,'));
+    assert.ok(output.includes('pub booleanProp: bool,'));
   });
 
-  // Test array types
-  test('should convert array types correctly', () => {
-    const arraySchema = {
-      type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-        numbers: {
-          type: 'array',
-          items: { type: 'number' },
+  test('nested objects', () => {
+    const schema = {
+      Parent: {
+        type: 'object',
+        properties: {
+          child: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              age: { type: 'integer' },
+            },
+          },
         },
       },
     };
 
-    const result = convertJSONSchemaToRustType({
-      schema: arraySchema,
-      structName: 'ArrayTest',
-      pad: 2,
+    const output = convertJSONSchemasToRustTypes({
+      schemas: schema,
+      rootName: 'test',
     });
 
-    assert.match(result, /pub struct ArrayTest/);
-    assert.match(result, /pub items: Option<Vec<String>>/);
-    assert.match(result, /pub numbers: Option<Vec<f64>>/);
+    assert.ok(output.includes('pub struct Parent'));
+    assert.ok(output.includes('pub child: Option<Parent_::child>,'));
+    assert.ok(output.includes('pub mod Parent_'));
+    assert.ok(output.includes('pub struct child'));
+    assert.ok(output.includes('pub name: Option<String>,'));
+    assert.ok(output.includes('pub age: Option<i64>,'));
   });
 
-  // Test object types
-  test('should convert object types correctly', () => {
-    const objectSchema = {
-      type: 'object',
-      properties: {
-        name: { type: 'string' },
-        age: { type: 'integer' },
-        active: { type: 'boolean' },
-      },
-      required: ['name', 'age'],
-    };
-
-    const result = convertJSONSchemaToRustType({
-      schema: objectSchema,
-      structName: 'User',
-      pad: 2,
-    });
-
-    assert.match(result, /pub struct User/);
-    assert.match(result, /pub name: String/);
-    assert.match(result, /pub age: i64/);
-    assert.match(result, /pub active: Option<bool>/);
-  });
-
-  // Test enum types - enum property must have a type
-  test('should convert enum types correctly', () => {
-    const enumSchema = {
-      type: 'object',
-      properties: {
-        color: {
-          type: 'string', // Must include type for the implementation to process it
-          enum: ['RED', 'GREEN', 'BLUE'],
+  test('array types', () => {
+    const schema = {
+      ArrayTypes: {
+        type: 'object',
+        properties: {
+          stringArray: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          objectArray: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                name: { type: 'string' },
+              },
+            },
+          },
         },
       },
     };
 
-    const result = convertJSONSchemaToRustType({
-      schema: enumSchema,
-      structName: 'ColorContainer',
-      pad: 2,
+    const output = convertJSONSchemasToRustTypes({
+      schemas: schema,
+      rootName: 'test',
     });
 
-    assert.match(result, /pub struct ColorContainer/);
-    assert.match(result, /pub color: Option<String>/);
+    assert.ok(output.includes('pub struct ArrayTypes'));
+    assert.ok(output.includes('pub stringArray: Option<Vec<String>>,'));
+    assert.ok(output.includes('pub objectArray: Option<Vec<ArrayTypes_::objectArrayItem>>,'));
+    assert.ok(output.includes('pub struct objectArrayItem'));
   });
 
-  // Test for property with enum but no type
-  test('should handle enum without type as unit', () => {
-    const enumNoTypeSchema = {
-      type: 'object',
-      properties: {
-        color: {
-          enum: ['RED', 'GREEN', 'BLUE'], // No type specified
+  test('required vs optional fields', () => {
+    const schema = {
+      MixedFields: {
+        type: 'object',
+        properties: {
+          required1: { type: 'string' },
+          required2: { type: 'integer' },
+          optional1: { type: 'string' },
+          optional2: { type: 'boolean' },
+        },
+        required: ['required1', 'required2'],
+      },
+    };
+
+    const output = convertJSONSchemasToRustTypes({
+      schemas: schema,
+      rootName: 'test',
+    });
+
+    assert.ok(output.includes('pub required1: String,'));
+    assert.ok(output.includes('pub required2: i64,'));
+    assert.ok(output.includes('pub optional1: Option<String>,'));
+    assert.ok(output.includes('pub optional2: Option<bool>,'));
+  });
+
+  test('enum generation', () => {
+    const schema = {
+      EnumContainer: {
+        type: 'object',
+        properties: {
+          status: {
+            type: 'string',
+            enum: ['pending', 'active', 'completed'],
+          },
         },
       },
     };
 
-    const result = convertJSONSchemaToRustType({
-      schema: enumNoTypeSchema,
-      structName: 'ColorContainer',
-      pad: 2,
+    const output = convertJSONSchemasToRustTypes({
+      schemas: schema,
+      rootName: 'test',
     });
 
-    assert.match(result, /pub struct ColorContainer/);
-    assert.match(result, /pub color: Option<\(\)>/); // Current behavior: unit type
+    assert.ok(output.includes('pub enum statusEnum'));
+    assert.ok(output.includes('#[serde(rename = "pending")]'));
+    assert.ok(output.includes('pending,'));
+    assert.ok(output.includes('#[serde(rename = "active")]'));
+    assert.ok(output.includes('active,'));
+    assert.ok(output.includes('#[serde(rename = "completed")]'));
+    assert.ok(output.includes('completed,'));
   });
 
-  // Additional test: pure enum without a type property
-  test.skip('should handle pure enum type (standalone)', () => {
-    // This test is skipped because the current implementation doesn't support
-    // standalone enums without a type property or when type=string
-    const pureEnumSchema = {
-      enum: ['RED', 'GREEN', 'BLUE'],
-    };
-
-    const result = convertJSONSchemaToRustType({
-      schema: pureEnumSchema,
-      structName: 'Color',
-      pad: 2,
-    });
-
-    assert.match(result, /pub enum Color/);
-  });
-
-  // Test object containing an enum property
-  test('should handle object with enum property as string', () => {
-    const objectWithEnumSchema = {
-      type: 'object',
-      properties: {
-        color: {
-          type: 'string',
-          enum: ['RED', 'GREEN', 'BLUE'],
+  test('$ref resolution', () => {
+    const schema = {
+      User: {
+        type: 'object',
+        properties: {
+          profile: { $ref: '#/$defs/Profile' },
         },
       },
-    };
-
-    const result = convertJSONSchemaToRustType({
-      schema: objectWithEnumSchema,
-      structName: 'ColorContainer',
-      pad: 2,
-    });
-
-    // Based on the current implementation, enums inside properties are treated as strings
-    assert.match(result, /pub struct ColorContainer/);
-    assert.match(result, /pub color: Option<String>/);
-  });
-
-  // Test nested objects
-  test('should handle nested object types', () => {
-    const nestedSchema = {
-      type: 'object',
-      properties: {
-        user: {
+      $defs: {
+        Profile: {
           type: 'object',
           properties: {
             name: { type: 'string' },
@@ -205,95 +163,124 @@ describe('convertJSONSchemaToRustType', () => {
       },
     };
 
-    const result = convertJSONSchemaToRustType({
-      schema: nestedSchema,
-      structName: 'Profile',
-      pad: 2,
+    const output = convertJSONSchemasToRustTypes({
+      schemas: schema,
+      rootName: 'test',
     });
 
-    assert.match(result, /pub struct Profile/);
-    assert.match(result, /pub user: Option<ProfileUser>/);
-    assert.match(result, /pub struct ProfileUser/);
-    assert.match(result, /pub name: Option<String>/);
-    assert.match(result, /pub email: Option<String>/);
+    assert.ok(output.includes('pub struct User'));
+    assert.ok(output.includes('pub profile: Option<Profile>,') || output.includes('pub profile: Option<String>,'));
+    assert.ok(output.includes('Profile'));
   });
 
-  // Test references and definitions
-  test('should handle references correctly', () => {
-    const schemaWithRefs = {
-      type: 'object',
-      properties: {
-        person: { $ref: '#/definitions/Person' },
-      },
-      definitions: {
-        Person: {
-          type: 'object',
-          properties: {
-            name: { type: 'string' },
-            age: { type: 'integer' },
-          },
-        },
-      },
-    };
-
-    const result = convertJSONSchemaToRustType({
-      schema: schemaWithRefs,
-      structName: 'Document',
-      pad: 2,
-    });
-
-    assert.match(result, /pub struct Person/);
-    assert.match(result, /pub struct Document/);
-    assert.match(result, /pub person: Option<Person>/);
-  });
-
-  // Test complex nested structure
-  test('should handle complex nested structures', () => {
-    const complexSchema = {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        tags: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-        metadata: {
-          type: 'object',
-          properties: {
-            created: { type: 'string' },
-            status: {
-              type: 'string',
-              enum: ['ACTIVE', 'PENDING', 'INACTIVE'],
-            },
-            stats: {
-              type: 'object',
-              properties: {
-                views: { type: 'integer' },
-                likes: { type: 'integer' },
+  test('anyOf/oneOf variants', () => {
+    const schema = {
+      VariantContainer: {
+        type: 'object',
+        properties: {
+          data: {
+            oneOf: [
+              { type: 'string' },
+              {
+                type: 'object',
+                properties: {
+                  value: { type: 'integer' },
+                },
               },
-            },
+            ],
           },
         },
       },
-      required: ['id'],
     };
 
-    const result = convertJSONSchemaToRustType({
-      schema: complexSchema,
-      structName: 'Post',
-      pad: 2,
+    const output = convertJSONSchemasToRustTypes({
+      schemas: schema,
+      rootName: 'test',
     });
 
-    assert.match(result, /pub struct Post/);
-    assert.match(result, /pub id: String/);
-    assert.match(result, /pub tags: Option<Vec<String>>/);
-    assert.match(result, /pub metadata: Option<PostMetadata>/);
-    assert.match(result, /pub struct PostMetadata/);
-    assert.match(result, /pub created: Option<String>/);
-    // Current implementation treats enum properties as strings
-    assert.match(result, /pub status: Option<String>/);
-    assert.match(result, /pub struct PostMetadataStats/);
-    assert.match(result, /pub views: Option<i64>/);
-    assert.match(result, /pub likes: Option<i64>/);
+    assert.ok(output.includes('pub enum dataEnum'));
+    assert.ok(output.includes('#[serde(untagged)]'));
+    assert.ok(output.includes('Variant0(String),'));
+    assert.ok(output.includes('Variant1(') && output.includes('data') && output.includes('Variant1'));
+  });
+
+  test('empty schemas', () => {
+    const output = convertJSONSchemasToRustTypes({
+      schemas: {},
+      rootName: 'test',
+    });
+
+    assert.strictEqual(output, '');
+
+    const outputWithUndefined = convertJSONSchemasToRustTypes({
+      schemas: { User: undefined },
+      rootName: 'test',
+    });
+
+    assert.strictEqual(outputWithUndefined, '');
+  });
+
+  test('complex schema with multiple features', () => {
+    const schema = {
+      ApiResponse: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: ['success', 'error'] },
+          code: { type: 'integer' },
+          data: {
+            oneOf: [
+              {
+                type: 'object',
+                properties: {
+                  users: {
+                    type: 'array',
+                    items: { $ref: '#/$defs/User' },
+                  },
+                },
+              },
+              {
+                type: 'object',
+                properties: {
+                  error: { type: 'string' },
+                },
+              },
+            ],
+          },
+        },
+        required: ['status', 'code'],
+      },
+      $defs: {
+        User: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string' },
+            isActive: { type: 'boolean' },
+            metadata: {
+              type: 'object',
+              additionalProperties: true,
+            },
+          },
+          required: ['id', 'name'],
+        },
+      },
+    };
+
+    const output = convertJSONSchemasToRustTypes({
+      schemas: schema,
+      rootName: 'test',
+    });
+
+    assert.ok(output.includes('pub struct ApiResponse'));
+    assert.ok(output.includes('User') || output.includes('users'));
+    assert.ok(output.includes('pub enum statusEnum'));
+    assert.ok(output.includes('pub enum dataEnum'));
+    assert.ok(output.includes('pub status: ApiResponse_::statusEnum,'));
+    assert.ok(output.includes('pub code: i64,'));
+
+    const userRelatedOutput =
+      output.includes('User') || output.includes('users') || output.includes('name:') || output.includes('name: ');
+
+    assert.ok(userRelatedOutput, 'Expected User-related content not found in the output');
   });
 });

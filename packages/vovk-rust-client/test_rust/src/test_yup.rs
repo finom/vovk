@@ -1,24 +1,22 @@
-// In your source file (e.g., lib.rs or main.rs)
 #[cfg(test)]
 pub mod test_yup {
     use generated_rust_client::with_yup_client_controller_rpc;
      
     // #[ignore = "needs external database"] | #[should_panic(expected = "Invalid input")]
 
-    // test OK
     #[test]
     fn test_ok() {
         // Create an instance of the API client with the back-end URL
-        let data:with_yup_client_controller_rpc::HandleAllOutput = with_yup_client_controller_rpc::handle_all(
-            with_yup_client_controller_rpc::HandleAllBody {
-                hello: "world".to_string(),
+        let data:with_yup_client_controller_rpc::handle_all_::output = with_yup_client_controller_rpc::handle_all(
+            with_yup_client_controller_rpc::handle_all_::body {
+                hello: with_yup_client_controller_rpc::handle_all_::body_::helloEnum::world,
             },
-            with_yup_client_controller_rpc::HandleAllQuery {
-                search: "value".to_string(),
+            with_yup_client_controller_rpc::handle_all_::query {
+                search: with_yup_client_controller_rpc::handle_all_::query_::searchEnum::value,
             },
-            with_yup_client_controller_rpc::HandleAllParams {
-                foo: "foo".to_string(),
-                bar: "bar".to_string(),
+            with_yup_client_controller_rpc::handle_all_::params {
+                foo: with_yup_client_controller_rpc::handle_all_::params_::fooEnum::foo,
+                bar: with_yup_client_controller_rpc::handle_all_::params_::barEnum::bar,
             },
             None,
             false,
@@ -35,17 +33,16 @@ pub mod test_yup {
         })); 
         
         // Check types
-        #[allow(unused_variables)]
-        let _body: generated_rust_client::with_yup_client_controller_rpc::HandleAllOutputBody = data.body;
+        #[allow(unused_variables)] 
+        let _body: generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::body = data.body;
 
         #[allow(unused_variables)]
-        let _query: generated_rust_client::with_yup_client_controller_rpc::HandleAllOutputQuery = data.query;
+        let _query: generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::query = data.query;
 
         #[allow(unused_variables)]
-        let _params:generated_rust_client::with_yup_client_controller_rpc::HandleAllOutputParams = data.params;
-
+        let _params:generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::params = data.params;
         #[allow(unused_variables)]
-        let _vovk_params:  generated_rust_client::with_yup_client_controller_rpc::HandleAllOutputVovkParams = data.vovkParams;
+        let _vovk_params:  generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::vovkParams = data.vovkParams;
     }
     
     // test body validation
@@ -53,8 +50,8 @@ pub mod test_yup {
     fn test_body() {
         // Test successful body validation
         let data = with_yup_client_controller_rpc::handle_body(
-            with_yup_client_controller_rpc::HandleBodyBody {
-                hello: "world".to_string(),
+            with_yup_client_controller_rpc::handle_body_::body {
+                hello: with_yup_client_controller_rpc::handle_body_::body_::helloEnum::world,
             },
             (),
             (),
@@ -93,8 +90,8 @@ pub mod test_yup {
         // Test successful query validation
         let data = with_yup_client_controller_rpc::handle_query(
             (),
-            with_yup_client_controller_rpc::HandleQueryQuery {
-                search: "value".to_string(),
+            with_yup_client_controller_rpc::handle_query_::query {
+                search: with_yup_client_controller_rpc::handle_query_::query_::searchEnum::value,
             },
             (),
             None,
@@ -133,9 +130,9 @@ pub mod test_yup {
         let data = with_yup_client_controller_rpc::handle_params(
             (),
             (),
-            with_yup_client_controller_rpc::HandleParamsParams {
-                foo: "foo".to_string(),
-                bar: "bar".to_string(),
+            with_yup_client_controller_rpc::handle_params_::params {
+                foo:  with_yup_client_controller_rpc::handle_params_::params_::fooEnum::foo,
+                bar: with_yup_client_controller_rpc::handle_params_::params_::barEnum::bar
             },
             None,
             false,
@@ -172,7 +169,7 @@ pub mod test_yup {
         // Test successful output validation
         let data = with_yup_client_controller_rpc::handle_output(
             (),
-            with_yup_client_controller_rpc::HandleOutputQuery {
+            with_yup_client_controller_rpc::handle_output_::query {
                 helloOutput: "world".to_string(),
             },
             (),
@@ -185,7 +182,7 @@ pub mod test_yup {
         // Test server-side output validation error
         let result = with_yup_client_controller_rpc::handle_output(
             (),
-            with_yup_client_controller_rpc::HandleOutputQuery {
+            with_yup_client_controller_rpc::handle_output_::query {
                 helloOutput: "worldx".to_string(),
             },
             (),
@@ -203,9 +200,9 @@ pub mod test_yup {
         // Test successful streaming
         let values = vec!["a", "b", "c", "d"];
         
-        let stream: Box<dyn Iterator<Item = with_yup_client_controller_rpc::HandleStreamIteration>> = with_yup_client_controller_rpc::handle_stream(
+        let stream: Box<dyn Iterator<Item = with_yup_client_controller_rpc::handle_stream_::iteration>> = with_yup_client_controller_rpc::handle_stream(
             (),
-            with_yup_client_controller_rpc::HandleStreamQuery {
+            with_yup_client_controller_rpc::handle_stream_::query {
                 values: values.iter().map(|s| s.to_string()).collect(),
             },
             (),
@@ -224,7 +221,7 @@ pub mod test_yup {
         let error_values = vec!["e", "f", "g", "h"];
         let error_stream = with_yup_client_controller_rpc::handle_stream(
             (),
-            with_yup_client_controller_rpc::HandleStreamQuery {
+            with_yup_client_controller_rpc::handle_stream_::query {
                 values: error_values.iter().map(|s| s.to_string()).collect(),
             },
             (),

@@ -208,8 +208,9 @@ segmentedClient: {
       */
 
 type ClientConfigCommon = {
-  enabled: boolean;
-  fromTemplates: string[];
+  enabled?: boolean;
+  outDir?: string;
+  fromTemplates?: string[];
 } & (
   | {
       excludeSegments?: never;
@@ -222,11 +223,9 @@ type ClientConfigCommon = {
 );
 
 type ClientConfigFull = ClientConfigCommon & {
-  outDir: string;
   package?: PackageJson;
 };
 type ClientConfigSegmented = ClientConfigCommon & {
-  outDir: string;
   packages?: Record<string, PackageJson>;
 };
 
@@ -265,7 +264,7 @@ export type VovkConfig = {
   libs?: Record<string, KnownAny>;
 };
 
-export type VovkStrictConfig = Required<Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports'>> & {
+export type VovkStrictConfig = Required<Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'fullClient' | 'segmentedClient'>> & {
   emitConfig: (keyof VovkStrictConfig)[];
   imports: {
     fetcher: [string, string] | [string];
@@ -273,6 +272,8 @@ export type VovkStrictConfig = Required<Omit<VovkConfig, 'emitConfig' | 'libs' |
     createRPC: [string, string] | [string];
   };
   libs: Record<string, KnownAny>;
+  fullClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'> 
+  segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
 };
 
 export type VovkFullSchema = {
@@ -345,3 +346,7 @@ export enum HttpStatus {
   GATEWAY_TIMEOUT = 504,
   HTTP_VERSION_NOT_SUPPORTED = 505,
 }
+
+// utils 
+
+type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;

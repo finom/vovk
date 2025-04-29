@@ -7,8 +7,7 @@ import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import getClientTemplateFiles from './getClientTemplateFiles.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import { ClientGenerateType, type GenerateOptions } from '../types.mjs';
-import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import type { GenerateOptions } from '../types.mjs';
 import pickSegmentFullSchema from '../utils/pickSegmentFullSchema.mjs';
 import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
 import type { PackageJson } from 'type-fest';
@@ -77,7 +76,7 @@ function logClientGenerationResults({
     const groupedByDir = _.groupBy(writtenResults, ({ outAbsoluteDir }) => outAbsoluteDir);
 
     for (const [outAbsoluteDir, dirResults] of Object.entries(groupedByDir)) {
-      const templateNames = dirResults.map(({ templateName }) => templateName);
+      const templateNames = _.uniq(dirResults.map(({ templateName }) => templateName));
       log.info(
         `${clientType} client${isEnsuringClient ? ' placeholder' : ''} is generated to ${chalkHighlightThing(outAbsoluteDir)} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
           templateNames.map((s) => `"${s}"`).join(', ')
@@ -123,7 +122,7 @@ export default async function generate({
       cwd,
       log,
       cliOptions,
-      type: ClientGenerateType.FULL,
+      configKey: 'fullClient',
     });
 
     const fullClientResults = await Promise.all(
@@ -195,7 +194,7 @@ export default async function generate({
       cwd,
       log,
       cliOptions,
-      type: ClientGenerateType.SEGMENTED,
+      configKey: 'segmentedClient',
     });
 
     const segmentedClientResults = await Promise.all(
@@ -211,13 +210,12 @@ export default async function generate({
               content: string;
             })
           : { data: { imports: [] }, content: templateContent };
-
         const results = await Promise.all(
           segmentNames.map(async (segmentName) => {
             const clientImports = await getTemplateClientImports({
               config,
               segments,
-              outCwdRelativeDir: path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME),
+              outCwdRelativeDir,
             });
 
             const packageJson = await mergePackages({
@@ -241,7 +239,7 @@ export default async function generate({
               matterResult,
               package: packageJson,
               isEnsuringClient,
-              outCwdRelativeDir: path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME),
+              outCwdRelativeDir,
               origin: config.origin ?? templateDef?.origin ?? null,
             });
 

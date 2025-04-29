@@ -4,7 +4,7 @@ import type { VovkStrictConfig } from 'vovk';
 import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
-import { ClientGenerateType, type GenerateOptions } from '../types.mjs';
+import { type GenerateOptions } from '../types.mjs';
 
 export interface ClientTemplateFile {
   templateName: string;
@@ -18,22 +18,22 @@ export default async function getClientTemplateFiles({
   config,
   cwd,
   log,
-  type,
+  configKey,
   cliOptions,
 }: {
   config: VovkStrictConfig;
   cwd: string;
   log: ProjectInfo['log'];
-  type: ClientGenerateType;
+  configKey: 'fullClient' | 'segmentedClient';
   cliOptions?: GenerateOptions;
 }) {
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
   const fromTemplates =
-    type === ClientGenerateType.FULL
+    configKey === 'fullClient'
       ? (cliOptions?.fullClientFrom ?? config.fullClient.fromTemplates)
       : (cliOptions?.segmentedClientFrom ?? config.segmentedClient.fromTemplates);
   const outDir =
-    type === ClientGenerateType.FULL
+    configKey === 'fullClient'
       ? (cliOptions?.fullClientOut ?? config.fullClient.outDir)
       : (cliOptions?.segmentedClientOut ?? config.segmentedClient.outDir);
 
@@ -56,8 +56,7 @@ export default async function getClientTemplateFiles({
     const templateAbsolutePath = resolveAbsoluteModulePath(templateDef.templatePath, cwd);
     const entryType = await getFileSystemEntryType(templateDef.templatePath);
     if (!entryType) throw new Error(`Unable to locate template path ${templateDef.templatePath}`);
-    const defOutDir =
-      type === ClientGenerateType.FULL ? templateDef.fullClient?.outDir : templateDef.segmentedClient?.outDir;
+    const defOutDir = configKey === 'fullClient' ? templateDef.fullClient?.outDir : templateDef.segmentedClient?.outDir;
 
     let files: string[];
 

@@ -59,7 +59,6 @@ export class VovkDev {
                 {
                   routeFilePath: filePath,
                   segmentName,
-                  segmentImportPath: path.relative(config.clientOutDir, filePath), // TODO DRY locateSegments
                 },
               ];
           log.info(`${capitalize(formatLoggedSegmentName(segmentName))} has been added`);

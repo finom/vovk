@@ -20,14 +20,17 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.ts]: {
       templatePath: path.resolve(templatesDir, 'ts/'),
       origin: null,
+      requires: { fullSchema: '.' },
     },
     [BuiltInTemplateName.main]: {
       templatePath: path.resolve(templatesDir, 'main/'),
       origin: null,
+      requires: { fullSchema: '.' },
     },
     [BuiltInTemplateName.module]: {
       templatePath: path.resolve(templatesDir, 'module/'),
       origin: null,
+      requires: { fullSchema: '.' },
     },
     [BuiltInTemplateName.fullSchema]: {
       templatePath: path.resolve(templatesDir, 'fullSchema/'),

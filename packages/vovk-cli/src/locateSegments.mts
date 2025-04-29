@@ -7,7 +7,6 @@ import type { ProjectInfo } from './getProjectInfo/index.mjs';
 export type Segment = {
   routeFilePath: string;
   segmentName: string;
-  segmentImportPath: string;
 };
 
 export default async function locateSegments({
@@ -47,8 +46,7 @@ export default async function locateSegments({
         if (await getFileSystemEntryType(routeFilePath)) {
           // Calculate the basePath relative to the root directory
           const segmentName = path.relative(rootDir, dir).replace(/\\/g, '/'); // windows fix
-          const segmentImportPath = path.relative(config?.clientOutDir ?? '.__error', routeFilePath);
-          results.push({ routeFilePath, segmentName, segmentImportPath });
+          results.push({ routeFilePath, segmentName });
         }
       }
 

@@ -6,7 +6,10 @@ const vovkConfig = {
   imports: {
     validateOnClient: '../packages/vovk-ajv/index.js',
   },
-  generateSegmentClient: true,
+  segmentedClient: {
+    enabled: true,
+    outDir: './src/generated-segment-client',
+  },
   schemaOutDir: './.vovk-schema',
   origin: `http://localhost:${process.env.PORT}`,
   rootEntry: 'api',

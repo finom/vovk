@@ -1,4 +1,3 @@
-// In your source file (e.g., lib.rs or main.rs)
 #[cfg(test)]
 pub mod test_dto {
     use generated_rust_client::with_dto_client_controller_rpc;
@@ -9,16 +8,16 @@ pub mod test_dto {
     #[test]
     fn test_ok() {
         // Create an instance of the API client with the back-end URL
-        let data:with_dto_client_controller_rpc::HandleAllOutput = with_dto_client_controller_rpc::handle_all(
-            with_dto_client_controller_rpc::HandleAllBody {
-                hello: "world".to_string(),
+        let data:with_dto_client_controller_rpc::handle_all_::output = with_dto_client_controller_rpc::handle_all(
+            with_dto_client_controller_rpc::handle_all_::body {
+                hello: with_dto_client_controller_rpc::handle_all_::body_::helloEnum::world
+            }, 
+            with_dto_client_controller_rpc::handle_all_::query {
+                search: with_dto_client_controller_rpc::handle_all_::query_::searchEnum::value
             },
-            with_dto_client_controller_rpc::HandleAllQuery {
-                search: "value".to_string(),
-            },
-            with_dto_client_controller_rpc::HandleAllParams {
-                foo: "foo".to_string(),
-                bar: "bar".to_string(),
+            with_dto_client_controller_rpc::handle_all_::params {
+                foo: with_dto_client_controller_rpc::handle_all_::params_::fooEnum::foo,
+                bar: with_dto_client_controller_rpc::handle_all_::params_::barEnum::bar,
             },
             None,
             false,
@@ -36,16 +35,16 @@ pub mod test_dto {
         
         // Check types
         #[allow(unused_variables)]
-        let _body: generated_rust_client::with_dto_client_controller_rpc::HandleAllBodyDto = data.body;
+        let _body: generated_rust_client::with_dto_client_controller_rpc::handle_all_::output_::body = data.body;
 
         #[allow(unused_variables)]
-        let _query:   generated_rust_client::with_dto_client_controller_rpc::HandleAllQueryDto = data.query;
+        let _query:   generated_rust_client::with_dto_client_controller_rpc::handle_all_::output_::query = data.query;
 
         #[allow(unused_variables)]
-        let _params:generated_rust_client::with_dto_client_controller_rpc::HandleAllParamsDto = data.params;
+        let _params:generated_rust_client::with_dto_client_controller_rpc::handle_all_::output_::params = data.params;
 
         #[allow(unused_variables)]
-        let _vovk_params:  generated_rust_client::with_dto_client_controller_rpc::HandleAllParamsDto = data.vovkParams;
+        let _vovk_params:  generated_rust_client::with_dto_client_controller_rpc::handle_all_::output_::vovkParams = data.vovkParams;
     }
     
     // test body validation
@@ -53,8 +52,8 @@ pub mod test_dto {
     fn test_body() {
         // Test successful body validation
         let data = with_dto_client_controller_rpc::handle_body(
-            with_dto_client_controller_rpc::HandleBodyBody {
-                hello: "world".to_string(),
+            with_dto_client_controller_rpc::handle_body_::body {
+                hello: with_dto_client_controller_rpc::handle_body_::body_::helloEnum::world,
             },
             (),
             (),
@@ -93,8 +92,8 @@ pub mod test_dto {
         // Test successful query validation
         let data = with_dto_client_controller_rpc::handle_query(
             (),
-            with_dto_client_controller_rpc::HandleQueryQuery {
-                search: "value".to_string(),
+            with_dto_client_controller_rpc::handle_query_::query {
+                search: with_dto_client_controller_rpc::handle_query_::query_::searchEnum::value,
             },
             (),
             None,
@@ -133,9 +132,9 @@ pub mod test_dto {
         let data = with_dto_client_controller_rpc::handle_params(
             (),
             (),
-            with_dto_client_controller_rpc::HandleParamsParams {
-                foo: "foo".to_string(),
-                bar: "bar".to_string(),
+            with_dto_client_controller_rpc::handle_params_::params {
+                foo: with_dto_client_controller_rpc::handle_params_::params_::fooEnum::foo,
+                bar: with_dto_client_controller_rpc::handle_params_::params_::barEnum::bar,
             },
             None,
             false,
@@ -172,7 +171,7 @@ pub mod test_dto {
         // Test successful output validation
         let data = with_dto_client_controller_rpc::handle_output(
             (),
-            with_dto_client_controller_rpc::HandleOutputQuery {
+            with_dto_client_controller_rpc::handle_output_::query {
                 helloOutput: "world".to_string(),
             },
             (),
@@ -185,7 +184,7 @@ pub mod test_dto {
         // Test server-side output validation error
         let result = with_dto_client_controller_rpc::handle_output(
             (),
-            with_dto_client_controller_rpc::HandleOutputQuery {
+            with_dto_client_controller_rpc::handle_output_::query {
                 helloOutput: "worldx".to_string(),
             },
             (),
@@ -203,9 +202,9 @@ pub mod test_dto {
         // Test successful streaming
         let values = vec!["a", "b", "c", "d"];
         
-        let stream: Box<dyn Iterator<Item = with_dto_client_controller_rpc::HandleStreamIteration>> = with_dto_client_controller_rpc::handle_stream(
+        let stream: Box<dyn Iterator<Item = with_dto_client_controller_rpc::handle_stream_::iteration>> = with_dto_client_controller_rpc::handle_stream(
             (),
-            with_dto_client_controller_rpc::HandleStreamQuery {
+            with_dto_client_controller_rpc::handle_stream_::query {
                 values: values.iter().map(|s| s.to_string()).collect(),
             },
             (),
@@ -224,7 +223,7 @@ pub mod test_dto {
         let error_values = vec!["e", "f", "g", "h"];
         let error_stream = with_dto_client_controller_rpc::handle_stream(
             (),
-            with_dto_client_controller_rpc::HandleStreamQuery {
+            with_dto_client_controller_rpc::handle_stream_::query {
                 values: error_values.iter().map(|s| s.to_string()).collect(),
             },
             (),

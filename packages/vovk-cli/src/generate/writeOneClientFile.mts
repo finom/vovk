@@ -74,18 +74,23 @@ export default async function writeOneClientFile({
         ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME), config.schemaOutDir)
         : path.relative(outCwdRelativeDir, config.schemaOutDir),
     segmentMeta: Object.fromEntries(
-      segments.map(({ segmentName: sName, routeFilePath, segmentImportPath }) => [
-        sName,
-        {
-          routeFilePath,
-          segmentImportPath:
-            typeof segmentName === 'string'
-              ? `${_.times((segmentName.match(/\//g)?.length ?? 0) + 1)
-                  .map(() => '..')
-                  .join('/')}/${segmentImportPath}`
-              : segmentImportPath,
-        },
-      ])
+      segments.map(({ segmentName: sName, routeFilePath }) => {
+        const segmentImportPath = path.relative(
+          path.resolve(
+            cwd,
+            outCwdRelativeDir,
+            typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '.'
+          ),
+          path.resolve(cwd, routeFilePath)
+        );
+        return [
+          sName,
+          {
+            routeFilePath,
+            segmentImportPath,
+          },
+        ];
+      })
     ),
   };
 
@@ -123,7 +128,7 @@ export default async function writeOneClientFile({
 
   // Determine if we need to rewrite the file, ignore 1st line
   const needsWriting = isEnsuringClient
-    ? !!existingContent
+    ? !existingContent
     : !existingContent ||
       existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
 
