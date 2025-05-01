@@ -134,6 +134,62 @@ export default class WithZodClientController {
   });
 
   @post.auto()
+  static handleSchemaComplains = withZod({
+    body: z.object({
+      // Number validations not in Rust
+      numbers: z.object({
+        minimum: z.number().min(0), // Minimum value (inclusive)
+        maximum: z.number().max(100), // Maximum value (inclusive)
+        exclusiveMinimum: z.number().gt(0), // Exclusive minimum
+        exclusiveMaximum: z.number().lt(100), // Exclusive maximum
+        multipleOf: z.number().multipleOf(5), // Must be multiple of value
+        integerOnly: z.number().int(), // Must be an integer
+      }),
+
+      // String validations not in Rust
+      strings: z.object({
+        minLength: z.string().min(3), // Minimum string length
+        maxLength: z.string().max(50), // Maximum string length
+        pattern: z.string().regex(/^[A-Z][a-z]*$/), // Must match regex pattern
+        email: z.string().email(), // Email format
+        url: z.string().url(), // URL format
+        uuid: z.string().uuid(), // UUID format
+        datetime: z.string().datetime(), // ISO datetime
+      }),
+
+      // Array validations not in Rust
+      arrays: z.object({
+        minItems: z.array(z.string()).min(1), // Minimum items
+        maxItems: z.array(z.string()).max(10), // Maximum items
+        nonemptyArray: z.array(z.number()).nonempty(), // Must have at least one item
+        // uniqueItems is handled differently in JSON Schema
+      }),
+
+      // Object validations not in Rust
+      objects: z.object({
+        required: z.object({
+          requiredField: z.string(),
+          optionalField: z.number().optional(),
+        }),
+        additionalPropertiesControl: z
+          .object({
+            knownField: z.string(),
+          })
+          .strict(), // No additional properties allowed
+      }),
+
+      // Logical compositions
+      logical: z.object({
+        oneOf: z.union([z.string(), z.number(), z.boolean()]),
+        allOf: z.intersection(z.object({ a: z.string() }), z.object({ b: z.number() })),
+      }),
+    }),
+    handle: async () => {
+      // do nothing
+    },
+  });
+
+  @post.auto()
   static handleNothitng = withZod({
     handle: async () => {
       return { nothing: 'here' } as const;
