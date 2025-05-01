@@ -143,7 +143,7 @@ export default class WithZodClientController {
         exclusiveMinimum: z.number().gt(0), // Exclusive minimum
         exclusiveMaximum: z.number().lt(100), // Exclusive maximum
         multipleOf: z.number().multipleOf(5), // Must be multiple of value
-        integerOnly: z.number().int(), // Must be an integer
+        integerOnly: z.int(), // Must be an integer
       }),
 
       // String validations not in Rust
@@ -151,10 +151,10 @@ export default class WithZodClientController {
         minLength: z.string().min(3), // Minimum string length
         maxLength: z.string().max(50), // Maximum string length
         pattern: z.string().regex(/^[A-Z][a-z]*$/), // Must match regex pattern
-        email: z.string().email(), // Email format
-        url: z.string().url(), // URL format
-        uuid: z.string().uuid(), // UUID format
-        datetime: z.string().datetime(), // ISO datetime
+        email: z.email(), // Email format
+        url: z.url(), // URL format
+        uuid: z.uuid(), // UUID format
+        datetime: z.iso.datetime(), // ISO datetime
       }),
 
       // Array validations not in Rust
@@ -165,18 +165,15 @@ export default class WithZodClientController {
         // uniqueItems is handled differently in JSON Schema
       }),
 
-      // Object validations not in Rust
-      objects: z.object({
-        required: z.object({
-          requiredField: z.string(),
-          optionalField: z.number().optional(),
-        }),
-        additionalPropertiesControl: z
-          .object({
-            knownField: z.string(),
-          })
-          .strict(), // No additional properties allowed
+      required: z.object({
+        requiredField: z.string(),
+        optionalField: z.number().optional(),
       }),
+      strict: z
+        .object({
+          knownField: z.string(),
+        })
+        .strict(), // No additional properties allowed
 
       // Logical compositions
       logical: z.object({
@@ -256,8 +253,8 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static validateEveryIteration = withZod({
-    validateEveryIteration: true,
+  static validateEachIteration = withZod({
+    validateEachIteration: true,
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.union([z.literal('a'), z.literal('b'), z.literal('c'), z.literal('d')]) }),
     async *handle(req) {

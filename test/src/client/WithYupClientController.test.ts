@@ -296,7 +296,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     const expected: { value: string }[] = tokens.slice(0, 2).map((value) => ({ value }));
     const expectedCollected: typeof expected = [];
     const { rejects } = expectPromise(async () => {
-      const resp = await WithYupClientControllerRPC.validateEveryIteration({
+      const resp = await WithYupClientControllerRPC.validateEachIteration({
         query: { values: tokens },
       });
       for await (const message of resp) {

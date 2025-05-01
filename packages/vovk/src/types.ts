@@ -40,6 +40,7 @@ export type VovkControllerInternal = {
   _controllerName?: VovkControllerSchema['controllerName'];
   _prefix?: VovkControllerSchema['prefix'];
   _handlers: VovkControllerSchema['handlers'];
+  _handlersMetadata?:  Record<string, { staticParams?: Record<string, string>[] }>
   _activated?: true;
   _onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
 };
@@ -52,6 +53,7 @@ export type VovkController = StaticClass &
 export type DecoratorOptions = {
   cors?: boolean;
   headers?: Record<string, string>;
+  staticParams?: Record<string, string>[];
   before?: (this: VovkController, req: VovkRequest) => unknown;
 };
 

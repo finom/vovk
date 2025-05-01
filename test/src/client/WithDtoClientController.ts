@@ -267,8 +267,8 @@ export default class WithDtoClientController {
     },
   });
   @post.auto()
-  static validateEveryIteration = withDto({
-    validateEveryIteration: true,
+  static validateEachIteration = withDto({
+    validateEachIteration: true,
     query: QueryValuesDto,
     iteration: IterationDto,
     async *handle(req) {

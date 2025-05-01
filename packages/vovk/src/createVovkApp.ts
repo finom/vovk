@@ -77,6 +77,14 @@ const assignSchema = ({
 
   methods[path] = controller[propertyKey] as RouteHandler;
   methods[path]._options = options;
+
+  controller._handlersMetadata = {
+    ...controller._handlersMetadata,
+    [propertyKey]: {
+      ...((controller._handlersMetadata ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
+      staticParams: options?.staticParams,
+    },
+  };
 };
 
 export function createVovkApp() {

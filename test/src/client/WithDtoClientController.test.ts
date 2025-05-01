@@ -386,7 +386,7 @@ describe('Validation with with vovk-dto', () => {
     const expected: { value: string }[] = tokens.slice(0, 2).map((value) => ({ value }));
     const expectedCollected: typeof expected = [];
     const { rejects } = expectPromise(async () => {
-      const resp = await WithDtoClientControllerRPC.validateEveryIteration({
+      const resp = await WithDtoClientControllerRPC.validateEachIteration({
         query: { values: tokens },
       });
       for await (const message of resp) {
@@ -396,10 +396,10 @@ describe('Validation with with vovk-dto', () => {
     await rejects.toThrow(
       /Validation failed. Invalid iteration #2 on server for http:.*\. value must be one of the following values: a, b, c, d/
     );
-    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.validateEveryIteration> satisfies {
+    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.validateEachIteration> satisfies {
       value: string;
     };
-    null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.validateEveryIteration> satisfies {
+    null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.validateEachIteration> satisfies {
       value: string;
     };
     deepStrictEqual(expected, expectedCollected);

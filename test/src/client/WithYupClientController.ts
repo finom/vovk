@@ -198,8 +198,8 @@ export default class WithYupClientController {
   });
 
   @post.auto()
-  static validateEveryIteration = withYup({
-    validateEveryIteration: true,
+  static validateEachIteration = withYup({
+    validateEachIteration: true,
     query: yup.object({ values: yup.array().of(yup.string().required()).required() }),
     iteration: yup.object({ value: yup.string().oneOf(['a', 'b', 'c', 'd']).required() }),
     async *handle(req) {

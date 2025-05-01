@@ -672,7 +672,7 @@
           "httpMethod": "POST",
           "path": "skip-schema-emission-strings"
         },
-        "validateEveryIteration": {
+        "validateEachIteration": {
           "validation": {
             "query": {
               "type": "object",
@@ -1241,7 +1241,7 @@
           "httpMethod": "POST",
           "path": "skip-schema-emission-strings"
         },
-        "validateEveryIteration": {
+        "validateEachIteration": {
           "validation": {
             "query": {
               "type": "object",
@@ -1862,7 +1862,7 @@
           "httpMethod": "POST",
           "path": "skip-schema-emission-strings"
         },
-        "validateEveryIteration": {
+        "validateEachIteration": {
           "validation": {
             "query": {
               "x-isDto": true,

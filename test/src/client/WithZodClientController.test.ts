@@ -13,30 +13,6 @@ import {
 import type WithZodClientController from './WithZodClientController';
 import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
-/*
-Only body,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only query,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Nested Query
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only params,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only output,
-  - Server
-Streaming
-All (just OK) DONE
-handler.schema for All, use @openapi and @openapi.error
-*/
-
 describe('Client validation with custon AJV options', () => {
   it('Should handle body validation on client with localize and options', async () => {
     const result = await WithZodClientControllerRPC.handleBody({
@@ -331,7 +307,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     const expectedCollected: typeof expected = [];
 
     const { rejects } = expectPromise(async () => {
-      const resp = await WithZodClientControllerRPC.validateEveryIteration({
+      const resp = await WithZodClientControllerRPC.validateEachIteration({
         query: { values: tokens },
       });
       for await (const message of resp) {
@@ -342,10 +318,10 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       /Zod validation failed. Invalid iteration #2 on server for http:.*\. Invalid input \(value\)/
     );
 
-    null as unknown as VovkControllerYieldType<typeof WithZodClientController.validateEveryIteration> satisfies {
+    null as unknown as VovkControllerYieldType<typeof WithZodClientController.validateEachIteration> satisfies {
       value: string;
     };
-    null as unknown as VovkYieldType<typeof WithZodClientControllerRPC.validateEveryIteration> satisfies {
+    null as unknown as VovkYieldType<typeof WithZodClientControllerRPC.validateEachIteration> satisfies {
       value: string;
     };
     deepStrictEqual(expected, expectedCollected);
