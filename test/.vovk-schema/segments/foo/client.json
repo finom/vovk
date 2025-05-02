@@ -508,125 +508,83 @@
           "httpMethod": "GET",
           "path": "handle-stream"
         },
-        "handleSchemaComplains": {
+        "handleSchemaComplaints": {
           "validation": {
             "body": {
               "type": "object",
               "properties": {
-                "numbers": {
-                  "type": "object",
-                  "properties": {
-                    "minimum": {
-                      "type": "number"
-                    },
-                    "maximum": {
-                      "type": "number",
-                      "maximum": 100
-                    },
-                    "exclusiveMinimum": {
-                      "type": "number"
-                    },
-                    "exclusiveMaximum": {
-                      "type": "number",
-                      "exclusiveMaximum": 100
-                    },
-                    "multipleOf": {
-                      "type": "number",
-                      "multipleOf": 5
-                    },
-                    "integerOnly": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    }
-                  },
-                  "required": [
-                    "minimum",
-                    "maximum",
-                    "exclusiveMinimum",
-                    "exclusiveMaximum",
-                    "multipleOf",
-                    "integerOnly"
-                  ]
+                "num_minimum": {
+                  "type": "number",
+                  "minimum": 1
                 },
-                "strings": {
-                  "type": "object",
-                  "properties": {
-                    "minLength": {
-                      "type": "string",
-                      "minLength": 3
-                    },
-                    "maxLength": {
-                      "type": "string",
-                      "maxLength": 50
-                    },
-                    "pattern": {
-                      "type": "string",
-                      "format": "regex",
-                      "pattern": "^[A-Z][a-z]*$"
-                    },
-                    "email": {
-                      "type": "string",
-                      "format": "email",
-                      "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                    },
-                    "url": {
-                      "type": "string",
-                      "format": "uri"
-                    },
-                    "uuid": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000)$"
-                    },
-                    "datetime": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z)$"
-                    }
-                  },
-                  "required": [
-                    "minLength",
-                    "maxLength",
-                    "pattern",
-                    "email",
-                    "url",
-                    "uuid",
-                    "datetime"
-                  ]
+                "num_maximum": {
+                  "type": "number",
+                  "maximum": 100
                 },
-                "arrays": {
-                  "type": "object",
-                  "properties": {
-                    "minItems": {
-                      "minItems": 1,
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "maxItems": {
-                      "maxItems": 10,
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "nonemptyArray": {
-                      "minItems": 1,
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      }
-                    }
-                  },
-                  "required": [
-                    "minItems",
-                    "maxItems",
-                    "nonemptyArray"
-                  ]
+                "num_exclusiveMinimum": {
+                  "type": "number",
+                  "exclusiveMinimum": 1
                 },
-                "required": {
+                "num_exclusiveMaximum": {
+                  "type": "number",
+                  "exclusiveMaximum": 100
+                },
+                "num_multipleOf": {
+                  "type": "number",
+                  "multipleOf": 5
+                },
+                "num_integerOnly": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "str_minLength": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "str_maxLength": {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                "str_pattern": {
+                  "type": "string",
+                  "format": "regex",
+                  "pattern": "^[A-Z][a-z]*$"
+                },
+                "str_email": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                },
+                "str_url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "str_uuid": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000)$"
+                },
+                "str_datetime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z)$"
+                },
+                "arr_minItems": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "arr_maxItems": {
+                  "maxItems": 10,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "obj_required": {
                   "type": "object",
                   "properties": {
                     "requiredField": {
@@ -640,7 +598,7 @@
                     "requiredField"
                   ]
                 },
-                "strict": {
+                "obj_strict": {
                   "type": "object",
                   "properties": {
                     "knownField": {
@@ -654,67 +612,72 @@
                     "not": {}
                   }
                 },
-                "logical": {
-                  "type": "object",
-                  "properties": {
-                    "oneOf": {
-                      "anyOf": [
-                        {
+                "logical_oneOf": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 5
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                "logical_allOf": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "a": {
                           "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "boolean"
                         }
+                      },
+                      "required": [
+                        "a"
                       ]
                     },
-                    "allOf": {
-                      "allOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "a": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "a"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "b": {
-                              "type": "number"
-                            }
-                          },
-                          "required": [
-                            "b"
-                          ]
+                    {
+                      "type": "object",
+                      "properties": {
+                        "b": {
+                          "type": "number"
                         }
+                      },
+                      "required": [
+                        "b"
                       ]
                     }
-                  },
-                  "required": [
-                    "oneOf",
-                    "allOf"
                   ]
                 }
               },
               "required": [
-                "numbers",
-                "strings",
-                "arrays",
-                "required",
-                "strict",
-                "logical"
+                "num_minimum",
+                "num_maximum",
+                "num_exclusiveMinimum",
+                "num_exclusiveMaximum",
+                "num_multipleOf",
+                "num_integerOnly",
+                "str_minLength",
+                "str_maxLength",
+                "str_pattern",
+                "str_email",
+                "str_url",
+                "str_uuid",
+                "str_datetime",
+                "arr_minItems",
+                "arr_maxItems",
+                "obj_required",
+                "obj_strict",
+                "logical_oneOf",
+                "logical_allOf"
               ]
             }
           },
           "httpMethod": "POST",
-          "path": "handle-schema-complains"
+          "path": "handle-schema-complaints"
         },
         "handleNothitng": {
           "validation": {},
@@ -1216,12 +1179,7 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "maxLength": 5
                 }
               },
               "required": [
@@ -1231,6 +1189,122 @@
           },
           "httpMethod": "GET",
           "path": "handle-stream"
+        },
+        "handleSchemaComplaints": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "default": {
+                "logical_allOf": {},
+                "obj_strict": {},
+                "obj_required": {}
+              },
+              "properties": {
+                "num_minimum": {
+                  "type": "number",
+                  "minimum": 1
+                },
+                "num_maximum": {
+                  "type": "number",
+                  "maximum": 100
+                },
+                "num_exclusiveMinimum": {
+                  "type": "number",
+                  "exclusiveMinimum": 1
+                },
+                "num_exclusiveMaximum": {
+                  "type": "number",
+                  "exclusiveMaximum": 100
+                },
+                "num_integerOnly": {
+                  "type": "integer"
+                },
+                "str_minLength": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "str_maxLength": {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                "str_pattern": {
+                  "type": "string",
+                  "pattern": "^[A-Z][a-z]*$"
+                },
+                "str_email": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "str_url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "str_uuid": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+                },
+                "str_datetime": {
+                  "type": "string"
+                },
+                "arr_minItems": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                "arr_maxItems": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 10
+                },
+                "obj_required": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "requiredField": {
+                      "type": "string"
+                    },
+                    "optionalField": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "requiredField"
+                  ]
+                },
+                "obj_strict": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "knownField": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "logical_allOf": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "a": {
+                      "type": "string"
+                    },
+                    "b": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "a",
+                    "b"
+                  ]
+                }
+              }
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-schema-complaints"
         },
         "handleNothitng": {
           "validation": {},
@@ -1717,6 +1791,149 @@
           },
           "httpMethod": "GET",
           "path": "handle-stream"
+        },
+        "handleSchemaComplaints": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {
+                "RequiredObject": {
+                  "properties": {
+                    "requiredField": {
+                      "type": "string",
+                      "not": {
+                        "type": "null"
+                      }
+                    },
+                    "optionalField": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "requiredField"
+                  ]
+                },
+                "StrictObject": {
+                  "properties": {
+                    "knownField": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "knownField"
+                  ]
+                }
+              },
+              "properties": {
+                "num_minimum": {
+                  "minimum": 1,
+                  "type": "number"
+                },
+                "num_maximum": {
+                  "maximum": 100,
+                  "type": "number"
+                },
+                "num_exclusiveMinimum": {
+                  "type": "number"
+                },
+                "num_exclusiveMaximum": {
+                  "type": "number"
+                },
+                "num_multipleOf": {
+                  "type": "number"
+                },
+                "num_integerOnly": {
+                  "type": "integer"
+                },
+                "str_minLength": {
+                  "minLength": 3,
+                  "type": "string"
+                },
+                "str_maxLength": {
+                  "maxLength": 50,
+                  "type": "string"
+                },
+                "str_pattern": {
+                  "pattern": "^[A-Z][a-z]*$",
+                  "type": "string"
+                },
+                "str_email": {
+                  "format": "email",
+                  "type": "string"
+                },
+                "str_url": {
+                  "format": "url",
+                  "type": "string"
+                },
+                "str_uuid": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "str_datetime": {
+                  "oneOf": [
+                    {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    {
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "arr_minItems": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "maxItems": 10,
+                  "minItems": 1
+                },
+                "arr_maxItems": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "maxItems": 10,
+                  "minItems": 1
+                },
+                "obj_required": {
+                  "$ref": "#/definitions/RequiredObject"
+                },
+                "obj_strict": {
+                  "$ref": "#/definitions/StrictObject"
+                },
+                "logical_allOf": {
+                  "type": "object"
+                }
+              },
+              "type": "object",
+              "required": [
+                "num_minimum",
+                "num_maximum",
+                "num_exclusiveMinimum",
+                "num_exclusiveMaximum",
+                "num_multipleOf",
+                "num_integerOnly",
+                "str_minLength",
+                "str_maxLength",
+                "str_pattern",
+                "str_email",
+                "str_url",
+                "str_uuid",
+                "str_datetime",
+                "arr_minItems",
+                "arr_maxItems",
+                "obj_required",
+                "obj_strict",
+                "logical_allOf"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-schema-complaints"
         },
         "handleNothitng": {
           "validation": {},

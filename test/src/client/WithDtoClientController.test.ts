@@ -10,7 +10,7 @@ import {
   type VovkControllerOutput,
 } from 'vovk';
 import type WithDtoClientController from './WithDtoClientController';
-import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type {
   HandleAllBodyDto,
   HandleAllParamsDto,
@@ -19,6 +19,48 @@ import type {
   HandleParamsDto,
   HandleQueryQueryDto,
 } from './WithDtoClientController.dto.ts';
+
+describe('DTO-to-JSONchema complaints', async () => {
+  const noComplaints = getComplainingObject(null);
+
+  await it('Should handle valid object', async () => {
+    // first check if the object is valid
+    await WithDtoClientControllerRPC.handleSchemaComplaints({
+      body: noComplaints,
+    });
+  });
+  const notSupported = [
+    'logical_oneOf',
+    'logical_allOf',
+    'obj_strict',
+    'obj_required',
+    'num_multipleOf',
+    'num_exclusiveMinimum',
+    'num_exclusiveMaximum',
+  ];
+  for (const key of Object.keys(noComplaints)) {
+    if (notSupported.includes(key)) {
+      continue;
+    }
+    await it(`Should handle ${key} complaint`, async () => {
+      const complainingObject = getComplainingObject(key);
+      let { rejects } = expectPromise(async () => {
+        await WithDtoClientControllerRPC.handleSchemaComplaints({
+          body: complainingObject,
+          disableClientValidation: true,
+        });
+      });
+      await rejects.toThrow(new RegExp(`Validation failed. Invalid body on server for http:.*\\. ${key}.*`));
+      await rejects.toThrowError(HttpException);
+      ({ rejects } = expectPromise(async () => {
+        await WithDtoClientControllerRPC.handleSchemaComplaints({
+          body: complainingObject,
+        });
+      }));
+      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));
+    });
+  }
+});
 
 describe('Validation with with vovk-dto', () => {
   it('Should be OK', async () => {

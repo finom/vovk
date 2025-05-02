@@ -9,7 +9,7 @@ import {
 } from 'vovk';
 import { convertSchema } from '@sodaru/yup-to-json-schema';
 
-const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.errors.join(', ') ?? String(e);
+const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.message ?? String(e);
 
 // Helper function to recursively add descriptions
 const enrichWithDescriptions = (jsonSchema: KnownAny, yupDescription: KnownAny) => {

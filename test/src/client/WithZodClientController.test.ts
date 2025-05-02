@@ -1,4 +1,4 @@
-import { it, describe } from 'node:test';
+import test, { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithZodClientControllerRPC } from 'vovk-client';
 import { validateOnClient as validateOnClientAjv } from 'vovk-ajv';
@@ -10,8 +10,8 @@ import {
   type VovkYieldType,
   type VovkControllerOutput,
 } from 'vovk';
-import type WithZodClientController from './WithZodClientController';
-import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import type WithZodClientController from './WithZodClientController.ts';
+import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 describe('Client validation with custom AJV options', () => {
   it('Should handle body validation on client with localize and options', async () => {
@@ -40,6 +40,39 @@ describe('Client validation with custom AJV options', () => {
     );
     await rejects.toThrowError(HttpException);
   });
+});
+
+describe('Zod-to-JSONchema complaints', async () => {
+  const noComplaints = getComplainingObject(null);
+
+  await test('Should handle valid object', async () => {
+    // first check if the object is valid
+    await WithZodClientControllerRPC.handleSchemaComplaints({
+      body: noComplaints,
+    });
+  });
+
+  for (const key of Object.keys(noComplaints)) {
+    await test(`Should handle ${key} complaint`, async () => {
+      const complainingObject = getComplainingObject(key);
+      let { rejects } = expectPromise(async () => {
+        await WithZodClientControllerRPC.handleSchemaComplaints({
+          body: complainingObject,
+          disableClientValidation: true,
+        });
+      });
+
+      await rejects.toThrow(new RegExp(`Zod validation failed. Invalid body on server for http:.*\\. At "${key}.*`));
+      await rejects.toThrowError(HttpException);
+
+      ({ rejects } = expectPromise(async () => {
+        await WithZodClientControllerRPC.handleSchemaComplaints({
+          body: complainingObject,
+        });
+      }));
+      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));
+    });
+  }
 });
 
 describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {

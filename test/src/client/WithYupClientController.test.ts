@@ -10,8 +10,42 @@ import {
   type VovkControllerOutput,
 } from 'vovk';
 import type WithDtoClientController from './WithDtoClientController';
-import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type WithYupClientController from './WithYupClientController.ts';
+
+describe('Yup-to-JSONchema complaints', async () => {
+  const noComplaints = getComplainingObject(null);
+  const notSupported = ['num_multipleOf', 'logical_oneOf', 'obj_strict', 'str_datetime'];
+
+  await it('Should handle valid object', async () => {
+    // first check if the object is valid
+    await WithYupClientControllerRPC.handleSchemaComplaints({
+      body: noComplaints,
+    });
+  });
+  for (const key of Object.keys(noComplaints)) {
+    if (notSupported.includes(key)) {
+      continue;
+    }
+    await it(`Should handle ${key} complaint`, async () => {
+      const complainingObject = getComplainingObject(key);
+      let { rejects } = expectPromise(async () => {
+        await WithYupClientControllerRPC.handleSchemaComplaints({
+          body: complainingObject,
+          disableClientValidation: true,
+        });
+      });
+      await rejects.toThrow(new RegExp(`Yup validation failed. Invalid body on server for http:.*\\. ${key}.*`));
+      await rejects.toThrowError(HttpException);
+      ({ rejects } = expectPromise(async () => {
+        await WithYupClientControllerRPC.handleSchemaComplaints({
+          body: complainingObject,
+        });
+      }));
+      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));
+    });
+  }
+});
 
 describe('Validation with with vovk-yup and validateOnClient defined at settings', () => {
   it('Should be OK', async () => {

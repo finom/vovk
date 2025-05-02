@@ -13,6 +13,43 @@ import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
 import * as z from 'zod';
 
+export const ComplaiingModel = z.object({
+  // Number validations not in Rust
+  num_minimum: z.number().min(1), // Minimum value (inclusive)
+  num_maximum: z.number().max(100), // Maximum value (inclusive)
+  num_exclusiveMinimum: z.number().gt(1), // Exclusive minimum
+  num_exclusiveMaximum: z.number().lt(100), // Exclusive maximum
+  num_multipleOf: z.number().multipleOf(5), // Must be multiple of value
+  num_integerOnly: z.int(), // Must be an integer
+
+  // String validations not in Rust
+  str_minLength: z.string().min(3), // Minimum string length
+  str_maxLength: z.string().max(50), // Maximum string length
+  str_pattern: z.string().regex(/^[A-Z][a-z]*$/), // Must match regex pattern
+  str_email: z.email(), // Email format
+  str_url: z.url(), // URL format
+  str_uuid: z.uuid(), // UUID format
+  str_datetime: z.iso.datetime(), // ISO datetime
+
+  // Array validations not in Rust
+  arr_minItems: z.array(z.string()).min(1), // Minimum items
+  arr_maxItems: z.array(z.string()).max(10), // Maximum items
+
+  obj_required: z.object({
+    requiredField: z.string(),
+    optionalField: z.number().optional(),
+  }),
+  obj_strict: z
+    .object({
+      knownField: z.string(),
+    })
+    .strict(), // No additional properties allowed
+
+  // Logical compositions
+  logical_oneOf: z.union([z.string().max(5), z.number(), z.boolean()]),
+  logical_allOf: z.intersection(z.object({ a: z.string() }), z.object({ b: z.number() })),
+});
+
 // check if the "circular" types don't error
 class WithZodClientService {
   static handleAll({
@@ -134,55 +171,10 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static handleSchemaComplains = withZod({
-    body: z.object({
-      // Number validations not in Rust
-      numbers: z.object({
-        minimum: z.number().min(0), // Minimum value (inclusive)
-        maximum: z.number().max(100), // Maximum value (inclusive)
-        exclusiveMinimum: z.number().gt(0), // Exclusive minimum
-        exclusiveMaximum: z.number().lt(100), // Exclusive maximum
-        multipleOf: z.number().multipleOf(5), // Must be multiple of value
-        integerOnly: z.int(), // Must be an integer
-      }),
-
-      // String validations not in Rust
-      strings: z.object({
-        minLength: z.string().min(3), // Minimum string length
-        maxLength: z.string().max(50), // Maximum string length
-        pattern: z.string().regex(/^[A-Z][a-z]*$/), // Must match regex pattern
-        email: z.email(), // Email format
-        url: z.url(), // URL format
-        uuid: z.uuid(), // UUID format
-        datetime: z.iso.datetime(), // ISO datetime
-      }),
-
-      // Array validations not in Rust
-      arrays: z.object({
-        minItems: z.array(z.string()).min(1), // Minimum items
-        maxItems: z.array(z.string()).max(10), // Maximum items
-        nonemptyArray: z.array(z.number()).nonempty(), // Must have at least one item
-        // uniqueItems is handled differently in JSON Schema
-      }),
-
-      required: z.object({
-        requiredField: z.string(),
-        optionalField: z.number().optional(),
-      }),
-      strict: z
-        .object({
-          knownField: z.string(),
-        })
-        .strict(), // No additional properties allowed
-
-      // Logical compositions
-      logical: z.object({
-        oneOf: z.union([z.string(), z.number(), z.boolean()]),
-        allOf: z.intersection(z.object({ a: z.string() }), z.object({ b: z.number() })),
-      }),
-    }),
-    handle: async () => {
-      // do nothing
+  static handleSchemaComplaints = withZod({
+    body: ComplaiingModel,
+    handle: async (req) => {
+      return req.json();
     },
   });
 

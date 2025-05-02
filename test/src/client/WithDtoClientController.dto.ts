@@ -1,4 +1,25 @@
-import { IsString, IsArray, IsOptional, ValidateNested, IsIn, MaxLength } from 'class-validator';
+import {
+  IsNumber,
+  Min,
+  Max,
+  IsInt,
+  MinLength,
+  MaxLength,
+  Matches,
+  IsEmail,
+  IsUrl,
+  IsUUID,
+  IsISO8601,
+  ArrayMinSize,
+  ArrayMaxSize,
+  IsString,
+  ValidateNested,
+  IsOptional,
+  IsDefined,
+  IsObject,
+  IsIn,
+  IsArray,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { JSONSchema } from 'class-validator-jsonschema';
 
@@ -197,4 +218,97 @@ export class IterationDto {
 export class QueryValuesDto {
   @IsArray()
   values: string[];
+}
+
+export class RequiredObject {
+  @IsDefined()
+  @IsString()
+  requiredField: string;
+
+  @IsOptional()
+  @IsNumber()
+  optionalField?: number;
+}
+
+export class StrictObject {
+  @IsString()
+  knownField: string;
+}
+
+export class ComplaiingDto {
+  // Number validations
+  @IsNumber()
+  @Min(1)
+  num_minimum: number;
+
+  @IsNumber()
+  @Max(100)
+  num_maximum: number;
+
+  @IsNumber()
+  num_exclusiveMinimum: number; // Can't exactly represent gt(1) with standard decorators
+
+  @IsNumber()
+  num_exclusiveMaximum: number; // Can't exactly represent lt(100) with standard decorators
+
+  @IsNumber()
+  num_multipleOf: number; // Can't represent multipleOf with standard decorators
+
+  @IsInt()
+  num_integerOnly: number;
+
+  // String validations
+  @IsString()
+  @MinLength(3)
+  str_minLength: string;
+
+  @IsString()
+  @MaxLength(50)
+  str_maxLength: string;
+
+  @IsString()
+  @Matches(/^[A-Z][a-z]*$/)
+  str_pattern: string;
+
+  @IsEmail()
+  str_email: string;
+
+  @IsUrl()
+  str_url: string;
+
+  @IsUUID()
+  str_uuid: string;
+
+  @IsISO8601()
+  str_datetime: string;
+
+  // Array validations
+  @ArrayMinSize(1)
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  arr_minItems: string[];
+
+  @ArrayMinSize(1)
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  arr_maxItems: string[];
+
+  // Object validations
+  @ValidateNested()
+  @Type(() => RequiredObject)
+  obj_required: RequiredObject;
+
+  @ValidateNested()
+  @Type(() => StrictObject)
+  obj_strict: StrictObject; // Cannot enforce "strict" (no additional properties) with standard decorators
+
+  // This can be string OR number OR boolean, but there's no standard way to represent unions
+  logical_oneOf: string | number | boolean;
+
+  // We can't represent an intersection directly
+  @IsObject()
+  logical_allOf: {
+    a: string;
+    b: number;
+  };
 }
