@@ -132,7 +132,7 @@ describe('useQuery', () => {
       assert.equal(result.current.isSuccess, true);
     });
 
-    assert.deepEqual(result.current.data satisfies { hello: 'world' } | undefined, { hello: 'world' });
+    assert.deepEqual(result.current.data satisfies { hello: string } | undefined, { hello: 'world' });
   });
 
   it('Validates on client', async () => {
@@ -141,7 +141,7 @@ describe('useQuery', () => {
     const { result } = renderHook(() => {
       return WithZodClientControllerRPC.handleBody.useQuery(
         {
-          body: { hello: 'wrong' as 'world' },
+          body: { hello: 'wrong_length' },
         },
         { experimental_prefetchInRender: true },
         queryClient
@@ -167,7 +167,7 @@ describe('useQuery', () => {
     const { result } = renderHook(() => {
       return WithZodClientControllerRPC.handleBody.useQuery(
         {
-          body: { hello: 'wrong' as 'world' },
+          body: { hello: 'wrong_length' },
           disableClientValidation: true,
         },
         { experimental_prefetchInRender: true },

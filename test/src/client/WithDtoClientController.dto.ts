@@ -138,6 +138,7 @@ export class ZDto {
 }
 
 export class HandleNestedQueryDto {
+  @MaxLength(5)
   @IsString()
   x: string;
 

@@ -3,7 +3,7 @@ import { HttpException, HttpStatus, JSONLinesResponse, type VovkRequest, get, po
 import { NextResponse } from 'next/server';
 import { NESTED_QUERY_EXAMPLE } from '../lib';
 
-@prefix('client')
+@prefix('common')
 export default class ClientController {
   @get.auto()
   static getHelloWorldResponseObject() {

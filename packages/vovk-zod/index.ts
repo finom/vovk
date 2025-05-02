@@ -8,6 +8,23 @@ import {
   type VovkValidationType,
 } from 'vovk';
 
+const getErrorText = (e: unknown) => {
+  if (e instanceof z.ZodError) {
+    return e.issues
+      .map((issue, i) => {
+        const path = issue.path.length ? `${issue.path.join('.')}` : '';
+        const message = issue.message;
+
+        return `${i ? 'at' : 'At'} "${path}": "${message}"`;
+      })
+      .join('; ');
+  }
+
+  if (e instanceof Error) {
+    return e.message;
+  }
+};
+
 function withZod<
   T extends (req: REQ, params: ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : Record<string, string>) => KnownAny,
   ZOD_BODY extends ZodType<KnownAny> | undefined = undefined,
@@ -61,7 +78,7 @@ function withZod<
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${(e as Error).message}`,
+          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
           { [type]: data, error: e }
         );
       }

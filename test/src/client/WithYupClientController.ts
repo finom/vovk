@@ -85,7 +85,7 @@ export default class WithYupClientController {
   @get.auto()
   static handleNestedQuery = withYup({
     query: yup.object({
-      x: yup.string().required(),
+      x: yup.string().max(5).required(),
       y: yup.array().of(yup.string().required()).required(),
       z: yup
         .object({

@@ -21,17 +21,17 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.ts]: {
       templatePath: path.resolve(templatesDir, 'ts/'),
       origin: null,
-      requires: { fullSchemaTs: '.' },
+      requires: { [BuiltInTemplateName.fullSchemaTs]: '.' },
     },
     [BuiltInTemplateName.main]: {
       templatePath: path.resolve(templatesDir, 'main/'),
       origin: null,
-      requires: { fullSchemaCjs: '.' },
+      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.module]: {
       templatePath: path.resolve(templatesDir, 'module/'),
       origin: null,
-      requires: { fullSchemaCjs: '.' },
+      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.package]: {
       templatePath: path.resolve(templatesDir, 'package/'),

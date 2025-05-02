@@ -85,7 +85,7 @@ describe('useMutation', () => {
 
     await act(async () => {
       await result.current.mutate({
-        body: { hello: 'wrong' as 'world' },
+        body: { hello: 'wrong_length' },
       });
     });
     await waitFor(() => {
@@ -108,7 +108,7 @@ describe('useMutation', () => {
 
     await act(async () => {
       await result.current.mutate({
-        body: { hello: 'wrong' as 'world' },
+        body: { hello: 'wrong_length' },
         disableClientValidation: true,
       });
     });

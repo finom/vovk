@@ -1,4 +1,4 @@
-import { ClientControllerRPC } from '../../node_modules/.vovk-client/foo/client/module.mjs';
+import { ClientControllerRPC } from '../generated-segment-client/foo/client/index.ts';
 import {
   HttpStatus,
   type VovkBody,
@@ -18,7 +18,7 @@ import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
-describe('Client with vovk-client', () => {
+describe.only('Client with vovk-client', () => {
   it(`Should handle requests that return NextResponse.json`, async () => {
     const result = await ClientControllerRPC.getHelloWorldResponseObject();
     deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });

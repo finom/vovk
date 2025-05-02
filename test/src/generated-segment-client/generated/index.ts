@@ -1,9 +1,9 @@
-// auto-generated 2025-05-02T14:26:21.998Z
+// auto-generated 2025-05-02T18:48:15.815Z
 /* eslint-disable */
 import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from 'vovk';
 import { createRPC } from 'vovk';
-import { fullSchema } from './fullSchema.cjs';
+import { fullSchema } from './fullSchema.ts';
 
 import type { Controllers as Controllers0 } from "../../app/api/generated/[[...vovk]]/route.ts";
 
@@ -11,7 +11,7 @@ import type { Controllers as Controllers0 } from "../../app/api/generated/[[...v
 import { validateOnClient } from '../../../../packages/vovk-ajv/index.js';
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-const apiRoot = 'http://localhost:3000/api';
+const apiRoot = 'http://localhost:3210/api';
 
   
 export const NoValidationControllerOnlyEntityRPC = createRPC<Controllers0["NoValidationControllerOnlyEntityRPC"], Options>(

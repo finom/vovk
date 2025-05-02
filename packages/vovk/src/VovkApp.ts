@@ -180,7 +180,10 @@ export class VovkApp {
     const { handler, methodParams } = this.#getHandler({ handlers, path, params });
 
     if (!handler) {
-      return this.#respondWithError(HttpStatus.NOT_FOUND, `Route ${path.join('/')} is not found`);
+      return this.#respondWithError(
+        HttpStatus.NOT_FOUND,
+        `${Object.keys(handlers)} - Route ${path.join('/')} is not found`
+      );
     }
 
     const { staticMethod, controller } = handler;

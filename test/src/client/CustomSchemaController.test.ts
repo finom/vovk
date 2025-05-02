@@ -5,8 +5,7 @@ import { fullSchema } from 'vovk-client';
 describe('Custom schema', () => {
   it('Should write custom schema', () => {
     strictEqual(
-      fullSchema.segments['foo/client'].controllers.CustomSchemaControllerRPC.handlers.getWithCustomSchema.custom
-        ?.hello,
+      fullSchema.segments['foo/client'].controllers.CustomSchemaControllerRPC.handlers.getWithCustomSchema.misc?.hello,
       'world'
     );
   });

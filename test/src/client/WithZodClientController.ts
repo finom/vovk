@@ -87,7 +87,7 @@ export default class WithZodClientController {
   @get.auto()
   static handleNestedQuery = withZod({
     query: z.object({
-      x: z.string(),
+      x: z.string().max(5),
       y: z.array(z.string()),
       z: z.object({
         f: z.string(),
@@ -125,7 +125,7 @@ export default class WithZodClientController {
   @get.auto()
   static handleStream = withZod({
     query: z.object({ values: z.string().array() }),
-    iteration: z.object({ value: z.union([z.literal('a'), z.literal('b'), z.literal('c'), z.literal('d')]) }),
+    iteration: z.object({ value: z.string().max(5) }),
     async *handle(req) {
       for (const value of req.vovk.query().values) {
         yield { value };
@@ -220,7 +220,7 @@ export default class WithZodClientController {
   static disableServerSideValidationStrings = withZod({
     disableServerSideValidation: ['body'],
     body: z.object({ hello: z.string().max(5) }),
-    query: z.object({ search: z.string() }),
+    query: z.object({ search: z.string().max(5) }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
