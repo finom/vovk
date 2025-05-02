@@ -13,30 +13,6 @@ import type WithDtoClientController from './WithDtoClientController';
 import { expectPromise, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type WithYupClientController from './WithYupClientController.ts';
 
-/*
-Only body,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only query,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Nested Query
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only params,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only output,
-  - Server
-Streaming
-All (just OK) DONE
-handler.schema for All, use @openapi and @openapi.error
-*/
-
 describe('Validation with with vovk-yup and validateOnClient defined at settings', () => {
   it('Should be OK', async () => {
     const result = await WithYupClientControllerRPC.handleAll({
@@ -78,12 +54,12 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       body: { hello: 'world' },
     });
 
-    deepStrictEqual(result satisfies { hello: 'world' }, { hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
 
     let { rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleBody({
         body: {
-          hello: 'wrong' as 'world',
+          hello: 'wrong_length',
         },
         disableClientValidation: true,
       });
@@ -97,7 +73,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     ({ rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleBody({
         body: {
-          hello: 'wrong' as 'world',
+          hello: 'wrong_length',
         },
       });
     }));
@@ -113,12 +89,12 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       params: { foo: 'foo', bar: 'bar' },
     });
 
-    deepStrictEqual(result satisfies { foo: 'foo'; bar: 'bar' }, { foo: 'foo', bar: 'bar' });
+    deepStrictEqual(result satisfies { foo: string; bar: string }, { foo: 'foo', bar: 'bar' });
 
     let { rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleParams({
         params: {
-          foo: 'wrong' as 'foo',
+          foo: 'wrong_length',
           bar: 'bar',
         },
         disableClientValidation: true,
@@ -133,7 +109,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     ({ rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleParams({
         params: {
-          foo: 'wrong' as 'foo',
+          foo: 'wrong_length',
           bar: 'bar',
         },
       });
@@ -150,12 +126,12 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       query: { search: 'value' },
     });
 
-    deepStrictEqual(result satisfies { search: 'value' }, { search: 'value' });
+    deepStrictEqual(result satisfies { search: string }, { search: 'value' });
 
     let { rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleQuery({
         query: {
-          search: 'wrong' as 'value',
+          search: 'wrong_length',
         },
         disableClientValidation: true,
       });
@@ -169,7 +145,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     ({ rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleQuery({
         query: {
-          search: 'wrong' as 'value',
+          search: 'wrong_length',
         },
       });
     }));
@@ -225,7 +201,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
 
     const { rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleOutput({
-        query: { helloOutput: 'wrong' },
+        query: { helloOutput: 'wrong_length' },
       });
     });
 
@@ -254,7 +230,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
   });
 
   it('Should handle stream first iteration validation', async () => {
-    const tokens = ['e', 'b', 'c', 'd'];
+    const tokens = ['wrong_length', 'b', 'c', 'd'];
     const expected: { value: string }[] = [];
     const expectedCollected: typeof expected = [];
 
@@ -277,7 +253,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
   });
 
   it('Should ignore non-first iteration validation', async () => {
-    const tokens = ['a', 'b', 'e', 'd'];
+    const tokens = ['a', 'b', 'wrong_length', 'd'];
     const expected: { value: string }[] = tokens.map((value) => ({ value }));
     const expectedCollected: typeof expected = [];
     const resp = await WithYupClientControllerRPC.handleStream({
@@ -292,7 +268,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
   });
 
   it('Should handle every iteration validation', async () => {
-    const tokens = ['a', 'b', 'e', 'd'];
+    const tokens = ['a', 'b', 'wrong_length', 'd'];
     const expected: { value: string }[] = tokens.slice(0, 2).map((value) => ({ value }));
     const expectedCollected: typeof expected = [];
     const { rejects } = expectPromise(async () => {
@@ -313,30 +289,30 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
 
   it('Should skip server-side validation with boolean value', async () => {
     const result = await WithYupClientControllerRPC.disableServerSideValidationBool({
-      body: { hello: 'wrong' as 'world' },
+      body: { hello: 'wrong_length' },
       query: { search: 'value' },
       disableClientValidation: true,
     });
-    deepStrictEqual(result satisfies { search: 'value'; body: { hello: 'world' } }, {
+    deepStrictEqual(result satisfies { search: string; body: { hello: string } }, {
       search: 'value',
-      body: { hello: 'wrong' },
+      body: { hello: 'wrong_length' },
     });
   });
 
   it('Should skip server-side validation with string[] value', async () => {
     const result = await WithYupClientControllerRPC.disableServerSideValidationStrings({
-      body: { hello: 'wrong' as 'world' },
+      body: { hello: 'wrong_length' },
       query: { search: 'value' },
       disableClientValidation: true,
     });
-    deepStrictEqual(result satisfies { search: 'value'; body: { hello: 'world' } }, {
+    deepStrictEqual(result satisfies { search: string; body: { hello: string } }, {
       search: 'value',
-      body: { hello: 'wrong' },
+      body: { hello: 'wrong_length' },
     });
     const { rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.disableServerSideValidationStrings({
         body: { hello: 'world' },
-        query: { search: 'wrong' as 'value' },
+        query: { search: 'wrong_length' },
         disableClientValidation: true,
       });
     });
@@ -349,7 +325,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
   it('Should skip schema emission with boolean value', async () => {
     const { rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.skipSchemaEmissionBool({
-        body: { hello: 'wrong' as 'world' },
+        body: { hello: 'wrong_length' },
         query: { search: 'value' },
       });
     });
@@ -363,7 +339,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
   it('Should skip schema emission with string[] value', async () => {
     const { rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.skipSchemaEmissionStrings({
-        body: { hello: 'wrong' as 'world' },
+        body: { hello: 'wrong_length' },
         query: { search: 'value' },
       });
     });
@@ -387,7 +363,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
         hello: 'world',
       },
       search: 'foo',
-    } as const;
+    };
     null as unknown as VovkReturnType<typeof WithYupClientControllerRPC.handleFormData> satisfies typeof expected;
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithYupClientControllerRPC.handleFormData> satisfies null;

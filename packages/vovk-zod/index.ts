@@ -1,4 +1,4 @@
-import z, { type ZodSchema } from 'zod';
+import z, { type ZodType } from 'zod';
 import {
   withValidation,
   HttpException,
@@ -7,22 +7,18 @@ import {
   type KnownAny,
   type VovkValidationType,
 } from 'vovk';
-import zodToJsonSchema from 'zod-to-json-schema';
-
-const getErrorText = (e: unknown) =>
-  (e as z.ZodError).errors?.map((er) => `${er.message} (${er.path.join('/')})`).join(', ') ?? String(e);
 
 function withZod<
-  T extends (req: REQ, params: ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : Record<string, string>) => KnownAny,
-  ZOD_BODY extends ZodSchema<KnownAny> | undefined = undefined,
-  ZOD_QUERY extends ZodSchema<KnownAny> | undefined = undefined,
-  ZOD_OUTPUT extends ZodSchema<KnownAny> | undefined = undefined,
-  ZOD_PARAMS extends ZodSchema<KnownAny> | undefined = undefined,
-  ZOD_ITERATION extends ZodSchema<KnownAny> | undefined = undefined,
+  T extends (req: REQ, params: ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : Record<string, string>) => KnownAny,
+  ZOD_BODY extends ZodType<KnownAny> | undefined = undefined,
+  ZOD_QUERY extends ZodType<KnownAny> | undefined = undefined,
+  ZOD_OUTPUT extends ZodType<KnownAny> | undefined = undefined,
+  ZOD_PARAMS extends ZodType<KnownAny> | undefined = undefined,
+  ZOD_ITERATION extends ZodType<KnownAny> | undefined = undefined,
   REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-    ZOD_BODY extends ZodSchema ? z.infer<ZOD_BODY> : undefined,
-    ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined,
-    ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : undefined
+    ZOD_BODY extends ZodType ? z.infer<ZOD_BODY> : undefined,
+    ZOD_QUERY extends ZodType ? z.infer<ZOD_QUERY> : undefined,
+    ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : undefined
   >,
 >({
   body,
@@ -55,18 +51,18 @@ function withZod<
     skipSchemaEmission,
     validateEachIteration,
     handle: handle as T & {
-      __output: ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny;
-      __iteration: ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny;
+      __output: ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny;
+      __iteration: ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny;
     },
-    getJSONSchemaFromModel: (model) => zodToJsonSchema(model, { errorMessages: true }),
+    getJSONSchemaFromModel: (model) => z.toJSONSchema(model),
     validate: async (data, model, { type, req, i }) => {
       try {
         model.parse(data);
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
-          { [type]: data }
+          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${(e as Error).message}`,
+          { [type]: data, error: e }
         );
       }
     },

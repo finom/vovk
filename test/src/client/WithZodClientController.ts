@@ -38,14 +38,14 @@ export default class WithZodClientController {
   @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/:foo/:bar')
   static handleAll = withZod({
-    body: z.object({ hello: z.literal('world') }),
-    query: z.object({ search: z.literal('value') }),
-    params: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
+    body: z.object({ hello: z.string() }),
+    query: z.object({ search: z.string() }),
+    params: z.object({ foo: z.string(), bar: z.string() }),
     output: z.object({
-      body: z.object({ hello: z.literal('world') }),
-      query: z.object({ search: z.literal('value') }),
-      params: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
-      vovkParams: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
+      body: z.object({ hello: z.string() }),
+      query: z.object({ search: z.string() }),
+      params: z.object({ foo: z.string(), bar: z.string() }),
+      vovkParams: z.object({ foo: z.string(), bar: z.string() }),
     }),
     handle: async (req, params) => {
       const body = await req.json();
@@ -62,7 +62,7 @@ export default class WithZodClientController {
 
   @get.auto()
   static handleQuery = withZod({
-    query: z.object({ search: z.literal('value') }),
+    query: z.object({ search: z.string().max(5) }),
     handle: (req) => {
       return req.vovk.query();
     },
@@ -70,7 +70,7 @@ export default class WithZodClientController {
 
   @post.auto()
   static handleBody = withZod({
-    body: z.object({ hello: z.literal('world') }),
+    body: z.object({ hello: z.string().max(5) }),
     handle: async (req) => {
       return req.vovk.body();
     },
@@ -78,7 +78,7 @@ export default class WithZodClientController {
 
   @put('x/:foo/:bar/y')
   static handleParams = withZod({
-    params: z.object({ foo: z.literal('foo'), bar: z.literal('bar') }),
+    params: z.object({ foo: z.string().max(5), bar: z.string().max(5) }),
     handle: async (req) => {
       return req.vovk.params();
     },
@@ -116,9 +116,9 @@ export default class WithZodClientController {
   @get.auto()
   static handleOutput = withZod({
     query: z.object({ helloOutput: z.string() }),
-    output: z.object({ hello: z.literal('world') }),
+    output: z.object({ hello: z.string().max(5) }),
     handle: async (req) => {
-      return { hello: req.vovk.query().helloOutput as 'world' };
+      return { hello: req.vovk.query().helloOutput };
     },
   });
 
@@ -196,7 +196,7 @@ export default class WithZodClientController {
   @post.auto()
   static handleFormData = withZod({
     body: withZod.formData,
-    query: z.object({ search: z.literal('foo') }),
+    query: z.object({ search: z.string() }),
     handle: async (req) => {
       const formData = await req.vovk.form<{ hello: 'world' }>();
       const search = req.vovk.query().search;
@@ -207,8 +207,8 @@ export default class WithZodClientController {
   @post.auto()
   static disableServerSideValidationBool = withZod({
     disableServerSideValidation: true,
-    body: z.object({ hello: z.literal('world') }),
-    query: z.object({ search: z.literal('value') }),
+    body: z.object({ hello: z.string().max(5) }),
+    query: z.object({ search: z.string() }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
@@ -219,8 +219,8 @@ export default class WithZodClientController {
   @post.auto()
   static disableServerSideValidationStrings = withZod({
     disableServerSideValidation: ['body'],
-    body: z.object({ hello: z.literal('world') }),
-    query: z.object({ search: z.literal('value') }),
+    body: z.object({ hello: z.string().max(5) }),
+    query: z.object({ search: z.string() }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
@@ -232,8 +232,8 @@ export default class WithZodClientController {
   @post.auto()
   static skipSchemaEmissionBool = withZod({
     skipSchemaEmission: true,
-    body: z.object({ hello: z.literal('world') }),
-    query: z.object({ search: z.literal('value') }),
+    body: z.object({ hello: z.string().max(5) }),
+    query: z.object({ search: z.string() }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
@@ -243,8 +243,8 @@ export default class WithZodClientController {
   @post.auto()
   static skipSchemaEmissionStrings = withZod({
     skipSchemaEmission: ['body'],
-    body: z.object({ hello: z.literal('world') }),
-    query: z.object({ search: z.literal('value') }),
+    body: z.object({ hello: z.string().max(5) }),
+    query: z.object({ search: z.string() }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
@@ -256,7 +256,7 @@ export default class WithZodClientController {
   static validateEachIteration = withZod({
     validateEachIteration: true,
     query: z.object({ values: z.string().array() }),
-    iteration: z.object({ value: z.union([z.literal('a'), z.literal('b'), z.literal('c'), z.literal('d')]) }),
+    iteration: z.object({ value: z.string().max(5) }),
     async *handle(req) {
       for (const value of req.vovk.query().values) {
         yield { value };

@@ -5,8 +5,9 @@ export enum BuiltInTemplateName {
   ts = 'ts',
   main = 'main',
   module = 'module',
-  fullSchema = 'fullSchema',
   package = 'package',
+  fullSchemaTs = 'fullSchemaTs',
+  fullSchemaCjs = 'fullSchemaCjs',
   fullSchemaJson = 'fullSchemaJson',
 }
 
@@ -20,24 +21,28 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.ts]: {
       templatePath: path.resolve(templatesDir, 'ts/'),
       origin: null,
-      requires: { fullSchema: '.' },
+      requires: { fullSchemaTs: '.' },
     },
     [BuiltInTemplateName.main]: {
       templatePath: path.resolve(templatesDir, 'main/'),
       origin: null,
-      requires: { fullSchema: '.' },
+      requires: { fullSchemaCjs: '.' },
     },
     [BuiltInTemplateName.module]: {
       templatePath: path.resolve(templatesDir, 'module/'),
       origin: null,
-      requires: { fullSchema: '.' },
-    },
-    [BuiltInTemplateName.fullSchema]: {
-      templatePath: path.resolve(templatesDir, 'fullSchema/'),
-      origin: null,
+      requires: { fullSchemaCjs: '.' },
     },
     [BuiltInTemplateName.package]: {
       templatePath: path.resolve(templatesDir, 'package/'),
+      origin: null,
+    },
+    [BuiltInTemplateName.fullSchemaTs]: {
+      templatePath: path.resolve(templatesDir, 'fullSchemaTs/'),
+      origin: null,
+    },
+    [BuiltInTemplateName.fullSchemaCjs]: {
+      templatePath: path.resolve(templatesDir, 'fullSchemaCjs/'),
       origin: null,
     },
     [BuiltInTemplateName.fullSchemaJson]: {

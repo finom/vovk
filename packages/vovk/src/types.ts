@@ -40,7 +40,7 @@ export type VovkControllerInternal = {
   _controllerName?: VovkControllerSchema['controllerName'];
   _prefix?: VovkControllerSchema['prefix'];
   _handlers: VovkControllerSchema['handlers'];
-  _handlersMetadata?:  Record<string, { staticParams?: Record<string, string>[] }>
+  _handlersMetadata?: Record<string, { staticParams?: Record<string, string>[] }>;
   _activated?: true;
   _onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
 };
@@ -232,7 +232,7 @@ type ClientConfigSegmented = ClientConfigCommon & {
 };
 
 export type ClientTemplateDef = {
-  extends?: 'main' | 'module' | 'ts' | 'package' | 'fullSchema' | 'fullSchemaJson' | string;
+  extends?: string;
   templatePath: string;
   origin?: string | null;
   fullClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
@@ -266,7 +266,9 @@ export type VovkConfig = {
   libs?: Record<string, KnownAny>;
 };
 
-export type VovkStrictConfig = Required<Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'fullClient' | 'segmentedClient'>> & {
+export type VovkStrictConfig = Required<
+  Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'fullClient' | 'segmentedClient'>
+> & {
   emitConfig: (keyof VovkStrictConfig)[];
   imports: {
     fetcher: [string, string] | [string];
@@ -274,7 +276,7 @@ export type VovkStrictConfig = Required<Omit<VovkConfig, 'emitConfig' | 'libs' |
     createRPC: [string, string] | [string];
   };
   libs: Record<string, KnownAny>;
-  fullClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'> 
+  fullClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
 };
 
@@ -349,6 +351,6 @@ export enum HttpStatus {
   HTTP_VERSION_NOT_SUPPORTED = 505,
 }
 
-// utils 
+// utils
 
 type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;

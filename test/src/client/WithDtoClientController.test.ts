@@ -20,30 +20,6 @@ import type {
   HandleQueryQueryDto,
 } from './WithDtoClientController.dto.ts';
 
-/*
-Only body,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only query,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Nested Query
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only params,
-  - Server
-  - Client
-    - For DTO: JSON Schema
-Only output,
-  - Server
-Streaming
-All (just OK) DONE
-handler.schema for All, use @openapi and @openapi.error
-*/
-
 describe('Validation with with vovk-dto', () => {
   it('Should be OK', async () => {
     const result = await WithDtoClientControllerRPC.handleAll({
@@ -129,7 +105,7 @@ describe('Validation with with vovk-dto', () => {
     let { rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleBody({
         body: {
-          hello: 'wrong',
+          hello: 'wrong_length',
         },
         disableClientValidation: true,
       });
@@ -141,7 +117,7 @@ describe('Validation with with vovk-dto', () => {
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleBody({
         body: {
-          hello: 'wrong',
+          hello: 'wrong_length',
         },
       });
     }));
@@ -154,7 +130,7 @@ describe('Validation with with vovk-dto', () => {
     await ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleBodyClient({
         body: {
-          hello: 'wrong',
+          hello: 'wrong_length',
         },
       });
     }));
@@ -173,7 +149,7 @@ describe('Validation with with vovk-dto', () => {
     let { rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleParams({
         params: {
-          foo: 'wrong' as 'foo',
+          foo: 'wrong_length',
           bar: 'bar',
         },
         disableClientValidation: true,
@@ -186,7 +162,7 @@ describe('Validation with with vovk-dto', () => {
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleParams({
         params: {
-          foo: 'wrong' as 'foo',
+          foo: 'wrong_length',
           bar: 'bar',
         },
       });
@@ -200,7 +176,7 @@ describe('Validation with with vovk-dto', () => {
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleParamsClient({
         params: {
-          foo: 'wrong' as 'foo',
+          foo: 'wrong_length',
           bar: 'bar',
         },
       });
@@ -219,7 +195,7 @@ describe('Validation with with vovk-dto', () => {
     let { rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleQuery({
         query: {
-          search: 'wrong' as 'value',
+          search: 'wrong_length',
         },
         disableClientValidation: true,
       });
@@ -231,7 +207,7 @@ describe('Validation with with vovk-dto', () => {
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleQuery({
         query: {
-          search: 'wrong' as 'value',
+          search: 'wrong_length',
         },
       });
     }));
@@ -244,7 +220,7 @@ describe('Validation with with vovk-dto', () => {
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleQueryClient({
         query: {
-          search: 'wrong' as 'value',
+          search: 'wrong_length',
         },
       });
     }));
@@ -309,7 +285,7 @@ describe('Validation with with vovk-dto', () => {
 
     const { rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleOutput({
-        query: { helloOutput: 'wrong' },
+        query: { helloOutput: 'wrong_length' },
       });
     });
 
@@ -336,7 +312,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Should handle stream first iteration validation', async () => {
-    const tokens = ['e', 'b', 'c', 'd'];
+    const tokens = ['wrong_length', 'b', 'c', 'd'];
     const expected: { value: string }[] = [];
     const expectedCollected: typeof expected = [];
 
@@ -363,7 +339,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Should ignore non-first iteration validation', async () => {
-    const tokens = ['a', 'b', 'e', 'd'];
+    const tokens = ['a', 'b', 'wrong_length', 'd'];
     const expected: { value: string }[] = tokens.map((value) => ({ value }));
     const expectedCollected: typeof expected = [];
     const resp = await WithDtoClientControllerRPC.handleStream({
@@ -382,7 +358,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Should handle every iteration validation', async () => {
-    const tokens = ['a', 'b', 'e', 'd'];
+    const tokens = ['a', 'b', 'wrong_length', 'd'];
     const expected: { value: string }[] = tokens.slice(0, 2).map((value) => ({ value }));
     const expectedCollected: typeof expected = [];
     const { rejects } = expectPromise(async () => {
@@ -407,31 +383,31 @@ describe('Validation with with vovk-dto', () => {
 
   it('Should skip server-side validation with boolean value', async () => {
     const result = await WithDtoClientControllerRPC.disableServerSideValidationBool({
-      body: { hello: 'wrong' as 'world' },
+      body: { hello: 'wrong_length' },
       query: { search: 'value' },
       disableClientValidation: true,
     });
     deepStrictEqual(result satisfies { search: string; body: HandleBodyBodyDto }, {
       search: 'value',
-      body: { hello: 'wrong' },
+      body: { hello: 'wrong_length' },
     });
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.disableServerSideValidationBool> satisfies null;
   });
   it('Should skip server-side validation with string[] value', async () => {
     const result = await WithDtoClientControllerRPC.disableServerSideValidationStrings({
-      body: { hello: 'wrong' as 'world' },
+      body: { hello: 'wrong_length' },
       query: { search: 'value' },
       disableClientValidation: true,
     });
     deepStrictEqual(result satisfies { search: string; body: HandleBodyBodyDto }, {
       search: 'value',
-      body: { hello: 'wrong' },
+      body: { hello: 'wrong_length' },
     });
     const { rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.disableServerSideValidationStrings({
         body: { hello: 'world' },
-        query: { search: 'wrong' as 'value' },
+        query: { search: 'wrong_length' },
         disableClientValidation: true,
       });
     });
@@ -447,7 +423,7 @@ describe('Validation with with vovk-dto', () => {
   it('Should skip schema emission with boolean value', async () => {
     const { rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.skipSchemaEmissionBool({
-        body: { hello: 'wrong' as 'world' },
+        body: { hello: 'wrong_length' },
         query: { search: 'value' },
       });
     });
@@ -460,7 +436,7 @@ describe('Validation with with vovk-dto', () => {
   it('Should skip schema emission with string[] value', async () => {
     const { rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.skipSchemaEmissionStrings({
-        body: { hello: 'wrong' as 'world' },
+        body: { hello: 'wrong_length' },
         query: { search: 'value' },
       });
     });

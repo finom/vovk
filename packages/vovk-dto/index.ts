@@ -61,16 +61,16 @@ function withDto<
     getJSONSchemaFromModel: (dto) => {
       const schema = {
         'x-isDto': true,
-        definitions: {} as Record<string, any>,
+        definitions: {} as Record<string, KnownAny>,
         ...targetConstructorToSchema(dto),
       };
 
       // get all $refs from the schema recursively
-      const getRefs = (schema: any, refs: string[] = []) => {
+      const getRefs = (schema: KnownAny, refs: string[] = []) => {
         if (schema.$ref) {
           refs.push(schema.$ref);
         }
-        if(schema.items?.$ref) {
+        if (schema.items?.$ref) {
           refs.push(schema.items.$ref);
         }
         if (schema.properties) {

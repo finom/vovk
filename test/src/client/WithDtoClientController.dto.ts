@@ -1,4 +1,4 @@
-import { IsString, Equals, IsArray, IsOptional, ValidateNested, IsIn } from 'class-validator';
+import { IsString, IsArray, IsOptional, ValidateNested, IsIn, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { JSONSchema } from 'class-validator-jsonschema';
 
@@ -9,23 +9,23 @@ import { JSONSchema } from 'class-validator-jsonschema';
  */
 export class HandleAllBodyDto {
   @IsString()
-  @Equals('world')
+  @MaxLength(5)
   hello: string;
 }
 
 export class HandleAllQueryDto {
   @IsString()
-  @Equals('value')
+  @MaxLength(5)
   search: string;
 }
 
 export class HandleAllParamsDto {
   @IsString()
-  @Equals('foo')
+  @MaxLength(5)
   foo: string;
 
   @IsString()
-  @Equals('bar')
+  @MaxLength(5)
   bar: string;
 }
 
@@ -54,7 +54,7 @@ export class HandleAllOutputDto {
  */
 export class HandleQueryQueryDto {
   @IsString()
-  @Equals('value')
+  @MaxLength(5)
   search: string;
 }
 
@@ -65,7 +65,7 @@ export class HandleQueryQueryDto {
  */
 export class HandleBodyBodyDto {
   @IsString()
-  @Equals('world')
+  @MaxLength(5)
   hello: string;
 }
 
@@ -76,11 +76,11 @@ export class HandleBodyBodyDto {
  */
 export class HandleParamsDto {
   @IsString()
-  @Equals('foo')
+  @MaxLength(5)
   foo: string;
 
   @IsString()
-  @Equals('bar')
+  @MaxLength(5)
   bar: string;
 }
 
@@ -162,7 +162,7 @@ export class HandleOutputQueryDto {
 
 export class HandleOutputOutputDto {
   @IsString()
-  @Equals('world')
+  @MaxLength(5)
   hello: string;
 }
 

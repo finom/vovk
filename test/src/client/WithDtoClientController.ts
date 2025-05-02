@@ -83,78 +83,6 @@ export default class WithDtoClientController {
     },
   });
 
-  // The tests are run on nodejs without TS compilator so decorators are not supported and it's not possible import a DTO at .test.ts file
-  // this endpoint and other ones ended with "Client" implement a proxy to be able to test errors on client side
-  @post('all/:foo/:bar/client')
-  static handleAllClient = async (
-    req: VovkRequest<HandleAllBodyDto, HandleAllQueryDto>,
-    params: HandleAllParamsDto
-  ) => {
-    const body = await req.json();
-    const query = { search: req.nextUrl.searchParams.get('search') };
-    const result = await WithDtoClientControllerRPC.handleAll({
-      body: plainToInstance(HandleAllBodyDto, body),
-      query: plainToInstance(HandleAllQueryDto, query),
-      params: plainToInstance(HandleAllParamsDto, params),
-      transform: (resp) => plainToInstance(HandleAllOutputDto, resp),
-      validateOnClient,
-    });
-
-    ok(result instanceof HandleAllOutputDto, 'Output is not an instance of HandleAllOutputDto');
-
-    return result;
-  };
-
-  @get.auto()
-  static handleQuery = withDto({
-    query: HandleQueryQueryDto,
-    handle: (req) => {
-      return req.vovk.query();
-    },
-  });
-
-  @get.auto()
-  static handleQueryClient = async (req: VovkRequest<never, HandleQueryQueryDto>) => {
-    const query = { search: req.nextUrl.searchParams.get('search') };
-    return WithDtoClientControllerRPC.handleQuery({
-      query: plainToInstance(HandleQueryQueryDto, query),
-      validateOnClient,
-    });
-  };
-
-  @post.auto()
-  static handleBody = withDto({
-    body: HandleBodyBodyDto,
-    handle: async (req) => {
-      return req.vovk.body();
-    },
-  });
-
-  @post.auto()
-  static handleBodyClient = async (req: VovkRequest<HandleBodyBodyDto>) => {
-    const body = await req.json();
-    return WithDtoClientControllerRPC.handleBody({
-      body: plainToInstance(HandleBodyBodyDto, body),
-      validateOnClient,
-    });
-  };
-
-  @put('x/:foo/:bar/y')
-  static handleParams = withDto({
-    params: HandleParamsDto,
-    handle: async (req) => {
-      return req.vovk.params();
-    },
-  });
-
-  @put('x/:foo/:bar/y/client')
-  static handleParamsClient = async (_req: VovkRequest, params: HandleParamsDto) => {
-    return WithDtoClientControllerRPC.handleParams({
-      params: plainToInstance(HandleParamsDto, params),
-      validateOnClient,
-    });
-  };
-
   @get.auto()
   static handleNestedQuery = withDto({
     query: HandleNestedQueryDto,
@@ -277,4 +205,76 @@ export default class WithDtoClientController {
       }
     },
   });
+
+  // The tests are run on nodejs without TS compilator so decorators are not supported and it's not possible import a DTO at .test.ts file
+  // this endpoint and other ones ended with "Client" implement a proxy to be able to test errors on client side
+  @post('all/:foo/:bar/client')
+  static handleAllClient = async (
+    req: VovkRequest<HandleAllBodyDto, HandleAllQueryDto>,
+    params: HandleAllParamsDto
+  ) => {
+    const body = await req.json();
+    const query = { search: req.nextUrl.searchParams.get('search') };
+    const result = await WithDtoClientControllerRPC.handleAll({
+      body: plainToInstance(HandleAllBodyDto, body),
+      query: plainToInstance(HandleAllQueryDto, query),
+      params: plainToInstance(HandleAllParamsDto, params),
+      transform: (resp) => plainToInstance(HandleAllOutputDto, resp),
+      validateOnClient,
+    });
+
+    ok(result instanceof HandleAllOutputDto, 'Output is not an instance of HandleAllOutputDto');
+
+    return result;
+  };
+
+  @get.auto()
+  static handleQuery = withDto({
+    query: HandleQueryQueryDto,
+    handle: (req) => {
+      return req.vovk.query();
+    },
+  });
+
+  @get.auto()
+  static handleQueryClient = async (req: VovkRequest<never, HandleQueryQueryDto>) => {
+    const query = { search: req.nextUrl.searchParams.get('search') };
+    return WithDtoClientControllerRPC.handleQuery({
+      query: plainToInstance(HandleQueryQueryDto, query),
+      validateOnClient,
+    });
+  };
+
+  @post.auto()
+  static handleBody = withDto({
+    body: HandleBodyBodyDto,
+    handle: async (req) => {
+      return req.vovk.body();
+    },
+  });
+
+  @post.auto()
+  static handleBodyClient = async (req: VovkRequest<HandleBodyBodyDto>) => {
+    const body = await req.json();
+    return WithDtoClientControllerRPC.handleBody({
+      body: plainToInstance(HandleBodyBodyDto, body),
+      validateOnClient,
+    });
+  };
+
+  @put('x/:foo/:bar/y')
+  static handleParams = withDto({
+    params: HandleParamsDto,
+    handle: async (req) => {
+      return req.vovk.params();
+    },
+  });
+
+  @put('x/:foo/:bar/y/client')
+  static handleParamsClient = async (_req: VovkRequest, params: HandleParamsDto) => {
+    return WithDtoClientControllerRPC.handleParams({
+      params: plainToInstance(HandleParamsDto, params),
+      validateOnClient,
+    });
+  };
 }

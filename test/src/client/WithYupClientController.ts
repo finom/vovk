@@ -38,19 +38,17 @@ export default class WithYupClientController {
   @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/:foo/:bar')
   static handleAll = withYup({
-    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
-    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
-    params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
+    body: yup.object({ hello: yup.string().max(5).required() }),
+    query: yup.object({ search: yup.string().max(5).required() }),
+    params: yup.object({ foo: yup.string().max(5).required(), bar: yup.string().max(5).required() }),
     output: yup.object({
-      body: yup.object({ hello: yup.string().oneOf(['world']).required() }).required(),
-      query: yup.object({ search: yup.string().oneOf(['value']).required() }).required(),
-      params: yup
-        .object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() })
-        .required(),
+      body: yup.object({ hello: yup.string().max(5).required() }).required(),
+      query: yup.object({ search: yup.string().max(5).required() }).required(),
+      params: yup.object({ foo: yup.string().max(5).required(), bar: yup.string().max(5).required() }).required(),
       vovkParams: yup
         .object({
-          foo: yup.string().oneOf(['foo']).required(),
-          bar: yup.string().oneOf(['bar']).required(),
+          foo: yup.string().max(5).required(),
+          bar: yup.string().max(5).required(),
         })
         .required(),
     }),
@@ -69,19 +67,19 @@ export default class WithYupClientController {
 
   @get.auto()
   static handleQuery = withYup({
-    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    query: yup.object({ search: yup.string().max(5).required() }),
     handle: (req) => req.vovk.query(),
   });
 
   @post.auto()
   static handleBody = withYup({
-    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    body: yup.object({ hello: yup.string().max(5).required() }),
     handle: async (req) => req.vovk.body(),
   });
 
   @put('x/:foo/:bar/y')
   static handleParams = withYup({
-    params: yup.object({ foo: yup.string().oneOf(['foo']).required(), bar: yup.string().oneOf(['bar']).required() }),
+    params: yup.object({ foo: yup.string().max(5).required(), bar: yup.string().max(5).required() }),
     handle: async (req) => req.vovk.params(),
   });
   @get.auto()
@@ -121,7 +119,7 @@ export default class WithYupClientController {
   @get.auto()
   static handleOutput = withYup({
     query: yup.object({ helloOutput: yup.string().required() }),
-    output: yup.object({ hello: yup.string().oneOf(['world']).required() }),
+    output: yup.object({ hello: yup.string().max(5).required() }),
     handle: async (req) => ({ hello: req.vovk.query().helloOutput as 'world' }),
   });
 
@@ -144,7 +142,7 @@ export default class WithYupClientController {
   @post.auto()
   static handleFormData = withYup({
     body: withYup.formData,
-    query: yup.object({ search: yup.string().oneOf(['foo']).required() }),
+    query: yup.object({ search: yup.string().max(5).required() }),
     handle: async (req) => {
       const formData = await req.vovk.form<{ hello: 'world' }>();
       const search = req.vovk.query().search;
@@ -155,8 +153,8 @@ export default class WithYupClientController {
   @post.auto()
   static disableServerSideValidationBool = withYup({
     disableServerSideValidation: true,
-    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
-    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    body: yup.object({ hello: yup.string().max(5).required() }),
+    query: yup.object({ search: yup.string().max(5).required() }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
@@ -166,8 +164,8 @@ export default class WithYupClientController {
   @post.auto()
   static disableServerSideValidationStrings = withYup({
     disableServerSideValidation: ['body'],
-    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
-    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    body: yup.object({ hello: yup.string().max(5).required() }),
+    query: yup.object({ search: yup.string().max(5).required() }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
@@ -177,8 +175,8 @@ export default class WithYupClientController {
   @post.auto()
   static skipSchemaEmissionBool = withYup({
     skipSchemaEmission: true,
-    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
-    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    body: yup.object({ hello: yup.string().max(5).required() }),
+    query: yup.object({ search: yup.string().max(5).required() }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
@@ -188,8 +186,8 @@ export default class WithYupClientController {
   @post.auto()
   static skipSchemaEmissionStrings = withYup({
     skipSchemaEmission: ['body'],
-    body: yup.object({ hello: yup.string().oneOf(['world']).required() }),
-    query: yup.object({ search: yup.string().oneOf(['value']).required() }),
+    body: yup.object({ hello: yup.string().max(5).required() }),
+    query: yup.object({ search: yup.string().max(5).required() }),
     handle: async (req) => {
       const body = await req.json();
       const search = req.nextUrl.searchParams.get('search');
@@ -201,7 +199,7 @@ export default class WithYupClientController {
   static validateEachIteration = withYup({
     validateEachIteration: true,
     query: yup.object({ values: yup.array().of(yup.string().required()).required() }),
-    iteration: yup.object({ value: yup.string().oneOf(['a', 'b', 'c', 'd']).required() }),
+    iteration: yup.object({ value: yup.string().max(5).required() }),
     async *handle(req) {
       for (const value of req.vovk.query().values) {
         yield { value };
