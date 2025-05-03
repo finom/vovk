@@ -71,6 +71,7 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
+        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
         
         let result = with_zod_client_controller_rpc::handle_body(
             serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),

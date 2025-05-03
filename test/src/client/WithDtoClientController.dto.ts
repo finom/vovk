@@ -235,6 +235,15 @@ export class StrictObject {
   knownField: string;
 }
 
+class AllOfDtoA {
+  @IsString()
+  a: string;
+}
+class AllOfDtoB {
+  @IsNumber()
+  b: number;
+}
+
 export class ComplaiingDto {
   // Number validations
   @IsNumber()
@@ -307,8 +316,5 @@ export class ComplaiingDto {
 
   // We can't represent an intersection directly
   @IsObject()
-  logical_allOf: {
-    a: string;
-    b: number;
-  };
+  logical_allOf: AllOfDtoA & AllOfDtoB;
 }

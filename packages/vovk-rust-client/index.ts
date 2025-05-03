@@ -77,7 +77,7 @@ export function convertJSONSchemasToRustTypes({
 
     if (schema.type === 'string') {
       if (schema.enum) {
-        return `${getModulePath(path)}Enum`;
+        return `${getModulePath(path)}`; // + 'Enum';
       }
       return 'String';
     } else if (schema.type === 'number' || schema.type === 'integer') {
@@ -100,9 +100,13 @@ export function convertJSONSchemasToRustTypes({
       }
       return 'Vec<String>';
     } else if (schema.type === 'object' || schema.properties) {
+      // Handle empty objects
+      if (schema.type === 'object' && (!schema.properties || Object.keys(schema.properties).length === 0)) {
+        return 'serde_json::Value';
+      }
       return path[path.length - 1];
     } else if (schema.anyOf || schema.oneOf || schema.allOf) {
-      return `${getModulePath(path)}Enum`;
+      return `${getModulePath(path)}`; // + 'Enum';
     }
 
     return 'String'; // Default fallback
@@ -122,7 +126,17 @@ export function convertJSONSchemasToRustTypes({
 
   // Process schema objects and generate Rust code
   function processObject(schema: KnownAny, path: string[], level: number, rootSchema: KnownAny = schema): string {
-    if (!schema || !schema.properties) {
+    if (!schema) {
+      return '';
+    }
+
+    // Handle empty objects
+    if (schema.type === 'object' && (!schema.properties || Object.keys(schema.properties).length === 0)) {
+      // Empty object is handled as serde_json::Value at the field level
+      return '';
+    }
+
+    if (!schema.properties) {
       return '';
     }
 
@@ -148,6 +162,7 @@ export function convertJSONSchemasToRustTypes({
 
       // Determine if this property is a nested type that should be accessed via module path
       const isNestedObject = propSchema.type === 'object' || propSchema.properties;
+      const isGenericObject = propSchema.type === 'object' && !propSchema.properties;
       // Define nested enum types
       const isNestedEnum =
         (propSchema.type === 'string' && propSchema.enum) || propSchema.anyOf || propSchema.oneOf || propSchema.allOf;
@@ -155,13 +170,16 @@ export function convertJSONSchemasToRustTypes({
       const propPath = [...path, propName];
       let propType: string;
 
-      if (isNestedObject || isNestedEnum) {
+      if (isGenericObject) {
+        // For generic objects, we can use serde_json::Value
+        propType = 'serde_json::Value';
+      } else if (isNestedObject || isNestedEnum) {
         // For nested objects and enums, we need to reference them via their module path
         propType = `${currentName}_::${propName}`;
 
         // Special case for enums which have a different naming convention
         if (isNestedEnum) {
-          propType += 'Enum';
+          propType += ''; // 'Enum';
         }
       } else {
         // For other types, use the standard type resolution
@@ -250,7 +268,7 @@ export function convertJSONSchemasToRustTypes({
     let code = '';
     code += `${indent(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
     code += `${indent(level)}#[allow(non_camel_case_types)]\n`;
-    code += `${indent(level)}pub enum ${name}Enum {\n`;
+    code += `${indent(level)}pub enum ${name} {\n`;
 
     schema.enum.forEach((value: string) => {
       // Create valid Rust enum variant
@@ -271,12 +289,19 @@ export function convertJSONSchemasToRustTypes({
     level: number,
     rootSchema: KnownAny
   ): string {
-    const variants = schema.anyOf || schema.oneOf || schema.allOf;
+    // Handle allOf separately - it should combine schemas rather than create variants
+    if (schema.allOf) {
+      return generateAllOfType(schema.allOf, name, path, level, rootSchema);
+    }
+
+    const variants = schema.anyOf || schema.oneOf || [];
     let code = '';
+    let nestedTypes = '';
 
     code += `${indent(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
+    code += `${indent(level)}#[allow(non_camel_case_types)]\n`;
     code += `${indent(level)}#[serde(untagged)]\n`;
-    code += `${indent(level)}pub enum ${name}Enum {\n`;
+    code += `${indent(level)}pub enum ${name} {\n`;
 
     variants.forEach((variant: KnownAny, index: number) => {
       // Resolve $ref if present
@@ -287,23 +312,74 @@ export function convertJSONSchemasToRustTypes({
         }
       }
 
-      const variantPath = [...path, name, `Variant${index}`];
-      const variantType = toRustType(variant, variantPath, rootSchema);
-      code += `${indent(level + 1)}Variant${index}(${variantType}),\n`;
+      const variantName = `Variant${index}`;
+      const variantPath = [...path, name, variantName];
 
-      // Process variant if it's an object
+      // If it's an object type, we need to create a separate struct
       if (variant.type === 'object' || variant.properties) {
-        code += processObject(variant, variantPath, level + 1, rootSchema);
+        code += `${indent(level + 1)}${variantName}(${name}_::${variantName}),\n`;
+        // Create a nested type definition to be added outside the enum
+        nestedTypes += processObject(variant, variantPath, level, rootSchema);
+      } else {
+        // For simple types, we can include them directly in the enum
+        const variantType = toRustType(variant, variantPath, rootSchema);
+        code += `${indent(level + 1)}${variantName}(${variantType}),\n`;
       }
     });
 
     code += `${indent(level)}}\n\n`;
+
+    // Add nested type definitions if needed
+    if (nestedTypes) {
+      code += nestedTypes;
+    }
+
     return code;
+  }
+
+  // New function to handle allOf schema by merging properties
+  function generateAllOfType(
+    schemas: KnownAny[],
+    name: string,
+    path: string[],
+    level: number,
+    rootSchema: KnownAny
+  ): string {
+    const mergedSchema: KnownAny = {
+      type: 'object',
+      properties: {},
+      required: [],
+    };
+
+    // Merge all schemas in allOf
+    schemas.forEach((schema: KnownAny) => {
+      // Resolve $ref if present
+      if (schema.$ref) {
+        const resolved = resolveRef(schema.$ref, rootSchema);
+        if (resolved) {
+          schema = resolved;
+        }
+      }
+
+      if (schema.properties) {
+        mergedSchema.properties = {
+          ...mergedSchema.properties,
+          ...schema.properties,
+        };
+      }
+
+      if (schema.required) {
+        mergedSchema.required = [...mergedSchema.required, ...schema.required];
+      }
+    });
+
+    // Process the merged schema as a regular object
+    return processObject(mergedSchema, [...path, name], level, rootSchema);
   }
 
   // Start code generation
   let result = `${indent(0)}pub mod ${rootName}_ {\n`;
-  result += `${indent(1)}use serde::{Serialize, Deserialize};\n\n`;
+  result += `${indent(1)}use serde::{Serialize, Deserialize};\n`;
 
   // Process each schema in the schemas object
   Object.entries(schemas).forEach(([schemaName, schemaObj]) => {
