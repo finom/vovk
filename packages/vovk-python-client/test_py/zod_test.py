@@ -9,17 +9,17 @@ def noop(*args: Any) -> None: # type: ignore
 class TestZod(unittest.TestCase):
     def test_ok(self) -> None:
         # Create an instance of the API client with the back-end URL
-        data: WithZodClientControllerRPC.infer_handle_all_output = WithZodClientControllerRPC.handle_all(
+        data: WithZodClientControllerRPC.HandleAllOutput = WithZodClientControllerRPC.handle_all(
             body={"hello": "world"},
             query={"search": "value"},
             params={"foo": "foo", "bar": "bar"},
         )
         
         # Check types
-        body: WithZodClientControllerRPC.infer_handle_all_body = data['body']
-        query: WithZodClientControllerRPC.infer_handle_all_query = data['query']
-        params: WithZodClientControllerRPC.infer_handle_all_params = data['params']
-        vovkParams: WithZodClientControllerRPC.infer_handle_all_params = data['vovkParams']
+        body: WithZodClientControllerRPC.HandleAllBody = data['body']
+        query: WithZodClientControllerRPC.HandleAllQuery = data['query']
+        params: WithZodClientControllerRPC.HandleAllParams = data['params']
+        vovkParams: WithZodClientControllerRPC.HandleAllParams = data['vovkParams']
         noop(body, query, params, vovkParams)
         
         # Check that the response matches the expected value
@@ -30,76 +30,77 @@ class TestZod(unittest.TestCase):
             'vovkParams': {'bar': 'bar', 'foo': 'foo'}
         })
     def test_body(self) -> None:
-        data: WithZodClientControllerRPC.infer_handle_body_body = WithZodClientControllerRPC.handle_body(
+        data: WithZodClientControllerRPC.HandleBodyBody = WithZodClientControllerRPC.handle_body(
             body={"hello": "world"}
         )
         self.assertEqual(data, {'hello': 'world'})
 
         with self.assertRaises(ValidationError) as context:
             WithZodClientControllerRPC.handle_body(
-                body={"hellox": "world"}  # type: ignore
+                body={"hello": "wrong_length"}
             )
-        self.assertIn("'hello' is a required property", str(context.exception).lower())
+            self.assertIn("'wrong_length' is too long", str(context.exception).lower())
+
 
         with self.assertRaises(HttpException) as context2:
             WithZodClientControllerRPC.handle_body(
-                body={"hellox": "world"},  # type: ignore
+                body={"hello": "wrong_length"}, 
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Zod validation failed\. Invalid body on server for http://\S+\. Invalid literal value, expected \"world\" \(hello\)")
+        self.assertRegex(str(context2.exception), r"Zod validation failed\. Invalid body on server for http://\S+\. At \"hello\":.*")
     
     def test_query(self) -> None:
-        data: WithZodClientControllerRPC.infer_handle_query_query = WithZodClientControllerRPC.handle_query(
+        data: WithZodClientControllerRPC.HandleQueryQuery = WithZodClientControllerRPC.handle_query(
             query={"search": "value"}
         )
         self.assertEqual(data, {'search': 'value'})
 
         with self.assertRaises(ValidationError) as context:
             WithZodClientControllerRPC.handle_query(
-                query={"searchx": "value"}  # type: ignore
+                query={"search": "wrong_length"} 
             )
-        self.assertIn("'search' is a required property", str(context.exception).lower())
+        self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
         with self.assertRaises(HttpException) as context2:
             WithZodClientControllerRPC.handle_query(
-                query={"searchx": "value"},  # type: ignore
+                query={"search": "wrong_length"},  
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Zod validation failed\. Invalid query on server for http://\S+\. Invalid literal value, expected \"value\" \(search\)")
+        self.assertRegex(str(context2.exception), r"Zod validation failed\. Invalid query on server for http://\S+\. At \"search\":.*")
     
     def test_params(self) -> None:
-        data: WithZodClientControllerRPC.infer_handle_params_params = WithZodClientControllerRPC.handle_params(
+        data: WithZodClientControllerRPC.HandleParamsParams = WithZodClientControllerRPC.handle_params(
             params={"foo": "foo", "bar": "bar"}
         )
         self.assertEqual(data, {'bar': 'bar', 'foo': 'foo'})
 
         with self.assertRaises(ValidationError) as context:
             WithZodClientControllerRPC.handle_params(
-                params={"foo": "foo"}  # type: ignore
+                params={"foo": "foo", "bar": "wrong_length"}
             )
-        self.assertIn("'bar' is a required property", str(context.exception).lower())
+        self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
         with self.assertRaises(HttpException) as context2:
             WithZodClientControllerRPC.handle_params(
-                params={"foo": "foo"},  # type: ignore
+                params={"foo": "foo", "bar": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Zod validation failed\. Invalid params on server for http://\S+\. Invalid literal value, expected \"bar\" \(bar\)")
+        self.assertRegex(str(context2.exception), r"Zod validation failed\. Invalid params on server for http://\S+\. At \"bar\":.*")
 
     def test_output(self) -> None:
-        data: WithZodClientControllerRPC.infer_handle_output_output = WithZodClientControllerRPC.handle_output(
+        data: WithZodClientControllerRPC.HandleOutputOutput = WithZodClientControllerRPC.handle_output(
             query={"helloOutput": "world"}
         )
         self.assertEqual(data, {'hello': 'world'})
 
         with self.assertRaises(HttpException) as context:
             WithZodClientControllerRPC.handle_output(
-                query={"helloOutput": "worldx"},
+                query={"helloOutput": "wrong_length"},
             )
-        self.assertRegex(str(context.exception), r"Zod validation failed\. Invalid output on server for http://\S+\. Invalid literal value, expected \"world\" \(hello\)")
+        self.assertRegex(str(context.exception), r"Zod validation failed\. Invalid output on server for http://\S+\. At \"hello\":.*")
 
     def test_stream(self) -> None: ## TODO: StreamException????
-        iterator: Generator[WithZodClientControllerRPC.infer_handle_stream_iteration, None, None] = WithZodClientControllerRPC.handle_stream(
+        iterator: Generator[WithZodClientControllerRPC.HandleStreamIteration, None, None] = WithZodClientControllerRPC.handle_stream(
             query={ "values": ['a', 'b', 'c', 'd'] }
         )
 
@@ -107,14 +108,14 @@ class TestZod(unittest.TestCase):
             self.assertEqual(data, {'value': ['a', 'b', 'c', 'd'][i]})
 
         iterator = WithZodClientControllerRPC.handle_stream(
-            query={ "values": ['e', 'f', 'g', 'h'] }
+            query={ "values": ['wrong_length', 'f', 'g', 'h'] }
         )
 
         with self.assertRaises(Exception) as context:
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Zod validation failed\. Invalid iteration #0 on server for http://\S+\. Invalid input \(value\)")
+        self.assertRegex(str(context.exception), r"Zod validation failed\. Invalid iteration #0 on server for http://\S+\. At \"value\".*")
 
 
 if __name__ == "__main__":

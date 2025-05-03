@@ -9,17 +9,17 @@ def noop(*args: Any) -> None: # type: ignore
 class TestDto(unittest.TestCase):
     def test_ok(self) -> None:
         # Create an instance of the API client with the back-end URL
-        data: WithDtoClientControllerRPC.infer_handle_all_output = WithDtoClientControllerRPC.handle_all(
+        data: WithDtoClientControllerRPC.HandleAllOutput = WithDtoClientControllerRPC.handle_all(
             body={"hello": "world"},
             query={"search": "value"},
             params={"foo": "foo", "bar": "bar"},
         )
         
         # Check types
-        body: WithDtoClientControllerRPC.infer_handle_all_body = data['body']
-        query: WithDtoClientControllerRPC.infer_handle_all_query = data['query']
-        params: WithDtoClientControllerRPC.infer_handle_all_params = data['params']
-        vovkParams: WithDtoClientControllerRPC.infer_handle_all_params = data['vovkParams']
+        body: WithDtoClientControllerRPC.HandleAllBody = data['body']
+        query: WithDtoClientControllerRPC.HandleAllQuery = data['query']
+        params: WithDtoClientControllerRPC.HandleAllParams = data['params']
+        vovkParams: WithDtoClientControllerRPC.HandleAllParams = data['vovkParams']
         noop(body, query, params, vovkParams)
         
         # Check that the response matches the expected value
@@ -30,64 +30,64 @@ class TestDto(unittest.TestCase):
             'vovkParams': {'bar': 'bar', 'foo': 'foo'}
         })
     def test_body(self) -> None:
-        data: WithDtoClientControllerRPC.infer_handle_body_body = WithDtoClientControllerRPC.handle_body(
+        data: WithDtoClientControllerRPC.HandleBodyBody = WithDtoClientControllerRPC.handle_body(
             body={"hello": "world"}
         )
         self.assertEqual(data, {'hello': 'world'})
 
         with self.assertRaises(ValidationError) as context:
             WithDtoClientControllerRPC.handle_body(
-                body={"hellox": "world"}  # type: ignore
+                body={"hello": "wrong_length"}  # type: ignore
             )
-        self.assertIn("'hello' is a required property", str(context.exception).lower())
+        self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
         with self.assertRaises(HttpException) as context2:
             WithDtoClientControllerRPC.handle_body(
-                body={"hellox": "world"},  # type: ignore
+                body={"hello": "wrong_length"},  # type: ignore
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body on server for http://\S+\. hello must be equal to world, hello must be a string")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body on server for http://\S+\. hello must be shorter than or equal to 5 characters")
     
     def test_query(self) -> None:
-        data: WithDtoClientControllerRPC.infer_handle_query_query = WithDtoClientControllerRPC.handle_query(
+        data: WithDtoClientControllerRPC.HandleQueryQuery = WithDtoClientControllerRPC.handle_query(
             query={"search": "value"}
         )
         self.assertEqual(data, {'search': 'value'})
 
         with self.assertRaises(ValidationError) as context:
             WithDtoClientControllerRPC.handle_query(
-                query={"searchx": "value"}  # type: ignore
+                query={"search": "wrong_length"}  # type: ignore
             )
-        self.assertIn("'search' is a required property", str(context.exception).lower())
+        self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
         with self.assertRaises(HttpException) as context2:
             WithDtoClientControllerRPC.handle_query(
-                query={"searchx": "value"},  # type: ignore
+                query={"search": "wrong_length"},  # type: ignore
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query on server for http://\S+\. search must be equal to value, search must be a string")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query on server for http://\S+\. search must be shorter than or equal to 5 characters")
     
     def test_params(self) -> None:
-        data: WithDtoClientControllerRPC.infer_handle_params_params = WithDtoClientControllerRPC.handle_params(
+        data: WithDtoClientControllerRPC.HandleParamsParams = WithDtoClientControllerRPC.handle_params(
             params={"foo": "foo", "bar": "bar"}
         )
         self.assertEqual(data, {'bar': 'bar', 'foo': 'foo'})
 
         with self.assertRaises(ValidationError) as context:
             WithDtoClientControllerRPC.handle_params(
-                params={"foo": "foo"}  # type: ignore
+                params={"foo": "foo", "bar": "wrong_length"}  # type: ignore
             )
-        self.assertIn("'bar' is a required property", str(context.exception).lower())
+        self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
         with self.assertRaises(HttpException) as context2:
             WithDtoClientControllerRPC.handle_params(
-                params={"foo": "foo"},  # type: ignore
+                params={"foo": "foo", "bar": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params on server for http://\S+\. bar must be equal to bar")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params on server for http://\S+\. bar must be shorter than or equal to 5 characters")
 
     def test_output(self) -> None:
-        data: WithDtoClientControllerRPC.infer_handle_output_output = WithDtoClientControllerRPC.handle_output(
+        data: WithDtoClientControllerRPC.HandleOutputOutput = WithDtoClientControllerRPC.handle_output(
             query={"helloOutput": "world"}
         )
         self.assertEqual(data, {'hello': 'world'})
@@ -96,10 +96,10 @@ class TestDto(unittest.TestCase):
             WithDtoClientControllerRPC.handle_output(
                 query={"helloOutput": "worldx"},
             )
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output on server for http://\S+\. hello must be equal to world")
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output on server for http://\S+\. hello must be shorter than or equal to 5 characters")
 
     def test_stream(self) -> None: ## TODO: StreamException????
-        iterator: Generator[WithDtoClientControllerRPC.infer_handle_stream_iteration, None, None] = WithDtoClientControllerRPC.handle_stream(
+        iterator: Generator[WithDtoClientControllerRPC.HandleStreamIteration, None, None] = WithDtoClientControllerRPC.handle_stream(
             query={ "values": ['a', 'b', 'c', 'd'] }
         )
 
@@ -107,7 +107,7 @@ class TestDto(unittest.TestCase):
             self.assertEqual(data, {'value': ['a', 'b', 'c', 'd'][i]})
 
         iterator = WithDtoClientControllerRPC.handle_stream(
-            query={ "values": ['e', 'f', 'g', 'h'] }
+            query={ "values": ['wrong_length', 'f', 'g', 'h'] }
         )
 
         with self.assertRaises(Exception) as context:

@@ -7,26 +7,11 @@ imports: ['vovk-python-client']
 <%- `# auto-generated ${new Date().toISOString()}` %>
 from __future__ import annotations  # Enables forward references in type hints
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator # type: ignore
-import os
-import json
 from .api_client import ApiClient, HttpException
-
-def _load_full_schema() -> Dict[str, Any]:    
-    """
-    Loads the 'full-schema.json' file from the ../data/ directory.
-    Returns it as a Python dictionary.
-    """
-    current_dir = os.path.dirname(__file__)
-    parent_dir = os.path.join(current_dir, "../..")
-    schema_path = os.path.join(parent_dir, "data", "full-schema.json")
-    with open(schema_path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-full_schema: Dict[str, Any] = _load_full_schema()
 
 HttpException = HttpException
 
-client = ApiClient('<%= t.apiRoot %>', full_schema)
+client = ApiClient('<%= t.apiRoot %>')
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
 class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 

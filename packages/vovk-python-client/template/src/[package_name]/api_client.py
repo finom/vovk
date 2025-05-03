@@ -1,3 +1,4 @@
+import os
 import json
 import requests
 import jsonschema
@@ -17,7 +18,19 @@ class HttpException(Exception):
         self.cause = 'cause' in response_body and response_body['cause']
 
 class ApiClient:
-    def __init__(self, api_root: str, full_schema: Any):
+    @staticmethod
+    def _load_full_schema() -> Dict[str, Any]:    
+        """
+        Loads the 'full-schema.json' file from the ../data/ directory.
+        Returns it as a Python dictionary.
+        """
+        current_dir = os.path.dirname(__file__)
+        parent_dir = os.path.join(current_dir, "../..")
+        schema_path = os.path.join(parent_dir, "data", "full-schema.json")
+        with open(schema_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def __init__(self, api_root: str):
         """
         Initialize the API client with a base URL and default HTTP method.
         
@@ -26,7 +39,7 @@ class ApiClient:
             default_http_method: Default HTTP method to use if not specified
         """
         self.api_root = api_root
-        self.full_schema = full_schema
+        self.full_schema: Dict[str, Any] = ApiClient._load_full_schema()
     
     def request(
         self,
