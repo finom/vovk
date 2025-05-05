@@ -81,7 +81,8 @@ export function getComplainingObject(key: string | null) {
     num_exclusiveMinimum: 10, // Valid: > 0
     num_exclusiveMaximum: 50, // Valid: < 100
     num_multipleOf: 15, // Valid: multiple of 5
-    num_integerOnly: 42, // Valid: integer
+    num_int: 42, // Valid: integer
+    num_int32: 42, // Valid: 32-bit integer
 
     // String validations
     str_minLength: 'hello', // Valid: length >= 3
@@ -123,7 +124,8 @@ export function getComplainingObject(key: string | null) {
     num_exclusiveMinimum: 0, // Invalid: = 0 (not > 0)
     num_exclusiveMaximum: 100, // Invalid: = 100 (not < 100)
     num_multipleOf: 12, // Invalid: not a multiple of 5
-    num_integerOnly: 42.5, // Invalid: not an integer
+    num_int: 42.5, // Invalid: not an integer
+    num_int32: 4294967296, // Invalid: not a 32-bit integer (too large)
 
     // String validations
     str_minLength: 'hi', // Invalid: length < 3

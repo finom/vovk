@@ -77,11 +77,62 @@ export function convertJSONSchemasToRustTypes({
 
     if (schema.type === 'string') {
       if (schema.enum) {
-        return `${getModulePath(path)}`; // + 'Enum';
+        return `${getModulePath(path)}`;
       }
       return 'String';
     } else if (schema.type === 'number' || schema.type === 'integer') {
-      return schema.type === 'integer' ? 'i64' : 'f64';
+      // Handle numeric types with constraints
+      if (schema.type === 'integer') {
+        // Determine integer type based on min/max constraints
+        const min =
+          typeof schema.minimum === 'number'
+            ? schema.minimum
+            : typeof schema.exclusiveMinimum === 'number'
+              ? schema.exclusiveMinimum + 1
+              : undefined;
+        const max =
+          typeof schema.maximum === 'number'
+            ? schema.maximum
+            : typeof schema.exclusiveMaximum === 'number'
+              ? schema.exclusiveMaximum - 1
+              : undefined;
+
+        // Check if we need unsigned (no negative values)
+        if (min !== undefined && min >= 0) {
+          // Choose appropriate unsigned int size
+          if (max !== undefined) {
+            if (max <= 255) return 'u8';
+            if (max <= 65535) return 'u16';
+            if (max <= 4294967295) return 'u32';
+          }
+          return 'u64'; // Default unsigned
+        } else {
+          // Choose appropriate signed int size
+          if (min !== undefined && max !== undefined) {
+            const absMin = Math.abs(min);
+            const absMax = Math.abs(max);
+            const maxVal = Math.max(absMin - 1, absMax);
+
+            if (maxVal <= 127) return 'i8';
+            if (maxVal <= 32767) return 'i16';
+            if (maxVal <= 2147483647) return 'i32';
+          }
+          return 'i64'; // Default signed
+        }
+      } else {
+        // Floating point
+        // Use f32 for smaller precision needs, f64 for larger
+        const hasHighPrecision = schema.multipleOf && schema.multipleOf < 0.0001;
+        const hasLargeRange =
+          (schema.minimum !== undefined &&
+            schema.maximum !== undefined &&
+            Math.abs(schema.maximum - schema.minimum) > 3.4e38) ||
+          (schema.exclusiveMinimum !== undefined &&
+            schema.exclusiveMaximum !== undefined &&
+            Math.abs(schema.exclusiveMaximum - schema.exclusiveMinimum) > 3.4e38);
+
+        return hasHighPrecision || hasLargeRange ? 'f64' : 'f32';
+      }
     } else if (schema.type === 'boolean') {
       return 'bool';
     } else if (schema.type === 'null') {
@@ -106,7 +157,7 @@ export function convertJSONSchemasToRustTypes({
       }
       return path[path.length - 1];
     } else if (schema.anyOf || schema.oneOf || schema.allOf) {
-      return `${getModulePath(path)}`; // + 'Enum';
+      return `${getModulePath(path)}`;
     }
 
     return 'String'; // Default fallback

@@ -264,7 +264,12 @@ export class ComplaiingDto {
   num_multipleOf: number; // Can't represent multipleOf with standard decorators
 
   @IsInt()
-  num_integerOnly: number;
+  num_int: number;
+
+  @IsInt()
+  @Max(2147483647)
+  @Min(-2147483648)
+  num_int32: number;
 
   // String validations
   @IsString()

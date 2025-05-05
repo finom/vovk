@@ -20,7 +20,8 @@ export const ComplaiingModel = yup.object({
   num_exclusiveMinimum: yup.number().moreThan(1),
   num_exclusiveMaximum: yup.number().lessThan(100),
   // num_multipleOf: not supported for schema emission
-  num_integerOnly: yup.number().integer(),
+  num_int: yup.number().integer(),
+  num_int32: yup.number().integer().max(2147483647).min(-2147483648),
 
   // String validations
   str_minLength: yup.string().min(3),

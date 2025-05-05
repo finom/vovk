@@ -533,10 +533,15 @@
                   "type": "number",
                   "multipleOf": 5
                 },
-                "num_integerOnly": {
+                "num_int": {
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
+                },
+                "num_int32": {
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
                 },
                 "str_minLength": {
                   "type": "string",
@@ -659,7 +664,8 @@
                 "num_exclusiveMinimum",
                 "num_exclusiveMaximum",
                 "num_multipleOf",
-                "num_integerOnly",
+                "num_int",
+                "num_int32",
                 "str_minLength",
                 "str_maxLength",
                 "str_pattern",
@@ -1216,8 +1222,13 @@
                   "type": "number",
                   "exclusiveMaximum": 100
                 },
-                "num_integerOnly": {
+                "num_int": {
                   "type": "integer"
+                },
+                "num_int32": {
+                  "type": "integer",
+                  "maximum": 2147483647,
+                  "minimum": -2147483648
                 },
                 "str_minLength": {
                   "type": "string",
@@ -1844,8 +1855,13 @@
                 "num_multipleOf": {
                   "type": "number"
                 },
-                "num_integerOnly": {
+                "num_int": {
                   "type": "integer"
+                },
+                "num_int32": {
+                  "minimum": -2147483648,
+                  "type": "integer",
+                  "maximum": 2147483647
                 },
                 "str_minLength": {
                   "minLength": 3,
@@ -1916,7 +1932,8 @@
                 "num_exclusiveMinimum",
                 "num_exclusiveMaximum",
                 "num_multipleOf",
-                "num_integerOnly",
+                "num_int",
+                "num_int32",
                 "str_minLength",
                 "str_maxLength",
                 "str_pattern",

@@ -135,7 +135,7 @@ describe('convertJSONSchemasToRustTypes', () => {
       rootName: 'test',
     });
 
-    assert.ok(output.includes('pub enum statusEnum'));
+    assert.ok(output.includes('pub enum status'));
     assert.ok(output.includes('#[serde(rename = "pending")]'));
     assert.ok(output.includes('pending,'));
     assert.ok(output.includes('#[serde(rename = "active")]'));
@@ -198,7 +198,7 @@ describe('convertJSONSchemasToRustTypes', () => {
       rootName: 'test',
     });
 
-    assert.ok(output.includes('pub enum dataEnum'));
+    assert.ok(output.includes('pub enum data'));
     assert.ok(output.includes('#[serde(untagged)]'));
     assert.ok(output.includes('Variant0(String),'));
     assert.ok(output.includes('Variant1(') && output.includes('data') && output.includes('Variant1'));
@@ -273,9 +273,9 @@ describe('convertJSONSchemasToRustTypes', () => {
 
     assert.ok(output.includes('pub struct ApiResponse'));
     assert.ok(output.includes('User') || output.includes('users'));
-    assert.ok(output.includes('pub enum statusEnum'));
-    assert.ok(output.includes('pub enum dataEnum'));
-    assert.ok(output.includes('pub status: ApiResponse_::statusEnum,'));
+    assert.ok(output.includes('pub enum status'));
+    assert.ok(output.includes('pub enum data'));
+    assert.ok(output.includes('pub status: ApiResponse_::status,'));
     assert.ok(output.includes('pub code: i64,'));
 
     const userRelatedOutput =

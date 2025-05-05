@@ -20,7 +20,8 @@ export const ComplaiingModel = z.object({
   num_exclusiveMinimum: z.number().gt(1), // Exclusive minimum
   num_exclusiveMaximum: z.number().lt(100), // Exclusive maximum
   num_multipleOf: z.number().multipleOf(5), // Must be multiple of value
-  num_integerOnly: z.int(), // Must be an integer
+  num_int: z.int(), // Must be an integer
+  num_int32: z.int32(), // Must be an integer with max 32 bits
 
   // String validations not in Rust
   str_minLength: z.string().min(3), // Minimum string length
