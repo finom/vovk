@@ -1,0 +1,28 @@
+{
+  "name": "vovk",
+  "version": "3.0.0-beta.9",
+  "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finom/vovk.git"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc && cp {package.json,LICENSE} && cp ../../README.md dist ",
+    "lint": "eslint . --fix",
+    "npm-publish": "npm publish ./dist --dry-run",
+    "ncu": "npm-check-updates -u"
+  },
+  "keywords": [
+    "nextjs",
+    "router"
+  ],
+  "author": "Andrey Gubanov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/finom/vovk/issues"
+  },
+  "homepage": "https://vovk.dev",
+  "peerDependencies": {
+    "next": "*"
+  }
+}
