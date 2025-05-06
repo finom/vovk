@@ -72,7 +72,7 @@ export function convertJSONSchemasToRustTypes({
         }
         return toRustType(resolvedSchema, refName ? [...path.slice(0, -1), refName] : path, rootSchema);
       }
-      return 'String'; // Fallback if ref can't be resolved
+      return 'sede_json::Value'; // Fallback for unresolved $ref
     }
 
     if (schema.type === 'string') {
@@ -121,17 +121,15 @@ export function convertJSONSchemasToRustTypes({
         }
       } else {
         // Floating point
-        // Use f32 for smaller precision needs, f64 for larger
-        const hasHighPrecision = schema.multipleOf && schema.multipleOf < 0.0001;
-        const hasLargeRange =
+        const hasLowRange =
           (schema.minimum !== undefined &&
             schema.maximum !== undefined &&
-            Math.abs(schema.maximum - schema.minimum) > 3.4e38) ||
+            Math.abs(schema.maximum - schema.minimum) <= 3.4e38) ||
           (schema.exclusiveMinimum !== undefined &&
             schema.exclusiveMaximum !== undefined &&
-            Math.abs(schema.exclusiveMaximum - schema.exclusiveMinimum) > 3.4e38);
+            Math.abs(schema.exclusiveMaximum - schema.exclusiveMinimum) <= 3.4e38);
 
-        return hasHighPrecision || hasLargeRange ? 'f64' : 'f32';
+        return hasLowRange ? 'f32' : 'f64';
       }
     } else if (schema.type === 'boolean') {
       return 'bool';

@@ -24,7 +24,7 @@ describe('convertJSONSchemasToRustTypes', () => {
 
     assert.ok(output.includes('pub struct BasicTypes'));
     assert.ok(output.includes('pub stringProp: String,'));
-    assert.ok(output.includes('pub numberProp: Option<f64>,'));
+    assert.ok(output.includes('pub numberProp: Option<f64>,'), output);
     assert.ok(output.includes('pub integerProp: Option<i64>,'));
     assert.ok(output.includes('pub booleanProp: bool,'));
   });
