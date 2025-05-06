@@ -13,8 +13,6 @@
 
 ---
 
-## vovk-openapi [![npm version](https://badge.fury.io/js/vovk-openapi.svg)](https://www.npmjs.com/package/vovk-openapi)
+## vovk-multitenant [![npm version](https://badge.fury.io/js/vovk-multitenant.svg)](https://www.npmjs.com/package/vovk-multitenant)
 
-```sh
-npm install vovk-openapi
-```
+**WIP**

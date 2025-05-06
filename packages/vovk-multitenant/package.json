@@ -1,7 +1,7 @@
 {
-  "name": "vovk-monoproject",
-  "version": "0.0.1-draft.1",
-  "description": "Vovk.ts Monoproject middleware for Next.js",
+  "name": "vovk-multitenant",
+  "version": "0.0.1-draft.0",
+  "description": "Vovk.ts multitenant middleware for Next.js",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -19,9 +19,7 @@
     "next": "^15.0.0",
     "vovk": "^3.0.0-draft.119"
   },
-  "dependencies": {
-    
-  },
+  "dependencies": {},
   "devDependencies": {
     "vovk-cli": "^0.0.1-draft.147"
   }
