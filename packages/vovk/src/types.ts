@@ -182,33 +182,6 @@ export type VovkEnv = {
   __VOVK_EXIT__?: 'true' | 'false';
 };
 
-/* TODO delete
-segmentedClient: {
-        excludeSegments: ['foo', 'bar'],
-        fromTemplates: ['ts', 'package'],
-        outDir: './src/lib/api/segmentClient/',
-        packages: {
-          root: {
-            name: 'pkg-root',
-          },
-          foo: {
-            name: 'pkg-foo',
-          },
-          bar: {
-            name: 'pkg-bar',
-          },
-        }
-      },
-      fullClient: {
-        includeSegments: ['foo', 'bar'],
-        fromTemplates: ['ts', 'package'],
-        outDir: './src/lib/api/fullClient/',
-        package: {
-          name: 'pkg-root',
-        }
-      },
-      */
-
 type ClientConfigCommon = {
   enabled?: boolean;
   outDir?: string;
@@ -237,6 +210,7 @@ export type ClientTemplateDef = {
   origin?: string | null;
   fullClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
+  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
   requires?: Record<string, string>;
 };
 
@@ -264,6 +238,7 @@ export type VovkConfig = {
     [key: string]: string | undefined;
   };
   libs?: Record<string, KnownAny>;
+  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
 };
 
 export type VovkStrictConfig = Required<

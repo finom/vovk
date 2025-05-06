@@ -7,12 +7,11 @@ import { validateOnClient } from '<%= t.imports.module.validateOnClient %>';
 <% } else { %>
 const validateOnClient = undefined;
 <% } %>
-const apiRoot = '<%= t.apiRoot %>';
 <% Object.values(t.fullSchema.segments).forEach((segment, i) => {
   Object.keys(segment.controllers).forEach((controllerName) => { %>
 export const <%= controllerName %> = createRPC(
   fullSchema, '<%= segment.segmentName %>', '<%= controllerName %>',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: '<%= segment.segmentApiRoot ?? t.apiRoot %>' } }
 );
 <% 
   }); 

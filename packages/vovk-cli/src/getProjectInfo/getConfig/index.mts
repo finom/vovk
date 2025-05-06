@@ -57,6 +57,7 @@ export default async function getConfig({ cliOptions, cwd }: { cliOptions?: Gene
       ...conf.moduleTemplates,
     },
     libs: conf.libs ?? {},
+    segmentConfig: {},
   };
 
   if (typeof conf.emitConfig === 'undefined') {

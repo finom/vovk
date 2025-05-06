@@ -164,6 +164,7 @@ export default async function generate({
           isEnsuringClient,
           outCwdRelativeDir,
           origin: config.origin ?? templateDef?.origin ?? null,
+          templateDef,
         });
 
         const outAbsoluteDir = path.join(cwd, outCwdRelativeDir);
@@ -241,6 +242,7 @@ export default async function generate({
               isEnsuringClient,
               outCwdRelativeDir,
               origin: config.origin ?? templateDef?.origin ?? null,
+              templateDef,
             });
 
             return {

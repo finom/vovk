@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
 import _ from 'lodash';
-import type { VovkFullSchema } from 'vovk';
+import type { VovkFullSchema, VovkStrictConfig } from 'vovk';
 import prettify from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
@@ -24,6 +24,7 @@ export default async function writeOneClientFile({
   isEnsuringClient,
   outCwdRelativeDir,
   origin,
+  templateDef,
 }: {
   cwd: string;
   projectInfo: ProjectInfo;
@@ -43,6 +44,7 @@ export default async function writeOneClientFile({
   isEnsuringClient: boolean;
   outCwdRelativeDir: string;
   origin: string | null;
+  templateDef: VovkStrictConfig['clientTemplateDefs'][string];
 }) {
   const { config, apiRoot, segments } = projectInfo;
   const { templateFilePath, relativeDir } = clientTemplateFile;
@@ -83,9 +85,17 @@ export default async function writeOneClientFile({
           ),
           path.resolve(cwd, routeFilePath)
         );
+        const { origin: configOrigin, rootEntry: configRootEntry } = {
+          ...(config.segmentConfig ? config.segmentConfig[sName] : {}),
+          ...(templateDef.segmentConfig ? templateDef.segmentConfig[sName] : {}),
+        };
         return [
           sName,
           {
+            segmentApiRoot:
+              configOrigin || configRootEntry
+                ? `${configOrigin ?? origin}/${configRootEntry ?? config.rootEntry}`
+                : null,
             routeFilePath,
             segmentImportPath,
           },
