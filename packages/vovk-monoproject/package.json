@@ -1,20 +1,14 @@
 {
   "name": "vovk-monoproject",
-  "version": "0.0.0",
+  "version": "0.0.1-draft.1",
   "description": "Vovk.ts Monoproject middleware for Next.js",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "npm-publish": "npm publish",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u"
-  },
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 2,
-    "semi": true,
-    "singleQuote": true,
-    "printWidth": 120
+    "ncu": "npm-check-updates -u",
+    "dev": "vovk dev --next-dev -- vovk dev --next-dev"
   },
   "keywords": [
     "vovk"
@@ -22,11 +16,13 @@
   "author": "Andrey Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.118",
-    "next": "^15.0.0"
+    "next": "^15.0.0",
+    "vovk": "^3.0.0-draft.119"
   },
   "dependencies": {
-    "@stoplight/json-schema-sampler": "^0.3.0",
-    "openapi3-ts": "^4.4.0"
+    
+  },
+  "devDependencies": {
+    "vovk-cli": "^0.0.1-draft.147"
   }
 }

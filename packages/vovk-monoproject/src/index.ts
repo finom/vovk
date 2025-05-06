@@ -25,23 +25,23 @@ c.example.com/baz -> REWRITE /foo/bar/baz/
  */
 
 export function monoproject(segments: Record<string, string>) {
-  // Create a reverse mapping from domains to segments
-  const domainToSegment: Record<string, string> = {};
-  for (const [segment, domain] of Object.entries(segments)) {
-    domainToSegment[domain] = segment;
+  // Create a reverse mapping from origins to segments
+  const originToSegment: Record<string, string> = {};
+  for (const [segment, origin] of Object.entries(segments)) {
+    originToSegment[origin] = segment;
   }
 
   const middleware = (request: NextRequest) => {
     const url = new URL(request.url);
-    const { pathname, hostname } = url;
-
-    // Check if the current hostname is in our domain mapping
-    if (hostname in domainToSegment) {
-      const currentSegment = domainToSegment[hostname];
+    const { pathname, origin, host } = url;
+    
+    // Check if the current origin is in our mapping
+    if (host in originToSegment) {
+      const currentSegment = originToSegment[host];
       
-      // Check for redirects to more specific domains
-      for (const [segment, domain] of Object.entries(segments)) {
-        // Skip current domain's segment
+      // Check for redirects to more specific origins
+      for (const [segment, targetOrigin] of Object.entries(segments)) {
+        // Skip current origin's segment
         if (segment === currentSegment) continue;
         
         // If this is a more specific segment that extends our current segment
@@ -51,19 +51,19 @@ export function monoproject(segments: Record<string, string>) {
             currentSegment === '' ? 0 : currentSegment.length + 1
           ).split('/')[0];
           
-          // If the pathname starts with this next part, redirect to the more specific domain
+          // If the pathname starts with this next part, redirect to the more specific origin
           if (pathname === `/${nextPart}` || pathname.startsWith(`/${nextPart}/`)) {
             const newPath = pathname.slice(nextPart.length + 1) || '/';
-            return NextResponse.redirect(new URL(`https://${domain}${newPath}`));
+            return NextResponse.redirect(new URL(`${targetOrigin}${newPath}`));
           }
         }
       }
       
       // No redirect needed, rewrite the URL to add the segment prefix
-      return NextResponse.rewrite(new URL(`${request.nextUrl.origin}/${currentSegment}${pathname}`));
+      return NextResponse.rewrite(new URL(`${origin}/${currentSegment}${pathname}`));
     }
     
-    // If hostname doesn't match any of our domains, continue
+    // If hostname doesn't match any of our origins, continue
     return NextResponse.next();
   };
 

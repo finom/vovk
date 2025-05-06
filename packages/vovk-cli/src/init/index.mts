@@ -275,6 +275,7 @@ export class Init {
     reactQuery =
       reactQuery ??
       (await confirm({
+        default: false,
         message: 'Do you want to use @tanstack/react-query for data fetching at React components?',
       }));
 
@@ -293,7 +294,7 @@ export class Init {
           keys.push('emitDecoratorMetadata');
         }
         updateTsConfig = await confirm({
-          message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')}} to tsconfig.json?`,
+          message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')} to tsconfig.json?`,
         });
       }
     }
