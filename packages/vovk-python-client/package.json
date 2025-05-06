@@ -1,6 +1,6 @@
 {
   "name": "vovk-python-client",
-  "version": "0.0.1-draft.13",
+  "version": "0.0.1-draft.14",
   "description": "Vovk.ts Python client",
   "scripts": {
     "build": "tsc",

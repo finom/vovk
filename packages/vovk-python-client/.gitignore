@@ -1,3 +1,4 @@
 *.d.ts
 *.js
 !eslint.config.js
+generated_python_client

@@ -10,9 +10,9 @@ const vovkConfig = {
         fullSchemaJson: './data',
       },
       fullClient: {
-        outDir: '../packages/vovk-python-client/test_py/generated_test_python_client',
+        outDir: '../packages/vovk-python-client/generated_python_client',
         package: {
-          name: 'generated_python_client',
+          name: 'test_generated_python_client',
           version: '0.0.1',
           license: 'MIT',
           description: 'Vovk Python Client',

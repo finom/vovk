@@ -3,3 +3,5 @@
 tsconfig.*
 .turbo
 eslint.config.js
+generated_python_client
+test_*
