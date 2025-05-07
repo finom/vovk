@@ -1,7 +1,7 @@
 import unittest
 from typing import Any, Generator
 from jsonschema import ValidationError
-from generated_test_python_client.src.generated_python_client import HttpException, WithYupClientControllerRPC
+from generated_python_client.src.test_generated_python_client import HttpException, WithYupClientControllerRPC
 
 def noop(*args: Any) -> None: # type: ignore
     pass
