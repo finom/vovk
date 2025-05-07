@@ -85,7 +85,6 @@ pub mod test_zod {
         assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
     }
     
-    // test query validation
     #[test]
     fn test_query() {
         // Test successful query validation
@@ -125,8 +124,84 @@ pub mod test_zod {
         assert!(result.is_err());
         assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
     }
-    
-    // test params validation
+
+    #[test]
+    fn test_nested_query() {
+        use serde_json::json;
+        
+        // Create a complex nested query structure
+        let nested_query_example = with_zod_client_controller_rpc::handle_nested_query_::query {
+            x: "xx".to_string(),
+            y: vec!["yy".to_string(), "uu".to_string()],
+            z: serde_json::from_value(json!({
+                "f": "x",
+                "u": ["uu", "xx"],
+                "d": {
+                    "x": "ee",
+                    "arrOfObjects": [
+                        {
+                            "foo": "bar",
+                            "nestedArr": ["one", "two", "three"],
+                            "nestedObj": {
+                                "deepKey": "deepValue1"
+                            }
+                        },
+                        {
+                            "foo": "baz",
+                            "nestedArr": ["four", "five", "six"],
+                            "nestedObj": {
+                                "deepKey": "deepValue2"
+                            }
+                        }
+                    ]
+                }
+            })).unwrap(),
+        };
+
+        // Test successful query validation
+        let data = with_zod_client_controller_rpc::handle_nested_query(
+            (),
+            nested_query_example.clone(),
+            (),
+            None,
+            false,
+        ).unwrap();
+
+        // Convert both to Value for easy comparison
+        let data_value = serde_json::to_value(&data).unwrap();
+        let example_value = serde_json::to_value(&nested_query_example).unwrap();
+        
+        assert_eq!(data_value, example_value);
+
+        // Test client-side validation error
+        let mut invalid_query = nested_query_example.clone();
+        invalid_query.x = "wrong_length".to_string();
+        
+        let result = with_zod_client_controller_rpc::handle_nested_query(
+            (),
+            invalid_query.clone(),
+            (),
+            None,
+            false,
+        );
+        
+        assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
+        
+        // Test with client validation disabled (server validation error)
+        let result = with_zod_client_controller_rpc::handle_nested_query(
+            (),
+            invalid_query,
+            (),
+            None,
+            true,
+        );
+        
+        assert!(result.is_err());
+        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+    }
+
     #[test]
     fn test_params() {
         // Test successful params validation
@@ -168,7 +243,6 @@ pub mod test_zod {
         assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
     }
     
-    // test output validation
     #[test]
     fn test_output() {
         // Test successful output validation
@@ -199,7 +273,6 @@ pub mod test_zod {
         assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
     }
     
-    // test streaming
     #[test]
     fn test_stream() {
         // Test successful streaming
