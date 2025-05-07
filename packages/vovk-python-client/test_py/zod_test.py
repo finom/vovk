@@ -67,6 +67,53 @@ class TestZod(unittest.TestCase):
                 disable_client_validation=True
             )
         self.assertRegex(str(context2.exception), r"Zod validation failed\. Invalid query on server for http://\S+\. At \"search\":.*")
+
+    def test_nested_query(self) -> None:
+        NESTED_QUERY_EXAMPLE: WithZodClientControllerRPC.HandleNestedQueryQuery = {
+            'x': 'xx',
+            'y': ['yy', 'uu'],
+            'z': {
+                'f': 'x',
+                'u': ['uu', 'xx'],
+                'd': {
+                'x': 'ee',
+                'arrOfObjects': [
+                    {
+                    'foo': 'bar',
+                    'nestedArr': ['one', 'two', 'three'],
+                    'nestedObj': {
+                        'deepKey': 'deepValue1',
+                    },
+                    },
+                    {
+                    'foo': 'baz',
+                    'nestedArr': ['four', 'five', 'six'], # WARNING: couldn't omit this field even if it is optional
+                    'nestedObj': { # WARNING: couldn't omit this field even if it is optional
+                        'deepKey': 'deepValue2',
+                    },
+                    },
+                ],
+                },
+            },
+        }
+
+        data: WithZodClientControllerRPC.HandleNestedQueryQuery = WithZodClientControllerRPC.handle_nested_query(
+            query=NESTED_QUERY_EXAMPLE
+        )
+        self.assertEqual(data, NESTED_QUERY_EXAMPLE)
+
+        with self.assertRaises(HttpException) as context1:
+            WithZodClientControllerRPC.handle_nested_query(
+                query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"},
+                disable_client_validation=True
+            )
+        self.assertRegex(str(context1.exception), r"Zod validation failed\. Invalid query on server for http://\S+\. At \"x\".*")
+
+        with self.assertRaises(ValidationError) as context2:
+            WithZodClientControllerRPC.handle_nested_query(
+                query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"}
+            )
+        self.assertIn("'wrong_length' is too long", str(context2.exception))
     
     def test_params(self) -> None:
         data: WithZodClientControllerRPC.HandleParamsParams = WithZodClientControllerRPC.handle_params(
@@ -116,7 +163,6 @@ class TestZod(unittest.TestCase):
                 print(data)
                 pass
         self.assertRegex(str(context.exception), r"Zod validation failed\. Invalid iteration #0 on server for http://\S+\. At \"value\".*")
-
 
 if __name__ == "__main__":
     unittest.main()

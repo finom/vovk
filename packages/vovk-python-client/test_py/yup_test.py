@@ -67,6 +67,53 @@ class TestYup(unittest.TestCase):
             )
         self.assertRegex(str(context2.exception), r"Yup validation failed\. Invalid query on server for http://\S+\. search must be at most 5 characters")
     
+    def test_nested_query(self) -> None:
+        NESTED_QUERY_EXAMPLE: WithYupClientControllerRPC.HandleNestedQueryQuery = {
+            'x': 'xx',
+            'y': ['yy', 'uu'],
+            'z': {
+                'f': 'x',
+                'u': ['uu', 'xx'],
+                'd': {
+                'x': 'ee',
+                'arrOfObjects': [
+                    {
+                    'foo': 'bar',
+                    'nestedArr': ['one', 'two', 'three'],
+                    'nestedObj': {
+                        'deepKey': 'deepValue1',
+                    },
+                    },
+                    {
+                    'foo': 'baz',
+                    'nestedArr': ['four', 'five', 'six'], # WARNING: couldn't omit this field even if it is optional
+                    'nestedObj': { # WARNING: couldn't omit this field even if it is optional
+                        'deepKey': 'deepValue2',
+                    },
+                    },
+                ],
+                },
+            },
+        }
+
+        data: WithYupClientControllerRPC.HandleNestedQueryQuery = WithYupClientControllerRPC.handle_nested_query(
+            query=NESTED_QUERY_EXAMPLE
+        )
+        self.assertEqual(data, NESTED_QUERY_EXAMPLE)
+
+        with self.assertRaises(HttpException) as context1:
+            WithYupClientControllerRPC.handle_nested_query(
+                query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"},
+                disable_client_validation=True
+            )
+        self.assertRegex(str(context1.exception), r"Yup validation failed\. Invalid query on server for http://\S+\. x must be.*")
+
+        with self.assertRaises(ValidationError) as context2:
+            WithYupClientControllerRPC.handle_nested_query(
+                query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"}
+            )
+        self.assertIn("'wrong_length' is too long", str(context2.exception))
+    
     def test_params(self) -> None:
         data: WithYupClientControllerRPC.HandleParamsParams = WithYupClientControllerRPC.handle_params(
             params={"foo": "foo", "bar": "bar"}
