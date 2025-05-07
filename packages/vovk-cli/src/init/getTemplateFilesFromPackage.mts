@@ -4,7 +4,6 @@ import tar, { Headers } from 'tar-stream';
 import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
 import { InitOptions } from '../types.mjs';
 
-// Crereated with AI
 /**
  * Retrieves a list of files in the 'templates' folder of an NPM package.
  * @param packageName - The name of the NPM package.

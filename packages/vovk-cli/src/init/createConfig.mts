@@ -31,10 +31,7 @@ export default async function createConfig({
 
   if (validationLibrary) {
     config.imports ??= {};
-    config.imports.validateOnClient =
-      {
-        'vovk-dto': `vovk-dto/validateOnClient.js`,
-      }[validationLibrary] ?? 'vovk-ajv';
+    config.imports.validateOnClient = 'vovk-ajv';
 
     try {
       const validationTemplates = await getTemplateFilesFromPackage(validationLibrary, channel);
@@ -53,7 +50,7 @@ export default async function createConfig({
 
   const configStr = await prettify(
     `// @ts-check
-/** @type {import('vovk-cli').VovkConfig} */
+/** @type {import('vovk').VovkConfig} */
 const config = ${JSON.stringify(config, null, 2)};
 ${isModule ? '\nexport default config;' : 'module.exports = config;'}`,
     configAbsolutePath

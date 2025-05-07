@@ -6,17 +6,16 @@ pub mod test_yup {
 
     #[test]
     fn test_ok() {
-        // Create an instance of the API client with the back-end URL
         let data:with_yup_client_controller_rpc::handle_all_::output = with_yup_client_controller_rpc::handle_all(
             with_yup_client_controller_rpc::handle_all_::body {
-                hello: with_yup_client_controller_rpc::handle_all_::body_::helloEnum::world,
+                hello: "world".to_string(),
             },
             with_yup_client_controller_rpc::handle_all_::query {
-                search: with_yup_client_controller_rpc::handle_all_::query_::searchEnum::value,
+                search: "value".to_string(),
             },
             with_yup_client_controller_rpc::handle_all_::params {
-                foo: with_yup_client_controller_rpc::handle_all_::params_::fooEnum::foo,
-                bar: with_yup_client_controller_rpc::handle_all_::params_::barEnum::bar,
+                foo: "foo".to_string(),
+                bar: "bar".to_string(),
             },
             None,
             false,
@@ -41,6 +40,7 @@ pub mod test_yup {
 
         #[allow(unused_variables)]
         let _params:generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::params = data.params;
+
         #[allow(unused_variables)]
         let _vovk_params:  generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::vovkParams = data.vovkParams;
     }
@@ -51,7 +51,7 @@ pub mod test_yup {
         // Test successful body validation
         let data = with_yup_client_controller_rpc::handle_body(
             with_yup_client_controller_rpc::handle_body_::body {
-                hello: with_yup_client_controller_rpc::handle_body_::body_::helloEnum::world,
+                hello: "world".to_string(),
             },
             (),
             (),
@@ -63,7 +63,7 @@ pub mod test_yup {
 
         // Test client-side validation error
         let result = with_yup_client_controller_rpc::handle_body(
-            serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
             None,
@@ -71,9 +71,11 @@ pub mod test_yup {
         );
         
         assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_yup_client_controller_rpc::handle_body(
-            serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
             None,
@@ -91,7 +93,7 @@ pub mod test_yup {
         let data = with_yup_client_controller_rpc::handle_query(
             (),
             with_yup_client_controller_rpc::handle_query_::query {
-                search: with_yup_client_controller_rpc::handle_query_::query_::searchEnum::value,
+                search: "value".to_string(),
             },
             (),
             None,
@@ -103,17 +105,19 @@ pub mod test_yup {
         // Test client-side validation error
         let result = with_yup_client_controller_rpc::handle_query(
             (),
-            serde_json::from_value(serde_json::json!({"search": "valuex"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
             None,
             false,
         );
           
         assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_yup_client_controller_rpc::handle_query(
             (),
-            serde_json::from_value(serde_json::json!({"search": "valuex"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
             None,
             true,
@@ -131,8 +135,8 @@ pub mod test_yup {
             (),
             (),
             with_yup_client_controller_rpc::handle_params_::params {
-                foo:  with_yup_client_controller_rpc::handle_params_::params_::fooEnum::foo,
-                bar: with_yup_client_controller_rpc::handle_params_::params_::barEnum::bar
+                foo: "foo".to_string(),
+                bar: "bar".to_string(),
             },
             None,
             false,
@@ -144,17 +148,19 @@ pub mod test_yup {
         let result = with_yup_client_controller_rpc::handle_params(
             (),
             (),
-            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "barx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
             None,
             false,
         );
         
         assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_yup_client_controller_rpc::handle_params(
             (),
             (),
-            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "barx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
             None,
             true,
         );
@@ -183,7 +189,7 @@ pub mod test_yup {
         let result = with_yup_client_controller_rpc::handle_output(
             (),
             with_yup_client_controller_rpc::handle_output_::query {
-                helloOutput: "worldx".to_string(),
+                helloOutput: "wrong_length".to_string(),
             },
             (),
             None,
@@ -218,7 +224,7 @@ pub mod test_yup {
         }
         
         // Test streaming error
-        let error_values = vec!["e", "f", "g", "h"];
+        let error_values = vec!["wrong_length", "f", "g", "h"];
         let error_stream = with_yup_client_controller_rpc::handle_stream(
             (),
             with_yup_client_controller_rpc::handle_stream_::query {

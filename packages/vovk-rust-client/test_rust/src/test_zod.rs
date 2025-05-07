@@ -5,7 +5,6 @@ pub mod test_zod {
     // #[ignore = "needs external database"] | #[should_panic(expected = "Invalid input")]
     #[test]
     fn test_ok() {
-        // Create an instance of the API client with the back-end URL
         let data:with_zod_client_controller_rpc::handle_all_::output = with_zod_client_controller_rpc::handle_all(
             with_zod_client_controller_rpc::handle_all_::body {
                 hello: "world".to_string(),
@@ -63,7 +62,7 @@ pub mod test_zod {
 
         // Test client-side validation error
         let result = with_zod_client_controller_rpc::handle_body(
-            serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
             None,
@@ -71,10 +70,11 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_zod_client_controller_rpc::handle_body(
-            serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
             None,
@@ -104,17 +104,19 @@ pub mod test_zod {
         // Test client-side validation error
         let result = with_zod_client_controller_rpc::handle_query(
             (),
-            serde_json::from_value(serde_json::json!({"search": "valuex"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
             None,
             false,
         );
           
         assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_zod_client_controller_rpc::handle_query(
             (),
-            serde_json::from_value(serde_json::json!({"search": "valuex"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
             None,
             true,
@@ -145,17 +147,19 @@ pub mod test_zod {
         let result = with_zod_client_controller_rpc::handle_params(
             (),
             (),
-            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "barx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
             None,
             false,
         );
         
         assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_zod_client_controller_rpc::handle_params(
             (),
             (),
-            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "barx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
             None,
             true,
         );
@@ -184,7 +188,7 @@ pub mod test_zod {
         let result = with_zod_client_controller_rpc::handle_output(
             (),
             with_zod_client_controller_rpc::handle_output_::query {
-                helloOutput: "worldx".to_string(),
+                helloOutput: "wrong_length".to_string(),
             },
             (),
             None,
@@ -219,7 +223,7 @@ pub mod test_zod {
         }
         
         // Test streaming error
-        let error_values = vec!["e", "f", "g", "h"];
+        let error_values = vec!["wrong_length", "f", "g", "h"];
         let error_stream = with_zod_client_controller_rpc::handle_stream(
             (),
             with_zod_client_controller_rpc::handle_stream_::query {

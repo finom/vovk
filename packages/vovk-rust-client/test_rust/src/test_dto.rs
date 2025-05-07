@@ -10,14 +10,14 @@ pub mod test_dto {
         // Create an instance of the API client with the back-end URL
         let data:with_dto_client_controller_rpc::handle_all_::output = with_dto_client_controller_rpc::handle_all(
             with_dto_client_controller_rpc::handle_all_::body {
-                hello: with_dto_client_controller_rpc::handle_all_::body_::helloEnum::world
-            }, 
+                hello: "world".to_string(),
+            },
             with_dto_client_controller_rpc::handle_all_::query {
-                search: with_dto_client_controller_rpc::handle_all_::query_::searchEnum::value
+                search: "value".to_string(),
             },
             with_dto_client_controller_rpc::handle_all_::params {
-                foo: with_dto_client_controller_rpc::handle_all_::params_::fooEnum::foo,
-                bar: with_dto_client_controller_rpc::handle_all_::params_::barEnum::bar,
+                foo: "foo".to_string(),
+                bar: "bar".to_string(),
             },
             None,
             false,
@@ -53,7 +53,7 @@ pub mod test_dto {
         // Test successful body validation
         let data = with_dto_client_controller_rpc::handle_body(
             with_dto_client_controller_rpc::handle_body_::body {
-                hello: with_dto_client_controller_rpc::handle_body_::body_::helloEnum::world,
+                hello: "world".to_string(),
             },
             (),
             (),
@@ -65,7 +65,7 @@ pub mod test_dto {
 
         // Test client-side validation error
         let result = with_dto_client_controller_rpc::handle_body(
-            serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
             None,
@@ -73,9 +73,11 @@ pub mod test_dto {
         );
         
         assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_dto_client_controller_rpc::handle_body(
-            serde_json::from_value(serde_json::json!({"hello": "worldx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
             None,
@@ -93,7 +95,7 @@ pub mod test_dto {
         let data = with_dto_client_controller_rpc::handle_query(
             (),
             with_dto_client_controller_rpc::handle_query_::query {
-                search: with_dto_client_controller_rpc::handle_query_::query_::searchEnum::value,
+                search: "value".to_string(),
             },
             (),
             None,
@@ -105,17 +107,19 @@ pub mod test_dto {
         // Test client-side validation error
         let result = with_dto_client_controller_rpc::handle_query(
             (),
-            serde_json::from_value(serde_json::json!({"search": "valuex"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
             None,
             false,
         );
           
         assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_dto_client_controller_rpc::handle_query(
             (),
-            serde_json::from_value(serde_json::json!({"search": "valuex"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
             None,
             true,
@@ -133,8 +137,8 @@ pub mod test_dto {
             (),
             (),
             with_dto_client_controller_rpc::handle_params_::params {
-                foo: with_dto_client_controller_rpc::handle_params_::params_::fooEnum::foo,
-                bar: with_dto_client_controller_rpc::handle_params_::params_::barEnum::bar,
+                foo: "foo".to_string(),
+                bar: "bar".to_string(),
             },
             None,
             false,
@@ -146,17 +150,19 @@ pub mod test_dto {
         let result = with_dto_client_controller_rpc::handle_params(
             (),
             (),
-            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "barx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
             None,
             false,
         );
         
         assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("\"wrong_length\" is longer than 5 characters"));
         
         let result = with_dto_client_controller_rpc::handle_params(
             (),
             (),
-            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "barx"})).unwrap(),
+            serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
             None,
             true,
         );
@@ -185,7 +191,7 @@ pub mod test_dto {
         let result = with_dto_client_controller_rpc::handle_output(
             (),
             with_dto_client_controller_rpc::handle_output_::query {
-                helloOutput: "worldx".to_string(),
+                helloOutput: "wrong_length".to_string(),
             },
             (),
             None,
