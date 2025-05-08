@@ -19,6 +19,7 @@ pub mod test_yup {
                 bar: "bar".to_string(),
             },
             None,
+            None,
             false,
         ).unwrap();
         // print data
@@ -57,6 +58,7 @@ pub mod test_yup {
             (),
             (),
             None,
+            None,
             false,
         ).unwrap();
 
@@ -67,6 +69,7 @@ pub mod test_yup {
             serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
+            None,
             None,
             false,
         );
@@ -79,6 +82,7 @@ pub mod test_yup {
             serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
+            None,
             None,
             true,
         );
@@ -98,6 +102,7 @@ pub mod test_yup {
             },
             (),
             None,
+            None,
             false,
         ).unwrap();
 
@@ -108,6 +113,7 @@ pub mod test_yup {
             (),
             serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
+            None,
             None,
             false,
         );
@@ -120,6 +126,7 @@ pub mod test_yup {
             (),
             serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
+            None,
             None,
             true,
         );
@@ -165,6 +172,7 @@ pub mod test_yup {
             nested_query_example.clone(),
             (),
             None,
+            None,
             false,
         ).unwrap();
 
@@ -183,6 +191,7 @@ pub mod test_yup {
             invalid_query.clone(),
             (),
             None,
+            None,
             false,
         );
         
@@ -195,6 +204,7 @@ pub mod test_yup {
             (),
             invalid_query,
             (),
+            None,
             None,
             true,
         );
@@ -215,6 +225,7 @@ pub mod test_yup {
                 bar: "bar".to_string(),
             },
             None,
+            None,
             false,
         ).unwrap();
 
@@ -225,6 +236,7 @@ pub mod test_yup {
             (),
             (),
             serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
+            None,
             None,
             false,
         );
@@ -237,6 +249,7 @@ pub mod test_yup {
             (),
             (),
             serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
+            None,
             None,
             true,
         );
@@ -256,6 +269,7 @@ pub mod test_yup {
             },
             (),
             None,
+            None,
             false,
         ).unwrap();
 
@@ -268,6 +282,7 @@ pub mod test_yup {
                 helloOutput: "wrong_length".to_string(),
             },
             (),
+            None,
             None,
             false,
         );
@@ -289,6 +304,7 @@ pub mod test_yup {
             },
             (),
             None,
+            None,
             false,
         );
         
@@ -307,6 +323,7 @@ pub mod test_yup {
                 values: error_values.iter().map(|s| s.to_string()).collect(),
             },
             (),
+            None,
             None,
             false,
         );
@@ -347,6 +364,7 @@ pub mod test_yup {
             (),
             (),
             None,
+            None,
             false
         );
         assert!(result.is_ok(), "Valid object should pass validation");
@@ -370,6 +388,7 @@ pub mod test_yup {
                 (),
                 (),
                 None,
+                None,
                 true // disable client validation
             );
             
@@ -385,6 +404,7 @@ pub mod test_yup {
                 complaining_object,
                 (),
                 (),
+                None,
                 None,
                 false // enable client validation
             );

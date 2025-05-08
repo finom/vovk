@@ -1,6 +1,7 @@
 mod test_zod;
 mod test_yup;
 mod test_dto;
+mod test_common;
 
 // Helper function to create objects with specific validation issues
 pub fn get_complaining_object(key: Option<String>) -> serde_json::Value {        

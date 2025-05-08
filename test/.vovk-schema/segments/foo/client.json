@@ -2,9 +2,9 @@
   "emitSchema": true,
   "segmentName": "foo/client",
   "controllers": {
-    "ClientControllerRPC": {
-      "controllerName": "ClientControllerRPC",
-      "originalControllerName": "ClientController",
+    "CommonControllerRPC": {
+      "controllerName": "CommonControllerRPC",
+      "originalControllerName": "CommonController",
       "prefix": "common",
       "handlers": {
         "getHelloWorldResponseObject": {

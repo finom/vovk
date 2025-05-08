@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { NESTED_QUERY_EXAMPLE } from '../lib';
 
 @prefix('common')
-export default class ClientController {
+export default class CommonController {
   @get.auto()
   static getHelloWorldResponseObject() {
     return NextResponse.json({ hello: 'world' });

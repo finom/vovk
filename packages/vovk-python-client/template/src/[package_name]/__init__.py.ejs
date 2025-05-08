@@ -5,7 +5,7 @@ imports: ['vovk-python-client']
     convertJSONSchemaToPythonType: t.imports['vovk-python-client'].convertJSONSchemaToPythonType,
 }; %>
 <%- `# auto-generated ${new Date().toISOString()}` %>
-from __future__ import annotations  # Enables forward references in type hints
+from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator # type: ignore
 from .api_client import ApiClient, HttpException
 
@@ -32,6 +32,7 @@ class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerNameOr
             validation?.query ? `query: ${controllerName}.${handlerNameOriginalCapitalized}Query,` : '', 
             validation?.params ? `params: ${controllerName}.${handlerNameOriginalCapitalized}Params,` : ''
         ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
+        headers: Optional[Dict[str, str]] = None,
         api_root: Optional[str] = None,
         disable_client_validation: bool = False
     ) -> <%= validation?.output ? `${controllerName}.${handlerNameOriginalCapitalized}Output` : validation?.iteration ? `Generator[${controllerName}.${handlerNameOriginalCapitalized}Iteration, None, None]` : 'Any' %>:
@@ -53,6 +54,7 @@ class <%= controllerName %>: <% Object.entries(handlers).forEach(([handlerNameOr
                 validation?.query ? 'query=query,' : '',
                 validation?.params ? 'params=params,' : ''
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n') %>
+            headers=headers,
             api_root=api_root,
             disable_client_validation=disable_client_validation
         )

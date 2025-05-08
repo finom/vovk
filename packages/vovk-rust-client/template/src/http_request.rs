@@ -1,7 +1,7 @@
 use serde::{Serialize, de::DeserializeOwned};
 use reqwest::blocking::Client;
 use reqwest::Method;
-use reqwest::header::HeaderMap;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use jsonschema::JSONSchema;
@@ -43,6 +43,7 @@ fn prepare_request<B, Q, P>(
     body: Option<&B>,
     query: Option<&Q>,
     params: Option<&P>,
+    headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
 ) -> Result<(reqwest::blocking::RequestBuilder, String), Box<dyn Error>>
@@ -181,10 +182,21 @@ where
     }
 
     // Set up request headers
-    let mut headers = HeaderMap::new();
-    headers.insert("Accept", "application/jsonl, application/json".parse().unwrap());
+    let mut headers_map = reqwest::header::HeaderMap::new();
+    headers_map.insert("Accept", "application/jsonl, application/json".parse().unwrap());
     if body_value.is_some() {
-        headers.insert("Content-Type", "application/json".parse().unwrap());
+        headers_map.insert("Content-Type", "application/json".parse().unwrap());
+    }
+
+    // Merge with user-provided headers if any
+    if let Some(provided_headers) = headers {
+        for (key, value) in provided_headers {
+            if let Ok(header_name) = reqwest::header::HeaderName::from_bytes(key.as_bytes()) {
+                if let Ok(header_value) = reqwest::header::HeaderValue::from_str(value) {
+                    headers_map.insert(header_name, header_value);
+                }
+            }
+        }
     }
 
     // Map HTTP method string to reqwest::Method
@@ -201,7 +213,7 @@ where
 
     // Build the HTTP request
     let client = Client::new();
-    let mut request = client.request(method, &url).headers(headers);
+    let mut request = client.request(method, &url).headers(headers_map);
     if let Some(body_val) = body_value {
         request = request.json(&body_val);
     }
@@ -218,6 +230,7 @@ pub fn http_request<T, B, Q, P>(
     body: Option<&B>,
     query: Option<&Q>,
     params: Option<&P>,
+    headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
 ) -> Result<T, Box<dyn Error>> 
@@ -236,8 +249,9 @@ where
         body,
         query,
         params,
+        headers,
         api_root,
-        disable_client_validation
+        disable_client_validation,
     )?;
     
     // Send the request
@@ -286,6 +300,7 @@ pub fn http_request_stream<T, B, Q, P>(
     body: Option<&B>,
     query: Option<&Q>,
     params: Option<&P>,
+    headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
 ) -> Box<dyn Iterator<Item = T>> 
@@ -304,8 +319,9 @@ where
         body,
         query,
         params,
+        headers,
         api_root,
-        disable_client_validation
+        disable_client_validation,
     ) {
         Ok(req) => req,
         Err(e) => panic!("{}", e),

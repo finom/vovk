@@ -51,6 +51,7 @@ class ApiClient:
         body: Optional[Any] = None,
         query: Optional[Any] = None,
         params: Optional[Any] = None,
+        headers: Optional[Dict[str, str]] = None,
         disable_client_validation: bool = False
     ) -> Any:
         """
@@ -77,6 +78,7 @@ class ApiClient:
             body=body,
             query=query,
             params=params,
+            headers=headers,
             validation=validation,
             disable_client_validation=disable_client_validation
         )
@@ -88,6 +90,7 @@ class ApiClient:
         body: Optional[Dict[str, Any]] = None,
         query: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
         validation: Optional[Dict[str, Any]] = None,
         disable_client_validation: bool = False
     ) -> Any:
@@ -100,6 +103,7 @@ class ApiClient:
             body: Optional dictionary to send as JSON in the request body
             query: Optional dictionary to convert to query parameters
             params: Optional dictionary to replace URL parameters
+            headers: Optional dictionary of custom headers
             validation: Optional dictionary with JSON schemas to validate body, query, and params
             disable_client_validation: Whether to disable validation entirely
             
@@ -154,18 +158,22 @@ class ApiClient:
                 processed_url += "?" + query_string
         
         # Prepare headers
-        headers = {
+        request_headers = {
             'Accept': 'application/jsonl, application/json'
         }
         
         if body:
-            headers['Content-Type'] = 'application/json'
+            request_headers['Content-Type'] = 'application/json'
+        
+        # Update with custom headers if provided
+        if headers:
+            request_headers.update(headers)
         
         # Make the request
         response = requests.request(
             method=http_method.upper(),
             url=processed_url,
-            headers=headers,
+            headers=request_headers,
             json=body if body else None,
             stream=True  # Always stream for consistent handling
         )

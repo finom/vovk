@@ -1,4 +1,4 @@
-// auto-generated 2025-05-07T19:29:00.378Z
+// auto-generated 2025-05-08T16:36:16.802Z
 /* eslint-disable */
 import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from 'vovk';
@@ -13,8 +13,8 @@ import { validateOnClient } from '../../../../../packages/vovk-ajv/index.js';
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 
   
-export const ClientControllerRPC = createRPC<Controllers0["ClientControllerRPC"], Options>(
-  fullSchema, 'foo/client', 'ClientControllerRPC',
+export const CommonControllerRPC = createRPC<Controllers0["CommonControllerRPC"], Options>(
+  fullSchema, 'foo/client', 'CommonControllerRPC',
   { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   

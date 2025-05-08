@@ -11,8 +11,9 @@ mod read_full_schema;
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
 pub mod <%= t._.snakeCase(controllerName) %> {
-    pub use crate::http_request::{http_request, http_request_stream};
-    pub use serde::{Deserialize, Serialize};
+    #[allow(unused_imports)]
+    use crate::http_request::{http_request, http_request_stream};
+    use std::collections::HashMap;
 <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
     const handlerName = t._.snakeCase(handlerNameOriginal);
     %>
@@ -43,6 +44,7 @@ vars.convertJSONSchemasToRustTypes({
         body: <%- validation?.body ? `${handlerName}_::body` : '()' %>,
         query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
         params: <%- validation?.params ? `${handlerName}_::params` : '()' %>,
+        headers: Option<&HashMap<String, String>>,
         api_root: Option<&str>,
         disable_client_validation: bool,
     ) -> <%- validation?.output ? `Result<${handlerName}_::output, Box<dyn serde::ser::StdError>>` : validation?.iteration ? `Box<dyn Iterator<Item = ${handlerName}_::iteration>>` : 'Result<serde_json::Value, Box<dyn serde::ser::StdError>>' %>{
@@ -61,6 +63,7 @@ vars.convertJSONSchemasToRustTypes({
             Some(&body),
             Some(&query),
             Some(&params),
+            headers,
             api_root,
             disable_client_validation,
         );

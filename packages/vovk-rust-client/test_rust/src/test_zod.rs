@@ -18,6 +18,7 @@ pub mod test_zod {
                 bar: "bar".to_string(),
             },
             None,
+            None,
             false,
         ).unwrap();
         // print data
@@ -56,6 +57,7 @@ pub mod test_zod {
             (),
             (),
             None,
+            None,
             false,
         ).unwrap();
 
@@ -66,6 +68,7 @@ pub mod test_zod {
             serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
+            None,
             None,
             false,
         );
@@ -78,6 +81,7 @@ pub mod test_zod {
             serde_json::from_value(serde_json::json!({"hello": "wrong_length"})).unwrap(),
             (),
             (),
+            None,
             None,
             true,
         );
@@ -96,6 +100,7 @@ pub mod test_zod {
             },
             (),
             None,
+            None,
             false,
         ).unwrap();
 
@@ -106,6 +111,7 @@ pub mod test_zod {
             (),
             serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
+            None,
             None,
             false,
         );
@@ -118,6 +124,7 @@ pub mod test_zod {
             (),
             serde_json::from_value(serde_json::json!({"search": "wrong_length"})).unwrap(),
             (),
+            None,
             None,
             true,
         );
@@ -165,6 +172,7 @@ pub mod test_zod {
             nested_query_example.clone(),
             (),
             None,
+            None,
             false,
         ).unwrap();
 
@@ -183,6 +191,7 @@ pub mod test_zod {
             invalid_query.clone(),
             (),
             None,
+            None,
             false,
         );
         
@@ -195,6 +204,7 @@ pub mod test_zod {
             (),
             invalid_query,
             (),
+            None,
             None,
             true,
         );
@@ -214,6 +224,7 @@ pub mod test_zod {
                 bar: "bar".to_string(),
             },
             None,
+            None,
             false,
         ).unwrap();
 
@@ -224,6 +235,7 @@ pub mod test_zod {
             (),
             (),
             serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
+            None,
             None,
             false,
         );
@@ -236,6 +248,7 @@ pub mod test_zod {
             (),
             (),
             serde_json::from_value(serde_json::json!({"foo": "foo", "bar": "wrong_length"})).unwrap(),
+            None,
             None,
             true,
         );
@@ -254,6 +267,7 @@ pub mod test_zod {
             },
             (),
             None,
+            None,
             false,
         ).unwrap();
 
@@ -266,6 +280,7 @@ pub mod test_zod {
                 helloOutput: "wrong_length".to_string(),
             },
             (),
+            None,
             None,
             false,
         );
@@ -286,6 +301,7 @@ pub mod test_zod {
             },
             (),
             None,
+            None,
             false,
         );
         
@@ -304,6 +320,7 @@ pub mod test_zod {
                 values: error_values.iter().map(|s| s.to_string()).collect(),
             },
             (),
+            None,
             None,
             false,
         );
@@ -345,6 +362,7 @@ pub mod test_zod {
             (),
             (),
             None,
+            None,
             false
         );
         assert!(result.is_ok(), "Valid object should pass validation");
@@ -368,6 +386,7 @@ pub mod test_zod {
                 (),
                 (),
                 None,
+                None,
                 true // disable client validation
             );
             
@@ -383,6 +402,7 @@ pub mod test_zod {
                 complaining_object,
                 (),
                 (),
+                None,
                 None,
                 false // enable client validation
             );

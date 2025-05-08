@@ -109,7 +109,7 @@ export interface VovkDefaultFetcherOptions {
   validateOnClient?: VovkValidateOnClient;
   fetcher?: VovkClientFetcher;
   interpretAs?: string;
-  init?: Omit<RequestInit, 'body'> & { reactNative?: { textStreaming: boolean } };
+  init?: RequestInit;
 }
 
 export type VovkValidateOnClient = (

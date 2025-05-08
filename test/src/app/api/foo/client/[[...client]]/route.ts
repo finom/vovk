@@ -1,6 +1,6 @@
 import { initVovk } from 'vovk';
 
-import ClientController from '../../../../../client/ClientController';
+import CommonController from '../../../../../client/CommonController';
 import StreamingController from '../../../../../client/StreamingController';
 import StreamingGeneratorController from '../../../../../client/StreamingGeneratorController';
 import CustomSchemaController from '../../../../../client/CustomSchemaController';
@@ -10,7 +10,7 @@ import WithDtoClientController from '../../../../../client/WithDtoClientControll
 import OpenApiController from '../../../../../client/OpenApiController';
 
 const controllers = {
-  ClientControllerRPC: ClientController,
+  CommonControllerRPC: CommonController,
   StreamingControllerRPC: StreamingController,
   StreamingGeneratorControllerRPC: StreamingGeneratorController,
   CustomSchemaControllerRPC: CustomSchemaController,
