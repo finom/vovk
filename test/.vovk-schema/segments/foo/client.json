@@ -3,7 +3,7 @@
   "segmentName": "foo/client",
   "controllers": {
     "CommonControllerRPC": {
-      "controllerName": "CommonControllerRPC",
+      "rpcModuleName": "CommonControllerRPC",
       "originalControllerName": "CommonController",
       "prefix": "common",
       "handlers": {
@@ -78,7 +78,7 @@
       }
     },
     "StreamingControllerRPC": {
-      "controllerName": "StreamingControllerRPC",
+      "rpcModuleName": "StreamingControllerRPC",
       "originalControllerName": "StreamingController",
       "prefix": "streaming",
       "handlers": {
@@ -105,7 +105,7 @@
       }
     },
     "StreamingGeneratorControllerRPC": {
-      "controllerName": "StreamingGeneratorControllerRPC",
+      "rpcModuleName": "StreamingGeneratorControllerRPC",
       "originalControllerName": "StreamingGeneratorController",
       "prefix": "streaming-generator",
       "handlers": {
@@ -140,7 +140,7 @@
       }
     },
     "CustomSchemaControllerRPC": {
-      "controllerName": "CustomSchemaControllerRPC",
+      "rpcModuleName": "CustomSchemaControllerRPC",
       "originalControllerName": "CustomSchemaController",
       "prefix": "",
       "handlers": {
@@ -154,7 +154,7 @@
       }
     },
     "WithZodClientControllerRPC": {
-      "controllerName": "WithZodClientControllerRPC",
+      "rpcModuleName": "WithZodClientControllerRPC",
       "originalControllerName": "WithZodClientController",
       "prefix": "with-zod",
       "handlers": {
@@ -167,9 +167,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -178,9 +176,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "params": {
               "type": "object",
@@ -192,10 +188,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "output": {
               "type": "object",
@@ -207,9 +200,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "hello"
-                  ]
+                  "required": ["hello"]
                 },
                 "query": {
                   "type": "object",
@@ -218,9 +209,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "search"
-                  ]
+                  "required": ["search"]
                 },
                 "params": {
                   "type": "object",
@@ -232,10 +221,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -247,18 +233,10 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ]
+              "required": ["body", "query", "params", "vovkParams"]
             }
           },
           "path": "all/:foo/:bar",
@@ -279,15 +257,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -310,9 +284,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "GET",
@@ -328,9 +300,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "POST",
@@ -350,10 +320,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             }
           },
           "path": "x/:foo/:bar/y",
@@ -413,35 +380,20 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": [
-                                  "deepKey"
-                                ]
+                                "required": ["deepKey"]
                               }
                             },
-                            "required": [
-                              "foo"
-                            ]
+                            "required": ["foo"]
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ]
+                      "required": ["x", "arrOfObjects"]
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
+                  "required": ["f", "u", "d"]
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             }
           },
           "httpMethod": "GET",
@@ -456,9 +408,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "helloOutput"
-              ]
+              "required": ["helloOutput"]
             },
             "output": {
               "type": "object",
@@ -468,9 +418,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "GET",
@@ -488,9 +436,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "type": "object",
@@ -500,9 +446,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "GET",
@@ -514,11 +458,7 @@
               "type": "object",
               "properties": {
                 "enum_value": {
-                  "enum": [
-                    "a",
-                    "b",
-                    "c"
-                  ]
+                  "enum": ["a", "b", "c"]
                 },
                 "num_minimum": {
                   "type": "number",
@@ -606,9 +546,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "requiredField"
-                  ]
+                  "required": ["requiredField"]
                 },
                 "obj_strict": {
                   "type": "object",
@@ -617,9 +555,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "knownField"
-                  ],
+                  "required": ["knownField"],
                   "additionalProperties": {
                     "not": {}
                   }
@@ -647,9 +583,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "a"
-                      ]
+                      "required": ["a"]
                     },
                     {
                       "type": "object",
@@ -658,9 +592,7 @@
                           "type": "number"
                         }
                       },
-                      "required": [
-                        "b"
-                      ]
+                      "required": ["b"]
                     }
                   ]
                 }
@@ -707,9 +639,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -725,9 +655,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -736,9 +664,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -754,9 +680,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -766,9 +690,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -788,9 +710,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -808,9 +728,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "type": "object",
@@ -820,9 +738,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "POST",
@@ -831,7 +747,7 @@
       }
     },
     "WithYupClientControllerRPC": {
-      "controllerName": "WithYupClientControllerRPC",
+      "rpcModuleName": "WithYupClientControllerRPC",
       "originalControllerName": "WithYupClientController",
       "prefix": "with-yup",
       "handlers": {
@@ -845,9 +761,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -857,9 +771,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "params": {
               "type": "object",
@@ -873,10 +785,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "output": {
               "type": "object",
@@ -889,9 +798,7 @@
                       "maxLength": 5
                     }
                   },
-                  "required": [
-                    "hello"
-                  ]
+                  "required": ["hello"]
                 },
                 "query": {
                   "type": "object",
@@ -901,9 +808,7 @@
                       "maxLength": 5
                     }
                   },
-                  "required": [
-                    "search"
-                  ]
+                  "required": ["search"]
                 },
                 "params": {
                   "type": "object",
@@ -917,10 +822,7 @@
                       "maxLength": 5
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -934,18 +836,10 @@
                       "maxLength": 5
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ]
+              "required": ["body", "query", "params", "vovkParams"]
             }
           },
           "path": "all/:foo/:bar",
@@ -966,15 +860,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -997,9 +887,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "GET",
@@ -1015,9 +903,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "POST",
@@ -1037,10 +923,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             }
           },
           "path": "x/:foo/:bar/y",
@@ -1106,30 +989,17 @@
                                 }
                               }
                             },
-                            "required": [
-                              "foo"
-                            ]
+                            "required": ["foo"]
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ]
+                      "required": ["x", "arrOfObjects"]
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
+                  "required": ["f", "u", "d"]
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             }
           },
           "httpMethod": "GET",
@@ -1144,9 +1014,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "helloOutput"
-              ]
+              "required": ["helloOutput"]
             },
             "output": {
               "type": "object",
@@ -1156,9 +1024,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "GET",
@@ -1176,9 +1042,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "type": "object",
@@ -1188,9 +1052,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "GET",
@@ -1208,11 +1070,7 @@
               "properties": {
                 "enum_value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c"
-                  ]
+                  "enum": ["a", "b", "c"]
                 },
                 "num_minimum": {
                   "type": "number",
@@ -1293,9 +1151,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "requiredField"
-                  ]
+                  "required": ["requiredField"]
                 },
                 "obj_strict": {
                   "type": "object",
@@ -1320,10 +1176,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "a",
-                    "b"
-                  ]
+                  "required": ["a", "b"]
                 }
               }
             }
@@ -1346,9 +1199,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -1364,9 +1215,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -1376,9 +1225,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -1394,9 +1241,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -1406,9 +1251,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -1429,9 +1272,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -1449,9 +1290,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "type": "object",
@@ -1461,9 +1300,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "POST",
@@ -1472,7 +1309,7 @@
       }
     },
     "WithDtoClientControllerRPC": {
-      "controllerName": "WithDtoClientControllerRPC",
+      "rpcModuleName": "WithDtoClientControllerRPC",
       "originalControllerName": "WithDtoClientController",
       "prefix": "with-dto",
       "handlers": {
@@ -1488,9 +1325,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
@@ -1502,9 +1337,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "params": {
               "x-isDto": true,
@@ -1520,10 +1353,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "output": {
               "x-isDto": true,
@@ -1536,9 +1366,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "hello"
-                  ]
+                  "required": ["hello"]
                 },
                 "HandleAllQueryDto": {
                   "properties": {
@@ -1548,9 +1376,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "search"
-                  ]
+                  "required": ["search"]
                 },
                 "HandleAllParamsDto": {
                   "properties": {
@@ -1564,10 +1390,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 }
               },
               "properties": {
@@ -1585,12 +1408,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ]
+              "required": ["body", "query", "params", "vovkParams"]
             }
           },
           "path": "all/:foo/:bar",
@@ -1611,15 +1429,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -1653,11 +1467,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
+                  "required": ["f", "u", "d"]
                 },
                 "DDto": {
                   "properties": {
@@ -1672,10 +1482,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "x",
-                    "arrOfObjects"
-                  ]
+                  "required": ["x", "arrOfObjects"]
                 },
                 "ArrOfObjectsDto": {
                   "properties": {
@@ -1693,9 +1500,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "foo"
-                  ]
+                  "required": ["foo"]
                 },
                 "NestedObjDto": {
                   "properties": {
@@ -1704,9 +1509,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "deepKey"
-                  ]
+                  "required": ["deepKey"]
                 }
               },
               "properties": {
@@ -1725,11 +1528,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             }
           },
           "httpMethod": "GET",
@@ -1750,9 +1549,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "helloOutput"
-              ]
+              "required": ["helloOutput"]
             },
             "output": {
               "x-isDto": true,
@@ -1764,9 +1561,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "GET",
@@ -1790,9 +1585,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "x-isDto": true,
@@ -1800,18 +1593,11 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
               "type": "object",
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "GET",
@@ -1835,9 +1621,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "requiredField"
-                  ]
+                  "required": ["requiredField"]
                 },
                 "StrictObject": {
                   "properties": {
@@ -1846,19 +1630,13 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "knownField"
-                  ]
+                  "required": ["knownField"]
                 }
               },
               "properties": {
                 "enum_value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c"
-                  ]
+                  "enum": ["a", "b", "c"]
                 },
                 "num_minimum": {
                   "minimum": 1,
@@ -1992,9 +1770,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -2012,9 +1788,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
@@ -2026,9 +1800,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -2046,9 +1818,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
@@ -2060,9 +1830,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -2085,9 +1853,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -2105,9 +1871,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "x-isDto": true,
@@ -2115,18 +1879,11 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
               "type": "object",
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "POST",
@@ -2148,9 +1905,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "GET",
@@ -2172,9 +1927,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "POST",
@@ -2200,10 +1953,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             }
           },
           "path": "x/:foo/:bar/y",
@@ -2216,7 +1966,7 @@
       }
     },
     "OpenApiControllerRPC": {
-      "controllerName": "OpenApiControllerRPC",
+      "rpcModuleName": "OpenApiControllerRPC",
       "originalControllerName": "OpenApiController",
       "prefix": "openapi",
       "handlers": {
@@ -2237,15 +1987,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "I am a teapot error"
-                              ]
+                              "enum": ["I am a teapot error"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                418
-                              ]
+                              "enum": [418]
                             }
                           }
                         }

@@ -8,8 +8,8 @@ import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segme
 <% }}) %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 <% Object.values(t.fullSchema.segments).forEach((segment, i) => { 
-  Object.keys(segment.controllers).forEach((controllerName) => { %>
-export const <%= controllerName %>: ReturnType<typeof createRPC<Controllers<%= i %>["<%= controllerName %>"], Options>>;
+  Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+export const <%= rpcModuleName %>: ReturnType<typeof createRPC<Controllers<%= i %>["<%= rpcModuleName %>"], Options>>;
   <% }) 
 }) %>
 export { fullSchema } from './fullSchema.cjs';

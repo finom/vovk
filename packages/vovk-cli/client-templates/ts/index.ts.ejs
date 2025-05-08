@@ -13,9 +13,9 @@ const validateOnClient = undefined;
 <% } %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 <% Object.values(t.fullSchema.segments).forEach((segment, i) => { %>
-  <% Object.keys(segment.controllers).forEach((controllerName) => { %>
-export const <%= controllerName %> = createRPC<Controllers<%= i %>["<%= controllerName %>"], Options>(
-  fullSchema, '<%= segment.segmentName %>', '<%= controllerName %>',
+  <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+export const <%= rpcModuleName %> = createRPC<Controllers<%= i %>["<%= rpcModuleName %>"], Options>(
+  fullSchema, '<%= segment.segmentName %>', '<%= rpcModuleName %>',
   { fetcher, validateOnClient, defaultOptions: { apiRoot: '<%= segment.segmentApiRoot ?? t.apiRoot %>' } }
 );
   <% }) %>

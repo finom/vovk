@@ -1,5 +1,5 @@
 <% const vars = {
-  ControllerName: t.TheThing + 'Controller',
+  rpcModuleName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
 }; %>
 ---
@@ -9,17 +9,17 @@ sourceName: <%= vars.ServiceName %>
 ---
 
 import type { VovkControllerBody, VovkControllerQuery } from 'vovk';
-import type <%= vars.ControllerName %> from './<%= vars.ControllerName %>';
+import type <%= vars.rpcModuleName %> from './<%= vars.rpcModuleName %>';
 
 export default class <%= vars.ServiceName %> {
-  static get<%= t.TheThings %> = (search: VovkControllerQuery<typeof <%= vars.ControllerName %>.get<%= t.TheThings %>>['search']) => {
+  static get<%= t.TheThings %> = (search: VovkControllerQuery<typeof <%= vars.rpcModuleName %>.get<%= t.TheThings %>>['search']) => {
     return { results: [], search };
   };
 
   static update<%= t.TheThing %> = (
     id: string,
-    q: VovkControllerQuery<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>['q'],
-    body: VovkControllerBody<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>
+    q: VovkControllerQuery<typeof <%= vars.rpcModuleName %>.update<%= t.TheThing %>>['q'],
+    body: VovkControllerBody<typeof <%= vars.rpcModuleName %>.update<%= t.TheThing %>>
   ) => {
     return { id, q, body };
   };

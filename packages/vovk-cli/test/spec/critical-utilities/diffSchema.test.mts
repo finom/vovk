@@ -23,7 +23,7 @@ await describe('diffSchema', async () => {
       segmentName: '',
       controllers: {
         ControllerA: {
-          controllerName: 'ControllerA',
+          rpcModuleName: 'ControllerA',
           originalControllerName: 'ControllerA',
           handlers: {
             handlerB: {
@@ -54,7 +54,7 @@ await describe('diffSchema', async () => {
       segmentName: '',
       controllers: {
         ControllerA: {
-          controllerName: 'ControllerA',
+          rpcModuleName: 'ControllerA',
           originalControllerName: 'ControllerA',
           handlers: {
             handlerC: {
@@ -71,7 +71,7 @@ await describe('diffSchema', async () => {
       segmentName: '',
       controllers: {
         ControllerB: {
-          controllerName: 'ControllerB',
+          rpcModuleName: 'ControllerB',
           originalControllerName: 'ControllerB',
           handlers: {
             handlerE: {
@@ -100,7 +100,7 @@ await describe('diffSchema', async () => {
       segmentName: '',
       controllers: {
         ControllerA: {
-          controllerName: 'ControllerA',
+          rpcModuleName: 'ControllerA',
           originalControllerName: 'ControllerA',
           handlers: {
             handlerC: {
@@ -121,7 +121,7 @@ await describe('diffSchema', async () => {
       segmentName: '',
       controllers: {
         ControllerA: {
-          controllerName: 'ControllerA',
+          rpcModuleName: 'ControllerA',
           originalControllerName: 'ControllerA',
           handlers: {
             handlerD: {
@@ -165,7 +165,7 @@ await describe('diffSchema', async () => {
       segmentName: '',
       controllers: {
         ControllerA: {
-          controllerName: 'ControllerA',
+          rpcModuleName: 'ControllerA',
           originalControllerName: 'ControllerA',
           handlers: {
             handlerD: {
@@ -182,7 +182,7 @@ await describe('diffSchema', async () => {
       segmentName: '',
       controllers: {
         ControllerA: {
-          controllerName: 'ControllerA',
+          rpcModuleName: 'ControllerA',
           originalControllerName: 'ControllerA',
           handlers: {
             handlerD: {
@@ -196,7 +196,7 @@ await describe('diffSchema', async () => {
           },
         },
         ControllerB: {
-          controllerName: 'ControllerB',
+          rpcModuleName: 'ControllerB',
           originalControllerName: 'ControllerB',
           handlers: {
             handlerH: {

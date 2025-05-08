@@ -1,8 +1,8 @@
 import type { VovkSegmentSchema, VovkController, StaticClass } from '../types';
 
-export function getControllerSchema(controller: VovkController, controllerName: string, exposeValidation: boolean) {
+export function getControllerSchema(controller: VovkController, rpcModuleName: string, exposeValidation: boolean) {
   return {
-    controllerName,
+    rpcModuleName,
     originalControllerName: controller.name,
     prefix: controller._prefix ?? '',
     handlers: {
@@ -32,8 +32,8 @@ export default function getSchema(options: {
 
   if (!emitSchema) return schema;
 
-  for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
-    schema.controllers[controllerName] = getControllerSchema(controller, controllerName, exposeValidation);
+  for (const [rpcModuleName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
+    schema.controllers[rpcModuleName] = getControllerSchema(controller, rpcModuleName, exposeValidation);
   }
 
   return schema;

@@ -1,11 +1,11 @@
 <% const vars = { 
-  ControllerName: t.TheThing + 'Controller',
+  rpcModuleName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
 }; %>
 ---
 dir: <%= t.defaultDir %>
-fileName: <%= vars.ControllerName + '.ts' %>
-sourceName: <%= vars.ControllerName %>
+fileName: <%= vars.rpcModuleName + '.ts' %>
+sourceName: <%= vars.rpcModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
@@ -17,7 +17,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')
-export default class <%= vars.ControllerName %> {
+export default class <%= vars.rpcModuleName %> {
     @get()
     static get<%= t.TheThings %> = withYup({
        query: yup.object({ search: yup.string() }), 

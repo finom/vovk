@@ -150,8 +150,8 @@ export function createVovkApp() {
     emitSchema?: boolean;
     onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
   }) => {
-    for (const [controllerName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
-      controller._controllerName = controllerName;
+    for (const [rpcModuleName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
+      controller._rpcModuleName = rpcModuleName;
       controller._activated = true;
       controller._onError = options?.onError;
     }

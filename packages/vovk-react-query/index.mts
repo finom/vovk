@@ -38,7 +38,7 @@ const withUseQuery = <
       const queryKey = [
         fn.segmentSchema.segmentName,
         fn.controllerSchema.prefix,
-        fn.controllerSchema.controllerName,
+        fn.controllerSchema.rpcModuleName,
         fn.schema.path,
         fn.schema.httpMethod,
         input,
@@ -80,10 +80,10 @@ const withUseQuery = <
 export function createRPC<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   fullSchema: VovkFullSchema,
   segmentName: string,
-  controllerName: string,
+  rpcModuleName: string,
   options?: VovkClientOptions<OPTS>
 ) {
-  const rpc = originalCreateRPC<T, OPTS>(fullSchema, segmentName, controllerName, options);
+  const rpc = originalCreateRPC<T, OPTS>(fullSchema, segmentName, rpcModuleName, options);
 
   // TODO Refactor
   type ClientWithQuery = {

@@ -27,11 +27,11 @@ const addDefinitions = (schema: KnownAny, schemas: ReturnType<typeof validationM
     }
     return refs;
   };
-  
+
   const refs = getRefs(schema);
   // Create a new definitions object based on the original
   const newDefinitions = { ...(schema.definitions || {}) };
-  
+
   for (let i = 0; i < refs.length; i++) {
     const ref = refs[i];
     const key = ref.replace('#/definitions/', '');
@@ -45,7 +45,7 @@ const addDefinitions = (schema: KnownAny, schemas: ReturnType<typeof validationM
   // Return new object with updated definitions
   return {
     ...schema,
-    definitions: newDefinitions
+    definitions: newDefinitions,
   };
 };
 

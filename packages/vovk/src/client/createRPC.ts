@@ -31,12 +31,12 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
   fullSchema: VovkFullSchema,
   segmentName: string,
-  controllerName: string,
+  rpcModuleName: string,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
   const segmentSchema = fullSchema.segments[segmentName];
   if (!segmentSchema) throw new Error(`Unable to create RPC object. Segment schema is missing. Check client template.`);
-  const controllerSchema = fullSchema.segments[segmentName]?.controllers[controllerName];
+  const controllerSchema = fullSchema.segments[segmentName]?.controllers[rpcModuleName];
   const client = {} as VovkClient<T, OPTS>;
   if (!controllerSchema)
     throw new Error(`Unable to create RPC object. Controller schema is missing. Check client template.`);

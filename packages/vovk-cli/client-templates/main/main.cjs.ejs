@@ -4,9 +4,9 @@ const { createRPC } = require('<%= t.imports.createRPC %>');
 const { fullSchema } = require('./fullSchema.cjs');
 const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
 <% Object.values(t.fullSchema.segments).forEach((segment) => { 
-  Object.keys(segment.controllers).forEach((controllerName) => { %>
-exports.<%= controllerName %> = createRPC(
-  fullSchema, '<%= segment.segmentName %>', '<%= controllerName %>',
+  Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+exports.<%= rpcModuleName %> = createRPC(
+  fullSchema, '<%= segment.segmentName %>', '<%= rpcModuleName %>',
   { fetcher, validateOnClient, defaultOptions: { apiRoot: '<%= segment.segmentApiRoot ?? t.apiRoot %>' } }
 );
   <% })

@@ -47,7 +47,7 @@ pub struct HandlerSchema {
 #[derive(Debug, Deserialize, Serialize)]
 #[allow(non_snake_case)]
 pub struct ControllerSchema {
-    pub controllerName: String,
+    pub rpcModuleName: String,
     pub originalControllerName: String,
     pub prefix: String,
     pub handlers: HashMap<String, HandlerSchema>,

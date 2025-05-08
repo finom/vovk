@@ -8,9 +8,9 @@ import { validateOnClient } from '<%= t.imports.module.validateOnClient %>';
 const validateOnClient = undefined;
 <% } %>
 <% Object.values(t.fullSchema.segments).forEach((segment, i) => {
-  Object.keys(segment.controllers).forEach((controllerName) => { %>
-export const <%= controllerName %> = createRPC(
-  fullSchema, '<%= segment.segmentName %>', '<%= controllerName %>',
+  Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+export const <%= rpcModuleName %> = createRPC(
+  fullSchema, '<%= segment.segmentName %>', '<%= rpcModuleName %>',
   { fetcher, validateOnClient, defaultOptions: { apiRoot: '<%= segment.segmentApiRoot ?? t.apiRoot %>' } }
 );
 <% 

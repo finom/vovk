@@ -17,7 +17,7 @@ export type VovkHandlerSchema = {
 };
 
 export type VovkControllerSchema = {
-  controllerName: string;
+  rpcModuleName: string;
   originalControllerName: string;
   prefix?: string;
   handlers: Record<string, VovkHandlerSchema>;
@@ -37,7 +37,7 @@ export type VovkErrorResponse = {
 };
 
 export type VovkControllerInternal = {
-  _controllerName?: VovkControllerSchema['controllerName'];
+  _rpcModuleName?: VovkControllerSchema['rpcModuleName'];
   _prefix?: VovkControllerSchema['prefix'];
   _handlers: VovkControllerSchema['handlers'];
   _handlersMetadata?: Record<string, { staticParams?: Record<string, string>[] }>;

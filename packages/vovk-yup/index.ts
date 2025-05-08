@@ -14,7 +14,7 @@ const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.message ?? Stri
 // Helper function to recursively add descriptions
 const enrichWithDescriptions = (jsonSchema: KnownAny, yupDescription: KnownAny): KnownAny => {
   const result = { ...jsonSchema };
-  
+
   if (yupDescription?.meta?.description && !result.description) {
     result.description = yupDescription.meta.description;
   }
@@ -45,7 +45,7 @@ const enrichWithDescriptions = (jsonSchema: KnownAny, yupDescription: KnownAny):
       });
     }
   });
-  
+
   return result;
 };
 
@@ -57,7 +57,7 @@ const applySchemaFixes = (schema: KnownAny): KnownAny => {
   // Fix for default values with undefined keys
   if (newSchema.default && typeof newSchema.default === 'object' && !Array.isArray(newSchema.default)) {
     newSchema.default = { ...newSchema.default };
-    
+
     if (newSchema?.required) {
       for (const key of newSchema.required) {
         delete newSchema.default[key];

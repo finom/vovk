@@ -9,15 +9,15 @@ mod http_request;
 mod read_full_schema;
 
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
-    Object.values(segment.controllers).forEach(({ prefix, handlers, controllerName }) => { %>
-pub mod <%= t._.snakeCase(controllerName) %> {
+    Object.values(segment.controllers).forEach(({ prefix, handlers, rpcModuleName }) => { %>
+pub mod <%= t._.snakeCase(rpcModuleName) %> {
     #[allow(unused_imports)]
     use crate::http_request::{http_request, http_request_stream};
     use std::collections::HashMap;
 <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
     const handlerName = t._.snakeCase(handlerNameOriginal);
     %>
-    // <%= controllerName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
+    // <%= rpcModuleName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
 <%- 
 vars.convertJSONSchemasToRustTypes({ 
     schemas: {
@@ -58,7 +58,7 @@ vars.convertJSONSchemasToRustTypes({
         >(
             "<%= t.apiRoot %>",
             "<%= segmentName %>",
-            "<%= controllerName %>",
+            "<%= rpcModuleName %>",
             "<%= handlerNameOriginal %>",
             Some(&body),
             Some(&query),

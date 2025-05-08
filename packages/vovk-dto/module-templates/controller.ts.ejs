@@ -1,11 +1,11 @@
 <% const vars = { 
-  ControllerName: t.TheThing + 'Controller',
+  rpcModuleName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
 }; %>
 ---
 dir: <%= t.defaultDir %>
-fileName: <%= vars.ControllerName + '.ts' %>
-sourceName: <%= vars.ControllerName %>
+fileName: <%= vars.rpcModuleName + '.ts' %>
+sourceName: <%= vars.rpcModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 import { prefix, get, put, post, del } from 'vovk';
@@ -31,7 +31,7 @@ class Update<%= t.TheThing %>QueryDto {
 }
 
 @prefix('<%= t['the-things'] %>')
-export default class <%= vars.ControllerName %> {
+export default class <%= vars.rpcModuleName %> {
     @get()
     static get<%= t.TheThings %> = withDto({
       query: Get<%= t.TheThings %>QueryDto, 

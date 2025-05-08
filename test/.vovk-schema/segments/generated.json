@@ -3,7 +3,7 @@
   "segmentName": "generated",
   "controllers": {
     "NoValidationControllerOnlyEntityRPC": {
-      "controllerName": "NoValidationControllerOnlyEntityRPC",
+      "rpcModuleName": "NoValidationControllerOnlyEntityRPC",
       "originalControllerName": "NoValidationControllerOnlyEntityController",
       "prefix": "no-validation-controller-only-entities",
       "handlers": {
@@ -26,7 +26,7 @@
       }
     },
     "NoValidationControllerAndServiceEntityRPC": {
-      "controllerName": "NoValidationControllerAndServiceEntityRPC",
+      "rpcModuleName": "NoValidationControllerAndServiceEntityRPC",
       "originalControllerName": "NoValidationControllerAndServiceEntityController",
       "prefix": "no-validation-controller-and-service-entities",
       "handlers": {
@@ -49,7 +49,7 @@
       }
     },
     "ZodControllerOnlyEntityRPC": {
-      "controllerName": "ZodControllerOnlyEntityRPC",
+      "rpcModuleName": "ZodControllerOnlyEntityRPC",
       "originalControllerName": "ZodControllerOnlyEntityController",
       "prefix": "zod-controller-only-entities",
       "handlers": {
@@ -62,9 +62,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "path": "",
@@ -86,9 +84,7 @@
                   ]
                 }
               },
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "type": "object",
@@ -97,9 +93,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "q"
-              ]
+              "required": ["q"]
             },
             "params": {
               "type": "object",
@@ -108,9 +102,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "path": ":id",
@@ -127,7 +119,7 @@
       }
     },
     "ZodControllerAndServiceEntityRPC": {
-      "controllerName": "ZodControllerAndServiceEntityRPC",
+      "rpcModuleName": "ZodControllerAndServiceEntityRPC",
       "originalControllerName": "ZodControllerAndServiceEntityController",
       "prefix": "zod-controller-and-service-entities",
       "handlers": {
@@ -140,9 +132,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "path": "",
@@ -164,9 +154,7 @@
                   ]
                 }
               },
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "type": "object",
@@ -175,9 +163,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "q"
-              ]
+              "required": ["q"]
             },
             "params": {
               "type": "object",
@@ -186,9 +172,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "path": ":id",
@@ -205,7 +189,7 @@
       }
     },
     "YupControllerOnlyEntityRPC": {
-      "controllerName": "YupControllerOnlyEntityRPC",
+      "rpcModuleName": "YupControllerOnlyEntityRPC",
       "originalControllerName": "YupControllerOnlyEntityController",
       "prefix": "yup-controller-only-entities",
       "handlers": {
@@ -230,18 +214,11 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": [
-                    "string"
-                  ],
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "type": ["string"],
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "type": "object",
@@ -267,7 +244,7 @@
       }
     },
     "YupControllerAndServiceEntityRPC": {
-      "controllerName": "YupControllerAndServiceEntityRPC",
+      "rpcModuleName": "YupControllerAndServiceEntityRPC",
       "originalControllerName": "YupControllerAndServiceEntityController",
       "prefix": "yup-controller-and-service-entities",
       "handlers": {
@@ -292,18 +269,11 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": [
-                    "string"
-                  ],
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "type": ["string"],
+                  "enum": ["bar", "baz"]
                 }
               },
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "type": "object",
@@ -329,7 +299,7 @@
       }
     },
     "DtoControllerOnlyEntityRPC": {
-      "controllerName": "DtoControllerOnlyEntityRPC",
+      "rpcModuleName": "DtoControllerOnlyEntityRPC",
       "originalControllerName": "DtoControllerOnlyEntityController",
       "prefix": "dto-controller-only-entities",
       "handlers": {
@@ -344,9 +314,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "path": "",
@@ -360,16 +328,11 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "enum": ["bar", "baz"]
                 }
               },
               "type": "object",
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "x-isDto": true,
@@ -380,9 +343,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "q"
-              ]
+              "required": ["q"]
             }
           },
           "path": ":id",
@@ -399,7 +360,7 @@
       }
     },
     "DtoControllerAndServiceEntityRPC": {
-      "controllerName": "DtoControllerAndServiceEntityRPC",
+      "rpcModuleName": "DtoControllerAndServiceEntityRPC",
       "originalControllerName": "DtoControllerAndServiceEntityController",
       "prefix": "dto-controller-and-service-entities",
       "handlers": {
@@ -414,9 +375,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "path": "",
@@ -430,16 +389,11 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                  "enum": ["bar", "baz"]
                 }
               },
               "type": "object",
-              "required": [
-                "foo"
-              ]
+              "required": ["foo"]
             },
             "query": {
               "x-isDto": true,
@@ -450,9 +404,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "q"
-              ]
+              "required": ["q"]
             }
           },
           "path": ":id",

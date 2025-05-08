@@ -58,7 +58,7 @@ await describe('CLI dev', async () => {
 
         await new Promise((resolve) => setTimeout(resolve, 10_000));
 
-        assert.strictEqual((await getSchema()).controllers.UserRPC.controllerName, 'UserRPC');
+        assert.strictEqual((await getSchema()).controllers.UserRPC.rpcModuleName, 'UserRPC');
         assert.ok((await getSchema()).controllers.UserRPC.handlers.getUsers);
 
         const segmentAbsolutePath = path.join(cwd, dir, 'src/app/api/[[...vovk]]/route.ts');
@@ -70,7 +70,7 @@ await describe('CLI dev', async () => {
 
         await new Promise((resolve) => setTimeout(resolve, 10_000));
 
-        assert.strictEqual((await getSchema()).controllers.CustomUserRPC.controllerName, 'CustomUserRPC');
+        assert.strictEqual((await getSchema()).controllers.CustomUserRPC.rpcModuleName, 'CustomUserRPC');
 
         const controllerCode = await fs.readFile(controllerAbsolutePath, 'utf8');
 
