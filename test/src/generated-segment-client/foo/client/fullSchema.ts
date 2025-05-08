@@ -1,4 +1,4 @@
-// auto-generated 2025-05-02T20:39:21.941Z
+// auto-generated 2025-05-07T19:29:00.379Z
 /* eslint-disable */
 import type { VovkStrictConfig, VovkSegmentSchema } from 'vovk';
 import config from './../../../../.vovk-schema/config.json' with { type: "json" };

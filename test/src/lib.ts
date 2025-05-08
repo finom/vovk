@@ -2,7 +2,7 @@ import { ok } from 'node:assert';
 import supertest from 'supertest';
 import type { KnownAny } from 'vovk';
 import { z } from 'zod';
-import type { ComplaiingModel } from './client/WithZodClientController.ts';
+import type { ComplainingModel } from './client/WithZodClientController.ts';
 
 export const apiUrl = `http://localhost:${process.env.PORT}/api`;
 
@@ -74,7 +74,8 @@ export const NESTED_QUERY_EXAMPLE = {
  */
 export function getComplainingObject(key: string | null) {
   // Object that satisfies all validation requirements
-  const withoutViolations: z.infer<typeof ComplaiingModel> = {
+  const withoutViolations: z.infer<typeof ComplainingModel> = {
+    enum_value: 'a',
     // Number validations
     num_minimum: 10, // Valid: >= 0
     num_maximum: 50, // Valid: <= 100
@@ -107,7 +108,7 @@ export function getComplainingObject(key: string | null) {
     },
 
     // Logical compositions
-    logical_oneOf: 'str', // Valid: one of string, number, boolean
+    logical_anyOf: 'str', // Valid: one of string, number, boolean
     logical_allOf: { a: 'string value', b: 42 }, // Valid: has both a and b
   };
 
@@ -118,6 +119,7 @@ export function getComplainingObject(key: string | null) {
 
   // Object that violates every validation requirement
   const withViolations = {
+    enum_value: 'invalid', // Invalid: not in ['a', 'b', 'c']
     // Number validations
     num_minimum: -10, // Invalid: < 0
     num_maximum: 200, // Invalid: > 100
@@ -151,7 +153,7 @@ export function getComplainingObject(key: string | null) {
     },
 
     // Logical compositions
-    logical_oneOf: 'wrong_length', // Invalid: not a string of length <= 5, number, or boolean
+    logical_anyOf: 'wrong_length', // Invalid: not a string of length <= 5, number, or boolean
     logical_allOf: { a: 'string value' }, // Invalid: missing b property
   };
 
@@ -161,5 +163,5 @@ export function getComplainingObject(key: string | null) {
     ...withoutViolations,
     // @ts-expect-error Expected
     [key]: withViolations[key],
-  } as z.infer<typeof ComplaiingModel>;
+  } as z.infer<typeof ComplainingModel>;
 }

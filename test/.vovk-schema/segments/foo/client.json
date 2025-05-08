@@ -513,6 +513,13 @@
             "body": {
               "type": "object",
               "properties": {
+                "enum_value": {
+                  "enum": [
+                    "a",
+                    "b",
+                    "c"
+                  ]
+                },
                 "num_minimum": {
                   "type": "number",
                   "minimum": 1
@@ -617,7 +624,7 @@
                     "not": {}
                   }
                 },
-                "logical_oneOf": {
+                "logical_anyOf": {
                   "anyOf": [
                     {
                       "type": "string",
@@ -659,6 +666,7 @@
                 }
               },
               "required": [
+                "enum_value",
                 "num_minimum",
                 "num_maximum",
                 "num_exclusiveMinimum",
@@ -677,7 +685,7 @@
                 "arr_maxItems",
                 "obj_required",
                 "obj_strict",
-                "logical_oneOf",
+                "logical_anyOf",
                 "logical_allOf"
               ]
             }
@@ -875,7 +883,6 @@
               "properties": {
                 "body": {
                   "type": "object",
-                  "default": {},
                   "properties": {
                     "hello": {
                       "type": "string",
@@ -888,7 +895,6 @@
                 },
                 "query": {
                   "type": "object",
-                  "default": {},
                   "properties": {
                     "search": {
                       "type": "string",
@@ -901,7 +907,6 @@
                 },
                 "params": {
                   "type": "object",
-                  "default": {},
                   "properties": {
                     "foo": {
                       "type": "string",
@@ -919,7 +924,6 @@
                 },
                 "vovkParams": {
                   "type": "object",
-                  "default": {},
                   "properties": {
                     "foo": {
                       "type": "string",
@@ -1059,9 +1063,6 @@
                 },
                 "z": {
                   "type": "object",
-                  "default": {
-                    "d": {}
-                  },
                   "properties": {
                     "f": {
                       "type": "string"
@@ -1074,7 +1075,6 @@
                     },
                     "d": {
                       "type": "object",
-                      "default": {},
                       "properties": {
                         "x": {
                           "type": "string"
@@ -1206,6 +1206,14 @@
                 "obj_required": {}
               },
               "properties": {
+                "enum_value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c"
+                  ]
+                },
                 "num_minimum": {
                   "type": "number",
                   "minimum": 1
@@ -1221,6 +1229,9 @@
                 "num_exclusiveMaximum": {
                   "type": "number",
                   "exclusiveMaximum": 100
+                },
+                "num_multipleOf": {
+                  "type": "number"
                 },
                 "num_int": {
                   "type": "integer"
@@ -1295,9 +1306,12 @@
                     }
                   }
                 },
+                "logical_anyOf": {
+                  "type": "string",
+                  "maxLength": 5
+                },
                 "logical_allOf": {
                   "type": "object",
-                  "default": {},
                   "properties": {
                     "a": {
                       "type": "string"
@@ -1838,6 +1852,14 @@
                 }
               },
               "properties": {
+                "enum_value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c"
+                  ]
+                },
                 "num_minimum": {
                   "minimum": 1,
                   "type": "number"
@@ -1880,7 +1902,7 @@
                   "type": "string"
                 },
                 "str_url": {
-                  "format": "url",
+                  "format": "uri",
                   "type": "string"
                 },
                 "str_uuid": {
@@ -1927,6 +1949,7 @@
               },
               "type": "object",
               "required": [
+                "enum_value",
                 "num_minimum",
                 "num_maximum",
                 "num_exclusiveMinimum",

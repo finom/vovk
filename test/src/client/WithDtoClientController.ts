@@ -14,7 +14,7 @@ import { openapi } from 'vovk-openapi';
 import { withDto } from 'vovk-dto';
 import { validateOnClient } from 'vovk-dto/validateOnClient';
 import {
-  ComplaiingDto,
+  ComplainingDto,
   HandleAllBodyDto,
   HandleAllOutputDto,
   HandleAllParamsDto,
@@ -133,7 +133,7 @@ export default class WithDtoClientController {
 
   @post.auto()
   static handleSchemaComplaints = withDto({
-    body: ComplaiingDto,
+    body: ComplainingDto,
     handle: async (req) => {
       return req.json();
     },

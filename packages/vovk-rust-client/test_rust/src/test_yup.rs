@@ -128,14 +128,12 @@ pub mod test_yup {
     }
 
     #[test]
-    fn test_nested_query() {
-        use serde_json::json;
-        
+    fn test_nested_query() {        
         // Create a complex nested query structure
         let nested_query_example = with_yup_client_controller_rpc::handle_nested_query_::query {
             x: "xx".to_string(),
             y: vec!["yy".to_string(), "uu".to_string()],
-            z: serde_json::from_value(json!({
+            z: serde_json::from_value(serde_json::json!({
                 "f": "x",
                 "u": ["uu", "xx"],
                 "d": {
@@ -150,8 +148,8 @@ pub mod test_yup {
                         },
                         {
                             "foo": "baz",
-                            "nestedArr": ["four", "five", "six"],
-                            "nestedObj": {
+                            "nestedArr": ["four", "five", "six"], // WARNING: couldn't omit this field even if it is optional
+                            "nestedObj": { // WARNING: couldn't omit this field even if it is optional
                                 "deepKey": "deepValue2"
                             }
                         }

@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import jsonschema
+from jsonschema import FormatChecker
 from typing import Dict, Optional, Any, Generator, Literal, List, TypedDict
 
 class HttpExceptionResponseBody(TypedDict):
@@ -100,6 +101,7 @@ class ApiClient:
             query: Optional dictionary to convert to query parameters
             params: Optional dictionary to replace URL parameters
             validation: Optional dictionary with JSON schemas to validate body, query, and params
+            disable_client_validation: Whether to disable validation entirely
             
         Returns:
             If the response is JSON, returns the parsed JSON.
@@ -115,23 +117,26 @@ class ApiClient:
             raise ValueError("HTTP method is required for making an API request")
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
+            # Always use format checker by default
+            format_checker = FormatChecker()
+            
             # Validate body
             if validation.get('body'):
                 if body is None:
                     raise ValueError("Body is required for validation but not provided")
-                jsonschema.validate(instance=body, schema=validation['body'])
+                jsonschema.validate(instance=body, schema=validation['body'], format_checker=format_checker)
             
             # Validate query
             if validation.get('query'):
                 if query is None:
                     raise ValueError("Query is required for validation but not provided")
-                jsonschema.validate(instance=query, schema=validation['query'])
+                jsonschema.validate(instance=query, schema=validation['query'], format_checker=format_checker)
             
             # Validate params
             if validation.get('params'):
                 if params is None:
                     raise ValueError("Params are required for validation but not provided")
-                jsonschema.validate(instance=params, schema=validation['params'])
+                jsonschema.validate(instance=params, schema=validation['params'], format_checker=format_checker)
         
         # Process URL and substitute path parameters
         processed_url = url

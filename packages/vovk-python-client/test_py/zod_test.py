@@ -1,10 +1,9 @@
 import unittest
-from typing import Any, Generator
+from typing import Generator, cast, List
 from jsonschema import ValidationError
 from generated_python_client.src.test_generated_python_client import HttpException, WithZodClientControllerRPC
+from utils import noop, get_complaining_object
 
-def noop(*args: Any) -> None: # type: ignore
-    pass
 
 class TestZod(unittest.TestCase):
     def test_ok(self) -> None:
@@ -163,7 +162,43 @@ class TestZod(unittest.TestCase):
                 print(data)
                 pass
         self.assertRegex(str(context.exception), r"Zod validation failed\. Invalid iteration #0 on server for http://\S+\. At \"value\".*")
-
+    def test_complaints(self) -> None:
+        # List of keys that are not supported
+        not_supported: List[str] = []
+        
+        # Get object with no complaints
+        no_complaints = cast(WithZodClientControllerRPC.HandleSchemaComplaintsBody, get_complaining_object(None))
+        
+        # Test valid object first
+        WithZodClientControllerRPC.handle_schema_complaints(body=no_complaints)
+        
+        # Test each key for complaints
+        for key in no_complaints.keys():
+            if key in not_supported:
+                continue
+                
+            # Get object with specific complaint
+            complaining_object = cast(WithZodClientControllerRPC.HandleSchemaComplaintsBody,get_complaining_object(key))
+            
+            # Test with client validation disabled
+            with self.assertRaises(HttpException, msg='HttpException is not raised for key ' + key) as context1:
+                WithZodClientControllerRPC.handle_schema_complaints(
+                    body=complaining_object,
+                    disable_client_validation=True
+                )
+            self.assertRegex(
+                str(context1.exception), 
+                rf"Zod validation failed\. Invalid body on server for http://\S+\. At \"{key}.*",
+                
+            )
+            
+            # Test with client validation enabled
+            with self.assertRaises(ValidationError, msg='ValidationError is not raised for key ' + key) as context2:
+                WithZodClientControllerRPC.handle_schema_complaints(
+                    body=complaining_object
+                )
+            # WORKAROUND: "logical_anyOf" does not appear in the error message
+            self.assertIn('wrong_length' if key == 'logical_anyOf' else key, str(context2.exception))
 if __name__ == "__main__":
     unittest.main()
 

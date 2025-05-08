@@ -13,7 +13,8 @@ import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
 import * as z from 'zod';
 
-export const ComplaiingModel = z.object({
+export const ComplainingModel = z.object({
+  enum_value: z.enum(['a', 'b', 'c']),
   // Number validations not in Rust
   num_minimum: z.number().min(1), // Minimum value (inclusive)
   num_maximum: z.number().max(100), // Maximum value (inclusive)
@@ -47,7 +48,7 @@ export const ComplaiingModel = z.object({
     .strict(), // No additional properties allowed
 
   // Logical compositions
-  logical_oneOf: z.union([z.string().max(5), z.number(), z.boolean()]),
+  logical_anyOf: z.union([z.string().max(5), z.number(), z.boolean()]), // One of these types
   logical_allOf: z.intersection(z.object({ a: z.string() }), z.object({ b: z.number() })),
 });
 
@@ -173,7 +174,7 @@ export default class WithZodClientController {
 
   @post.auto()
   static handleSchemaComplaints = withZod({
-    body: ComplaiingModel,
+    body: ComplainingModel,
     handle: async (req) => {
       return req.json();
     },

@@ -14,12 +14,13 @@ import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
 export const ComplaiingModel = yup.object({
+  enum_value: yup.string().oneOf(['a', 'b', 'c']),
   // Number validations
   num_minimum: yup.number().min(1),
   num_maximum: yup.number().max(100),
   num_exclusiveMinimum: yup.number().moreThan(1),
   num_exclusiveMaximum: yup.number().lessThan(100),
-  // num_multipleOf: not supported for schema emission
+  num_multipleOf: yup.number(), // not supported for schema emission
   num_int: yup.number().integer(),
   num_int32: yup.number().integer().max(2147483647).min(-2147483648),
 
@@ -30,7 +31,7 @@ export const ComplaiingModel = yup.object({
   str_email: yup.string().email(),
   str_url: yup.string().url(),
   str_uuid: yup.string().matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
-  str_datetime: yup.string(),
+  str_datetime: yup.string().datetime(),
 
   // Array validations
   arr_minItems: yup.array().of(yup.string()).min(1),
@@ -46,8 +47,8 @@ export const ComplaiingModel = yup.object({
     })
     .noUnknown(true),
 
-  // Logical compositions
-  // logical_oneOf: not supported for schema emission
+  // Logical compositions (num, str, bool)
+  logical_anyOf: yup.string().max(5) as yup.Schema<string | number | boolean>, // WARNING: not supported for schema emission
 
   // Intersection approximation in Yup
   logical_allOf: yup.object({

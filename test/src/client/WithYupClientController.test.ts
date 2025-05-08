@@ -15,7 +15,7 @@ import type WithYupClientController from './WithYupClientController.ts';
 
 describe('Yup-to-JSONchema complaints', async () => {
   const noComplaints = getComplainingObject(null);
-  const notSupported = ['num_multipleOf', 'logical_oneOf', 'obj_strict', 'str_datetime'];
+  const notSupported = ['num_multipleOf', 'logical_anyOf', 'obj_strict', 'str_datetime'];
 
   await it('Should handle valid object', async () => {
     // first check if the object is valid

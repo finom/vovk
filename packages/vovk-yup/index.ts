@@ -12,34 +12,83 @@ import { convertSchema } from '@sodaru/yup-to-json-schema';
 const getErrorText = (e: unknown) => (e as Yup.ValidationError)?.message ?? String(e);
 
 // Helper function to recursively add descriptions
-const enrichWithDescriptions = (jsonSchema: KnownAny, yupDescription: KnownAny) => {
-  if (yupDescription?.meta?.description && !jsonSchema.description) {
-    jsonSchema.description = yupDescription.meta.description;
+const enrichWithDescriptions = (jsonSchema: KnownAny, yupDescription: KnownAny): KnownAny => {
+  const result = { ...jsonSchema };
+  
+  if (yupDescription?.meta?.description && !result.description) {
+    result.description = yupDescription.meta.description;
   }
 
-  if (jsonSchema.properties && yupDescription.fields) {
-    for (const [key, value] of Object.entries(jsonSchema.properties)) {
+  if (result.properties && yupDescription.fields) {
+    // Create a new properties object
+    result.properties = { ...result.properties };
+    for (const [key, value] of Object.entries(result.properties)) {
       if (yupDescription.fields[key]) {
-        enrichWithDescriptions(value, yupDescription.fields[key]);
+        result.properties[key] = enrichWithDescriptions(value, yupDescription.fields[key]);
       }
     }
   }
 
   // Handle array items
-  if (jsonSchema.items && yupDescription.innerType) {
-    enrichWithDescriptions(jsonSchema.items, yupDescription.innerType);
+  if (result.items && yupDescription.innerType) {
+    result.items = enrichWithDescriptions(result.items, yupDescription.innerType);
   }
 
   // Handle oneOf, anyOf, allOf
   ['oneOf', 'anyOf', 'allOf'].forEach((combiner) => {
-    if (jsonSchema[combiner] && Array.isArray(jsonSchema[combiner]) && yupDescription.oneOf) {
-      jsonSchema[combiner].forEach((subSchema: KnownAny, index: number) => {
+    if (result[combiner] && Array.isArray(result[combiner]) && yupDescription.oneOf) {
+      result[combiner] = [...result[combiner]].map((subSchema: KnownAny, index: number) => {
         if (yupDescription.oneOf[index]) {
-          enrichWithDescriptions(subSchema, yupDescription.oneOf[index]);
+          return enrichWithDescriptions(subSchema, yupDescription.oneOf[index]);
         }
+        return subSchema;
       });
     }
   });
+  
+  return result;
+};
+
+// Apply schema fixes recursively
+const applySchemaFixes = (schema: KnownAny): KnownAny => {
+  // Create a copy using spread operator instead of deep cloning
+  const newSchema = { ...schema };
+
+  // Fix for default values with undefined keys
+  if (newSchema.default && typeof newSchema.default === 'object' && !Array.isArray(newSchema.default)) {
+    newSchema.default = { ...newSchema.default };
+    
+    if (newSchema?.required) {
+      for (const key of newSchema.required) {
+        delete newSchema.default[key];
+      }
+    }
+
+    if (Object.keys(newSchema.default).length === 0) {
+      delete newSchema.default;
+    }
+  }
+
+  // Apply fixes to nested properties
+  if (newSchema.properties) {
+    newSchema.properties = Object.fromEntries(
+      Object.entries(newSchema.properties).map(([key, prop]) => [key, applySchemaFixes(prop)])
+    );
+  }
+
+  // Apply fixes to array items
+  if (newSchema.items) {
+    newSchema.items = applySchemaFixes(newSchema.items);
+  }
+
+  // Apply fixes to combiners
+  ['oneOf', 'anyOf', 'allOf'].forEach((combiner) => {
+    if (newSchema[combiner] && Array.isArray(newSchema[combiner])) {
+      newSchema[combiner] = [...newSchema[combiner]].map((subSchema: KnownAny) => applySchemaFixes(subSchema));
+    }
+  });
+
+  return newSchema;
 };
 
 function withYup<
@@ -89,23 +138,7 @@ function withYup<
       __iteration: YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny;
     },
     getJSONSchemaFromModel: (model) => {
-      const schema = convertSchema(model);
-      // Fix for default values with undefined keys
-      if (schema.default && typeof schema.default === 'object' && !Array.isArray(schema.default)) {
-        if (schema?.required) {
-          for (const key of schema.required) {
-            delete schema.default[key];
-          }
-        }
-
-        if (Object.keys(schema.default).length === 0) {
-          delete schema.default;
-        }
-      }
-
-      // Add descriptions recursively
-      enrichWithDescriptions(schema, model.describe());
-      return schema;
+      return enrichWithDescriptions(applySchemaFixes(convertSchema(model)), model.describe());
     },
     validate: async (data, model, { type, req, i }) => {
       try {

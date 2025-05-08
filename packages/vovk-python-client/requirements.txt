@@ -1,4 +1,5 @@
 requests
 jsonschema
+rfc3987
 types-requests
 types-jsonschema

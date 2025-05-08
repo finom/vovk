@@ -244,7 +244,10 @@ class AllOfDtoB {
   b: number;
 }
 
-export class ComplaiingDto {
+export class ComplainingDto {
+  @IsIn(['a', 'b', 'c'])
+  enum_value: 'a' | 'b' | 'c';
+
   // Number validations
   @IsNumber()
   @Min(1)
@@ -255,13 +258,13 @@ export class ComplaiingDto {
   num_maximum: number;
 
   @IsNumber()
-  num_exclusiveMinimum: number; // Can't exactly represent gt(1) with standard decorators
+  num_exclusiveMinimum: number; // WARNING: Can't impelemt gt(1) with standard decorators
 
   @IsNumber()
-  num_exclusiveMaximum: number; // Can't exactly represent lt(100) with standard decorators
+  num_exclusiveMaximum: number; // WARNING: Can't impelemt lt(100) with standard decorators
 
   @IsNumber()
-  num_multipleOf: number; // Can't represent multipleOf with standard decorators
+  num_multipleOf: number; // WARNING: Can't impelemt multipleOf with standard decorators
 
   @IsInt()
   num_int: number;
@@ -294,7 +297,7 @@ export class ComplaiingDto {
   str_uuid: string;
 
   @IsISO8601()
-  str_datetime: string;
+  str_datetime: string; // WARNING: Client validation is ignored in Python
 
   // Array validations
   @ArrayMinSize(1)
@@ -317,8 +320,7 @@ export class ComplaiingDto {
   obj_strict: StrictObject; // Cannot enforce "strict" (no additional properties) with standard decorators
 
   // This can be string OR number OR boolean, but there's no standard way to represent unions
-  logical_oneOf: string | number | boolean;
-
+  logical_anyOf: string | number | boolean;
   // We can't represent an intersection directly
   @IsObject()
   logical_allOf: AllOfDtoA & AllOfDtoB;

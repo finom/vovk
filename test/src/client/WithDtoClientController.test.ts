@@ -30,7 +30,7 @@ describe('DTO-to-JSONchema complaints', async () => {
     });
   });
   const notSupported = [
-    'logical_oneOf',
+    'logical_anyOf',
     'logical_allOf',
     'obj_strict',
     'obj_required',

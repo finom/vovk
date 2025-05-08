@@ -1,10 +1,8 @@
 import unittest
-from typing import Any, Generator
+from typing import Generator, cast
 from jsonschema import ValidationError
 from generated_python_client.src.test_generated_python_client import HttpException, WithYupClientControllerRPC
-
-def noop(*args: Any) -> None: # type: ignore
-    pass
+from utils import noop, get_complaining_object
 
 class TestYup(unittest.TestCase):
     def test_ok(self) -> None:
@@ -162,6 +160,42 @@ class TestYup(unittest.TestCase):
                 print(data)
                 pass
         self.assertRegex(str(context.exception), r"Yup validation failed\. Invalid iteration #0 on server for http://\S+\. value must be at most 5 characters")
+    def test_complaints(self) -> None:
+        # List of keys that are not supported
+        not_supported = ["num_multipleOf", "logical_anyOf", "obj_strict", "str_datetime"]
+        
+        # Get object with no complaints
+        no_complaints = cast(WithYupClientControllerRPC.HandleSchemaComplaintsBody, get_complaining_object(None))
+        
+        # Test valid object first
+        WithYupClientControllerRPC.handle_schema_complaints(body=no_complaints)
+        
+        # Test each key for complaints
+        for key in no_complaints.keys():
+            if key in not_supported:
+                continue
+                
+            # Get object with specific complaint
+            complaining_object = cast(WithYupClientControllerRPC.HandleSchemaComplaintsBody,get_complaining_object(key))
+            
+            # Test with client validation disabled
+            with self.assertRaises(HttpException, msg='HttpException is not raised for key ' + key) as context1:
+                WithYupClientControllerRPC.handle_schema_complaints(
+                    body=complaining_object,
+                    disable_client_validation=True
+                )
+            self.assertRegex(
+                str(context1.exception), 
+                rf"Yup validation failed\. Invalid body on server for http://\S+\. {key}.*",
+                
+            )
+            
+            # Test with client validation enabled
+            with self.assertRaises(ValidationError, msg='ValidationError is not raised for key ' + key) as context2:
+                WithYupClientControllerRPC.handle_schema_complaints(
+                    body=complaining_object
+                )
+            self.assertIn(key, str(context2.exception))
 
 
 if __name__ == "__main__":
