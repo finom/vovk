@@ -14,7 +14,7 @@ const stringifyPySample = (data: KnownAny, pad = 4) =>
     .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
     .join('\n');
 
-export function createCodeSamples({
+export function createCodeExamples({
   handlerName,
   handlerSchema,
   controllerSchema,

@@ -1,7 +1,7 @@
 import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
 import { HttpStatus } from 'vovk';
 import type { HttpMethod, KnownAny, VovkFullSchema } from 'vovk';
-import { createCodeSamples } from './createCodeSamples';
+import { createCodeExamples } from './createCodeExamples';
 
 export type SimpleJsonSchema = {
   type: 'object';
@@ -26,7 +26,7 @@ export function fromSchema(
           const paramsValidation = h?.validation?.params as SimpleJsonSchema | undefined;
           const outputValidation = h?.validation?.output as SimpleJsonSchema | undefined;
  
-          const { ts, rs, py } = createCodeSamples({
+          const { ts, rs, py } = createCodeExamples({
             handlerName,
             handlerSchema: h,
             controllerSchema: c,
