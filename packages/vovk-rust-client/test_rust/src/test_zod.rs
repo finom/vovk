@@ -1,6 +1,7 @@
 #[cfg(test)]
 pub mod test_zod {
     use generated_rust_client::with_zod_client_controller_rpc;
+    use crate::get_complaining_object;
      
     // #[ignore = "needs external database"] | #[should_panic(expected = "Invalid input")]
     #[test]
@@ -314,5 +315,134 @@ pub mod test_zod {
         }));
         
         assert!(result.is_err(), "Expected an error during stream iteration but none occurred");
+    }
+
+    #[test]
+    fn test_complaints() {
+        // List of keys that are not supported
+        let not_supported = vec![
+            // JSON validator doesn't support these keys
+            "num_multipleOf",
+
+            // TODO: WARNING: Not validated by an unknown reason 
+            "obj_strict",
+
+            // unwrap errors, tested below
+            "logical_allOf",
+            "enum_value",
+            "num_int",
+            "num_int32",
+            "obj_required",
+        ];
+        
+        // Get object with no complaints
+        let no_complaints: with_zod_client_controller_rpc::handle_schema_complaints_::body = 
+            serde_json::from_value(get_complaining_object(None)).unwrap();
+        
+        // Test valid object first
+        let result = with_zod_client_controller_rpc::handle_schema_complaints(
+            no_complaints.clone(),
+            (),
+            (),
+            None,
+            false
+        );
+        assert!(result.is_ok(), "Valid object should pass validation");
+        
+        // Convert struct to JSON to access its keys
+        let no_complaints_json = serde_json::to_value(&no_complaints).unwrap();
+        if let serde_json::Value::Object(map) = no_complaints_json {
+            // Test each key for complaints
+            for (key, _) in map {
+                if not_supported.contains(&key.as_str()) {
+                    continue;
+                }
+            
+            // Get object with specific complaint
+            let complaining_object: with_zod_client_controller_rpc::handle_schema_complaints_::body = 
+                serde_json::from_value(get_complaining_object(Some(key.clone()))).unwrap();
+            
+            // Test with client validation disabled (server-side error)
+            let result_server = with_zod_client_controller_rpc::handle_schema_complaints(
+                complaining_object.clone(),
+                (),
+                (),
+                None,
+                true // disable client validation
+            );
+            
+            assert!(result_server.is_err(), "Server validation should fail for key {}", key);
+            let err_msg = result_server.err().unwrap().to_string();
+            assert!(
+                err_msg.contains("Zod validation failed") && err_msg.contains(&key), 
+                "Error message should contain 'Zod validation failed' and '{}', got: {}", key, err_msg
+            );
+            
+            // Test with client validation enabled (client-side error)
+            let result_client = with_zod_client_controller_rpc::handle_schema_complaints(
+                complaining_object,
+                (),
+                (),
+                None,
+                false // enable client validation
+            );
+            
+            assert!(result_client.is_err(), "Client validation should fail for key {}", key);
+            let err_msg = result_client.err().unwrap().to_string();
+            assert!(
+                err_msg.contains(&key), 
+                "Error message should contain '{}', got: {}", key, err_msg
+            );
+        }
+        }
+    }
+    
+    #[test]
+    fn test_type_complaints() {
+        // Keys that should cause unwrap errors during deserialization
+        let should_fail_unwrap = vec![
+            "logical_allOf",
+            "enum_value",
+            "num_int",
+            "num_int32",
+            "obj_required",
+        ];
+        
+        // Get object with no complaints to extract all keys
+        let no_complaints_json = get_complaining_object(None);
+        
+        if let serde_json::Value::Object(ref map) = no_complaints_json {
+            // Test each key for unwrap behavior
+            for (key, _) in map.clone() {
+                // Create an object with a violation for the specific key
+                let complaining_object = get_complaining_object(Some(key.clone()));
+                
+                // Try to deserialize (unwrap) the object
+                let result = serde_json::from_value::<with_zod_client_controller_rpc::handle_schema_complaints_::body>(complaining_object);
+                
+                if should_fail_unwrap.contains(&key.as_str()) {
+                    // These keys should cause deserialization failures
+                    assert!(result.is_err(), "Key '{}' should fail to unwrap but succeeded", key);
+                    println!("Key '{}' correctly failed to unwrap with error: {}", key, result.err().unwrap());
+                } else {
+                    // Other keys should deserialize successfully, even with validation issues
+                    assert!(result.is_ok(), "Key '{}' should unwrap successfully but failed with: {:?}", 
+                           key, result.err());
+                }
+            }
+        } else {
+            panic!("Expected get_complaining_object to return a JSON object");
+        }
+
+        let int32  = no_complaints_json.get("num_int32").unwrap();
+        // check if the number is actually an int32
+        if let serde_json::Value::Number(num) = int32 {
+            assert!(num.is_i64(), "Expected num_int32 to be an i64");
+            let int_value = num.as_i64().unwrap();
+            assert!(int_value >= i32::MIN as i64 && int_value <= i32::MAX as i64, 
+                    "num_int32 value {} is not within the i32 range", int_value);
+        } else {
+            panic!("Expected num_int32 to be a number");
+        }
     }
 }

@@ -142,7 +142,7 @@ class TestDto(unittest.TestCase):
             )
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid output on server for http://\S+\. hello must be shorter than or equal to 5 characters")
 
-    def test_stream(self) -> None: ## TODO: StreamException????
+    def test_stream(self) -> None: ## TODO: StreamException???
         iterator: Generator[WithDtoClientControllerRPC.HandleStreamIteration, None, None] = WithDtoClientControllerRPC.handle_stream(
             query={ "values": ['a', 'b', 'c', 'd'] }
         )
@@ -170,7 +170,7 @@ class TestDto(unittest.TestCase):
             'num_multipleOf',
             'num_exclusiveMinimum',
             'num_exclusiveMaximum',
-            # Doesn't perform validation on the Python client side, but on the server side only
+            # WARNING: Doesn't perform validation on the Python client side, but on the server side only
             'str_datetime',
         ]
         

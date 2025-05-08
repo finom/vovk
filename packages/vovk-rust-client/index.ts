@@ -75,10 +75,14 @@ export function convertJSONSchemasToRustTypes({
       return 'sede_json::Value'; // Fallback for unresolved $ref
     }
 
-    if (schema.type === 'string') {
-      if (schema.enum) {
+    // Check for enum without type (assume string)
+    if (schema.enum) {
+      if (schema.type === 'string' || !schema.type) {
         return `${getModulePath(path)}`;
       }
+    }
+
+    if (schema.type === 'string') {
       return 'String';
     } else if (schema.type === 'number' || schema.type === 'integer') {
       // Handle numeric types with constraints
@@ -214,7 +218,10 @@ export function convertJSONSchemasToRustTypes({
       const isGenericObject = propSchema.type === 'object' && !propSchema.properties;
       // Define nested enum types
       const isNestedEnum =
-        (propSchema.type === 'string' && propSchema.enum) || propSchema.anyOf || propSchema.oneOf || propSchema.allOf;
+        ((propSchema.type === 'string' || !propSchema.type) && propSchema.enum) ||
+        propSchema.anyOf ||
+        propSchema.oneOf ||
+        propSchema.allOf;
 
       const propPath = [...path, propName];
       let propType: string;
@@ -255,7 +262,7 @@ export function convertJSONSchemasToRustTypes({
       return (
         propSchema.type === 'object' ||
         propSchema.properties ||
-        (propSchema.type === 'string' && propSchema.enum) ||
+        ((propSchema.type === 'string' || !propSchema.type) && propSchema.enum) ||
         (propSchema.type === 'array' &&
           propSchema.items &&
           (propSchema.items.type === 'object' || propSchema.items.properties || propSchema.items.$ref)) ||
@@ -284,8 +291,8 @@ export function convertJSONSchemasToRustTypes({
         if (propSchema.type === 'object' || propSchema.properties) {
           code += processObject(propSchema, [...path, propName], level + 1, rootSchema);
         }
-        // Generate enum types for string enums
-        else if (propSchema.type === 'string' && propSchema.enum) {
+        // Generate enum types for string enums (also when type is missing but enum exists)
+        else if ((propSchema.type === 'string' || !propSchema.type) && propSchema.enum) {
           code += generateEnum(propSchema, propName, level + 1);
         }
         // Generate types for array items if they're objects

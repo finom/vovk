@@ -114,7 +114,7 @@ where
                 schema
                     .validate(body_val)
                     .map_err(|e| {
-                        let error_msgs: Vec<String> = e.map(|err| err.to_string()).collect();
+                        let error_msgs: Vec<String> = e.map(|err| format!("{}: {}", err.instance_path, err.to_string())).collect();
                         format!("Body validation failed: {}", error_msgs.join(", "))
                     })?;
             } else if http_method != "GET" {
@@ -129,7 +129,7 @@ where
                 schema
                     .validate(query_val)
                     .map_err(|e| {
-                        let error_msgs: Vec<String> = e.map(|err| err.to_string()).collect();
+                        let error_msgs: Vec<String> = e.map(|err| format!("{}: {}", err.instance_path, err.to_string())).collect();
                         format!("Query validation failed: {}", error_msgs.join(", "))
                     })?;
             } else {
@@ -144,7 +144,7 @@ where
                 schema
                     .validate(params_val)
                     .map_err(|e| {
-                        let error_msgs: Vec<String> = e.map(|err| err.to_string()).collect();
+                        let error_msgs: Vec<String> = e.map(|err| format!("{}: {}", err.instance_path, err.to_string())).collect();
                         format!("Params validation failed: {}", error_msgs.join(", "))
                     })?;
             } else {
