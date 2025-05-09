@@ -4,7 +4,7 @@ import type { VovkStrictConfig } from 'vovk';
 import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
-import { type GenerateOptions } from '../types.mjs';
+import type { GenerateOptions } from '../types.mjs';
 
 export interface ClientTemplateFile {
   templateName: string;
@@ -53,23 +53,28 @@ export default async function getClientTemplateFiles({
   ][];
   for (let i = 0; i < entries.length; i++) {
     const [templateName, templateDef, forceOutCwdRelativeDir] = entries[i];
-    const templateAbsolutePath = resolveAbsoluteModulePath(templateDef.templatePath, cwd);
-    const entryType = await getFileSystemEntryType(templateDef.templatePath);
-    if (!entryType) throw new Error(`Unable to locate template path ${templateDef.templatePath}`);
+    const templateAbsolutePath = templateDef.templatePath
+      ? resolveAbsoluteModulePath(templateDef.templatePath, cwd)
+      : null;
+    const entryType = templateDef.templatePath ? await getFileSystemEntryType(templateDef.templatePath) : null;
+    if (templateAbsolutePath && !entryType)
+      throw new Error(`Unable to locate template path ${templateDef.templatePath}`);
     const defOutDir = configKey === 'fullClient' ? templateDef.fullClient?.outDir : templateDef.segmentedClient?.outDir;
 
-    let files: string[];
+    let files: string[] = [];
 
-    if (entryType === FileSystemEntryType.FILE) {
-      files = [templateAbsolutePath];
-    } else {
-      const globPath = path.join(templateAbsolutePath, '**/*.*');
-      files = await glob(globPath);
-    }
+    if (templateAbsolutePath) {
+      if (entryType === FileSystemEntryType.FILE) {
+        files = [templateAbsolutePath];
+      } else {
+        const globPath = path.join(templateAbsolutePath, '**/*.*');
+        files = await glob(globPath);
+      }
 
-    if (files.length === 0) {
-      log.error(`Template "${templateAbsolutePath}" not found`);
-      continue;
+      if (files.length === 0) {
+        log.error(`Template "${templateAbsolutePath}" not found`);
+        continue;
+      }
     }
 
     const outCwdRelativeDir = forceOutCwdRelativeDir ?? defOutDir ?? outDir;
@@ -78,7 +83,7 @@ export default async function getClientTemplateFiles({
       templateFiles.push({
         templateName,
         templateFilePath: filePath,
-        relativeDir: path.relative(templateAbsolutePath, path.dirname(filePath)),
+        relativeDir: path.relative(templateAbsolutePath!, path.dirname(filePath)),
         outCwdRelativeDir,
         templateDef,
       });

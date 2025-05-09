@@ -1,8 +1,8 @@
 import path from 'node:path';
-import type { VovkEnv, VovkStrictConfig } from 'vovk';
+import type { VovkStrictConfig } from 'vovk';
 import getUserConfig from '../getUserConfig.mjs';
 import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';
-import type { GenerateOptions } from '../../types.mjs';
+import type { GenerateOptions, VovkEnv } from '../../types.mjs';
 import getTemplateDefs from './getTemplateDefs.mjs';
 
 export default async function getConfig({ cliOptions, cwd }: { cliOptions?: GenerateOptions; cwd: string }) {
@@ -34,7 +34,7 @@ export default async function getConfig({ cliOptions, cwd }: { cliOptions?: Gene
     fullClient: {
       enabled: true,
       ...conf.fullClient,
-      fromTemplates: cliOptions?.fullClientFrom ?? conf.fullClient?.fromTemplates ?? ['module', 'main'],
+      fromTemplates: cliOptions?.fullClientFrom ?? conf.fullClient?.fromTemplates ?? ['mjs', 'cjs'],
       outDir: cliOptions?.fullClientOut ?? conf.fullClient?.outDir ?? './node_modules/.vovk-client',
     },
     segmentedClient: {

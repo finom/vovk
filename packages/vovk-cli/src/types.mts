@@ -47,3 +47,22 @@ export interface NewOptions {
   noSegmentUpdate?: boolean;
   empty?: boolean;
 }
+
+export type VovkEnv = {
+  // TODO: cover fromTemplates and outDir for segmentedClient and fullClient
+  PORT?: string;
+  VOVK_SCHEMA_OUT_DIR?: string;
+  VOVK_IMPORTS_FETCHER?: string;
+  VOVK_IMPORTS_VALIDATE_ON_CLIENT?: string;
+  VOVK_IMPORTS_CREATE_RPC?: string;
+  VOVK_MODULES_DIR?: string;
+  VOVK_ORIGIN?: string;
+  VOVK_ROOT_ENTRY?: string;
+  VOVK_API_ENTRY_POINT?: string;
+  VOVK_ROOT_SEGMENT_MODULES_DIR_NAME?: string;
+  VOVK_LOG_LEVEL?: LogLevelNames;
+  VOVK_PRETTIFY_CLIENT?: string;
+  VOVK_DEV_HTTPS?: string;
+  __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
+  __VOVK_EXIT__?: 'true' | 'false';
+};

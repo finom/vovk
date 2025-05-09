@@ -29,7 +29,7 @@
   "peerDependencies": {
     "next": "*"
   },
-  "optionalDependencies": {
+  "devDependencies": {
     "openapi3-ts": "*",
     "type-fest": "*"
   }

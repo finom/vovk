@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 import type { OperationObject } from 'openapi3-ts/oas31';
-import type { PackageJson } from 'type-fest';
 import type { JSONLinesResponse } from './JSONLinesResponse';
 import { VovkStreamAsyncIterable } from './client/types';
+import type { PackageJson } from 'type-fest';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -159,108 +159,12 @@ export type StreamAbortMessage = {
   reason: KnownAny;
 };
 
-// CLI types are moved here in order to be able to be able to build VovkFullSchema type that is used by the core
-
-type LogLevelNames = 'trace' | 'debug' | 'info' | 'warn' | 'error';
-
-export type VovkEnv = {
-  // TODO: cover fromTemplates and outDir for segmentedClient and fullClient
-  PORT?: string;
-  VOVK_SCHEMA_OUT_DIR?: string;
-  VOVK_IMPORTS_FETCHER?: string;
-  VOVK_IMPORTS_VALIDATE_ON_CLIENT?: string;
-  VOVK_IMPORTS_CREATE_RPC?: string;
-  VOVK_MODULES_DIR?: string;
-  VOVK_ORIGIN?: string;
-  VOVK_ROOT_ENTRY?: string;
-  VOVK_API_ENTRY_POINT?: string;
-  VOVK_ROOT_SEGMENT_MODULES_DIR_NAME?: string;
-  VOVK_LOG_LEVEL?: LogLevelNames;
-  VOVK_PRETTIFY_CLIENT?: string;
-  VOVK_DEV_HTTPS?: string;
-  __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
-  __VOVK_EXIT__?: 'true' | 'false';
-};
-
-type ClientConfigCommon = {
-  enabled?: boolean;
-  outDir?: string;
-  fromTemplates?: string[];
-} & (
-  | {
-      excludeSegments?: never;
-      includeSegments?: string[];
-    }
-  | {
-      excludeSegments?: string[];
-      includeSegments?: never;
-    }
-);
-
-type ClientConfigFull = ClientConfigCommon & {
-  package?: PackageJson;
-};
-type ClientConfigSegmented = ClientConfigCommon & {
-  packages?: Record<string, PackageJson>;
-};
-
-export type ClientTemplateDef = {
-  extends?: string;
-  templatePath: string;
-  origin?: string | null;
-  fullClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
-  segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
-  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
-  requires?: Record<string, string>;
-};
-
-export type VovkConfig = {
-  emitConfig?: boolean | (keyof VovkStrictConfig)[];
-  schemaOutDir?: string;
-  fullClient?: ClientConfigFull;
-  segmentedClient?: ClientConfigSegmented;
-  imports?: {
-    fetcher?: string | [string, string] | [string];
-    validateOnClient?: string | [string, string] | [string];
-    createRPC?: string | [string, string] | [string];
-  };
-  modulesDir?: string;
-  rootEntry?: string;
-  origin?: string;
-  rootSegmentModulesDirName?: string;
-  logLevel?: LogLevelNames;
-  prettifyClient?: boolean;
-  devHttps?: boolean;
-  clientTemplateDefs?: Record<string, ClientTemplateDef>;
-  moduleTemplates?: {
-    service?: string;
-    controller?: string;
-    [key: string]: string | undefined;
-  };
-  libs?: Record<string, KnownAny>;
-  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
-};
-
-export type VovkStrictConfig = Required<
-  Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'fullClient' | 'segmentedClient'>
-> & {
-  emitConfig: (keyof VovkStrictConfig)[];
-  imports: {
-    fetcher: [string, string] | [string];
-    validateOnClient: [string, string] | [string] | null;
-    createRPC: [string, string] | [string];
-  };
-  libs: Record<string, KnownAny>;
-  fullClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
-  segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
-};
+export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration';
 
 export type VovkFullSchema = {
   config: Partial<VovkStrictConfig>;
   segments: Record<string, VovkSegmentSchema>;
 };
-
-export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration';
 
 // Enums
 
@@ -325,6 +229,79 @@ export enum HttpStatus {
   GATEWAY_TIMEOUT = 504,
   HTTP_VERSION_NOT_SUPPORTED = 505,
 }
+
+type ClientConfigCommon = {
+  enabled?: boolean;
+  outDir?: string;
+  fromTemplates?: string[];
+} & (
+  | {
+      excludeSegments?: never;
+      includeSegments?: string[];
+    }
+  | {
+      excludeSegments?: string[];
+      includeSegments?: never;
+    }
+);
+
+type ClientConfigFull = ClientConfigCommon & {
+  package?: PackageJson;
+};
+type ClientConfigSegmented = ClientConfigCommon & {
+  packages?: Record<string, PackageJson>;
+};
+
+export type ClientTemplateDef = {
+  extends?: string;
+  templatePath?: string | null;
+  origin?: string | null;
+  fullClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
+  segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
+  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
+  requires?: Record<string, string>;
+};
+
+export type VovkConfig = {
+  emitConfig?: boolean | (keyof VovkStrictConfig)[];
+  schemaOutDir?: string;
+  fullClient?: ClientConfigFull;
+  segmentedClient?: ClientConfigSegmented;
+  imports?: {
+    fetcher?: string | [string, string] | [string];
+    validateOnClient?: string | [string, string] | [string];
+    createRPC?: string | [string, string] | [string];
+  };
+  modulesDir?: string;
+  rootEntry?: string;
+  origin?: string;
+  rootSegmentModulesDirName?: string;
+  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn';
+  prettifyClient?: boolean;
+  devHttps?: boolean;
+  clientTemplateDefs?: Record<string, ClientTemplateDef>;
+  moduleTemplates?: {
+    service?: string;
+    controller?: string;
+    [key: string]: string | undefined;
+  };
+  libs?: Record<string, KnownAny>;
+  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
+};
+
+export type VovkStrictConfig = Required<
+  Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'fullClient' | 'segmentedClient'>
+> & {
+  emitConfig: (keyof VovkStrictConfig)[];
+  imports: {
+    fetcher: [string, string] | [string];
+    validateOnClient: [string, string] | [string] | null;
+    createRPC: [string, string] | [string];
+  };
+  libs: Record<string, KnownAny>;
+  fullClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
+  segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
+};
 
 // utils
 

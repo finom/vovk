@@ -3,9 +3,10 @@ import path from 'node:path';
 
 export enum BuiltInTemplateName {
   ts = 'ts',
-  main = 'main',
-  module = 'module',
-  package = 'package',
+  cjs = 'cjs',
+  mjs = 'mjs',
+  readme = 'readme',
+  packageJson = 'packageJson',
   fullSchemaTs = 'fullSchemaTs',
   fullSchemaCjs = 'fullSchemaCjs',
   fullSchemaJson = 'fullSchemaJson',
@@ -23,18 +24,22 @@ export default function getTemplateDefs(
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaTs]: '.' },
     },
-    [BuiltInTemplateName.main]: {
-      templatePath: path.resolve(templatesDir, 'main/'),
+    [BuiltInTemplateName.cjs]: {
+      templatePath: path.resolve(templatesDir, 'cjs/'),
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
-    [BuiltInTemplateName.module]: {
-      templatePath: path.resolve(templatesDir, 'module/'),
+    [BuiltInTemplateName.mjs]: {
+      templatePath: path.resolve(templatesDir, 'mjs/'),
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
-    [BuiltInTemplateName.package]: {
-      templatePath: path.resolve(templatesDir, 'package/'),
+    [BuiltInTemplateName.readme]: {
+      templatePath: path.resolve(templatesDir, 'readme/'),
+      origin: null,
+    },
+    [BuiltInTemplateName.packageJson]: {
+      templatePath: path.resolve(templatesDir, 'packageJson/'),
       origin: null,
     },
     [BuiltInTemplateName.fullSchemaTs]: {

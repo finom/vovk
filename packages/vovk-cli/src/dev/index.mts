@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { VovkEnv, VovkFullSchema, VovkSegmentSchema } from 'vovk';
+import type { VovkFullSchema, VovkSegmentSchema } from 'vovk';
 import * as chokidar from 'chokidar';
 import { Agent, setGlobalDispatcher } from 'undici';
 import keyBy from 'lodash/keyBy.js';
@@ -18,6 +18,7 @@ import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import isSegmentSchemaEmpty from './isSegmentSchemaEmpty.mjs';
 import writeConfigJson from './writeConfigJson.mjs';
+import type { VovkEnv } from '../types.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;

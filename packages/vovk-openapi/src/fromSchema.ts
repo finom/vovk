@@ -25,7 +25,7 @@ export function fromSchema(
           const bodyValidation = h?.validation?.body as SimpleJsonSchema | undefined;
           const paramsValidation = h?.validation?.params as SimpleJsonSchema | undefined;
           const outputValidation = h?.validation?.output as SimpleJsonSchema | undefined;
- 
+
           const { ts, rs, py } = createCodeExamples({
             handlerName,
             handlerSchema: h,

@@ -1,0 +1,28 @@
+---
+imports: ['vovk-openapi']
+---
+<% const vars = {
+    createCodeExamples: t.imports['vovk-openapi'].createCodeExamples,
+}; %>
+
+# <%= t.package.name %>
+
+<%= t.package.description ? `> ${t.package.description}` : '' %>
+
+<%= t.package.license ? `> License: ${t.package.license}` : '' %>
+
+<% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
+    Object.values(segment.controllers).forEach((controllerSchema) => { %>
+
+## <%= controllerSchema.rpcModuleName %>
+        <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => { %>
+```ts
+<%- vars.createCodeExamples({
+    handlerSchema,
+    handlerName,
+    controllerSchema,
+}).ts %>
+```
+        <% }) %>
+    <% }) %>
+<% }) %>

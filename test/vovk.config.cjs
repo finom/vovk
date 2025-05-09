@@ -18,6 +18,20 @@ const vovkConfig = {
     service: 'none',
     controller: 'none',
   },
+  clientTemplateDefs: {
+    npm: {
+      extends: 'npm',
+      fullClient: {
+        outDir: './generated/npm',
+        package: {
+          name: 'test_generated_client',
+          version: '0.0.1',
+          license: 'MIT',
+          description: 'Vovk Client',
+        },
+      },
+    },
+  },
 };
 
 module.exports = vovkConfig;

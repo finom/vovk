@@ -11,8 +11,10 @@ import { VovkDev } from './dev/index.mjs';
 import newComponents from './new/index.mjs';
 import type { DevOptions, GenerateOptions, NewOptions } from './types.mjs';
 import initProgram from './initProgram.mjs';
-import type { VovkEnv } from 'vovk';
 import { getFullSchemaFromJSON } from './generate/getFullSchemaFromJSON.mjs';
+
+import type { VovkEnv } from './types.mjs';
+export type { VovkEnv };
 
 const program = new Command();
 

@@ -116,7 +116,11 @@ export function createVovkApp() {
           },
         };
 
-        assignSchema({ controller, propertyKey, path: toKebabCase(propertyKey), options, httpMethod, vovkApp });
+        const properties = Object.keys(controller._handlers[propertyKey]?.validation?.params?.properties ?? {});
+        const kebab = toKebabCase(propertyKey); // 🥙
+        const path = properties.length ? `${kebab}/${properties.map((prop) => `:${prop}`).join('/')}` : kebab;
+
+        assignSchema({ controller, propertyKey, path, options, httpMethod, vovkApp });
       }
 
       return decorator;

@@ -21,7 +21,6 @@ import {
   type VovkFullSchema,
   type VovkConfig,
   type VovkStrictConfig,
-  type VovkEnv,
   type VovkValidationType,
 } from './types';
 import {
@@ -66,7 +65,6 @@ export {
   type VovkFullSchema,
   type VovkConfig,
   type VovkStrictConfig,
-  type VovkEnv,
   type VovkValidationType,
   JSONLinesResponse,
   HttpException,
