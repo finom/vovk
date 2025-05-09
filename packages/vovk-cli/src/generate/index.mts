@@ -61,6 +61,7 @@ function logClientGenerationResults({
   forceNothingWrittenLog = false,
   clientType = 'Full',
   startTime,
+  fromTemplates,
 }: {
   results: GenerationResult[];
   log: ProjectInfo['log'];
@@ -68,6 +69,7 @@ function logClientGenerationResults({
   forceNothingWrittenLog?: boolean;
   clientType?: string;
   startTime: number;
+  fromTemplates: string[];
 }): void {
   const writtenResults = results.filter(({ written }) => written);
   const duration = Date.now() - startTime;
@@ -83,7 +85,7 @@ function logClientGenerationResults({
         )} in ${duration}ms`
       );
     }
-  } else if (!isEnsuringClient) {
+  } else if (!isEnsuringClient && fromTemplates.length) {
     const logOrDebug = forceNothingWrittenLog ? log.info : log.debug;
     logOrDebug(`${clientType} client is up to date and doesn't need to be regenerated (${duration}ms)`);
   }
@@ -117,7 +119,7 @@ export default async function generate({
   if (config.fullClient.enabled) {
     const now = Date.now();
     const segmentNames = getIncludedSegmentNames(config, segments, 'fullClient');
-    const fullClientTemplateFiles = await getClientTemplateFiles({
+    const { templateFiles: fullClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
       log,
@@ -184,13 +186,14 @@ export default async function generate({
       forceNothingWrittenLog,
       clientType: 'Full',
       startTime: now,
+      fromTemplates,
     });
   }
 
   if (config.segmentedClient.enabled) {
     const now = Date.now();
     const segmentNames = getIncludedSegmentNames(config, segments, 'segmentedClient');
-    const segmentedClientTemplateFiles = await getClientTemplateFiles({
+    const { templateFiles: segmentedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
       log,
@@ -271,6 +274,7 @@ export default async function generate({
       forceNothingWrittenLog,
       clientType: 'Segmented',
       startTime: now,
+      fromTemplates,
     });
   }
 }

@@ -19,15 +19,33 @@ const vovkConfig = {
     controller: 'none',
   },
   clientTemplateDefs: {
-    npm: {
-      extends: 'npm',
+    py: {
+      templatePath: '../packages/vovk-python-client/template/',
+      requires: {
+        fullSchemaJson: './data',
+      },
       fullClient: {
-        outDir: './generated/npm',
+        outDir: './tmp/py',
         package: {
-          name: 'test_generated_client',
+          name: 'test_generated_python_client',
           version: '0.0.1',
           license: 'MIT',
-          description: 'Vovk Client',
+          description: 'Vovk Python Client',
+        },
+      },
+    },
+    rs: {
+      templatePath: '../packages/vovk-rust-client/template/',
+      requires: {
+        fullSchemaJson: './data',
+      },
+      fullClient: {
+        outDir: './tmp/rs',
+        package: {
+          name: 'test_generated_rust_client',
+          version: '0.0.1',
+          license: 'MIT',
+          description: 'Vovk Rust Client',
         },
       },
     },

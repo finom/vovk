@@ -297,7 +297,8 @@
                 }
               }
             },
-            "summary": "This is a summary"
+            "summary": "This is a summary",
+            "description": "This is a description"
           }
         },
         "handleQuery": {
@@ -984,7 +985,8 @@
                 }
               }
             },
-            "summary": "This is a summary"
+            "summary": "This is a summary",
+            "description": "This is a description"
           }
         },
         "handleQuery": {
@@ -1629,7 +1631,8 @@
                 }
               }
             },
-            "summary": "This is a summary"
+            "summary": "This is a summary",
+            "description": "This is a description"
           }
         },
         "handleNestedQuery": {

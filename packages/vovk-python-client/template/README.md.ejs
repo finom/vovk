@@ -5,7 +5,7 @@ imports: ['vovk-openapi']
     createCodeExamples: t.imports['vovk-openapi'].createCodeExamples,
 }; %>
 
-# <%= t.package.name %> v<%= t.package.version %>
+# <%= t.package.name.replace(/-/g, '_') %> v<%= t.package.version %>
 
 <%- t.package.description ? `> ${t.package.description}` : '' %>
 
@@ -13,7 +13,7 @@ imports: ['vovk-openapi']
 
 ```bash
 # Install the package
-npm install <%= t.package.name.replace(/-/g, '_') %>
+pip install <%= t.package.name.replace(/-/g, '_') %>
 ```
 
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
@@ -21,20 +21,20 @@ npm install <%= t.package.name.replace(/-/g, '_') %>
 
 ## <%= controllerSchema.rpcModuleName %>
         <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => { %>
-### <%= controllerSchema.rpcModuleName %>.<%= handlerName %>
+### <%= controllerSchema.rpcModuleName %>.<%= t._.snakeCase(handlerName) %>
 <%- handlerSchema.openapi?.summary ? `> ${handlerSchema.openapi.summary}` : '' %>
 
 <%- handlerSchema.openapi?.description ? `${handlerSchema.openapi.description}` : '' %>
 
 Endpoint: <%= t.apiRoot %>/<%= segmentName %>/<%= controllerSchema.prefix %>/<%= handlerSchema.path %>
 
-```ts
+```py
 <%- vars.createCodeExamples({
     handlerSchema,
     handlerName,
     controllerSchema,
     package: t.package,
-}).ts %>
+}).py %>
 ```
         <% }) %>
     <% }) %>

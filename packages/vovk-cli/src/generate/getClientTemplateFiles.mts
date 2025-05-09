@@ -30,8 +30,12 @@ export default async function getClientTemplateFiles({
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
   const fromTemplates =
     configKey === 'fullClient'
-      ? (cliOptions?.fullClientFrom ?? config.fullClient.fromTemplates)
-      : (cliOptions?.segmentedClientFrom ?? config.segmentedClient.fromTemplates);
+      ? cliOptions?.fullClientFrom || cliOptions?.segmentedClientFrom
+        ? (cliOptions?.fullClientFrom ?? [])
+        : config.fullClient.fromTemplates
+      : cliOptions?.fullClientFrom || cliOptions?.segmentedClientFrom
+        ? (cliOptions?.segmentedClientFrom ?? [])
+        : config.segmentedClient.fromTemplates;
   const outDir =
     configKey === 'fullClient'
       ? (cliOptions?.fullClientOut ?? config.fullClient.outDir)
@@ -100,5 +104,5 @@ export default async function getClientTemplateFiles({
       }
     }
   }
-  return templateFiles;
+  return { fromTemplates, templateFiles };
 }

@@ -2,6 +2,9 @@
   "name": "test",
   "version": "0.1.1-beta.0",
   "private": true,
+  "description": "Vovk test app",
+  "license": "MIT",
+  "author": "Andrey Gubanov",
   "scripts": {
     "ncu": "npm-check-updates -u && npm i",
     "dev": "npm run generate-modules-from-templates && node ../packages/vovk-cli/dist/index.mjs dev --next-dev",

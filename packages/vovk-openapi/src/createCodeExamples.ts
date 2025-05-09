@@ -1,6 +1,7 @@
 import type { KnownAny, VovkControllerSchema, VovkHandlerSchema } from 'vovk';
 import type { SimpleJsonSchema } from './fromSchema';
 import { sample } from '@stoplight/json-schema-sampler';
+import type { PackageJson } from 'type-fest';
 
 const stringifyTsSample = (data: KnownAny, pad = 4) =>
   JSON.stringify(data, null, 2)
@@ -14,14 +15,23 @@ const stringifyPySample = (data: KnownAny, pad = 4) =>
     .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
     .join('\n');
 
+    const toSnakeCase = (str: string) =>
+      str
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2') // Add underscore between lowercase/digit and uppercase
+        .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
+        .toLowerCase()
+        .replace(/^_/, ''); // Remove leading underscore
+
 export function createCodeExamples({
   handlerName,
   handlerSchema,
   controllerSchema,
+  package: packageJson
 }: {
   handlerName: string;
   handlerSchema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
+  package?: PackageJson
 }) {
   const queryValidation = handlerSchema?.validation?.query as SimpleJsonSchema | undefined;
   const bodyValidation = handlerSchema?.validation?.body as SimpleJsonSchema | undefined;
@@ -33,10 +43,11 @@ export function createCodeExamples({
   const outputFake = outputValidation && sample(outputValidation);
   const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
   const rpcName = controllerSchema.rpcModuleName;
-  const handlerNameSnake = handlerName
-    .replace(/[A-Z]/g, (letter, index) => (index === 0 ? letter.toLowerCase() : '_' + letter.toLowerCase()))
-    .toLowerCase();
-  const tsCodeSample = `import { ${rpcName} } from 'vovk-client';
+  const handlerNameSnake = toSnakeCase(handlerName)
+  const rpcNameSnake = toSnakeCase(rpcName);
+  const packageName = packageJson?.name || 'vovk-client';
+  const packageNameSnake = toSnakeCase(packageName);
+  const tsCodeSample = `import { ${rpcName} } from '${packageName}';
 
 const response = await ${rpcName}.${handlerName}(${
     hasArg
@@ -53,10 +64,9 @@ ${stringifyTsSample(outputFake, 0)}
 */
     `
         : ''
-    }
-  `;
+    }`;
 
-  const pyCodeSample = `from vovk_client import ${rpcName}
+  const pyCodeSample = `from ${packageNameSnake} import ${rpcName}
 
 response = ${rpcName}.${handlerNameSnake}(${hasArg ? `\n    params=${paramsFake ? stringifyPySample(paramsFake) : 'None'},\n` : ''}${bodyFake ? `    body=${stringifyPySample(bodyFake)},\n` : ''}${queryFake ? `    query=${stringifyPySample(queryFake)},\n` : ''})
 
@@ -67,10 +77,22 @@ ${
         .map((s) => `# ${s}`)
         .join('\n')}`
     : ''
-}
-`;
+}`;
 
-  const rsCodeSample = `// TODO: Coming soon';`;
+  const serdeUnwrap = (fake: string) => `serde_json::from_value(serde_json::json!(${fake})).unwrap()`
+
+  const rsCodeSample = `use ${packageNameSnake}::${rpcNameSnake};
+
+pub fn main() {
+    let response = ${rpcNameSnake}::${handlerNameSnake}(
+      /* body */ ${bodyFake ? serdeUnwrap(stringifyTsSample(bodyFake)) : '()'},
+      /* query */ ${queryFake ? serdeUnwrap(stringifyTsSample(queryFake)) : '()'},
+      /* params */ ${paramsFake ? serdeUnwrap(stringifyTsSample(paramsFake)) : '()'},
+      /* headers */ None,
+      /* api_root */ None,
+      /* disable_client_validation */ false,
+  );
+}`;
 
   return { ts: tsCodeSample, py: pyCodeSample, rs: rsCodeSample };
 }

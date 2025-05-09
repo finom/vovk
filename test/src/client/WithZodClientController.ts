@@ -73,6 +73,7 @@ class WithZodClientService {
 export default class WithZodClientController {
   @openapi({
     summary: 'This is a summary',
+    description: 'This is a description',
   })
   @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/:foo/:bar')

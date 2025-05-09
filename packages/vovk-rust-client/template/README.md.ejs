@@ -5,36 +5,37 @@ imports: ['vovk-openapi']
     createCodeExamples: t.imports['vovk-openapi'].createCodeExamples,
 }; %>
 
-# <%= t.package.name %> v<%= t.package.version %>
+# <%= t.package.name.replace(/-/g, '_') %> v<%= t.package.version %>
 
 <%- t.package.description ? `> ${t.package.description}` : '' %>
 
 <%- t.package.license ? `License: **${t.package.license}**` : '' %>
 
+
 ```bash
 # Install the package
-npm install <%= t.package.name.replace(/-/g, '_') %>
+cargo install <%= t.package.name.replace(/-/g, '_') %>
 ```
 
 <% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach((controllerSchema) => { %>
 
-## <%= controllerSchema.rpcModuleName %>
+## mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %>
         <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => { %>
-### <%= controllerSchema.rpcModuleName %>.<%= handlerName %>
+### <%= t._.snakeCase(controllerSchema.rpcModuleName) %>::<%= t._.snakeCase(handlerName) %>
 <%- handlerSchema.openapi?.summary ? `> ${handlerSchema.openapi.summary}` : '' %>
 
 <%- handlerSchema.openapi?.description ? `${handlerSchema.openapi.description}` : '' %>
 
 Endpoint: <%= t.apiRoot %>/<%= segmentName %>/<%= controllerSchema.prefix %>/<%= handlerSchema.path %>
 
-```ts
+```rust
 <%- vars.createCodeExamples({
     handlerSchema,
     handlerName,
     controllerSchema,
     package: t.package,
-}).ts %>
+}).rs %>
 ```
         <% }) %>
     <% }) %>
