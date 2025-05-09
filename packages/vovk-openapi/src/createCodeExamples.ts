@@ -15,23 +15,23 @@ const stringifyPySample = (data: KnownAny, pad = 4) =>
     .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
     .join('\n');
 
-    const toSnakeCase = (str: string) =>
-      str
-        .replace(/([a-z0-9])([A-Z])/g, '$1_$2') // Add underscore between lowercase/digit and uppercase
-        .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
-        .toLowerCase()
-        .replace(/^_/, ''); // Remove leading underscore
+const toSnakeCase = (str: string) =>
+  str
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2') // Add underscore between lowercase/digit and uppercase
+    .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
+    .toLowerCase()
+    .replace(/^_/, ''); // Remove leading underscore
 
 export function createCodeExamples({
   handlerName,
   handlerSchema,
   controllerSchema,
-  package: packageJson
+  package: packageJson,
 }: {
   handlerName: string;
   handlerSchema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
-  package?: PackageJson
+  package?: PackageJson;
 }) {
   const queryValidation = handlerSchema?.validation?.query as SimpleJsonSchema | undefined;
   const bodyValidation = handlerSchema?.validation?.body as SimpleJsonSchema | undefined;
@@ -43,7 +43,7 @@ export function createCodeExamples({
   const outputFake = outputValidation && sample(outputValidation);
   const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
   const rpcName = controllerSchema.rpcModuleName;
-  const handlerNameSnake = toSnakeCase(handlerName)
+  const handlerNameSnake = toSnakeCase(handlerName);
   const rpcNameSnake = toSnakeCase(rpcName);
   const packageName = packageJson?.name || 'vovk-client';
   const packageNameSnake = toSnakeCase(packageName);
@@ -79,7 +79,7 @@ ${
     : ''
 }`;
 
-  const serdeUnwrap = (fake: string) => `serde_json::from_value(serde_json::json!(${fake})).unwrap()`
+  const serdeUnwrap = (fake: string) => `serde_json::from_value(serde_json::json!(${fake})).unwrap()`;
 
   const rsCodeSample = `use ${packageNameSnake}::${rpcNameSnake};
 

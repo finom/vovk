@@ -4,16 +4,20 @@ import { HttpException } from '../HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
-function createFetcher<T>({ init, transform }: {
-  init?: (init: RequestInit) => RequestInit | Promise<RequestInit>;
-  transform?: (resp: unknown) => T | Promise<T>;
+function createFetcher<T = unknown>({
+  prepareRequestInit,
+  transformResponse,
+}: {
+  prepareRequestInit?: (init: RequestInit, options: VovkDefaultFetcherOptions & T) => RequestInit | Promise<RequestInit>;
+  transformResponse?: (resp: unknown, options: VovkDefaultFetcherOptions & T, init: RequestInit) => unknown;
 } = {}) {
   // defaultFetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
-  const newFetcher: VovkClientFetcher<VovkDefaultFetcherOptions> = async (
+  const newFetcher: VovkClientFetcher<VovkDefaultFetcherOptions & T> = async (
     { httpMethod, getEndpoint, validate, defaultHandler, defaultStreamHandler },
-    { params, query, body, apiRoot = '/api', ...options }
+    options
   ) => {
+    const { params, query, body, apiRoot = '/api', disableClientValidation, init, interpretAs } = options;
     const endpoint = getEndpoint({ apiRoot, params, query });
     const unusedParams = new URL(endpoint).pathname.split('/').filter((segment) => segment.startsWith(':'));
 
@@ -26,7 +30,7 @@ function createFetcher<T>({ init, transform }: {
       });
     }
 
-    if (!options.disableClientValidation) {
+    if (!disableClientValidation) {
       try {
         await validate({ body, query, params, endpoint });
       } catch (e) {
@@ -44,10 +48,10 @@ function createFetcher<T>({ init, transform }: {
 
     let requestInit: RequestInit = {
       method: httpMethod,
-      ...options.init,
+      ...init,
       headers: {
         accept: 'application/jsonl, application/json',
-        ...options.init?.headers,
+        ...init?.headers,
       },
     };
 
@@ -57,7 +61,7 @@ function createFetcher<T>({ init, transform }: {
       requestInit.body = JSON.stringify(body);
     }
 
-    requestInit = init ? await init(requestInit) : requestInit;
+    requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, options) : requestInit;
 
     let response: Response;
 
@@ -73,7 +77,7 @@ function createFetcher<T>({ init, transform }: {
       });
     }
 
-    const contentType = options.interpretAs ?? response.headers.get('content-type');
+    const contentType = interpretAs ?? response.headers.get('content-type');
 
     let resp;
 
@@ -87,10 +91,12 @@ function createFetcher<T>({ init, transform }: {
 
     resp = await resp;
 
-    return transform ? await transform(resp) : resp;
+    return transformResponse ? await transformResponse(resp, options, requestInit) : resp;
   };
 
   return newFetcher;
 }
 
-export const fetcher = Object.assign(createFetcher(), { create: createFetcher });
+export const fetcher = Object.assign(createFetcher({
+  transformResponse: (resp) => resp,
+}), { create: createFetcher });
