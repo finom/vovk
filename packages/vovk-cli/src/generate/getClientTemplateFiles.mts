@@ -87,7 +87,7 @@ export default async function getClientTemplateFiles({
       templateFiles.push({
         templateName,
         templateFilePath: filePath,
-        relativeDir: path.relative(templateAbsolutePath!, path.dirname(filePath)),
+        relativeDir: path.relative(templateAbsolutePath!, path.dirname(filePath) + '/'),
         outCwdRelativeDir,
         templateDef,
       });
