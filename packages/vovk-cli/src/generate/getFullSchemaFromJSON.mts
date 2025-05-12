@@ -4,12 +4,14 @@ import { glob } from 'glob';
 import type { VovkFullSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { SchemaOfTheSchema } from '../enums.mjs';
 
 export async function getFullSchemaFromJSON(
   schemaOutAbsolutePath: string,
   projectInfo: ProjectInfo
 ): Promise<VovkFullSchema> {
   const result: VovkFullSchema = {
+    $schema: SchemaOfTheSchema.FULL,
     config: {},
     segments: {},
   };

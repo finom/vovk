@@ -24,6 +24,7 @@ export type VovkControllerSchema = {
 };
 
 export type VovkSegmentSchema = {
+  $schema: string;
   emitSchema: boolean;
   segmentName: string;
   controllers: Record<string, VovkControllerSchema>;
@@ -178,6 +179,7 @@ export type StreamAbortMessage = {
 export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration';
 
 export type VovkFullSchema = {
+  $schema: string;
   config: Partial<VovkStrictConfig>;
   segments: Record<string, VovkSegmentSchema>;
 };
@@ -279,6 +281,7 @@ export type ClientTemplateDef = {
 };
 
 export type VovkConfig = {
+  $schema?: string;
   emitConfig?: boolean | (keyof VovkStrictConfig)[];
   schemaOutDir?: string;
   fullClient?: ClientConfigFull;

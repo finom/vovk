@@ -1,9 +1,11 @@
 import path from 'node:path';
-import type { VovkStrictConfig } from 'vovk';
+import type { KnownAny, VovkStrictConfig } from 'vovk';
+import camelCase from 'lodash/camelCase.js';
 import getUserConfig from '../getUserConfig.mjs';
 import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';
 import type { BundleOptions, GenerateOptions, VovkEnv } from '../../types.mjs';
 import getTemplateDefs from './getTemplateDefs.mjs';
+import { SchemaOfTheSchema } from '../../enums.mjs';
 
 export default async function getConfig({
   cliGenerateOptions,
@@ -39,6 +41,7 @@ export default async function getConfig({
   };
 
   const config: VovkStrictConfig = {
+    $schema: SchemaOfTheSchema.CONFIG,
     clientTemplateDefs,
     imports,
     emitConfig: [],
@@ -80,12 +83,48 @@ export default async function getConfig({
   };
 
   if (typeof conf.emitConfig === 'undefined') {
-    config.emitConfig = ['libs'];
+    config.emitConfig = ['libs', '$schema'];
   } else if (conf.emitConfig === true) {
     config.emitConfig = Object.keys(config) as (keyof VovkStrictConfig)[];
   } else if (Array.isArray(conf.emitConfig)) {
     config.emitConfig = conf.emitConfig;
   } // else it's false and emitConfig already is []
+
+  for (const [envKey, envValue] of Object.entries(env)) {
+    if (envKey.startsWith('VOVK_')) {
+      const pathArr = envKey
+        .replace(/^VOVK_/, '')
+        .split('__')
+        .map(camelCase);
+
+      // Parse value
+      let value: unknown = envValue;
+      if (envValue === 'null') {
+        value = null;
+      } else if (envValue === 'true') {
+        value = true;
+      } else if (envValue === 'false') {
+        value = false;
+      } else if (typeof envValue === 'string' && envValue.startsWith('[') && envValue.endsWith(']')) {
+        value = envValue
+          .slice(1, -1)
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
+      // Set value in config at the given path
+      let target: KnownAny = config;
+      for (let i = 0; i < pathArr.length - 1; i++) {
+        const key = pathArr[i];
+        if (typeof target[key] !== 'object' || target[key] === null) {
+          target[key] = {};
+        }
+        target = target[key];
+      }
+      target[pathArr[pathArr.length - 1]] = value;
+    }
+  }
 
   return { config, srcRoot, configAbsolutePaths, userConfig, error };
 }
