@@ -57,6 +57,8 @@ export default async function writeOneClientFile({
     path.basename(templateFilePath).replace('.ejs', '')
   );
 
+  console.log('outPath', outPath, relativeDir);
+
   let placeholder = `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
 // If you still see this text, the client is not generated yet because of an unknown problem.
 // Feel free to report an issue at https://github.com/finom/vovk/issues`;
