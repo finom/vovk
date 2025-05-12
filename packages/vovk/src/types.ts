@@ -267,6 +267,13 @@ export type VovkConfig = {
   schemaOutDir?: string;
   fullClient?: ClientConfigFull;
   segmentedClient?: ClientConfigSegmented;
+  bundle?: {
+    outDir: string;
+    tsClientOutDir: string;
+    deleteTsClientOutDirAfter: boolean;
+    noReadme?: boolean;
+    noPackage?: boolean;
+  };
   imports?: {
     fetcher?: string | [string, string] | [string];
     validateOnClient?: string | [string, string] | [string];
@@ -286,6 +293,7 @@ export type VovkConfig = {
     [key: string]: string | undefined;
   };
   libs?: Record<string, KnownAny>;
+  /** @todo this is an experimental feature */
   segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
 };
 

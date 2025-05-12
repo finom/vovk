@@ -11,7 +11,7 @@ function createFetcher<T = unknown>({
   prepareRequestInit?: (init: RequestInit, options: VovkDefaultFetcherOptions & T) => RequestInit | Promise<RequestInit>;
   transformResponse?: (resp: unknown, options: VovkDefaultFetcherOptions & T, init: RequestInit) => unknown;
 } = {}) {
-  // defaultFetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
+  // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
   const newFetcher: VovkClientFetcher<VovkDefaultFetcherOptions & T> = async (
     { httpMethod, getEndpoint, validate, defaultHandler, defaultStreamHandler },

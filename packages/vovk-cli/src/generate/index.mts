@@ -96,13 +96,13 @@ export default async function generate({
   projectInfo,
   forceNothingWrittenLog,
   fullSchema,
-  cliOptions,
+  cliGenerateOptions,
 }: {
   isEnsuringClient?: boolean;
   projectInfo: ProjectInfo;
   forceNothingWrittenLog?: boolean;
   fullSchema: VovkFullSchema;
-  cliOptions?: GenerateOptions;
+  cliGenerateOptions?: GenerateOptions;
 }) {
   const { config, cwd, log, segments } = projectInfo;
 
@@ -123,7 +123,7 @@ export default async function generate({
       config,
       cwd,
       log,
-      cliOptions,
+      cliGenerateOptions,
       configKey: 'fullClient',
     });
 
@@ -197,7 +197,7 @@ export default async function generate({
       config,
       cwd,
       log,
-      cliOptions,
+      cliGenerateOptions,
       configKey: 'segmentedClient',
     });
 

@@ -23,6 +23,15 @@ export interface GenerateOptions {
   segmentedClientOut?: string;
 }
 
+export interface BundleOptions {
+  config?: string;
+  outDir?: string;
+  noReadme?: boolean;
+  noPackage?: boolean;
+  tsClientOutDir?: string;
+  deleteTsClientOutDirAfter?: boolean;
+}
+
 export interface InitOptions {
   yes?: boolean;
   logLevel: LogLevelNames;

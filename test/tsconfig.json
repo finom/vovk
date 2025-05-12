@@ -3,6 +3,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "webpack.config.mjs",
     ".next/types/**/*.ts",
     "src/**/*.ts",
     "packages/**/*.ts",

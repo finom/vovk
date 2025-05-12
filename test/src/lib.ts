@@ -161,7 +161,6 @@ export function getComplainingObject(key: string | null) {
   // which comes from withViolations
   return {
     ...withoutViolations,
-    // @ts-expect-error Expected
-    [key]: withViolations[key],
+    [key]: withViolations[key as 'num_int32'],
   } as z.infer<typeof ComplainingModel>;
 }

@@ -2,11 +2,22 @@ import path from 'node:path';
 import type { VovkStrictConfig } from 'vovk';
 import getUserConfig from '../getUserConfig.mjs';
 import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';
-import type { GenerateOptions, VovkEnv } from '../../types.mjs';
+import type { BundleOptions, GenerateOptions, VovkEnv } from '../../types.mjs';
 import getTemplateDefs from './getTemplateDefs.mjs';
 
-export default async function getConfig({ cliOptions, cwd }: { cliOptions?: GenerateOptions; cwd: string }) {
-  const { configAbsolutePaths, error, userConfig } = await getUserConfig({ configPath: cliOptions?.config, cwd });
+export default async function getConfig({
+  cliGenerateOptions,
+  cliBundleOptions,
+  cwd,
+}: {
+  cliGenerateOptions?: GenerateOptions;
+  cliBundleOptions?: BundleOptions;
+  cwd: string;
+}) {
+  const { configAbsolutePaths, error, userConfig } = await getUserConfig({
+    configPath: cliGenerateOptions?.config,
+    cwd,
+  });
 
   const conf = userConfig ?? {};
   const env = process.env as VovkEnv;
@@ -34,14 +45,22 @@ export default async function getConfig({ cliOptions, cwd }: { cliOptions?: Gene
     fullClient: {
       enabled: true,
       ...conf.fullClient,
-      fromTemplates: cliOptions?.fullClientFrom ?? conf.fullClient?.fromTemplates ?? ['mjs', 'cjs'],
-      outDir: cliOptions?.fullClientOut ?? conf.fullClient?.outDir ?? './node_modules/.vovk-client',
+      fromTemplates: cliGenerateOptions?.fullClientFrom ?? conf.fullClient?.fromTemplates ?? ['mjs', 'cjs'],
+      outDir: cliGenerateOptions?.fullClientOut ?? conf.fullClient?.outDir ?? './node_modules/.vovk-client',
     },
     segmentedClient: {
       enabled: false,
       ...conf.segmentedClient,
-      fromTemplates: cliOptions?.segmentedClientFrom ?? conf.segmentedClient?.fromTemplates ?? ['ts'],
-      outDir: cliOptions?.segmentedClientOut ?? conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
+      fromTemplates: cliGenerateOptions?.segmentedClientFrom ?? conf.segmentedClient?.fromTemplates ?? ['ts'],
+      outDir: cliGenerateOptions?.segmentedClientOut ?? conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
+    },
+    bundle: {
+      outDir: cliBundleOptions?.outDir ?? conf.bundle?.outDir ?? path.join(srcRoot, 'dist'),
+      tsClientOutDir: cliBundleOptions?.tsClientOutDir ?? conf.bundle?.tsClientOutDir ?? path.join(srcRoot, 'client'),
+      deleteTsClientOutDirAfter:
+        cliBundleOptions?.deleteTsClientOutDirAfter ?? conf.bundle?.deleteTsClientOutDirAfter ?? true,
+      noReadme: cliBundleOptions?.noReadme ?? conf.bundle?.noReadme ?? false,
+      noPackage: cliBundleOptions?.noPackage ?? conf.bundle?.noPackage ?? false,
     },
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',

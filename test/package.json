@@ -20,14 +20,18 @@
   "dependencies": {
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "dto-mapped-types": "^0.0.7",
     "next": "^15.3.2",
     "react": "^19",
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
-    "vovk-client": "^0.0.4-draft.60",
-    "dto-mapped-types": "^0.0.7"
+    "vovk-client": "^0.0.4-draft.60"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@tailwindcss/postcss": "^4.1.5",
     "@types/node": "^22.15.17",
     "@types/react": "^19",
@@ -37,6 +41,8 @@
     "openapi3-ts": "^4.4.0",
     "postcss": "^8",
     "tailwind": "^4.0.0",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "ts-loader": "^9.5.2",
+    "webpack-cli": "^6.0.1"
   }
 }

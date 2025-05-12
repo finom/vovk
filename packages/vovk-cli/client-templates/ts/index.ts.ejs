@@ -3,16 +3,16 @@ import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from '<%= t.imports.fetcher %>';
 import { createRPC } from '<%= t.imports.createRPC %>';
 import { fullSchema } from './fullSchema.ts';
-<% Object.values(t.fullSchema.segments).forEach((segment, i) => { if(Object.keys(segment.controllers).length) { %>
+<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
-<% }}) %>
+<% }) %>
 <% if (t.imports.validateOnClient) { %>
 import { validateOnClient } from '<%= t.imports.validateOnClient %>';
 <% } else { %>
 const validateOnClient = undefined;
 <% } %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-<% Object.values(t.fullSchema.segments).forEach((segment, i) => { %>
+<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
   <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %> = createRPC<Controllers<%= i %>["<%= rpcModuleName %>"], Options>(
   fullSchema, '<%= segment.segmentName %>', '<%= rpcModuleName %>',

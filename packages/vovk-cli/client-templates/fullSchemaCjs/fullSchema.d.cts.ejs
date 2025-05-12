@@ -3,9 +3,7 @@ import type { VovkStrictConfig, VovkSegmentSchema } from 'vovk';
 
 export const fullSchema: {
     config: Partial<VovkStrictConfig>;
-    segments: {
-      <% Object.values(t.fullSchema.segments).forEach((segment) => { %>
-      '<%= segment.segmentName %>': VovkSegmentSchema;
-      <% }) %>
+    segments: {<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
+      '<%= segment.segmentName %>': VovkSegmentSchema;<% }) %>
     };
 };

@@ -1,15 +1,10 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
-import type { VovkStrictConfig, VovkSegmentSchema } from 'vovk';
 import config from './<%= t.schemaOutDir %>/config.json' with { type: "json" };
-
-<% Object.values(t.fullSchema.segments).forEach((segment, i) => { if(Object.keys(segment.controllers).length) { %>
-  import segment<%= i %> from './<%= t.schemaOutDir %>/<%= t.SEGMENTS_SCHEMA_DIR_NAME %>/<%= segment.segmentName || t.ROOT_SEGMENT_SCHEMA_NAME %>.json' with { type: "json" };
-<% }}) %>
-
-const segments = {
-  <% Object.values(t.fullSchema.segments).forEach((segment, i) => { %>
-    '<%= segment.segmentName %>': segment<%= i %>,
-  <% }) %>
+<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
+import segment<%= i %> from './<%= t.schemaOutDir %>/<%= t.SEGMENTS_SCHEMA_DIR_NAME %>/<%= segment.segmentName || t.ROOT_SEGMENT_SCHEMA_NAME %>.json' with { type: "json" };
+<% }) %>
+const segments = {<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
+  '<%= segment.segmentName %>': segment<%= i %>,<% }) %>
 };
 
 export const fullSchema = {

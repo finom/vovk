@@ -94,8 +94,8 @@ program
   .option('--segment-client-from <templates...>', 'client template names for segment client')
   .option('--prettify', 'prettify output files')
   .option('--config <config>', 'path to config file')
-  .action(async (cliOptions: GenerateOptions) => {
-    const projectInfo = await getProjectInfo({ cliOptions });
+  .action(async (cliGenerateOptions: GenerateOptions) => {
+    const projectInfo = await getProjectInfo({ cliGenerateOptions });
     const { cwd, config } = projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
@@ -104,7 +104,7 @@ program
       projectInfo,
       fullSchema,
       forceNothingWrittenLog: true,
-      cliOptions,
+      cliGenerateOptions,
     });
   });
 

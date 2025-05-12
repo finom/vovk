@@ -19,27 +19,27 @@ export default async function getClientTemplateFiles({
   cwd,
   log,
   configKey,
-  cliOptions,
+  cliGenerateOptions,
 }: {
   config: VovkStrictConfig;
   cwd: string;
   log: ProjectInfo['log'];
   configKey: 'fullClient' | 'segmentedClient';
-  cliOptions?: GenerateOptions;
+  cliGenerateOptions?: GenerateOptions;
 }) {
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
   const fromTemplates =
     configKey === 'fullClient'
-      ? cliOptions?.fullClientFrom || cliOptions?.segmentedClientFrom
-        ? (cliOptions?.fullClientFrom ?? [])
+      ? cliGenerateOptions?.fullClientFrom || cliGenerateOptions?.segmentedClientFrom
+        ? (cliGenerateOptions?.fullClientFrom ?? [])
         : config.fullClient.fromTemplates
-      : cliOptions?.fullClientFrom || cliOptions?.segmentedClientFrom
-        ? (cliOptions?.segmentedClientFrom ?? [])
+      : cliGenerateOptions?.fullClientFrom || cliGenerateOptions?.segmentedClientFrom
+        ? (cliGenerateOptions?.segmentedClientFrom ?? [])
         : config.segmentedClient.fromTemplates;
   const outDir =
     configKey === 'fullClient'
-      ? (cliOptions?.fullClientOut ?? config.fullClient.outDir)
-      : (cliOptions?.segmentedClientOut ?? config.segmentedClient.outDir);
+      ? (cliGenerateOptions?.fullClientOut ?? config.fullClient.outDir)
+      : (cliGenerateOptions?.segmentedClientOut ?? config.segmentedClient.outDir);
 
   for (const templateName of fromTemplates) {
     if (!(templateName in config.clientTemplateDefs)) {

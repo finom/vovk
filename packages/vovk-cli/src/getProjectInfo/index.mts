@@ -9,15 +9,15 @@ export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 export default async function getProjectInfo({
   port: givenPort,
   cwd = process.cwd(),
-  cliOptions,
-}: { port?: number; cwd?: string; cliOptions?: GenerateOptions } = {}) {
+  cliGenerateOptions,
+}: { port?: number; cwd?: string; cliGenerateOptions?: GenerateOptions } = {}) {
   const port = givenPort?.toString() ?? process.env.PORT ?? '3000';
 
   // Make PORT available to the config file at getConfig
   process.env.PORT = port;
 
   const { config, srcRoot, configAbsolutePaths, userConfig, error } = await getConfig({
-    cliOptions,
+    cliGenerateOptions,
     cwd,
   });
   const apiRoot = `${config.origin ?? ''}/${config.rootEntry}`;

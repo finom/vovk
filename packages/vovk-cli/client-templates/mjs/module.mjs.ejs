@@ -7,7 +7,7 @@ import { validateOnClient } from '<%= t.imports.module.validateOnClient %>';
 <% } else { %>
 const validateOnClient = undefined;
 <% } %>
-<% Object.values(t.fullSchema.segments).forEach((segment, i) => {
+<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {
   Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %> = createRPC(
   fullSchema, '<%= segment.segmentName %>', '<%= rpcModuleName %>',

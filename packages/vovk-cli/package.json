@@ -43,6 +43,10 @@
   "dependencies": {
     "@inquirer/prompts": "^7.5.0",
     "@npmcli/package-json": "^6.1.1",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
     "chalk": "^5.4.1",
     "chokidar": "^4.0.3",
     "commander": "^13.1.0",
@@ -57,10 +61,11 @@
     "loglevel": "^1.9.2",
     "pluralize": "^8.0.0",
     "prettier": "^3.5.3",
+    "rollup": "^4.40.2",
     "tar-stream": "^3.1.7",
     "ts-morph": "^25.0.1",
-    "undici": "^7.8.0",
     "type-fest": "^4.41.0",
+    "undici": "^7.8.0",
     "vovk-openapi": "*"
   },
   "devDependencies": {
