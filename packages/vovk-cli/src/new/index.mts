@@ -4,7 +4,7 @@ import type { NewOptions } from '../types.mjs';
 
 export default async function newComponents(
   components: string[],
-  { dryRun, dir, templates, overwrite, noSegmentUpdate, empty }: NewOptions
+  { dryRun, dir, templates, overwrite, noSegmentUpdate, empty, static: isStaticSegment }: NewOptions
 ) {
   if (components[0] === 'segment' || components[0] === 'segments') {
     // vovk new segment [segmentName]
@@ -17,7 +17,7 @@ export default async function newComponents(
     }
 
     for (const segmentName of segmentNames) {
-      await newSegment({ segmentName, overwrite, dryRun });
+      await newSegment({ segmentName, isStaticSegment, overwrite, dryRun });
     }
   } else {
     // vovk new [what...] [moduleNameWithOptionalSegment]

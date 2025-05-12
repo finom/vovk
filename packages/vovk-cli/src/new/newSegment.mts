@@ -9,10 +9,12 @@ import chalk from 'chalk';
 
 export default async function newSegment({
   segmentName,
+  isStaticSegment,
   overwrite,
   dryRun,
 }: {
   segmentName: string;
+  isStaticSegment?: boolean;
   overwrite?: boolean;
   dryRun?: boolean;
 }) {
@@ -27,14 +29,20 @@ export default async function newSegment({
   }
 
   const code = await prettify(
-    `import { initVovk } from 'vovk';
+    `import { initVovk${isStaticSegment ? ', generateStaticAPI' : ''} } from 'vovk';
 
 export const runtime = 'edge';
 
 const controllers = {};
 
 export type Controllers = typeof controllers;
-
+${
+  isStaticSegment
+    ? `export function generateStaticParams() {
+  return generateStaticAPI(controllers);
+}`
+    : ''
+}
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
 ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
   controllers,

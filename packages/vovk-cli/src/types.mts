@@ -51,6 +51,7 @@ export interface NewOptions {
   overwrite?: boolean;
   noSegmentUpdate?: boolean;
   empty?: boolean;
+  static?: boolean;
 }
 
 export type VovkEnv = {
