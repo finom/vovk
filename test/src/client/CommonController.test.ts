@@ -3,12 +3,9 @@ import {
   HttpStatus,
   type VovkBody,
   type VovkErrorResponse,
-  type VovkParams,
   type VovkQuery,
   type VovkReturnType,
-  type VovkControllerBody,
-  type VovkControllerParams,
-  type VovkControllerQuery,
+  type VovkParams,
   type VovkHandlerSchema,
 } from 'vovk';
 import { it, describe } from 'node:test';
@@ -120,25 +117,25 @@ describe('Client with vovk-client', () => {
     null as unknown as VovkBody<typeof CommonControllerRPC.getWithParams> satisfies undefined;
 
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerBody<typeof CommonController.getWithParams> satisfies { hello: 'world' };
-    null as unknown as VovkControllerBody<typeof CommonController.getWithParams> satisfies undefined;
+    null as unknown as VovkBody<typeof CommonController.getWithParams> satisfies { hello: 'world' };
+    null as unknown as VovkBody<typeof CommonController.getWithParams> satisfies undefined;
 
     // @ts-expect-error Expect error
     null as unknown as VovkQuery<typeof CommonControllerRPC.getWithParams> satisfies { hello: 'world' };
     null as unknown as VovkQuery<typeof CommonControllerRPC.getWithParams> satisfies undefined;
 
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerQuery<typeof CommonController.getWithParams> satisfies { hello: 'world' };
-    null as unknown as VovkControllerQuery<typeof CommonController.getWithParams> satisfies undefined;
+    null as unknown as VovkQuery<typeof CommonController.getWithParams> satisfies { hello: 'world' };
+    null as unknown as VovkQuery<typeof CommonController.getWithParams> satisfies undefined;
 
     null as unknown as VovkParams<typeof CommonControllerRPC.getWithParams> satisfies { hello: 'world' };
     // @ts-expect-error Expect error
     null as unknown as VovkParams<typeof CommonControllerRPC.getWithParams> satisfies { hello: 'foo' };
     null as unknown as VovkParams<typeof CommonControllerRPC.getWithParams> satisfies { hello: 'world' };
 
-    null as unknown as VovkControllerParams<typeof CommonController.getWithParams> satisfies { hello: 'world' };
+    null as unknown as VovkParams<typeof CommonController.getWithParams> satisfies { hello: 'world' };
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerParams<typeof CommonController.getWithParams> satisfies { hello: 'foo' };
+    null as unknown as VovkParams<typeof CommonController.getWithParams> satisfies { hello: 'foo' };
 
     deepStrictEqual(result satisfies { hello: 'world' }, { hello: 'world' });
   });

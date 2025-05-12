@@ -26,7 +26,7 @@
     "react": "^19",
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
-    "vovk-client": "^0.0.4-draft.77",
+    "vovk-client": "^0.0.4-draft.81",
     "zod": "^4.0.0-beta.20250430T185432"
   },
   "devDependencies": {

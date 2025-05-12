@@ -128,29 +128,45 @@ export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownA
       ? Y
       : never;
 
-export type VovkControllerOutput<
+export type VovkOutput<
   T extends ((...args: KnownAny) => KnownAny) & {
     __output?: KnownAny;
   },
 > = T['__output'];
 
-export type VovkControllerIteration<
+export type VovkIteration<
   T extends ((...args: KnownAny) => KnownAny) & {
     __iteration?: KnownAny;
   },
 > = T['__iteration'];
 
-export type VovkBody<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['body'];
+export type VovkClientBody<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['body'];
 
-export type VovkQuery<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['query'];
+export type VovkClientQuery<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['query'];
 
-export type VovkParams<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['params'];
+export type VovkClientParams<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['params'];
 
-export type VovkYieldType<T extends (...args: KnownAny[]) => unknown> = T extends (
+export type VovkClientYieldType<T extends (...args: KnownAny[]) => unknown> = T extends (
   ...args: KnownAny[]
 ) => Promise<VovkStreamAsyncIterable<infer Y>>
   ? Y
   : never;
+
+export type VovkBody<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
+  ? VovkClientBody<T>
+  : VovkControllerBody<T>;
+
+export type VovkQuery<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
+  ? VovkClientQuery<T>
+  : VovkControllerQuery<T>;
+
+export type VovkParams<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
+  ? VovkClientParams<T>
+  : VovkControllerParams<T>;
+
+export type VovkYieldType<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
+  ? VovkClientYieldType<T>
+  : VovkControllerYieldType<T>;
 
 export type VovkReturnType<T extends (...args: KnownAny) => unknown> = Awaited<ReturnType<T>>;
 

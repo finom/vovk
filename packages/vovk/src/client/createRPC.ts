@@ -127,6 +127,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
     handler.controllerSchema = controllerSchema;
     handler.segmentSchema = segmentSchema;
     handler.fullSchema = fullSchema;
+    handler.isRPC = true;
 
     // @ts-expect-error TODO
     client[staticMethodName] = handler;

@@ -4,10 +4,10 @@ import {
   get,
   prefix,
   HttpStatus,
-  type VovkControllerBody,
-  type VovkControllerQuery,
-  type VovkControllerParams,
-  type VovkControllerOutput,
+  type VovkBody,
+  type VovkQuery,
+  type VovkParams,
+  type VovkOutput,
   type VovkRequest,
 } from 'vovk';
 import { openapi } from 'vovk-openapi';
@@ -40,17 +40,17 @@ class WithDtoClientService {
     params,
     vovkParams,
   }: {
-    body: VovkControllerBody<typeof WithDtoClientController.handleAll>;
-    query: VovkControllerQuery<typeof WithDtoClientController.handleAll>;
-    params: VovkControllerParams<typeof WithDtoClientController.handleAll>;
-    vovkParams: VovkControllerParams<typeof WithDtoClientController.handleAll>;
+    body: VovkBody<typeof WithDtoClientController.handleAll>;
+    query: VovkQuery<typeof WithDtoClientController.handleAll>;
+    params: VovkParams<typeof WithDtoClientController.handleAll>;
+    vovkParams: VovkParams<typeof WithDtoClientController.handleAll>;
   }) {
     return {
       body,
       query,
       params,
       vovkParams,
-    } satisfies VovkControllerOutput<typeof WithDtoClientController.handleAll>;
+    } satisfies VovkOutput<typeof WithDtoClientController.handleAll>;
   }
 }
 

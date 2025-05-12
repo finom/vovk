@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
 import type { Token, default as StreamingController } from './StreamingController';
 import { expectPromise } from '../lib.ts';
-import { HttpException, type VovkYieldType, type VovkControllerYieldType } from 'vovk';
+import { HttpException, type VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from 'vovk-client';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
@@ -23,7 +23,7 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControllerYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
+    null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
     deepStrictEqual(expected, expectedCollected);

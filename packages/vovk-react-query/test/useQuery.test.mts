@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import { HttpException, type VovkReturnType, type VovkYieldType } from 'vovk';
 import { renderHook, waitFor } from '@testing-library/react';
 import {
-  ClientControllerRPC,
+  CommonControllerRPC,
   StreamingControllerRPC,
   WithZodClientControllerRPC,
-} from '../../../test/node_modules/vovk-client/module.mjs';
+} from '../../../test/node_modules/vovk-client/index.mjs';
 import { JSDOM } from 'jsdom';
 import { createElement, type ReactNode } from 'react';
 
@@ -22,7 +22,7 @@ describe('useQuery', () => {
     const queryClient = new QueryClient();
 
     const { result } = renderHook(() => {
-      return ClientControllerRPC.postWithAll.useQuery(
+      return CommonControllerRPC.postWithAll.useQuery(
         {
           params: { hello: 'world' },
           body: { isBody: true },
@@ -37,7 +37,7 @@ describe('useQuery', () => {
       assert.equal(result.current.isSuccess, true);
     });
 
-    assert.deepEqual(result.current.data satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll> | undefined, {
+    assert.deepEqual(result.current.data satisfies VovkReturnType<typeof CommonControllerRPC.postWithAll> | undefined, {
       params: { hello: 'world' },
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue' },
@@ -57,7 +57,7 @@ describe('useQuery', () => {
       );
     const { result } = renderHook(
       () => {
-        return ClientControllerRPC.postWithAll.useQuery({
+        return CommonControllerRPC.postWithAll.useQuery({
           params: { hello: 'world' },
           body: { isBody: true },
           query: { simpleQueryParam: 'queryValue' },
@@ -70,7 +70,7 @@ describe('useQuery', () => {
       assert.equal(result.current.isSuccess, true);
     });
 
-    assert.deepEqual(result.current.data satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll> | undefined, {
+    assert.deepEqual(result.current.data satisfies VovkReturnType<typeof CommonControllerRPC.postWithAll> | undefined, {
       params: { hello: 'world' },
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue' },

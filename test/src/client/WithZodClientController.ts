@@ -4,10 +4,10 @@ import {
   get,
   prefix,
   HttpStatus,
-  type VovkControllerBody,
-  type VovkControllerQuery,
-  type VovkControllerParams,
-  type VovkControllerOutput,
+  type VovkBody,
+  type VovkQuery,
+  type VovkParams,
+  type VovkOutput,
 } from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
@@ -60,12 +60,12 @@ class WithZodClientService {
     params,
     vovkParams,
   }: {
-    body: VovkControllerBody<typeof WithZodClientController.handleAll>;
-    query: VovkControllerQuery<typeof WithZodClientController.handleAll>;
-    params: VovkControllerParams<typeof WithZodClientController.handleAll>;
-    vovkParams: VovkControllerParams<typeof WithZodClientController.handleAll>;
+    body: VovkBody<typeof WithZodClientController.handleAll>;
+    query: VovkQuery<typeof WithZodClientController.handleAll>;
+    params: VovkParams<typeof WithZodClientController.handleAll>;
+    vovkParams: VovkParams<typeof WithZodClientController.handleAll>;
   }) {
-    return { body, query, params, vovkParams } satisfies VovkControllerOutput<typeof WithZodClientController.handleAll>;
+    return { body, query, params, vovkParams } satisfies VovkOutput<typeof WithZodClientController.handleAll>;
   }
 }
 

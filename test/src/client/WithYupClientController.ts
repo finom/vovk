@@ -4,10 +4,10 @@ import {
   get,
   prefix,
   HttpStatus,
-  type VovkControllerBody,
-  type VovkControllerQuery,
-  type VovkControllerParams,
-  type VovkControllerOutput,
+  type VovkBody,
+  type VovkQuery,
+  type VovkParams,
+  type VovkOutput,
 } from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withYup } from 'vovk-yup';
@@ -65,12 +65,12 @@ class WithYupClientService {
     params,
     vovkParams,
   }: {
-    body: VovkControllerBody<typeof WithYupClientController.handleAll>;
-    query: VovkControllerQuery<typeof WithYupClientController.handleAll>;
-    params: VovkControllerParams<typeof WithYupClientController.handleAll>;
-    vovkParams: VovkControllerParams<typeof WithYupClientController.handleAll>;
+    body: VovkBody<typeof WithYupClientController.handleAll>;
+    query: VovkQuery<typeof WithYupClientController.handleAll>;
+    params: VovkParams<typeof WithYupClientController.handleAll>;
+    vovkParams: VovkParams<typeof WithYupClientController.handleAll>;
   }) {
-    return { body, query, params, vovkParams } satisfies VovkControllerOutput<typeof WithYupClientController.handleAll>;
+    return { body, query, params, vovkParams } satisfies VovkOutput<typeof WithYupClientController.handleAll>;
   }
 }
 

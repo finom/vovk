@@ -5,7 +5,6 @@ export enum BuiltInTemplateName {
   ts = 'ts',
   cjs = 'cjs',
   mjs = 'mjs',
-  dts = 'dts',
   readme = 'readme',
   packageJson = 'packageJson',
   fullSchemaTs = 'fullSchemaTs',
@@ -28,16 +27,12 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.cjs]: {
       templatePath: path.resolve(templatesDir, 'cjs/'),
       origin: null,
-      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.', [BuiltInTemplateName.dts]: '.' },
+      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.mjs]: {
       templatePath: path.resolve(templatesDir, 'mjs/'),
       origin: null,
-      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.', [BuiltInTemplateName.dts]: '.' },
-    },
-    [BuiltInTemplateName.dts]: {
-      templatePath: path.resolve(templatesDir, 'dts/'),
-      origin: null,
+      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.readme]: {
       templatePath: path.resolve(templatesDir, 'readme/'),

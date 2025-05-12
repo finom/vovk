@@ -8,7 +8,10 @@ function createFetcher<T = unknown>({
   prepareRequestInit,
   transformResponse,
 }: {
-  prepareRequestInit?: (init: RequestInit, options: VovkDefaultFetcherOptions & T) => RequestInit | Promise<RequestInit>;
+  prepareRequestInit?: (
+    init: RequestInit,
+    options: VovkDefaultFetcherOptions & T
+  ) => RequestInit | Promise<RequestInit>;
   transformResponse?: (resp: unknown, options: VovkDefaultFetcherOptions & T, init: RequestInit) => unknown;
 } = {}) {
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
@@ -97,6 +100,9 @@ function createFetcher<T = unknown>({
   return newFetcher;
 }
 
-export const fetcher = Object.assign(createFetcher({
-  transformResponse: (resp) => resp,
-}), { create: createFetcher });
+export const fetcher = Object.assign(
+  createFetcher({
+    transformResponse: (resp) => resp,
+  }),
+  { create: createFetcher }
+);

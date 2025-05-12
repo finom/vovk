@@ -31,8 +31,9 @@
     "test/vovk.config.cjs",
     "test/next.config.mjs",
     "test/postcss.config.cjs",
-    "packages/vovk-dto/index.cts"
-, "test/webpack.config.mjs"  ],
+    "packages/vovk-dto/index.cts",
+    "test/webpack.config.mjs"
+  ],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"

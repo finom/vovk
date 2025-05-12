@@ -1,13 +1,13 @@
 {
   "name": "vovk-client",
-  "version": "0.0.4-draft.77",
+  "version": "0.0.4-draft.81",
   "description": "Vovk.ts client",
   "scripts": {
     "npm-publish": "npm publish"
   },
   "main": "./index.cjs",
   "module": "./index.mjs",
-  "types": "./index.d.ts",
+  "types": "./index.d.mts",
   "exports": {
     ".": {
       "import": "./index.mjs",

@@ -1,14 +1,7 @@
 import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithYupClientControllerRPC } from 'vovk-client';
-import {
-  HttpException,
-  type VovkReturnType,
-  type VovkHandlerSchema,
-  type VovkControllerYieldType,
-  type VovkYieldType,
-  type VovkControllerOutput,
-} from 'vovk';
+import { HttpException, type VovkReturnType, type VovkHandlerSchema, type VovkYieldType, type VovkOutput } from 'vovk';
 import type WithDtoClientController from './WithDtoClientController';
 import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type WithYupClientController from './WithYupClientController.ts';
@@ -63,12 +56,12 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     };
 
     null as unknown as VovkReturnType<typeof WithYupClientControllerRPC.handleAll> satisfies typeof expected;
-    null as unknown as VovkControllerOutput<typeof WithYupClientController.handleAll> satisfies typeof expected;
+    null as unknown as VovkOutput<typeof WithYupClientController.handleAll> satisfies typeof expected;
 
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithYupClientController.handleAll> satisfies null;
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerOutput<typeof WithYupClientController.handleAll> satisfies null;
+    null as unknown as VovkOutput<typeof WithYupClientController.handleAll> satisfies null;
 
     deepStrictEqual(result satisfies typeof expected, expected);
   });
@@ -241,7 +234,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
@@ -262,7 +255,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     });
     await rejects.toThrow(/Yup validation failed. Invalid iteration #0 on server for http:.*\. value.*/);
 
-    null as unknown as VovkControllerYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithYupClientControllerRPC.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
@@ -278,7 +271,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     for await (const message of resp) {
       expectedCollected.push(message);
     }
-    null as unknown as VovkControllerYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithYupClientControllerRPC.handleStream> satisfies { value: string };
     deepStrictEqual(expected, expectedCollected);
   });
@@ -296,7 +289,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       }
     });
     await rejects.toThrow(/Yup validation failed. Invalid iteration #2 on server for http:.*\. value.*/);
-    null as unknown as VovkControllerYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithYupClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithYupClientControllerRPC.handleStream> satisfies { value: string };
     deepStrictEqual(expected, expectedCollected);
   });

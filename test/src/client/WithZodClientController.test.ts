@@ -2,14 +2,7 @@ import test, { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithZodClientControllerRPC } from 'vovk-client';
 import { validateOnClient as validateOnClientAjv } from 'vovk-ajv';
-import {
-  HttpException,
-  type VovkReturnType,
-  type VovkHandlerSchema,
-  type VovkControllerYieldType,
-  type VovkYieldType,
-  type VovkControllerOutput,
-} from 'vovk';
+import { HttpException, type VovkReturnType, type VovkHandlerSchema, type VovkYieldType, type VovkOutput } from 'vovk';
 import type WithZodClientController from './WithZodClientController.ts';
 import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
@@ -91,12 +84,12 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     };
 
     null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleAll> satisfies typeof expected;
-    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies typeof expected;
+    null as unknown as VovkOutput<typeof WithZodClientController.handleAll> satisfies typeof expected;
 
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleAll> satisfies null;
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerOutput<typeof WithZodClientController.handleAll> satisfies null;
+    null as unknown as VovkOutput<typeof WithZodClientController.handleAll> satisfies null;
 
     deepStrictEqual(result satisfies typeof expected, expected);
   });
@@ -269,7 +262,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControllerYieldType<typeof WithZodClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithZodClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithZodClientControllerRPC.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
@@ -290,7 +283,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
     await rejects.toThrow(/Zod validation failed. Invalid iteration #0 on server for http:.*\. At "value".*/);
 
-    null as unknown as VovkControllerYieldType<typeof WithZodClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithZodClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithZodClientControllerRPC.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
@@ -309,7 +302,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControllerYieldType<typeof WithZodClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithZodClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithZodClientControllerRPC.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
@@ -331,7 +324,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
     await rejects.toThrow(/Zod validation failed. Invalid iteration #2 on server for http:.*\. At "value".*/);
 
-    null as unknown as VovkControllerYieldType<typeof WithZodClientController.validateEachIteration> satisfies {
+    null as unknown as VovkYieldType<typeof WithZodClientController.validateEachIteration> satisfies {
       value: string;
     };
     null as unknown as VovkYieldType<typeof WithZodClientControllerRPC.validateEachIteration> satisfies {

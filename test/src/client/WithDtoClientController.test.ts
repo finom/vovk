@@ -1,14 +1,7 @@
 import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithDtoClientControllerRPC } from 'vovk-client';
-import {
-  HttpException,
-  type VovkReturnType,
-  type VovkHandlerSchema,
-  type VovkControllerYieldType,
-  type VovkYieldType,
-  type VovkControllerOutput,
-} from 'vovk';
+import { HttpException, type VovkReturnType, type VovkHandlerSchema, type VovkYieldType, type VovkOutput } from 'vovk';
 import type WithDtoClientController from './WithDtoClientController';
 import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type {
@@ -85,12 +78,12 @@ describe('Validation with with vovk-dto', () => {
     };
 
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies ExpectedType;
-    null as unknown as VovkControllerOutput<typeof WithDtoClientController.handleAll> satisfies typeof expected;
+    null as unknown as VovkOutput<typeof WithDtoClientController.handleAll> satisfies typeof expected;
 
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies null;
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerOutput<typeof WithDtoClientController.handleAll> satisfies null;
+    null as unknown as VovkOutput<typeof WithDtoClientController.handleAll> satisfies null;
 
     deepStrictEqual(result satisfies ExpectedType, expected);
   });
@@ -117,12 +110,12 @@ describe('Validation with with vovk-dto', () => {
     };
 
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies ExpectedType;
-    null as unknown as VovkControllerOutput<typeof WithDtoClientController.handleAll> satisfies typeof expected;
+    null as unknown as VovkOutput<typeof WithDtoClientController.handleAll> satisfies typeof expected;
 
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies null;
     // @ts-expect-error Expect error
-    null as unknown as VovkControllerOutput<typeof WithDtoClientController.handleAll> satisfies null;
+    null as unknown as VovkOutput<typeof WithDtoClientController.handleAll> satisfies null;
 
     deepStrictEqual(result satisfies ExpectedType, expected);
   });
@@ -339,7 +332,7 @@ describe('Validation with with vovk-dto', () => {
       expectedCollected.push(message);
     }
 
-    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
@@ -360,7 +353,7 @@ describe('Validation with with vovk-dto', () => {
     });
     await rejects.toThrow(/Validation failed. Invalid iteration #0 on server for http:.*\. value.*/);
 
-    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.handleStream> satisfies {
+    null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies {
       value: string;
     };
     null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies {
@@ -380,7 +373,7 @@ describe('Validation with with vovk-dto', () => {
     for await (const message of resp) {
       expectedCollected.push(message);
     }
-    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.handleStream> satisfies {
+    null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies {
       value: string;
     };
     null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies {
@@ -402,7 +395,7 @@ describe('Validation with with vovk-dto', () => {
       }
     });
     await rejects.toThrow(/Validation failed. Invalid iteration #2 on server for http:.*\. value.*/);
-    null as unknown as VovkControllerYieldType<typeof WithDtoClientController.validateEachIteration> satisfies {
+    null as unknown as VovkYieldType<typeof WithDtoClientController.validateEachIteration> satisfies {
       value: string;
     };
     null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.validateEachIteration> satisfies {

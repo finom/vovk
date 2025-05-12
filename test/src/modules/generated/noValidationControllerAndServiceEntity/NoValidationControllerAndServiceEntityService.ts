@@ -1,9 +1,9 @@
-import type { VovkControllerBody, VovkControllerQuery } from 'vovk';
+import type { VovkBody, VovkQuery } from 'vovk';
 import type NoValidationControllerAndServiceEntityController from './NoValidationControllerAndServiceEntityController';
 
 export default class NoValidationControllerAndServiceEntityService {
   static getNoValidationControllerAndServiceEntities = (
-    search: VovkControllerQuery<
+    search: VovkQuery<
       typeof NoValidationControllerAndServiceEntityController.getNoValidationControllerAndServiceEntities
     >['search']
   ) => {
@@ -12,12 +12,10 @@ export default class NoValidationControllerAndServiceEntityService {
 
   static updateNoValidationControllerAndServiceEntity = (
     id: string,
-    q: VovkControllerQuery<
+    q: VovkQuery<
       typeof NoValidationControllerAndServiceEntityController.updateNoValidationControllerAndServiceEntity
     >['q'],
-    body: VovkControllerBody<
-      typeof NoValidationControllerAndServiceEntityController.updateNoValidationControllerAndServiceEntity
-    >
+    body: VovkBody<typeof NoValidationControllerAndServiceEntityController.updateNoValidationControllerAndServiceEntity>
   ) => {
     return { id, q, body };
   };

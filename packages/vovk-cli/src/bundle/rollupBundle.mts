@@ -67,9 +67,7 @@ export async function rollupBundle({
 
   console.log({ input });
 
-
   const bundle = await rollup(input);
-
 
   for (const outputOption of output as OutputOptions[]) {
     await bundle.write(outputOption);

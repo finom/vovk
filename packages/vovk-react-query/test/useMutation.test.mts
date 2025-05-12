@@ -3,7 +3,7 @@ import { it, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { HttpException, type VovkReturnType } from 'vovk';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { ClientControllerRPC, WithZodClientControllerRPC } from '../../../test/node_modules/vovk-client/module.mjs';
+import { CommonControllerRPC, WithZodClientControllerRPC } from '../../../test/node_modules/vovk-client/index.mjs';
 import { JSDOM } from 'jsdom';
 import { createElement, type ReactNode } from 'react';
 
@@ -16,7 +16,7 @@ describe('useMutation', () => {
     const queryClient = new QueryClient();
 
     const { result } = renderHook(() => {
-      return ClientControllerRPC.postWithAll.useMutation({}, queryClient);
+      return CommonControllerRPC.postWithAll.useMutation({}, queryClient);
     });
 
     await act(async () => {
@@ -31,7 +31,7 @@ describe('useMutation', () => {
       assert.equal(result.current.isSuccess, true);
     });
 
-    assert.deepEqual(result.current.data satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll> | undefined, {
+    assert.deepEqual(result.current.data satisfies VovkReturnType<typeof CommonControllerRPC.postWithAll> | undefined, {
       params: { hello: 'world' },
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue' },
@@ -52,7 +52,7 @@ describe('useMutation', () => {
 
     const { result } = renderHook(
       () => {
-        return ClientControllerRPC.postWithAll.useMutation();
+        return CommonControllerRPC.postWithAll.useMutation();
       },
       { wrapper }
     );
@@ -69,7 +69,7 @@ describe('useMutation', () => {
       assert.equal(result.current.isSuccess, true);
     });
 
-    assert.deepEqual(result.current.data satisfies VovkReturnType<typeof ClientControllerRPC.postWithAll> | undefined, {
+    assert.deepEqual(result.current.data satisfies VovkReturnType<typeof CommonControllerRPC.postWithAll> | undefined, {
       params: { hello: 'world' },
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue' },

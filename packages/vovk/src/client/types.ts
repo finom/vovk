@@ -41,7 +41,12 @@ type StaticMethodReturn<T extends ControllerStaticMethod> =
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
 type ClientMethod<
-  T extends (...args: KnownAny[]) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>,
+  T extends ((
+    ...args: KnownAny[]
+  ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
+    __output?: KnownAny;
+    __iteration?: KnownAny;
+  },
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
 > = (<R>(
@@ -66,10 +71,13 @@ type ClientMethod<
   : R extends object
     ? Promise<R>
     : StaticMethodReturnPromise<T>) & {
+  isRPC: true;
   schema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkFullSchema;
+  __output: T['__output'];
+  __iteration: T['__iteration'];
 };
 
 type OmitNever<T> = {
