@@ -49,11 +49,12 @@ function getRollupConfig({
 export async function rollupBundle({
   tsFullClientOutDirInput,
   outDir,
+  cwd,
 }: {
   tsFullClientOutDirInput: string;
   outDir: string;
+  cwd: string;
 }) {
-  const cwd = process.cwd();
   const { output, ...input } = getRollupConfig({
     tsFullClientOutDirInput,
     outDir,

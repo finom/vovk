@@ -1,4 +1,5 @@
 import type { LogLevelNames } from 'loglevel';
+import type { VovkStrictConfig } from 'vovk';
 
 export type VovkModuleRenderResult = {
   fileName: string;
@@ -23,13 +24,8 @@ export interface GenerateOptions {
   segmentedClientOut?: string;
 }
 
-export interface BundleOptions {
+export interface BundleOptions extends Partial<VovkStrictConfig['bundle']> {
   config?: string;
-  outDir?: string;
-  noReadme?: boolean;
-  noPackage?: boolean;
-  tsClientOutDir?: string;
-  deleteTsClientOutDirAfter?: boolean;
 }
 
 export interface InitOptions {

@@ -15,8 +15,10 @@ export default async function bundle({
   fullSchema: VovkFullSchema;
   cliBundleOptions?: BundleOptions;
 }) {
-  // tsClientOutDir
-  const tsFullClientOutDirInput = path.join(import.meta.dirname, '__tmp_ts_client__');
+  const cwd = process.cwd();
+  const tsFullClientOutDirInput = cliBundleOptions?.tsClientOutDir
+    ? path.resolve(cwd, cliBundleOptions.tsClientOutDir)
+    : path.join(import.meta.dirname, '__tmp_ts_client__');
   await generate({
     isEnsuringClient: false,
     projectInfo,
@@ -37,5 +39,6 @@ export default async function bundle({
   await rollupBundle({
     tsFullClientOutDirInput,
     outDir,
+    cwd,
   });
 }

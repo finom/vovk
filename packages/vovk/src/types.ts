@@ -268,11 +268,11 @@ export type VovkConfig = {
   fullClient?: ClientConfigFull;
   segmentedClient?: ClientConfigSegmented;
   bundle?: {
-    outDir: string;
-    tsClientOutDir: string;
-    deleteTsClientOutDirAfter: boolean;
+    outDir?: string;
     noReadme?: boolean;
     noPackage?: boolean;
+    tsClientOutDir?: string;
+    dontDeleteTsClientOutDirAfter?: boolean;
   };
   imports?: {
     fetcher?: string | [string, string] | [string];
@@ -298,9 +298,10 @@ export type VovkConfig = {
 };
 
 export type VovkStrictConfig = Required<
-  Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'fullClient' | 'segmentedClient'>
+  Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'fullClient' | 'segmentedClient' | 'bundle'>
 > & {
   emitConfig: (keyof VovkStrictConfig)[];
+  bundle: Exclude<Required<VovkConfig['bundle']>, undefined>;
   imports: {
     fetcher: [string, string] | [string];
     validateOnClient: [string, string] | [string] | null;

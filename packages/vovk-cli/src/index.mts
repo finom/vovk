@@ -7,12 +7,12 @@ import concurrently from 'concurrently';
 import getAvailablePort from './utils/getAvailablePort.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
 import generate from './generate/index.mjs';
+import bundle from './bundle/index.mjs';
 import { VovkDev } from './dev/index.mjs';
 import newComponents from './new/index.mjs';
-import type { DevOptions, GenerateOptions, NewOptions } from './types.mjs';
+import type { BundleOptions, DevOptions, GenerateOptions, NewOptions } from './types.mjs';
 import initProgram from './initProgram.mjs';
 import { getFullSchemaFromJSON } from './generate/getFullSchemaFromJSON.mjs';
-
 import type { VovkEnv } from './types.mjs';
 export type { VovkEnv };
 
@@ -124,6 +124,29 @@ program
   .option('--no-segment-update', 'do not update segment files when creating a new module')
   .option('--dry-run', 'do not write files to disk')
   .action((components: string[], options: NewOptions) => newComponents(components, options));
+
+program
+  .command('bundle')
+  .alias('b')
+  .description('Generate TypeScrtipt RPC and bundle it')
+  .option('--out, --out-dir <path>', 'path to output directory for bundle')
+  .option('--ts-client-out-dir <path>', 'path to output directory for TypeScript client')
+  .option('--no-readme', 'do not generate README file')
+  .option('--no-package', 'do not generate package.json file')
+  .option('--dont-delete-ts-client-out-dir-after', 'do not delete TypeScript client output directory after bundling')
+  .option('--config <config>', 'path to config file')
+  .action(async (cliBundleOptions: BundleOptions) => {
+    const projectInfo = await getProjectInfo({ cliBundleOptions });
+    const { cwd, config } = projectInfo;
+    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
+    const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
+
+    await bundle({
+      projectInfo,
+      fullSchema,
+      cliBundleOptions,
+    });
+  });
 
 program
   .command('help')
