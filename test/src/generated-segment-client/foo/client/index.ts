@@ -1,4 +1,4 @@
-// auto-generated 2025-05-12T21:16:31.678Z
+// auto-generated 2025-05-12T21:29:33.337Z
 /* eslint-disable */
 import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from 'vovk';
