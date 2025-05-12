@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type { KnownAny, VovkStrictConfig } from 'vovk';
 import camelCase from 'lodash/camelCase.js';
+import getLogger from '../../utils/getLogger.mjs';
 import getUserConfig from '../getUserConfig.mjs';
 import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';
 import type { BundleOptions, GenerateOptions, VovkEnv } from '../../types.mjs';
@@ -90,6 +91,8 @@ export default async function getConfig({
     config.emitConfig = conf.emitConfig;
   } // else it's false and emitConfig already is []
 
+  const log = getLogger(config.logLevel);
+
   for (const [envKey, envValue] of Object.entries(env)) {
     if (envKey.startsWith('VOVK_')) {
       const pathArr = envKey
@@ -123,8 +126,9 @@ export default async function getConfig({
         target = target[key];
       }
       target[pathArr[pathArr.length - 1]] = value;
+      log.debug(`Set config.${pathArr.join('.')} from env ${envKey}=${envValue}`);
     }
   }
 
-  return { config, srcRoot, configAbsolutePaths, userConfig, error };
+  return { config, srcRoot, configAbsolutePaths, userConfig, error, log };
 }

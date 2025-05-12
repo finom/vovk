@@ -1,6 +1,5 @@
 import path from 'node:path';
 import getConfig from './getConfig/index.mjs';
-import getLogger from '../utils/getLogger.mjs';
 import locateSegments from '../locateSegments.mjs';
 import type { BundleOptions, GenerateOptions } from '../types.mjs';
 
@@ -17,15 +16,13 @@ export default async function getProjectInfo({
   // Make PORT available to the config file at getConfig
   process.env.PORT = port;
 
-  const { config, srcRoot, configAbsolutePaths, userConfig, error } = await getConfig({
+  const { config, srcRoot, configAbsolutePaths, userConfig, error, log } = await getConfig({
     cliGenerateOptions,
     cliBundleOptions,
     cwd,
   });
   const apiRoot = `${config.origin ?? ''}/${config.rootEntry}`;
   const apiDir = path.join(srcRoot, 'app', config.rootEntry);
-
-  const log = getLogger(config.logLevel);
 
   if (configAbsolutePaths.length > 1) {
     log.warn(`Multiple config files found. Using the first one: ${configAbsolutePaths[0]}`);

@@ -29,6 +29,7 @@ import {
   type VovkStreamAsyncIterable,
   createRPC,
   fetcher,
+  createFetcher,
 } from './client';
 import { HttpException } from './HttpException';
 import { createDecorator } from './createDecorator';
@@ -68,6 +69,7 @@ export {
   createDecorator,
   createRPC,
   fetcher,
+  createFetcher,
   generateStaticAPI,
   withValidation,
 };

@@ -4,7 +4,7 @@ import { HttpException } from '../HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
-function createFetcher<T = unknown>({
+export function createFetcher<T = unknown>({
   prepareRequestInit,
   transformResponse,
 }: {
@@ -100,9 +100,4 @@ function createFetcher<T = unknown>({
   return newFetcher;
 }
 
-export const fetcher = Object.assign(
-  createFetcher({
-    transformResponse: (resp) => resp,
-  }),
-  { create: createFetcher }
-);
+export const fetcher = createFetcher();
