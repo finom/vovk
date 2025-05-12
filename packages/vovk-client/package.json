@@ -6,11 +6,11 @@
     "npm-publish": "npm publish"
   },
   "main": "./index.cjs",
-  "module": "./module.mjs",
-  "types": "./module.d.mts",
+  "module": "./index.mjs",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
-      "import": "./module.mjs",
+      "import": "./index.mjs",
       "require": "./index.cjs"
     },
     "./fullSchema": {
