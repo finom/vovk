@@ -1,1 +1,1 @@
-export * from '../.vovk-client/module.mjs';
+export * from '../.vovk-client/index.mjs';

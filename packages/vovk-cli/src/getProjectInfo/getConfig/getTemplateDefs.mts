@@ -36,9 +36,8 @@ export default function getTemplateDefs(
       requires: { [BuiltInTemplateName.fullSchemaCjs]: '.', [BuiltInTemplateName.dts]: '.' },
     },
     [BuiltInTemplateName.dts]: {
-      templatePath: path.resolve(templatesDir, 'mjs/'),
+      templatePath: path.resolve(templatesDir, 'dts/'),
       origin: null,
-      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.readme]: {
       templatePath: path.resolve(templatesDir, 'readme/'),

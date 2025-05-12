@@ -1,16 +1,11 @@
-// auto-generated 2025-05-09T16:59:36.187Z
+// auto-generated 2025-05-12T11:44:56.279Z
 /* eslint-disable */
-import type { VovkStrictConfig, VovkSegmentSchema } from 'vovk';
 import config from './../../../.vovk-schema/config.json' with { type: "json" };
 
-
-  import segment0 from './../../../.vovk-schema/segments/generated.json' with { type: "json" };
-
+import segment0 from './../../../.vovk-schema/segments/generated.json' with { type: "json" };
 
 const segments = {
-  
-    'generated': segment0,
-  
+  'generated': segment0,
 };
 
 export const fullSchema = {

@@ -1,4 +1,4 @@
-// auto-generated 2025-05-09T17:00:41.842Z
+// auto-generated 2025-05-12T12:05:16.446Z
 /* eslint-disable */
 import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from 'vovk';
@@ -15,42 +15,42 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   
 export const NoValidationControllerOnlyEntityRPC = createRPC<Controllers0["NoValidationControllerOnlyEntityRPC"], Options>(
   fullSchema, 'generated', 'NoValidationControllerOnlyEntityRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3001/api' } }
 );
   
 export const NoValidationControllerAndServiceEntityRPC = createRPC<Controllers0["NoValidationControllerAndServiceEntityRPC"], Options>(
   fullSchema, 'generated', 'NoValidationControllerAndServiceEntityRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3001/api' } }
 );
   
 export const ZodControllerOnlyEntityRPC = createRPC<Controllers0["ZodControllerOnlyEntityRPC"], Options>(
   fullSchema, 'generated', 'ZodControllerOnlyEntityRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3001/api' } }
 );
   
 export const ZodControllerAndServiceEntityRPC = createRPC<Controllers0["ZodControllerAndServiceEntityRPC"], Options>(
   fullSchema, 'generated', 'ZodControllerAndServiceEntityRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3001/api' } }
 );
   
 export const YupControllerOnlyEntityRPC = createRPC<Controllers0["YupControllerOnlyEntityRPC"], Options>(
   fullSchema, 'generated', 'YupControllerOnlyEntityRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3001/api' } }
 );
   
 export const YupControllerAndServiceEntityRPC = createRPC<Controllers0["YupControllerAndServiceEntityRPC"], Options>(
   fullSchema, 'generated', 'YupControllerAndServiceEntityRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3001/api' } }
 );
   
 export const DtoControllerOnlyEntityRPC = createRPC<Controllers0["DtoControllerOnlyEntityRPC"], Options>(
   fullSchema, 'generated', 'DtoControllerOnlyEntityRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3001/api' } }
 );
   
 export const DtoControllerAndServiceEntityRPC = createRPC<Controllers0["DtoControllerAndServiceEntityRPC"], Options>(
   fullSchema, 'generated', 'DtoControllerAndServiceEntityRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3001/api' } }
 );
   
 
