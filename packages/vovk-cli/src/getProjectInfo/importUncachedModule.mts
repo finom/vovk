@@ -1,16 +1,12 @@
 // importUncachedModule.js
 import { Worker } from 'node:worker_threads';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import './importUncachedModuleWorker.mjs'; // required for TS compilation
 
 function importUncachedModule<T>(modulePath: string): Promise<T> {
   return new Promise((resolve, reject) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
     // Resolve the path to the worker script
-    const workerPath = path.resolve(__dirname, 'importUncachedModuleWorker.mjs');
+    const workerPath = path.resolve(import.meta.dirname, 'importUncachedModuleWorker.mjs');
 
     // Initialize the worker thread
     const worker = new Worker(workerPath, {

@@ -79,28 +79,28 @@ export default async function getClientTemplateFiles({
         log.error(`Template "${templateAbsolutePath}" not found`);
         continue;
       }
-    }
 
-    const outCwdRelativeDir = forceOutCwdRelativeDir ?? defOutDir ?? outDir;
+      const outCwdRelativeDir = forceOutCwdRelativeDir ?? defOutDir ?? outDir;
 
-    for (const filePath of files) {
-      templateFiles.push({
-        templateName,
-        templateFilePath: filePath,
-        relativeDir: path.relative(templateAbsolutePath!, path.dirname(filePath) + '/'),
-        outCwdRelativeDir,
-        templateDef,
-      });
-    }
+      for (const filePath of files) {
+        templateFiles.push({
+          templateName,
+          templateFilePath: filePath,
+          relativeDir: path.relative(templateAbsolutePath, path.dirname(filePath) + '/'),
+          outCwdRelativeDir,
+          templateDef,
+        });
+      }
 
-    if (templateDef.requires) {
-      for (const [tName, reqRelativeDir] of Object.entries(templateDef.requires)) {
-        const def = config.clientTemplateDefs[tName];
-        if (!def) {
-          throw new Error(`Template "${tName}" required by "${templateName}" not found`);
+      if (templateDef.requires) {
+        for (const [tName, reqRelativeDir] of Object.entries(templateDef.requires)) {
+          const def = config.clientTemplateDefs[tName];
+          if (!def) {
+            throw new Error(`Template "${tName}" required by "${templateName}" not found`);
+          }
+
+          entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir)]);
         }
-
-        entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir)]);
       }
     }
   }

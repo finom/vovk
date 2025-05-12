@@ -141,7 +141,9 @@ export default async function newModule({
 
       const { routeFilePath } = segment;
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
-      const importPath = path.relative(path.dirname(routeFilePath), absoluteModulePath).replace(/\.(ts|tsx)$/, '');
+      const importPath = path
+        .relative(path.dirname(routeFilePath) + '/', absoluteModulePath)
+        .replace(/\.(ts|tsx)$/, '');
 
       if (!noSegmentUpdate) {
         const newSegmentCode = await prettify(
