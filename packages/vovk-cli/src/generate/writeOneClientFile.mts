@@ -9,6 +9,7 @@ import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import type { ClientImports } from './getTemplateClientImports.mjs';
 import type { PackageJson } from 'type-fest';
 import { ROOT_SEGMENT_SCHEMA_NAME, SEGMENTS_SCHEMA_DIR_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { SchemaIdEnum } from '../enums.mjs';
 
 export default async function writeOneClientFile({
   cwd,
@@ -71,6 +72,7 @@ export default async function writeOneClientFile({
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports,
     fullSchema,
+    SchemaIdEnum,
     schemaOutDir:
       typeof segmentName === 'string'
         ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME), config.schemaOutDir)

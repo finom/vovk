@@ -1,4 +1,5 @@
 {
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
   "emitSchema": true,
   "segmentName": "foo/client",
   "controllers": {
@@ -1639,79 +1640,7 @@
           "validation": {
             "query": {
               "x-isDto": true,
-              "definitions": {
-                "ZDto": {
-                  "properties": {
-                    "f": {
-                      "type": "string"
-                    },
-                    "u": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "d": {
-                      "$ref": "#/definitions/DDto"
-                    }
-                  },
-                  "type": "object",
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
-                },
-                "DDto": {
-                  "properties": {
-                    "x": {
-                      "type": "string"
-                    },
-                    "arrOfObjects": {
-                      "items": {
-                        "$ref": "#/definitions/ArrOfObjectsDto"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "type": "object",
-                  "required": [
-                    "x",
-                    "arrOfObjects"
-                  ]
-                },
-                "ArrOfObjectsDto": {
-                  "properties": {
-                    "foo": {
-                      "type": "string"
-                    },
-                    "nestedArr": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "nestedObj": {
-                      "$ref": "#/definitions/NestedObjDto"
-                    }
-                  },
-                  "type": "object",
-                  "required": [
-                    "foo"
-                  ]
-                },
-                "NestedObjDto": {
-                  "properties": {
-                    "deepKey": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object",
-                  "required": [
-                    "deepKey"
-                  ]
-                }
-              },
+              "definitions": {},
               "properties": {
                 "x": {
                   "type": "string",
@@ -1722,16 +1651,12 @@
                     "type": "string"
                   },
                   "type": "array"
-                },
-                "z": {
-                  "$ref": "#/definitions/ZDto"
                 }
               },
               "type": "object",
               "required": [
                 "x",
-                "y",
-                "z"
+                "y"
               ]
             }
           },
@@ -1824,36 +1749,7 @@
           "validation": {
             "body": {
               "x-isDto": true,
-              "definitions": {
-                "RequiredObject": {
-                  "properties": {
-                    "requiredField": {
-                      "type": "string",
-                      "not": {
-                        "type": "null"
-                      }
-                    },
-                    "optionalField": {
-                      "type": "number"
-                    }
-                  },
-                  "type": "object",
-                  "required": [
-                    "requiredField"
-                  ]
-                },
-                "StrictObject": {
-                  "properties": {
-                    "knownField": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object",
-                  "required": [
-                    "knownField"
-                  ]
-                }
-              },
+              "definitions": {},
               "properties": {
                 "enum_value": {
                   "type": "string",
@@ -1940,12 +1836,6 @@
                   "maxItems": 10,
                   "minItems": 1
                 },
-                "obj_required": {
-                  "$ref": "#/definitions/RequiredObject"
-                },
-                "obj_strict": {
-                  "$ref": "#/definitions/StrictObject"
-                },
                 "logical_allOf": {
                   "type": "object"
                 }
@@ -1969,8 +1859,6 @@
                 "str_datetime",
                 "arr_minItems",
                 "arr_maxItems",
-                "obj_required",
-                "obj_strict",
                 "logical_allOf"
               ]
             }

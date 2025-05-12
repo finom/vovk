@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import diffSchema from '../../../dist/dev/diffSegmentSchema.mjs';
 import type { HttpMethod as VovkHttpMethod, VovkSegmentSchema } from 'vovk';
+import { SchemaIdEnum } from '../../../src/enums.mjs';
 
 // got some problems importing it from "vovk"
 enum _HttpMethod {
@@ -19,6 +20,7 @@ const HttpMethod = _HttpMethod as unknown as typeof VovkHttpMethod;
 await describe('diffSchema', async () => {
   await it('Test case 1: No changes', () => {
     const oldJson: VovkSegmentSchema = {
+      $schema: SchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -50,6 +52,7 @@ await describe('diffSchema', async () => {
 
   await it('Test case 2: Controllers added and removed', () => {
     const oldJson: VovkSegmentSchema = {
+      $schema: SchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -67,6 +70,7 @@ await describe('diffSchema', async () => {
     };
 
     const newJson: VovkSegmentSchema = {
+      $schema: SchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -96,6 +100,7 @@ await describe('diffSchema', async () => {
 
   await it('Test case 3: Handlers added, removed, and changed', () => {
     const oldJson: VovkSegmentSchema = {
+      $schema: SchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -117,6 +122,7 @@ await describe('diffSchema', async () => {
     };
 
     const newJson: VovkSegmentSchema = {
+      $schema: SchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -161,6 +167,7 @@ await describe('diffSchema', async () => {
 
   await it('Test case 4: Complex changes', () => {
     const oldJson: VovkSegmentSchema = {
+      $schema: SchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
       controllers: {
@@ -178,6 +185,7 @@ await describe('diffSchema', async () => {
     };
 
     const newJson: VovkSegmentSchema = {
+      $schema: SchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
       controllers: {

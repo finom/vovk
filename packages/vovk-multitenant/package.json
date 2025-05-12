@@ -21,6 +21,6 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "vovk-cli": "^0.0.1-draft.149"
+    "vovk-cli": "^0.0.1-beta.0"
   }
 }

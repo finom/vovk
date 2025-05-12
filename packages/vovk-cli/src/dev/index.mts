@@ -19,13 +19,13 @@ import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import isSegmentSchemaEmpty from './isSegmentSchemaEmpty.mjs';
 import writeConfigJson from './writeConfigJson.mjs';
 import type { VovkEnv } from '../types.mjs';
-import { SchemaOfTheSchema } from '../enums.mjs';
+import { SchemaIdEnum } from '../enums.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
 
   #fullSchema: VovkFullSchema = {
-    $schema: SchemaOfTheSchema.FULL,
+    $schema: SchemaIdEnum.FULL,
     segments: {},
     config: {},
   };

@@ -8,6 +8,7 @@ const segments = {<% Object.values(t.fullSchema.segments).filter((segment) => se
 };
 
 export const fullSchema = {
+  $schema: '<%- t.SchemaIdEnum.FULL %>',
   config,
   segments,
 };

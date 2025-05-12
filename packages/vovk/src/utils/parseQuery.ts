@@ -146,7 +146,7 @@ export default function parseQuery(queryString: string): Record<string, KnownAny
   for (const pair of pairs) {
     const [rawKey, rawVal = ''] = pair.split('=');
 
-    const decodedKey = decodeURIComponent(rawKey || '');
+    const decodedKey = decodeURIComponent(rawKey);
     const decodedVal = decodeURIComponent(rawVal);
 
     // Parse bracket notation

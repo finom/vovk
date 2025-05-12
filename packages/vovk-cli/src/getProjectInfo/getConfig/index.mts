@@ -5,7 +5,7 @@ import getUserConfig from '../getUserConfig.mjs';
 import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';
 import type { BundleOptions, GenerateOptions, VovkEnv } from '../../types.mjs';
 import getTemplateDefs from './getTemplateDefs.mjs';
-import { SchemaOfTheSchema } from '../../enums.mjs';
+import { SchemaIdEnum } from '../../enums.mjs';
 
 export default async function getConfig({
   cliGenerateOptions,
@@ -41,7 +41,7 @@ export default async function getConfig({
   };
 
   const config: VovkStrictConfig = {
-    $schema: SchemaOfTheSchema.CONFIG,
+    $schema: SchemaIdEnum.CONFIG,
     clientTemplateDefs,
     imports,
     emitConfig: [],

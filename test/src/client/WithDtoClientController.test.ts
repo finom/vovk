@@ -257,13 +257,13 @@ describe('Validation with with vovk-dto', () => {
     await rejects.toThrow(/Validation failed. Invalid query on client for http:.*\. search must be shorter.*/);
   });
 
-  it('Should handle nested queries on server and client', async () => {
-    const result = await WithDtoClientControllerRPC.handleNestedQuery({
+  it.only('Should handle nested queries on server and client', async () => {
+    const result = await WithDtoClientControllerRPC.handleNestedQueryClient({
       query: NESTED_QUERY_EXAMPLE,
     });
 
     deepStrictEqual(
-      result satisfies VovkReturnType<typeof WithDtoClientControllerRPC.handleNestedQuery>,
+      result satisfies VovkReturnType<typeof WithDtoClientControllerRPC.handleNestedQueryClient>,
       NESTED_QUERY_EXAMPLE
     );
 

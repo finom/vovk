@@ -141,12 +141,18 @@ function withDto<
     validate: async (data, dto, { type, req, status, i }) => {
       const instance = plainToInstance(dto, data);
       const errors: ValidationError[] = await validate(instance as object);
+      console.log('data xx', instance, JSON.stringify(data, null, 2), JSON.stringify(instance, null, 2));
 
       if (errors.length > 0) {
-        const err = errors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
+        const err =
+          errors
+            .map((e) => Object.values(e.constraints || {}))
+            .flat()
+            .join(', ') || errors.toString();
         throw new HttpException(
           status ?? HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${err}`
+          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${err}`,
+          { errorStr: errors.toString() }
         );
       }
 

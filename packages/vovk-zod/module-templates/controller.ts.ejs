@@ -1,11 +1,11 @@
 <% const vars = { 
-  rpcModuleName: t.TheThing + 'Controller',
+  RpcModuleName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
 }; %>
 ---
 dir: <%= t.defaultDir %>
-fileName: <%= vars.rpcModuleName + '.ts' %>
-sourceName: <%= vars.rpcModuleName %>
+fileName: <%= vars.RpcModuleName + '.ts' %>
+sourceName: <%= vars.RpcModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
@@ -17,7 +17,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')
-export default class <%= vars.rpcModuleName %> {
+export default class <%= vars.RpcModuleName %> {
     @get()
     static get<%= t.TheThings %> = withZod({
         query: z.object({ search: z.string() }), 

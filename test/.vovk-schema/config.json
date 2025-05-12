@@ -1,3 +1,4 @@
 {
-  "libs": {}
+  "libs": {},
+  "$schema": "https://vovk.dev/api/schema/v3/config.json"
 }

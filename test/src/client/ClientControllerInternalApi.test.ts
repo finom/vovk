@@ -6,7 +6,7 @@ import { deepStrictEqual } from 'node:assert';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
-const defaultController = createRPC<typeof ClientController>(fullSchema, 'foo/client', 'ClientControllerRPC', {
+const defaultController = createRPC<typeof ClientController>(fullSchema, 'foo/client', 'CommonControllerRPC', {
   defaultOptions: { apiRoot },
 });
 
@@ -17,7 +17,7 @@ describe('Internal client API', () => {
   });
 
   it('Should handle custom options', async () => {
-    const noOptionsController = createRPC<typeof ClientController>(fullSchema, 'foo/client', 'ClientControllerRPC');
+    const noOptionsController = createRPC<typeof ClientController>(fullSchema, 'foo/client', 'CommonControllerRPC');
     const result = await noOptionsController.getHelloWorldObjectLiteral({
       apiRoot,
     });

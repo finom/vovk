@@ -8,7 +8,7 @@ import writeOneSchemaFile, {
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import writeConfigJson from './writeConfigJson.mjs';
-import { SchemaOfTheSchema } from '../enums.mjs';
+import { SchemaIdEnum } from '../enums.mjs';
 
 /**
  * Ensure that the schema files are created to avoid any import errors.
@@ -31,7 +31,7 @@ export default async function ensureSchemaFiles(
       const { isCreated } = await writeOneSchemaFile({
         schemaOutAbsolutePath,
         segmentSchema: {
-          $schema: SchemaOfTheSchema.SEGMENT,
+          $schema: SchemaIdEnum.SEGMENT,
           emitSchema: false,
           segmentName,
           controllers: {},

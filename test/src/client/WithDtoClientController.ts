@@ -79,7 +79,7 @@ export default class WithDtoClientController {
       return WithDtoClientService.handleAll({
         body,
         query,
-        params,
+        params: plainToInstance(HandleAllParamsDto, params),
         vovkParams,
       });
     },

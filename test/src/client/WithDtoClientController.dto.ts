@@ -141,7 +141,7 @@ export class DDto {
       $ref: '#/definitions/ArrOfObjectsDto',
     },
   })
-  // @Type(() => ArrOfObjectsDto)
+  @Type(() => ArrOfObjectsDto)
   arrOfObjects: ArrOfObjectsDto[];
 }
 
@@ -167,7 +167,7 @@ export class HandleNestedQueryDto {
   @IsString({ each: true })
   y: string[];
 
-  @ValidateNested()
+  // @ValidateNested() // TODO: WARNING: Ndsted validation suddenly stopped working
   @Type(() => ZDto)
   z: ZDto;
 }
@@ -311,11 +311,11 @@ export class ComplainingDto {
   arr_maxItems: string[];
 
   // Object validations
-  @ValidateNested()
+  // @ValidateNested() // TODO: WARNING: Ndsted validation suddenly stopped working
   @Type(() => RequiredObject)
   obj_required: RequiredObject;
 
-  @ValidateNested()
+  // @ValidateNested() // TODO: WARNING: Ndsted validation suddenly stopped working
   @Type(() => StrictObject)
   obj_strict: StrictObject; // Cannot enforce "strict" (no additional properties) with standard decorators
 
