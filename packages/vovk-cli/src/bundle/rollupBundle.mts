@@ -6,17 +6,17 @@ import typescript from '@rollup/plugin-typescript';
 import json from '@rollup/plugin-json';
 
 function getRollupConfig({
-  tsFullClientOutDirInput,
+  tsFullClientOutAbsoluteDirInput,
   outDir,
   cwd,
 }: {
-  tsFullClientOutDirInput: string;
+  tsFullClientOutAbsoluteDirInput: string;
   outDir: string;
   cwd: string;
 }) {
   const out = path.join(cwd, outDir);
   const config: RollupOptions = {
-    input: path.join(tsFullClientOutDirInput, './index.ts'),
+    input: path.join(tsFullClientOutAbsoluteDirInput, './index.ts'),
     output: [
       {
         file: path.join(out, './index.cjs'),
@@ -37,9 +37,13 @@ function getRollupConfig({
         declaration: true,
         declarationDir: out,
         outDir: cwd,
-        rootDir: tsFullClientOutDirInput,
+        rootDir: tsFullClientOutAbsoluteDirInput,
         module: 'ESNext',
         target: 'ESNext',
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+        allowImportingTsExtensions: true,
+        noForceEmit: false,
       }),
     ],
   };
@@ -47,23 +51,26 @@ function getRollupConfig({
 }
 
 export async function rollupBundle({
-  tsFullClientOutDirInput,
+  tsFullClientOutAbsoluteDirInput,
   outDir,
   cwd,
 }: {
-  tsFullClientOutDirInput: string;
+  tsFullClientOutAbsoluteDirInput: string;
   outDir: string;
   cwd: string;
 }) {
   const { output, ...input } = getRollupConfig({
-    tsFullClientOutDirInput,
+    tsFullClientOutAbsoluteDirInput,
     outDir,
     cwd,
   });
 
+  console.log({ input });
+
+
   const bundle = await rollup(input);
 
-  // Write the bundle to disk
+
   for (const outputOption of output as OutputOptions[]) {
     await bundle.write(outputOption);
   }

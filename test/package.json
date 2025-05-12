@@ -13,6 +13,7 @@
     "start": "NODE_ENV=test next start",
     "lint": "next lint",
     "generate": "node ../packages/vovk-cli/dist/index.mjs generate",
+    "bundle": "node ../packages/vovk-cli/dist/index.mjs bundle",
     "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --full-schema-json --template=python --full-schema-json --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
   },

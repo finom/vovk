@@ -41,6 +41,8 @@ export default async function getClientTemplateFiles({
       ? (cliGenerateOptions?.fullClientOut ?? config.fullClient.outDir)
       : (cliGenerateOptions?.segmentedClientOut ?? config.segmentedClient.outDir);
 
+
+
   for (const templateName of fromTemplates) {
     if (!(templateName in config.clientTemplateDefs)) {
       throw new Error(`Unknown template name: ${templateName}`);

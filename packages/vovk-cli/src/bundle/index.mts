@@ -16,9 +16,7 @@ export default async function bundle({
   cliBundleOptions?: BundleOptions;
 }) {
   const cwd = process.cwd();
-  const tsFullClientOutDirInput = cliBundleOptions?.tsClientOutDir
-    ? path.resolve(cwd, cliBundleOptions.tsClientOutDir)
-    : path.join(import.meta.dirname, '__tmp_ts_client__');
+  const tsFullClientOutAbsoluteDirInput = path.join(cwd, projectInfo.config.bundle.tsClientOutDir);
   await generate({
     isEnsuringClient: false,
     projectInfo,
@@ -26,7 +24,7 @@ export default async function bundle({
     fullSchema,
     cliGenerateOptions: {
       fullClientFrom: [BuiltInTemplateName.ts],
-      fullClientOut: tsFullClientOutDirInput,
+      fullClientOut: projectInfo.config.bundle.tsClientOutDir,
     },
   });
 
@@ -37,7 +35,7 @@ export default async function bundle({
   }
 
   await rollupBundle({
-    tsFullClientOutDirInput,
+    tsFullClientOutAbsoluteDirInput,
     outDir,
     cwd,
   });

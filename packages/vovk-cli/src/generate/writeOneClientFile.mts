@@ -57,6 +57,7 @@ export default async function writeOneClientFile({
     path.basename(templateFilePath).replace('.ejs', '')
   );
 
+
   let placeholder = `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
 // If you still see this text, the client is not generated yet because of an unknown problem.
 // Feel free to report an issue at https://github.com/finom/vovk/issues`;
@@ -141,6 +142,7 @@ export default async function writeOneClientFile({
     ? !existingContent
     : !existingContent ||
       existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
+
 
   if (needsWriting) {
     await fs.mkdir(path.dirname(outPath), { recursive: true });

@@ -30,6 +30,8 @@ const config = {
       rootDir: './tmp/ts',
       module: 'ESNext',
       target: 'ESNext',
+      allowImportingTsExtensions: true,
+      emitDeclarationOnly: true,
     }),
   ],
 };

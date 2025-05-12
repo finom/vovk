@@ -56,7 +56,7 @@ export default async function getConfig({
     },
     bundle: {
       outDir: cliBundleOptions?.outDir ?? conf.bundle?.outDir ?? path.join(srcRoot, 'dist'),
-      tsClientOutDir: cliBundleOptions?.tsClientOutDir ?? conf.bundle?.tsClientOutDir ?? path.join(srcRoot, 'client'),
+      tsClientOutDir: cliBundleOptions?.tsClientOutDir ?? conf.bundle?.tsClientOutDir ?? '.tmp-ts-rpc',
       dontDeleteTsClientOutDirAfter:
         cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? conf.bundle?.dontDeleteTsClientOutDirAfter ?? true,
       noReadme: cliBundleOptions?.noReadme ?? conf.bundle?.noReadme ?? false,
