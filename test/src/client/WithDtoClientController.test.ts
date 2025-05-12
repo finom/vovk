@@ -1,7 +1,14 @@
 import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithDtoClientControllerRPC } from 'vovk-client';
-import { HttpException, type VovkReturnType, type VovkHandlerSchema, type VovkYieldType, type VovkOutput } from 'vovk';
+import {
+  HttpException,
+  type VovkReturnType,
+  type VovkHandlerSchema,
+  type VovkYieldType,
+  type VovkOutput,
+  type VovkIteration,
+} from 'vovk';
 import type WithDtoClientController from './WithDtoClientController';
 import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type {
@@ -77,11 +84,14 @@ describe('Validation with with vovk-dto', () => {
       vovkParams: HandleAllParamsDto;
     };
 
-    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies ExpectedType;
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies typeof expected;
+    null as unknown as VovkOutput<typeof WithDtoClientControllerRPC.handleAll> satisfies typeof expected;
     null as unknown as VovkOutput<typeof WithDtoClientController.handleAll> satisfies typeof expected;
 
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAll> satisfies null;
+    // @ts-expect-error Expect error
+    null as unknown as VovkOutput<typeof WithDtoClientControllerRPC.handleAll> satisfies null;
     // @ts-expect-error Expect error
     null as unknown as VovkOutput<typeof WithDtoClientController.handleAll> satisfies null;
 
@@ -257,7 +267,7 @@ describe('Validation with with vovk-dto', () => {
     await rejects.toThrow(/Validation failed. Invalid query on client for http:.*\. search must be shorter.*/);
   });
 
-  it.only('Should handle nested queries on server and client', async () => {
+  it('Should handle nested queries on server and client', async () => {
     const result = await WithDtoClientControllerRPC.handleNestedQueryClient({
       query: NESTED_QUERY_EXAMPLE,
     });
@@ -334,6 +344,8 @@ describe('Validation with with vovk-dto', () => {
 
     null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies { value: string };
     null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies { value: string };
+    null as unknown as VovkIteration<typeof WithDtoClientController.handleStream> satisfies { value: string };
+    null as unknown as VovkIteration<typeof WithDtoClientControllerRPC.handleStream> satisfies { value: string };
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -353,13 +365,6 @@ describe('Validation with with vovk-dto', () => {
     });
     await rejects.toThrow(/Validation failed. Invalid iteration #0 on server for http:.*\. value.*/);
 
-    null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies {
-      value: string;
-    };
-    null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies {
-      value: string;
-    };
-
     deepStrictEqual(expected, expectedCollected);
   });
 
@@ -373,12 +378,6 @@ describe('Validation with with vovk-dto', () => {
     for await (const message of resp) {
       expectedCollected.push(message);
     }
-    null as unknown as VovkYieldType<typeof WithDtoClientController.handleStream> satisfies {
-      value: string;
-    };
-    null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies {
-      value: string;
-    };
     deepStrictEqual(expected, expectedCollected);
   });
 
@@ -395,12 +394,6 @@ describe('Validation with with vovk-dto', () => {
       }
     });
     await rejects.toThrow(/Validation failed. Invalid iteration #2 on server for http:.*\. value.*/);
-    null as unknown as VovkYieldType<typeof WithDtoClientController.validateEachIteration> satisfies {
-      value: string;
-    };
-    null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.validateEachIteration> satisfies {
-      value: string;
-    };
     deepStrictEqual(expected, expectedCollected);
   });
 
