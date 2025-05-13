@@ -2,14 +2,23 @@ import type { VovkStrictConfig } from 'vovk';
 import path from 'node:path';
 
 export enum BuiltInTemplateName {
+  // ts/js
   ts = 'ts',
   cjs = 'cjs',
   mjs = 'mjs',
-  readme = 'readme',
-  packageJson = 'packageJson',
+
+  // schema
   fullSchemaTs = 'fullSchemaTs',
   fullSchemaCjs = 'fullSchemaCjs',
   fullSchemaJson = 'fullSchemaJson',
+
+  // misc
+  readme = 'readme',
+  packageJson = 'packageJson',
+
+  // other languages
+  rs = 'rs',
+  py = 'py',
 }
 
 const templatesDir = path.join(import.meta.dirname, '../../..', 'client-templates');
@@ -53,6 +62,18 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.fullSchemaJson]: {
       templatePath: path.resolve(templatesDir, 'fullSchemaJson/'),
       origin: null,
+    },
+    [BuiltInTemplateName.rs]: {
+      templatePath: 'vovk-rust-client/template/',
+      requires: {
+        fullSchemaJson: './data',
+      },
+    },
+    [BuiltInTemplateName.py]: {
+      templatePath: 'vovk-python-client/template/',
+      requires: {
+        fullSchemaJson: './data',
+      },
     },
   };
 

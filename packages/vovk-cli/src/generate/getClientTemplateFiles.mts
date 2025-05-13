@@ -5,6 +5,7 @@ import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import type { GenerateOptions } from '../types.mjs';
+import { checkIfInstalled } from '../utils/checkIfInstalled.mts';
 
 export interface ClientTemplateFile {
   templateName: string;
@@ -55,6 +56,27 @@ export default async function getClientTemplateFiles({
     VovkStrictConfig['clientTemplateDefs'][string],
     string | undefined,
   ][];
+
+  for (const [templateName, templateDef] of entries) {
+    if (
+      templateDef.templatePath &&
+      !templateDef.templatePath.startsWith('.') &&
+      !templateDef.templatePath.startsWith('/')
+    ) {
+      const npmModuleName = templateDef.templatePath.split('/')[0];
+      const isInstalled = checkIfInstalled(npmModuleName);
+
+      if (!isInstalled) {
+        log.error(`Template "${templateName}" requires the package "${npmModuleName}" to be installed.`);
+
+        return {
+          fromTemplates: [],
+          templateFiles: [],
+        };
+      }
+    }
+  }
+
   for (let i = 0; i < entries.length; i++) {
     const [templateName, templateDef, forceOutCwdRelativeDir] = entries[i];
     const templateAbsolutePath = templateDef.templatePath
@@ -104,5 +126,6 @@ export default async function getClientTemplateFiles({
       }
     }
   }
+
   return { fromTemplates, templateFiles };
 }

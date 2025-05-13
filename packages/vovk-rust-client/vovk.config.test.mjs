@@ -4,11 +4,9 @@ const vovkConfig = {
   logLevel: 'debug',
   origin: `http://localhost:${process.env.PORT}`,
   clientTemplateDefs: {
-    rust: {
+    rs: {
+      extends: 'rs',
       templatePath: '../packages/vovk-rust-client/template/',
-      requires: {
-        fullSchemaJson: './data',
-      },
       fullClient: {
         outDir: '../packages/vovk-rust-client/generated_rust_client',
         package: {

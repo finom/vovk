@@ -5,10 +5,8 @@ const vovkConfig = {
   origin: `http://localhost:${process.env.PORT}`,
   clientTemplateDefs: {
     py: {
+      extends: 'py',
       templatePath: '../packages/vovk-python-client/template/',
-      requires: {
-        fullSchemaJson: './data',
-      },
       fullClient: {
         outDir: '../packages/vovk-python-client/test_py/generated_python_client',
         package: {

@@ -178,15 +178,19 @@ export default async function generate({
       })
     );
 
-    logClientGenerationResults({
-      results: fullClientResults,
-      log,
-      isEnsuringClient,
-      forceNothingWrittenLog,
-      clientType: 'Full',
-      startTime: now,
-      fromTemplates,
-    });
+    if (fullClientTemplateFiles.length) {
+      logClientGenerationResults({
+        results: fullClientResults,
+        log,
+        isEnsuringClient,
+        forceNothingWrittenLog,
+        clientType: 'Full',
+        startTime: now,
+        fromTemplates,
+      });
+    } else {
+      log.warn('No full client template files found. Skipping full client generation.');
+    }
   }
 
   if (config.segmentedClient.enabled) {
@@ -266,14 +270,18 @@ export default async function generate({
       })
     );
 
-    logClientGenerationResults({
-      results: segmentedClientResults,
-      log,
-      isEnsuringClient,
-      forceNothingWrittenLog,
-      clientType: 'Segmented',
-      startTime: now,
-      fromTemplates,
-    });
+    if (segmentedClientTemplateFiles.length) {
+      logClientGenerationResults({
+        results: segmentedClientResults,
+        log,
+        isEnsuringClient,
+        forceNothingWrittenLog,
+        clientType: 'Segmented',
+        startTime: now,
+        fromTemplates,
+      });
+    } else {
+      log.warn('No segmented client template files found. Skipping segmented client generation.');
+    }
   }
 }
