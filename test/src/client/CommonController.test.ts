@@ -1,4 +1,6 @@
-import { CommonControllerRPC } from '../generated-segment-client/foo/client/index.ts';
+import { CommonControllerRPC } from 'vovk-client';
+import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segment-client/foo/client/index.ts';
+import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
 import {
   HttpStatus,
   type VovkBody,
@@ -16,15 +18,29 @@ import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
 describe('Client with vovk-client', () => {
-  it(`Should handle requests that return NextResponse.json`, async () => {
-    const result = await CommonControllerRPC.getHelloWorldResponseObject();
-    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
-  });
-
   it(`Should handle object literals`, async () => {
     const result = await CommonControllerRPC.getHelloWorldObjectLiteral({
       apiRoot,
     });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
+  });
+
+  it(`Should use segment client RPC`, async () => {
+    const result = await SegmentClientCommonControllerRPC.getHelloWorldObjectLiteral({
+      apiRoot,
+    });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
+  });
+
+  it(`Should use bundle RPC`, async () => {
+    const result = await BundleClientCommonControllerRPC.getHelloWorldObjectLiteral({
+      apiRoot,
+    });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
+  });
+
+  it(`Should handle requests that return NextResponse.json`, async () => {
+    const result = await CommonControllerRPC.getHelloWorldResponseObject();
     deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 

@@ -1,4 +1,4 @@
-// auto-generated 2025-05-12T21:14:56.303Z
+// auto-generated 2025-05-13T10:24:47.608Z
 /* eslint-disable */
 import config from './../../../../.vovk-schema/config.json' with { type: "json" };
 

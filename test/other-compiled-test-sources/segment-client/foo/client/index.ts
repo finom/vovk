@@ -1,11 +1,11 @@
-// auto-generated 2025-05-12T21:29:33.337Z
+// auto-generated 2025-05-13T10:30:00.011Z
 /* eslint-disable */
 import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from 'vovk';
 import { createRPC } from 'vovk';
 import { fullSchema } from './fullSchema.ts';
 
-import type { Controllers as Controllers0 } from "../../../app/api/foo/client/[[...client]]/route.ts";
+import type { Controllers as Controllers0 } from "../../../../src/app/api/foo/client/[[...client]]/route.ts";
 
 
 import { validateOnClient } from '../../../../../packages/vovk-ajv/index.js';

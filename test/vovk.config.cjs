@@ -8,7 +8,7 @@ const vovkConfig = {
   },
   segmentedClient: {
     enabled: true,
-    outDir: './src/generated-segment-client',
+    outDir: './other-compiled-test-sources/segment-client',
   },
   schemaOutDir: './.vovk-schema',
   origin: `http://localhost:${process.env.PORT}`,
@@ -17,6 +17,9 @@ const vovkConfig = {
   moduleTemplates: {
     service: 'none',
     controller: 'none',
+  },
+  bundle: {
+    outDir: './other-compiled-test-sources/bundle',
   },
   clientTemplateDefs: {
     py: {
