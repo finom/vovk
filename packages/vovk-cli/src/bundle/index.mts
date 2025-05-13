@@ -1,22 +1,24 @@
 import path from 'node:path';
+import fs from 'node:fs/promises';
 import type { VovkFullSchema } from 'vovk';
+import { build } from 'tsdown';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import generate from '../generate/index.mjs';
-import type { BundleOptions } from '../types.mjs';
 import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
-import { rollupBundle } from './rollupBundle.mjs';
+import type { GenerateOptions } from '../types.mjs';
+import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 
 export default async function bundle({
   projectInfo,
   fullSchema,
-  cliBundleOptions,
 }: {
   projectInfo: ProjectInfo;
   fullSchema: VovkFullSchema;
-  cliBundleOptions?: BundleOptions;
 }) {
+  const { config, log } = projectInfo;
+  const { bundle: bundleConfig } = config;
   const cwd = process.cwd();
-  const tsFullClientOutAbsoluteDirInput = path.join(cwd, projectInfo.config.bundle.tsClientOutDir);
+  const tsFullClientOutAbsoluteDirInput = path.join(cwd, bundleConfig.tsClientOutDir);
   await generate({
     isEnsuringClient: false,
     projectInfo,
@@ -24,19 +26,72 @@ export default async function bundle({
     fullSchema,
     cliGenerateOptions: {
       fullClientFrom: [BuiltInTemplateName.ts],
-      fullClientOut: projectInfo.config.bundle.tsClientOutDir,
+      fullClientOut: bundleConfig.tsClientOutDir,
     },
   });
 
-  const outDir = cliBundleOptions?.outDir ?? projectInfo.config.bundle.outDir;
+  const outDir = bundleConfig.outDir;
 
   if (!outDir) {
     throw new Error('No output directory specified for bundling');
   }
 
-  await rollupBundle({
-    tsFullClientOutAbsoluteDirInput,
+  await build({
+    entry: path.join(tsFullClientOutAbsoluteDirInput, './index.ts'),
+    dts: true,
+    format: ['cjs', 'esm'],
+    fixedExtension: true,
     outDir,
-    cwd,
+    sourcemap: bundleConfig.sourcemap,
   });
+
+  log.debug(`Bundled TypeScript client to ${chalkHighlightThing(outDir)}`);
+
+  await build({
+    entry: path.join(tsFullClientOutAbsoluteDirInput, './fullSchema.ts'),
+    dts: true,
+    format: ['cjs'],
+    fixedExtension: true,
+    outDir,
+    clean: false,
+    sourcemap: bundleConfig.sourcemap,
+  });
+
+  log.debug(`Bundled fullSchema.ts to ${chalkHighlightThing(outDir)}`);
+
+  const fullClientFrom: GenerateOptions['fullClientFrom'] = [];
+
+  if (!bundleConfig.noReadme) {
+    fullClientFrom.push(BuiltInTemplateName.readme);
+  }
+  if (!bundleConfig.noPackage) {
+    fullClientFrom.push(BuiltInTemplateName.packageJson);
+  }
+  if (fullClientFrom.length) {
+    await generate({
+      isEnsuringClient: false,
+      projectInfo,
+      forceNothingWrittenLog: true,
+      fullSchema,
+      cliGenerateOptions: {
+        fullClientFrom,
+        fullClientOut: outDir,
+      },
+    });
+  } else {
+    log.debug('No README or package.json generated');
+  }
+
+  if (!bundleConfig.dontDeleteTsClientOutDirAfter) {
+    await fs.rm(tsFullClientOutAbsoluteDirInput, { recursive: true, force: true });
+    log.debug(
+      `Deleted temporary TypeScript client output directory: ${chalkHighlightThing(tsFullClientOutAbsoluteDirInput)}`
+    );
+  } else {
+    log.debug(
+      `Temporary TypeScript client output directory not deleted: ${chalkHighlightThing(tsFullClientOutAbsoluteDirInput)}`
+    );
+  }
+
+  log.info(`Bundled TypeScript client to ${outDir}`);
 }

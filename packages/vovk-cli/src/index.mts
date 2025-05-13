@@ -118,6 +118,7 @@ program
   .option('--no-package', 'do not generate package.json file')
   .option('--dont-delete-ts-client-out-dir-after', 'do not delete TypeScript client output directory after bundling')
   .option('--config <config>', 'path to config file')
+  .option('--sourcemap', 'generate sourcemaps')
   .action(async (cliBundleOptions: BundleOptions) => {
     const projectInfo = await getProjectInfo({ cliBundleOptions });
     const { cwd, config } = projectInfo;
@@ -127,7 +128,6 @@ program
     await bundle({
       projectInfo,
       fullSchema,
-      cliBundleOptions,
     });
   });
 

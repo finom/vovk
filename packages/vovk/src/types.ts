@@ -292,6 +292,7 @@ export type VovkConfig = {
     noPackage?: boolean;
     tsClientOutDir?: string;
     dontDeleteTsClientOutDirAfter?: boolean;
+    sourcemap?: boolean;
   };
   imports?: {
     fetcher?: string | [string, string] | [string];

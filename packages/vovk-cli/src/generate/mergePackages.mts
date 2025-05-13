@@ -6,27 +6,6 @@ import type { VovkStrictConfig } from 'vovk';
 
 let cachedPromise: Promise<PackageJson> | undefined;
 
-const getDependenciesFromImports = (imports: VovkStrictConfig['imports']) => {
-  const getDependency = (importName: string) => {
-    const importParts = importName.split('/');
-    const importPath = importParts[0];
-    if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
-      return importPath;
-    }
-    return null;
-  };
-  const dependencies = new Set<string>();
-  for (const imp of Object.values(imports)) {
-    for (const importName of imp ?? []) {
-      const dependency = getDependency(importName);
-      if (dependency) {
-        dependencies.add(dependency);
-      }
-    }
-  }
-  return Array.from(dependencies);
-};
-
 function getPackageJson(cwd: string): Promise<PackageJson> {
   const pkgPath = path.join(cwd, 'package.json'); // Hard-coded path
 
@@ -51,13 +30,13 @@ function getPackageJson(cwd: string): Promise<PackageJson> {
 
 function mergeTwoPackageJsons(base: PackageJson, additional: PackageJson): PackageJson {
   const merged = { ...base, ...additional };
+  // TODO: Add deep merge for all properties
   merged.dependencies = { ...base.dependencies, ...additional.dependencies };
   return merged;
 }
 
 export default async function mergePackages({
   cwd,
-  config,
   packages,
 }: {
   cwd: string;
@@ -65,7 +44,23 @@ export default async function mergePackages({
   packages: (PackageJson | undefined)[];
 }): Promise<PackageJson> {
   const fullPackageJson = await getPackageJson(cwd);
-  const pickedPackageJson = pick(fullPackageJson, [
+  const defaultPackageJson: PackageJson = {
+    main: './index.cjs',
+    module: './index.mjs',
+    types: './index.d.mts',
+    exports: {
+      '.': {
+        import: './index.mjs',
+        require: './index.cjs',
+      },
+      './fullSchema': {
+        import: './fullSchema.cjs',
+        require: './fullSchema.cjs',
+        types: './fullSchema.d.cts',
+      },
+    },
+  };
+  const pickedPackageJson: PackageJson = pick(fullPackageJson, [
     'name',
     'version',
     'description',
@@ -78,7 +73,7 @@ export default async function mergePackages({
     'keywords',
   ]);
 
-  let result: PackageJson = { ...pickedPackageJson };
+  let result: PackageJson = { ...pickedPackageJson, ...defaultPackageJson };
 
   for (const pkg of packages) {
     if (pkg) {
@@ -90,9 +85,6 @@ export default async function mergePackages({
     ...result,
     dependencies: {
       ...result.dependencies,
-      ...Object.fromEntries(
-        getDependenciesFromImports(config.imports).map((dep) => [dep, fullPackageJson.dependencies?.[dep] ?? 'latest'])
-      ),
     },
   } as PackageJson;
 }

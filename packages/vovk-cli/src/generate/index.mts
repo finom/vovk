@@ -115,7 +115,6 @@ export default async function generate({
     }
     if (!schema.emitSchema) continue;
   }
-
   if (config.fullClient.enabled) {
     const now = Date.now();
     const segmentNames = getIncludedSegmentNames(config, segments, 'fullClient');

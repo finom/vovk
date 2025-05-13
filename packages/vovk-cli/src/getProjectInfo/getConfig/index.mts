@@ -59,12 +59,13 @@ export default async function getConfig({
       outDir: cliGenerateOptions?.segmentedClientOut ?? conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
     },
     bundle: {
-      outDir: cliBundleOptions?.outDir ?? conf.bundle?.outDir ?? path.join(srcRoot, 'dist'),
+      outDir: cliBundleOptions?.outDir ?? conf.bundle?.outDir ?? 'dist',
       tsClientOutDir: cliBundleOptions?.tsClientOutDir ?? conf.bundle?.tsClientOutDir ?? '.tmp-ts-rpc',
       dontDeleteTsClientOutDirAfter:
-        cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? conf.bundle?.dontDeleteTsClientOutDirAfter ?? true,
+        cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? conf.bundle?.dontDeleteTsClientOutDirAfter ?? false,
       noReadme: cliBundleOptions?.noReadme ?? conf.bundle?.noReadme ?? false,
       noPackage: cliBundleOptions?.noPackage ?? conf.bundle?.noPackage ?? false,
+      sourcemap: cliBundleOptions?.sourcemap ?? conf.bundle?.sourcemap ?? false,
     },
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',

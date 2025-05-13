@@ -50,7 +50,7 @@ export default async function writeOneClientFile({
   const { config, apiRoot, segments } = projectInfo;
   const { templateFilePath, relativeDir } = clientTemplateFile;
 
-  const outPath = path.join(
+  const outPath = path.resolve(
     cwd,
     outCwdRelativeDir,
     typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '',
