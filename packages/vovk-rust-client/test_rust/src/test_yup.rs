@@ -7,14 +7,26 @@ pub mod test_yup {
 
     #[test]
     fn test_ok() {
-        let data:with_yup_client_controller_rpc::handle_all_::output = with_yup_client_controller_rpc::handle_all(
-            with_yup_client_controller_rpc::handle_all_::body {
+        use with_yup_client_controller_rpc::handle_all_::{ 
+            body as Body,
+            query as Query,
+            params as Params,
+            output as Output,
+        };
+        use with_yup_client_controller_rpc::handle_all_::output_::{
+            body as BodyOutput,
+            query as QueryOutput,
+            params as ParamsOutput,
+            vovkParams as VovkParamsOutput,
+        };
+        let data:Output = with_yup_client_controller_rpc::handle_all(
+            Body {
                 hello: "world".to_string(),
             },
-            with_yup_client_controller_rpc::handle_all_::query {
+            Query {
                 search: "value".to_string(),
             },
-            with_yup_client_controller_rpc::handle_all_::params {
+            Params {
                 foo: "foo".to_string(),
                 bar: "bar".to_string(),
             },
@@ -34,17 +46,17 @@ pub mod test_yup {
         })); 
         
         // Check types
-        #[allow(unused_variables)] 
-        let _body: generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::body = data.body;
+        #[allow(unused_variables)]
+        let _body: BodyOutput = data.body;
 
         #[allow(unused_variables)]
-        let _query: generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::query = data.query;
+        let _query: QueryOutput = data.query;
 
         #[allow(unused_variables)]
-        let _params:generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::params = data.params;
+        let _params: ParamsOutput = data.params;
 
         #[allow(unused_variables)]
-        let _vovk_params:  generated_rust_client::with_yup_client_controller_rpc::handle_all_::output_::vovkParams = data.vovkParams;
+        let _vovk_params: VovkParamsOutput = data.vovkParams;
     }
     
     // test body validation

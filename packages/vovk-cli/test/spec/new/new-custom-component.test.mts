@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import updateConfigProperty from '../../lib/updateConfigProperty.mts';
+import updateConfig from '../../lib/updateConfig.mts';
 
 await describe('Custom components', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
@@ -22,11 +22,13 @@ await describe('Custom components', async () => {
         controllers, 
       });`,
     ]);
-    await updateConfigProperty(
-      path.join(cwd, dir, 'vovk.config.js'),
-      ['templates', 'state'],
-      '../test/spec/new/custom-state.ts.ejs'
-    );
+    await updateConfig(path.join(cwd, dir, 'vovk.config.js'), (config) => ({
+      ...config,
+      moduleTemplates: {
+        ...config.moduleTemplates,
+        state: '../test/spec/new/custom-state.ts.ejs',
+      },
+    }));
     await runAtProjectDir('../dist/index.mjs new c state user');
 
     await assertFile('src/modules/user/UserController.ts', [
@@ -68,16 +70,15 @@ await describe('Custom components', async () => {
         controllers, 
       });`,
     ]);
-    await updateConfigProperty(
-      path.join(cwd, dir, 'vovk.config.js'),
-      ['templates', 'state'],
-      '../test/spec/new/custom-state.ts.ejs'
-    );
-    await updateConfigProperty(
-      path.join(cwd, dir, 'vovk.config.js'),
-      ['templates', 'controller'],
-      '../test/spec/new/custom-controller.ts.ejs'
-    );
+
+    await updateConfig(path.join(cwd, dir, 'vovk.config.js'), (config) => ({
+      ...config,
+      moduleTemplates: {
+        ...config.moduleTemplates,
+        controller: '../test/spec/new/custom-controller.ts.ejs',
+        state: '../test/spec/new/custom-state.ts.ejs',
+      },
+    }));
     await runAtProjectDir('../dist/index.mjs new c state user');
 
     await assertFile('src/modules/user/UserController.ts', [

@@ -1,6 +1,7 @@
 import { Project, QuoteKind, IndentationText, NewLineKind, SyntaxKind, CodeBlockWriter, Node } from 'ts-morph';
 import type { KnownAny } from 'vovk';
 
+/** @deprecated Use updateConfig */
 export default function updateConfigProperty(
   absolutePathToTheFile: string,
   pathToProperty: string[],

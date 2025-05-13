@@ -1,3 +1,4 @@
+import type { InitOptions } from '../types.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type getLogger from '../utils/getLogger.mjs';
 import { getPackageManager } from './installDependencies.mjs';
@@ -11,6 +12,7 @@ export default function logUpdateDependenciesError({
   dependencies,
   devDependencies,
   error,
+  channel,
 }: {
   useNpm?: boolean;
   useYarn?: boolean;
@@ -20,9 +22,18 @@ export default function logUpdateDependenciesError({
   dependencies: string[];
   devDependencies: string[];
   error: Error;
+  channel: InitOptions['channel'];
 }) {
   const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun });
   const installCommands: string[] = [];
+
+  const addChannel = (packageName: string) => {
+    const isVovk = packageName.startsWith('vovk') && packageName !== 'dto-mapped-types';
+    return isVovk ? (!channel || channel !== 'latest' ? `${packageName}@${channel}` : packageName) : packageName;
+  };
+
+  dependencies = dependencies.map(addChannel);
+  devDependencies = devDependencies.map(addChannel);
 
   if (dependencies.length > 0) {
     let depInstallCmd = '';

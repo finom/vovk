@@ -18,10 +18,12 @@ export interface DevOptions {
 export interface GenerateOptions {
   prettify?: boolean;
   config?: string;
-  fullClientFrom?: string[];
-  fullClientOut?: string;
-  segmentedClientFrom?: string[];
-  segmentedClientOut?: string;
+  fullFrom?: string[];
+  fullOut?: string;
+  fullOnly?: boolean;
+  segmentedFrom?: string[];
+  segmentedOut?: string;
+  segmentedOnly?: boolean;
 }
 
 export interface BundleOptions extends Partial<VovkStrictConfig['bundle']> {

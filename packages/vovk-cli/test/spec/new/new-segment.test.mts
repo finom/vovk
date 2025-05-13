@@ -62,6 +62,20 @@ await describe('CLI new segment', async () => {
     );
   });
 
+  await it('New static segment', async () => {
+    await createNextApp();
+    await vovkInit('--yes');
+    await runAtProjectDir('../dist/index.mjs new segment foo');
+    await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
+      `export function generateStaticParams() {`,
+      `initVovk({
+        segmentName: 'foo',
+        emitSchema: true,
+        controllers,
+      });`,
+    ]);
+  });
+
   await it('New nested segment', async () => {
     await createNextApp();
     await vovkInit('--yes');
@@ -74,6 +88,8 @@ await describe('CLI new segment', async () => {
         controllers,
       });`
     );
+
+    await assertFile('src/app/api/bar/baz/qwe/[[...vovk]]/route.ts', `export function generateStaticParams() {`, true);
   });
 
   await it('Multiple new segments', async () => {

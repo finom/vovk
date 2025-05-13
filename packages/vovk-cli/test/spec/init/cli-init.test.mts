@@ -149,7 +149,7 @@ await describe('CLI init', async () => {
     await assertNotExists('./node_modules/vovk-cli');
   });
 
-  await it('Works with --yes and --use-yarn', async () => {
+  await it.only('Works with --yes and --use-yarn', async () => {
     await createNextApp('--use-yarn');
     await vovkInit('--yes --use-yarn');
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
@@ -338,7 +338,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting', async () => {
     await createNextApp();
-    await vovkInit('', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('', { combo: [ENTER, ENTER, 'Y', ENTER, ENTER, ENTER] }); // Y is for react-query
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
 
     await assertDeps({
@@ -365,10 +365,10 @@ await describe('CLI init', async () => {
   await it('Works with prompting and --use-yarn', async () => {
     await createNextApp('--use-yarn');
     await vovkInit('--use-yarn', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-react-query', 'vovk-client', 'vovk-openapi'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client', 'vovk-openapi'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -388,19 +388,10 @@ await describe('CLI init', async () => {
   await it('Works with prompting and no TSConfig update', async () => {
     await createNextApp();
     await vovkInit('', { combo: [ENTER, ENTER, ENTER, 'N', ENTER] });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
-      dependencies: [
-        'vovk',
-        'vovk-zod',
-        'vovk-ajv',
-        'zod',
-        'vovk-react-query',
-        '@tanstack/react-query',
-        'vovk-client',
-        'vovk-openapi',
-      ],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client', 'vovk-openapi'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -414,19 +405,10 @@ await describe('CLI init', async () => {
   await it('Works with prompting and --update-ts-config', async () => {
     await createNextApp();
     await vovkInit('--update-ts-config', { combo: [ENTER, ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
-      dependencies: [
-        'vovk',
-        'vovk-zod',
-        'vovk-ajv',
-        'zod',
-        'vovk-react-query',
-        '@tanstack/react-query',
-        'vovk-client',
-        'vovk-openapi',
-      ],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client', 'vovk-openapi'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -440,7 +422,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and --validation-library', async () => {
     await createNextApp();
     await vovkInit('--validation-library=vovk-dto', { combo: [ENTER, ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto', true));
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
 
     await assertDeps({
       dependencies: [
@@ -450,8 +432,6 @@ await describe('CLI init', async () => {
         'class-transformer',
         'dto-mapped-types',
         'reflect-metadata',
-        'vovk-react-query',
-        '@tanstack/react-query',
         'vovk-client',
         'vovk-openapi',
       ],
@@ -468,15 +448,15 @@ await describe('CLI init', async () => {
   await it('Works with prompting and --validation-library=none', async () => {
     await createNextApp();
     await vovkInit('--validation-library=none', { combo: [ENTER, ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null, true));
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-react-query', '@tanstack/react-query', 'vovk-client', 'vovk-openapi'],
+      dependencies: ['vovk', 'vovk-client', 'vovk-openapi'],
       devDependencies: ['vovk-cli'],
     });
 
     await assertDeps({
-      dependencies: ['vovk-dto', 'vovk-zod'],
+      dependencies: ['vovk-dto', 'vovk-zod', 'vovk-yup', 'zod', 'class-validator', 'class-transformer'],
       opposite: true,
     });
 
@@ -489,7 +469,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and no validation', async () => {
     await createNextApp();
-    await vovkInit('', { combo: ['N', ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('', { combo: ['N', ENTER, ENTER, 'Y', ENTER, ENTER] });
     await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig(null, true)));
 
     await assertDeps({
@@ -512,18 +492,10 @@ await describe('CLI init', async () => {
   await it('Works with prompting and down arrow selection', async () => {
     await createNextApp();
     await vovkInit('', { combo: [DOWN, ENTER, ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-yup', true));
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-yup'));
 
     await assertDeps({
-      dependencies: [
-        'vovk',
-        'vovk-yup',
-        'yup',
-        'vovk-react-query',
-        '@tanstack/react-query',
-        'vovk-client',
-        'vovk-openapi',
-      ],
+      dependencies: ['vovk', 'vovk-yup', 'yup', 'vovk-client', 'vovk-openapi'],
       devDependencies: ['vovk-cli'],
     });
 

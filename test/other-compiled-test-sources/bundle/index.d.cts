@@ -1,6 +1,6 @@
-import * as vovk0 from "vovk";
-import * as vovk_dist_client_types279 from "vovk/dist/client/types";
-import * as openapi3_ts_oas31561 from "openapi3-ts/oas31";
+import * as vovk0 from 'vovk';
+import * as vovk_dist_client_types279 from 'vovk/dist/client/types';
+import * as openapi3_ts_oas31561 from 'openapi3-ts/oas31';
 
 //#region src/client/StreamingController.d.ts
 type Token$1 = {
@@ -415,29 +415,32 @@ declare const fullSchema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  "400": {
+                  '400': {
                     description: string;
                     content: {
-                      "application/json": {
+                      'application/json': {
                         schema: {
-                          allOf: ({
-                            $ref: string;
-                            type?: undefined;
-                            properties?: undefined;
-                          } | {
-                            type: string;
-                            properties: {
-                              message: {
+                          allOf: (
+                            | {
+                                $ref: string;
+                                type?: undefined;
+                                properties?: undefined;
+                              }
+                            | {
                                 type: string;
-                                enum: string[];
-                              };
-                              statusCode: {
-                                type: string;
-                                enum: number[];
-                              };
-                            };
-                            $ref?: undefined;
-                          })[];
+                                properties: {
+                                  message: {
+                                    type: string;
+                                    enum: string[];
+                                  };
+                                  statusCode: {
+                                    type: string;
+                                    enum: number[];
+                                  };
+                                };
+                                $ref?: undefined;
+                              }
+                          )[];
                         };
                       };
                     };
@@ -734,34 +737,40 @@ declare const fullSchema: {
                       };
                     };
                     logical_anyOf: {
-                      anyOf: ({
-                        type: string;
-                        maxLength: number;
-                      } | {
-                        type: string;
-                        maxLength?: undefined;
-                      })[];
+                      anyOf: (
+                        | {
+                            type: string;
+                            maxLength: number;
+                          }
+                        | {
+                            type: string;
+                            maxLength?: undefined;
+                          }
+                      )[];
                     };
                     logical_allOf: {
-                      allOf: ({
-                        type: string;
-                        properties: {
-                          a: {
+                      allOf: (
+                        | {
                             type: string;
-                          };
-                          b?: undefined;
-                        };
-                        required: string[];
-                      } | {
-                        type: string;
-                        properties: {
-                          b: {
+                            properties: {
+                              a: {
+                                type: string;
+                              };
+                              b?: undefined;
+                            };
+                            required: string[];
+                          }
+                        | {
                             type: string;
-                          };
-                          a?: undefined;
-                        };
-                        required: string[];
-                      })[];
+                            properties: {
+                              b: {
+                                type: string;
+                              };
+                              a?: undefined;
+                            };
+                            required: string[];
+                          }
+                      )[];
                     };
                   };
                   required: string[];
@@ -991,29 +1000,32 @@ declare const fullSchema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  "400": {
+                  '400': {
                     description: string;
                     content: {
-                      "application/json": {
+                      'application/json': {
                         schema: {
-                          allOf: ({
-                            $ref: string;
-                            type?: undefined;
-                            properties?: undefined;
-                          } | {
-                            type: string;
-                            properties: {
-                              message: {
+                          allOf: (
+                            | {
+                                $ref: string;
+                                type?: undefined;
+                                properties?: undefined;
+                              }
+                            | {
                                 type: string;
-                                enum: string[];
-                              };
-                              statusCode: {
-                                type: string;
-                                enum: number[];
-                              };
-                            };
-                            $ref?: undefined;
-                          })[];
+                                properties: {
+                                  message: {
+                                    type: string;
+                                    enum: string[];
+                                  };
+                                  statusCode: {
+                                    type: string;
+                                    enum: number[];
+                                  };
+                                };
+                                $ref?: undefined;
+                              }
+                          )[];
                         };
                       };
                     };
@@ -1462,7 +1474,7 @@ declare const fullSchema: {
             handleAll: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1474,7 +1486,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -1486,7 +1498,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 params: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -1502,7 +1514,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 output: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {
                     HandleAllBodyDto: {
                       properties: {
@@ -1561,29 +1573,32 @@ declare const fullSchema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  "400": {
+                  '400': {
                     description: string;
                     content: {
-                      "application/json": {
+                      'application/json': {
                         schema: {
-                          allOf: ({
-                            $ref: string;
-                            type?: undefined;
-                            properties?: undefined;
-                          } | {
-                            type: string;
-                            properties: {
-                              message: {
+                          allOf: (
+                            | {
+                                $ref: string;
+                                type?: undefined;
+                                properties?: undefined;
+                              }
+                            | {
                                 type: string;
-                                enum: string[];
-                              };
-                              statusCode: {
-                                type: string;
-                                enum: number[];
-                              };
-                            };
-                            $ref?: undefined;
-                          })[];
+                                properties: {
+                                  message: {
+                                    type: string;
+                                    enum: string[];
+                                  };
+                                  statusCode: {
+                                    type: string;
+                                    enum: number[];
+                                  };
+                                };
+                                $ref?: undefined;
+                              }
+                          )[];
                         };
                       };
                     };
@@ -1596,7 +1611,7 @@ declare const fullSchema: {
             handleNestedQuery: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     x: {
@@ -1624,7 +1639,7 @@ declare const fullSchema: {
             handleOutput: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     helloOutput: {
@@ -1635,7 +1650,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 output: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1657,7 +1672,7 @@ declare const fullSchema: {
             handleStream: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     values: {
@@ -1671,7 +1686,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 iteration: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     value: {
@@ -1689,7 +1704,7 @@ declare const fullSchema: {
             handleSchemaComplaints: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     enum_value: {
@@ -1786,7 +1801,7 @@ declare const fullSchema: {
             handleFormData: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -1804,7 +1819,7 @@ declare const fullSchema: {
             disableServerSideValidationBool: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1816,7 +1831,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -1834,7 +1849,7 @@ declare const fullSchema: {
             disableServerSideValidationStrings: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1846,7 +1861,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -1869,7 +1884,7 @@ declare const fullSchema: {
             skipSchemaEmissionStrings: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -1887,7 +1902,7 @@ declare const fullSchema: {
             validateEachIteration: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     values: {
@@ -1899,7 +1914,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 iteration: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     value: {
@@ -1921,7 +1936,7 @@ declare const fullSchema: {
             handleQuery: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -1943,7 +1958,7 @@ declare const fullSchema: {
             handleBody: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1965,7 +1980,7 @@ declare const fullSchema: {
             handleParams: {
               validation: {
                 params: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -1998,29 +2013,32 @@ declare const fullSchema: {
             getFromSchema: {
               openapi: {
                 responses: {
-                  "418": {
+                  '418': {
                     description: string;
                     content: {
-                      "application/json": {
+                      'application/json': {
                         schema: {
-                          allOf: ({
-                            $ref: string;
-                            type?: undefined;
-                            properties?: undefined;
-                          } | {
-                            type: string;
-                            properties: {
-                              message: {
+                          allOf: (
+                            | {
+                                $ref: string;
+                                type?: undefined;
+                                properties?: undefined;
+                              }
+                            | {
                                 type: string;
-                                enum: string[];
-                              };
-                              statusCode: {
-                                type: string;
-                                enum: number[];
-                              };
-                            };
-                            $ref?: undefined;
-                          })[];
+                                properties: {
+                                  message: {
+                                    type: string;
+                                    enum: string[];
+                                  };
+                                  statusCode: {
+                                    type: string;
+                                    enum: number[];
+                                  };
+                                };
+                                $ref?: undefined;
+                              }
+                          )[];
                         };
                       };
                     };
@@ -2334,7 +2352,7 @@ declare const fullSchema: {
             getDtoControllerOnlyEntities: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2351,7 +2369,7 @@ declare const fullSchema: {
             updateDtoControllerOnlyEntity: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -2363,7 +2381,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     q: {
@@ -2395,7 +2413,7 @@ declare const fullSchema: {
             getDtoControllerAndServiceEntities: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2412,7 +2430,7 @@ declare const fullSchema: {
             updateDtoControllerAndServiceEntity: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -2424,7 +2442,7 @@ declare const fullSchema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     q: {
@@ -2454,13 +2472,17 @@ declare const fullSchema: {
 }; //#endregion
 //#region .tmp-ts-rpc/index.d.ts
 declare const CommonControllerRPC: {
-  getHelloWorldResponseObject: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }>) & {
+  getHelloWorldResponseObject: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { hello: string }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2469,13 +2491,17 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getHelloWorldObjectLiteral: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }>) & {
+  getHelloWorldObjectLiteral: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { hello: string }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2484,13 +2510,17 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getHelloWorldNextResponseObjectPromise: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }>) & {
+  getHelloWorldNextResponseObjectPromise: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { hello: string }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2499,9 +2529,13 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getHelloWorldRawResponseObjectPromise: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: Response) => R;
-  }>) => R extends object ? Promise<R> : Promise<Response>) & {
+  getHelloWorldRawResponseObjectPromise: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: Response) => R;
+      }
+    >
+  ) => R extends object ? Promise<R> : Promise<Response>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2510,13 +2544,17 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getHelloWorldObjectLiteralPromise: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }>) & {
+  getHelloWorldObjectLiteralPromise: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { hello: string }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2525,13 +2563,17 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getHelloWorldHeaders: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string | null;
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    hello: string | null;
-  }>) & {
+  getHelloWorldHeaders: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { hello: string | null }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string | null;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2540,13 +2582,23 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getHelloWorldArray: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }[]) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }[]>) & {
+  getHelloWorldArray: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (
+          staticMethodReturn: {
+            hello: string;
+          }[]
+        ) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<
+        {
+          hello: string;
+        }[]
+      >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2555,13 +2607,17 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getHelloWorldAndEmptyGeneric: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }>) & {
+  getHelloWorldAndEmptyGeneric: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { hello: string }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2570,64 +2626,25 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getWithParams: (<R>(options: {
-    body?: undefined;
-  } & {
-    query?: undefined;
-  } & {
-    params: {
-      hello: "world";
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: "world";
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    hello: "world";
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: unknown;
-    __iteration: unknown;
-  };
-  postWithAll: (<R>(options: {
-    body: {
-      isBody: true;
-    };
-  } & {
-    query: {
-      simpleQueryParam: "queryValue";
-    };
-  } & {
-    params: {
-      hello: "world";
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  getWithParams: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query?: undefined;
+    } & {
       params: {
-        hello: "world";
+        hello: 'world';
       };
-      body: {
-        isBody: true;
-      };
-      query: {
-        simpleQueryParam: "queryValue";
-      };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    params: {
-      hello: "world";
-    };
-    body: {
-      isBody: true;
-    };
-    query: {
-      simpleQueryParam: "queryValue";
-    };
-  }>) & {
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { hello: 'world' }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: 'world';
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2636,86 +2653,116 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithBodyAndQueryUsingReqVovk: (<R>(options: {
-    body: {
-      isBody: true;
-    };
-  } & {
-    query: {
-      simpleQueryParam: "queryValue";
-      array1: readonly ["foo"];
-      array2: readonly ["bar", "baz"];
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  postWithAll: (<R>(
+    options: {
       body: {
         isBody: true;
       };
+    } & {
       query: {
-        simpleQueryParam: "queryValue";
-        array1: readonly ["foo"];
-        array2: readonly ["bar", "baz"];
+        simpleQueryParam: 'queryValue';
       };
-      meta: {
-        isMeta1: true;
-        isMeta2: true;
+    } & {
+      params: {
+        hello: 'world';
       };
-      metaNulled: Record<any, any>;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      isBody: true;
-    };
-    query: {
-      simpleQueryParam: "queryValue";
-      array1: readonly ["foo"];
-      array2: readonly ["bar", "baz"];
-    };
-    meta: {
-      isMeta1: true;
-      isMeta2: true;
-    };
-    metaNulled: Record<any, any>;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: unknown;
-    __iteration: unknown;
-  };
-  getNestedQuery: (<R>(options: {
-    body?: undefined;
-  } & {
-    query: {
-      x: string;
-      y: string[];
-      z: {
-        f: string;
-        u: string[];
-        d: {
-          x: string;
-          arrOfObjects: ({
-            foo: string;
-            nestedArr: string[];
-            nestedObj?: undefined;
-          } | {
-            foo: string;
-            nestedObj: {
-              deepKey: string;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            params: {
+              hello: 'world';
             };
-            nestedArr?: undefined;
-          })[];
+            body: {
+              isBody: true;
+            };
+            query: {
+              simpleQueryParam: 'queryValue';
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        params: {
+          hello: 'world';
         };
+        body: {
+          isBody: true;
+        };
+        query: {
+          simpleQueryParam: 'queryValue';
+        };
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: unknown;
+    __iteration: unknown;
+  };
+  postWithBodyAndQueryUsingReqVovk: (<R>(
+    options: {
+      body: {
+        isBody: true;
       };
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+    } & {
+      query: {
+        simpleQueryParam: 'queryValue';
+        array1: readonly ['foo'];
+        array2: readonly ['bar', 'baz'];
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              isBody: true;
+            };
+            query: {
+              simpleQueryParam: 'queryValue';
+              array1: readonly ['foo'];
+              array2: readonly ['bar', 'baz'];
+            };
+            meta: {
+              isMeta1: true;
+              isMeta2: true;
+            };
+            metaNulled: Record<any, any>;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          isBody: true;
+        };
+        query: {
+          simpleQueryParam: 'queryValue';
+          array1: readonly ['foo'];
+          array2: readonly ['bar', 'baz'];
+        };
+        meta: {
+          isMeta1: true;
+          isMeta2: true;
+        };
+        metaNulled: Record<any, any>;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: unknown;
+    __iteration: unknown;
+  };
+  getNestedQuery: (<R>(
+    options: {
+      body?: undefined;
+    } & {
       query: {
         x: string;
         y: string[];
@@ -2724,47 +2771,87 @@ declare const CommonControllerRPC: {
           u: string[];
           d: {
             x: string;
-            arrOfObjects: ({
-              foo: string;
-              nestedArr: string[];
-              nestedObj?: undefined;
-            } | {
-              foo: string;
-              nestedObj: {
-                deepKey: string;
-              };
-              nestedArr?: undefined;
-            })[];
+            arrOfObjects: (
+              | {
+                  foo: string;
+                  nestedArr: string[];
+                  nestedObj?: undefined;
+                }
+              | {
+                  foo: string;
+                  nestedObj: {
+                    deepKey: string;
+                  };
+                  nestedArr?: undefined;
+                }
+            )[];
           };
         };
       };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    query: {
-      x: string;
-      y: string[];
-      z: {
-        f: string;
-        u: string[];
-        d: {
-          x: string;
-          arrOfObjects: ({
-            foo: string;
-            nestedArr: string[];
-            nestedObj?: undefined;
-          } | {
-            foo: string;
-            nestedObj: {
-              deepKey: string;
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            query: {
+              x: string;
+              y: string[];
+              z: {
+                f: string;
+                u: string[];
+                d: {
+                  x: string;
+                  arrOfObjects: (
+                    | {
+                        foo: string;
+                        nestedArr: string[];
+                        nestedObj?: undefined;
+                      }
+                    | {
+                        foo: string;
+                        nestedObj: {
+                          deepKey: string;
+                        };
+                        nestedArr?: undefined;
+                      }
+                  )[];
+                };
+              };
             };
-            nestedArr?: undefined;
-          })[];
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        query: {
+          x: string;
+          y: string[];
+          z: {
+            f: string;
+            u: string[];
+            d: {
+              x: string;
+              arrOfObjects: (
+                | {
+                    foo: string;
+                    nestedArr: string[];
+                    nestedObj?: undefined;
+                  }
+                | {
+                    foo: string;
+                    nestedObj: {
+                      deepKey: string;
+                    };
+                    nestedArr?: undefined;
+                  }
+              )[];
+            };
+          };
         };
-      };
-    };
-    search: string;
-  }>) & {
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2773,19 +2860,23 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithFormDataUsingReqVovk: (<R>(options: {
-    body: FormData;
-  } & {
-    query?: undefined;
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      field: "value";
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    field: "value";
-  }>) & {
+  postWithFormDataUsingReqVovk: (<R>(
+    options: {
+      body: FormData;
+    } & {
+      query?: undefined;
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { field: 'value' }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        field: 'value';
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2794,9 +2885,13 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getErrorResponse: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: void) => R;
-  }>) => R extends object ? Promise<R> : Promise<void>) & {
+  getErrorResponse: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: void) => R;
+      }
+    >
+  ) => R extends object ? Promise<R> : Promise<void>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2805,9 +2900,13 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getJsonTextResponse: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: Response) => R;
-  }>) => R extends object ? Promise<R> : Promise<Response>) & {
+  getJsonTextResponse: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: Response) => R;
+      }
+    >
+  ) => R extends object ? Promise<R> : Promise<Response>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2816,13 +2915,21 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getJsonlResponse: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: vovk0.JSONLinesResponse<{
+  getJsonlResponse: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (
+          staticMethodReturn: vovk0.JSONLinesResponse<{
+            hello: string;
+          }>
+        ) => R;
+      }
+    >
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
       hello: string;
-    }>) => R;
-  }>) => Promise<vovk0.VovkStreamAsyncIterable<{
-    hello: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2831,13 +2938,21 @@ declare const CommonControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  getJsonlTextResponse: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: vovk0.JSONLinesResponse<{
+  getJsonlTextResponse: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (
+          staticMethodReturn: vovk0.JSONLinesResponse<{
+            hello: string;
+          }>
+        ) => R;
+      }
+    >
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
       hello: string;
-    }>) => R;
-  }>) => Promise<vovk0.VovkStreamAsyncIterable<{
-    hello: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2848,17 +2963,21 @@ declare const CommonControllerRPC: {
   };
 };
 declare const StreamingControllerRPC: {
-  postWithStreaming: (<R>(options: {
-    body: Omit<Token$1, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
+  postWithStreaming: (<R>(
+    options: {
+      body: Omit<Token$1, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
+        }
+      >)
+  ) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2867,17 +2986,21 @@ declare const StreamingControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreamingAndImmediateError: (<R>(options: {
-    body: Omit<Token$1, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
+  postWithStreamingAndImmediateError: (<R>(
+    options: {
+      body: Omit<Token$1, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
+        }
+      >)
+  ) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2886,17 +3009,21 @@ declare const StreamingControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreamingAndDelayedError: (<R>(options: {
-    body: Omit<Token$1, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
+  postWithStreamingAndDelayedError: (<R>(
+    options: {
+      body: Omit<Token$1, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
+        }
+      >)
+  ) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2905,17 +3032,21 @@ declare const StreamingControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreamingAndDelayedCustomError: (<R>(options: {
-    body: Omit<Token$1, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
+  postWithStreamingAndDelayedCustomError: (<R>(
+    options: {
+      body: Omit<Token$1, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
+        }
+      >)
+  ) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2924,17 +3055,21 @@ declare const StreamingControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreamingAndDelayedUnhandledError: (<R>(options: {
-    body: Omit<Token$1, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
+  postWithStreamingAndDelayedUnhandledError: (<R>(
+    options: {
+      body: Omit<Token$1, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: vovk0.JSONLinesResponse<Token$1>) => R;
+        }
+      >)
+  ) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2945,17 +3080,21 @@ declare const StreamingControllerRPC: {
   };
 };
 declare const StreamingGeneratorControllerRPC: {
-  getWithStreaming: (<R>(options: {
-    body?: null;
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<Token, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<Token>>) & {
+  getWithStreaming: (<R>(
+    options: {
+      body?: null;
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: AsyncGenerator<Token, void, unknown>) => R;
+        }
+      >)
+  ) => Promise<vovk0.VovkStreamAsyncIterable<Token>>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2964,23 +3103,35 @@ declare const StreamingGeneratorControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithAsyncStreaming: (<R>(options: {
-    body: Omit<Token, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
-      query: "queryValue";
+  postWithAsyncStreaming: (<R>(
+    options: {
+      body: Omit<Token, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                query: 'queryValue';
+                token: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
+      query: 'queryValue';
       token: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    query: "queryValue";
-    token: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -2989,23 +3140,35 @@ declare const StreamingGeneratorControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreaming: (<R>(options: {
-    body: Omit<Token, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
-      query: "queryValue";
+  postWithStreaming: (<R>(
+    options: {
+      body: Omit<Token, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                query: 'queryValue';
+                token: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
+      query: 'queryValue';
       token: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    query: "queryValue";
-    token: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3014,17 +3177,21 @@ declare const StreamingGeneratorControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreamingAndImmediateError: (<R>(options: {
-    body: Omit<Token, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<Token, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<Token>>) & {
+  postWithStreamingAndImmediateError: (<R>(
+    options: {
+      body: Omit<Token, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: AsyncGenerator<Token, void, unknown>) => R;
+        }
+      >)
+  ) => Promise<vovk0.VovkStreamAsyncIterable<Token>>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3033,23 +3200,35 @@ declare const StreamingGeneratorControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreamingAndDelayedError: (<R>(options: {
-    body: Omit<Token, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
-      query: "queryValue";
+  postWithStreamingAndDelayedError: (<R>(
+    options: {
+      body: Omit<Token, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                query: 'queryValue';
+                token: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
+      query: 'queryValue';
       token: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    query: "queryValue";
-    token: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3058,23 +3237,35 @@ declare const StreamingGeneratorControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreamingAndDelayedCustomError: (<R>(options: {
-    body: Omit<Token, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
-      query: "queryValue";
+  postWithStreamingAndDelayedCustomError: (<R>(
+    options: {
+      body: Omit<Token, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                query: 'queryValue';
+                token: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
+      query: 'queryValue';
       token: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    query: "queryValue";
-    token: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3083,23 +3274,35 @@ declare const StreamingGeneratorControllerRPC: {
     __output: unknown;
     __iteration: unknown;
   };
-  postWithStreamingAndDelayedUnhandledError: (<R>(options: {
-    body: Omit<Token, "query">[];
-  } & {
-    query: {
-      query: "queryValue";
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
-      query: "queryValue";
+  postWithStreamingAndDelayedUnhandledError: (<R>(
+    options: {
+      body: Omit<Token, 'query'>[];
+    } & {
+      query: {
+        query: 'queryValue';
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                query: 'queryValue';
+                token: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
+      query: 'queryValue';
       token: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    query: "queryValue";
-    token: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3110,9 +3313,13 @@ declare const StreamingGeneratorControllerRPC: {
   };
 };
 declare const CustomSchemaControllerRPC: {
-  getWithCustomSchema: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: null) => R;
-  }>) => R extends object ? Promise<R> : Promise<null>) & {
+  getWithCustomSchema: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: null) => R;
+      }
+    >
+  ) => R extends object ? Promise<R> : Promise<null>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3123,207 +3330,100 @@ declare const CustomSchemaControllerRPC: {
   };
 };
 declare const WithZodClientControllerRPC: {
-  handleAll: (<R>(options: {
-    body: {
-      hello: string;
-    };
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params: {
-      foo: string;
-      bar: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  handleAll: (<R>(
+    options: {
       body: {
         hello: string;
       };
+    } & {
       query: {
         search: string;
       };
+    } & {
       params: {
         foo: string;
         bar: string;
       };
-      vovkParams: {
-        foo: string;
-        bar: string;
-      };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    query: {
-      search: string;
-    };
-    params: {
-      foo: string;
-      bar: string;
-    };
-    vovkParams: {
-      foo: string;
-      bar: string;
-    };
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: {
-      body: {
-        hello: string;
-      };
-      query: {
-        search: string;
-      };
-      params: {
-        foo: string;
-        bar: string;
-      };
-      vovkParams: {
-        foo: string;
-        bar: string;
-      };
-    };
-    __iteration: any;
-  };
-  handleQuery: (<R>(options: {
-    body?: undefined;
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    search: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleBody: (<R>(options: {
-    body: {
-      hello: string;
-    };
-  } & {
-    query?: undefined;
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleParams: (<R>(options: {
-    body?: undefined;
-  } & {
-    query?: undefined;
-  } & {
-    params: {
-      foo: string;
-      bar: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      foo: string;
-      bar: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    foo: string;
-    bar: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleNestedQuery: (<R>(options: {
-    body?: undefined;
-  } & {
-    query: {
-      x: string;
-      y: string[];
-      z: {
-        f: string;
-        u: string[];
-        d: {
-          x: string;
-          arrOfObjects: {
-            foo: string;
-            nestedArr?: string[] | undefined;
-            nestedObj?: {
-              deepKey: string;
-            } | undefined;
-          }[];
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            query: {
+              search: string;
+            };
+            params: {
+              foo: string;
+              bar: string;
+            };
+            vovkParams: {
+              foo: string;
+              bar: string;
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
         };
-      };
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      x: string;
-      y: string[];
-      z: {
-        f: string;
-        u: string[];
-        d: {
-          x: string;
-          arrOfObjects: {
-            foo: string;
-            nestedArr?: string[] | undefined;
-            nestedObj?: {
-              deepKey: string;
-            } | undefined;
-          }[];
+        query: {
+          search: string;
         };
-      };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    x: string;
-    y: string[];
-    z: {
-      f: string;
-      u: string[];
-      d: {
-        x: string;
-        arrOfObjects: {
+        params: {
           foo: string;
-          nestedArr?: string[] | undefined;
-          nestedObj?: {
-            deepKey: string;
-          } | undefined;
-        }[];
+          bar: string;
+        };
+        vovkParams: {
+          foo: string;
+          bar: string;
+        };
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: {
+      body: {
+        hello: string;
+      };
+      query: {
+        search: string;
+      };
+      params: {
+        foo: string;
+        bar: string;
+      };
+      vovkParams: {
+        foo: string;
+        bar: string;
       };
     };
-  }>) & {
+    __iteration: any;
+  };
+  handleQuery: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query: {
+        search: string;
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3332,21 +3432,161 @@ declare const WithZodClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  handleOutput: (<R>(options: {
-    body?: undefined;
-  } & {
-    query: {
-      helloOutput: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }>) & {
+  handleBody: (<R>(
+    options: {
+      body: {
+        hello: string;
+      };
+    } & {
+      query?: undefined;
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { hello: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleParams: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query?: undefined;
+    } & {
+      params: {
+        foo: string;
+        bar: string;
+      };
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { foo: string; bar: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        foo: string;
+        bar: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleNestedQuery: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query: {
+        x: string;
+        y: string[];
+        z: {
+          f: string;
+          u: string[];
+          d: {
+            x: string;
+            arrOfObjects: {
+              foo: string;
+              nestedArr?: string[] | undefined;
+              nestedObj?:
+                | {
+                    deepKey: string;
+                  }
+                | undefined;
+            }[];
+          };
+        };
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            x: string;
+            y: string[];
+            z: {
+              f: string;
+              u: string[];
+              d: {
+                x: string;
+                arrOfObjects: {
+                  foo: string;
+                  nestedArr?: string[] | undefined;
+                  nestedObj?:
+                    | {
+                        deepKey: string;
+                      }
+                    | undefined;
+                }[];
+              };
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        x: string;
+        y: string[];
+        z: {
+          f: string;
+          u: string[];
+          d: {
+            x: string;
+            arrOfObjects: {
+              foo: string;
+              nestedArr?: string[] | undefined;
+              nestedObj?:
+                | {
+                    deepKey: string;
+                  }
+                | undefined;
+            }[];
+          };
+        };
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleOutput: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query: {
+        helloOutput: string;
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { hello: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3357,21 +3597,33 @@ declare const WithZodClientControllerRPC: {
     };
     __iteration: any;
   };
-  handleStream: (<R>(options: {
-    body?: undefined;
-  } & {
-    query: {
-      values: string[];
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
+  handleStream: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query: {
+        values: string[];
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                value: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
       value: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    value: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3382,108 +3634,114 @@ declare const WithZodClientControllerRPC: {
       value: string;
     };
   };
-  handleSchemaComplaints: (<R>(options: {
-    body: {
-      enum_value: "a" | "b" | "c";
-      num_minimum: number;
-      num_maximum: number;
-      num_exclusiveMinimum: number;
-      num_exclusiveMaximum: number;
-      num_multipleOf: number;
-      num_int: number;
-      num_int32: number;
-      str_minLength: string;
-      str_maxLength: string;
-      str_pattern: string;
-      str_email: string;
-      str_url: string;
-      str_uuid: string;
-      str_datetime: string;
-      arr_minItems: string[];
-      arr_maxItems: string[];
-      obj_required: {
-        requiredField: string;
-        optionalField?: number | undefined;
+  handleSchemaComplaints: (<R>(
+    options: {
+      body: {
+        enum_value: 'a' | 'b' | 'c';
+        num_minimum: number;
+        num_maximum: number;
+        num_exclusiveMinimum: number;
+        num_exclusiveMaximum: number;
+        num_multipleOf: number;
+        num_int: number;
+        num_int32: number;
+        str_minLength: string;
+        str_maxLength: string;
+        str_pattern: string;
+        str_email: string;
+        str_url: string;
+        str_uuid: string;
+        str_datetime: string;
+        arr_minItems: string[];
+        arr_maxItems: string[];
+        obj_required: {
+          requiredField: string;
+          optionalField?: number | undefined;
+        };
+        obj_strict: {
+          knownField: string;
+        };
+        logical_anyOf: string | number | boolean;
+        logical_allOf: {
+          a: string;
+        } & {
+          b: number;
+        };
       };
-      obj_strict: {
-        knownField: string;
-      };
-      logical_anyOf: string | number | boolean;
-      logical_allOf: {
-        a: string;
-      } & {
-        b: number;
-      };
-    };
-  } & {
-    query?: undefined;
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      enum_value: "a" | "b" | "c";
-      num_minimum: number;
-      num_maximum: number;
-      num_exclusiveMinimum: number;
-      num_exclusiveMaximum: number;
-      num_multipleOf: number;
-      num_int: number;
-      num_int32: number;
-      str_minLength: string;
-      str_maxLength: string;
-      str_pattern: string;
-      str_email: string;
-      str_url: string;
-      str_uuid: string;
-      str_datetime: string;
-      arr_minItems: string[];
-      arr_maxItems: string[];
-      obj_required: {
-        requiredField: string;
-        optionalField?: number | undefined;
-      };
-      obj_strict: {
-        knownField: string;
-      };
-      logical_anyOf: string | number | boolean;
-      logical_allOf: {
-        a: string;
-      } & {
-        b: number;
-      };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    enum_value: "a" | "b" | "c";
-    num_minimum: number;
-    num_maximum: number;
-    num_exclusiveMinimum: number;
-    num_exclusiveMaximum: number;
-    num_multipleOf: number;
-    num_int: number;
-    num_int32: number;
-    str_minLength: string;
-    str_maxLength: string;
-    str_pattern: string;
-    str_email: string;
-    str_url: string;
-    str_uuid: string;
-    str_datetime: string;
-    arr_minItems: string[];
-    arr_maxItems: string[];
-    obj_required: {
-      requiredField: string;
-      optionalField?: number | undefined;
-    };
-    obj_strict: {
-      knownField: string;
-    };
-    logical_anyOf: string | number | boolean;
-    logical_allOf: {
-      a: string;
     } & {
-      b: number;
-    };
-  }>) & {
+      query?: undefined;
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            enum_value: 'a' | 'b' | 'c';
+            num_minimum: number;
+            num_maximum: number;
+            num_exclusiveMinimum: number;
+            num_exclusiveMaximum: number;
+            num_multipleOf: number;
+            num_int: number;
+            num_int32: number;
+            str_minLength: string;
+            str_maxLength: string;
+            str_pattern: string;
+            str_email: string;
+            str_url: string;
+            str_uuid: string;
+            str_datetime: string;
+            arr_minItems: string[];
+            arr_maxItems: string[];
+            obj_required: {
+              requiredField: string;
+              optionalField?: number | undefined;
+            };
+            obj_strict: {
+              knownField: string;
+            };
+            logical_anyOf: string | number | boolean;
+            logical_allOf: {
+              a: string;
+            } & {
+              b: number;
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        enum_value: 'a' | 'b' | 'c';
+        num_minimum: number;
+        num_maximum: number;
+        num_exclusiveMinimum: number;
+        num_exclusiveMaximum: number;
+        num_multipleOf: number;
+        num_int: number;
+        num_int32: number;
+        str_minLength: string;
+        str_maxLength: string;
+        str_pattern: string;
+        str_email: string;
+        str_url: string;
+        str_uuid: string;
+        str_datetime: string;
+        arr_minItems: string[];
+        arr_maxItems: string[];
+        obj_required: {
+          requiredField: string;
+          optionalField?: number | undefined;
+        };
+        obj_strict: {
+          knownField: string;
+        };
+        logical_anyOf: string | number | boolean;
+        logical_allOf: {
+          a: string;
+        } & {
+          b: number;
+        };
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3492,13 +3750,17 @@ declare const WithZodClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  handleNothitng: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      readonly nothing: "here";
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    readonly nothing: "here";
-  }>) & {
+  handleNothitng: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { readonly nothing: 'here' }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        readonly nothing: 'here';
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3507,27 +3769,33 @@ declare const WithZodClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  handleFormData: (<R>(options: {
-    body: FormData;
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      formData: {
-        hello: "world";
+  handleFormData: (<R>(
+    options: {
+      body: FormData;
+    } & {
+      query: {
+        search: string;
       };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    formData: {
-      hello: "world";
-    };
-    search: string;
-  }>) & {
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            formData: {
+              hello: 'world';
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        formData: {
+          hello: 'world';
+        };
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3536,29 +3804,35 @@ declare const WithZodClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  disableServerSideValidationBool: (<R>(options: {
-    body: {
-      hello: string;
-    };
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  disableServerSideValidationBool: (<R>(
+    options: {
       body: {
         hello: string;
       };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
+    } & {
+      query: {
+        search: string;
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3567,29 +3841,35 @@ declare const WithZodClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  disableServerSideValidationStrings: (<R>(options: {
-    body: {
-      hello: string;
-    };
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  disableServerSideValidationStrings: (<R>(
+    options: {
       body: {
         hello: string;
       };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
+    } & {
+      query: {
+        search: string;
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3598,29 +3878,35 @@ declare const WithZodClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  skipSchemaEmissionBool: (<R>(options: {
-    body: {
-      hello: string;
-    };
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  skipSchemaEmissionBool: (<R>(
+    options: {
       body: {
         hello: string;
       };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
+    } & {
+      query: {
+        search: string;
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3629,29 +3915,35 @@ declare const WithZodClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  skipSchemaEmissionStrings: (<R>(options: {
-    body: {
-      hello: string;
-    };
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  skipSchemaEmissionStrings: (<R>(
+    options: {
       body: {
         hello: string;
       };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
+    } & {
+      query: {
+        search: string;
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3660,21 +3952,33 @@ declare const WithZodClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  validateEachIteration: (<R>(options: {
-    body?: undefined;
-  } & {
-    query: {
-      values: string[];
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
+  validateEachIteration: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query: {
+        values: string[];
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                value: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
       value: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    value: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -3687,607 +3991,831 @@ declare const WithZodClientControllerRPC: {
   };
 };
 declare const WithYupClientControllerRPC: {
-  handleAll: (<R>(options: {
-    body: {
-      hello: string;
-    };
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params: {
-      foo: string;
-      bar: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  handleAll: (<R>(
+    options: {
       body: {
         hello: string;
       };
+    } & {
       query: {
         search: string;
       };
+    } & {
       params: {
         foo: string;
         bar: string;
       };
-      vovkParams: {
-        foo: string;
-        bar: string;
-      };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    query: {
-      search: string;
-    };
-    params: {
-      foo: string;
-      bar: string;
-    };
-    vovkParams: {
-      foo: string;
-      bar: string;
-    };
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: {
-      body: {
-        hello: string;
-      };
-      query: {
-        search: string;
-      };
-      params: {
-        foo: string;
-        bar: string;
-      };
-      vovkParams: {
-        foo: string;
-        bar: string;
-      };
-    };
-    __iteration: any;
-  };
-  handleQuery: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    search: string;
-  }, any>) => {
-    search: string;
-  }) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    search: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleBody: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<{
-    hello: string;
-  }, any, any>) => Promise<{
-    hello: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    hello: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleParams: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, any, {
-    foo: string;
-    bar: string;
-  }>) => Promise<{
-    foo: string;
-    bar: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      foo: string;
-      bar: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    foo: string;
-    bar: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleNestedQuery: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    x: string;
-    y: string[];
-    z: {
-      f: string;
-      u: string[];
-      d: {
-        x: string;
-        arrOfObjects: {
-          nestedObj?: {
-            deepKey?: string | undefined;
-          } | undefined;
-          nestedArr?: (string | undefined)[] | undefined;
-          foo: string;
-        }[];
-      };
-    };
-  }, any>) => {
-    x: string;
-    y: string[];
-    z: {
-      f: string;
-      u: string[];
-      d: {
-        x: string;
-        arrOfObjects: {
-          nestedObj?: {
-            deepKey?: string | undefined;
-          } | undefined;
-          nestedArr?: (string | undefined)[] | undefined;
-          foo: string;
-        }[];
-      };
-    };
-  }) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      x: string;
-      y: string[];
-      z: {
-        f: string;
-        u: string[];
-        d: {
-          x: string;
-          arrOfObjects: {
-            nestedObj?: {
-              deepKey?: string | undefined;
-            } | undefined;
-            nestedArr?: (string | undefined)[] | undefined;
-            foo: string;
-          }[];
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            query: {
+              search: string;
+            };
+            params: {
+              foo: string;
+              bar: string;
+            };
+            vovkParams: {
+              foo: string;
+              bar: string;
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
         };
-      };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    x: string;
-    y: string[];
-    z: {
-      f: string;
-      u: string[];
-      d: {
-        x: string;
-        arrOfObjects: {
-          nestedObj?: {
-            deepKey?: string | undefined;
-          } | undefined;
-          nestedArr?: (string | undefined)[] | undefined;
+        query: {
+          search: string;
+        };
+        params: {
           foo: string;
-        }[];
-      };
-    };
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleOutput: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    helloOutput: string;
-  }, any>) => Promise<{
-    hello: "world";
-  }>) & {
-    __output: {
-      hello: string;
-    };
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: "world";
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    hello: "world";
-  }>) & {
+          bar: string;
+        };
+        vovkParams: {
+          foo: string;
+          bar: string;
+        };
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
     segmentSchema: vovk0.VovkSegmentSchema;
     fullSchema: vovk0.VovkFullSchema;
     __output: {
+      body: {
+        hello: string;
+      };
+      query: {
+        search: string;
+      };
+      params: {
+        foo: string;
+        bar: string;
+      };
+      vovkParams: {
+        foo: string;
+        bar: string;
+      };
+    };
+    __iteration: any;
+  };
+  handleQuery: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            search: string;
+          },
+          any
+        >
+      ) => {
+        search: string;
+      }) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        search: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleBody: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          {
+            hello: string;
+          },
+          any,
+          any
+        >
+      ) => Promise<{
+        hello: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { hello: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleParams: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          any,
+          {
+            foo: string;
+            bar: string;
+          }
+        >
+      ) => Promise<{
+        foo: string;
+        bar: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { foo: string; bar: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        foo: string;
+        bar: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleNestedQuery: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            x: string;
+            y: string[];
+            z: {
+              f: string;
+              u: string[];
+              d: {
+                x: string;
+                arrOfObjects: {
+                  nestedObj?:
+                    | {
+                        deepKey?: string | undefined;
+                      }
+                    | undefined;
+                  nestedArr?: (string | undefined)[] | undefined;
+                  foo: string;
+                }[];
+              };
+            };
+          },
+          any
+        >
+      ) => {
+        x: string;
+        y: string[];
+        z: {
+          f: string;
+          u: string[];
+          d: {
+            x: string;
+            arrOfObjects: {
+              nestedObj?:
+                | {
+                    deepKey?: string | undefined;
+                  }
+                | undefined;
+              nestedArr?: (string | undefined)[] | undefined;
+              foo: string;
+            }[];
+          };
+        };
+      }) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            x: string;
+            y: string[];
+            z: {
+              f: string;
+              u: string[];
+              d: {
+                x: string;
+                arrOfObjects: {
+                  nestedObj?:
+                    | {
+                        deepKey?: string | undefined;
+                      }
+                    | undefined;
+                  nestedArr?: (string | undefined)[] | undefined;
+                  foo: string;
+                }[];
+              };
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        x: string;
+        y: string[];
+        z: {
+          f: string;
+          u: string[];
+          d: {
+            x: string;
+            arrOfObjects: {
+              nestedObj?:
+                | {
+                    deepKey?: string | undefined;
+                  }
+                | undefined;
+              nestedArr?: (string | undefined)[] | undefined;
+              foo: string;
+            }[];
+          };
+        };
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleOutput: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            helloOutput: string;
+          },
+          any
+        >
+      ) => Promise<{
+        hello: 'world';
+      }>) & {
+        __output: {
+          hello: string;
+        };
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { hello: 'world' }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: 'world';
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: {
       hello: string;
     };
     __iteration: any;
   };
-  handleStream: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    values: string[];
-  }, any>) => AsyncGenerator<{
-    value: string;
-  }, void, unknown>) & {
+  handleStream: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            values: string[];
+          },
+          any
+        >
+      ) => AsyncGenerator<
+        {
+          value: string;
+        },
+        void,
+        unknown
+      >) & {
+        __output: any;
+        __iteration: {
+          value: string;
+        };
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                value: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
+      value: string;
+    }>
+  >) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
     __output: any;
     __iteration: {
       value: string;
     };
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
+  };
+  handleSchemaComplaints: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          {
+            enum_value?: string | undefined;
+            num_minimum?: number | undefined;
+            num_maximum?: number | undefined;
+            num_exclusiveMinimum?: number | undefined;
+            num_exclusiveMaximum?: number | undefined;
+            num_multipleOf?: number | undefined;
+            num_int?: number | undefined;
+            num_int32?: number | undefined;
+            str_minLength?: string | undefined;
+            str_maxLength?: string | undefined;
+            str_pattern?: string | undefined;
+            str_email?: string | undefined;
+            str_url?: string | undefined;
+            str_uuid?: string | undefined;
+            str_datetime?: string | undefined;
+            arr_minItems?: (string | undefined)[] | undefined;
+            arr_maxItems?: (string | undefined)[] | undefined;
+            obj_required: {
+              optionalField?: number | undefined;
+              requiredField: string;
+            };
+            obj_strict: {
+              knownField?: string | undefined;
+            };
+            logical_anyOf: string | number | boolean;
+            logical_allOf: {
+              a: string;
+              b: number;
+            };
+          },
+          any,
+          any
+        >
+      ) => Promise<{
+        enum_value?: string | undefined;
+        num_minimum?: number | undefined;
+        num_maximum?: number | undefined;
+        num_exclusiveMinimum?: number | undefined;
+        num_exclusiveMaximum?: number | undefined;
+        num_multipleOf?: number | undefined;
+        num_int?: number | undefined;
+        num_int32?: number | undefined;
+        str_minLength?: string | undefined;
+        str_maxLength?: string | undefined;
+        str_pattern?: string | undefined;
+        str_email?: string | undefined;
+        str_url?: string | undefined;
+        str_uuid?: string | undefined;
+        str_datetime?: string | undefined;
+        arr_minItems?: (string | undefined)[] | undefined;
+        arr_maxItems?: (string | undefined)[] | undefined;
+        obj_required: {
+          optionalField?: number | undefined;
+          requiredField: string;
+        };
+        obj_strict: {
+          knownField?: string | undefined;
+        };
+        logical_anyOf: string | number | boolean;
+        logical_allOf: {
+          a: string;
+          b: number;
+        };
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            enum_value?: string | undefined;
+            num_minimum?: number | undefined;
+            num_maximum?: number | undefined;
+            num_exclusiveMinimum?: number | undefined;
+            num_exclusiveMaximum?: number | undefined;
+            num_multipleOf?: number | undefined;
+            num_int?: number | undefined;
+            num_int32?: number | undefined;
+            str_minLength?: string | undefined;
+            str_maxLength?: string | undefined;
+            str_pattern?: string | undefined;
+            str_email?: string | undefined;
+            str_url?: string | undefined;
+            str_uuid?: string | undefined;
+            str_datetime?: string | undefined;
+            arr_minItems?: (string | undefined)[] | undefined;
+            arr_maxItems?: (string | undefined)[] | undefined;
+            obj_required: {
+              optionalField?: number | undefined;
+              requiredField: string;
+            };
+            obj_strict: {
+              knownField?: string | undefined;
+            };
+            logical_anyOf: string | number | boolean;
+            logical_allOf: {
+              a: string;
+              b: number;
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        enum_value?: string | undefined;
+        num_minimum?: number | undefined;
+        num_maximum?: number | undefined;
+        num_exclusiveMinimum?: number | undefined;
+        num_exclusiveMaximum?: number | undefined;
+        num_multipleOf?: number | undefined;
+        num_int?: number | undefined;
+        num_int32?: number | undefined;
+        str_minLength?: string | undefined;
+        str_maxLength?: string | undefined;
+        str_pattern?: string | undefined;
+        str_email?: string | undefined;
+        str_url?: string | undefined;
+        str_uuid?: string | undefined;
+        str_datetime?: string | undefined;
+        arr_minItems?: (string | undefined)[] | undefined;
+        arr_maxItems?: (string | undefined)[] | undefined;
+        obj_required: {
+          optionalField?: number | undefined;
+          requiredField: string;
+        };
+        obj_strict: {
+          knownField?: string | undefined;
+        };
+        logical_anyOf: string | number | boolean;
+        logical_allOf: {
+          a: string;
+          b: number;
+        };
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleNothitng: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { readonly nothing: 'here' }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        readonly nothing: 'here';
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  handleFormData: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          FormData,
+          {
+            search: string;
+          },
+          any
+        >
+      ) => Promise<{
+        formData: {
+          hello: 'world';
+        };
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            formData: {
+              hello: 'world';
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        formData: {
+          hello: 'world';
+        };
+        search: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  disableServerSideValidationBool: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          {
+            hello: string;
+          },
+          {
+            search: string;
+          },
+          any
+        >
+      ) => Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  disableServerSideValidationStrings: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          {
+            hello: string;
+          },
+          {
+            search: string;
+          },
+          any
+        >
+      ) => Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  skipSchemaEmissionBool: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          {
+            hello: string;
+          },
+          {
+            search: string;
+          },
+          any
+        >
+      ) => Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  skipSchemaEmissionStrings: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          {
+            hello: string;
+          },
+          {
+            search: string;
+          },
+          any
+        >
+      ) => Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: {
+              hello: string;
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>) & {
+    isRPC: true;
+    schema: vovk0.VovkHandlerSchema;
+    controllerSchema: vovk0.VovkControllerSchema;
+    segmentSchema: vovk0.VovkSegmentSchema;
+    fullSchema: vovk0.VovkFullSchema;
+    __output: any;
+    __iteration: any;
+  };
+  validateEachIteration: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            values: string[];
+          },
+          any
+        >
+      ) => AsyncGenerator<
+        {
+          value: string;
+        },
+        void,
+        unknown
+      >) & {
+        __output: any;
+        __iteration: {
+          value: string;
+        };
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                value: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
       value: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    value: string;
-  }>>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: {
-      value: string;
-    };
-  };
-  handleSchemaComplaints: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<{
-    enum_value?: string | undefined;
-    num_minimum?: number | undefined;
-    num_maximum?: number | undefined;
-    num_exclusiveMinimum?: number | undefined;
-    num_exclusiveMaximum?: number | undefined;
-    num_multipleOf?: number | undefined;
-    num_int?: number | undefined;
-    num_int32?: number | undefined;
-    str_minLength?: string | undefined;
-    str_maxLength?: string | undefined;
-    str_pattern?: string | undefined;
-    str_email?: string | undefined;
-    str_url?: string | undefined;
-    str_uuid?: string | undefined;
-    str_datetime?: string | undefined;
-    arr_minItems?: (string | undefined)[] | undefined;
-    arr_maxItems?: (string | undefined)[] | undefined;
-    obj_required: {
-      optionalField?: number | undefined;
-      requiredField: string;
-    };
-    obj_strict: {
-      knownField?: string | undefined;
-    };
-    logical_anyOf: string | number | boolean;
-    logical_allOf: {
-      a: string;
-      b: number;
-    };
-  }, any, any>) => Promise<{
-    enum_value?: string | undefined;
-    num_minimum?: number | undefined;
-    num_maximum?: number | undefined;
-    num_exclusiveMinimum?: number | undefined;
-    num_exclusiveMaximum?: number | undefined;
-    num_multipleOf?: number | undefined;
-    num_int?: number | undefined;
-    num_int32?: number | undefined;
-    str_minLength?: string | undefined;
-    str_maxLength?: string | undefined;
-    str_pattern?: string | undefined;
-    str_email?: string | undefined;
-    str_url?: string | undefined;
-    str_uuid?: string | undefined;
-    str_datetime?: string | undefined;
-    arr_minItems?: (string | undefined)[] | undefined;
-    arr_maxItems?: (string | undefined)[] | undefined;
-    obj_required: {
-      optionalField?: number | undefined;
-      requiredField: string;
-    };
-    obj_strict: {
-      knownField?: string | undefined;
-    };
-    logical_anyOf: string | number | boolean;
-    logical_allOf: {
-      a: string;
-      b: number;
-    };
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      enum_value?: string | undefined;
-      num_minimum?: number | undefined;
-      num_maximum?: number | undefined;
-      num_exclusiveMinimum?: number | undefined;
-      num_exclusiveMaximum?: number | undefined;
-      num_multipleOf?: number | undefined;
-      num_int?: number | undefined;
-      num_int32?: number | undefined;
-      str_minLength?: string | undefined;
-      str_maxLength?: string | undefined;
-      str_pattern?: string | undefined;
-      str_email?: string | undefined;
-      str_url?: string | undefined;
-      str_uuid?: string | undefined;
-      str_datetime?: string | undefined;
-      arr_minItems?: (string | undefined)[] | undefined;
-      arr_maxItems?: (string | undefined)[] | undefined;
-      obj_required: {
-        optionalField?: number | undefined;
-        requiredField: string;
-      };
-      obj_strict: {
-        knownField?: string | undefined;
-      };
-      logical_anyOf: string | number | boolean;
-      logical_allOf: {
-        a: string;
-        b: number;
-      };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    enum_value?: string | undefined;
-    num_minimum?: number | undefined;
-    num_maximum?: number | undefined;
-    num_exclusiveMinimum?: number | undefined;
-    num_exclusiveMaximum?: number | undefined;
-    num_multipleOf?: number | undefined;
-    num_int?: number | undefined;
-    num_int32?: number | undefined;
-    str_minLength?: string | undefined;
-    str_maxLength?: string | undefined;
-    str_pattern?: string | undefined;
-    str_email?: string | undefined;
-    str_url?: string | undefined;
-    str_uuid?: string | undefined;
-    str_datetime?: string | undefined;
-    arr_minItems?: (string | undefined)[] | undefined;
-    arr_maxItems?: (string | undefined)[] | undefined;
-    obj_required: {
-      optionalField?: number | undefined;
-      requiredField: string;
-    };
-    obj_strict: {
-      knownField?: string | undefined;
-    };
-    logical_anyOf: string | number | boolean;
-    logical_allOf: {
-      a: string;
-      b: number;
-    };
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleNothitng: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      readonly nothing: "here";
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    readonly nothing: "here";
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  handleFormData: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<FormData, {
-    search: string;
-  }, any>) => Promise<{
-    formData: {
-      hello: "world";
-    };
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      formData: {
-        hello: "world";
-      };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    formData: {
-      hello: "world";
-    };
-    search: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  disableServerSideValidationBool: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<{
-    hello: string;
-  }, {
-    search: string;
-  }, any>) => Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      body: {
-        hello: string;
-      };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  disableServerSideValidationStrings: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<{
-    hello: string;
-  }, {
-    search: string;
-  }, any>) => Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      body: {
-        hello: string;
-      };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  skipSchemaEmissionBool: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<{
-    hello: string;
-  }, {
-    search: string;
-  }, any>) => Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      body: {
-        hello: string;
-      };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  skipSchemaEmissionStrings: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<{
-    hello: string;
-  }, {
-    search: string;
-  }, any>) => Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      body: {
-        hello: string;
-      };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: {
-      hello: string;
-    };
-    search: string;
-  }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkFullSchema;
-    __output: any;
-    __iteration: any;
-  };
-  validateEachIteration: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    values: string[];
-  }, any>) => AsyncGenerator<{
-    value: string;
-  }, void, unknown>) & {
-    __output: any;
-    __iteration: {
-      value: string;
-    };
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
-      value: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    value: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4300,25 +4828,31 @@ declare const WithYupClientControllerRPC: {
   };
 };
 declare const WithDtoClientControllerRPC: {
-  handleAll: (<R>(options: {
-    body: HandleAllBodyDto;
-  } & {
-    query: HandleAllQueryDto;
-  } & {
-    params: HandleAllParamsDto;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
+  handleAll: (<R>(
+    options: {
       body: HandleAllBodyDto;
+    } & {
       query: HandleAllQueryDto;
+    } & {
       params: HandleAllParamsDto;
-      vovkParams: HandleAllParamsDto;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: HandleAllBodyDto;
-    query: HandleAllQueryDto;
-    params: HandleAllParamsDto;
-    vovkParams: HandleAllParamsDto;
-  }>) & {
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            body: HandleAllBodyDto;
+            query: HandleAllQueryDto;
+            params: HandleAllParamsDto;
+            vovkParams: HandleAllParamsDto;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: HandleAllBodyDto;
+        query: HandleAllQueryDto;
+        params: HandleAllParamsDto;
+        vovkParams: HandleAllParamsDto;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4327,12 +4861,19 @@ declare const WithDtoClientControllerRPC: {
     __output: HandleAllOutputDto;
     __iteration: any;
   };
-  handleNestedQuery: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, HandleNestedQueryDto, any>) => HandleNestedQueryDto) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: HandleNestedQueryDto) => R;
-  }>)) => R extends object ? Promise<R> : Promise<HandleNestedQueryDto>) & {
+  handleNestedQuery: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<any, HandleNestedQueryDto, any>) => HandleNestedQueryDto) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: HandleNestedQueryDto) => R;
+        }
+      >)
+  ) => R extends object ? Promise<R> : Promise<HandleNestedQueryDto>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4342,18 +4883,25 @@ declare const WithDtoClientControllerRPC: {
     __iteration: any;
   };
   handleNestedQueryClient: (req: vovk0.VovkRequest<never, HandleNestedQueryDto>) => Promise<HandleNestedQueryDto>;
-  handleOutput: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, HandleOutputQueryDto, any>) => Promise<{
-    hello: "world";
-  }>) & {
-    __output: HandleOutputOutputDto;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      hello: "world";
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    hello: "world";
-  }>) & {
+  handleOutput: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<any, HandleOutputQueryDto, any>) => Promise<{
+        hello: 'world';
+      }>) & {
+        __output: HandleOutputOutputDto;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { hello: 'world' }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        hello: 'world';
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4363,20 +4911,39 @@ declare const WithDtoClientControllerRPC: {
     __iteration: any;
   };
   handleOutputClient: (req: vovk0.VovkRequest<never, HandleOutputQueryDto>) => Promise<{
-    hello: "world";
+    hello: 'world';
   }>;
-  handleStream: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, HandleStreamQueryDto, any>) => AsyncGenerator<{
-    value: string;
-  }, void, unknown>) & {
-    __output: any;
-    __iteration: IterationDto;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
+  handleStream: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<any, HandleStreamQueryDto, any>) => AsyncGenerator<
+        {
+          value: string;
+        },
+        void,
+        unknown
+      >) & {
+        __output: any;
+        __iteration: IterationDto;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                value: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
       value: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    value: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4385,12 +4952,19 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: IterationDto;
   };
-  handleSchemaComplaints: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<ComplainingDto, any, any>) => Promise<ComplainingDto>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: ComplainingDto) => R;
-  }>)) => R extends object ? Promise<R> : Promise<ComplainingDto>) & {
+  handleSchemaComplaints: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<ComplainingDto, any, any>) => Promise<ComplainingDto>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: ComplainingDto) => R;
+        }
+      >)
+  ) => R extends object ? Promise<R> : Promise<ComplainingDto>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4399,13 +4973,17 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  handleNothitng: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      readonly nothing: "here";
-    }) => R;
-  }>) => R extends object ? Promise<R> : Promise<{
-    readonly nothing: "here";
-  }>) & {
+  handleNothitng: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: { readonly nothing: 'here' }) => R;
+      }
+    >
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        readonly nothing: 'here';
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4414,27 +4992,36 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  handleFormData: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<FormData, HandleQueryQueryDto, any>) => Promise<{
-    formData: {
-      hello: "world";
-    };
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      formData: {
-        hello: "world";
-      };
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    formData: {
-      hello: "world";
-    };
-    search: string;
-  }>) & {
+  handleFormData: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<FormData, HandleQueryQueryDto, any>) => Promise<{
+        formData: {
+          hello: 'world';
+        };
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            formData: {
+              hello: 'world';
+            };
+            search: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        formData: {
+          hello: 'world';
+        };
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4443,21 +5030,27 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  disableServerSideValidationBool: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
-    body: HandleBodyBodyDto;
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      body: HandleBodyBodyDto;
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: HandleBodyBodyDto;
-    search: string;
-  }>) & {
+  disableServerSideValidationBool: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { body: HandleBodyBodyDto; search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4466,21 +5059,27 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  disableServerSideValidationStrings: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
-    body: HandleBodyBodyDto;
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      body: HandleBodyBodyDto;
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: HandleBodyBodyDto;
-    search: string;
-  }>) & {
+  disableServerSideValidationStrings: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { body: HandleBodyBodyDto; search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4489,21 +5088,27 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  skipSchemaEmissionBool: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
-    body: HandleBodyBodyDto;
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      body: HandleBodyBodyDto;
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: HandleBodyBodyDto;
-    search: string;
-  }>) & {
+  skipSchemaEmissionBool: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { body: HandleBodyBodyDto; search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4512,21 +5117,27 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  skipSchemaEmissionStrings: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
-    body: HandleBodyBodyDto;
-    search: string;
-  }>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      body: HandleBodyBodyDto;
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    body: HandleBodyBodyDto;
-    search: string;
-  }>) & {
+  skipSchemaEmissionStrings: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { body: HandleBodyBodyDto; search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4535,18 +5146,37 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: any;
   };
-  validateEachIteration: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, QueryValuesDto, any>) => AsyncGenerator<{
-    value: string;
-  }, void, unknown>) & {
-    __output: any;
-    __iteration: IterationDto;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: AsyncGenerator<{
+  validateEachIteration: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<any, QueryValuesDto, any>) => AsyncGenerator<
+        {
+          value: string;
+        },
+        void,
+        unknown
+      >) & {
+        __output: any;
+        __iteration: IterationDto;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (
+            staticMethodReturn: AsyncGenerator<
+              {
+                value: string;
+              },
+              void,
+              unknown
+            >
+          ) => R;
+        }
+      >)
+  ) => Promise<
+    vovk0.VovkStreamAsyncIterable<{
       value: string;
-    }, void, unknown>) => R;
-  }>)) => Promise<vovk0.VovkStreamAsyncIterable<{
-    value: string;
-  }>>) & {
+    }>
+  >) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4555,13 +5185,23 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: IterationDto;
   };
-  handleAllClient: (req: vovk0.VovkRequest<HandleAllBodyDto, HandleAllQueryDto>, params: HandleAllParamsDto) => Promise<HandleAllOutputDto>;
-  handleQuery: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, HandleQueryQueryDto, any>) => HandleQueryQueryDto) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: HandleQueryQueryDto) => R;
-  }>)) => R extends object ? Promise<R> : Promise<HandleQueryQueryDto>) & {
+  handleAllClient: (
+    req: vovk0.VovkRequest<HandleAllBodyDto, HandleAllQueryDto>,
+    params: HandleAllParamsDto
+  ) => Promise<HandleAllOutputDto>;
+  handleQuery: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<any, HandleQueryQueryDto, any>) => HandleQueryQueryDto) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: HandleQueryQueryDto) => R;
+        }
+      >)
+  ) => R extends object ? Promise<R> : Promise<HandleQueryQueryDto>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4571,12 +5211,19 @@ declare const WithDtoClientControllerRPC: {
     __iteration: any;
   };
   handleQueryClient: (req: vovk0.VovkRequest<never, HandleQueryQueryDto>) => Promise<HandleQueryQueryDto>;
-  handleBody: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<HandleBodyBodyDto, any, any>) => Promise<HandleBodyBodyDto>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: HandleBodyBodyDto) => R;
-  }>)) => R extends object ? Promise<R> : Promise<HandleBodyBodyDto>) & {
+  handleBody: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<HandleBodyBodyDto, any, any>) => Promise<HandleBodyBodyDto>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: HandleBodyBodyDto) => R;
+        }
+      >)
+  ) => R extends object ? Promise<R> : Promise<HandleBodyBodyDto>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4586,12 +5233,19 @@ declare const WithDtoClientControllerRPC: {
     __iteration: any;
   };
   handleBodyClient: (req: vovk0.VovkRequest<HandleBodyBodyDto>) => Promise<HandleBodyBodyDto>;
-  handleParams: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, any, HandleParamsDto>) => Promise<HandleParamsDto>) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: HandleParamsDto) => R;
-  }>)) => R extends object ? Promise<R> : Promise<HandleParamsDto>) & {
+  handleParams: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((req: vovk0.VovkRequest<any, any, HandleParamsDto>) => Promise<HandleParamsDto>) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: HandleParamsDto) => R;
+        }
+      >)
+  ) => R extends object ? Promise<R> : Promise<HandleParamsDto>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4603,9 +5257,13 @@ declare const WithDtoClientControllerRPC: {
   handleParamsClient: (_req: vovk0.VovkRequest, params: HandleParamsDto) => Promise<HandleParamsDto>;
 };
 declare const OpenApiControllerRPC: {
-  getFromSchema: (<R>(options: void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: openapi3_ts_oas31561.OpenAPIObject) => R;
-  }>) => R extends object ? Promise<R> : Promise<openapi3_ts_oas31561.OpenAPIObject>) & {
+  getFromSchema: (<R>(
+    options: void | Partial<
+      vovk0.VovkDefaultFetcherOptions & {
+        transform: (staticMethodReturn: openapi3_ts_oas31561.OpenAPIObject) => R;
+      }
+    >
+  ) => R extends object ? Promise<R> : Promise<openapi3_ts_oas31561.OpenAPIObject>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4616,22 +5274,33 @@ declare const OpenApiControllerRPC: {
   };
 };
 declare const NoValidationControllerOnlyEntityRPC: {
-  getNoValidationControllerOnlyEntities: (req: vovk0.VovkRequest<null, {
-    search: string;
-  }>) => Promise<{
+  getNoValidationControllerOnlyEntities: (
+    req: vovk0.VovkRequest<
+      null,
+      {
+        search: string;
+      }
+    >
+  ) => Promise<{
     results: never[];
     search: string;
   }>;
-  updateNoValidationControllerOnlyEntity: (req: vovk0.VovkRequest<{
-    foo: "bar" | "baz";
-  }, {
-    q: string;
-  }>, params: {
-    id: string;
-  }) => Promise<{
+  updateNoValidationControllerOnlyEntity: (
+    req: vovk0.VovkRequest<
+      {
+        foo: 'bar' | 'baz';
+      },
+      {
+        q: string;
+      }
+    >,
+    params: {
+      id: string;
+    }
+  ) => Promise<{
     id: string;
     body: {
-      foo: "bar" | "baz";
+      foo: 'bar' | 'baz';
     };
     q: string;
   }>;
@@ -4639,46 +5308,60 @@ declare const NoValidationControllerOnlyEntityRPC: {
   deleteNoValidationControllerOnlyEntity: () => void;
 };
 declare const NoValidationControllerAndServiceEntityRPC: {
-  getNoValidationControllerAndServiceEntities: (req: vovk0.VovkRequest<null, {
-    search: string;
-  }>) => Promise<{
+  getNoValidationControllerAndServiceEntities: (
+    req: vovk0.VovkRequest<
+      null,
+      {
+        search: string;
+      }
+    >
+  ) => Promise<{
     results: never[];
     search: string;
   }>;
-  updateNoValidationControllerAndServiceEntity: (req: vovk0.VovkRequest<{
-    foo: "bar" | "baz";
-  }, {
-    q: string;
-  }>, params: {
-    id: string;
-  }) => Promise<{
+  updateNoValidationControllerAndServiceEntity: (
+    req: vovk0.VovkRequest<
+      {
+        foo: 'bar' | 'baz';
+      },
+      {
+        q: string;
+      }
+    >,
+    params: {
+      id: string;
+    }
+  ) => Promise<{
     id: string;
     q: string;
     body: {
-      foo: "bar" | "baz";
+      foo: 'bar' | 'baz';
     };
   }>;
   createNoValidationControllerAndServiceEntity: () => void;
   deleteNoValidationControllerAndServiceEntity: () => void;
 };
 declare const ZodControllerOnlyEntityRPC: {
-  getZodControllerOnlyEntities: (<R>(options: {
-    body?: undefined;
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      results: never[];
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    results: never[];
-    search: string;
-  }>) & {
+  getZodControllerOnlyEntities: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query: {
+        search: string;
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { results: never[]; search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        results: never[];
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4687,33 +5370,39 @@ declare const ZodControllerOnlyEntityRPC: {
     __output: any;
     __iteration: any;
   };
-  updateZodControllerOnlyEntity: (<R>(options: {
-    body: {
-      foo: "bar" | "baz";
-    };
-  } & {
-    query: {
-      q: string;
-    };
-  } & {
-    params: {
-      id: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      id: string;
+  updateZodControllerOnlyEntity: (<R>(
+    options: {
       body: {
-        foo: "bar" | "baz";
+        foo: 'bar' | 'baz';
       };
-      q: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    id: string;
-    body: {
-      foo: "bar" | "baz";
-    };
-    q: string;
-  }>) & {
+    } & {
+      query: {
+        q: string;
+      };
+    } & {
+      params: {
+        id: string;
+      };
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            id: string;
+            body: {
+              foo: 'bar' | 'baz';
+            };
+            q: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        id: string;
+        body: {
+          foo: 'bar' | 'baz';
+        };
+        q: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4726,23 +5415,26 @@ declare const ZodControllerOnlyEntityRPC: {
   deleteZodControllerOnlyEntity: () => void;
 };
 declare const ZodControllerAndServiceEntityRPC: {
-  getZodControllerAndServiceEntities: (<R>(options: {
-    body?: undefined;
-  } & {
-    query: {
-      search: string;
-    };
-  } & {
-    params?: undefined;
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      results: never[];
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    results: never[];
-    search: string;
-  }>) & {
+  getZodControllerAndServiceEntities: (<R>(
+    options: {
+      body?: undefined;
+    } & {
+      query: {
+        search: string;
+      };
+    } & {
+      params?: undefined;
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { results: never[]; search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        results: never[];
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4751,33 +5443,39 @@ declare const ZodControllerAndServiceEntityRPC: {
     __output: any;
     __iteration: any;
   };
-  updateZodControllerAndServiceEntity: (<R>(options: {
-    body: {
-      foo: "bar" | "baz";
-    };
-  } & {
-    query: {
-      q: string;
-    };
-  } & {
-    params: {
-      id: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      id: string;
-      q: string;
+  updateZodControllerAndServiceEntity: (<R>(
+    options: {
       body: {
-        foo: "bar" | "baz";
+        foo: 'bar' | 'baz';
       };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    id: string;
-    q: string;
-    body: {
-      foo: "bar" | "baz";
-    };
-  }>) & {
+    } & {
+      query: {
+        q: string;
+      };
+    } & {
+      params: {
+        id: string;
+      };
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            id: string;
+            q: string;
+            body: {
+              foo: 'bar' | 'baz';
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        id: string;
+        q: string;
+        body: {
+          foo: 'bar' | 'baz';
+        };
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4790,23 +5488,35 @@ declare const ZodControllerAndServiceEntityRPC: {
   deleteZodControllerAndServiceEntity: () => void;
 };
 declare const YupControllerOnlyEntityRPC: {
-  getYupControllerOnlyEntities: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    search?: string | undefined;
-  }, any>) => {
-    results: never[];
-    search: string | undefined;
-  }) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      results: never[];
-      search: string | undefined;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    results: never[];
-    search: string | undefined;
-  }>) & {
+  getYupControllerOnlyEntities: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            search?: string | undefined;
+          },
+          any
+        >
+      ) => {
+        results: never[];
+        search: string | undefined;
+      }) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { results: never[]; search: string | undefined }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        results: never[];
+        search: string | undefined;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4815,33 +5525,39 @@ declare const YupControllerOnlyEntityRPC: {
     __output: any;
     __iteration: any;
   };
-  updateYupControllerOnlyEntity: (<R>(options: {
-    body: {
-      foo: {};
-    };
-  } & {
-    query: {
-      q?: string | undefined;
-    };
-  } & {
-    params: {
-      id: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      id: string;
+  updateYupControllerOnlyEntity: (<R>(
+    options: {
       body: {
         foo: {};
       };
-      q: string | undefined;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    id: string;
-    body: {
-      foo: {};
-    };
-    q: string | undefined;
-  }>) & {
+    } & {
+      query: {
+        q?: string | undefined;
+      };
+    } & {
+      params: {
+        id: string;
+      };
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            id: string;
+            body: {
+              foo: {};
+            };
+            q: string | undefined;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        id: string;
+        body: {
+          foo: {};
+        };
+        q: string | undefined;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4854,23 +5570,35 @@ declare const YupControllerOnlyEntityRPC: {
   deleteYupControllerOnlyEntity: () => void;
 };
 declare const YupControllerAndServiceEntityRPC: {
-  getYupControllerAndServiceEntities: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    search?: string | undefined;
-  }, any>) => {
-    results: never[];
-    search: string | undefined;
-  }) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      results: never[];
-      search: string | undefined;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    results: never[];
-    search: string | undefined;
-  }>) & {
+  getYupControllerAndServiceEntities: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            search?: string | undefined;
+          },
+          any
+        >
+      ) => {
+        results: never[];
+        search: string | undefined;
+      }) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { results: never[]; search: string | undefined }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        results: never[];
+        search: string | undefined;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4879,33 +5607,39 @@ declare const YupControllerAndServiceEntityRPC: {
     __output: any;
     __iteration: any;
   };
-  updateYupControllerAndServiceEntity: (<R>(options: {
-    body: {
-      foo: {};
-    };
-  } & {
-    query: {
-      q?: string | undefined;
-    };
-  } & {
-    params: {
-      id: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      id: string;
-      q: string | undefined;
+  updateYupControllerAndServiceEntity: (<R>(
+    options: {
       body: {
         foo: {};
       };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    id: string;
-    q: string | undefined;
-    body: {
-      foo: {};
-    };
-  }>) & {
+    } & {
+      query: {
+        q?: string | undefined;
+      };
+    } & {
+      params: {
+        id: string;
+      };
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            id: string;
+            q: string | undefined;
+            body: {
+              foo: {};
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        id: string;
+        q: string | undefined;
+        body: {
+          foo: {};
+        };
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4918,23 +5652,35 @@ declare const YupControllerAndServiceEntityRPC: {
   deleteYupControllerAndServiceEntity: () => void;
 };
 declare const DtoControllerOnlyEntityRPC: {
-  getDtoControllerOnlyEntities: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    search: string;
-  }, any>) => {
-    results: never[];
-    search: string;
-  }) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      results: never[];
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    results: never[];
-    search: string;
-  }>) & {
+  getDtoControllerOnlyEntities: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            search: string;
+          },
+          any
+        >
+      ) => {
+        results: never[];
+        search: string;
+      }) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { results: never[]; search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        results: never[];
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4943,33 +5689,39 @@ declare const DtoControllerOnlyEntityRPC: {
     __output: any;
     __iteration: any;
   };
-  updateDtoControllerOnlyEntity: (<R>(options: {
-    body: {
-      foo: "bar" | "baz";
-    };
-  } & {
-    query: {
-      q: string;
-    };
-  } & {
-    params: {
-      id: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      id: string;
+  updateDtoControllerOnlyEntity: (<R>(
+    options: {
       body: {
-        foo: "bar" | "baz";
+        foo: 'bar' | 'baz';
       };
-      q: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    id: string;
-    body: {
-      foo: "bar" | "baz";
-    };
-    q: string;
-  }>) & {
+    } & {
+      query: {
+        q: string;
+      };
+    } & {
+      params: {
+        id: string;
+      };
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            id: string;
+            body: {
+              foo: 'bar' | 'baz';
+            };
+            q: string;
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        id: string;
+        body: {
+          foo: 'bar' | 'baz';
+        };
+        q: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -4982,23 +5734,35 @@ declare const DtoControllerOnlyEntityRPC: {
   deleteDtoControllerOnlyEntity: () => void;
 };
 declare const DtoControllerAndServiceEntityRPC: {
-  getDtoControllerAndServiceEntities: (<R>(options: vovk_dist_client_types279.StaticMethodInput<((req: vovk0.VovkRequest<any, {
-    search: string;
-  }, any>) => {
-    results: never[];
-    search: string;
-  }) & {
-    __output: any;
-    __iteration: any;
-  }> & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      results: never[];
-      search: string;
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    results: never[];
-    search: string;
-  }>) & {
+  getDtoControllerAndServiceEntities: (<R>(
+    options: vovk_dist_client_types279.StaticMethodInput<
+      ((
+        req: vovk0.VovkRequest<
+          any,
+          {
+            search: string;
+          },
+          any
+        >
+      ) => {
+        results: never[];
+        search: string;
+      }) & {
+        __output: any;
+        __iteration: any;
+      }
+    > &
+      (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: { results: never[]; search: string }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        results: never[];
+        search: string;
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -5007,33 +5771,39 @@ declare const DtoControllerAndServiceEntityRPC: {
     __output: any;
     __iteration: any;
   };
-  updateDtoControllerAndServiceEntity: (<R>(options: {
-    body: {
-      foo: "bar" | "baz";
-    };
-  } & {
-    query: {
-      q: string;
-    };
-  } & {
-    params: {
-      id: string;
-    };
-  } & (void | Partial<vovk0.VovkDefaultFetcherOptions & {
-    transform: (staticMethodReturn: {
-      id: string;
-      q: string;
+  updateDtoControllerAndServiceEntity: (<R>(
+    options: {
       body: {
-        foo: "bar" | "baz";
+        foo: 'bar' | 'baz';
       };
-    }) => R;
-  }>)) => R extends object ? Promise<R> : Promise<{
-    id: string;
-    q: string;
-    body: {
-      foo: "bar" | "baz";
-    };
-  }>) & {
+    } & {
+      query: {
+        q: string;
+      };
+    } & {
+      params: {
+        id: string;
+      };
+    } & (void | Partial<
+        vovk0.VovkDefaultFetcherOptions & {
+          transform: (staticMethodReturn: {
+            id: string;
+            q: string;
+            body: {
+              foo: 'bar' | 'baz';
+            };
+          }) => R;
+        }
+      >)
+  ) => R extends object
+    ? Promise<R>
+    : Promise<{
+        id: string;
+        q: string;
+        body: {
+          foo: 'bar' | 'baz';
+        };
+      }>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;
@@ -5045,4 +5815,22 @@ declare const DtoControllerAndServiceEntityRPC: {
   createDtoControllerAndServiceEntity: () => void;
   deleteDtoControllerAndServiceEntity: () => void;
 }; //#endregion
-export { CommonControllerRPC, CustomSchemaControllerRPC, DtoControllerAndServiceEntityRPC, DtoControllerOnlyEntityRPC, NoValidationControllerAndServiceEntityRPC, NoValidationControllerOnlyEntityRPC, OpenApiControllerRPC, StreamingControllerRPC, StreamingGeneratorControllerRPC, WithDtoClientControllerRPC, WithYupClientControllerRPC, WithZodClientControllerRPC, YupControllerAndServiceEntityRPC, YupControllerOnlyEntityRPC, ZodControllerAndServiceEntityRPC, ZodControllerOnlyEntityRPC, fullSchema };
+export {
+  CommonControllerRPC,
+  CustomSchemaControllerRPC,
+  DtoControllerAndServiceEntityRPC,
+  DtoControllerOnlyEntityRPC,
+  NoValidationControllerAndServiceEntityRPC,
+  NoValidationControllerOnlyEntityRPC,
+  OpenApiControllerRPC,
+  StreamingControllerRPC,
+  StreamingGeneratorControllerRPC,
+  WithDtoClientControllerRPC,
+  WithYupClientControllerRPC,
+  WithZodClientControllerRPC,
+  YupControllerAndServiceEntityRPC,
+  YupControllerOnlyEntityRPC,
+  ZodControllerAndServiceEntityRPC,
+  ZodControllerOnlyEntityRPC,
+  fullSchema,
+};

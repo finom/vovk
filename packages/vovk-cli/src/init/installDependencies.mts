@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import getLogger from '../utils/getLogger.mjs';
 import type { InitOptions } from '../types.mjs';
+import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 
 type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
 
@@ -25,10 +26,11 @@ export default async function installDependencies({
 }): Promise<void> {
   const packageManager = getPackageManager(options);
 
-  log.info(`Installing dependencies at ${cwd} using ${packageManager}...`);
+  log.info(`Installing dependencies at ${chalkHighlightThing(cwd)} using ${chalkHighlightThing(packageManager)}...`);
 
   await new Promise<void>((resolve, reject) => {
-    const child = spawn(packageManager, ['install'], { cwd, stdio: 'inherit' });
+    const args = packageManager === 'yarn' ? ['install', '--non-interactive'] : ['install'];
+    const child = spawn(packageManager, args, { cwd, stdio: 'inherit' });
 
     child.on('close', (code) => {
       if (code === 0) {

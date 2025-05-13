@@ -25,8 +25,8 @@ export default async function bundle({
     forceNothingWrittenLog: true,
     fullSchema,
     cliGenerateOptions: {
-      fullClientFrom: [BuiltInTemplateName.ts],
-      fullClientOut: bundleConfig.tsClientOutDir,
+      fullFrom: [BuiltInTemplateName.ts],
+      fullOut: bundleConfig.tsClientOutDir,
     },
   });
 
@@ -59,23 +59,23 @@ export default async function bundle({
 
   log.debug(`Bundled fullSchema.ts to ${chalkHighlightThing(outDir)}`);
 
-  const fullClientFrom: GenerateOptions['fullClientFrom'] = [];
+  const fullFrom: GenerateOptions['fullFrom'] = [];
 
   if (!bundleConfig.noReadme) {
-    fullClientFrom.push(BuiltInTemplateName.readme);
+    fullFrom.push(BuiltInTemplateName.readme);
   }
   if (!bundleConfig.noPackage) {
-    fullClientFrom.push(BuiltInTemplateName.packageJson);
+    fullFrom.push(BuiltInTemplateName.packageJson);
   }
-  if (fullClientFrom.length) {
+  if (fullFrom.length) {
     await generate({
       isEnsuringClient: false,
       projectInfo,
       forceNothingWrittenLog: true,
       fullSchema,
       cliGenerateOptions: {
-        fullClientFrom,
-        fullClientOut: outDir,
+        fullFrom,
+        fullOut: outDir,
       },
     });
   } else {

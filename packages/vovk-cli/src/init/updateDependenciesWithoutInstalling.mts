@@ -11,22 +11,54 @@ async function updateDeps({
   packageNames,
   channel,
   key,
+  log,
 }: {
   packageNames: string[];
   packageJson: PackageJson;
   channel: InitOptions['channel'];
   key: 'dependencies' | 'devDependencies';
+  log: ReturnType<typeof getLogger>;
 }) {
   return Promise.all(
     packageNames.map(async (packageName) => {
-      const metadata = await getNPMPackageMetadata(packageName);
-      const isVovk = packageName.startsWith('vovk') && packageName !== 'dto-mapped-types';
+      let name: string;
+      let version: string | undefined;
+
+      if (packageName.startsWith('@')) {
+        // Handle scoped packages (@org/name@version)
+        const lastAtIndex = packageName.lastIndexOf('@');
+        if (lastAtIndex > 0) {
+          name = packageName.substring(0, lastAtIndex);
+          version = packageName.substring(lastAtIndex + 1);
+        } else {
+          name = packageName;
+          version = undefined;
+        }
+      } else {
+        // Handle regular packages (name@version)
+        const parts = packageName.split('@');
+        name = parts[0];
+        version = parts[1];
+      }
+
+      if (version) {
+        packageJson[key] ??= {};
+        packageJson[key][name] = version;
+        return;
+      }
+      let metadata;
+
+      try {
+        metadata = await getNPMPackageMetadata(name);
+      } catch (error) {
+        log.error(`Failed to fetch metadata for package ${name}@${channel ?? 'latest'}: ${error}`);
+        return;
+      }
+      const isVovk = name.startsWith('vovk') && name !== 'dto-mapped-types';
 
       const latestVersion = metadata['dist-tags'][isVovk ? (channel ?? 'latest') : 'latest'];
-      if (!packageJson[key]) {
-        packageJson[key] = {};
-      }
-      packageJson[key][packageName] = `^${latestVersion}`;
+      packageJson[key] ??= {};
+      packageJson[key][name] = `^${latestVersion}`;
     })
   );
 }
@@ -46,8 +78,8 @@ export default async function updateDependenciesWithoutInstalling({
 }) {
   const packageJsonPath = path.join(dir, 'package.json');
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8')) as PackageJson;
-  await updateDeps({ packageJson, packageNames: dependencyNames, channel, key: 'dependencies' });
-  await updateDeps({ packageJson, packageNames: devDependencyNames, channel, key: 'devDependencies' });
+  await updateDeps({ packageJson, packageNames: dependencyNames, channel, log, key: 'dependencies' });
+  await updateDeps({ packageJson, packageNames: devDependencyNames, channel, log, key: 'devDependencies' });
   await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
   log.info('Added dependencies to package.json:');
   for (const dependency of dependencyNames) {

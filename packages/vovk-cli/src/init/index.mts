@@ -57,7 +57,7 @@ export class Init {
         validationLibrary,
         'vovk-ajv',
         ...({
-          'vovk-zod': ['zod'],
+          'vovk-zod': ['zod@next'],
           'vovk-yup': ['yup'],
           'vovk-dto': ['class-validator', 'class-transformer', 'dto-mapped-types', 'reflect-metadata'],
         }[validationLibrary] ?? [])
@@ -114,7 +114,17 @@ export class Init {
         depsUpdated = true;
       } catch (e) {
         const error = e as Error;
-        logUpdateDependenciesError({ log, error, useNpm, useYarn, usePnpm, useBun, dependencies, devDependencies });
+        logUpdateDependenciesError({
+          log,
+          error,
+          useNpm,
+          useYarn,
+          usePnpm,
+          useBun,
+          dependencies,
+          devDependencies,
+          channel,
+        });
       }
 
       if (depsUpdated) {
@@ -139,7 +149,7 @@ export class Init {
             log.info('Dependencies installed successfully');
           } catch (error) {
             log.warn(
-              `Failed to install dependencies: ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`
+              `Failed to install dependencies. ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`
             );
           }
         }

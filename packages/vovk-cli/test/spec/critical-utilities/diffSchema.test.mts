@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import diffSchema from '../../../dist/dev/diffSegmentSchema.mjs';
 import type { HttpMethod as VovkHttpMethod, VovkSegmentSchema } from 'vovk';
-import { SchemaIdEnum } from '../../../src/enums.mjs';
+import { SchemaIdEnum } from '../../../dist/enums.mjs';
 
 // got some problems importing it from "vovk"
 enum _HttpMethod {

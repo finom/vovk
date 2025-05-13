@@ -47,16 +47,19 @@ export default async function getConfig({
     imports,
     emitConfig: [],
     fullClient: {
-      enabled: true,
+      enabled: !cliGenerateOptions?.segmentedOnly || !!cliGenerateOptions?.fullFrom || !!cliGenerateOptions?.fullOut,
       ...conf.fullClient,
-      fromTemplates: cliGenerateOptions?.fullClientFrom ?? conf.fullClient?.fromTemplates ?? ['mjs', 'cjs'],
-      outDir: cliGenerateOptions?.fullClientOut ?? conf.fullClient?.outDir ?? './node_modules/.vovk-client',
+      fromTemplates: cliGenerateOptions?.fullFrom ?? conf.fullClient?.fromTemplates ?? ['mjs', 'cjs'],
+      outDir: cliGenerateOptions?.fullOut ?? conf.fullClient?.outDir ?? './node_modules/.vovk-client',
     },
     segmentedClient: {
-      enabled: false,
+      enabled:
+        !!cliGenerateOptions?.segmentedOnly ||
+        !!cliGenerateOptions?.segmentedFrom ||
+        !!cliGenerateOptions?.segmentedOut,
       ...conf.segmentedClient,
-      fromTemplates: cliGenerateOptions?.segmentedClientFrom ?? conf.segmentedClient?.fromTemplates ?? ['ts'],
-      outDir: cliGenerateOptions?.segmentedClientOut ?? conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
+      fromTemplates: cliGenerateOptions?.segmentedFrom ?? conf.segmentedClient?.fromTemplates ?? ['ts'],
+      outDir: cliGenerateOptions?.segmentedOut ?? conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
     },
     bundle: {
       outDir: cliBundleOptions?.outDir ?? conf.bundle?.outDir ?? 'dist',

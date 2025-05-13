@@ -14,6 +14,7 @@ import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
 import getTemplateClientImports from './getTemplateClientImports.mjs';
 import mergePackages from './mergePackages.mjs';
 import writeOneClientFile from './writeOneClientFile.mjs';
+import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -260,8 +261,10 @@ export default async function generate({
         const outAbsoluteDir = path.join(cwd, outCwdRelativeDir);
 
         // Remove unlisted directories in the output directory
-        await removeUnlistedDirectories(outAbsoluteDir, segmentNames);
-
+        await removeUnlistedDirectories(
+          outAbsoluteDir,
+          segmentNames.map((s) => s || ROOT_SEGMENT_SCHEMA_NAME)
+        );
         return {
           written: results.some(({ written }) => written),
           templateName,

@@ -5,7 +5,7 @@ import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import type { GenerateOptions } from '../types.mjs';
-import { checkIfInstalled } from '../utils/checkIfInstalled.mts';
+import { checkIfInstalled } from '../utils/checkIfInstalled.mjs';
 
 export interface ClientTemplateFile {
   templateName: string;
@@ -31,16 +31,16 @@ export default async function getClientTemplateFiles({
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
   const fromTemplates =
     configKey === 'fullClient'
-      ? cliGenerateOptions?.fullClientFrom || cliGenerateOptions?.segmentedClientFrom
-        ? (cliGenerateOptions?.fullClientFrom ?? [])
+      ? cliGenerateOptions?.fullFrom || cliGenerateOptions?.segmentedFrom
+        ? (cliGenerateOptions?.fullFrom ?? [])
         : config.fullClient.fromTemplates
-      : cliGenerateOptions?.fullClientFrom || cliGenerateOptions?.segmentedClientFrom
-        ? (cliGenerateOptions?.segmentedClientFrom ?? [])
+      : cliGenerateOptions?.fullFrom || cliGenerateOptions?.segmentedFrom
+        ? (cliGenerateOptions?.segmentedFrom ?? [])
         : config.segmentedClient.fromTemplates;
   const outDir =
     configKey === 'fullClient'
-      ? (cliGenerateOptions?.fullClientOut ?? config.fullClient.outDir)
-      : (cliGenerateOptions?.segmentedClientOut ?? config.segmentedClient.outDir);
+      ? (cliGenerateOptions?.fullOut ?? config.fullClient.outDir)
+      : (cliGenerateOptions?.segmentedOut ?? config.segmentedClient.outDir);
 
   for (const templateName of fromTemplates) {
     if (!(templateName in config.clientTemplateDefs)) {
@@ -63,7 +63,8 @@ export default async function getClientTemplateFiles({
       !templateDef.templatePath.startsWith('.') &&
       !templateDef.templatePath.startsWith('/')
     ) {
-      const npmModuleName = templateDef.templatePath.split('/')[0];
+      const pathParts = templateDef.templatePath.split('/');
+      const npmModuleName = pathParts[0].startsWith('@') ? `${pathParts[0]}/${pathParts[1]}` : pathParts[0];
       const isInstalled = checkIfInstalled(npmModuleName);
 
       if (!isInstalled) {
@@ -87,14 +88,17 @@ export default async function getClientTemplateFiles({
       throw new Error(`Unable to locate template path ${templateDef.templatePath}`);
     const defOutDir = configKey === 'fullClient' ? templateDef.fullClient?.outDir : templateDef.segmentedClient?.outDir;
 
-    let files: string[] = [];
+    let files: { filePath: string; isSingleFileTemplate: boolean }[] = [];
 
     if (templateAbsolutePath) {
       if (entryType === FileSystemEntryType.FILE) {
-        files = [templateAbsolutePath];
+        files = [{ filePath: templateAbsolutePath, isSingleFileTemplate: true }];
       } else {
         const globPath = path.join(templateAbsolutePath, '**/*.*');
-        files = await glob(globPath);
+        files = (await glob(globPath)).map((filePath) => ({
+          filePath,
+          isSingleFileTemplate: false,
+        }));
       }
 
       if (files.length === 0) {
@@ -104,11 +108,14 @@ export default async function getClientTemplateFiles({
 
       const outCwdRelativeDir = forceOutCwdRelativeDir ?? defOutDir ?? outDir;
 
-      for (const filePath of files) {
+      for (const { filePath, isSingleFileTemplate } of files) {
         templateFiles.push({
           templateName,
           templateFilePath: filePath,
-          relativeDir: path.relative(templateAbsolutePath, path.dirname(filePath) + '/'),
+          relativeDir: path.relative(
+            isSingleFileTemplate ? path.dirname(templateAbsolutePath) : templateAbsolutePath,
+            path.dirname(filePath) + '/'
+          ),
           outCwdRelativeDir,
           templateDef,
         });

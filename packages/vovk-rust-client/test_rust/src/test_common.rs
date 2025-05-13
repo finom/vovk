@@ -1,8 +1,8 @@
 #[cfg(test)]
 pub mod test_common {
     use std::collections::HashMap;
-
     use generated_rust_client::common_controller_rpc;
+
     #[test]
     fn test_headers() {
         // Call the function with the headers

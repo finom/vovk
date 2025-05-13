@@ -52,7 +52,11 @@ export function runScript(
       if (exitCode.exitCode === 0) {
         resolve(result); // Resolve with the accumulated result
       } else {
-        reject(new Error(`Process exited with code ${exitCode.exitCode}\nOutput:\n${result || 'no output'}`));
+        reject(
+          new Error(
+            `Command "${commandWithArgs}" (cwd=${options.cwd}) exited with code ${exitCode.exitCode}\nOutput:\n${result || 'no output'}`
+          )
+        );
       }
     });
   }) as Promise<string> & { kill: () => void };

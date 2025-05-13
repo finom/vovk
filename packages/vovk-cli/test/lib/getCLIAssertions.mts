@@ -6,6 +6,7 @@ import getUserConfig from '../../dist/getProjectInfo/getUserConfig.mjs';
 import type { VovkConfig } from 'vovk';
 import getFileSystemEntryType, { FileSystemEntryType } from '../../dist/utils/getFileSystemEntryType.mjs';
 import checkTSConfigForExperimentalDecorators from '../../dist/init/checkTSConfigForExperimentalDecorators.mjs';
+import getConfig from '../../dist/getProjectInfo/getConfig/index.mjs';
 
 export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);
@@ -55,15 +56,14 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   assertConfig.makeConfig = (validationLibrary: string | null, useReactQuery?: boolean) => {
     const config: VovkConfig = {
       moduleTemplates: {
-        controller: `${validationLibrary ?? 'vovk-cli'}/templates/controller.ts.ejs`,
-        service: 'vovk-cli/templates/service.ts.ejs',
+        controller: `${validationLibrary ?? 'vovk-cli'}/module-templates/controller.ts.ejs`,
+        service: 'vovk-cli/module-templates/service.ts.ejs',
       },
     };
 
     if (validationLibrary) {
       config.imports ??= {};
-      config.imports.validateOnClient =
-        validationLibrary === 'vovk-dto' ? `${validationLibrary}/validateOnClient.js` : 'vovk-ajv';
+      config.imports.validateOnClient = 'vovk-ajv';
     }
 
     if (useReactQuery) {
@@ -72,6 +72,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     }
     return config;
   };
+
+  assertConfig.getStrictConfig = () => getConfig({ cwd: projectDir });
 
   async function assertDirExists(dirPath: string) {
     assert.strictEqual(
@@ -151,7 +153,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     }
   }
 
-  async function assertFile(filePath: string, exp?: RegExp | string | RegExp[] | string[]) {
+  async function assertFile(filePath: string, exp?: RegExp | string | RegExp[] | string[], opposite?: boolean) {
     let content;
     const p = path.join(projectDir, filePath);
     try {
@@ -164,21 +166,20 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
 
     if (exp) {
       if (typeof exp === 'string') {
-        assert.ok(
-          content.replace(/\s+/g, '').includes(exp.replace(/\s+/g, '')),
-          `File ${p} does not match the string "${exp}". Content: ${content}`
-        );
+        const val = content.replace(/\s+/g, '').includes(exp.replace(/\s+/g, ''));
+        assert.ok(opposite ? !val : val, `File ${p} does not match the string "${exp}". Content: ${content}`);
       } else if (exp instanceof RegExp) {
         assert.ok(exp.test(content), `File ${p} does not match the regex "${exp}". Content: ${content}`);
       } else if (Array.isArray(exp)) {
         for (const e of exp) {
           if (typeof e === 'string') {
-            assert.ok(
-              content.replace(/\s+/g, '').includes(e.replace(/\s+/g, '')),
-              `File ${p} does not match the string "${e}". Content: ${content}`
-            );
+            const val = content.replace(/\s+/g, '').includes(e.replace(/\s+/g, ''));
+            assert.ok(opposite ? !val : val, `File ${p} does not match the string "${e}". Content: ${content}`);
           } else if (e instanceof RegExp) {
-            assert.ok(e.test(content), `File ${p} does not match the regex "${e}". Content: ${content}`);
+            assert.ok(
+              opposite ? e.test(content) : !e.test(content),
+              `File ${p} does not match the regex "${e}". Content: ${content}`
+            );
           }
         }
       }

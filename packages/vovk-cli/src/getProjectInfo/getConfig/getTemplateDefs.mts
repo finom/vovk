@@ -65,12 +65,18 @@ export default function getTemplateDefs(
     },
     [BuiltInTemplateName.rs]: {
       templatePath: 'vovk-rust-client/template/',
+      fullClient: {
+        outDir: 'dist_rust',
+      },
       requires: {
         fullSchemaJson: './data',
       },
     },
     [BuiltInTemplateName.py]: {
       templatePath: 'vovk-python-client/template/',
+      fullClient: {
+        outDir: 'dist_python',
+      },
       requires: {
         fullSchemaJson: './data',
       },
