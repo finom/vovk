@@ -40,6 +40,34 @@ type StaticMethodReturn<T extends ControllerStaticMethod> =
 
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
+type StaticMethodOption<
+  T extends ((
+    ...args: KnownAny[]
+  ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
+    __output?: KnownAny;
+    __iteration?: KnownAny;
+  },
+  OPTS extends Record<string, KnownAny>,
+  STREAM extends KnownAny = unknown,
+  R = KnownAny,
+  F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<KnownAny>,
+> = (StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
+  ? unknown
+  : Parameters<T>[0] extends void
+    ? StaticMethodInput<T>['params'] extends object
+      ? { params: StaticMethodInput<T>['params'] }
+      : unknown
+    : StaticMethodInput<T>) &
+  (Partial<
+    OPTS & {
+      transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
+      fetcher: VovkClientFetcher<F>;
+    }
+  > | void) &
+  (Partial<
+    F extends VovkDefaultFetcherOptions<infer U> ? Omit<U, keyof VovkDefaultFetcherOptions<OPTS>> : void
+  > | void);
+
 type ClientMethod<
   T extends ((
     ...args: KnownAny[]
@@ -49,19 +77,8 @@ type ClientMethod<
   },
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
-> = (<R>(
-  options: (StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
-    ? unknown
-    : Parameters<T>[0] extends void
-      ? StaticMethodInput<T>['params'] extends object
-        ? { params: StaticMethodInput<T>['params'] }
-        : unknown
-      : StaticMethodInput<T>) &
-    (Partial<
-      OPTS & {
-        transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
-      }
-    > | void)
+> = (<R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(
+  options: StaticMethodOption<T, OPTS, STREAM, R, F>
 ) => ReturnType<T> extends
   | Promise<JSONLinesResponse<infer U>>
   | JSONLinesResponse<infer U>
@@ -90,7 +107,7 @@ type VovkClientWithNever<T, OPTS extends { [key: string]: KnownAny }> = {
 
 export type VovkClient<T, OPTS extends { [key: string]: KnownAny }> = OmitNever<VovkClientWithNever<T, OPTS>>;
 
-export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<string, never>, T = KnownAny> = (
+export type VovkClientFetcher<OPTS, T = KnownAny> = (
   options: {
     name: keyof T;
     httpMethod: HttpMethod;
@@ -110,12 +127,11 @@ export type VovkClientFetcher<OPTS extends Record<string, KnownAny> = Record<str
   } & OPTS
 ) => KnownAny;
 
-// `RequestInit` is the type of options passed to fetch function
-export interface VovkDefaultFetcherOptions {
+export interface VovkDefaultFetcherOptions<T> {
   apiRoot?: string;
   disableClientValidation?: boolean;
   validateOnClient?: VovkValidateOnClient;
-  fetcher?: VovkClientFetcher;
+  fetcher?: VovkClientFetcher<T>;
   interpretAs?: string;
   init?: RequestInit;
 }

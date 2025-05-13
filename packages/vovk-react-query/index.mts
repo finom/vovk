@@ -77,7 +77,7 @@ const withUseQuery = <
   });
 };
 
-export function createRPC<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions>(
+export function createRPC<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions<KnownAny>>(
   fullSchema: VovkFullSchema,
   segmentName: string,
   rpcModuleName: string,

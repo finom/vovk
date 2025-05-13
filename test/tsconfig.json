@@ -6,6 +6,7 @@
     "webpack.config.mjs",
     ".next/types/**/*.ts",
     "src/**/*.ts",
+    "other-compiled-test-sources/**/*.ts",
     "packages/**/*.ts",
     "vovk.config.cjs",
     "next.config.mjs",

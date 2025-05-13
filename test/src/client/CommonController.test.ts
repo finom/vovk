@@ -3,6 +3,7 @@ import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../o
 import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
 import {
   HttpStatus,
+  createFetcher,
   type VovkBody,
   type VovkErrorResponse,
   type VovkQuery,
@@ -11,7 +12,7 @@ import {
   type VovkHandlerSchema,
 } from 'vovk';
 import { it, describe } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, ok } from 'node:assert';
 import type CommonController from './CommonController.ts';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
@@ -179,11 +180,26 @@ describe('Client with vovk-client', () => {
     });
   });
 
-  it('Should store schema at handler.schema', async () => {
+  it('Should store handler schema at handler.schema', async () => {
     deepStrictEqual(CommonControllerRPC.postWithAll.schema satisfies VovkHandlerSchema, {
       httpMethod: 'POST',
       path: 'with-all/:hello',
     });
+  });
+
+  // TODO
+  it('Should store controller schema at handler.controllerSchema', async () => {
+    ok(CommonControllerRPC.postWithAll.controllerSchema);
+  });
+
+  // TODO
+  it('Should store segment schema at handler.segmentSchema', async () => {
+    ok(CommonControllerRPC.postWithAll.segmentSchema);
+  });
+
+  // TODO
+  it('Should store full schema at handler.fullSchema', async () => {
+    ok(CommonControllerRPC.postWithAll.fullSchema);
   });
 
   it('Should handle requests body and query with using of req.vovk object', async () => {
@@ -244,6 +260,23 @@ describe('Client with vovk-client', () => {
       name: 'postWithBodyAndQueryUsingReqVovk',
       query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
       body: { isBody: true },
+    });
+  });
+
+  it('Should work with createFetcher', async () => {
+    const result = await CommonControllerRPC.getHelloWorldHeaders({
+      customFlag: 'foo',
+      fetcher: createFetcher<{ customFlag: 'foo' }>({
+        prepareRequestInit: (init) => ({ ...init, headers: { ...init.headers, 'x-test': 'custom' } }),
+        transformResponse: (response, options) => ({ response, customFlag: options.customFlag }),
+      }),
+    });
+
+    deepStrictEqual(result, {
+      customFlag: 'foo',
+      response: {
+        hello: 'custom',
+      },
     });
   });
 

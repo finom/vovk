@@ -1,22 +1,22 @@
 import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types';
-import { HttpStatus } from '../types';
+import { HttpStatus, KnownAny } from '../types';
 import { HttpException } from '../HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
-export function createFetcher<T = unknown>({
+export function createFetcher<T extends Record<string, KnownAny> = Record<string, never>>({
   prepareRequestInit,
   transformResponse,
 }: {
   prepareRequestInit?: (
     init: RequestInit,
-    options: VovkDefaultFetcherOptions & T
-  ) => RequestInit | Promise<RequestInit>;
-  transformResponse?: (resp: unknown, options: VovkDefaultFetcherOptions & T, init: RequestInit) => unknown;
+    options: VovkDefaultFetcherOptions<T> & T
+  ) => RequestInit | Promise<RequestInit> | void | Promise<void>;
+  transformResponse?: (resp: unknown, options: VovkDefaultFetcherOptions<T> & T, init: RequestInit) => unknown;
 } = {}) {
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
-  const newFetcher: VovkClientFetcher<VovkDefaultFetcherOptions & T> = async (
+  const newFetcher: VovkClientFetcher<VovkDefaultFetcherOptions<T>> = async (
     { httpMethod, getEndpoint, validate, defaultHandler, defaultStreamHandler },
     options
   ) => {
@@ -64,7 +64,9 @@ export function createFetcher<T = unknown>({
       requestInit.body = JSON.stringify(body);
     }
 
-    requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, options) : requestInit;
+    requestInit = prepareRequestInit
+      ? ((await prepareRequestInit(requestInit, options as typeof options & T)) ?? requestInit)
+      : requestInit;
 
     let response: Response;
 
@@ -94,7 +96,9 @@ export function createFetcher<T = unknown>({
 
     resp = await resp;
 
-    return transformResponse ? await transformResponse(resp, options, requestInit) : resp;
+    return transformResponse
+      ? ((await transformResponse(resp, options as typeof options & T, requestInit)) ?? resp)
+      : resp;
   };
 
   return newFetcher;
