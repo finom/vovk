@@ -5,7 +5,6 @@ import { fetcher } from 'vovk';
 import { createRPC } from 'vovk';
 import { fullSchema } from './fullSchema.ts';
 
-
 import { validateOnClient } from '../../../../packages/vovk-ajv/index.js';
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;

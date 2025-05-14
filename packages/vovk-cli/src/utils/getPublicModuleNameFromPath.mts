@@ -1,4 +1,7 @@
-export default function getPublicModuleNameFromPath(modulePath: string): { moduleName: string | null; restPath: string } {
+export default function getPublicModuleNameFromPath(modulePath: string): {
+  moduleName: string | null;
+  restPath: string;
+} {
   if (modulePath && !modulePath.startsWith('.') && !modulePath.startsWith('/')) {
     const pathParts = modulePath.split('/');
     const moduleName = pathParts[0].startsWith('@') ? `${pathParts[0]}/${pathParts[1]}` : pathParts[0];
