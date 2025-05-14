@@ -29,38 +29,38 @@ export default function getTemplateDefs(
   const defs: VovkStrictConfig['clientTemplateDefs'] = {};
   const builtInDefs: VovkStrictConfig['clientTemplateDefs'] = {
     [BuiltInTemplateName.ts]: {
-      templatePath: path.resolve(templatesDir, 'ts/'),
+      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.ts}/`,
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaTs]: '.' },
     },
     [BuiltInTemplateName.cjs]: {
-      templatePath: path.resolve(templatesDir, 'cjs/'),
+      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.cjs}/`,
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.mjs]: {
-      templatePath: path.resolve(templatesDir, 'mjs/'),
+      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.mjs}/`,
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.readme]: {
-      templatePath: path.resolve(templatesDir, 'readme/'),
+      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.readme}/`,
       origin: null,
     },
     [BuiltInTemplateName.packageJson]: {
-      templatePath: path.resolve(templatesDir, 'packageJson/'),
+      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.packageJson}/`,
       origin: null,
     },
     [BuiltInTemplateName.fullSchemaTs]: {
-      templatePath: path.resolve(templatesDir, 'fullSchemaTs/'),
+      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.fullSchemaTs}/`,
       origin: null,
     },
     [BuiltInTemplateName.fullSchemaCjs]: {
-      templatePath: path.resolve(templatesDir, 'fullSchemaCjs/'),
+      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.fullSchemaCjs}/`,
       origin: null,
     },
     [BuiltInTemplateName.fullSchemaJson]: {
-      templatePath: path.resolve(templatesDir, 'fullSchemaJson/'),
+      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.fullSchemaJson}/`,
       origin: null,
     },
     [BuiltInTemplateName.rs]: {

@@ -11,7 +11,7 @@ export default async function writeConfigJson(schemaOutAbsolutePath: string, pro
 
   if (existingStr !== configStr) {
     await fs.writeFile(configJsonPath, configStr);
-    projectInfo?.log.info(`Config JSON written to ${configJsonPath}`);
+    projectInfo?.log.info(`Config JSON is written to ${configJsonPath}`);
   } else {
     projectInfo?.log.debug(`Config JSON is up to date at ${configJsonPath}`);
   }
