@@ -14,6 +14,12 @@ await describe('Full & segmented client', async () => {
     await vovkInit('--yes');
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new controller user');
+    /* await runAtProjectDir('../dist/index.mjs new segment foo');
+    await runAtProjectDir('../dist/index.mjs new controller foo/cucumber');
+    await runAtProjectDir('../dist/index.mjs new controller foo/tomato');
+    await runAtProjectDir('../dist/index.mjs new segment bar/baz');
+    await runAtProjectDir('../dist/index.mjs new controller bar/baz/pineapple');
+    await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi'); */
   });
 
   await it('Generates full client', async () => {
@@ -32,6 +38,9 @@ await describe('Full & segmented client', async () => {
     await assertNotExists('./node_modules/.vovk-client/root/index.mjs');
   });
 
+  await it.skip('Generates full client with included segments', async () => {});
+  await it.skip('Generates full client with excluded segments', async () => {});
+
   await it('Generates segmented client', async () => {
     await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
@@ -42,4 +51,7 @@ await describe('Full & segmented client', async () => {
 
     await assertNotExists('./segmented-client/index.ts');
   });
+
+  await it.skip('Generates segmented client with included segments', async () => {});
+  await it.skip('Generates segmented client with excluded segments', async () => {});
 });

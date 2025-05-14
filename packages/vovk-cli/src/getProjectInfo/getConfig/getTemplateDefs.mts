@@ -15,7 +15,7 @@ export enum BuiltInTemplateName {
   readme = 'readme',
   packageJson = 'packageJson',
 
-  // other languages
+  // other languages (packages installed separately)
   rs = 'rs',
   py = 'py',
 }
