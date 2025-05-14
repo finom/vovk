@@ -58,8 +58,7 @@ ${paramsFake ? `    params: ${stringifyTsSample(paramsFake)},\n` : ''}${bodyFake
     ${
       outputFake
         ? `
-console.log(response);
-/* 
+console.log(response); /* 
 ${stringifyTsSample(outputFake, 0)}
 */
     `
@@ -84,14 +83,22 @@ ${
   const rsCodeSample = `use ${packageNameSnake}::${rpcNameSnake};
 
 pub fn main() {
-    let response = ${rpcNameSnake}::${handlerNameSnake}(
-      /* body */ ${bodyFake ? serdeUnwrap(stringifyTsSample(bodyFake)) : '()'},
-      /* query */ ${queryFake ? serdeUnwrap(stringifyTsSample(queryFake)) : '()'},
-      /* params */ ${paramsFake ? serdeUnwrap(stringifyTsSample(paramsFake)) : '()'},
-      /* headers */ None,
-      /* api_root */ None,
-      /* disable_client_validation */ false,
+  let response = ${rpcNameSnake}::${handlerNameSnake}(
+    ${bodyFake ? serdeUnwrap(stringifyTsSample(bodyFake)) : '()'}, /* body */ 
+    ${queryFake ? serdeUnwrap(stringifyTsSample(queryFake)) : '()'}, /* query */ 
+    ${paramsFake ? serdeUnwrap(stringifyTsSample(paramsFake)) : '()'}, /* params */ 
+    None, /* headers (HashMap) */ 
+    None, /* api_root */ 
+    false, /* disable_client_validation */
   );
+
+  ${
+    outputFake
+      ? `println!("data: {}", serde_json::to_string_pretty(&response).unwrap()); /* 
+  ${stringifyTsSample(outputFake, 0)} 
+  */`
+      : ''
+  }
 }`;
 
   return { ts: tsCodeSample, py: pyCodeSample, rs: rsCodeSample };

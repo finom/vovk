@@ -28,9 +28,9 @@ export default async function getConfig({
 
   const srcRoot = await getRelativeSrcRoot({ cwd });
 
-  const validateOnClientImport = env.VOVK_IMPORTS_VALIDATE_ON_CLIENT ?? conf.imports?.validateOnClient ?? null;
-  const fetcherImport = env.VOVK_IMPORTS_FETCHER ?? conf.imports?.fetcher ?? 'vovk';
-  const createRPCImport = env.VOVK_IMPORTS_CREATE_RPC ?? conf.imports?.createRPC ?? 'vovk';
+  const validateOnClientImport = conf.imports?.validateOnClient ?? null;
+  const fetcherImport = conf.imports?.fetcher ?? 'vovk';
+  const createRPCImport = conf.imports?.createRPC ?? 'vovk';
 
   const imports = {
     fetcher: typeof fetcherImport === 'string' ? ([fetcherImport] as [string]) : fetcherImport,
@@ -72,11 +72,11 @@ export default async function getConfig({
         [BuiltInTemplateName.packageJson]: '.',
       },
     },
-    modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
+    modulesDir: conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',
-    rootSegmentModulesDirName: env.VOVK_ROOT_SEGMENT_MODULES_DIR_NAME ?? conf.rootSegmentModulesDirName ?? '',
+    rootSegmentModulesDirName: conf.rootSegmentModulesDirName ?? '',
     logLevel: env.VOVK_LOG_LEVEL ?? conf.logLevel ?? 'info',
     prettifyClient: (env.VOVK_PRETTIFY_CLIENT ? !!env.VOVK_PRETTIFY_CLIENT : null) ?? conf.prettifyClient ?? false,
     devHttps: (env.VOVK_DEV_HTTPS ? !!env.VOVK_DEV_HTTPS : null) ?? conf.devHttps ?? false,
@@ -98,43 +98,6 @@ export default async function getConfig({
   } // else it's false and emitConfig already is []
 
   const log = getLogger(config.logLevel);
-
-  for (const [envKey, envValue] of Object.entries(env)) {
-    if (envKey.startsWith('VOVK_')) {
-      const pathArr = envKey
-        .replace(/^VOVK_/, '')
-        .split('__')
-        .map(camelCase);
-
-      // Parse value
-      let value: unknown = envValue;
-      if (envValue === 'null') {
-        value = null;
-      } else if (envValue === 'true') {
-        value = true;
-      } else if (envValue === 'false') {
-        value = false;
-      } else if (typeof envValue === 'string' && envValue.startsWith('[') && envValue.endsWith(']')) {
-        value = envValue
-          .slice(1, -1)
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-
-      // Set value in config at the given path
-      let target: KnownAny = config;
-      for (let i = 0; i < pathArr.length - 1; i++) {
-        const key = pathArr[i];
-        if (typeof target[key] !== 'object' || target[key] === null) {
-          target[key] = {};
-        }
-        target = target[key];
-      }
-      target[pathArr[pathArr.length - 1]] = value;
-      log.debug(`Set config.${pathArr.join('.')} from env ${envKey}=${envValue}`);
-    }
-  }
 
   return { config, srcRoot, configAbsolutePaths, userConfig, error, log };
 }

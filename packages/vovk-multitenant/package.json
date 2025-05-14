@@ -7,8 +7,7 @@
     "build": "tsc",
     "npm-publish": "npm publish",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u",
-    "dev": "vovk dev --next-dev -- vovk dev --next-dev"
+    "ncu": "npm-check-updates -u"
   },
   "keywords": [
     "vovk"
@@ -18,9 +17,5 @@
   "peerDependencies": {
     "next": "^15.0.0",
     "vovk": "^3.0.0-draft.128"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "vovk-cli": "^0.0.1-draft.163"
   }
 }

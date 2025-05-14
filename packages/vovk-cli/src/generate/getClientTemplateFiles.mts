@@ -5,7 +5,7 @@ import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import type { GenerateOptions } from '../types.mjs';
-import { checkIfInstalled } from '../utils/checkIfInstalled.mjs';
+import getPublicModuleNameFromPath from '../utils/getPublicModuleNameFromPath.mjs';
 
 export interface ClientTemplateFile {
   templateName: string;
@@ -58,35 +58,23 @@ export default async function getClientTemplateFiles({
     string | undefined,
   ][];
 
-  for (const [templateName, templateDef] of entries) {
-    if (
-      templateDef.templatePath &&
-      !templateDef.templatePath.startsWith('.') &&
-      !templateDef.templatePath.startsWith('/')
-    ) {
-      const pathParts = templateDef.templatePath.split('/');
-      const npmModuleName = pathParts[0].startsWith('@') ? `${pathParts[0]}/${pathParts[1]}` : pathParts[0];
-      const isInstalled = checkIfInstalled(npmModuleName);
-
-      if (!isInstalled) {
-        log.error(`Template "${templateName}" requires the package "${npmModuleName}" to be installed.`);
-
-        return {
-          fromTemplates: [],
-          templateFiles: [],
-        };
-      }
-    }
-  }
-
   for (let i = 0; i < entries.length; i++) {
     const [templateName, templateDef, forceOutCwdRelativeDir] = entries[i];
     const templateAbsolutePath = templateDef.templatePath
       ? resolveAbsoluteModulePath(templateDef.templatePath, cwd)
       : null;
     const entryType = templateAbsolutePath ? await getFileSystemEntryType(templateAbsolutePath) : null;
-    if (templateAbsolutePath && !entryType)
-      throw new Error(`Unable to locate template path "${templateDef.templatePath}" resolved as "${templateAbsolutePath}"`);
+    if (templateAbsolutePath && !entryType) {
+      const { moduleName } = templateDef.templatePath ? getPublicModuleNameFromPath(templateDef.templatePath) : {};
+      if (moduleName) {
+        throw new Error(
+          `Unable to locate template path "${templateDef.templatePath}" resolved as "${templateAbsolutePath}". You may need to install the package "${moduleName}" first.`
+        );
+      }
+      throw new Error(
+        `Unable to locate template path "${templateDef.templatePath}" resolved as "${templateAbsolutePath}"`
+      );
+    }
     const defOutDir = configKey === 'fullClient' ? templateDef.fullClient?.outDir : templateDef.segmentedClient?.outDir;
 
     let files: { filePath: string; isSingleFileTemplate: boolean }[] = [];

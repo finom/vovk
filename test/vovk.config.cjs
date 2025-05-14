@@ -23,10 +23,7 @@ const vovkConfig = {
   },
   clientTemplateDefs: {
     py: {
-      templatePath: '../packages/vovk-python-client/template/',
-      requires: {
-        fullSchemaJson: './data',
-      },
+      extends: 'py',
       fullClient: {
         outDir: './tmp/py',
         package: {
@@ -38,10 +35,7 @@ const vovkConfig = {
       },
     },
     rs: {
-      templatePath: '../packages/vovk-rust-client/template/',
-      requires: {
-        fullSchemaJson: './data',
-      },
+      extends: 'rs',
       fullClient: {
         outDir: './tmp/rs',
         package: {
