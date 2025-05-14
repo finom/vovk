@@ -5,7 +5,7 @@ import getLogger from '../../utils/getLogger.mjs';
 import getUserConfig from '../getUserConfig.mjs';
 import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';
 import type { BundleOptions, GenerateOptions, VovkEnv } from '../../types.mjs';
-import getTemplateDefs from './getTemplateDefs.mjs';
+import getTemplateDefs, { BuiltInTemplateName } from './getTemplateDefs.mjs';
 import { SchemaIdEnum } from '../../enums.mjs';
 
 export default async function getConfig({
@@ -66,9 +66,11 @@ export default async function getConfig({
       tsClientOutDir: cliBundleOptions?.tsClientOutDir ?? conf.bundle?.tsClientOutDir ?? '.tmp-ts-rpc',
       dontDeleteTsClientOutDirAfter:
         cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? conf.bundle?.dontDeleteTsClientOutDirAfter ?? false,
-      noReadme: cliBundleOptions?.noReadme ?? conf.bundle?.noReadme ?? false,
-      noPackage: cliBundleOptions?.noPackage ?? conf.bundle?.noPackage ?? false,
       sourcemap: cliBundleOptions?.sourcemap ?? conf.bundle?.sourcemap ?? false,
+      requires: {
+        [BuiltInTemplateName.readme]: '.',
+        [BuiltInTemplateName.packageJson]: '.',
+      },
     },
     modulesDir: env.VOVK_MODULES_DIR ?? conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',

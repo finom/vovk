@@ -288,8 +288,7 @@ export type VovkConfig = {
   segmentedClient?: ClientConfigSegmented;
   bundle?: {
     outDir?: string;
-    noReadme?: boolean;
-    noPackage?: boolean;
+    requires?: Record<string, string>;
     tsClientOutDir?: string;
     dontDeleteTsClientOutDirAfter?: boolean;
     sourcemap?: boolean;

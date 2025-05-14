@@ -26,7 +26,7 @@ export interface GenerateOptions {
   segmentedOnly?: boolean;
 }
 
-export interface BundleOptions extends Partial<VovkStrictConfig['bundle']> {
+export interface BundleOptions extends Partial<Omit<VovkStrictConfig['bundle'], 'requires'>> {
   config?: string;
 }
 

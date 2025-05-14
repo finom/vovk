@@ -37,6 +37,7 @@ export default async function getClientTemplateFiles({
       : cliGenerateOptions?.fullFrom || cliGenerateOptions?.segmentedFrom
         ? (cliGenerateOptions?.segmentedFrom ?? [])
         : config.segmentedClient.fromTemplates;
+
   const outDir =
     configKey === 'fullClient'
       ? (cliGenerateOptions?.fullOut ?? config.fullClient.outDir)

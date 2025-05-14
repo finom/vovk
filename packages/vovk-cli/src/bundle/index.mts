@@ -2,10 +2,10 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { VovkFullSchema } from 'vovk';
 import { build } from 'tsdown';
+import groupBy from 'lodash/groupBy.js';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import generate from '../generate/index.mjs';
 import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
-import type { GenerateOptions } from '../types.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 
 export default async function bundle({
@@ -45,7 +45,9 @@ export default async function bundle({
     sourcemap: bundleConfig.sourcemap,
   });
 
-  log.debug(`Bundled TypeScript client to ${chalkHighlightThing(outDir)}`);
+  const outDirAbsolute = path.resolve(cwd, outDir);
+
+  log.info(`Bundled index.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
   await build({
     entry: path.join(tsFullClientOutAbsoluteDirInput, './fullSchema.ts'),
@@ -57,29 +59,21 @@ export default async function bundle({
     sourcemap: bundleConfig.sourcemap,
   });
 
-  log.debug(`Bundled fullSchema.ts to ${chalkHighlightThing(outDir)}`);
+  log.info(`Bundled fullSchema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
-  const fullFrom: GenerateOptions['fullFrom'] = [];
+  const requiresGroup = groupBy(Object.entries(bundleConfig.requires), ([, relativeOutDir]) => relativeOutDir);
 
-  if (!bundleConfig.noReadme) {
-    fullFrom.push(BuiltInTemplateName.readme);
-  }
-  if (!bundleConfig.noPackage) {
-    fullFrom.push(BuiltInTemplateName.packageJson);
-  }
-  if (fullFrom.length) {
+  for (const [relativePath, group] of Object.entries(requiresGroup)) {
     await generate({
       isEnsuringClient: false,
       projectInfo,
       forceNothingWrittenLog: true,
       fullSchema,
       cliGenerateOptions: {
-        fullFrom,
-        fullOut: outDir,
+        fullFrom: group.map(([templateName]) => templateName),
+        fullOut: path.resolve(outDir, relativePath),
       },
     });
-  } else {
-    log.debug('No README or package.json generated');
   }
 
   if (!bundleConfig.dontDeleteTsClientOutDirAfter) {
@@ -93,5 +87,5 @@ export default async function bundle({
     );
   }
 
-  log.info(`Bundled TypeScript client to ${outDir}`);
+  log.info(`Bundled TypeScript client to ${outDirAbsolute}`);
 }
