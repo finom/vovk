@@ -1,5 +1,4 @@
 import type { VovkStrictConfig } from 'vovk';
-import path from 'node:path';
 
 export enum BuiltInTemplateName {
   // ts/js
