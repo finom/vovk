@@ -29,38 +29,38 @@ export default function getTemplateDefs(
   const defs: VovkStrictConfig['clientTemplateDefs'] = {};
   const builtInDefs: VovkStrictConfig['clientTemplateDefs'] = {
     [BuiltInTemplateName.ts]: {
-      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.ts}/`,
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.ts}/`,
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaTs]: '.' },
     },
     [BuiltInTemplateName.cjs]: {
-      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.cjs}/`,
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.cjs}/`,
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.mjs]: {
-      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.mjs}/`,
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.mjs}/`,
       origin: null,
       requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
     },
     [BuiltInTemplateName.readme]: {
-      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.readme}/`,
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.readme}/`,
       origin: null,
     },
     [BuiltInTemplateName.packageJson]: {
-      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.packageJson}/`,
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.packageJson}/`,
       origin: null,
     },
     [BuiltInTemplateName.fullSchemaTs]: {
-      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.fullSchemaTs}/`,
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.fullSchemaTs}/`,
       origin: null,
     },
     [BuiltInTemplateName.fullSchemaCjs]: {
-      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.fullSchemaCjs}/`,
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.fullSchemaCjs}/`,
       origin: null,
     },
     [BuiltInTemplateName.fullSchemaJson]: {
-      templatePath: `vovk-cli/module-templates/${BuiltInTemplateName.fullSchemaJson}/`,
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.fullSchemaJson}/`,
       origin: null,
     },
     [BuiltInTemplateName.rs]: {
