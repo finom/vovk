@@ -151,37 +151,6 @@ await describe('CLI init', async () => {
     await assertNotExists('./node_modules/vovk-cli');
   });
 
-  await it('Works with --yes and --use-yarn', async () => {
-    await createNextApp('--use-yarn');
-    // Add packageManager: yarn to package.json
-    const pkgJson = await NPMCliPackageJson.load(projectDir);
-    pkgJson.update({
-      packageManager: 'yarn@1.22.22',
-    });
-    await pkgJson.save();
-    await vovkInit('--yes --use-yarn');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
-
-    await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-openapi'],
-      devDependencies: ['vovk-cli'],
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-    });
-
-    await assertTsConfig();
-
-    // check if packages are installed
-    await assertDirExists('./node_modules/vovk');
-    await assertDirExists('./node_modules/vovk-cli');
-    await assertFileExists('./yarn.lock');
-
-    // check if yarn.lock does not exist
-    await assertNotExists('./package-lock.json');
-  });
-
   await it('Works with --yes and --validation-library=none', async () => {
     await createNextApp();
     await vovkInit('--yes --validation-library=none');
@@ -370,35 +339,6 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await it('Works with prompting and --use-yarn', async () => {
-    await createNextApp('--use-yarn');
-    // Add packageManager: yarn to package.json
-    const pkgJson = await NPMCliPackageJson.load(projectDir);
-    pkgJson.update({
-      packageManager: 'yarn@1.22.22',
-    });
-    await pkgJson.save();
-    await vovkInit('--use-yarn', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
-
-    await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client', 'vovk-openapi'],
-      devDependencies: ['vovk-cli'],
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-    });
-
-    await assertTsConfig();
-
-    await assertDirExists('./node_modules/vovk');
-    await assertDirExists('./node_modules/vovk-cli');
-
-    await assertNotExists('./package-lock.json');
-    await assertFileExists('./yarn.lock');
-  });
-
   await it('Works with prompting and no TSConfig update', async () => {
     await createNextApp();
     await vovkInit('', { combo: [ENTER, ENTER, ENTER, 'N', ENTER] });
@@ -518,5 +458,190 @@ await describe('CLI init', async () => {
     });
 
     await assertTsConfig();
+  });
+
+  await describe('Yarn-specific tests', async () => {
+    await it('Works with prompting and --use-yarn', async () => {
+      await createNextApp('--use-yarn');
+      // Add packageManager: yarn to package.json
+      const pkgJson = await NPMCliPackageJson.load(projectDir);
+      pkgJson.update({
+        packageManager: 'yarn@1.22.22',
+      });
+      await pkgJson.save();
+      await vovkInit('--use-yarn', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
+      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
+
+      await assertDeps({
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client', 'vovk-openapi'],
+        devDependencies: ['vovk-cli'],
+      });
+
+      await assertScripts({
+        dev: 'vovk dev --next-dev',
+      });
+
+      await assertTsConfig();
+
+      await assertDirExists('./node_modules/vovk');
+      await assertDirExists('./node_modules/vovk-cli');
+
+      await assertNotExists('./package-lock.json');
+      await assertFileExists('./yarn.lock');
+    });
+
+    await it('Works with --yes and --use-yarn', async () => {
+      await createNextApp('--use-yarn');
+      // Add packageManager: yarn to package.json
+      const pkgJson = await NPMCliPackageJson.load(projectDir);
+      pkgJson.update({
+        packageManager: 'yarn@1.22.22',
+      });
+      await pkgJson.save();
+      await vovkInit('--yes --use-yarn');
+      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
+
+      await assertDeps({
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-openapi'],
+        devDependencies: ['vovk-cli'],
+      });
+
+      await assertScripts({
+        dev: 'vovk dev --next-dev',
+      });
+
+      await assertTsConfig();
+
+      // check if packages are installed
+      await assertDirExists('./node_modules/vovk');
+      await assertDirExists('./node_modules/vovk-cli');
+
+      await assertNotExists('./package-lock.json');
+
+      await assertFileExists('./yarn.lock');
+    });
+  });
+
+  await describe('Bun-specific tests', async () => {
+    await it('Works with prompting and --use-bun', async () => {
+      await createNextApp('--use-bun');
+      // Add packageManager: bun to package.json
+      const pkgJson = await NPMCliPackageJson.load(projectDir);
+      pkgJson.update({
+        packageManager: 'bun@1.2.13',
+      });
+      await pkgJson.save();
+      await vovkInit('--use-bun', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
+      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
+
+      await assertDeps({
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client', 'vovk-openapi'],
+        devDependencies: ['vovk-cli'],
+      });
+
+      await assertScripts({
+        dev: 'vovk dev --next-dev',
+      });
+
+      await assertTsConfig();
+
+      await assertDirExists('./node_modules/vovk');
+      await assertDirExists('./node_modules/vovk-cli');
+
+      await assertNotExists('./package-lock.json');
+      await assertFileExists('./bun.lock');
+    });
+
+    await it('Works with --yes and --use-bun', async () => {
+      await createNextApp('--use-bun');
+      // Add packageManager: bun to package.json
+      const pkgJson = await NPMCliPackageJson.load(projectDir);
+      pkgJson.update({
+        packageManager: 'bun@1.2.13',
+      });
+      await pkgJson.save();
+      await vovkInit('--yes --use-bun');
+      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
+
+      await assertDeps({
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-openapi'],
+        devDependencies: ['vovk-cli'],
+      });
+
+      await assertScripts({
+        dev: 'vovk dev --next-dev',
+      });
+
+      await assertTsConfig();
+
+      // check if packages are installed
+      await assertDirExists('./node_modules/vovk');
+      await assertDirExists('./node_modules/vovk-cli');
+
+      await assertNotExists('./package-lock.json');
+      await assertFileExists('./bun.lock');
+    });
+  });
+
+  await describe('pnpm-specific tests', async () => {
+    await it('Works with prompting and --use-pnpm', async () => {
+      await createNextApp('--use-pnpm');
+      // Add packageManager: pnpm to package.json
+      const pkgJson = await NPMCliPackageJson.load(projectDir);
+      pkgJson.update({
+        packageManager: 'pnpm@8.6.0',
+      });
+      await pkgJson.save();
+      await vovkInit('--use-pnpm', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
+      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
+
+      await assertDeps({
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client', 'vovk-openapi'],
+        devDependencies: ['vovk-cli'],
+      });
+
+      await assertScripts({
+        dev: 'vovk dev --next-dev',
+      });
+
+      await assertTsConfig();
+
+      await assertDirExists('./node_modules/vovk');
+      await assertDirExists('./node_modules/vovk-cli');
+
+      await assertNotExists('./package-lock.json');
+      await assertFileExists('./pnpm-lock.yaml');
+    });
+
+    await it('Works with --yes and --use-pnpm', async () => {
+      await createNextApp('--use-pnpm');
+      // Add packageManager: pnpm to package.json
+      const pkgJson = await NPMCliPackageJson.load(projectDir);
+      pkgJson.update({
+        packageManager: 'pnpm@8.6.0',
+      });
+      await pkgJson.save();
+      await vovkInit('--yes --use-pnpm');
+      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
+
+      await assertDeps({
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-openapi'],
+        devDependencies: ['vovk-cli'],
+      });
+
+      await assertScripts({
+        dev: 'vovk dev --next-dev',
+      });
+
+      await assertTsConfig();
+
+      // check if packages are installed
+      await assertDirExists('./node_modules/vovk');
+      await assertDirExists('./node_modules/vovk-cli');
+
+      // check if packages are not installed
+      await assertNotExists('./package-lock.json');
+      await assertFileExists('./pnpm-lock.yaml');
+    });
   });
 });
