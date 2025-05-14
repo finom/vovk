@@ -15,7 +15,7 @@ await describe('CLI new segment', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
-      `initVovk({
+      `export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
         emitSchema: true,
         controllers,
       });`
@@ -28,7 +28,7 @@ await describe('CLI new segment', async () => {
     await runAtProjectDir('../dist/index.mjs new segment ""');
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
-      `initVovk({
+      `export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
         emitSchema: true,
         controllers,
       });`
@@ -41,7 +41,7 @@ await describe('CLI new segment', async () => {
     await runAtProjectDir("../dist/index.mjs new segment ''");
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
-      `initVovk({
+      `export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
         emitSchema: true,
         controllers,
       });`
@@ -54,7 +54,7 @@ await describe('CLI new segment', async () => {
     await runAtProjectDir('../dist/index.mjs new segment foo');
     await assertFile(
       'src/app/api/foo/[[...vovk]]/route.ts',
-      `initVovk({
+      `export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
         segmentName: 'foo',
         emitSchema: true,
         controllers,
@@ -68,7 +68,7 @@ await describe('CLI new segment', async () => {
     await runAtProjectDir('../dist/index.mjs new segment foo --static');
     await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
       `export function generateStaticParams() {`,
-      `initVovk({
+      `export const { GET } = initVovk({
         segmentName: 'foo',
         emitSchema: true,
         controllers,
@@ -82,7 +82,7 @@ await describe('CLI new segment', async () => {
     await runAtProjectDir('../dist/index.mjs new segment bar/baz/qwe');
     await assertFile(
       'src/app/api/bar/baz/qwe/[[...vovk]]/route.ts',
-      `initVovk({
+      `export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
         segmentName: 'bar/baz/qwe',
         emitSchema: true,
         controllers,
@@ -98,14 +98,14 @@ await describe('CLI new segment', async () => {
     await runAtProjectDir('../dist/index.mjs new segment "" foo foo/bar/baz');
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
-      `initVovk({
+      `export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
           emitSchema: true,
           controllers,
         });`
     );
     await assertFile(
       'src/app/api/foo/[[...vovk]]/route.ts',
-      `initVovk({
+      `export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
           segmentName: 'foo',
           emitSchema: true,
           controllers,
@@ -113,7 +113,7 @@ await describe('CLI new segment', async () => {
     );
     await assertFile(
       'src/app/api/foo/bar/baz/[[...vovk]]/route.ts',
-      `initVovk({
+      `export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
         segmentName: 'foo/bar/baz',
         emitSchema: true,
         controllers,

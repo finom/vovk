@@ -4,7 +4,7 @@ mod test_dto;
 mod test_common;
 
 // Helper function to create objects with specific validation issues
-pub fn get_complaining_object(key: Option<String>) -> serde_json::Value {        
+pub fn get_constraining_object(key: Option<String>) -> serde_json::Value {        
     // Object that satisfies all validation requirements
     let mut without_violations = serde_json::json!({
         "enum_value": "a",

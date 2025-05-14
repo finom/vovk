@@ -84,9 +84,9 @@ export default async function getClientTemplateFiles({
     const templateAbsolutePath = templateDef.templatePath
       ? resolveAbsoluteModulePath(templateDef.templatePath, cwd)
       : null;
-    const entryType = templateDef.templatePath ? await getFileSystemEntryType(templateDef.templatePath) : null;
+    const entryType = templateAbsolutePath ? await getFileSystemEntryType(templateAbsolutePath) : null;
     if (templateAbsolutePath && !entryType)
-      throw new Error(`Unable to locate template path ${templateDef.templatePath}`);
+      throw new Error(`Unable to locate template path "${templateDef.templatePath}" resolved as "${templateAbsolutePath}"`);
     const defOutDir = configKey === 'fullClient' ? templateDef.fullClient?.outDir : templateDef.segmentedClient?.outDir;
 
     let files: { filePath: string; isSingleFileTemplate: boolean }[] = [];

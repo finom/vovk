@@ -10,7 +10,7 @@ import {
   type VovkIteration,
 } from 'vovk';
 import type WithDtoClientController from './WithDtoClientController';
-import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type {
   HandleAllBodyDto,
   HandleAllParamsDto,
@@ -20,13 +20,13 @@ import type {
   HandleQueryQueryDto,
 } from './WithDtoClientController.dto.ts';
 
-describe('DTO-to-JSONchema complaints', async () => {
-  const noComplaints = getComplainingObject(null);
+describe('DTO-to-JSONchema constraints', async () => {
+  const noConstraints = getConstrainingObject(null);
 
   await it('Should handle valid object', async () => {
     // first check if the object is valid
-    await WithDtoClientControllerRPC.handleSchemaComplaints({
-      body: noComplaints,
+    await WithDtoClientControllerRPC.handleSchemaConstraints({
+      body: noConstraints,
     });
   });
   const notSupported = [
@@ -38,23 +38,23 @@ describe('DTO-to-JSONchema complaints', async () => {
     'num_exclusiveMinimum',
     'num_exclusiveMaximum',
   ];
-  for (const key of Object.keys(noComplaints)) {
+  for (const key of Object.keys(noConstraints)) {
     if (notSupported.includes(key)) {
       continue;
     }
-    await it(`Should handle ${key} complaint`, async () => {
-      const complainingObject = getComplainingObject(key);
+    await it(`Should handle ${key} constraint`, async () => {
+      const constrainingObject = getConstrainingObject(key);
       let { rejects } = expectPromise(async () => {
-        await WithDtoClientControllerRPC.handleSchemaComplaints({
-          body: complainingObject,
+        await WithDtoClientControllerRPC.handleSchemaConstraints({
+          body: constrainingObject,
           disableClientValidation: true,
         });
       });
       await rejects.toThrow(new RegExp(`Validation failed. Invalid body on server for http:.*\\. ${key}.*`));
       await rejects.toThrowError(HttpException);
       ({ rejects } = expectPromise(async () => {
-        await WithDtoClientControllerRPC.handleSchemaComplaints({
-          body: complainingObject,
+        await WithDtoClientControllerRPC.handleSchemaConstraints({
+          body: constrainingObject,
         });
       }));
       await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));

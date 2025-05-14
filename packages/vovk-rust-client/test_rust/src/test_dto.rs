@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub mod test_dto {
     use generated_rust_client::with_dto_client_controller_rpc;
-    use crate::get_complaining_object;
+    use crate::get_constraining_object;
      
     // test OK
     #[test]
@@ -352,7 +352,7 @@ pub mod test_dto {
     }
 
     #[test]
-    fn test_complaints() {
+    fn test_constraints() {
         // List of keys that are not supported
         let not_supported = vec![
             "logical_anyOf",
@@ -370,13 +370,13 @@ pub mod test_dto {
             "obj_required",
         ];
         
-        // Get object with no complaints
-        let no_complaints: with_dto_client_controller_rpc::handle_schema_complaints_::body = 
-            serde_json::from_value(get_complaining_object(None)).unwrap();
+        // Get object with no constraints
+        let no_constraints: with_dto_client_controller_rpc::handle_schema_constraints_::body = 
+            serde_json::from_value(get_constraining_object(None)).unwrap();
         
         // Test valid object first
-        let result = with_dto_client_controller_rpc::handle_schema_complaints(
-            no_complaints.clone(),
+        let result = with_dto_client_controller_rpc::handle_schema_constraints(
+            no_constraints.clone(),
             (),
             (),
             None,
@@ -386,21 +386,21 @@ pub mod test_dto {
         assert!(result.is_ok(), "Valid object should pass validation");
         
         // Convert struct to JSON to access its keys
-        let no_complaints_json = serde_json::to_value(&no_complaints).unwrap();
-        if let serde_json::Value::Object(map) = no_complaints_json {
-            // Test each key for complaints
+        let no_constraints_json = serde_json::to_value(&no_constraints).unwrap();
+        if let serde_json::Value::Object(map) = no_constraints_json {
+            // Test each key for constraints
             for (key, _) in map {
                 if not_supported.contains(&key.as_str()) {
                     continue;
                 }
             
-            // Get object with specific complaint
-            let complaining_object: with_dto_client_controller_rpc::handle_schema_complaints_::body = 
-                serde_json::from_value(get_complaining_object(Some(key.clone()))).unwrap();
+            // Get object with specific constraint
+            let constraining_object: with_dto_client_controller_rpc::handle_schema_constraints_::body = 
+                serde_json::from_value(get_constraining_object(Some(key.clone()))).unwrap();
             
             // Test with client validation disabled (server-side error)
-            let result_server = with_dto_client_controller_rpc::handle_schema_complaints(
-                complaining_object.clone(),
+            let result_server = with_dto_client_controller_rpc::handle_schema_constraints(
+                constraining_object.clone(),
                 (),
                 (),
                 None,
@@ -416,8 +416,8 @@ pub mod test_dto {
             );
             
             // Test with client validation enabled (client-side error)
-            let result_client = with_dto_client_controller_rpc::handle_schema_complaints(
-                complaining_object,
+            let result_client = with_dto_client_controller_rpc::handle_schema_constraints(
+                constraining_object,
                 (),
                 (),
                 None,
@@ -436,7 +436,7 @@ pub mod test_dto {
     }
     
     #[test]
-    fn test_type_complaints() {
+    fn test_type_constraints() {
         // Keys that should cause unwrap errors during deserialization
         let should_fail_unwrap = vec![
             "enum_value",
@@ -445,17 +445,17 @@ pub mod test_dto {
             "obj_required",
         ];
         
-        // Get object with no complaints to extract all keys
-        let no_complaints_json = get_complaining_object(None);
+        // Get object with no constraints to extract all keys
+        let no_constraints_json = get_constraining_object(None);
         
-        if let serde_json::Value::Object(ref map) = no_complaints_json {
+        if let serde_json::Value::Object(ref map) = no_constraints_json {
             // Test each key for unwrap behavior
             for (key, _) in map.clone() {
                 // Create an object with a violation for the specific key
-                let complaining_object = get_complaining_object(Some(key.clone()));
+                let constraining_object = get_constraining_object(Some(key.clone()));
                 
                 // Try to deserialize (unwrap) the object
-                let result = serde_json::from_value::<with_dto_client_controller_rpc::handle_schema_complaints_::body>(complaining_object);
+                let result = serde_json::from_value::<with_dto_client_controller_rpc::handle_schema_constraints_::body>(constraining_object);
                 
                 if should_fail_unwrap.contains(&key.as_str()) {
                     // These keys should cause deserialization failures
@@ -468,10 +468,10 @@ pub mod test_dto {
                 }
             }
         } else {
-            panic!("Expected get_complaining_object to return a JSON object");
+            panic!("Expected get_constraining_object to return a JSON object");
         }
 
-        let int32  = no_complaints_json.get("num_int32").unwrap();
+        let int32  = no_constraints_json.get("num_int32").unwrap();
         // check if the number is actually an int32
         if let serde_json::Value::Number(num) = int32 {
             assert!(num.is_i64(), "Expected num_int32 to be an i64");

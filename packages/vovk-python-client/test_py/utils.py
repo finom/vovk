@@ -4,7 +4,7 @@ from typing import Any, Dict, Union
 def noop(*args: Any) -> None: # type: ignore
     pass
 
-def get_complaining_object(key: Union[str, None]) -> Dict[str, Any]:
+def get_constraining_object(key: Union[str, None]) -> Dict[str, Any]:
     # Object that satisfies all validation requirements
     without_violations: Dict[str, Any] = {
         "enum_value": "a",

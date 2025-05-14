@@ -473,14 +473,14 @@ const response = await WithZodClientControllerRPC.handleStream({
 });
 ```
 
-### WithZodClientControllerRPC.handleSchemaComplaints
+### WithZodClientControllerRPC.handleSchemaConstraints
 
-Endpoint: http://localhost:3000/api/foo/client/with-zod/handle-schema-complaints
+Endpoint: http://localhost:3000/api/foo/client/with-zod/handle-schema-constraints
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
 
-const response = await WithZodClientControllerRPC.handleSchemaComplaints({
+const response = await WithZodClientControllerRPC.handleSchemaConstraints({
   body: {
     enum_value: 'a',
     num_minimum: 1,
@@ -765,14 +765,14 @@ const response = await WithYupClientControllerRPC.handleStream({
 });
 ```
 
-### WithYupClientControllerRPC.handleSchemaComplaints
+### WithYupClientControllerRPC.handleSchemaConstraints
 
-Endpoint: http://localhost:3000/api/foo/client/with-yup/handle-schema-complaints
+Endpoint: http://localhost:3000/api/foo/client/with-yup/handle-schema-constraints
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
 
-const response = await WithYupClientControllerRPC.handleSchemaComplaints({
+const response = await WithYupClientControllerRPC.handleSchemaConstraints({
   body: {
     logical_allOf: {},
     obj_strict: {},
@@ -994,14 +994,14 @@ const response = await WithDtoClientControllerRPC.handleStream({
 });
 ```
 
-### WithDtoClientControllerRPC.handleSchemaComplaints
+### WithDtoClientControllerRPC.handleSchemaConstraints
 
-Endpoint: http://localhost:3000/api/foo/client/with-dto/handle-schema-complaints
+Endpoint: http://localhost:3000/api/foo/client/with-dto/handle-schema-constraints
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
 
-const response = await WithDtoClientControllerRPC.handleSchemaComplaints({
+const response = await WithDtoClientControllerRPC.handleSchemaConstraints({
   body: {
     enum_value: 'a',
     num_minimum: 1,

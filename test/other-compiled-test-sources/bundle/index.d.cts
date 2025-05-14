@@ -138,7 +138,7 @@ declare class AllOfDtoA {
 declare class AllOfDtoB {
   b: number;
 }
-declare class ComplainingDto {
+declare class ConstrainingDto {
   enum_value: 'a' | 'b' | 'c';
   num_minimum: number;
   num_maximum: number;
@@ -628,7 +628,7 @@ declare const fullSchema: {
               httpMethod: string;
               path: string;
             };
-            handleSchemaComplaints: {
+            handleSchemaConstraints: {
               validation: {
                 body: {
                   type: string;
@@ -1216,7 +1216,7 @@ declare const fullSchema: {
               httpMethod: string;
               path: string;
             };
-            handleSchemaComplaints: {
+            handleSchemaConstraints: {
               validation: {
                 body: {
                   type: string;
@@ -1701,7 +1701,7 @@ declare const fullSchema: {
               httpMethod: string;
               path: string;
             };
-            handleSchemaComplaints: {
+            handleSchemaConstraints: {
               validation: {
                 body: {
                   'x-isDto': boolean;
@@ -3634,7 +3634,7 @@ declare const WithZodClientControllerRPC: {
       value: string;
     };
   };
-  handleSchemaComplaints: (<R>(
+  handleSchemaConstraints: (<R>(
     options: {
       body: {
         enum_value: 'a' | 'b' | 'c';
@@ -4369,7 +4369,7 @@ declare const WithYupClientControllerRPC: {
       value: string;
     };
   };
-  handleSchemaComplaints: (<R>(
+  handleSchemaConstraints: (<R>(
     options: vovk_dist_client_types279.StaticMethodInput<
       ((
         req: vovk0.VovkRequest<
@@ -4952,19 +4952,19 @@ declare const WithDtoClientControllerRPC: {
     __output: any;
     __iteration: IterationDto;
   };
-  handleSchemaComplaints: (<R>(
+  handleSchemaConstraints: (<R>(
     options: vovk_dist_client_types279.StaticMethodInput<
-      ((req: vovk0.VovkRequest<ComplainingDto, any, any>) => Promise<ComplainingDto>) & {
+      ((req: vovk0.VovkRequest<ConstrainingDto, any, any>) => Promise<ConstrainingDto>) & {
         __output: any;
         __iteration: any;
       }
     > &
       (void | Partial<
         vovk0.VovkDefaultFetcherOptions & {
-          transform: (staticMethodReturn: ComplainingDto) => R;
+          transform: (staticMethodReturn: ConstrainingDto) => R;
         }
       >)
-  ) => R extends object ? Promise<R> : Promise<ComplainingDto>) & {
+  ) => R extends object ? Promise<R> : Promise<ConstrainingDto>) & {
     isRPC: true;
     schema: vovk0.VovkHandlerSchema;
     controllerSchema: vovk0.VovkControllerSchema;

@@ -244,7 +244,7 @@ class AllOfDtoB {
   b: number;
 }
 
-export class ComplainingDto {
+export class ConstrainingDto {
   @IsIn(['a', 'b', 'c'])
   enum_value: 'a' | 'b' | 'c';
 

@@ -2,7 +2,7 @@ import unittest
 from typing import Generator, cast
 from jsonschema import ValidationError
 from generated_python_client.src.test_generated_python_client import HttpException, WithDtoClientControllerRPC
-from utils import noop, get_complaining_object
+from utils import noop, get_constraining_object
 
 class TestDto(unittest.TestCase):
     def test_ok(self) -> None:
@@ -160,7 +160,7 @@ class TestDto(unittest.TestCase):
                 pass
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0 on server for http://\S+\. value must be one of the following values: a, b, c, d")
 
-    def test_complaints(self) -> None:
+    def test_constraints(self) -> None:
         # List of keys that are not supported
         not_supported = [
             'logical_anyOf',
@@ -174,24 +174,24 @@ class TestDto(unittest.TestCase):
             'str_datetime',
         ]
         
-        # Get object with no complaints
-        no_complaints = cast(WithDtoClientControllerRPC.HandleSchemaComplaintsBody, get_complaining_object(None))
+        # Get object with no constraints
+        no_constraints = cast(WithDtoClientControllerRPC.HandleSchemaConstraintsBody, get_constraining_object(None))
         
         # Test valid object first
-        WithDtoClientControllerRPC.handle_schema_complaints(body=no_complaints)
+        WithDtoClientControllerRPC.handle_schema_constraints(body=no_constraints)
         
-        # Test each key for complaints
-        for key in no_complaints.keys():
+        # Test each key for constraints
+        for key in no_constraints.keys():
             if key in not_supported:
                 continue
                 
-            # Get object with specific complaint
-            complaining_object = cast(WithDtoClientControllerRPC.HandleSchemaComplaintsBody,get_complaining_object(key))
+            # Get object with specific constraint
+            constraining_object = cast(WithDtoClientControllerRPC.HandleSchemaConstraintsBody,get_constraining_object(key))
             
             # Test with client validation disabled
             with self.assertRaises(HttpException, msg='HttpException is not raised for key ' + key) as context1:
-                WithDtoClientControllerRPC.handle_schema_complaints(
-                    body=complaining_object,
+                WithDtoClientControllerRPC.handle_schema_constraints(
+                    body=constraining_object,
                     disable_client_validation=True
                 )
             self.assertRegex(
@@ -201,8 +201,8 @@ class TestDto(unittest.TestCase):
             
             # Test with client validation enabled
             with self.assertRaises(ValidationError, msg='ValidationError is not raised for key ' + key) as context2:
-                WithDtoClientControllerRPC.handle_schema_complaints(
-                    body=complaining_object
+                WithDtoClientControllerRPC.handle_schema_constraints(
+                    body=constraining_object
                 )
             self.assertIn(key, str(context2.exception))
 if __name__ == "__main__":

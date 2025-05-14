@@ -454,7 +454,7 @@
           "httpMethod": "GET",
           "path": "handle-stream"
         },
-        "handleSchemaComplaints": {
+        "handleSchemaConstraints": {
           "validation": {
             "body": {
               "type": "object",
@@ -625,7 +625,7 @@
             }
           },
           "httpMethod": "POST",
-          "path": "handle-schema-complaints"
+          "path": "handle-schema-constraints"
         },
         "handleNothitng": {
           "validation": {},
@@ -1061,7 +1061,7 @@
           "httpMethod": "GET",
           "path": "handle-stream"
         },
-        "handleSchemaComplaints": {
+        "handleSchemaConstraints": {
           "validation": {
             "body": {
               "type": "object",
@@ -1185,7 +1185,7 @@
             }
           },
           "httpMethod": "POST",
-          "path": "handle-schema-complaints"
+          "path": "handle-schema-constraints"
         },
         "handleNothitng": {
           "validation": {},
@@ -1543,7 +1543,7 @@
           "httpMethod": "GET",
           "path": "handle-stream"
         },
-        "handleSchemaComplaints": {
+        "handleSchemaConstraints": {
           "validation": {
             "body": {
               "x-isDto": true,
@@ -1658,7 +1658,7 @@
             }
           },
           "httpMethod": "POST",
-          "path": "handle-schema-complaints"
+          "path": "handle-schema-constraints"
         },
         "handleNothitng": {
           "validation": {},

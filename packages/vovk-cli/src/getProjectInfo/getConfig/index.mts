@@ -81,8 +81,8 @@ export default async function getConfig({
     prettifyClient: (env.VOVK_PRETTIFY_CLIENT ? !!env.VOVK_PRETTIFY_CLIENT : null) ?? conf.prettifyClient ?? false,
     devHttps: (env.VOVK_DEV_HTTPS ? !!env.VOVK_DEV_HTTPS : null) ?? conf.devHttps ?? false,
     moduleTemplates: {
-      service: 'vovk-cli/templates/service.ts.ejs',
-      controller: 'vovk-cli/templates/controller.ts.ejs',
+      service: 'vovk-cli/module-templates/service.ts.ejs',
+      controller: 'vovk-cli/module-templates/controller.ts.ejs',
       ...conf.moduleTemplates,
     },
     libs: conf.libs ?? {},

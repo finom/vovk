@@ -2,7 +2,7 @@ import { ok } from 'node:assert';
 import supertest from 'supertest';
 import type { KnownAny } from 'vovk';
 import { z } from 'zod';
-import type { ComplainingModel } from './client/WithZodClientController.ts';
+import type { ConstrainingModel } from './client/WithZodClientController.ts';
 
 export const apiUrl = `http://localhost:${process.env.PORT}/api`;
 
@@ -72,9 +72,9 @@ export const NESTED_QUERY_EXAMPLE = {
  * Returns an object that follows the ComplaiingModel schema but violates exactly
  * one validation constraint specified by the key parameter.
  */
-export function getComplainingObject(key: string | null) {
+export function getConstrainingObject(key: string | null) {
   // Object that satisfies all validation requirements
-  const withoutViolations: z.infer<typeof ComplainingModel> = {
+  const withoutViolations: z.infer<typeof ConstrainingModel> = {
     enum_value: 'a',
     // Number validations
     num_minimum: 10, // Valid: >= 0
@@ -162,5 +162,5 @@ export function getComplainingObject(key: string | null) {
   return {
     ...withoutViolations,
     [key]: withViolations[key as 'num_int32'],
-  } as z.infer<typeof ComplainingModel>;
+  } as z.infer<typeof ConstrainingModel>;
 }

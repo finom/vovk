@@ -180,7 +180,7 @@ export default class WithYupClientController {
   });
 
   @post.auto()
-  static handleSchemaComplaints = withYup({
+  static handleSchemaConstraints = withYup({
     body: ComplaiingModel,
     handle: async (req) => {
       return req.json();

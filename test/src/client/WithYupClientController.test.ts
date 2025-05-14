@@ -9,36 +9,36 @@ import {
   type VovkOutput,
   type VovkIteration,
 } from 'vovk';
-import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type WithYupClientController from './WithYupClientController.ts';
 
-describe('Yup-to-JSONchema complaints', async () => {
-  const noComplaints = getComplainingObject(null);
+describe('Yup-to-JSONchema constraints', async () => {
+  const noConstraints = getConstrainingObject(null);
   const notSupported = ['num_multipleOf', 'logical_anyOf', 'obj_strict', 'str_datetime'];
 
   await it('Should handle valid object', async () => {
     // first check if the object is valid
-    await WithYupClientControllerRPC.handleSchemaComplaints({
-      body: noComplaints,
+    await WithYupClientControllerRPC.handleSchemaConstraints({
+      body: noConstraints,
     });
   });
-  for (const key of Object.keys(noComplaints)) {
+  for (const key of Object.keys(noConstraints)) {
     if (notSupported.includes(key)) {
       continue;
     }
-    await it(`Should handle ${key} complaint`, async () => {
-      const complainingObject = getComplainingObject(key);
+    await it(`Should handle ${key} constraint`, async () => {
+      const constrainingObject = getConstrainingObject(key);
       let { rejects } = expectPromise(async () => {
-        await WithYupClientControllerRPC.handleSchemaComplaints({
-          body: complainingObject,
+        await WithYupClientControllerRPC.handleSchemaConstraints({
+          body: constrainingObject,
           disableClientValidation: true,
         });
       });
       await rejects.toThrow(new RegExp(`Yup validation failed. Invalid body on server for http:.*\\. ${key}.*`));
       await rejects.toThrowError(HttpException);
       ({ rejects } = expectPromise(async () => {
-        await WithYupClientControllerRPC.handleSchemaComplaints({
-          body: complainingObject,
+        await WithYupClientControllerRPC.handleSchemaConstraints({
+          body: constrainingObject,
         });
       }));
       await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));

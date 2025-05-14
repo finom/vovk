@@ -11,7 +11,7 @@ import {
   type VovkIteration,
 } from 'vovk';
 import type WithZodClientController from './WithZodClientController.ts';
-import { expectPromise, getComplainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 describe('Client validation with custom AJV options', () => {
   it('Should handle body validation on client with localize and options', async () => {
@@ -42,22 +42,22 @@ describe('Client validation with custom AJV options', () => {
   });
 });
 
-describe('Zod-to-JSONchema complaints', async () => {
-  const noComplaints = getComplainingObject(null);
+describe('Zod-to-JSONchema constraints', async () => {
+  const noConstraints = getConstrainingObject(null);
 
   await test('Should handle valid object', async () => {
     // first check if the object is valid
-    await WithZodClientControllerRPC.handleSchemaComplaints({
-      body: noComplaints,
+    await WithZodClientControllerRPC.handleSchemaConstraints({
+      body: noConstraints,
     });
   });
 
-  for (const key of Object.keys(noComplaints)) {
-    await test(`Should handle ${key} complaint`, async () => {
-      const complainingObject = getComplainingObject(key);
+  for (const key of Object.keys(noConstraints)) {
+    await test(`Should handle ${key} constraint`, async () => {
+      const constrainingObject = getConstrainingObject(key);
       let { rejects } = expectPromise(async () => {
-        await WithZodClientControllerRPC.handleSchemaComplaints({
-          body: complainingObject,
+        await WithZodClientControllerRPC.handleSchemaConstraints({
+          body: constrainingObject,
           disableClientValidation: true,
         });
       });
@@ -66,8 +66,8 @@ describe('Zod-to-JSONchema complaints', async () => {
       await rejects.toThrowError(HttpException);
 
       ({ rejects } = expectPromise(async () => {
-        await WithZodClientControllerRPC.handleSchemaComplaints({
-          body: complainingObject,
+        await WithZodClientControllerRPC.handleSchemaConstraints({
+          body: constrainingObject,
         });
       }));
       await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));

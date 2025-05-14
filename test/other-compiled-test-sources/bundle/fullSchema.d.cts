@@ -465,7 +465,7 @@ declare const fullSchema: {
               httpMethod: string;
               path: string;
             };
-            handleSchemaComplaints: {
+            handleSchemaConstraints: {
               validation: {
                 body: {
                   type: string;
@@ -1053,7 +1053,7 @@ declare const fullSchema: {
               httpMethod: string;
               path: string;
             };
-            handleSchemaComplaints: {
+            handleSchemaConstraints: {
               validation: {
                 body: {
                   type: string;
@@ -1538,7 +1538,7 @@ declare const fullSchema: {
               httpMethod: string;
               path: string;
             };
-            handleSchemaComplaints: {
+            handleSchemaConstraints: {
               validation: {
                 body: {
                   'x-isDto': boolean;

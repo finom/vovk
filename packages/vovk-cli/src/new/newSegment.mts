@@ -43,7 +43,7 @@ ${
 }`
     : ''
 }
-export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
+export const { GET${isStaticSegment ? '' : ', POST, PATCH, PUT, HEAD, OPTIONS, DELETE'} } = initVovk({
 ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
   controllers,
 });

@@ -411,7 +411,7 @@ var controllers$1 = {
         httpMethod: 'GET',
         path: 'handle-stream',
       },
-      handleSchemaComplaints: {
+      handleSchemaConstraints: {
         validation: {
           body: {
             type: 'object',
@@ -557,7 +557,7 @@ var controllers$1 = {
           },
         },
         httpMethod: 'POST',
-        path: 'handle-schema-complaints',
+        path: 'handle-schema-constraints',
       },
       handleNothitng: {
         validation: {},
@@ -953,7 +953,7 @@ var controllers$1 = {
         httpMethod: 'GET',
         path: 'handle-stream',
       },
-      handleSchemaComplaints: {
+      handleSchemaConstraints: {
         validation: {
           body: {
             type: 'object',
@@ -1055,7 +1055,7 @@ var controllers$1 = {
           },
         },
         httpMethod: 'POST',
-        path: 'handle-schema-complaints',
+        path: 'handle-schema-constraints',
       },
       handleNothitng: {
         validation: {},
@@ -1393,7 +1393,7 @@ var controllers$1 = {
         httpMethod: 'GET',
         path: 'handle-stream',
       },
-      handleSchemaComplaints: {
+      handleSchemaConstraints: {
         validation: {
           body: {
             'x-isDto': true,
@@ -1494,7 +1494,7 @@ var controllers$1 = {
           },
         },
         httpMethod: 'POST',
-        path: 'handle-schema-complaints',
+        path: 'handle-schema-constraints',
       },
       handleNothitng: {
         validation: {},
