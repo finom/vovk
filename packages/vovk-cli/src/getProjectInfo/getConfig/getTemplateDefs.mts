@@ -21,8 +21,6 @@ export enum BuiltInTemplateName {
   py = 'py',
 }
 
-const templatesDir = path.join(import.meta.dirname, '../../..', 'client-templates');
-
 export default function getTemplateDefs(
   userTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {}
 ): VovkStrictConfig['clientTemplateDefs'] {

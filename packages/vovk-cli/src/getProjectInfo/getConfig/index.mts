@@ -1,6 +1,5 @@
 import path from 'node:path';
-import type { KnownAny, VovkStrictConfig } from 'vovk';
-import camelCase from 'lodash/camelCase.js';
+import type { VovkStrictConfig } from 'vovk';
 import getLogger from '../../utils/getLogger.mjs';
 import getUserConfig from '../getUserConfig.mjs';
 import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';

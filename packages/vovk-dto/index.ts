@@ -141,7 +141,6 @@ function withDto<
     validate: async (data, dto, { type, req, status, i }) => {
       const instance = plainToInstance(dto, data);
       const errors: ValidationError[] = await validate(instance as object);
-      console.log('data xx', instance, JSON.stringify(data, null, 2), JSON.stringify(instance, null, 2));
 
       if (errors.length > 0) {
         const err =
