@@ -38,7 +38,7 @@ export default async function getConfig({
       typeof validateOnClientImport === 'string'
         ? ([validateOnClientImport] as [string])
         : (validateOnClientImport ?? null),
-    createRPC: typeof createRPCImport === 'string' ? ([createRPCImport, 'vovk'] as [string, string]) : createRPCImport,
+    createRPC: typeof createRPCImport === 'string' ? ([createRPCImport, createRPCImport] as [string, string]) : createRPCImport,
   };
 
   const config: VovkStrictConfig = {
