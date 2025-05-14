@@ -1,6 +1,6 @@
 {
   "name": "vovk-multitenant",
-  "version": "0.0.1-draft.1",
+  "version": "0.0.1-draft.7",
   "description": "Vovk.ts multitenant middleware for Next.js",
   "main": "dist/index.js",
   "scripts": {
@@ -17,10 +17,10 @@
   "license": "MIT",
   "peerDependencies": {
     "next": "^15.0.0",
-    "vovk": "^3.0.0-draft.120"
+    "vovk": "^3.0.0-draft.127"
   },
   "dependencies": {},
   "devDependencies": {
-    "vovk-cli": "^0.0.1-beta.0"
+    "vovk-cli": "^0.0.1-draft.156"
   }
 }

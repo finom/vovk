@@ -65,7 +65,7 @@ await describe('CLI new segment', async () => {
   await it('New static segment', async () => {
     await createNextApp();
     await vovkInit('--yes');
-    await runAtProjectDir('../dist/index.mjs new segment foo');
+    await runAtProjectDir('../dist/index.mjs new segment foo --static');
     await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
       `export function generateStaticParams() {`,
       `initVovk({

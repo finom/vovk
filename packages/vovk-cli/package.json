@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.149",
+  "version": "0.0.1-draft.156",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,10 +35,10 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.120"
+    "vovk": "^3.0.0-draft.127"
   },
   "optionalDependencies": {
-    "vovk-python-client": "^0.0.1-draft.16"
+    "vovk-python-client": "^0.0.1-draft.23"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.5.1",
@@ -67,7 +67,7 @@
     "tsdown": "^0.11.7",
     "type-fest": "^4.41.0",
     "undici": "^7.9.0",
-    "vovk-openapi": "^0.0.1-draft.66"
+    "vovk-openapi": "^0.0.1-draft.73"
   },
   "devDependencies": {
     "@types/concat-stream": "^2.0.3",
