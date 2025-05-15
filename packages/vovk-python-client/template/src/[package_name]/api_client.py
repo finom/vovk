@@ -22,12 +22,12 @@ class ApiClient:
     @staticmethod
     def _load_full_schema() -> Dict[str, Any]:    
         """
-        Loads the 'full-schema.json' file from the ../data/ directory.
+        Loads the 'schema.json' file from the ../data/ directory.
         Returns it as a Python dictionary.
         """
         current_dir = os.path.dirname(__file__)
         parent_dir = os.path.join(current_dir, "../..")
-        schema_path = os.path.join(parent_dir, "data", "full-schema.json")
+        schema_path = os.path.join(parent_dir, "data", "schema.json")
         with open(schema_path, "r", encoding="utf-8") as f:
             return json.load(f)
 

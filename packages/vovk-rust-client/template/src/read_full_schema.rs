@@ -56,7 +56,7 @@ pub struct ControllerSchema {
 /// Schema for individual segment
 #[derive(Debug, Deserialize, Serialize)]
 #[allow(non_snake_case)]
-pub struct VovkSchema {
+pub struct VovkSegmentSchema {
     pub emitSchema: bool,
     pub segmentName: String,
     pub controllers: HashMap<String, ControllerSchema>,
@@ -64,25 +64,25 @@ pub struct VovkSchema {
 
 /// Complete Vovk schema with config and multiple segments
 #[derive(Debug, Deserialize, Serialize)]
-pub struct VovkFullSchema {
+pub struct VovkSchema {
     pub config: HashMap<String, Value>,
-    pub segments: HashMap<String, VovkSchema>,
+    pub segments: HashMap<String, VovkSegmentSchema>,
 }
 
 /// Read the complete Vovk schema from a JSON file
-pub fn read_full_schema() -> Result<VovkFullSchema, Box<dyn std::error::Error>> {
+pub fn read_full_schema() -> Result<VovkSchema, Box<dyn std::error::Error>> {
     // Get the path to the project root (where Cargo.toml is)
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
     
     // Build the full path to the data file
-    let json_path = Path::new(manifest_dir).join("data/full-schema.json");
+    let json_path = Path::new(manifest_dir).join("data/schema.json");
 
     // Open the file
     let file = File::open(&json_path)?;
     let reader = BufReader::new(file);
     
     // Parse the JSON
-    let schema: VovkFullSchema = serde_json::from_reader(reader)?;
+    let schema: VovkSchema = serde_json::from_reader(reader)?;
      
     Ok(schema)
 }

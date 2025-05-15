@@ -16,7 +16,7 @@ imports: ['vovk-openapi']
 npm install <%= t.package.name.replace(/-/g, '_') %>
 ```
 
-<% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
+<% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach((controllerSchema) => { %>
 
 ## <%= controllerSchema.rpcModuleName %>

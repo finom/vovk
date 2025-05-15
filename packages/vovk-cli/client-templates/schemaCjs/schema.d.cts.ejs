@@ -1,10 +1,10 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
 import type { VovkStrictConfig, VovkSegmentSchema } from 'vovk';
 
-export const fullSchema: {
+export const schema: {
     $schema: string;
     config: Partial<VovkStrictConfig>;
-    segments: {<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
+    segments: {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
       '<%= segment.segmentName %>': VovkSegmentSchema;<% }) %>
     };
 };

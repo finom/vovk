@@ -1,10 +1,10 @@
-import type { VovkFullSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
 import { SchemaIdEnum } from '../enums.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import generate from './index.mjs';
 
 const getEmptySegmentRecordSchema = (segments: ProjectInfo['segments']) => {
-  const result: VovkFullSchema['segments'] = {};
+  const result: VovkSchema['segments'] = {};
   for (const { segmentName } of segments) {
     result[segmentName] = {
       $schema: SchemaIdEnum.SEGMENT,

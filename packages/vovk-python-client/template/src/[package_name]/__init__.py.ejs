@@ -12,7 +12,7 @@ from .api_client import ApiClient, HttpException
 HttpException = HttpException
 
 client = ApiClient('<%= t.apiRoot %>')
-<% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
+<% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, rpcModuleName }) => { %>
 class <%= rpcModuleName %>: <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
     const handlerNameOriginalCapitalized = handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1);

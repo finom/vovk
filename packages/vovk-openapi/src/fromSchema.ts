@@ -1,6 +1,6 @@
 import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
 import { HttpStatus } from 'vovk';
-import type { HttpMethod, KnownAny, VovkFullSchema } from 'vovk';
+import type { HttpMethod, KnownAny, VovkSchema } from 'vovk';
 import { createCodeExamples } from './createCodeExamples';
 
 export type SimpleJsonSchema = {
@@ -12,7 +12,7 @@ export type SimpleJsonSchema = {
 
 export function fromSchema(
   apiRoot: string,
-  fullSchema: VovkFullSchema,
+  fullSchema: VovkSchema,
   extendWith?: Partial<OpenAPIObject>
 ): OpenAPIObject {
   const paths: PathsObject = {};

@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { VovkFullSchema, VovkSegmentSchema } from 'vovk';
+import type { VovkSchema, VovkSegmentSchema } from 'vovk';
 import * as chokidar from 'chokidar';
 import { Agent, setGlobalDispatcher } from 'undici';
 import keyBy from 'lodash/keyBy.js';
@@ -24,7 +24,7 @@ import { SchemaIdEnum } from '../enums.mjs';
 export class VovkDev {
   #projectInfo: ProjectInfo;
 
-  #fullSchema: VovkFullSchema = {
+  #fullSchema: VovkSchema = {
     $schema: SchemaIdEnum.FULL,
     segments: {},
     config: {},

@@ -4,7 +4,7 @@ import type {
   VovkControllerQuery,
   KnownAny,
   HttpMethod,
-  VovkFullSchema,
+  VovkSchema,
 } from '../types';
 import type { VovkClientOptions, VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
@@ -29,14 +29,14 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 };
 
 export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions<Record<string, never>>>(
-  fullSchema: VovkFullSchema,
+  schema: VovkSchema,
   segmentName: string,
   rpcModuleName: string,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
-  const segmentSchema = fullSchema.segments[segmentName];
+  const segmentSchema = schema.segments[segmentName];
   if (!segmentSchema) throw new Error(`Unable to create RPC object. Segment schema is missing. Check client template.`);
-  const controllerSchema = fullSchema.segments[segmentName]?.controllers[rpcModuleName];
+  const controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
   const client = {} as VovkClient<T, OPTS>;
   if (!controllerSchema)
     throw new Error(`Unable to create RPC object. Controller schema is missing. Check client template.`);
@@ -88,7 +88,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');
           }
-          await validateOnClient({ body, query, params, endpoint }, validation, fullSchema);
+          await validateOnClient({ body, query, params, endpoint }, validation, schema);
         }
       };
 
@@ -126,7 +126,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
     handler.schema = handlerSchema;
     handler.controllerSchema = controllerSchema;
     handler.segmentSchema = segmentSchema;
-    handler.fullSchema = fullSchema;
+    handler.fullSchema = schema;
     handler.isRPC = true;
 
     // @ts-expect-error TODO

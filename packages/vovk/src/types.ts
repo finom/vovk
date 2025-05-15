@@ -178,7 +178,7 @@ export type StreamAbortMessage = {
 
 export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration';
 
-export type VovkFullSchema = {
+export type VovkSchema = {
   $schema: string;
   config: Partial<VovkStrictConfig>;
   segments: Record<string, VovkSegmentSchema>;

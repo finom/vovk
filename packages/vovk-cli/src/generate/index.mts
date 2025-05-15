@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import matter from 'gray-matter';
 import _ from 'lodash';
-import type { VovkFullSchema, VovkStrictConfig } from 'vovk';
+import type { VovkSchema, VovkStrictConfig } from 'vovk';
 import type { PackageJson } from 'type-fest';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import getClientTemplateFiles from './getClientTemplateFiles.mjs';
@@ -102,7 +102,7 @@ export default async function generate({
   isEnsuringClient?: boolean;
   projectInfo: ProjectInfo;
   forceNothingWrittenLog?: boolean;
-  fullSchema: VovkFullSchema;
+  fullSchema: VovkSchema;
   cliGenerateOptions?: GenerateOptions;
 }) {
   const { config, cwd, log, segments } = projectInfo;

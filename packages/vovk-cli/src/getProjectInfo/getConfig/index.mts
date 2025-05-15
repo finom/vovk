@@ -95,7 +95,7 @@ export default async function getConfig({
   };
 
   if (typeof conf.emitConfig === 'undefined') {
-    config.emitConfig = ['libs', '$schema'];
+    config.emitConfig = ['$schema', 'libs'];
   } else if (conf.emitConfig === true) {
     config.emitConfig = Object.keys(config) as (keyof VovkStrictConfig)[];
   } else if (Array.isArray(conf.emitConfig)) {

@@ -1,7 +1,7 @@
 import { it, describe, beforeEach } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
 import path from 'node:path';
-import type { VovkFullSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfig from '../../lib/updateConfig.mts';
 
@@ -36,8 +36,8 @@ await describe('Full & segmented client', async () => {
       'index.d.mts',
       'index.cjs',
       'index.d.cts',
-      'fullSchema.cjs',
-      'fullSchema.d.cts',
+      'schema.cjs',
+      'schema.d.cts',
     ]);
 
     await assertNotExists('./node_modules/.vovk-client/root/index.mjs');
@@ -55,7 +55,7 @@ await describe('Full & segmented client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --out ./full-client --from ts`);
     await assertNotExists('./full-client/index.mjs');
     await assertNotExists('./full-client/root/index.mjs');
-    await assertDirFileList('./full-client', ['index.ts', 'fullSchema.ts']);
+    await assertDirFileList('./full-client', ['index.ts', 'schema.ts']);
   });
   await it('Generates full client with included segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
@@ -67,13 +67,11 @@ await describe('Full & segmented client', async () => {
       },
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
-    await assertDirFileList('./full-client', ['index.ts', 'fullSchema.ts']);
-    const { fullSchema }: { fullSchema: VovkFullSchema } = await import(
-      path.join(projectDir, 'full-client', 'fullSchema.ts')
-    );
-    deepStrictEqual(Object.keys(fullSchema.segments).sort(), ['foo', 'bar/baz'].sort());
+    await assertDirFileList('./full-client', ['index.ts', 'schema.ts']);
+    const { schema }: { schema: VovkSchema } = await import(path.join(projectDir, 'full-client', 'schema.ts'));
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
-  await it('Generates full client with excluded segments', async () => {
+  await it.only('Generates full client with excluded segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       fullClient: {
@@ -83,16 +81,14 @@ await describe('Full & segmented client', async () => {
       },
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
-    await assertDirFileList('./full-client', ['index.ts', 'fullSchema.ts']);
-    const { fullSchema }: { fullSchema: VovkFullSchema } = await import(
-      path.join(projectDir, 'full-client', 'fullSchema.ts')
-    );
-    deepStrictEqual(Object.keys(fullSchema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
+    await assertDirFileList('./full-client', ['index.ts', 'schema.ts']);
+    const { schema }: { schema: VovkSchema } = await import(path.join(projectDir, 'full-client', 'schema.ts'));
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
   await it('Generates segmented client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
-    await assertDirFileList('./segmented-client/root', ['index.ts', 'fullSchema.ts']);
+    await assertDirFileList('./segmented-client/root', ['index.ts', 'schema.ts']);
     await assertNotExists('./segmented-client/index.ts');
   });
 
@@ -100,13 +96,13 @@ await describe('Full & segmented client', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client --segmented-from ts`
     );
-    await assertDirFileList('./segmented-client/root', ['index.ts', 'fullSchema.ts']);
+    await assertDirFileList('./segmented-client/root', ['index.ts', 'schema.ts']);
     await assertNotExists('./segmented-client/index.ts');
-    await assertNotExists('./segmented-client/fullSchema.ts');
-    await assertDirFileList('./segmented-client/foo', ['index.ts', 'fullSchema.ts']);
+    await assertNotExists('./segmented-client/schema.ts');
+    await assertDirFileList('./segmented-client/foo', ['index.ts', 'schema.ts']);
     await assertDirFileList('./segmented-client/bar', ['baz']);
-    await assertDirFileList('./segmented-client/bar/baz', ['index.ts', 'fullSchema.ts']);
-    await assertDirFileList('./segmented-client/a/b/c/d/e', ['index.ts', 'fullSchema.ts']);
+    await assertDirFileList('./segmented-client/bar/baz', ['index.ts', 'schema.ts']);
+    await assertDirFileList('./segmented-client/a/b/c/d/e', ['index.ts', 'schema.ts']);
   });
   await it('Generates segmented client with included segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
@@ -122,10 +118,10 @@ await describe('Full & segmented client', async () => {
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
     await assertDirFileList('./segmented-client', ['foo', 'bar']);
-    const { fullSchema }: { fullSchema: VovkFullSchema } = await import(
-      path.join(projectDir, 'segmented-client/bar/baz', 'fullSchema.ts')
+    const { schema }: { schema: VovkSchema } = await import(
+      path.join(projectDir, 'segmented-client/bar/baz', 'schema.ts')
     );
-    deepStrictEqual(Object.keys(fullSchema.segments), ['bar/baz']);
+    deepStrictEqual(Object.keys(schema.segments), ['bar/baz']);
   });
   await it('Generates segmented client with excluded segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
@@ -141,9 +137,7 @@ await describe('Full & segmented client', async () => {
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
     await assertDirFileList('./segmented-client', ['foo', 'a']);
-    const { fullSchema }: { fullSchema: VovkFullSchema } = await import(
-      path.join(projectDir, 'segmented-client/foo', 'fullSchema.ts')
-    );
-    deepStrictEqual(Object.keys(fullSchema.segments), ['foo']);
+    const { schema }: { schema: VovkSchema } = await import(path.join(projectDir, 'segmented-client/foo', 'schema.ts'));
+    deepStrictEqual(Object.keys(schema.segments), ['foo']);
   });
 });

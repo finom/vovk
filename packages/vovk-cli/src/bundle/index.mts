@@ -1,6 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import type { VovkFullSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
 import { build } from 'tsdown';
 import groupBy from 'lodash/groupBy.js';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
@@ -13,7 +13,7 @@ export default async function bundle({
   fullSchema,
 }: {
   projectInfo: ProjectInfo;
-  fullSchema: VovkFullSchema;
+  fullSchema: VovkSchema;
 }) {
   const { config, log } = projectInfo;
   const { bundle: bundleConfig } = config;
@@ -50,7 +50,7 @@ export default async function bundle({
   log.info(`Bundled index.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
   await build({
-    entry: path.join(tsFullClientOutAbsoluteDirInput, './fullSchema.ts'),
+    entry: path.join(tsFullClientOutAbsoluteDirInput, './schema.ts'),
     dts: true,
     format: ['cjs'],
     fixedExtension: true,
@@ -59,7 +59,7 @@ export default async function bundle({
     sourcemap: bundleConfig.sourcemap,
   });
 
-  log.info(`Bundled fullSchema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
+  log.info(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
   const requiresGroup = groupBy(Object.entries(bundleConfig.requires), ([, relativePath]) => relativePath);
 

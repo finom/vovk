@@ -1,14 +1,14 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
 const { fetcher } = require('<%= t.imports.fetcher %>');
 const { createRPC } = require('<%= t.imports.createRPC %>');
-const { fullSchema } = require('./fullSchema.cjs');
+const { schema } = require('./schema.cjs');
 const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
-<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { 
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { 
   Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 exports.<%= rpcModuleName %> = createRPC(
-  fullSchema, '<%= segment.segmentName %>', '<%= rpcModuleName %>',
+  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>',
   { fetcher, validateOnClient, defaultOptions: { apiRoot: '<%= segment.segmentApiRoot ?? t.apiRoot %>' } }
 );
   <% })
 }) %>
-exports.fullSchema = fullSchema;
+exports.schema = schema;

@@ -9,8 +9,8 @@ import {
   type VovkReturnType,
   type VovkHandlerSchema,
   type VovkStreamAsyncIterable,
-  VovkFullSchema,
-  VovkSegmentSchema,
+  type VovkSchema,
+  type VovkSegmentSchema,
 } from 'vovk';
 
 import {
@@ -27,7 +27,7 @@ const withUseQuery = <
     schema: VovkHandlerSchema;
     controllerSchema: VovkControllerSchema;
     segmentSchema: VovkSegmentSchema;
-    fullSchema: VovkFullSchema;
+    fullSchema: VovkSchema;
   },
 >(
   fn: T
@@ -78,7 +78,7 @@ const withUseQuery = <
 };
 
 export function createRPC<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions<KnownAny>>(
-  fullSchema: VovkFullSchema,
+  fullSchema: VovkSchema,
   segmentName: string,
   rpcModuleName: string,
   options?: VovkClientOptions<OPTS>

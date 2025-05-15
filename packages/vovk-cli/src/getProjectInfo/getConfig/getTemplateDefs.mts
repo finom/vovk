@@ -7,9 +7,9 @@ export enum BuiltInTemplateName {
   mjs = 'mjs',
 
   // schema
-  fullSchemaTs = 'fullSchemaTs',
-  fullSchemaCjs = 'fullSchemaCjs',
-  fullSchemaJson = 'fullSchemaJson',
+  schemaTs = 'schemaTs',
+  schemaCjs = 'schemaCjs',
+  schemaJson = 'schemaJson',
 
   // misc
   readme = 'readme',
@@ -27,15 +27,15 @@ export default function getTemplateDefs(
   const builtInDefs: VovkStrictConfig['clientTemplateDefs'] = {
     [BuiltInTemplateName.ts]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.ts}/`,
-      requires: { [BuiltInTemplateName.fullSchemaTs]: '.' },
+      requires: { [BuiltInTemplateName.schemaTs]: '.' },
     },
     [BuiltInTemplateName.cjs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.cjs}/`,
-      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
+      requires: { [BuiltInTemplateName.schemaCjs]: '.' },
     },
     [BuiltInTemplateName.mjs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.mjs}/`,
-      requires: { [BuiltInTemplateName.fullSchemaCjs]: '.' },
+      requires: { [BuiltInTemplateName.schemaCjs]: '.' },
     },
     [BuiltInTemplateName.readme]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.readme}/`,
@@ -43,14 +43,14 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.packageJson]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.packageJson}/`,
     },
-    [BuiltInTemplateName.fullSchemaTs]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.fullSchemaTs}/`,
+    [BuiltInTemplateName.schemaTs]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaTs}/`,
     },
-    [BuiltInTemplateName.fullSchemaCjs]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.fullSchemaCjs}/`,
+    [BuiltInTemplateName.schemaCjs]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaCjs}/`,
     },
-    [BuiltInTemplateName.fullSchemaJson]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.fullSchemaJson}/`,
+    [BuiltInTemplateName.schemaJson]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaJson}/`,
     },
     [BuiltInTemplateName.rs]: {
       templatePath: 'vovk-rust-client/template/',
@@ -58,7 +58,7 @@ export default function getTemplateDefs(
         outDir: 'dist_rust',
       },
       requires: {
-        fullSchemaJson: './data',
+        schemaJson: './data',
       },
     },
     [BuiltInTemplateName.py]: {
@@ -67,7 +67,7 @@ export default function getTemplateDefs(
         outDir: 'dist_python',
       },
       requires: {
-        fullSchemaJson: './data',
+        schemaJson: './data',
       },
     },
   };

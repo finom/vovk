@@ -25,8 +25,8 @@ await describe('TypeScript bundle', async () => {
       'index.d.mts',
       'index.cjs',
       'index.d.cts',
-      'fullSchema.cjs',
-      'fullSchema.d.cts',
+      'schema.cjs',
+      'schema.d.cts',
       'package.json',
       'README.md',
     ]);
@@ -44,8 +44,8 @@ await describe('TypeScript bundle', async () => {
       'index.d.mts',
       'index.cjs',
       'index.d.cts',
-      'fullSchema.cjs',
-      'fullSchema.d.cts',
+      'schema.cjs',
+      'schema.d.cts',
       'package.json',
       'README.md',
     ]);

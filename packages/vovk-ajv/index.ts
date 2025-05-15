@@ -1,5 +1,5 @@
 import Ajv, { Options } from 'ajv';
-import { HttpException, HttpStatus, KnownAny, VovkFullSchema, type VovkValidateOnClient } from 'vovk';
+import { HttpException, HttpStatus, KnownAny, VovkSchema, type VovkValidateOnClient } from 'vovk';
 import ajvFormats from 'ajv-formats';
 import ajvLocalize from 'ajv-i18n';
 import ajvErrors from 'ajv-errors';
@@ -64,8 +64,8 @@ const validateAll = ({
   validate({ data: input.params, schema: validation.params, ajv, localize, endpoint: input.endpoint, type: 'params' });
 };
 
-const getConfig = (fullSchema: VovkFullSchema) => {
-  const config = fullSchema.config.libs?.ajv as VovkAjvConfig | undefined;
+const getConfig = (schema: VovkSchema) => {
+  const config = schema.config.libs?.ajv as VovkAjvConfig | undefined;
 
   const options = config?.options || {};
   const localize = config?.localize || 'en';
@@ -75,8 +75,8 @@ const getConfig = (fullSchema: VovkFullSchema) => {
 
 let ajvScope: Ajv | null = null;
 
-const validateOnClientAjv: VovkValidateOnClient = (input, validation, fullSchema) => {
-  const { options, localize } = getConfig(fullSchema);
+const validateOnClientAjv: VovkValidateOnClient = (input, validation, schema) => {
+  const { options, localize } = getConfig(schema);
 
   if (!ajvScope) {
     ajvScope = createAjv(options);
@@ -87,8 +87,8 @@ const validateOnClientAjv: VovkValidateOnClient = (input, validation, fullSchema
 
 const configure =
   ({ options: givenOptions, localize: givenLocalize }: VovkAjvConfig): VovkValidateOnClient =>
-  (input, validation, fullSchema) => {
-    const { options, localize } = getConfig(fullSchema);
+  (input, validation, schema) => {
+    const { options, localize } = getConfig(schema);
     const ajv = createAjv({ ...options, ...givenOptions });
 
     validateAll({

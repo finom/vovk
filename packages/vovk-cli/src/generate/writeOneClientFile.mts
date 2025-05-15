@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
 import _ from 'lodash';
-import type { VovkFullSchema, VovkStrictConfig } from 'vovk';
+import type { VovkSchema, VovkStrictConfig } from 'vovk';
 import prettify from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
@@ -30,7 +30,7 @@ export default async function writeOneClientFile({
   cwd: string;
   projectInfo: ProjectInfo;
   clientTemplateFile: ClientTemplateFile;
-  fullSchema: VovkFullSchema;
+  fullSchema: VovkSchema;
   prettifyClient: boolean;
   segmentName: string | null; // null for full client
   imports: ClientImports;
@@ -71,7 +71,7 @@ export default async function writeOneClientFile({
     SEGMENTS_SCHEMA_DIR_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports,
-    fullSchema,
+    schema: fullSchema,
     SchemaIdEnum,
     schemaOutDir:
       typeof segmentName === 'string'

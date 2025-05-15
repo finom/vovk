@@ -1,12 +1,12 @@
 <%- `// auto-generated ${new Date().toISOString()}\n/* eslint-disable */` %>
 const config = require('./<%= t.schemaOutDir %>/config.json');
-const segments = {<% Object.values(t.fullSchema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
+const segments = {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
     '<%= segment.segmentName %>': require('./<%= t.schemaOutDir %>/<%= t.SEGMENTS_SCHEMA_DIR_NAME %>/<%= segment.segmentName || t.ROOT_SEGMENT_SCHEMA_NAME %>.json'),<% }) %>
 };
-const fullSchema = {
+const schema = {
   $schema: '<%- t.SchemaIdEnum.FULL %>',
   config,
   segments,
 };
 
-module.exports.fullSchema = fullSchema;
+module.exports.schema = schema;

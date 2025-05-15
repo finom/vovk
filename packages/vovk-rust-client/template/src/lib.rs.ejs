@@ -8,7 +8,7 @@ imports: ['vovk-rust-client']
 mod http_request;
 mod read_full_schema;
 
-<% Object.entries(t.fullSchema.segments).forEach(([segmentName, segment]) => {
+<% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach(({ prefix, handlers, rpcModuleName }) => { %>
 pub mod <%= t._.snakeCase(rpcModuleName) %> {
     #[allow(unused_imports)]

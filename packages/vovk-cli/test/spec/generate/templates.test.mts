@@ -49,8 +49,8 @@ await describe('Client templates', async () => {
       'index.d.cts',
       'index.mjs',
       'index.d.mts',
-      'fullSchema.cjs',
-      'fullSchema.d.cts',
+      'schema.cjs',
+      'schema.d.cts',
     ]);
   });
 
@@ -61,9 +61,9 @@ await describe('Client templates', async () => {
       'index.ts',
       'index.mjs',
       'index.d.mts',
-      'fullSchema.cjs',
-      'fullSchema.d.cts',
-      'fullSchema.ts',
+      'schema.cjs',
+      'schema.d.cts',
+      'schema.ts',
     ]);
   });
 
@@ -82,8 +82,8 @@ await describe('Client templates', async () => {
       'index.cjs',
       'index.d.cts',
       'custom.ts',
-      'fullSchema.cjs',
-      'fullSchema.d.cts',
+      'schema.cjs',
+      'schema.d.cts',
     ]);
   });
 
@@ -104,8 +104,8 @@ await describe('Client templates', async () => {
       'index.cjs',
       'index.d.cts',
       'custom.ts',
-      'fullSchema.cjs',
-      'fullSchema.d.cts',
+      'schema.cjs',
+      'schema.d.cts',
     ]);
   });
 
@@ -127,8 +127,8 @@ await describe('Client templates', async () => {
       'index.d.cts',
       'custom.ts',
       'hello-world.js',
-      'fullSchema.cjs',
-      'fullSchema.d.cts',
+      'schema.cjs',
+      'schema.d.cts',
     ]);
   });
 
@@ -146,13 +146,13 @@ await describe('Client templates', async () => {
     await assertDirFileList(compiledClientFolderName, ['data', 'src', 'README.md', 'setup.cfg', 'pyproject.toml']);
     await assertDirFileList(`${compiledClientFolderName}/src`, ['tmp_test_dir']);
     await assertDirFileList(`${compiledClientFolderName}/src/tmp_test_dir`, ['__init__.py', 'api_client.py']);
-    await assertDirFileList(`${compiledClientFolderName}/data`, ['full-schema.json']);
+    await assertDirFileList(`${compiledClientFolderName}/data`, ['schema.json']);
   });
 
   await it('Generates Rust client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --from=rs --out ${compiledClientFolderName}`);
     await assertDirFileList(compiledClientFolderName, ['Cargo.toml', 'src', 'data', 'README.md']);
     await assertDirFileList(`${compiledClientFolderName}/src`, ['lib.rs', 'http_request.rs', 'read_full_schema.rs']);
-    await assertDirFileList(`${compiledClientFolderName}/data`, ['full-schema.json']);
+    await assertDirFileList(`${compiledClientFolderName}/data`, ['schema.json']);
   });
 });

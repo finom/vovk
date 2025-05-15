@@ -8,7 +8,7 @@ import type {
   VovkHandlerSchema,
   VovkControllerSchema,
   VovkSegmentSchema,
-  VovkFullSchema,
+  VovkSchema,
 } from '../types';
 import type { JSONLinesResponse } from '../JSONLinesResponse';
 import type { NextResponse } from 'next/server';
@@ -92,7 +92,7 @@ type ClientMethod<
   schema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
-  fullSchema: VovkFullSchema;
+  fullSchema: VovkSchema;
   __output: T['__output'];
   __iteration: T['__iteration'];
 };
@@ -139,7 +139,7 @@ export interface VovkDefaultFetcherOptions<T> {
 export type VovkValidateOnClient = (
   input: { body?: unknown; query?: unknown; params?: unknown; endpoint: string },
   validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>,
-  fullSchema: VovkFullSchema
+  fullSchema: VovkSchema
 ) => void | Promise<void>;
 
 export type VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
