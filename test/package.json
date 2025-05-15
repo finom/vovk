@@ -14,7 +14,7 @@
     "lint": "next lint",
     "generate": "node ../packages/vovk-cli/dist/index.mjs generate",
     "bundle": "node ../packages/vovk-cli/dist/index.mjs bundle --dont-delete-ts-client-out-dir-after",
-    "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --full-schema-json --template=python --full-schema-json --out ./python",
+    "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --composed-schema-json --template=python --composed-schema-json --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
   },
   "type": "module",

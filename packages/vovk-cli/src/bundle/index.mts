@@ -25,8 +25,8 @@ export default async function bundle({
     forceNothingWrittenLog: true,
     fullSchema,
     cliGenerateOptions: {
-      fullFrom: [BuiltInTemplateName.ts],
-      fullOut: bundleConfig.tsClientOutDir,
+      composedFrom: [BuiltInTemplateName.ts],
+      composedOut: bundleConfig.tsClientOutDir,
     },
   });
 
@@ -70,8 +70,8 @@ export default async function bundle({
       forceNothingWrittenLog: true,
       fullSchema,
       cliGenerateOptions: {
-        fullFrom: group.map(([templateName]) => templateName),
-        fullOut: path.resolve(outDir, relativePath),
+        composedFrom: group.map(([templateName]) => templateName),
+        composedOut: path.resolve(outDir, relativePath),
       },
     });
   }

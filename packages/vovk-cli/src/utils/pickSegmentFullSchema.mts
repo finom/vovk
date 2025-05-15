@@ -4,9 +4,7 @@ export default function pickSegmentFullSchema(schema: VovkSchema, segmentNames: 
   return {
     $schema: VovkSchemaIdEnum.FULL,
     config: schema.config,
-    segments: {
-      ...Object.fromEntries(segmentNames.map((segmentName) => [segmentName, schema.segments[segmentName]])),
-    },
+    segments: Object.fromEntries(segmentNames.map((segmentName) => [segmentName, schema.segments[segmentName]])),
   };
 }
 

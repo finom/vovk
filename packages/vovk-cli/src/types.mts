@@ -18,9 +18,9 @@ export interface DevOptions {
 export interface GenerateOptions {
   prettify?: boolean;
   config?: string;
-  fullFrom?: string[];
-  fullOut?: string;
-  fullOnly?: boolean;
+  composedFrom?: string[];
+  composedOut?: string;
+  composedOnly?: boolean;
   segmentedFrom?: string[];
   segmentedOut?: string;
   segmentedOnly?: boolean;

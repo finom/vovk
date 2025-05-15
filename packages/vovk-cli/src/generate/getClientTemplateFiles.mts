@@ -31,14 +31,14 @@ export default async function getClientTemplateFiles({
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
   const fromTemplates =
     configKey === 'composedClient'
-      ? cliGenerateOptions?.fullFrom || cliGenerateOptions?.segmentedFrom
-        ? (cliGenerateOptions?.fullFrom ?? [])
+      ? cliGenerateOptions?.composedFrom || cliGenerateOptions?.segmentedFrom
+        ? (cliGenerateOptions?.composedFrom ?? [])
         : config.composedClient.fromTemplates
-      : cliGenerateOptions?.fullFrom || cliGenerateOptions?.segmentedFrom
+      : cliGenerateOptions?.composedFrom || cliGenerateOptions?.segmentedFrom
         ? (cliGenerateOptions?.segmentedFrom ?? [])
         : config.segmentedClient.fromTemplates;
 
-  const cliOutDir = configKey === 'composedClient' ? cliGenerateOptions?.fullOut : cliGenerateOptions?.segmentedOut;
+  const cliOutDir = configKey === 'composedClient' ? cliGenerateOptions?.composedOut : cliGenerateOptions?.segmentedOut;
   const configOutDir = configKey === 'composedClient' ? config.composedClient.outDir : config.segmentedClient.outDir;
 
   for (const templateName of fromTemplates) {
