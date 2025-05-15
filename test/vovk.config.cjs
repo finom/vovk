@@ -8,7 +8,7 @@ const vovkConfig = {
   },
   segmentedClient: {
     enabled: true,
-    outDir: './other-compiled-test-sources/segment-client',
+    outDir: './other-compiled-test-sources/segmented-client',
   },
   schemaOutDir: './.vovk-schema',
   origin: `http://localhost:${process.env.PORT}`,

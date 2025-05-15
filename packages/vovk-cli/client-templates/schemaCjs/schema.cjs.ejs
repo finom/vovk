@@ -4,7 +4,7 @@ const segments = {<% Object.values(t.schema.segments).filter((segment) => segmen
     '<%= segment.segmentName %>': require('./<%= t.schemaOutDir %>/<%= t.SEGMENTS_SCHEMA_DIR_NAME %>/<%= segment.segmentName || t.ROOT_SEGMENT_SCHEMA_NAME %>.json'),<% }) %>
 };
 const schema = {
-  $schema: '<%- t.SchemaIdEnum.FULL %>',
+  $schema: '<%- t.VovkSchemaIdEnum.FULL %>',
   config,
   segments,
 };

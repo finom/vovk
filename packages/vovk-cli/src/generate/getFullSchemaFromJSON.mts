@@ -1,17 +1,16 @@
 import { readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { glob } from 'glob';
-import type { VovkSchema } from 'vovk';
+import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
-import { SchemaIdEnum } from '../enums.mjs';
 
 export async function getFullSchemaFromJSON(
   schemaOutAbsolutePath: string,
   projectInfo: ProjectInfo
 ): Promise<VovkSchema> {
   const result: VovkSchema = {
-    $schema: SchemaIdEnum.FULL,
+    $schema: VovkSchemaIdEnum.FULL,
     config: {},
     segments: {},
   };

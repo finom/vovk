@@ -2,6 +2,7 @@ import { createVovkApp } from './createVovkApp';
 import {
   HttpStatus,
   HttpMethod,
+  VovkSchemaIdEnum,
   type KnownAny,
   type VovkErrorResponse,
   type VovkRequest,
@@ -61,6 +62,7 @@ export {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkValidationType,
+  VovkSchemaIdEnum,
   JSONLinesResponse,
   HttpException,
   HttpStatus,

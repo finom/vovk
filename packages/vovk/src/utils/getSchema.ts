@@ -1,4 +1,4 @@
-import type { VovkSegmentSchema, VovkController, StaticClass } from '../types';
+import { type VovkSegmentSchema, type VovkController, type StaticClass, VovkSchemaIdEnum } from '../types';
 
 export function getControllerSchema(controller: VovkController, rpcModuleName: string, exposeValidation: boolean) {
   return {
@@ -25,7 +25,7 @@ export default function getSchema(options: {
   const exposeValidation = options?.exposeValidation ?? true;
   const emitSchema = options.emitSchema ?? true;
   const schema: VovkSegmentSchema = {
-    $schema: `https://vovk.dev/api/spec/v3/segment.json`, // TODO move enum from vovk-cli
+    $schema: VovkSchemaIdEnum.SEGMENT,
     emitSchema,
     segmentName: options.segmentName ?? '',
     controllers: {},

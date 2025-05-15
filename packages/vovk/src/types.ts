@@ -24,7 +24,7 @@ export type VovkControllerSchema = {
 };
 
 export type VovkSegmentSchema = {
-  $schema: string;
+  $schema: typeof VovkSchemaIdEnum.SEGMENT | string;
   emitSchema: boolean;
   segmentName: string;
   controllers: Record<string, VovkControllerSchema>;
@@ -179,7 +179,7 @@ export type StreamAbortMessage = {
 export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration';
 
 export type VovkSchema = {
-  $schema: string;
+  $schema: typeof VovkSchemaIdEnum.FULL | string;
   config: Partial<VovkStrictConfig>;
   segments: Record<string, VovkSegmentSchema>;
 };
@@ -248,6 +248,12 @@ export enum HttpStatus {
   HTTP_VERSION_NOT_SUPPORTED = 505,
 }
 
+export enum VovkSchemaIdEnum {
+  CONFIG = 'https://vovk.dev/api/spec/v3/config.json',
+  SEGMENT = 'https://vovk.dev/api/spec/v3/segment.json',
+  FULL = 'https://vovk.dev/api/spec/v3/schema.json',
+}
+
 type ClientConfigCommon = {
   enabled?: boolean;
   outDir?: string;
@@ -281,7 +287,7 @@ export type ClientTemplateDef = {
 };
 
 export type VovkConfig = {
-  $schema?: string;
+  $schema?: typeof VovkSchemaIdEnum.CONFIG | string;
   emitConfig?: boolean | (keyof VovkStrictConfig)[];
   schemaOutDir?: string;
   fullClient?: ClientConfigFull;

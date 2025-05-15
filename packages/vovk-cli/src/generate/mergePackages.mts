@@ -53,10 +53,10 @@ export default async function mergePackages({
         import: './index.mjs',
         require: './index.cjs',
       },
-      './fullSchema': {
-        import: './fullSchema.cjs',
-        require: './fullSchema.cjs',
-        types: './fullSchema.d.cts',
+      './schema': {
+        import: './schema.cjs',
+        require: './schema.cjs',
+        types: './schema.d.cts',
       },
     },
   };

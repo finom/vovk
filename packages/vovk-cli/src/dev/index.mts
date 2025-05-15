@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { VovkSchema, VovkSegmentSchema } from 'vovk';
+import { VovkSchemaIdEnum, type VovkSchema, type VovkSegmentSchema } from 'vovk';
 import * as chokidar from 'chokidar';
 import { Agent, setGlobalDispatcher } from 'undici';
 import keyBy from 'lodash/keyBy.js';
@@ -19,13 +19,12 @@ import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import isSegmentSchemaEmpty from './isSegmentSchemaEmpty.mjs';
 import writeConfigJson from './writeConfigJson.mjs';
 import type { VovkEnv } from '../types.mjs';
-import { SchemaIdEnum } from '../enums.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
 
   #fullSchema: VovkSchema = {
-    $schema: SchemaIdEnum.FULL,
+    $schema: VovkSchemaIdEnum.FULL,
     segments: {},
     config: {},
   };

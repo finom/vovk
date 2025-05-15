@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import debounce from 'lodash/debounce.js';
+import { VovkSchemaIdEnum } from 'vovk';
 import writeOneSchemaFile, {
   SEGMENTS_SCHEMA_DIR_NAME,
   ROOT_SEGMENT_SCHEMA_NAME,
@@ -8,7 +9,6 @@ import writeOneSchemaFile, {
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import writeConfigJson from './writeConfigJson.mjs';
-import { SchemaIdEnum } from '../enums.mjs';
 
 /**
  * Ensure that the schema files are created to avoid any import errors.
@@ -31,7 +31,7 @@ export default async function ensureSchemaFiles(
       const { isCreated } = await writeOneSchemaFile({
         schemaOutAbsolutePath,
         segmentSchema: {
-          $schema: SchemaIdEnum.SEGMENT,
+          $schema: VovkSchemaIdEnum.SEGMENT,
           emitSchema: false,
           segmentName,
           controllers: {},

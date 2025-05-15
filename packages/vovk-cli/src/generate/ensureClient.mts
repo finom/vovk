@@ -1,5 +1,4 @@
-import type { VovkSchema } from 'vovk';
-import { SchemaIdEnum } from '../enums.mjs';
+import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import generate from './index.mjs';
 
@@ -7,7 +6,7 @@ const getEmptySegmentRecordSchema = (segments: ProjectInfo['segments']) => {
   const result: VovkSchema['segments'] = {};
   for (const { segmentName } of segments) {
     result[segmentName] = {
-      $schema: SchemaIdEnum.SEGMENT,
+      $schema: VovkSchemaIdEnum.SEGMENT,
       segmentName,
       emitSchema: false,
       controllers: {},
@@ -22,7 +21,7 @@ export default async function ensureClient(projectInfo: ProjectInfo) {
     isEnsuringClient: true,
     projectInfo,
     fullSchema: {
-      $schema: SchemaIdEnum.FULL,
+      $schema: VovkSchemaIdEnum.FULL,
       config: {},
       segments: getEmptySegmentRecordSchema(projectInfo.segments),
     },

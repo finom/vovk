@@ -1,5 +1,5 @@
 import { CommonControllerRPC } from 'vovk-client';
-import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segment-client/foo/client/index.ts';
+import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
 import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
 import {
   HttpStatus,
