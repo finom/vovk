@@ -1,9 +1,12 @@
 import { it, describe, beforeEach } from 'node:test';
+import { deepStrictEqual } from 'node:assert';
 import path from 'node:path';
+import type { VovkFullSchema } from 'vovk';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
+import updateConfig from '../../lib/updateConfig.mts';
 
 await describe('Full & segmented client', async () => {
-  const { runAtProjectDir, createNextApp, vovkInit, assertNotExists, vovkDevAndKill, assertDirFileList } =
+  const { projectDir, runAtProjectDir, createNextApp, vovkInit, assertNotExists, vovkDevAndKill, assertDirFileList } =
     getCLIAssertions({
       cwd: path.resolve(import.meta.dirname, '../../..'),
       dir: 'tmp_test_dir',
@@ -14,16 +17,18 @@ await describe('Full & segmented client', async () => {
     await vovkInit('--yes');
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new controller user');
-    /* await runAtProjectDir('../dist/index.mjs new segment foo');
+    await runAtProjectDir('../dist/index.mjs new segment foo');
     await runAtProjectDir('../dist/index.mjs new controller foo/cucumber');
     await runAtProjectDir('../dist/index.mjs new controller foo/tomato');
     await runAtProjectDir('../dist/index.mjs new segment bar/baz');
     await runAtProjectDir('../dist/index.mjs new controller bar/baz/pineapple');
-    await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi'); */
+    await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi');
+    await runAtProjectDir('../dist/index.mjs new segment a/b/c/d/e');
+    await runAtProjectDir('../dist/index.mjs new controller a/b/c/d/e/post');
+    await vovkDevAndKill();
   });
 
   await it('Generates full client', async () => {
-    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs generate`);
 
     await assertDirFileList('./node_modules/.vovk-client', [
@@ -38,20 +43,107 @@ await describe('Full & segmented client', async () => {
     await assertNotExists('./node_modules/.vovk-client/root/index.mjs');
   });
 
-  await it.skip('Generates full client with included segments', async () => {});
-  await it.skip('Generates full client with excluded segments', async () => {});
+  await it('Generates full client using --from and --out', async () => {
+    // also make sure that segmented client is not generated even if it is enabled
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      segmentedClient: {
+        enabled: true,
+        outDir: './full-client',
+      },
+    }));
+    await runAtProjectDir(`../dist/index.mjs generate --out ./full-client --from ts`);
+    await assertNotExists('./full-client/index.mjs');
+    await assertNotExists('./full-client/root/index.mjs');
+    await assertDirFileList('./full-client', ['index.ts', 'fullSchema.ts']);
+  });
+  await it('Generates full client with included segments', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      fullClient: {
+        outDir: './full-client',
+        includeSegments: ['foo', 'bar/baz'],
+        fromTemplates: ['ts'],
+      },
+    }));
+    await runAtProjectDir(`../dist/index.mjs generate`);
+    await assertDirFileList('./full-client', ['index.ts', 'fullSchema.ts']);
+    const { fullSchema }: { fullSchema: VovkFullSchema } = await import(
+      path.join(projectDir, 'full-client', 'fullSchema.ts')
+    );
+    deepStrictEqual(Object.keys(fullSchema.segments).sort(), ['foo', 'bar/baz'].sort());
+  });
+  await it('Generates full client with excluded segments', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      fullClient: {
+        outDir: './full-client',
+        excludeSegments: ['', 'bar/baz'],
+        fromTemplates: ['ts'],
+      },
+    }));
+    await runAtProjectDir(`../dist/index.mjs generate`);
+    await assertDirFileList('./full-client', ['index.ts', 'fullSchema.ts']);
+    const { fullSchema }: { fullSchema: VovkFullSchema } = await import(
+      path.join(projectDir, 'full-client', 'fullSchema.ts')
+    );
+    deepStrictEqual(Object.keys(fullSchema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
+  });
 
   await it('Generates segmented client', async () => {
-    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
     await assertDirFileList('./segmented-client/root', ['index.ts', 'fullSchema.ts']);
-
     await assertNotExists('./segmented-client/index.ts');
   });
 
-  await it.skip('Generates segmented client with included segments', async () => {});
-  await it.skip('Generates segmented client with excluded segments', async () => {});
+  await it('Generates segmented client --segmented-from and --segmented-out', async () => {
+    await runAtProjectDir(
+      `../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client --segmented-from ts`
+    );
+    await assertDirFileList('./segmented-client/root', ['index.ts', 'fullSchema.ts']);
+    await assertNotExists('./segmented-client/index.ts');
+    await assertNotExists('./segmented-client/fullSchema.ts');
+    await assertDirFileList('./segmented-client/foo', ['index.ts', 'fullSchema.ts']);
+    await assertDirFileList('./segmented-client/bar', ['baz']);
+    await assertDirFileList('./segmented-client/bar/baz', ['index.ts', 'fullSchema.ts']);
+    await assertDirFileList('./segmented-client/a/b/c/d/e', ['index.ts', 'fullSchema.ts']);
+  });
+  await it('Generates segmented client with included segments', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      fullClient: {
+        enabled: false,
+      },
+      segmentedClient: {
+        outDir: './segmented-client',
+        includeSegments: ['foo', 'bar/baz'],
+        enabled: true,
+      },
+    }));
+    await runAtProjectDir(`../dist/index.mjs generate`);
+    await assertDirFileList('./segmented-client', ['foo', 'bar']);
+    const { fullSchema }: { fullSchema: VovkFullSchema } = await import(
+      path.join(projectDir, 'segmented-client/bar/baz', 'fullSchema.ts')
+    );
+    deepStrictEqual(Object.keys(fullSchema.segments), ['bar/baz']);
+  });
+  await it('Generates segmented client with excluded segments', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      fullClient: {
+        enabled: false,
+      },
+      segmentedClient: {
+        outDir: './segmented-client',
+        excludeSegments: ['', 'bar/baz'],
+        enabled: true,
+      },
+    }));
+    await runAtProjectDir(`../dist/index.mjs generate`);
+    await assertDirFileList('./segmented-client', ['foo', 'a']);
+    const { fullSchema }: { fullSchema: VovkFullSchema } = await import(
+      path.join(projectDir, 'segmented-client/foo', 'fullSchema.ts')
+    );
+    deepStrictEqual(Object.keys(fullSchema.segments), ['foo']);
+  });
 });

@@ -3,7 +3,7 @@ import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfig from '../../lib/updateConfig.mts';
 
-const compiledClientFolderName = 'client-from-template';
+const compiledClientFolderName = 'client_from_template';
 
 await describe('Client templates', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, assertFile, vovkDevAndKill, assertDirFileList } =
@@ -130,5 +130,29 @@ await describe('Client templates', async () => {
       'fullSchema.cjs',
       'fullSchema.d.cts',
     ]);
+  });
+
+  await it('Generates README.md and package.json', async () => {
+    await runAtProjectDir(
+      `../dist/index.mjs generate --from=readme --from=packageJson --out ${compiledClientFolderName}`
+    );
+    await assertFile(`${compiledClientFolderName}/README.md`, ['tmp_test_dir']);
+    await assertFile(`${compiledClientFolderName}/package.json`, ['"name": "tmp_test_dir"']);
+  });
+
+  await it('Generates Python client', async () => {
+    await runAtProjectDir(`../dist/index.mjs generate --from=py --out ${compiledClientFolderName}`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await assertDirFileList(compiledClientFolderName, ['data', 'src', 'README.md', 'setup.cfg', 'pyproject.toml']);
+    await assertDirFileList(`${compiledClientFolderName}/src`, ['tmp_test_dir']);
+    await assertDirFileList(`${compiledClientFolderName}/src/tmp_test_dir`, ['__init__.py', 'api_client.py']);
+    await assertDirFileList(`${compiledClientFolderName}/data`, ['full-schema.json']);
+  });
+
+  await it('Generates Rust client', async () => {
+    await runAtProjectDir(`../dist/index.mjs generate --from=rs --out ${compiledClientFolderName}`);
+    await assertDirFileList(compiledClientFolderName, ['Cargo.toml', 'src', 'data', 'README.md']);
+    await assertDirFileList(`${compiledClientFolderName}/src`, ['lib.rs', 'http_request.rs', 'read_full_schema.rs']);
+    await assertDirFileList(`${compiledClientFolderName}/data`, ['full-schema.json']);
   });
 });

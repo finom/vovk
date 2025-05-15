@@ -38,10 +38,8 @@ export default async function getClientTemplateFiles({
         ? (cliGenerateOptions?.segmentedFrom ?? [])
         : config.segmentedClient.fromTemplates;
 
-  const outDir =
-    configKey === 'fullClient'
-      ? (cliGenerateOptions?.fullOut ?? config.fullClient.outDir)
-      : (cliGenerateOptions?.segmentedOut ?? config.segmentedClient.outDir);
+  const cliOutDir = configKey === 'fullClient' ? cliGenerateOptions?.fullOut : cliGenerateOptions?.segmentedOut;
+  const configOutDir = configKey === 'fullClient' ? config.fullClient.outDir : config.segmentedClient.outDir;
 
   for (const templateName of fromTemplates) {
     if (!(templateName in config.clientTemplateDefs)) {
@@ -95,7 +93,7 @@ export default async function getClientTemplateFiles({
         continue;
       }
 
-      const outCwdRelativeDir = forceOutCwdRelativeDir ?? defOutDir ?? outDir;
+      const outCwdRelativeDir = forceOutCwdRelativeDir ?? cliOutDir ?? defOutDir ?? configOutDir;
 
       for (const { filePath, isSingleFileTemplate } of files) {
         templateFiles.push({

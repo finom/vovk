@@ -61,7 +61,7 @@ export default async function bundle({
 
   log.info(`Bundled fullSchema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
-  const requiresGroup = groupBy(Object.entries(bundleConfig.requires), ([, relativeOutDir]) => relativeOutDir);
+  const requiresGroup = groupBy(Object.entries(bundleConfig.requires), ([, relativePath]) => relativePath);
 
   for (const [relativePath, group] of Object.entries(requiresGroup)) {
     await generate({

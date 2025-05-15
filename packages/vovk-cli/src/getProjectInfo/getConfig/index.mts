@@ -46,23 +46,29 @@ export default async function getConfig({
     imports,
     emitConfig: [],
     fullClient: {
-      enabled: !cliGenerateOptions?.segmentedOnly || !!cliGenerateOptions?.fullFrom || !!cliGenerateOptions?.fullOut,
       ...conf.fullClient,
+      enabled:
+        cliGenerateOptions?.fullOnly ||
+        !!cliGenerateOptions?.fullFrom ||
+        !!cliGenerateOptions?.fullOut ||
+        (conf.fullClient?.enabled ?? !cliGenerateOptions?.segmentedOnly),
       fromTemplates: cliGenerateOptions?.fullFrom ?? conf.fullClient?.fromTemplates ?? ['mjs', 'cjs'],
       outDir: cliGenerateOptions?.fullOut ?? conf.fullClient?.outDir ?? './node_modules/.vovk-client',
     },
     segmentedClient: {
-      enabled:
-        !!cliGenerateOptions?.segmentedOnly ||
-        !!cliGenerateOptions?.segmentedFrom ||
-        !!cliGenerateOptions?.segmentedOut,
       ...conf.segmentedClient,
+      enabled:
+        !cliGenerateOptions?.fullOnly &&
+        (cliGenerateOptions?.segmentedOnly ||
+          !!cliGenerateOptions?.segmentedFrom ||
+          !!cliGenerateOptions?.segmentedOut ||
+          (conf.segmentedClient?.enabled ?? false)),
       fromTemplates: cliGenerateOptions?.segmentedFrom ?? conf.segmentedClient?.fromTemplates ?? ['ts'],
       outDir: cliGenerateOptions?.segmentedOut ?? conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
     },
     bundle: {
       outDir: cliBundleOptions?.outDir ?? conf.bundle?.outDir ?? 'dist',
-      tsClientOutDir: cliBundleOptions?.tsClientOutDir ?? conf.bundle?.tsClientOutDir ?? '.tmp-ts-rpc',
+      tsClientOutDir: cliBundleOptions?.tsClientOutDir ?? conf.bundle?.tsClientOutDir ?? 'tmp_ts_rpc',
       dontDeleteTsClientOutDirAfter:
         cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? conf.bundle?.dontDeleteTsClientOutDirAfter ?? false,
       sourcemap: cliBundleOptions?.sourcemap ?? conf.bundle?.sourcemap ?? false,
