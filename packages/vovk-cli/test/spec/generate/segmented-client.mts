@@ -28,7 +28,7 @@ await describe('Full & segmented client', async () => {
     await vovkDevAndKill();
   });
 
-  await it('Generates full client', async () => {
+  await it('Generates composed client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate`);
 
     await assertDirFileList('./node_modules/.vovk-client', [
@@ -43,7 +43,7 @@ await describe('Full & segmented client', async () => {
     await assertNotExists('./node_modules/.vovk-client/root/index.mjs');
   });
 
-  await it('Generates full client using --from and --out', async () => {
+  await it('Generates composed client using --from and --out', async () => {
     // also make sure that segmented client is not generated even if it is enabled
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
@@ -57,10 +57,10 @@ await describe('Full & segmented client', async () => {
     await assertNotExists('./full-client/root/index.mjs');
     await assertDirFileList('./full-client', ['index.ts', 'schema.ts']);
   });
-  await it('Generates full client with included segments', async () => {
+  await it('Generates composed client with included segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
-      fullClient: {
+      composedClient: {
         outDir: './full-client',
         includeSegments: ['foo', 'bar/baz'],
         fromTemplates: ['ts'],
@@ -71,10 +71,10 @@ await describe('Full & segmented client', async () => {
     const { schema }: { schema: VovkSchema } = await import(path.join(projectDir, 'full-client', 'schema.ts'));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
-  await it.only('Generates full client with excluded segments', async () => {
+  await it.only('Generates composed client with excluded segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
-      fullClient: {
+      composedClient: {
         outDir: './full-client',
         excludeSegments: ['', 'bar/baz'],
         fromTemplates: ['ts'],
@@ -107,7 +107,7 @@ await describe('Full & segmented client', async () => {
   await it('Generates segmented client with included segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
-      fullClient: {
+      composedClient: {
         enabled: false,
       },
       segmentedClient: {
@@ -126,7 +126,7 @@ await describe('Full & segmented client', async () => {
   await it('Generates segmented client with excluded segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
-      fullClient: {
+      composedClient: {
         enabled: false,
       },
       segmentedClient: {

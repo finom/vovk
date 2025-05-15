@@ -25,21 +25,21 @@ export default async function getClientTemplateFiles({
   config: VovkStrictConfig;
   cwd: string;
   log: ProjectInfo['log'];
-  configKey: 'fullClient' | 'segmentedClient';
+  configKey: 'composedClient' | 'segmentedClient';
   cliGenerateOptions?: GenerateOptions;
 }) {
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
   const fromTemplates =
-    configKey === 'fullClient'
+    configKey === 'composedClient'
       ? cliGenerateOptions?.fullFrom || cliGenerateOptions?.segmentedFrom
         ? (cliGenerateOptions?.fullFrom ?? [])
-        : config.fullClient.fromTemplates
+        : config.composedClient.fromTemplates
       : cliGenerateOptions?.fullFrom || cliGenerateOptions?.segmentedFrom
         ? (cliGenerateOptions?.segmentedFrom ?? [])
         : config.segmentedClient.fromTemplates;
 
-  const cliOutDir = configKey === 'fullClient' ? cliGenerateOptions?.fullOut : cliGenerateOptions?.segmentedOut;
-  const configOutDir = configKey === 'fullClient' ? config.fullClient.outDir : config.segmentedClient.outDir;
+  const cliOutDir = configKey === 'composedClient' ? cliGenerateOptions?.fullOut : cliGenerateOptions?.segmentedOut;
+  const configOutDir = configKey === 'composedClient' ? config.composedClient.outDir : config.segmentedClient.outDir;
 
   for (const templateName of fromTemplates) {
     if (!(templateName in config.clientTemplateDefs)) {
@@ -73,7 +73,8 @@ export default async function getClientTemplateFiles({
         `Unable to locate template path "${templateDef.templatePath}" resolved as "${templateAbsolutePath}"`
       );
     }
-    const defOutDir = configKey === 'fullClient' ? templateDef.fullClient?.outDir : templateDef.segmentedClient?.outDir;
+    const defOutDir =
+      configKey === 'composedClient' ? templateDef.composedClient?.outDir : templateDef.segmentedClient?.outDir;
 
     let files: { filePath: string; isSingleFileTemplate: boolean }[] = [];
 

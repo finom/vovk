@@ -23,10 +23,10 @@ export default function getTemplateClientImports({
     p.startsWith('.') ? path.relative(path.join(outCwdRelativeDir, s), p) : p;
 
   const clientImports: {
-    fullClient: ClientImports & { module: ClientImports };
+    composedClient: ClientImports & { module: ClientImports };
     segmentedClient: Record<string, ClientImports & { module: ClientImports }>;
   } = {
-    fullClient: {
+    composedClient: {
       fetcher: getImportPath(imports.fetcher[0]),
       createRPC: getImportPath(imports.createRPC[0]),
       validateOnClient: imports.validateOnClient ? getImportPath(imports.validateOnClient[0]) : null,

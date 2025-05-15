@@ -16,7 +16,7 @@ await describe('TypeScript bundle', async () => {
     await runAtProjectDir('../dist/index.mjs new controller user');
   });
 
-  await it('Bundles full client', async () => {
+  await it('Bundles composed client', async () => {
     await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs bundle`);
 
@@ -35,7 +35,7 @@ await describe('TypeScript bundle', async () => {
     await assertNotExists('./dist/root/index.mjs');
   });
 
-  await it('Bundles full client to an --out dir', async () => {
+  await it('Bundles composed client to an --out dir', async () => {
     await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs bundle --out my_dist`);
 

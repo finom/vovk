@@ -19,7 +19,7 @@ import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
   segments: ProjectInfo['segments'],
-  configKey: 'segmentedClient' | 'fullClient'
+  configKey: 'segmentedClient' | 'composedClient'
 ) => {
   if (
     ('includeSegments' satisfies keyof (typeof config)[typeof configKey]) in config[configKey] &&
@@ -60,7 +60,7 @@ function logClientGenerationResults({
   log,
   isEnsuringClient = false,
   forceNothingWrittenLog = false,
-  clientType = 'Full',
+  clientType = 'Composed',
   startTime,
   fromTemplates,
 }: {
@@ -116,19 +116,19 @@ export default async function generate({
     }
     if (!schema.emitSchema) continue;
   }
-  if (config.fullClient.enabled) {
+  if (config.composedClient.enabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, segments, 'fullClient');
-    const { templateFiles: fullClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
+    const segmentNames = getIncludedSegmentNames(config, segments, 'composedClient');
+    const { templateFiles: composedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
       log,
       cliGenerateOptions,
-      configKey: 'fullClient',
+      configKey: 'composedClient',
     });
 
-    const fullClientResults = await Promise.all(
-      fullClientTemplateFiles.map(async (clientTemplateFile) => {
+    const composedClientResults = await Promise.all(
+      composedClientTemplateFiles.map(async (clientTemplateFile) => {
         const { templateFilePath, templateName, templateDef, outCwdRelativeDir } = clientTemplateFile;
         const templateContent = await fs.readFile(templateFilePath, 'utf-8');
 
@@ -149,7 +149,7 @@ export default async function generate({
         const packageJson = await mergePackages({
           cwd,
           config,
-          packages: [config.fullClient.package as PackageJson, templateDef.fullClient?.package as PackageJson],
+          packages: [config.composedClient.package as PackageJson, templateDef.composedClient?.package as PackageJson],
         });
 
         const { written } = await writeOneClientFile({
@@ -159,7 +159,7 @@ export default async function generate({
           fullSchema: pickSegmentFullSchema(fullSchema, segmentNames),
           prettifyClient: config.prettifyClient,
           segmentName: null,
-          imports: clientImports.fullClient,
+          imports: clientImports.composedClient,
           templateContent,
           matterResult,
           package: packageJson,
@@ -179,18 +179,18 @@ export default async function generate({
       })
     );
 
-    if (fullClientTemplateFiles.length) {
+    if (composedClientTemplateFiles.length) {
       logClientGenerationResults({
-        results: fullClientResults,
+        results: composedClientResults,
         log,
         isEnsuringClient,
         forceNothingWrittenLog,
-        clientType: 'Full',
+        clientType: 'Composed',
         startTime: now,
         fromTemplates,
       });
     } else {
-      log.warn('No full client template files found. Skipping full client generation.');
+      log.warn('No composed client template files found. Skipping composed client generation.');
     }
   }
 

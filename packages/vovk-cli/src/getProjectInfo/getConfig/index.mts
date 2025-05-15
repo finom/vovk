@@ -44,15 +44,15 @@ export default async function getConfig({
     clientTemplateDefs,
     imports,
     emitConfig: [],
-    fullClient: {
-      ...conf.fullClient,
+    composedClient: {
+      ...conf.composedClient,
       enabled:
         cliGenerateOptions?.fullOnly ||
         !!cliGenerateOptions?.fullFrom ||
         !!cliGenerateOptions?.fullOut ||
-        (conf.fullClient?.enabled ?? !cliGenerateOptions?.segmentedOnly),
-      fromTemplates: cliGenerateOptions?.fullFrom ?? conf.fullClient?.fromTemplates ?? ['mjs', 'cjs'],
-      outDir: cliGenerateOptions?.fullOut ?? conf.fullClient?.outDir ?? './node_modules/.vovk-client',
+        (conf.composedClient?.enabled ?? !cliGenerateOptions?.segmentedOnly),
+      fromTemplates: cliGenerateOptions?.fullFrom ?? conf.composedClient?.fromTemplates ?? ['mjs', 'cjs'],
+      outDir: cliGenerateOptions?.fullOut ?? conf.composedClient?.outDir ?? './node_modules/.vovk-client',
     },
     segmentedClient: {
       ...conf.segmentedClient,

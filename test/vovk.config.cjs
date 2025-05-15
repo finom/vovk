@@ -24,7 +24,7 @@ const vovkConfig = {
   clientTemplateDefs: {
     py: {
       extends: 'py',
-      fullClient: {
+      composedClient: {
         outDir: './tmp/py',
         package: {
           name: 'test_generated_python_client',
@@ -36,7 +36,7 @@ const vovkConfig = {
     },
     rs: {
       extends: 'rs',
-      fullClient: {
+      composedClient: {
         outDir: './tmp/rs',
         package: {
           name: 'test_generated_rust_client',

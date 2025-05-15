@@ -54,7 +54,7 @@ export default function getTemplateDefs(
     },
     [BuiltInTemplateName.rs]: {
       templatePath: 'vovk-rust-client/template/',
-      fullClient: {
+      composedClient: {
         outDir: 'dist_rust',
       },
       requires: {
@@ -63,7 +63,7 @@ export default function getTemplateDefs(
     },
     [BuiltInTemplateName.py]: {
       templatePath: 'vovk-python-client/template/',
-      fullClient: {
+      composedClient: {
         outDir: 'dist_python',
       },
       requires: {

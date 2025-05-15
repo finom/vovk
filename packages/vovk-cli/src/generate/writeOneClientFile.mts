@@ -31,7 +31,7 @@ export default async function writeOneClientFile({
   clientTemplateFile: ClientTemplateFile;
   fullSchema: VovkSchema;
   prettifyClient: boolean;
-  segmentName: string | null; // null for full client
+  segmentName: string | null; // null for composed client
   imports: ClientImports;
   templateContent: string;
   matterResult: {

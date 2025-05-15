@@ -280,7 +280,7 @@ export type ClientTemplateDef = {
   extends?: string;
   templatePath?: string | null;
   origin?: string | null;
-  fullClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
+  composedClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
   requires?: Record<string, string>;
@@ -290,7 +290,7 @@ export type VovkConfig = {
   $schema?: typeof VovkSchemaIdEnum.CONFIG | string;
   emitConfig?: boolean | (keyof VovkStrictConfig)[];
   schemaOutDir?: string;
-  fullClient?: ClientConfigFull;
+  composedClient?: ClientConfigFull;
   segmentedClient?: ClientConfigSegmented;
   bundle?: {
     outDir?: string;
@@ -323,7 +323,7 @@ export type VovkConfig = {
 };
 
 export type VovkStrictConfig = Required<
-  Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'fullClient' | 'segmentedClient' | 'bundle'>
+  Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'composedClient' | 'segmentedClient' | 'bundle'>
 > & {
   emitConfig: (keyof VovkStrictConfig)[];
   bundle: Exclude<Required<VovkConfig['bundle']>, undefined>;
@@ -333,7 +333,7 @@ export type VovkStrictConfig = Required<
     createRPC: [string, string] | [string];
   };
   libs: Record<string, KnownAny>;
-  fullClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
+  composedClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
 };
 
