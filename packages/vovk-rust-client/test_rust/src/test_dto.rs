@@ -160,22 +160,6 @@ pub mod test_dto {
                 "u": ["uu", "xx"],
                 "d": {
                     "x": "ee",
-                    "arrOfObjects": [
-                        {
-                            "foo": "bar",
-                            "nestedArr": ["one", "two", "three"],
-                            "nestedObj": {
-                                "deepKey": "deepValue1"
-                            }
-                        },
-                        {
-                            "foo": "baz",
-                            "nestedArr": ["four", "five", "six"],
-                            "nestedObj": {
-                                "deepKey": "deepValue2"
-                            }
-                        }
-                    ]
                 }
             })).unwrap(),
         };

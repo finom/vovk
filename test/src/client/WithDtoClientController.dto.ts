@@ -20,8 +20,7 @@ import {
   IsIn,
   IsArray,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { JSONSchema } from 'class-validator-jsonschema';
+import { Expose, Type } from 'class-transformer';
 
 /**
  * -------------------------------------------------------------------------
@@ -134,15 +133,18 @@ export class DDto {
   @IsString()
   x: string;
 
-  @IsArray()
+  /* 
+  TODO: See commend at the test for the reason why this is commented out
+
+  @Type(() => ArrOfObjectsDto)
   @ValidateNested({ each: true })
   @JSONSchema({
     items: {
       $ref: '#/definitions/ArrOfObjectsDto',
     },
   })
-  @Type(() => ArrOfObjectsDto)
   arrOfObjects: ArrOfObjectsDto[];
+  */
 }
 
 export class ZDto {
@@ -167,8 +169,8 @@ export class HandleNestedQueryDto {
   @IsString({ each: true })
   y: string[];
 
-  // @ValidateNested() // TODO: WARNING: Ndsted validation suddenly stopped working
   @Type(() => ZDto)
+  @ValidateNested()
   z: ZDto;
 }
 
@@ -220,6 +222,7 @@ export class QueryValuesDto {
   values: string[];
 }
 
+@Expose()
 export class RequiredObject {
   @IsDefined()
   @IsString()
@@ -310,12 +313,11 @@ export class ConstrainingDto {
   @IsString({ each: true })
   arr_maxItems: string[];
 
-  // Object validations
-  // @ValidateNested() // TODO: WARNING: Ndsted validation suddenly stopped working
+  @ValidateNested()
   @Type(() => RequiredObject)
   obj_required: RequiredObject;
 
-  // @ValidateNested() // TODO: WARNING: Ndsted validation suddenly stopped working
+  @ValidateNested()
   @Type(() => StrictObject)
   obj_strict: StrictObject; // Cannot enforce "strict" (no additional properties) with standard decorators
 

@@ -47,6 +47,7 @@ function withZod<
   disableServerSideValidation,
   skipSchemaEmission,
   validateEachIteration,
+  options,
 }: {
   body?: ZOD_BODY;
   query?: ZOD_QUERY;
@@ -57,6 +58,9 @@ function withZod<
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
+  options?: {
+    toJSONSchemaParams?: Parameters<typeof z.toJSONSchema>[1];
+  };
 }) {
   return withValidation({
     body,
@@ -71,7 +75,7 @@ function withZod<
       __output: ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny;
       __iteration: ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny;
     },
-    getJSONSchemaFromModel: (model) => z.toJSONSchema(model),
+    getJSONSchemaFromModel: (model) => z.toJSONSchema(model, options?.toJSONSchemaParams),
     validate: async (data, model, { type, req, i }) => {
       try {
         model.parse(data);

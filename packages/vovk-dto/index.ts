@@ -1,5 +1,5 @@
-import { validate, type ValidationError } from 'class-validator';
-import { plainToInstance, type ClassConstructor } from 'class-transformer';
+import { validate, type ValidationError, type ValidatorOptions } from 'class-validator';
+import { ClassTransformOptions, plainToInstance, type ClassConstructor } from 'class-transformer';
 import {
   withValidation,
   HttpException,
@@ -9,6 +9,7 @@ import {
   type VovkValidationType,
 } from 'vovk';
 import { validationMetadatasToSchemas, targetConstructorToSchema } from 'class-validator-jsonschema';
+export { validateOnClient } from './validateOnClient.js';
 
 // Apply schema fixes recursively
 const addDefinitions = (schema: KnownAny, schemas: ReturnType<typeof validationMetadatasToSchemas>): KnownAny => {
@@ -103,6 +104,7 @@ function withDto<
   disableServerSideValidation,
   skipSchemaEmission,
   validateEachIteration,
+  options,
 }: {
   body?: BODY_DTO;
   query?: QUERY_DTO;
@@ -113,6 +115,10 @@ function withDto<
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
+  options?: {
+    classTransformOptions?: ClassTransformOptions;
+    validatorOptions?: ValidatorOptions;
+  };
 }) {
   const schemas = validationMetadatasToSchemas();
 
@@ -139,8 +145,8 @@ function withDto<
       return addDefinitions(applySchemaFixes(schema), schemas);
     },
     validate: async (data, dto, { type, req, status, i }) => {
-      const instance = plainToInstance(dto, data);
-      const errors: ValidationError[] = await validate(instance as object);
+      const instance = plainToInstance(dto, data, options?.classTransformOptions);
+      const errors: ValidationError[] = await validate(instance as object, options?.validatorOptions);
 
       if (errors.length > 0) {
         const err =

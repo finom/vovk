@@ -36,11 +36,11 @@ if (t.package.contributors && t.package.contributors.length) {
   });
 }
 %>
-<% if (authors.length > 0) { %>
-authors = [<%= authors.map(author => `"${author}"`).join(', ') %>]
+<% if (authors.length) { %>
+authors = <%- JSON.stringify(authors) %>
 <% } %>
 <% if (t.package.keywords && t.package.keywords.length) { %>
-keywords = [<%= t.package.keywords.map(keyword => `"${keyword}"`).join(', ') %>]
+keywords = <%- JSON.stringify(t.package.keywords) %>
 <% } %>
 edition = "2021"
 

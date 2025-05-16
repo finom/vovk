@@ -11,8 +11,7 @@ import {
   type VovkRequest,
 } from 'vovk';
 import { openapi } from 'vovk-openapi';
-import { withDto } from 'vovk-dto';
-import { validateOnClient } from 'vovk-dto/validateOnClient';
+import { withDto, validateOnClient } from 'vovk-dto';
 import {
   ConstrainingDto,
   HandleAllBodyDto,
@@ -32,6 +31,7 @@ import {
 import { WithDtoClientControllerRPC } from 'vovk-client';
 import { plainToInstance } from 'class-transformer';
 import { ok } from 'node:assert';
+import 'reflect-metadata/lite';
 
 class WithDtoClientService {
   static handleAll({
@@ -88,6 +88,11 @@ export default class WithDtoClientController {
   @get.auto()
   static handleNestedQuery = withDto({
     query: HandleNestedQueryDto,
+    options: {
+      classTransformOptions: {
+        enableImplicitConversion: true,
+      },
+    },
     handle: (req) => {
       return req.vovk.query();
     },
@@ -96,10 +101,13 @@ export default class WithDtoClientController {
   @get.auto()
   static handleNestedQueryClient = async (req: VovkRequest<never, HandleNestedQueryDto>) => {
     const query = { ...req.vovk.query() };
-    return WithDtoClientControllerRPC.handleNestedQuery({
-      query: plainToInstance(HandleNestedQueryDto, query),
+
+    const result = await WithDtoClientControllerRPC.handleNestedQuery({
+      query: plainToInstance(HandleNestedQueryDto, query, { enableImplicitConversion: true }),
       validateOnClient,
     });
+
+    return result;
   };
 
   @get.auto()
@@ -135,6 +143,11 @@ export default class WithDtoClientController {
   @post.auto()
   static handleSchemaConstraints = withDto({
     body: ConstrainingDto,
+    options: {
+      classTransformOptions: {
+        enableImplicitConversion: true,
+      },
+    },
     handle: async (req) => {
       return req.json();
     },

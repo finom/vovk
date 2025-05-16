@@ -1640,7 +1640,41 @@
           "validation": {
             "query": {
               "x-isDto": true,
-              "definitions": {},
+              "definitions": {
+                "ZDto": {
+                  "properties": {
+                    "f": {
+                      "type": "string"
+                    },
+                    "u": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "d": {
+                      "$ref": "#/definitions/DDto"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "f",
+                    "u",
+                    "d"
+                  ]
+                },
+                "DDto": {
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "x"
+                  ]
+                }
+              },
               "properties": {
                 "x": {
                   "type": "string",
@@ -1651,12 +1685,16 @@
                     "type": "string"
                   },
                   "type": "array"
+                },
+                "z": {
+                  "$ref": "#/definitions/ZDto"
                 }
               },
               "type": "object",
               "required": [
                 "x",
-                "y"
+                "y",
+                "z"
               ]
             }
           },
@@ -1749,7 +1787,36 @@
           "validation": {
             "body": {
               "x-isDto": true,
-              "definitions": {},
+              "definitions": {
+                "RequiredObject": {
+                  "properties": {
+                    "requiredField": {
+                      "type": "string",
+                      "not": {
+                        "type": "null"
+                      }
+                    },
+                    "optionalField": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "requiredField"
+                  ]
+                },
+                "StrictObject": {
+                  "properties": {
+                    "knownField": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "knownField"
+                  ]
+                }
+              },
               "properties": {
                 "enum_value": {
                   "type": "string",
@@ -1836,6 +1903,12 @@
                   "maxItems": 10,
                   "minItems": 1
                 },
+                "obj_required": {
+                  "$ref": "#/definitions/RequiredObject"
+                },
+                "obj_strict": {
+                  "$ref": "#/definitions/StrictObject"
+                },
                 "logical_allOf": {
                   "type": "object"
                 }
@@ -1859,6 +1932,8 @@
                 "str_datetime",
                 "arr_minItems",
                 "arr_maxItems",
+                "obj_required",
+                "obj_strict",
                 "logical_allOf"
               ]
             }

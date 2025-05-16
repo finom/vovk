@@ -19,7 +19,7 @@ const vovkConfig = {
     },
   },
   composedClient: {
-    fromTemplates: ['rust'],
+    fromTemplates: ['rs'],
   },
 };
 

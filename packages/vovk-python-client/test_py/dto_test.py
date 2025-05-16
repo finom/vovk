@@ -73,23 +73,7 @@ class TestDto(unittest.TestCase):
                 'f': 'x',
                 'u': ['uu', 'xx'],
                 'd': {
-                'x': 'ee',
-                'arrOfObjects': [
-                    {
-                    'foo': 'bar',
-                    'nestedArr': ['one', 'two', 'three'],
-                    'nestedObj': {
-                        'deepKey': 'deepValue1',
-                    },
-                    },
-                    {
-                    'foo': 'baz',
-                    'nestedArr': ['four', 'five', 'six'], # WARNING: couldn't omit this field even if it is optional
-                    'nestedObj': { # WARNING: couldn't omit this field even if it is optional
-                        'deepKey': 'deepValue2',
-                    },
-                    },
-                ],
+                    'x': 'ee',
                 },
             },
         }

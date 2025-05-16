@@ -76,7 +76,7 @@ export default async function getConfig({
         [BuiltInTemplateName.packageJson]: '.',
       },
     },
-    modulesDir: conf.modulesDir ?? './' + [srcRoot, 'modules'].filter(Boolean).join('/'),
+    modulesDir: conf.modulesDir ?? path.join(srcRoot, 'modules'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',

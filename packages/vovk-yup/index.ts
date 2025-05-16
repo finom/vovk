@@ -113,6 +113,7 @@ function withYup<
   disableServerSideValidation,
   skipSchemaEmission,
   validateEachIteration,
+  options,
 }: {
   body?: YUP_BODY;
   query?: YUP_QUERY;
@@ -123,6 +124,9 @@ function withYup<
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
+  options?: {
+    validateOptions?: Yup.ValidateOptions;
+  };
 }) {
   return withValidation({
     body,
@@ -142,7 +146,7 @@ function withYup<
     },
     validate: async (data, model, { type, req, i }) => {
       try {
-        await model.validate(data);
+        await model.validate(data, options?.validateOptions);
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
