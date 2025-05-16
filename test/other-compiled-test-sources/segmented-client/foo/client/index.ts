@@ -1,4 +1,4 @@
-// auto-generated 2025-05-16T15:42:09.841Z
+// auto-generated 2025-05-16T15:45:45.294Z
 /* eslint-disable */
 import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from 'vovk';
@@ -15,42 +15,42 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   
 export const CommonControllerRPC = createRPC<Controllers0["CommonControllerRPC"], Options>(
   schema, 'foo/client', 'CommonControllerRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3210/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   
 export const StreamingControllerRPC = createRPC<Controllers0["StreamingControllerRPC"], Options>(
   schema, 'foo/client', 'StreamingControllerRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3210/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   
 export const StreamingGeneratorControllerRPC = createRPC<Controllers0["StreamingGeneratorControllerRPC"], Options>(
   schema, 'foo/client', 'StreamingGeneratorControllerRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3210/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   
 export const CustomSchemaControllerRPC = createRPC<Controllers0["CustomSchemaControllerRPC"], Options>(
   schema, 'foo/client', 'CustomSchemaControllerRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3210/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   
 export const WithZodClientControllerRPC = createRPC<Controllers0["WithZodClientControllerRPC"], Options>(
   schema, 'foo/client', 'WithZodClientControllerRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3210/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   
 export const WithYupClientControllerRPC = createRPC<Controllers0["WithYupClientControllerRPC"], Options>(
   schema, 'foo/client', 'WithYupClientControllerRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3210/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   
 export const WithDtoClientControllerRPC = createRPC<Controllers0["WithDtoClientControllerRPC"], Options>(
   schema, 'foo/client', 'WithDtoClientControllerRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3210/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   
 export const OpenApiControllerRPC = createRPC<Controllers0["OpenApiControllerRPC"], Options>(
   schema, 'foo/client', 'OpenApiControllerRPC',
-  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3210/api' } }
+  { fetcher, validateOnClient, defaultOptions: { apiRoot: 'http://localhost:3000/api' } }
 );
   
 
