@@ -179,7 +179,7 @@ export type StreamAbortMessage = {
 export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration';
 
 export type VovkSchema = {
-  $schema: typeof VovkSchemaIdEnum.FULL | string;
+  $schema: typeof VovkSchemaIdEnum.SCHEMA | string;
   config: Partial<VovkStrictConfig>;
   segments: Record<string, VovkSegmentSchema>;
 };
@@ -251,7 +251,7 @@ export enum HttpStatus {
 export enum VovkSchemaIdEnum {
   CONFIG = 'https://vovk.dev/api/spec/v3/config.json',
   SEGMENT = 'https://vovk.dev/api/spec/v3/segment.json',
-  FULL = 'https://vovk.dev/api/spec/v3/schema.json',
+  SCHEMA = 'https://vovk.dev/api/spec/v3/schema.json',
 }
 
 type ClientConfigCommon = {
@@ -272,6 +272,7 @@ type ClientConfigCommon = {
 type ClientConfigFull = ClientConfigCommon & {
   package?: PackageJson;
 };
+
 type ClientConfigSegmented = ClientConfigCommon & {
   packages?: Record<string, PackageJson>;
 };
@@ -282,7 +283,7 @@ export type ClientTemplateDef = {
   origin?: string | null;
   composedClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
-  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
+  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>; // TODO: not documented
   requires?: Record<string, string>;
 };
 

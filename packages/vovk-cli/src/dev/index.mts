@@ -24,7 +24,7 @@ export class VovkDev {
   #projectInfo: ProjectInfo;
 
   #fullSchema: VovkSchema = {
-    $schema: VovkSchemaIdEnum.FULL,
+    $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {},
     config: {},
   };

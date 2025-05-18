@@ -21,7 +21,7 @@ export default async function ensureClient(projectInfo: ProjectInfo) {
     isEnsuringClient: true,
     projectInfo,
     fullSchema: {
-      $schema: VovkSchemaIdEnum.FULL,
+      $schema: VovkSchemaIdEnum.SCHEMA,
       config: {},
       segments: getEmptySegmentRecordSchema(projectInfo.segments),
     },

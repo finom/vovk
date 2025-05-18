@@ -10,7 +10,7 @@ export async function getFullSchemaFromJSON(
   projectInfo: ProjectInfo
 ): Promise<VovkSchema> {
   const result: VovkSchema = {
-    $schema: VovkSchemaIdEnum.FULL,
+    $schema: VovkSchemaIdEnum.SCHEMA,
     config: {},
     segments: {},
   };

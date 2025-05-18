@@ -2,7 +2,7 @@ import { createVovkApp } from './createVovkApp';
 import {
   HttpStatus,
   HttpMethod,
-  VovkSchemaIdEnum,
+  VovkSchemaIdEnum, // TODO: not documented
   type KnownAny,
   type VovkErrorResponse,
   type VovkRequest,

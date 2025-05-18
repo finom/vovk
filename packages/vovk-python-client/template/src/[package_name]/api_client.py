@@ -45,7 +45,7 @@ class ApiClient:
     def request(
         self,
         segment_name: str,
-        controller_name: str,
+        rpc_name: str,
         handler_name: str,
         api_root: Optional[str],
         body: Optional[Any] = None,
@@ -60,7 +60,7 @@ class ApiClient:
         """
         # Extract relevant information from the full schema
         schema = self.full_schema['segments'][segment_name]
-        controller = schema['controllers'][controller_name]
+        controller = schema['controllers'][rpc_name]
         handlers = controller['handlers']
         handler = handlers[handler_name]
         prefix = controller['prefix']
