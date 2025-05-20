@@ -277,6 +277,23 @@ type ClientConfigSegmented = ClientConfigCommon & {
   packages?: Record<string, PackageJson>;
 };
 
+type BundleConfig = {
+  outDir?: string;
+  requires?: Record<string, string>;
+  tsClientOutDir?: string;
+  dontDeleteTsClientOutDirAfter?: boolean;
+  sourcemap?: boolean;
+} & (
+  | {
+      excludeSegments?: never;
+      includeSegments?: string[];
+    }
+  | {
+      excludeSegments?: string[];
+      includeSegments?: never;
+    }
+);
+
 export type ClientTemplateDef = {
   extends?: string;
   templatePath?: string | null;
@@ -293,13 +310,7 @@ export type VovkConfig = {
   schemaOutDir?: string;
   composedClient?: ClientConfigFull;
   segmentedClient?: ClientConfigSegmented;
-  bundle?: {
-    outDir?: string;
-    requires?: Record<string, string>;
-    tsClientOutDir?: string;
-    dontDeleteTsClientOutDirAfter?: boolean;
-    sourcemap?: boolean;
-  };
+  bundle?: BundleConfig;
   imports?: {
     fetcher?: string | [string, string] | [string];
     validateOnClient?: string | [string, string] | [string];
@@ -327,7 +338,7 @@ export type VovkStrictConfig = Required<
   Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'composedClient' | 'segmentedClient' | 'bundle'>
 > & {
   emitConfig: (keyof VovkStrictConfig)[];
-  bundle: Exclude<Required<VovkConfig['bundle']>, undefined>;
+  bundle: RequireAllExcept<Exclude<VovkConfig['bundle'], undefined>, 'includeSegments' | 'excludeSegments'>;
   imports: {
     fetcher: [string, string] | [string];
     validateOnClient: [string, string] | [string] | null;
@@ -341,3 +352,4 @@ export type VovkStrictConfig = Required<
 // utils
 
 type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+type RequireAllExcept<T, K extends keyof T> = Required<Omit<T, K>> & Pick<T, K>;

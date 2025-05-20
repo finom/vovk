@@ -7,18 +7,37 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import generate from '../generate/index.mjs';
 import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import type { BundleOptions } from '../types.mjs';
 
 export default async function bundle({
   projectInfo,
   fullSchema,
+  cliBundleOptions,
 }: {
   projectInfo: ProjectInfo;
   fullSchema: VovkSchema;
+  cliBundleOptions: BundleOptions;
 }) {
   const { config, log } = projectInfo;
   const { bundle: bundleConfig } = config;
   const cwd = process.cwd();
   const tsFullClientOutAbsoluteDirInput = path.join(cwd, bundleConfig.tsClientOutDir);
+
+  const tsClientOutDir = cliBundleOptions?.tsClientOutDir ?? bundleConfig.tsClientOutDir;
+  const dontDeleteTsClientOutDirAfter =
+    cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? bundleConfig?.dontDeleteTsClientOutDirAfter ?? false;
+  const sourcemap = cliBundleOptions?.sourcemap ?? bundleConfig?.sourcemap;
+
+  if (!tsClientOutDir) {
+    throw new Error('No output directory specified for composed client');
+  }
+
+  const outDir = cliBundleOptions?.outDir ?? bundleConfig.outDir;
+
+  if (!outDir) {
+    throw new Error('No output directory specified for bundling');
+  }
+
   await generate({
     isEnsuringClient: false,
     projectInfo,
@@ -26,15 +45,12 @@ export default async function bundle({
     fullSchema,
     cliGenerateOptions: {
       composedFrom: [BuiltInTemplateName.ts],
-      composedOut: bundleConfig.tsClientOutDir,
+      composedOut: tsClientOutDir,
+      composedOnly: true,
+      composedIncludeSegments: cliBundleOptions.includeSegments ?? bundleConfig.includeSegments,
+      composedExcludeSegments: cliBundleOptions.excludeSegments ?? bundleConfig.excludeSegments,
     },
   });
-
-  const outDir = bundleConfig.outDir;
-
-  if (!outDir) {
-    throw new Error('No output directory specified for bundling');
-  }
 
   await build({
     entry: path.join(tsFullClientOutAbsoluteDirInput, './index.ts'),
@@ -56,7 +72,7 @@ export default async function bundle({
     fixedExtension: true,
     outDir,
     clean: false,
-    sourcemap: bundleConfig.sourcemap,
+    sourcemap,
   });
 
   log.info(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
@@ -76,7 +92,7 @@ export default async function bundle({
     });
   }
 
-  if (!bundleConfig.dontDeleteTsClientOutDirAfter) {
+  if (!dontDeleteTsClientOutDirAfter) {
     await fs.rm(tsFullClientOutAbsoluteDirInput, { recursive: true, force: true });
     log.debug(
       `Deleted temporary TypeScript client output directory: ${chalkHighlightThing(tsFullClientOutAbsoluteDirInput)}`

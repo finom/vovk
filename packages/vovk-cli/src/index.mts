@@ -90,14 +90,18 @@ program
   .description('Generate RPC client from schema')
   .option('--out, --composed-out <path>', 'path to output directory for composed client')
   .option('--from, --composed-from <templates...>', 'client template names for composed client')
+  .option('--include, --composed-include-segments <segments...>', 'include segments in composed client')
+  .option('--exclude, --composed-exclude-segments <segments...>', 'exclude segments in composed client')
   .option('--composed-only', 'generate only composed client even if segmented client is enabled')
   .option('--segmented-only', 'generate only segmented client even if composed client is enabled')
   .option('--segmented-out <path>', 'path to output directory for segmented client')
   .option('--segmented-from <templates...>', 'client template names for segmented client')
+  .option('--segmented-include-segments <segments...>', 'include segments in segmented client')
+  .option('--segmented-exclude-segments <segments...>', 'exclude segments in segmented client')
   .option('--prettify', 'prettify output files')
   .option('--config <config>', 'path to config file')
   .action(async (cliGenerateOptions: GenerateOptions) => {
-    const projectInfo = await getProjectInfo({ cliGenerateOptions });
+    const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.config });
     const { cwd, config } = projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
@@ -115,14 +119,14 @@ program
   .alias('b')
   .description('Generate TypeScrtipt RPC and bundle it')
   .option('--out, --out-dir <path>', 'path to output directory for bundle')
+  .option('--include, --include-segments <segments...>', 'include segments')
+  .option('--exclude, --exclude-segments <segments...>', 'exclude segments')
   .option('--ts-client-out-dir <path>', 'path to output directory for TypeScript client')
-  .option('--no-readme', 'do not generate README file')
-  .option('--no-package', 'do not generate package.json file')
   .option('--dont-delete-ts-client-out-dir-after', 'do not delete TypeScript client output directory after bundling')
   .option('--config <config>', 'path to config file')
   .option('--sourcemap', 'generate sourcemaps')
   .action(async (cliBundleOptions: BundleOptions) => {
-    const projectInfo = await getProjectInfo({ cliBundleOptions });
+    const projectInfo = await getProjectInfo({ configPath: cliBundleOptions.config });
     const { cwd, config } = projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
@@ -130,6 +134,7 @@ program
     await bundle({
       projectInfo,
       fullSchema,
+      cliBundleOptions,
     });
   });
 

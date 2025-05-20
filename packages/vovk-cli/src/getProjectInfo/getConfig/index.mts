@@ -3,20 +3,12 @@ import { VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk';
 import getLogger from '../../utils/getLogger.mjs';
 import getUserConfig from '../getUserConfig.mjs';
 import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';
-import type { BundleOptions, GenerateOptions, VovkEnv } from '../../types.mjs';
+import type { VovkEnv } from '../../types.mjs';
 import getTemplateDefs, { BuiltInTemplateName } from './getTemplateDefs.mjs';
 
-export default async function getConfig({
-  cliGenerateOptions,
-  cliBundleOptions,
-  cwd,
-}: {
-  cliGenerateOptions?: GenerateOptions;
-  cliBundleOptions?: BundleOptions;
-  cwd: string;
-}) {
+export default async function getConfig({ configPath, cwd }: { configPath?: string; cwd: string }) {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({
-    configPath: cliGenerateOptions?.config,
+    configPath,
     cwd,
   });
 
@@ -46,31 +38,22 @@ export default async function getConfig({
     emitConfig: [],
     composedClient: {
       ...conf.composedClient,
-      enabled:
-        cliGenerateOptions?.composedOnly ||
-        !!cliGenerateOptions?.composedFrom ||
-        !!cliGenerateOptions?.composedOut ||
-        (conf.composedClient?.enabled ?? !cliGenerateOptions?.segmentedOnly),
-      fromTemplates: cliGenerateOptions?.composedFrom ?? conf.composedClient?.fromTemplates ?? ['mjs', 'cjs'],
-      outDir: cliGenerateOptions?.composedOut ?? conf.composedClient?.outDir ?? './node_modules/.vovk-client',
+      enabled: conf.composedClient?.enabled ?? true,
+      fromTemplates: conf.composedClient?.fromTemplates ?? ['mjs', 'cjs'],
+      outDir: conf.composedClient?.outDir ?? './node_modules/.vovk-client',
     },
     segmentedClient: {
       ...conf.segmentedClient,
-      enabled:
-        !cliGenerateOptions?.composedOnly &&
-        (cliGenerateOptions?.segmentedOnly ||
-          !!cliGenerateOptions?.segmentedFrom ||
-          !!cliGenerateOptions?.segmentedOut ||
-          (conf.segmentedClient?.enabled ?? false)),
-      fromTemplates: cliGenerateOptions?.segmentedFrom ?? conf.segmentedClient?.fromTemplates ?? ['ts'],
-      outDir: cliGenerateOptions?.segmentedOut ?? conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
+      enabled: conf.segmentedClient?.enabled ?? false,
+      fromTemplates: conf.segmentedClient?.fromTemplates ?? ['ts'],
+      outDir: conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
     },
     bundle: {
-      outDir: cliBundleOptions?.outDir ?? conf.bundle?.outDir ?? 'dist',
-      tsClientOutDir: cliBundleOptions?.tsClientOutDir ?? conf.bundle?.tsClientOutDir ?? 'tmp_ts_rpc',
-      dontDeleteTsClientOutDirAfter:
-        cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? conf.bundle?.dontDeleteTsClientOutDirAfter ?? false,
-      sourcemap: cliBundleOptions?.sourcemap ?? conf.bundle?.sourcemap ?? false,
+      ...conf.bundle,
+      outDir: conf.bundle?.outDir ?? 'dist',
+      tsClientOutDir: conf.bundle?.tsClientOutDir ?? 'tmp_ts_rpc',
+      dontDeleteTsClientOutDirAfter: conf.bundle?.dontDeleteTsClientOutDirAfter ?? false,
+      sourcemap: conf.bundle?.sourcemap ?? false,
       requires: {
         [BuiltInTemplateName.readme]: '.',
         [BuiltInTemplateName.packageJson]: '.',

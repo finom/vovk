@@ -92,6 +92,28 @@ await describe('Full & segmented client', async () => {
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
+  await it('Generates composed client with included segments using --include flag', async () => {
+    await runAtProjectDir(
+      `../dist/index.mjs generate --include foo --include bar/baz --out ./composed-client --from ts`
+    );
+    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts']);
+    const { schema }: { schema: VovkSchema } = await import(
+      path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
+    );
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
+  });
+
+  await it('Generates composed client with excluded segments using --exclude flag', async () => {
+    await runAtProjectDir(
+      `../dist/index.mjs generate --exclude "" --exclude bar/baz --out ./composed-client --from ts`
+    );
+    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts']);
+    const { schema }: { schema: VovkSchema } = await import(
+      path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
+    );
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
+  });
+
   await it('Generates segmented client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
     await assertDirFileList('./segmented-client/root', ['index.ts', 'schema.ts']);
@@ -142,6 +164,39 @@ await describe('Full & segmented client', async () => {
       },
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
+    await assertDirFileList('./segmented-client', ['foo', 'a']);
+    const { schema }: { schema: VovkSchema } = await import(
+      path.join(projectDir, 'segmented-client/foo', 'schema.ts') + '?' + Math.random()
+    );
+    deepStrictEqual(Object.keys(schema.segments), ['foo']);
+  });
+
+  await it('Generates segmented client with included segments using --segmented-include-segments flag', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      composedClient: {
+        enabled: false,
+      },
+    }));
+    await runAtProjectDir(
+      `../dist/index.mjs generate --segmented-include-segments foo --segmented-include-segments bar/baz --segmented-out ./segmented-client`
+    );
+    await assertDirFileList('./segmented-client', ['foo', 'bar']);
+    const { schema }: { schema: VovkSchema } = await import(
+      path.join(projectDir, 'segmented-client/bar/baz', 'schema.ts') + '?' + Math.random()
+    );
+    deepStrictEqual(Object.keys(schema.segments), ['bar/baz']);
+  });
+  await it('Generates segmented client with excluded segments using --segmented-include-segments flag', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      composedClient: {
+        enabled: false,
+      },
+    }));
+    await runAtProjectDir(
+      `../dist/index.mjs generate --segmented-exclude-segments "" --segmented-exclude-segments bar/baz --segmented-out ./segmented-client`
+    );
     await assertDirFileList('./segmented-client', ['foo', 'a']);
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'segmented-client/foo', 'schema.ts') + '?' + Math.random()

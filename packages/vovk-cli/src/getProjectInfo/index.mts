@@ -1,24 +1,21 @@
 import path from 'node:path';
 import getConfig from './getConfig/index.mjs';
 import locateSegments from '../locateSegments.mjs';
-import type { BundleOptions, GenerateOptions } from '../types.mjs';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
 export default async function getProjectInfo({
   port: givenPort,
   cwd = process.cwd(),
-  cliGenerateOptions,
-  cliBundleOptions,
-}: { port?: number; cwd?: string; cliGenerateOptions?: GenerateOptions; cliBundleOptions?: BundleOptions } = {}) {
+  configPath,
+}: { port?: number; cwd?: string; configPath?: string } = {}) {
   const port = givenPort?.toString() ?? process.env.PORT ?? '3000';
 
   // Make PORT available to the config file at getConfig
   process.env.PORT = port;
 
   const { config, srcRoot, configAbsolutePaths, userConfig, error, log } = await getConfig({
-    cliGenerateOptions,
-    cliBundleOptions,
+    configPath,
     cwd,
   });
   const apiRoot = `${config.origin ?? ''}/${config.rootEntry}`;

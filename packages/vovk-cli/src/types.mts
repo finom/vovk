@@ -21,9 +21,13 @@ export interface GenerateOptions {
   composedFrom?: string[];
   composedOut?: string;
   composedOnly?: boolean;
+  composedIncludeSegments?: string[];
+  composedExcludeSegments?: string[];
   segmentedFrom?: string[];
   segmentedOut?: string;
   segmentedOnly?: boolean;
+  segmentedIncludeSegments?: string[];
+  segmentedExcludeSegments?: string[];
 }
 
 export interface BundleOptions extends Partial<Omit<VovkStrictConfig['bundle'], 'requires'>> {

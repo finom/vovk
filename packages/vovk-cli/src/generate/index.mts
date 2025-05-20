@@ -19,30 +19,32 @@ import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
   segments: ProjectInfo['segments'],
-  configKey: 'segmentedClient' | 'composedClient'
+  configKey: 'segmentedClient' | 'composedClient',
+  cliGenerateOptions: GenerateOptions | undefined
 ) => {
-  if (
-    ('includeSegments' satisfies keyof (typeof config)[typeof configKey]) in config[configKey] &&
-    ('excludeSegments' satisfies keyof (typeof config)[typeof configKey]) in config[configKey]
-  ) {
+  const includeSegments =
+    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'] ??
+    config[configKey].includeSegments;
+  const excludeSegments =
+    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedExcludeSegments' : 'composedExcludeSegments'] ??
+    config[configKey].excludeSegments;
+  if (includeSegments?.length && excludeSegments?.length) {
     throw new Error(
-      `Both includeSegments and excludeSegments are set in ${configKey} config. Please use only one of them.`
+      `Both includeSegments and excludeSegments are set in "${configKey}" config. Please use only one of them.`
     );
   }
   const includedSegmentNames =
-    ('includeSegments' satisfies keyof (typeof config)[typeof configKey]) in config[configKey] &&
-    Array.isArray(config[configKey].includeSegments)
-      ? config[configKey].includeSegments.map((segmentName) => {
+    Array.isArray(includeSegments) && includeSegments.length
+      ? includeSegments.map((segmentName) => {
           const segment = segments.find(({ segmentName: sName }) => sName === segmentName);
           if (!segment) {
-            throw new Error(`Segment "${segmentName}" not found in the config for ${configKey}`);
+            throw new Error(`Segment "${segmentName}" not found in the config for "${configKey}"`);
           }
           return segment.segmentName;
         })
-      : ('excludeSegments' satisfies keyof (typeof config)[typeof configKey]) in config[configKey] &&
-          Array.isArray(config[configKey].excludeSegments)
+      : Array.isArray(excludeSegments) && excludeSegments.length // TODO: Warn if excludeSegments includes a segment name that is not listed at segments
         ? segments
-            .filter(({ segmentName }) => !config[configKey].excludeSegments?.includes(segmentName))
+            .filter(({ segmentName }) => !excludeSegments?.includes(segmentName))
             .map(({ segmentName }) => segmentName)
         : segments.map(({ segmentName }) => segmentName);
 
@@ -106,6 +108,17 @@ export default async function generate({
   cliGenerateOptions?: GenerateOptions;
 }) {
   const { config, cwd, log, segments } = projectInfo;
+  const isComposedEnabled =
+    cliGenerateOptions?.composedOnly ||
+    !!cliGenerateOptions?.composedFrom ||
+    !!cliGenerateOptions?.composedOut ||
+    (config.composedClient?.enabled && !cliGenerateOptions?.segmentedOnly);
+
+  const isSegmentedEnabled =
+    cliGenerateOptions?.segmentedOnly ||
+    !!cliGenerateOptions?.segmentedFrom ||
+    !!cliGenerateOptions?.segmentedOut ||
+    (config.segmentedClient?.enabled && !cliGenerateOptions?.composedOnly);
 
   // Ensure that each segment has a matching schema if it needs to be emitted:
   for (let i = 0; i < segments.length; i++) {
@@ -116,9 +129,9 @@ export default async function generate({
     }
     if (!schema.emitSchema) continue;
   }
-  if (config.composedClient.enabled) {
+  if (isComposedEnabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, segments, 'composedClient');
+    const segmentNames = getIncludedSegmentNames(config, segments, 'composedClient', cliGenerateOptions);
     const { templateFiles: composedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
@@ -194,9 +207,9 @@ export default async function generate({
     }
   }
 
-  if (config.segmentedClient.enabled) {
+  if (isSegmentedEnabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, segments, 'segmentedClient');
+    const segmentNames = getIncludedSegmentNames(config, segments, 'segmentedClient', cliGenerateOptions);
     const { templateFiles: segmentedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
