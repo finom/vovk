@@ -1,5 +1,5 @@
 import path from 'node:path';
-import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
+import getFileSystemEntryType, { FileSystemEntryType } from '../../utils/getFileSystemEntryType.mjs';
 
 export default async function getRelativeSrcRoot({ cwd }: { cwd: string }) {
   // Next.js Docs: src/app or src/pages will be ignored if app or pages are present in the root directory.
@@ -9,5 +9,5 @@ export default async function getRelativeSrcRoot({ cwd }: { cwd: string }) {
     return './src';
   }
 
-  throw new Error(`${cwd} Could not find app router directory. Check Next.js docs for more info.`);
+  return null;
 }

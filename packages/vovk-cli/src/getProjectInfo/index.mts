@@ -1,6 +1,5 @@
 import path from 'node:path';
 import getConfig from './getConfig/index.mjs';
-import locateSegments from '../locateSegments.mjs';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
@@ -8,29 +7,28 @@ export default async function getProjectInfo({
   port: givenPort,
   cwd = process.cwd(),
   configPath,
-}: { port?: number; cwd?: string; configPath?: string } = {}) {
+  srcRootRequired = true,
+}: { port?: number; cwd?: string; configPath?: string; srcRootRequired?: boolean } = {}) {
   const port = givenPort?.toString() ?? process.env.PORT ?? '3000';
 
   // Make PORT available to the config file at getConfig
   process.env.PORT = port;
 
-  const { config, srcRoot, configAbsolutePaths, userConfig, error, log } = await getConfig({
+  const { config, srcRoot, configAbsolutePaths, log } = await getConfig({
     configPath,
     cwd,
   });
+
+  if (srcRootRequired && !srcRoot) {
+    throw new Error(`Could not find app router directory at ${cwd}. Check Next.js docs for more info.`);
+  }
+
   const apiRoot = `${config.origin ?? ''}/${config.rootEntry}`;
-  const apiDir = path.join(srcRoot, 'app', config.rootEntry);
+  const apiDir = path.join(srcRoot ?? '.', 'app', config.rootEntry);
 
   if (configAbsolutePaths.length > 1) {
     log.warn(`Multiple config files found. Using the first one: ${configAbsolutePaths[0]}`);
   }
-
-  if (!userConfig && configAbsolutePaths.length > 0) {
-    log.error(`Error reading config file at ${configAbsolutePaths[0]}: ${error?.message ?? 'Unknown Error'}`);
-  }
-
-  const apiDirAbsolutePath = path.join(cwd, apiDir);
-  const segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
 
   return {
     cwd,
@@ -40,6 +38,5 @@ export default async function getProjectInfo({
     srcRoot,
     config,
     log,
-    segments,
   };
 }

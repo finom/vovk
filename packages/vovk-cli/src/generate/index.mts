@@ -4,7 +4,6 @@ import matter from 'gray-matter';
 import _ from 'lodash';
 import type { VovkSchema, VovkStrictConfig } from 'vovk';
 import type { PackageJson } from 'type-fest';
-import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import getClientTemplateFiles from './getClientTemplateFiles.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
@@ -18,10 +17,11 @@ import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
-  segments: ProjectInfo['segments'],
+  fullSchema: VovkSchema,
   configKey: 'segmentedClient' | 'composedClient',
   cliGenerateOptions: GenerateOptions | undefined
 ) => {
+  const segments = Object.values(fullSchema.segments);
   const includeSegments =
     cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'] ??
     config[configKey].includeSegments;
@@ -107,7 +107,7 @@ export default async function generate({
   fullSchema: VovkSchema;
   cliGenerateOptions?: GenerateOptions;
 }) {
-  const { config, cwd, log, segments } = projectInfo;
+  const { config, cwd, log } = projectInfo;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
     !!cliGenerateOptions?.composedFrom ||
@@ -120,18 +120,9 @@ export default async function generate({
     !!cliGenerateOptions?.segmentedOut ||
     (config.segmentedClient?.enabled && !cliGenerateOptions?.composedOnly);
 
-  // Ensure that each segment has a matching schema if it needs to be emitted:
-  for (let i = 0; i < segments.length; i++) {
-    const { segmentName } = segments[i];
-    const schema = fullSchema.segments[segmentName];
-    if (!schema) {
-      throw new Error(`Unable to generate client. No schema found for ${formatLoggedSegmentName(segmentName)}`);
-    }
-    if (!schema.emitSchema) continue;
-  }
   if (isComposedEnabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, segments, 'composedClient', cliGenerateOptions);
+    const segmentNames = getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions);
     const { templateFiles: composedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
@@ -155,7 +146,7 @@ export default async function generate({
           : { data: { imports: [] }, content: templateContent };
         const clientImports = await getTemplateClientImports({
           config,
-          segments,
+          fullSchema,
           outCwdRelativeDir,
         });
 
@@ -209,7 +200,7 @@ export default async function generate({
 
   if (isSegmentedEnabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, segments, 'segmentedClient', cliGenerateOptions);
+    const segmentNames = getIncludedSegmentNames(config, fullSchema, 'segmentedClient', cliGenerateOptions);
     const { templateFiles: segmentedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
@@ -235,7 +226,7 @@ export default async function generate({
           segmentNames.map(async (segmentName) => {
             const clientImports = await getTemplateClientImports({
               config,
-              segments,
+              fullSchema,
               outCwdRelativeDir,
             });
 

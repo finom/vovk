@@ -101,10 +101,10 @@ program
   .option('--prettify', 'prettify output files')
   .option('--config <config>', 'path to config file')
   .action(async (cliGenerateOptions: GenerateOptions) => {
-    const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.config });
-    const { cwd, config } = projectInfo;
+    const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.config, srcRootRequired: false });
+    const { cwd, config, log } = projectInfo;
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
-    const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
+    const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, log);
 
     await generate({
       projectInfo,
@@ -126,10 +126,9 @@ program
   .option('--config <config>', 'path to config file')
   .option('--sourcemap', 'generate sourcemaps')
   .action(async (cliBundleOptions: BundleOptions) => {
-    const projectInfo = await getProjectInfo({ configPath: cliBundleOptions.config });
-    const { cwd, config } = projectInfo;
-    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
-    const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, projectInfo);
+    const projectInfo = await getProjectInfo({ configPath: cliBundleOptions.config, srcRootRequired: false });
+    const { cwd, config, log } = projectInfo;
+    const fullSchema = await getFullSchemaFromJSON(path.resolve(cwd, config.schemaOutDir), log);
 
     await bundle({
       projectInfo,

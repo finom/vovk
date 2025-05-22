@@ -1,6 +1,5 @@
 import path from 'node:path';
-import type { VovkStrictConfig } from 'vovk';
-import type { Segment } from '../locateSegments.mjs';
+import type { VovkSchema, VovkStrictConfig } from 'vovk';
 import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 export type ClientImports = {
@@ -11,11 +10,11 @@ export type ClientImports = {
 
 export default function getTemplateClientImports({
   config,
-  segments,
+  fullSchema,
   outCwdRelativeDir,
 }: {
   config: VovkStrictConfig;
-  segments: Segment[];
+  fullSchema: VovkSchema;
   outCwdRelativeDir: string;
 }) {
   const { imports } = config;
@@ -39,7 +38,7 @@ export default function getTemplateClientImports({
       },
     },
     segmentedClient: Object.fromEntries(
-      segments.map((segment) => [
+      Object.values(fullSchema.segments).map((segment) => [
         segment.segmentName,
         {
           fetcher: getImportPath(imports.fetcher[0], segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME),

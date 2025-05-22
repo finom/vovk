@@ -7,14 +7,13 @@ import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 export async function getFullSchemaFromJSON(
   schemaOutAbsolutePath: string,
-  projectInfo: ProjectInfo
+  log: ProjectInfo['log']
 ): Promise<VovkSchema> {
   const result: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     config: {},
     segments: {},
   };
-  const { log } = projectInfo;
 
   // Handle config.json
   const configPath = path.join(schemaOutAbsolutePath, 'config.json');

@@ -1,7 +1,7 @@
 import { confirm, select } from '@inquirer/prompts';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import getConfigPaths from '../getProjectInfo/getConfigAbsolutePaths.mjs';
+import getConfigPaths from '../getProjectInfo/getConfig/getConfigAbsolutePaths.mjs';
 import type { InitOptions } from '../types.mjs';
 import chalk from 'chalk';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';

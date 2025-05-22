@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk';
 import getLogger from '../../utils/getLogger.mjs';
-import getUserConfig from '../getUserConfig.mjs';
-import getRelativeSrcRoot from '../getRelativeSrcRoot.mjs';
+import getUserConfig from './getUserConfig.mjs';
+import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 import type { VovkEnv } from '../../types.mjs';
 import getTemplateDefs, { BuiltInTemplateName } from './getTemplateDefs.mjs';
 
@@ -46,7 +46,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
       ...conf.segmentedClient,
       enabled: conf.segmentedClient?.enabled ?? false,
       fromTemplates: conf.segmentedClient?.fromTemplates ?? ['ts'],
-      outDir: conf.segmentedClient?.outDir ?? path.join(srcRoot, 'client'),
+      outDir: conf.segmentedClient?.outDir ?? path.join(srcRoot ?? '.', 'client'),
     },
     bundle: {
       ...conf.bundle,
@@ -59,7 +59,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
         [BuiltInTemplateName.packageJson]: '.',
       },
     },
-    modulesDir: conf.modulesDir ?? path.join(srcRoot, 'modules'),
+    modulesDir: conf.modulesDir ?? path.join(srcRoot ?? '.', 'modules'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',
@@ -86,5 +86,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
 
   const log = getLogger(config.logLevel);
 
-  return { config, srcRoot, configAbsolutePaths, userConfig, error, log };
+  if (error) log.error(`Error reading config: ${String(error)}`);
+
+  return { config, srcRoot, configAbsolutePaths, userConfig, log };
 }

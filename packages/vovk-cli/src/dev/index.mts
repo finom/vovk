@@ -13,15 +13,17 @@ import logDiffResult from './logDiffResult.mjs';
 import ensureClient from '../generate/ensureClient.mjs';
 import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
 import generate from '../generate/index.mjs';
-import locateSegments from '../locateSegments.mjs';
+import locateSegments, { Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import isSegmentSchemaEmpty from './isSegmentSchemaEmpty.mjs';
 import writeConfigJson from './writeConfigJson.mjs';
 import type { VovkEnv } from '../types.mjs';
+import { isEmpty } from 'lodash';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
+
+  #segments: Segment[] = [];
 
   #fullSchema: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
@@ -54,22 +56,22 @@ export class VovkDev {
         if (segmentReg.test(filePath)) {
           const segmentName = getSegmentName(filePath);
 
-          this.#projectInfo.segments = this.#projectInfo.segments.find((s) => s.segmentName === segmentName)
-            ? this.#projectInfo.segments
+          this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
+            ? this.#segments
             : [
-                ...this.#projectInfo.segments,
+                ...this.#segments,
                 {
                   routeFilePath: filePath,
                   segmentName,
                 },
               ];
           log.info(`${capitalize(formatLoggedSegmentName(segmentName))} has been added`);
-          log.debug(`Full list of segments: ${this.#projectInfo.segments.map((s) => s.segmentName).join(', ')}`);
+          log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
           void debouncedEnsureSchemaFiles(
             this.#projectInfo,
             schemaOutAbsolutePath,
-            this.#projectInfo.segments.map((s) => s.segmentName)
+            this.#segments.map((s) => s.segmentName)
           );
         }
       })
@@ -82,24 +84,24 @@ export class VovkDev {
 
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
-        this.#projectInfo.segments = await locateSegments({
+        this.#segments = await locateSegments({
           dir: apiDirAbsolutePath,
           config,
           log: this.#projectInfo.log,
         });
-        for (const { segmentName } of this.#projectInfo.segments) {
+        for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
       })
 
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
-        this.#projectInfo.segments = await locateSegments({
+        this.#segments = await locateSegments({
           dir: apiDirAbsolutePath,
           config,
           log: this.#projectInfo.log,
         });
-        for (const { segmentName } of this.#projectInfo.segments) {
+        for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
       })
@@ -107,14 +109,14 @@ export class VovkDev {
         log.debug(`File ${filePath} has been removed from segments folder`);
         if (segmentReg.test(filePath)) {
           const segmentName = getSegmentName(filePath);
-          this.#projectInfo.segments = this.#projectInfo.segments.filter((s) => s.segmentName !== segmentName);
+          this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
           log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} has been removed`);
-          log.debug(`Full list of segments: ${this.#projectInfo.segments.map((s) => s.segmentName).join(', ')}`);
+          log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
 
           void debouncedEnsureSchemaFiles(
             this.#projectInfo,
             schemaOutAbsolutePath,
-            this.#projectInfo.segments.map((s) => s.segmentName)
+            this.#segments.map((s) => s.segmentName)
           );
         }
       })
@@ -149,12 +151,12 @@ export class VovkDev {
         log.debug(`File ${filePath} has been removed from modules folder`);
       })
       .on('addDir', () => {
-        for (const { segmentName } of this.#projectInfo.segments) {
+        for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
       })
       .on('unlinkDir', () => {
-        for (const { segmentName } of this.#projectInfo.segments) {
+        for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
       })
@@ -175,6 +177,8 @@ export class VovkDev {
 
     const handle = debounce(async () => {
       this.#projectInfo = await getProjectInfo();
+      const { config, apiDir } = this.#projectInfo;
+      this.#segments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
       await this.#modulesWatcher?.close();
       await this.#segmentWatcher?.close();
 
@@ -236,7 +240,7 @@ export class VovkDev {
     const { log } = this.#projectInfo;
 
     log.debug(
-      `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#projectInfo.segments.map((s) => s.segmentName))}.`
+      `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
 
     // automatically watches segments and modules
@@ -255,7 +259,7 @@ export class VovkDev {
 
     const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
     if (importRegex.test(code) && namesOfClasses.length) {
-      const affectedSegments = this.#projectInfo.segments.filter((s) => {
+      const affectedSegments = this.#segments.filter((s) => {
         const segmentSchema = this.#fullSchema.segments[s.segmentName];
         if (!segmentSchema) return false;
         const controllersByOriginalName = keyBy(
@@ -336,7 +340,7 @@ export class VovkDev {
     log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
 
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
-    const segment = this.#projectInfo.segments.find((s) => s.segmentName === segmentName);
+    const segment = this.#segments.find((s) => s.segmentName === segmentName);
 
     if (!segment) {
       log.warn(`${formatLoggedSegmentName(segmentName)} not found`);
@@ -358,13 +362,13 @@ export class VovkDev {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
         log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName)} has been updated in ${timeTook}ms`);
       }
-    } else if (segmentSchema && !isSegmentSchemaEmpty(segmentSchema)) {
+    } else if (segmentSchema && !isEmpty(segmentSchema.controllers)) {
       log.error(
         `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but "emitSchema" is false`
       );
     }
 
-    if (this.#projectInfo.segments.every((s) => this.#fullSchema.segments[s.segmentName])) {
+    if (this.#segments.every((s) => this.#fullSchema.segments[s.segmentName])) {
       log.debug(`All segments with "emitSchema" have schema.`);
       this.#generate();
     }
@@ -373,7 +377,8 @@ export class VovkDev {
   async start({ exit }: { exit: boolean }) {
     const now = Date.now();
     this.#projectInfo = await getProjectInfo();
-    const { log, config, cwd } = this.#projectInfo;
+    const { log, config, cwd, apiDir } = this.#projectInfo;
+    this.#segments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
     log.info('Starting...');
 
     if (exit) {
@@ -405,7 +410,7 @@ export class VovkDev {
     await ensureSchemaFiles(
       this.#projectInfo,
       schemaOutAbsolutePath,
-      this.#projectInfo.segments.map((s) => s.segmentName)
+      this.#segments.map((s) => s.segmentName)
     );
 
     await ensureClient(this.#projectInfo);
@@ -415,7 +420,7 @@ export class VovkDev {
 
     // Request schema every segment in 5 seconds in order to update schema on start
     setTimeout(() => {
-      for (const { segmentName } of this.#projectInfo.segments) {
+      for (const { segmentName } of this.#segments) {
         let attempts = 0;
         void this.#requestSchema(segmentName).then(({ isError }) => {
           if (isError) {

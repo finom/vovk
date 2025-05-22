@@ -14,7 +14,7 @@ async function getUserConfig({
   let userConfig: VovkConfig;
 
   if (!configAbsolutePaths.length) {
-    return { userConfig: null, configAbsolutePaths, error: new Error('No config file found') };
+    return { userConfig: null, configAbsolutePaths };
   }
 
   const configPath = configAbsolutePaths[0];
