@@ -18,7 +18,7 @@ export default async function newSegment({
   overwrite?: boolean;
   dryRun?: boolean;
 }) {
-  const { apiDir, cwd, log } = await getProjectInfo();
+  const { apiDir, cwd, log, config } = await getProjectInfo();
 
   const absoluteSegmentRoutePath = path.join(cwd, apiDir, segmentName, '[[...vovk]]/route.ts');
 
@@ -38,9 +38,11 @@ const controllers = {};
 export type Controllers = typeof controllers;
 ${
   isStaticSegment
-    ? `export function generateStaticParams() {
+    ? `
+export function generateStaticParams() {
   return generateStaticAPI(controllers);
-}`
+}
+`
     : ''
 }
 export const { GET${isStaticSegment ? '' : ', POST, PATCH, PUT, HEAD, OPTIONS, DELETE'} } = initVovk({
@@ -56,10 +58,12 @@ ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
     await fs.writeFile(absoluteSegmentRoutePath, code);
   }
 
-  log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} created at ${absoluteSegmentRoutePath}.`);
+  log.info(
+    `${formatLoggedSegmentName(segmentName, { upperFirst: true, isStatic: isStaticSegment })} created at ${absoluteSegmentRoutePath}.`
+  );
 
   const dir = chalk.cyanBright([segmentName, 'thing'].filter(Boolean).join('/'));
   log.info(
-    `Run ${chalkHighlightThing(`npx vovk new service controller ${dir}`)} to create a new controller with a service at modules/${dir} folder for this segment`
+    `Run ${chalkHighlightThing(`npx vovk new service controller ${dir}`)} to create a new controller with a service at ${path.join(config.modulesDir, dir)} folder for this segment`
   );
 }
