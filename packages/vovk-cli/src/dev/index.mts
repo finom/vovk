@@ -7,6 +7,7 @@ import keyBy from 'lodash/keyBy.js';
 import capitalize from 'lodash/capitalize.js';
 import debounce from 'lodash/debounce.js';
 import once from 'lodash/once.js';
+import isEmpty from 'lodash/isEmpty.js';
 import ensureSchemaFiles, { debouncedEnsureSchemaFiles } from './ensureSchemaFiles.mjs';
 import writeOneSegmentSchemaFile from './writeOneSegmentSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
@@ -18,7 +19,6 @@ import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import writeConfigJson from './writeConfigJson.mjs';
 import type { VovkEnv } from '../types.mjs';
-import { isEmpty } from 'lodash';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
