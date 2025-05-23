@@ -11,7 +11,7 @@ compiledName: <%= t.TheThing + 'RPC' %>
 
 import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.resolutionExt %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')

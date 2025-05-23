@@ -17,6 +17,7 @@ export default async function render(
     moduleName,
     empty,
     templateFileName,
+    isNodeNextResolution,
   }: {
     cwd: string;
     config: VovkStrictConfig;
@@ -25,6 +26,7 @@ export default async function render(
     moduleName: string;
     empty?: boolean;
     templateFileName: string;
+    isNodeNextResolution: boolean;
   }
 ): Promise<VovkModuleRenderResult> {
   const getModuleDirName = (givenSegmentName: string, givenModuleName: string) =>
@@ -56,6 +58,7 @@ export default async function render(
     config,
     withService,
     segmentName,
+    resolutionExt: isNodeNextResolution ? '.ts' : '',
     defaultDir: getModuleDirName(segmentName, theThing),
 
     // libraries

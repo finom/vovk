@@ -1,4 +1,4 @@
-import { type VovkSegmentSchema, type VovkController, type StaticClass, VovkSchemaIdEnum } from '../types';
+import { type VovkSegmentSchema, type VovkController, type StaticClass, VovkSchemaIdEnum } from '../types.js';
 
 export function getControllerSchema(controller: VovkController, rpcModuleName: string, exposeValidation: boolean) {
   return {

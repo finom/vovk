@@ -7,3 +7,5 @@
 *.cjs
 !eslint.config.js
 !vovk.config.test.mjs
+cjs
+mjs

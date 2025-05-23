@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "include": ["index.cts"],
-  "compilerOptions": {
-    "moduleResolution": "node",
-    "module": "CommonJS",
-    "declaration": true
-  }
-}

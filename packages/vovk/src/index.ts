@@ -1,4 +1,4 @@
-import { createVovkApp } from './createVovkApp';
+import { createVovkApp } from './createVovkApp.js';
 import {
   HttpStatus,
   HttpMethod,
@@ -20,7 +20,7 @@ import {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkValidationType,
-} from './types';
+} from './types.js';
 import {
   type VovkClient,
   type VovkClientOptions,
@@ -31,12 +31,12 @@ import {
   createRPC,
   fetcher,
   createFetcher,
-} from './client';
-import { HttpException } from './HttpException';
-import { createDecorator } from './createDecorator';
-import { JSONLinesResponse } from './JSONLinesResponse';
-import { generateStaticAPI } from './utils/generateStaticAPI';
-import { withValidation } from './utils/withValidation';
+} from './client/index.js';
+import { HttpException } from './HttpException.js';
+import { createDecorator } from './createDecorator.js';
+import { JSONLinesResponse } from './JSONLinesResponse.js';
+import { generateStaticAPI } from './utils/generateStaticAPI.js';
+import { withValidation } from './utils/withValidation.js';
 
 export {
   type KnownAny,

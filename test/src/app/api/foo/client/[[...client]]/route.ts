@@ -1,13 +1,13 @@
 import { initVovk } from 'vovk';
 
-import CommonController from '../../../../../client/CommonController';
-import StreamingController from '../../../../../client/StreamingController';
-import StreamingGeneratorController from '../../../../../client/StreamingGeneratorController';
-import CustomSchemaController from '../../../../../client/CustomSchemaController';
-import WithZodClientController from '../../../../../client/WithZodClientController';
-import WithYupClientController from '../../../../../client/WithYupClientController';
-import WithDtoClientController from '../../../../../client/WithDtoClientController';
-import OpenApiController from '../../../../../client/OpenApiController';
+import CommonController from '../../../../../client/CommonController.ts';
+import StreamingController from '../../../../../client/StreamingController.ts';
+import StreamingGeneratorController from '../../../../../client/StreamingGeneratorController.ts';
+import CustomSchemaController from '../../../../../client/CustomSchemaController.ts';
+import WithZodClientController from '../../../../../client/WithZodClientController.ts';
+import WithYupClientController from '../../../../../client/WithYupClientController.ts';
+import WithDtoClientController from '../../../../../client/WithDtoClientController.ts';
+import OpenApiController from '../../../../../client/OpenApiController.ts';
 
 const controllers = {
   CommonControllerRPC: CommonController,

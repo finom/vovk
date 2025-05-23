@@ -1,19 +1,22 @@
 {
   "name": "vovk",
-  "version": "3.0.0-draft.128",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
+  "version": "3.0.0-draft.140",
+  "main": "./cjs/index.js",
+  "module": "./mjs/index.js",
+  "types": "./mjs/index.d.ts",
+  "description": "RESTful RPC for Next.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
+    "build:esm": "tsc --module NodeNext --outDir mjs --moduleResolution nodenext",
+    "build:cjs": "tsc --module commonjs --outDir cjs",
     "rm-dist": "shx rm -rf dist",
     "lint": "eslint . --fix",
     "tsc": "tsc --noEmit",
-    "npm-publish": "if [ -z \"$NPM_TAG\" ]; then echo 'Error: NPM_TAG is not set'; exit 1; fi; cd ./dist && npm publish --tag=$NPM_TAG && cd ..",
+    "npm-publish": "if [ -z \"$NPM_TAG\" ]; then echo 'Error: NPM_TAG is not set'; exit 1; fi; npm publish --tag=$NPM_TAG",
     "ncu": "npm-check-updates -u"
   },
   "keywords": [

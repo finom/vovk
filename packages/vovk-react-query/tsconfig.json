@@ -3,8 +3,8 @@
   "compilerOptions": {
     "noEmit": false
   },
-  "include": ["index.mts", "test/**/*.mts"],
-  "exclude": ["*.d.mts", "*.d.cts", "vovk.config.test.mjs"],
+  "include": ["src/index.mts"],
+  "exclude": ["dist"],
   "paths": {
     "react/*": ["../../node_modules/react/*"]
   }

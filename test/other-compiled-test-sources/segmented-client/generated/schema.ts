@@ -1,15 +1,15 @@
-// auto-generated 2025-05-16T15:42:01.655Z
+// auto-generated 2025-05-23T18:21:43.664Z
 /* eslint-disable */
-import config from './../../../.vovk-schema/config.json' with { type: 'json' };
+import config from './../../../.vovk-schema/config.json' with { type: "json" };
 
-import segment0 from './../../../.vovk-schema/segments/generated.json' with { type: 'json' };
+import segment0 from './../../../.vovk-schema/segments/generated.json' with { type: "json" };
 
 const segments = {
-  generated: segment0,
+  'generated': segment0,
 };
 
 export const schema = {
-  $schema: 'https://vovk.dev/api/spec/v3/schema.json',
+  $schema: '',
   config,
   segments,
 };

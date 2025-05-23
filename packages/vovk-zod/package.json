@@ -1,10 +1,13 @@
 {
   "name": "vovk-zod",
-  "version": "1.0.0-draft.71",
+  "version": "1.0.0-draft.99",
   "description": "Zod validation for Vovk.ts",
-  "main": "index.js",
+  "main": "./esm/index.mjs",
+  "module": "./esm/index.mjs",
+  "types": "./esm/index.d.mts",
   "scripts": {
-    "build": "tsc -P tsconfig.build.json",
+    "build": "rm -rf esm && npm run build:esm",
+    "build:esm": "tsc --outDir esm",
     "tsc": "tsc --noEmit",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u"
@@ -14,13 +17,16 @@
     "zod",
     "ajv"
   ],
-  "author": "Andrii Gubanov",
+  "author": "Andrey Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.128",
+    "vovk": "^3.0.0-draft.140",
     "zod": "^3.25.23"
   },
   "dependencies": {
     "vovk-validate-client-ajv": "^0.0.0-beta.3"
+  },
+  "devDependencies": {
+    "zod": "^3.25.23"
   }
 }

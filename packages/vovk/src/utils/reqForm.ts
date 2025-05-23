@@ -1,4 +1,4 @@
-import type { KnownAny, VovkRequest } from '../types';
+import type { KnownAny, VovkRequest } from '../types.js';
 
 const formMap = new WeakMap();
 

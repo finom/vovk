@@ -14,8 +14,8 @@
   ],
   "compilerOptions": {
     "noEmit": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "allowImportingTsExtensions": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

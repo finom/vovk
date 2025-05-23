@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
 import { runScript } from './runScript.mts';
 import path from 'node:path';
-import getUserConfig from '../../dist/getProjectInfo/getUserConfig.mjs';
+import getUserConfig from '../../dist/getProjectInfo/getConfig/getUserConfig.mjs';
 import type { VovkConfig } from 'vovk';
 import getFileSystemEntryType, { FileSystemEntryType } from '../../dist/utils/getFileSystemEntryType.mjs';
 import checkTSConfigForExperimentalDecorators from '../../dist/init/checkTSConfigForExperimentalDecorators.mjs';

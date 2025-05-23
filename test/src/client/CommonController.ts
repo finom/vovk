@@ -1,7 +1,7 @@
-import { headers } from 'next/headers';
+import { headers } from 'next/headers.js';
 import { HttpException, HttpStatus, JSONLinesResponse, type VovkRequest, get, post, prefix } from 'vovk';
-import { NextResponse } from 'next/server';
-import { NESTED_QUERY_EXAMPLE } from '../lib';
+import { NextResponse } from 'next/server.js';
+import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 @prefix('common')
 export default class CommonController {

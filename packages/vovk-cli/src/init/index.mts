@@ -1,9 +1,9 @@
-import { confirm, select } from '@inquirer/prompts';
+import { confirm, select, checkbox } from '@inquirer/prompts';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import getConfigPaths from '../getProjectInfo/getConfig/getConfigAbsolutePaths.mjs';
-import type { InitOptions } from '../types.mjs';
 import chalk from 'chalk';
+import NPMCliPackageJson from '@npmcli/package-json';
+import getConfigPaths from '../getProjectInfo/getConfig/getConfigAbsolutePaths.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import installDependencies, { getPackageManager } from './installDependencies.mjs';
 import getLogger from '../utils/getLogger.mjs';
@@ -14,7 +14,7 @@ import updateTypeScriptConfig from './updateTypeScriptConfig.mjs';
 import updateDependenciesWithoutInstalling from './updateDependenciesWithoutInstalling.mjs';
 import logUpdateDependenciesError from './logUpdateDependenciesError.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
-import NPMCliPackageJson from '@npmcli/package-json';
+import type { InitOptions } from '../types.mjs';
 
 export class Init {
   root: string;
@@ -38,6 +38,7 @@ export class Init {
       updateScripts,
       validationLibrary,
       reactQuery,
+      lang,
       dryRun,
       channel,
     }: Omit<InitOptions, 'yes' | 'logLevel'>
@@ -45,6 +46,13 @@ export class Init {
     const { log, root } = this;
     const dependencies: string[] = ['vovk', 'vovk-client', 'vovk-openapi'];
     const devDependencies: string[] = ['vovk-cli'];
+
+    if (lang?.includes('py')) {
+      dependencies.push('vovk-python-client');
+    }
+    if (lang?.includes('rs')) {
+      dependencies.push('vovk-rust-client');
+    }
 
     // delete older config files
     if (configPaths.length) {
@@ -57,7 +65,7 @@ export class Init {
         validationLibrary,
         'vovk-ajv',
         ...({
-          'vovk-zod': ['zod@next'],
+          'vovk-zod': ['zod'],
           'vovk-yup': ['yup'],
           'vovk-dto': ['class-validator', 'class-transformer', 'dto-mapped-types', 'reflect-metadata'],
         }[validationLibrary] ?? [])
@@ -160,7 +168,7 @@ export class Init {
       const { configAbsolutePath } = await createConfig({
         root,
         log,
-        options: { validationLibrary, reactQuery, channel, dryRun },
+        options: { validationLibrary, reactQuery, channel, lang, dryRun },
       });
 
       log.info('Config created successfully at ' + configAbsolutePath);
@@ -183,6 +191,7 @@ export class Init {
       updateScripts,
       validationLibrary,
       reactQuery,
+      lang,
       dryRun,
       channel,
     }: InitOptions
@@ -210,6 +219,7 @@ export class Init {
         reactQuery: reactQuery ?? true,
         dryRun: dryRun ?? false,
         channel: channel ?? 'latest',
+        lang: lang ?? [],
       } satisfies Required<Omit<InitOptions, 'yes' | 'logLevel'>>);
     }
 
@@ -258,36 +268,32 @@ export class Init {
             ],
           })));
 
-    updateScripts =
-      updateScripts ??
-      (await select({
-        message: 'Do you want to update "dev" NPM script at package.json?',
-        default: 'implicit',
-        choices: [
-          {
-            name: 'Yes, use "concurrently" implicitly',
-            value: 'implicit' as const,
-            description: `The script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}`,
-          },
-          {
-            name: 'Yes, use "concurrently" explicitly',
-            value: 'explicit' as const,
-            description: `The script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}`,
-          },
-          {
-            name: 'No',
-            value: undefined,
-            description: 'Add the NPM scripts manually',
-          },
-        ],
-      }));
+    updateScripts ??= await select({
+      message: 'Do you want to update "dev" NPM script at package.json?',
+      default: 'implicit',
+      choices: [
+        {
+          name: 'Yes, use "concurrently" implicitly',
+          value: 'implicit' as const,
+          description: `The script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}`,
+        },
+        {
+          name: 'Yes, use "concurrently" explicitly',
+          value: 'explicit' as const,
+          description: `The script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}`,
+        },
+        {
+          name: 'No',
+          value: undefined,
+          description: 'Add the NPM scripts manually',
+        },
+      ],
+    });
 
-    reactQuery =
-      reactQuery ??
-      (await confirm({
-        default: false,
-        message: 'Do you want to use @tanstack/react-query for data fetching at React components?',
-      }));
+    reactQuery ??= await confirm({
+      default: false,
+      message: 'Do you want to use @tanstack/react-query for data fetching at React components?',
+    });
 
     if (typeof updateTsConfig === 'undefined') {
       let shouldAsk = false;
@@ -309,6 +315,14 @@ export class Init {
       }
     }
 
+    lang ??= await checkbox({
+      message: 'Do you want to generate RPC client for other languages besides TypeScript?',
+      choices: [
+        { name: 'Python', value: 'py' },
+        { name: 'Rust', value: 'rs' },
+      ],
+    });
+
     await this.#init(
       { configPaths, pkgJson },
       {
@@ -321,6 +335,7 @@ export class Init {
         updateScripts,
         validationLibrary,
         reactQuery,
+        lang,
         dryRun,
         channel,
       }

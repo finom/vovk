@@ -10,11 +10,11 @@ import type { InitOptions } from '../types.mjs';
 export default async function createConfig({
   root,
   log,
-  options: { validationLibrary, reactQuery, channel, dryRun },
+  options: { validationLibrary, reactQuery, lang, channel, dryRun },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
-  options: Pick<InitOptions, 'validationLibrary' | 'reactQuery' | 'channel' | 'dryRun'>;
+  options: Pick<InitOptions, 'validationLibrary' | 'reactQuery' | 'lang' | 'channel' | 'dryRun'>;
 }) {
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
@@ -39,6 +39,11 @@ export default async function createConfig({
     } catch (error) {
       log.warn(`Failed to fetch validation library templates: ${(error as Error).message}`);
     }
+  }
+
+  if (lang?.length) {
+    config.composedClient ??= {};
+    config.composedClient.fromTemplates = ['mjs', 'cjs', ...lang];
   }
 
   if (reactQuery) {

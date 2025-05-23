@@ -1,4 +1,4 @@
-import type { KnownAny } from '../types';
+import type { KnownAny } from '../types.js';
 
 /**
  * Parse a bracket-based key (e.g. "z[d][0][x]" or "arr[]")

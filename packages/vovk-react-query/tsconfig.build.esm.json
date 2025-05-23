@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "include": ["index.mts"],
-  "compilerOptions": {
-    "moduleResolution": "node",
-    "module": "ESNext",
-    "declaration": true
-  }
-}

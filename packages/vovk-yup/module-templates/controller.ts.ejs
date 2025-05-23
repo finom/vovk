@@ -13,7 +13,7 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.resolutionExt %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')

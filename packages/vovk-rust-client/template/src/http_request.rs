@@ -11,8 +11,8 @@ use crate::read_full_schema;
 use once_cell::sync::Lazy;
 
 // Custom error type for HTTP exceptions
-#[derive(Debug)]
-struct HttpException {
+#[derive(Debug, Serialize)]
+pub struct HttpException {
     message: String,
     status_code: i32,
     #[allow(dead_code)]
@@ -28,10 +28,10 @@ impl fmt::Display for HttpException {
 impl Error for HttpException {}
 
 // Load the full schema only once using lazy initialization
-static FULL_SCHEMA: Lazy<Result<Value, Box<dyn Error + Send + Sync>>> = Lazy::new(|| {
+static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
     read_full_schema::read_full_schema()
         .map(|schema| serde_json::to_value(schema).expect("Failed to convert schema to Value"))
-        .map_err(|e| Box::<dyn Error + Send + Sync>::from(format!("Failed to read schema: {}", e)))
+        .map_err(|e| format!("Failed to read schema: {}", e))
 });
 
 // Private helper function for request preparation
@@ -222,6 +222,7 @@ where
 }
 
 // Main request function for regular (non-streaming) responses
+#[allow(dead_code)]
 pub fn http_request<T, B, Q, P>(
     default_api_root: &str,
     segment_name: &str,
@@ -233,7 +234,7 @@ pub fn http_request<T, B, Q, P>(
     headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
-) -> Result<T, Box<dyn Error>> 
+) -> Result<T, HttpException> 
 where 
     T: DeserializeOwned + 'static,
     B: Serialize + ?Sized,
@@ -252,10 +253,18 @@ where
         headers,
         api_root,
         disable_client_validation,
-    )?;
+    ).map_err(|e| HttpException {
+        message: e.to_string(),
+        status_code: 0,
+        cause: None,
+    })?;
     
     // Send the request
-    let response = request.send()?;
+    let response = request.send().map_err(|e| HttpException {
+        message: e.to_string(),
+        status_code: 0,
+        cause: None,
+    })?;
     
     // Handle the response based on Content-Type
     let content_type = response
@@ -265,7 +274,11 @@ where
     
     match content_type {
         Some(ct) if ct.contains("application/json") => {
-            let value: Value = response.json()?;
+            let value: Value = response.json().map_err(|e| HttpException {
+                message: e.to_string(),
+                status_code: 0,
+                cause: None,
+            })?;
             if value.get("isError").is_some() {
                 let message = value["message"]
                     .as_str()
@@ -273,25 +286,38 @@ where
                     .to_string();
                 let status_code = value["statusCode"].as_i64().unwrap_or(0) as i32;
                 let cause = value.get("cause").cloned();
-                return Err(Box::new(HttpException {
+                return Err(HttpException {
                     message,
                     status_code,
                     cause,
-                }));
+                });
             }
             
-            let typed_value = serde_json::from_value::<T>(value)?;
+            let typed_value = serde_json::from_value::<T>(value).map_err(|e| HttpException {
+                message: e.to_string(),
+                status_code: 0,
+                cause: None,
+            })?;
             Ok(typed_value)
         }
         _ => {
-            let text = response.text()?;
-            let typed_value = serde_json::from_str::<T>(&text)?;
+            let text = response.text().map_err(|e| HttpException {
+                message: e.to_string(),
+                status_code: 0,
+                cause: None,
+            })?;
+            let typed_value = serde_json::from_str::<T>(&text).map_err(|e| HttpException {
+                message: e.to_string(),
+                status_code: 0,
+                cause: None,
+            })?;
             Ok(typed_value)
         }
     }
 }
 
 // Request function specifically for streaming responses
+#[allow(dead_code)]
 pub fn http_request_stream<T, B, Q, P>(
     default_api_root: &str,
     segment_name: &str,

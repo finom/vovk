@@ -5,13 +5,13 @@ import type {
   KnownAny,
   HttpMethod,
   VovkSchema,
-} from '../types';
-import type { VovkClientOptions, VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
+} from '../types.js';
+import type { VovkClientOptions, VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types.js';
 
-import { fetcher } from './fetcher';
-import { defaultHandler } from './defaultHandler';
-import { defaultStreamHandler } from './defaultStreamHandler';
-import serializeQuery from '../utils/serializeQuery';
+import { fetcher } from './fetcher.js';
+import { defaultHandler } from './defaultHandler.js';
+import { defaultStreamHandler } from './defaultStreamHandler.js';
+import serializeQuery from '../utils/serializeQuery.js';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 

@@ -5,7 +5,7 @@ imports: ['vovk-openapi']
     createCodeExamples: t.imports['vovk-openapi'].createCodeExamples,
 }; %>
 
-# <%= t.package.name.replace(/-/g, '_') %> v<%= t.package.version %>
+# <%= t.package.name.replace(/-/g, '_') %> v<%= t.package.version %> ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 
 <%- t.package.description ? `> ${t.package.description}` : '' %>
 
@@ -27,7 +27,7 @@ cargo install <%= t.package.name.replace(/-/g, '_') %>
 
 <%- handlerSchema.openapi?.description ? `${handlerSchema.openapi.description}` : '' %>
 
-Endpoint: <%= t.apiRoot %>/<%= segmentName %>/<%= controllerSchema.prefix %>/<%= handlerSchema.path %>
+Endpoint: `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
 
 ```rust
 <%- vars.createCodeExamples({

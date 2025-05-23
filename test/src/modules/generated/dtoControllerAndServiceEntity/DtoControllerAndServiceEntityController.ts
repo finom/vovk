@@ -2,7 +2,7 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { IsString, IsIn } from 'class-validator';
 
-import DtoControllerAndServiceEntityService from './DtoControllerAndServiceEntityService';
+import DtoControllerAndServiceEntityService from './DtoControllerAndServiceEntityService.ts';
 
 class GetDtoControllerAndServiceEntitiesQueryDto {
   @IsString()

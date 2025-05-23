@@ -1,6 +1,6 @@
 import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
 
-import NoValidationControllerAndServiceEntityService from './NoValidationControllerAndServiceEntityService';
+import NoValidationControllerAndServiceEntityService from './NoValidationControllerAndServiceEntityService.ts';
 
 @prefix('no-validation-controller-and-service-entities')
 export default class NoValidationControllerAndServiceEntityController {

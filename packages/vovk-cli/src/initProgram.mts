@@ -17,6 +17,10 @@ export default function initProgram(program: Command) {
     .option('--update-ts-config', 'update tsconfig.json')
     .option('--update-scripts <mode>', 'update package.json scripts ("implicit" or "explicit")')
     .option(
+      '--lang <languages...>',
+      'generate client for other programming languages by default ("py" for Python and "rs" for Rust are supported)'
+    )
+    .option(
       '--validation-library <library>',
       'validation library to use ("vovk-zod", "vovk-yup", "vovk-dto" or another); set to "none" to skip'
     )

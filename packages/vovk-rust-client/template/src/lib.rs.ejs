@@ -9,15 +9,16 @@ mod http_request;
 mod read_full_schema;
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
-    Object.values(segment.controllers).forEach(({ prefix, handlers, rpcModuleName }) => { %>
-pub mod <%= t._.snakeCase(rpcModuleName) %> {
+    Object.values(segment.controllers).forEach((controllerSchema) => { %>
+pub mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %> {
     #[allow(unused_imports)]
-    use crate::http_request::{http_request, http_request_stream};
+    use crate::http_request::{HttpException, http_request, http_request_stream};
     use std::collections::HashMap;
-<% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
+<% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => { 
+    const { validation, openapi, path, httpMethod } = handlerSchema;
     const handlerName = t._.snakeCase(handlerNameOriginal);
     %>
-    // <%= rpcModuleName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
+    // <%= controllerSchema.rpcModuleName %>.<%= handlerName %> <%= httpMethod %> `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
 <%- 
 vars.convertJSONSchemasToRustTypes({ 
     schemas: {
@@ -47,7 +48,7 @@ vars.convertJSONSchemasToRustTypes({
         headers: Option<&HashMap<String, String>>,
         api_root: Option<&str>,
         disable_client_validation: bool,
-    ) -> <%- validation?.output ? `Result<${handlerName}_::output, Box<dyn serde::ser::StdError>>` : validation?.iteration ? `Box<dyn Iterator<Item = ${handlerName}_::iteration>>` : 'Result<serde_json::Value, Box<dyn serde::ser::StdError>>' %>{
+    ) -> <%- validation?.output ? `Result<${handlerName}_::output, HttpException>` : validation?.iteration ? `Box<dyn Iterator<Item = ${handlerName}_::iteration>>` : 'Result<serde_json::Value, HttpException>' %>{
         let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
 <%- [
                 validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
@@ -58,7 +59,7 @@ vars.convertJSONSchemasToRustTypes({
         >(
             "<%= t.apiRoot %>",
             "<%= segmentName %>",
-            "<%= rpcModuleName %>",
+            "<%= controllerSchema.rpcModuleName %>",
             "<%= handlerNameOriginal %>",
             Some(&body),
             Some(&query),

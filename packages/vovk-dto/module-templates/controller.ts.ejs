@@ -12,7 +12,7 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { IsString, IsIn } from 'class-validator';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.resolutionExt %>';
 <% } %>
 
 class Get<%= t.TheThings %>QueryDto {

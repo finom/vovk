@@ -47,6 +47,7 @@ export interface InitOptions {
   validationLibrary?: string | null;
   reactQuery?: boolean;
   dryRun?: boolean;
+  lang?: string[];
   channel?: 'latest' | 'beta' | 'draft';
 }
 

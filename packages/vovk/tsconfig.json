@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "dist",
     "noEmit": false,
-    "declaration": true
+    "declaration": true,
+    "resolveJsonModule": false
   },
   "include": ["src/**/*.ts"],
   "exclude": ["dist"]

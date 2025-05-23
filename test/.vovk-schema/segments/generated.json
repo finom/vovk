@@ -63,7 +63,10 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
           "path": "",
@@ -85,7 +88,10 @@
                   ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
             },
             "query": {
               "type": "object",
@@ -94,7 +100,10 @@
                   "type": "string"
                 }
               },
-              "required": ["q"]
+              "required": [
+                "q"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
             },
             "params": {
               "type": "object",
@@ -103,7 +112,10 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
           "path": ":id",
@@ -133,7 +145,10 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
           "path": "",
@@ -155,7 +170,10 @@
                   ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
             },
             "query": {
               "type": "object",
@@ -164,7 +182,10 @@
                   "type": "string"
                 }
               },
-              "required": ["q"]
+              "required": [
+                "q"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
             },
             "params": {
               "type": "object",
@@ -173,7 +194,10 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
           "path": ":id",
@@ -215,11 +239,18 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -270,11 +301,18 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -315,7 +353,9 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "",
@@ -329,11 +369,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -344,7 +389,9 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             }
           },
           "path": ":id",
@@ -376,7 +423,9 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "",
@@ -390,11 +439,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -405,7 +459,9 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             }
           },
           "path": ":id",

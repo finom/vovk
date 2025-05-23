@@ -1,7 +1,10 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["*.ts", "templates/**/*"],
+  "include": ["src/index.mts"],
+  "exclude": ["dist"],
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": false,
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
   }
 }

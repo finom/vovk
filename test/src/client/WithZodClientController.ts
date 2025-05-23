@@ -11,7 +11,7 @@ import {
 } from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
-import * as z from 'zod';
+import { z } from 'zod/v4';
 
 export const ConstrainingModel = z.object({
   enum_value: z.enum(['a', 'b', 'c']),

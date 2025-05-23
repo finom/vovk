@@ -3,9 +3,20 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import omit from 'lodash/omit.js';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import { DOWN, ENTER } from '../../lib/runScript.mts';
+import { DOWN, ENTER, SPACE } from '../../lib/runScript.mts';
 import type { PackageJson } from 'type-fest';
 import NPMCliPackageJson from '@npmcli/package-json';
+import { deepStrictEqual } from 'node:assert';
+
+const combos = {
+  REACT_QUERY: [ENTER, ENTER, 'Y', ENTER, ENTER, ENTER, ENTER],
+  NO_VALIDATION_REACT_QUERY: ['N', ENTER, ENTER, 'Y', ENTER, ENTER, ENTER],
+  NO_TS_CONFIG_UPDATE: [ENTER, ENTER, ENTER, 'N', ENTER, ENTER],
+  ONE_FLAG_PASSED: [ENTER, ENTER, ENTER, ENTER],
+  YUP_VALIDATION_ARROW: [DOWN, ENTER, ENTER, ENTER, ENTER, ENTER],
+  YES: [ENTER, ENTER, ENTER, ENTER, ENTER, ENTER],
+  RUST: [ENTER, ENTER, ENTER, ENTER, ENTER, DOWN, DOWN, SPACE, ENTER],
+};
 
 await describe('CLI init', async () => {
   const dir = 'tmp_test_dir';
@@ -315,7 +326,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting', async () => {
     await createNextApp();
-    await vovkInit('', { combo: [ENTER, ENTER, 'Y', ENTER, ENTER, ENTER] }); // Y is for react-query
+    await vovkInit('', { combo: combos.REACT_QUERY });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod', true));
 
     await assertDeps({
@@ -341,7 +352,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and no TSConfig update', async () => {
     await createNextApp();
-    await vovkInit('', { combo: [ENTER, ENTER, ENTER, 'N', ENTER] });
+    await vovkInit('', { combo: combos.NO_TS_CONFIG_UPDATE });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
@@ -358,7 +369,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and --update-ts-config', async () => {
     await createNextApp();
-    await vovkInit('--update-ts-config', { combo: [ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('--update-ts-config', { combo: combos.ONE_FLAG_PASSED });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
     await assertDeps({
@@ -375,7 +386,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and --validation-library', async () => {
     await createNextApp();
-    await vovkInit('--validation-library=vovk-dto', { combo: [ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('--validation-library=vovk-dto', { combo: combos.ONE_FLAG_PASSED });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-dto'));
 
     await assertDeps({
@@ -401,7 +412,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and --validation-library=none', async () => {
     await createNextApp();
-    await vovkInit('--validation-library=none', { combo: [ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('--validation-library=none', { combo: combos.ONE_FLAG_PASSED });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null));
 
     await assertDeps({
@@ -423,7 +434,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and no validation', async () => {
     await createNextApp();
-    await vovkInit('', { combo: ['N', ENTER, ENTER, 'Y', ENTER, ENTER] });
+    await vovkInit('', { combo: combos.NO_VALIDATION_REACT_QUERY });
     await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig(null, true)));
 
     await assertDeps({
@@ -445,7 +456,7 @@ await describe('CLI init', async () => {
 
   await it('Works with prompting and down arrow selection', async () => {
     await createNextApp();
-    await vovkInit('', { combo: [DOWN, ENTER, ENTER, ENTER, ENTER] });
+    await vovkInit('', { combo: combos.YUP_VALIDATION_ARROW });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-yup'));
 
     await assertDeps({
@@ -460,6 +471,30 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
+  await it('Uses Rust template', async () => {
+    await createNextApp();
+    await vovkInit('', { combo: combos.RUST });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-yup'));
+
+    const { config } = await assertConfig.getStrictConfig();
+
+    deepStrictEqual(config.composedClient, {
+      fromTemplates: ['mjs', 'cjs', 'rs'],
+    });
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-rust-client'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertDeps({
+      dependencies: ['vovk-python-client'],
+      opposite: true,
+    });
+
+    await assertTsConfig();
+  });
+
   await describe('Yarn-specific tests', async () => {
     await it('Works with prompting and --use-yarn', async () => {
       await createNextApp('--use-yarn');
@@ -469,7 +504,7 @@ await describe('CLI init', async () => {
         packageManager: 'yarn@1.22.22',
       });
       await pkgJson.save();
-      await vovkInit('--use-yarn', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
+      await vovkInit('--use-yarn', { combo: combos.YES });
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
       await assertDeps({
@@ -531,7 +566,7 @@ await describe('CLI init', async () => {
         packageManager: 'bun@1.2.13',
       });
       await pkgJson.save();
-      await vovkInit('--use-bun', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
+      await vovkInit('--use-bun', { combo: combos.YES });
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
       await assertDeps({
@@ -592,7 +627,7 @@ await describe('CLI init', async () => {
         packageManager: 'pnpm@8.6.0',
       });
       await pkgJson.save();
-      await vovkInit('--use-pnpm', { combo: [ENTER, ENTER, ENTER, ENTER, ENTER] });
+      await vovkInit('--use-pnpm', { combo: combos.YES });
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('vovk-zod'));
 
       await assertDeps({

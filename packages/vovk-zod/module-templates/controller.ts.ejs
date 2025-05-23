@@ -11,9 +11,9 @@ compiledName: <%= t.TheThing + 'RPC' %>
 
 import { prefix, get, put, post, del } from 'vovk';
 import { withZod } from 'vovk-zod';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %>';
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.resolutionExt %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')

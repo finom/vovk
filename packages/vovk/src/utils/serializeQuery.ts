@@ -1,4 +1,4 @@
-import type { KnownAny } from '../types';
+import type { KnownAny } from '../types.js';
 
 /**
  * Recursively build query parameters from an object.

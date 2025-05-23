@@ -1,4 +1,5 @@
-import Ajv, { Options } from 'ajv';
+import { Ajv, Options } from 'ajv';
+import Ajv2020 from 'ajv/dist/2020';
 import { HttpException, HttpStatus, KnownAny, VovkSchema, type VovkValidateOnClient } from 'vovk';
 import ajvFormats from 'ajv-formats';
 import ajvLocalize from 'ajv-i18n';
@@ -9,10 +10,12 @@ type Lang = keyof typeof ajvLocalize;
 export type VovkAjvConfig = {
   options?: Options;
   localize?: Lang;
+  target?: 'draft-2020-12' | 'draft-07';
 };
 
-const createAjv = (options: Options) => {
-  const ajv = new Ajv({ allErrors: true, ...options });
+const createAjv = (options: Options, target: VovkAjvConfig['target']) => {
+  const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
+  const ajv = new AjvClass({ allErrors: true, ...options });
   ajvFormats(ajv);
   ajvErrors(ajv);
   ajv.addKeyword('x-isDto');
@@ -28,7 +31,7 @@ const validate = ({
   endpoint,
 }: {
   data: KnownAny;
-  schema: Parameters<VovkValidateOnClient>[1];
+  schema: Parameters<VovkValidateOnClient>[1]['body' | 'query' | 'params'];
   ajv: Ajv;
   localize: Lang;
   type: 'body' | 'query' | 'params';
@@ -67,35 +70,36 @@ const validateAll = ({
 const getConfig = (schema: VovkSchema) => {
   const config = schema.config.libs?.ajv as VovkAjvConfig | undefined;
 
-  const options = config?.options || {};
-  const localize = config?.localize || 'en';
+  const options = config?.options ?? {};
+  const localize = config?.localize ?? 'en';
+  const target = config?.target ?? 'draft-2020-12';
 
-  return { options, localize };
+  return { options, localize, target };
 };
 
 let ajvScope: Ajv | null = null;
 
 const validateOnClientAjv: VovkValidateOnClient = (input, validation, schema) => {
-  const { options, localize } = getConfig(schema);
+  const { options, localize, target } = getConfig(schema);
 
   if (!ajvScope) {
-    ajvScope = createAjv(options);
+    ajvScope = createAjv(options, target);
   }
 
   return validateAll({ input, validation, ajv: ajvScope, localize });
 };
 
 const configure =
-  ({ options: givenOptions, localize: givenLocalize }: VovkAjvConfig): VovkValidateOnClient =>
+  ({ options: givenOptions, localize: givenLocalize, target: givenTarget }: VovkAjvConfig): VovkValidateOnClient =>
   (input, validation, schema) => {
-    const { options, localize } = getConfig(schema);
-    const ajv = createAjv({ ...options, ...givenOptions });
+    const { options, localize, target } = getConfig(schema);
+    const ajv = createAjv({ ...options, ...givenOptions }, givenTarget ?? target);
 
     validateAll({
       input,
       validation,
       ajv,
-      localize: givenLocalize || localize,
+      localize: givenLocalize ?? localize,
     });
   };
 

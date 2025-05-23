@@ -1,5 +1,5 @@
 import type { VovkBody, VovkQuery } from 'vovk';
-import type DtoControllerAndServiceEntityController from './DtoControllerAndServiceEntityController';
+import type DtoControllerAndServiceEntityController from './DtoControllerAndServiceEntityController.ts';
 
 export default class DtoControllerAndServiceEntityService {
   static getDtoControllerAndServiceEntities = (

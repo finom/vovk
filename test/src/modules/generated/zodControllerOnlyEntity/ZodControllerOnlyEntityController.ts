@@ -1,6 +1,6 @@
 import { prefix, get, put, post, del } from 'vovk';
 import { withZod } from 'vovk-zod';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 @prefix('zod-controller-only-entities')
 export default class ZodControllerOnlyEntityController {

@@ -17,6 +17,7 @@ const stringifyPySample = (data: KnownAny, pad = 4) =>
 
 const toSnakeCase = (str: string) =>
   str
+    .replace(/-/g, '_') // Replace hyphens with underscores
     .replace(/([a-z0-9])([A-Z])/g, '$1_$2') // Add underscore between lowercase/digit and uppercase
     .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
     .toLowerCase()
@@ -84,9 +85,9 @@ ${
 
 pub fn main() {
   let response = ${rpcNameSnake}::${handlerNameSnake}(
-    ${bodyFake ? serdeUnwrap(stringifyTsSample(bodyFake)) : '()'}, /* body */ 
-    ${queryFake ? serdeUnwrap(stringifyTsSample(queryFake)) : '()'}, /* query */ 
-    ${paramsFake ? serdeUnwrap(stringifyTsSample(paramsFake)) : '()'}, /* params */ 
+    ${bodyFake ? serdeUnwrap(stringifyPySample(bodyFake)) : '()'}, /* body */ 
+    ${queryFake ? serdeUnwrap(stringifyPySample(queryFake)) : '()'}, /* query */ 
+    ${paramsFake ? serdeUnwrap(stringifyPySample(paramsFake)) : '()'}, /* params */ 
     None, /* headers (HashMap) */ 
     None, /* api_root */ 
     false, /* disable_client_validation */
@@ -94,8 +95,8 @@ pub fn main() {
 
   ${
     outputFake
-      ? `println!("data: {}", serde_json::to_string_pretty(&response).unwrap()); /* 
-  ${stringifyTsSample(outputFake, 0)} 
+      ? `println!("{}", serde_json::to_string_pretty(&response).unwrap()); /* 
+  ${stringifyPySample({ Ok: outputFake }, 0)} 
   */`
       : ''
   }

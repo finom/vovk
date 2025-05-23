@@ -1,33 +1,45 @@
 import type { NextRequest } from 'next/server';
 import type { OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponse } from './JSONLinesResponse';
-import { VovkStreamAsyncIterable } from './client/types';
+import type { JSONLinesResponse } from './JSONLinesResponse.js';
+import { VovkStreamAsyncIterable } from './client/types.js';
 import type { PackageJson } from 'type-fest';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
 
-export type VovkHandlerSchema = {
+export type VovkHandlerSchema<T = KnownAny> = {
   path: string;
   httpMethod: string; // HttpMethod type makes JSON incompatible with VovkHandlerSchema type
-  validation?: { query?: KnownAny; body?: KnownAny; params?: KnownAny; output?: KnownAny; iteration?: KnownAny };
+  validation?: {
+    query?: T;
+    body?: T;
+    params?: T;
+    output?: T;
+    iteration?: T;
+  };
   openapi?: OperationObject;
   misc?: Record<string, KnownAny>;
 };
 
-export type VovkControllerSchema = {
+export type VovkControllerSchema<T = KnownAny> = {
   rpcModuleName: string;
   originalControllerName: string;
   prefix?: string;
-  handlers: Record<string, VovkHandlerSchema>;
+  handlers: Record<string, VovkHandlerSchema<T>>;
 };
 
-export type VovkSegmentSchema = {
+export type VovkSegmentSchema<T = KnownAny> = {
   $schema: typeof VovkSchemaIdEnum.SEGMENT | string;
   emitSchema: boolean;
   segmentName: string;
-  controllers: Record<string, VovkControllerSchema>;
+  controllers: Record<string, VovkControllerSchema<T>>;
+};
+
+export type VovkSchema<T = KnownAny> = {
+  $schema: typeof VovkSchemaIdEnum.SCHEMA | string;
+  config: Partial<VovkStrictConfig>;
+  segments: Record<string, VovkSegmentSchema<T>>;
 };
 
 export type VovkErrorResponse = {
@@ -177,12 +189,6 @@ export type StreamAbortMessage = {
 };
 
 export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration';
-
-export type VovkSchema = {
-  $schema: typeof VovkSchemaIdEnum.SCHEMA | string;
-  config: Partial<VovkStrictConfig>;
-  segments: Record<string, VovkSegmentSchema>;
-};
 
 // Enums
 

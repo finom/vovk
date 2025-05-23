@@ -9,8 +9,8 @@ import type {
   VovkControllerSchema,
   VovkSegmentSchema,
   VovkSchema,
-} from '../types';
-import type { JSONLinesResponse } from '../JSONLinesResponse';
+} from '../types.js';
+import type { JSONLinesResponse } from '../JSONLinesResponse.js';
 import type { NextResponse } from 'next/server';
 
 export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControllerBody<T> extends undefined | void

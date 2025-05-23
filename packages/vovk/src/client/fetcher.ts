@@ -1,6 +1,6 @@
-import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types';
-import { HttpStatus, KnownAny } from '../types';
-import { HttpException } from '../HttpException';
+import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types.js';
+import { HttpStatus, KnownAny } from '../types.js';
+import { HttpException } from '../HttpException.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
@@ -22,7 +22,9 @@ export function createFetcher<T extends Record<string, KnownAny> = Record<string
   ) => {
     const { params, query, body, apiRoot = '/api', disableClientValidation, init, interpretAs } = options;
     const endpoint = getEndpoint({ apiRoot, params, query });
-    const unusedParams = new URL(endpoint).pathname.split('/').filter((segment) => segment.startsWith(':'));
+    const unusedParams = new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname
+      .split('/')
+      .filter((segment) => segment.startsWith(':'));
 
     if (unusedParams.length) {
       throw new HttpException(HttpStatus.NULL, `Unused params: ${unusedParams.join(', ')} in ${endpoint}`, {

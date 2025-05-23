@@ -1,5 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import { getTsconfig } from 'get-tsconfig';
 import render from './render.mjs';
 import addClassToSegmentCode from './addClassToSegmentCode.mjs';
 import getProjectInfo from '../getProjectInfo/index.mjs';
@@ -45,6 +46,10 @@ export default async function newModule({
 }) {
   const { config, log, cwd, apiDir } = await getProjectInfo();
   const segments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
+  const tsConfigResult = await getTsconfig(cwd);
+  const isNodeNextResolution = ['node16', 'nodenext'].includes(
+    tsConfigResult?.config?.compilerOptions?.moduleResolution?.toLowerCase() ?? ''
+  );
   let templates = config.moduleTemplates as Required<typeof config.moduleTemplates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
   // replace c by controller, s by service, everything else keeps the same
@@ -105,6 +110,7 @@ export default async function newModule({
       moduleName,
       empty,
       templateFileName: templateAbsolutePath,
+      isNodeNextResolution,
     });
     const dir = dirFlag || renderedDir;
     if (!dir) {
@@ -143,9 +149,9 @@ export default async function newModule({
 
       const { routeFilePath } = segment;
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
-      const importPath = path
-        .relative(path.dirname(routeFilePath) + '/', absoluteModulePath)
-        .replace(/\.(ts|tsx)$/, '');
+      let importPath = path.relative(path.dirname(routeFilePath) + '/', absoluteModulePath).replace(/\.(ts|tsx)$/, '');
+
+      importPath += isNodeNextResolution ? '.ts' : '';
 
       if (!noSegmentUpdate) {
         const newSegmentCode = await prettify(

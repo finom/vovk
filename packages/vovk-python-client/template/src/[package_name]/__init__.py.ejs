@@ -17,7 +17,7 @@ client = ApiClient('<%= t.apiRoot %>')
 class <%= rpcModuleName %>: <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
     const handlerNameOriginalCapitalized = handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1);
     const handlerName = t._.snakeCase(handlerNameOriginal); %>
-    # <%= rpcModuleName %>.<%= handlerName %> <%= httpMethod %> <%= t.apiRoot %>/<%= segmentName %>/<%= prefix %>/<%= path %>
+    # <%= rpcModuleName %>.<%= handlerName %> <%= httpMethod %> `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
 <%- ([
         vars.convertJSONSchemaToPythonType({ schema: validation?.body, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
         vars.convertJSONSchemaToPythonType({ schema: validation?.query, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Query`, pad: 4 }),
