@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
-import _, { keyBy } from 'lodash';
+import _ from 'lodash';
 import { VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
 import prettify from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
@@ -51,7 +51,7 @@ export default async function writeOneClientFile({
 }) {
   const { config, apiRoot } = projectInfo;
   const { templateFilePath, relativeDir } = clientTemplateFile;
-  const locatedSegmentsByName = keyBy(locatedSegments, 'segmentName');
+  const locatedSegmentsByName = _.keyBy(locatedSegments, 'segmentName');
 
   const outPath = path.resolve(
     cwd,
