@@ -13,8 +13,10 @@ HttpException = HttpException
 
 client = ApiClient('<%= t.apiRoot %>')
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
-    Object.values(segment.controllers).forEach(({ prefix, handlers, rpcModuleName }) => { %>
-class <%= rpcModuleName %>: <% Object.entries(handlers).forEach(([handlerNameOriginal, { validation, openapi, path, httpMethod }]) => { 
+    Object.values(segment.controllers).forEach((controllerSchema) => { 
+const { rpcModuleName } = controllerSchema; %> 
+class <%= rpcModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
+    const { validation, openapi, path, httpMethod } = handlerSchema;
     const handlerNameOriginalCapitalized = handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1);
     const handlerName = t._.snakeCase(handlerNameOriginal); %>
     # <%= rpcModuleName %>.<%= handlerName %> <%= httpMethod %> `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`

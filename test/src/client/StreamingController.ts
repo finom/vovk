@@ -1,4 +1,4 @@
-import { headers } from 'next/headers';
+import { headers } from 'next/headers.js';
 import { type VovkRequest, post, prefix } from 'vovk';
 import { JSONLinesResponse } from 'vovk';
 

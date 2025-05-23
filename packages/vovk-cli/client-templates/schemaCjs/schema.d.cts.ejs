@@ -2,7 +2,7 @@
 import type { VovkStrictConfig, VovkSegmentSchema, VovkSchemaIdEnum } from 'vovk';
 
 export const schema: {
-    $schema: '<%- t.VovkSchemaIdEnum.FULL %>';
+    $schema: '<%- t.VovkSchemaIdEnum.SCHEMA %>';
     config: Partial<VovkStrictConfig>;
     segments: {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
       '<%= segment.segmentName %>': VovkSegmentSchema;<% }) %>

@@ -34,7 +34,7 @@ export async function getFullSchemaFromJSON(
     const files = await glob(`${segmentsDir}/**/*.json`);
 
     // Process each JSON file
-    for await (const filePath of files) {
+    for await (const filePath of files.toSorted()) {
       try {
         const content = await readFile(filePath, 'utf-8');
         const jsonData = JSON.parse(content);

@@ -27,7 +27,7 @@ import {
   HandleStreamQueryDto,
   IterationDto,
   QueryValuesDto,
-} from './WithDtoClientController.dto';
+} from './WithDtoClientController.dto.ts';
 import { WithDtoClientControllerRPC } from 'vovk-client';
 import { plainToInstance } from 'class-transformer';
 import { ok } from 'node:assert';

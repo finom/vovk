@@ -57,7 +57,7 @@ export default async function writeOneClientFile({
     cwd,
     outCwdRelativeDir,
     typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '',
-    relativeDir.replace('[package_name]', packageJson.name ?? 'my-package-name'),
+    relativeDir.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name'),
     path.basename(templateFilePath).replace('.ejs', '')
   );
 

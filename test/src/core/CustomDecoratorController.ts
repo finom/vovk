@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server.js';
 import { prefix, get, createDecorator } from 'vovk';
 
 type EnhancedNextRequest = NextRequest & {

@@ -2,6 +2,8 @@ import type { KnownAny } from 'vovk';
 
 interface JSONSchema {
   type?: string | string[];
+  title?: string;
+  description?: string;
   enum?: KnownAny[];
   items?: JSONSchema | JSONSchema[];
   properties?: { [key: string]: JSONSchema };
@@ -160,6 +162,25 @@ export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
           // Start building the class definition lines
           const lines: string[] = [];
           lines.push(`class ${newClassName}(TypedDict):`);
+
+          // Add docstring if title or description exists
+          if (s.title || s.description) {
+            lines.push(`    """`);
+            if (s.title) {
+              lines.push(`    ${s.title}`);
+            }
+            if (s.title && s.description) {
+              lines.push(``);
+            }
+            if (s.description) {
+              // Split description by newlines and add proper indentation to each line
+              const descLines = s.description.split('\n');
+              for (const descLine of descLines) {
+                lines.push(`    ${descLine}`);
+              }
+            }
+            lines.push(`    """`);
+          }
 
           const props = s.properties || {};
           const required = new Set(s.required || []);

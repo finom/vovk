@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server.js';
 import { prefix, post } from 'vovk';
 
 @prefix('input')

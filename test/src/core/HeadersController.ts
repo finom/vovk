@@ -1,4 +1,4 @@
-import { headers } from 'next/headers';
+import { headers } from 'next/headers.js';
 import { get, prefix } from 'vovk';
 
 @prefix('headers')

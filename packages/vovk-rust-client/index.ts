@@ -1,5 +1,34 @@
 import type { KnownAny } from 'vovk';
 
+// Helper function for indentation
+export function indent(level: number, pad: number = 0): string {
+  return ' '.repeat(pad + level * 2);
+}
+
+// Generate documentation comments from title and description
+export function generateDocComment(schema: KnownAny, level: number, pad: number = 0): string {
+  if (!schema?.title && !schema?.description) return '';
+
+  let comment = '';
+
+  if (schema.title) {
+    comment += `${indent(level, pad)}/// ${schema.title}\n`;
+    if (schema.description) {
+      comment += `${indent(level, pad)}///\n`;
+    }
+  }
+
+  if (schema.description) {
+    // Split description into lines and add /// to each line
+    const lines = schema.description.split('\n');
+    for (const line of lines) {
+      comment += `${indent(level, pad)}/// ${line}\n`;
+    }
+  }
+
+  return comment;
+}
+
 export function convertJSONSchemasToRustTypes({
   schemas,
   pad = 0,
@@ -15,7 +44,7 @@ export function convertJSONSchemasToRustTypes({
     return '';
   }
 
-  const indent = (level: number) => ' '.repeat(pad + level * 2);
+  const indentFn = (level: number) => ' '.repeat(pad + level * 2);
 
   // Track processed $refs to avoid circular references
   const processedRefs = new Set<string>();
@@ -196,10 +225,13 @@ export function convertJSONSchemasToRustTypes({
     const currentName = path[path.length - 1];
     let code = '';
 
+    // Add documentation comments for the struct
+    code += generateDocComment(schema, level, pad);
+
     // Generate struct
-    code += `${indent(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
-    code += `${indent(level)}#[allow(non_snake_case, non_camel_case_types)]\n`;
-    code += `${indent(level)}pub struct ${currentName} {\n`;
+    code += `${indentFn(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
+    code += `${indentFn(level)}#[allow(non_snake_case, non_camel_case_types)]\n`;
+    code += `${indentFn(level)}pub struct ${currentName} {\n`;
 
     // Generate struct fields
     Object.entries(schema.properties).forEach(([propName, propSchema]: [string, KnownAny]) => {
@@ -212,6 +244,9 @@ export function convertJSONSchemasToRustTypes({
           propSchema = resolvedSchema;
         }
       }
+
+      // Add documentation comments for the field
+      code += generateDocComment(propSchema, level + 1, pad);
 
       // Determine if this property is a nested type that should be accessed via module path
       const isNestedObject = propSchema.type === 'object' || propSchema.properties;
@@ -246,10 +281,10 @@ export function convertJSONSchemasToRustTypes({
         propType = `Option<${propType}>`;
       }
 
-      code += `${indent(level + 1)}pub ${propName}: ${propType},\n`;
+      code += `${indentFn(level + 1)}pub ${propName}: ${propType},\n`;
     });
 
-    code += `${indent(level)}}\n\n`;
+    code += `${indentFn(level)}}\n\n`;
 
     // Check if any properties require nested types before generating the sub-module
     const hasNestedTypes = Object.entries(schema.properties).some(([, propSchema]: [string, KnownAny]) => {
@@ -274,9 +309,9 @@ export function convertJSONSchemasToRustTypes({
 
     // Only generate sub-modules if there are nested types
     if (hasNestedTypes && Object.keys(schema.properties).length > 0) {
-      code += `${indent(level)}#[allow(non_snake_case)]\n`;
-      code += `${indent(level)}pub mod ${currentName}_ {\n`;
-      code += `${indent(level + 1)}use serde::{Serialize, Deserialize};\n\n`;
+      code += `${indentFn(level)}#[allow(non_snake_case)]\n`;
+      code += `${indentFn(level)}pub mod ${currentName}_ {\n`;
+      code += `${indentFn(level + 1)}use serde::{Serialize, Deserialize};\n\n`;
 
       Object.entries(schema.properties).forEach(([propName, propSchema]: [string, KnownAny]) => {
         // Resolve $ref if present
@@ -313,7 +348,7 @@ export function convertJSONSchemasToRustTypes({
         }
       });
 
-      code += `${indent(level)}}\n`;
+      code += `${indentFn(level)}}\n`;
     }
 
     return code;
@@ -322,18 +357,29 @@ export function convertJSONSchemasToRustTypes({
   // Generate enum for string with enum values
   function generateEnum(schema: KnownAny, name: string, level: number): string {
     let code = '';
-    code += `${indent(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
-    code += `${indent(level)}#[allow(non_camel_case_types)]\n`;
-    code += `${indent(level)}pub enum ${name} {\n`;
 
-    schema.enum.forEach((value: string) => {
+    // Add documentation comments for the enum
+    code += generateDocComment(schema, level, pad);
+
+    code += `${indentFn(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
+    code += `${indentFn(level)}#[allow(non_camel_case_types)]\n`;
+    code += `${indentFn(level)}pub enum ${name} {\n`;
+
+    schema.enum.forEach((value: string, index: number) => {
       // Create valid Rust enum variant
       const variant = value.replace(/[^a-zA-Z0-9_]/g, '_');
-      code += `${indent(level + 1)}#[serde(rename = "${value}")]\n`;
-      code += `${indent(level + 1)}${variant},\n`;
+
+      // Add documentation if available in enumDescriptions
+      if (schema.enumDescriptions && schema.enumDescriptions[index]) {
+        const description = schema.enumDescriptions[index];
+        code += `${indentFn(level + 1)}/// ${description}\n`;
+      }
+
+      code += `${indentFn(level + 1)}#[serde(rename = "${value}")]\n`;
+      code += `${indentFn(level + 1)}${variant},\n`;
     });
 
-    code += `${indent(level)}}\n\n`;
+    code += `${indentFn(level)}}\n\n`;
     return code;
   }
 
@@ -354,10 +400,13 @@ export function convertJSONSchemasToRustTypes({
     let code = '';
     let nestedTypes = '';
 
-    code += `${indent(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
-    code += `${indent(level)}#[allow(non_camel_case_types)]\n`;
-    code += `${indent(level)}#[serde(untagged)]\n`;
-    code += `${indent(level)}pub enum ${name} {\n`;
+    // Add documentation comments for the enum
+    code += generateDocComment(schema, level, pad);
+
+    code += `${indentFn(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
+    code += `${indentFn(level)}#[allow(non_camel_case_types)]\n`;
+    code += `${indentFn(level)}#[serde(untagged)]\n`;
+    code += `${indentFn(level)}pub enum ${name} {\n`;
 
     variants.forEach((variant: KnownAny, index: number) => {
       // Resolve $ref if present
@@ -373,17 +422,17 @@ export function convertJSONSchemasToRustTypes({
 
       // If it's an object type, we need to create a separate struct
       if (variant.type === 'object' || variant.properties) {
-        code += `${indent(level + 1)}${variantName}(${name}_::${variantName}),\n`;
+        code += `${indentFn(level + 1)}${variantName}(${name}_::${variantName}),\n`;
         // Create a nested type definition to be added outside the enum
         nestedTypes += processObject(variant, variantPath, level, rootSchema);
       } else {
         // For simple types, we can include them directly in the enum
         const variantType = toRustType(variant, variantPath, rootSchema);
-        code += `${indent(level + 1)}${variantName}(${variantType}),\n`;
+        code += `${indentFn(level + 1)}${variantName}(${variantType}),\n`;
       }
     });
 
-    code += `${indent(level)}}\n\n`;
+    code += `${indentFn(level)}}\n\n`;
 
     // Add nested type definitions if needed
     if (nestedTypes) {
@@ -434,8 +483,8 @@ export function convertJSONSchemasToRustTypes({
   }
 
   // Start code generation
-  let result = `${indent(0)}pub mod ${rootName}_ {\n`;
-  result += `${indent(1)}use serde::{Serialize, Deserialize};\n`;
+  let result = `${indentFn(0)}pub mod ${rootName}_ {\n`;
+  result += `${indentFn(1)}use serde::{Serialize, Deserialize};\n`;
 
   // Process each schema in the schemas object
   Object.entries(schemas).forEach(([schemaName, schemaObj]) => {
@@ -452,6 +501,8 @@ export function convertJSONSchemasToRustTypes({
               type: 'object',
               properties: defSchema.properties || {},
               required: defSchema.required || [],
+              title: defSchema.title,
+              description: defSchema.description,
             };
             result += processObject(rootDefObject, [defName], 1, schemaObj);
           } else if (defSchema.type === 'string' && defSchema.enum) {
@@ -468,12 +519,14 @@ export function convertJSONSchemasToRustTypes({
       type: 'object',
       properties: schemaObj.properties || {},
       required: schemaObj.required || [],
+      title: schemaObj.title,
+      description: schemaObj.description,
     };
 
     result += processObject(rootObject, [schemaName], 1, schemaObj);
   });
 
-  result += `${indent(0)}}\n`;
+  result += `${indentFn(0)}}\n`;
 
   return result;
 }

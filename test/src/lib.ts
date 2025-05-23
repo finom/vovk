@@ -1,7 +1,7 @@
 import { ok } from 'node:assert';
 import supertest from 'supertest';
 import type { KnownAny } from 'vovk';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { ConstrainingModel } from './client/WithZodClientController.ts';
 
 export const apiUrl = `http://localhost:${process.env.PORT}/api`;

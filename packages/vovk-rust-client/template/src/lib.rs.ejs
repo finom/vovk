@@ -32,15 +32,13 @@ vars.convertJSONSchemasToRustTypes({
     pad: 4 
 })
 %>
-    /** 
 <%= ([
-                openapi?.summary ?? 'No summary',
-                openapi?.description ? `Description: ${openapi.description}` : '',
-                validation?.body?.description ? `Body: ${validation?.body?.description}`: '',
-                validation?.query?.description ? `Query: ${validation?.query?.description}`: '',
-                validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
-            ]).filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
-    */
+    openapi?.summary ? `Summary: ${openapi.summary}` : '',
+    openapi?.description ? `Description: ${openapi.description}` : '',
+    validation?.body?.description ? `Body: ${validation?.body?.description}`: '',
+    validation?.query?.description ? `Query: ${validation?.query?.description}`: '',
+    validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
+]).filter(Boolean).map((s) => s.split('\n')).flat().map((s) => ' '.repeat(4) + '/// ' + s).join('\n') %>
     pub fn <%= handlerName %>( 
         body: <%- validation?.body ? `${handlerName}_::body` : '()' %>,
         query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,

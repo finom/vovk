@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { redirect } from 'next/navigation.js';
 import { prefix, get } from 'vovk';
 
 @prefix('redirect')
