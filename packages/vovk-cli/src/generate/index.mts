@@ -14,6 +14,7 @@ import getTemplateClientImports from './getTemplateClientImports.mjs';
 import mergePackages from './mergePackages.mjs';
 import writeOneClientFile from './writeOneClientFile.mjs';
 import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import type { Segment } from '../locateSegments.mts';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -99,12 +100,14 @@ export default async function generate({
   projectInfo,
   forceNothingWrittenLog,
   fullSchema,
+  locatedSegments,
   cliGenerateOptions,
 }: {
   isEnsuringClient?: boolean;
   projectInfo: ProjectInfo;
   forceNothingWrittenLog?: boolean;
   fullSchema: VovkSchema;
+  locatedSegments: Segment[];
   cliGenerateOptions?: GenerateOptions;
 }) {
   const { config, cwd, log } = projectInfo;
@@ -171,6 +174,7 @@ export default async function generate({
           outCwdRelativeDir,
           origin: config.origin ?? templateDef?.origin ?? null,
           templateDef,
+          locatedSegments,
         });
 
         const outAbsoluteDir = path.join(cwd, outCwdRelativeDir);
@@ -254,6 +258,7 @@ export default async function generate({
               outCwdRelativeDir,
               origin: config.origin ?? templateDef?.origin ?? null,
               templateDef,
+              locatedSegments,
             });
 
             return {

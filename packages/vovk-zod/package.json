@@ -1,6 +1,6 @@
 {
   "name": "vovk-zod",
-  "version": "1.0.0-draft.66",
+  "version": "1.0.0-draft.71",
   "description": "Zod validation for Vovk.ts",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   "license": "MIT",
   "peerDependencies": {
     "vovk": "^3.0.0-draft.128",
-    "zod": "^4.0.0-beta.20250430T185432"
+    "zod": "^3.25.23"
   },
   "dependencies": {
     "vovk-validate-client-ajv": "^0.0.0-beta.3"

@@ -14,6 +14,7 @@ import type { BundleOptions, DevOptions, GenerateOptions, NewOptions } from './t
 import initProgram from './initProgram.mjs';
 import { getFullSchemaFromJSON } from './generate/getFullSchemaFromJSON.mjs';
 import type { VovkEnv } from './types.mjs';
+import locateSegments from './locateSegments.mjs';
 export type { VovkEnv };
 
 const program = new Command();
@@ -102,7 +103,8 @@ program
   .option('--config <config>', 'path to config file')
   .action(async (cliGenerateOptions: GenerateOptions) => {
     const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.config, srcRootRequired: false });
-    const { cwd, config, log } = projectInfo;
+    const { cwd, config, log, apiDir } = projectInfo;
+    const locatedSegments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
     const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, log);
 
@@ -111,6 +113,7 @@ program
       fullSchema,
       forceNothingWrittenLog: true,
       cliGenerateOptions,
+      locatedSegments,
     });
   });
 

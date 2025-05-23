@@ -8,6 +8,7 @@ import generate from '../generate/index.mjs';
 import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { BundleOptions } from '../types.mjs';
+import locateSegments from '../locateSegments.mjs';
 
 export default async function bundle({
   projectInfo,
@@ -18,9 +19,9 @@ export default async function bundle({
   fullSchema: VovkSchema;
   cliBundleOptions: BundleOptions;
 }) {
-  const { config, log } = projectInfo;
+  const { config, log, cwd, apiDir } = projectInfo;
+  const locatedSegments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
   const { bundle: bundleConfig } = config;
-  const cwd = process.cwd();
   const tsFullClientOutAbsoluteDirInput = path.join(cwd, bundleConfig.tsClientOutDir);
 
   const tsClientOutDir = cliBundleOptions?.tsClientOutDir ?? bundleConfig.tsClientOutDir;
@@ -43,6 +44,7 @@ export default async function bundle({
     projectInfo,
     forceNothingWrittenLog: true,
     fullSchema,
+    locatedSegments,
     cliGenerateOptions: {
       composedFrom: [BuiltInTemplateName.ts],
       composedOut: tsClientOutDir,
@@ -85,6 +87,7 @@ export default async function bundle({
       projectInfo,
       forceNothingWrittenLog: true,
       fullSchema,
+      locatedSegments,
       cliGenerateOptions: {
         composedFrom: group.map(([templateName]) => templateName),
         composedOut: path.resolve(outDir, relativePath),

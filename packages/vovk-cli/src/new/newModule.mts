@@ -8,6 +8,7 @@ import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import prettify from '../utils/prettify.mjs';
 import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
+import locateSegments from '../locateSegments.mjs';
 
 function splitByLast(str: string, delimiter: string = '/'): [string, string] {
   const index = str.lastIndexOf(delimiter);
@@ -42,7 +43,8 @@ export default async function newModule({
   overwrite?: boolean;
   empty?: boolean;
 }) {
-  const { config, log, cwd, segments } = await getProjectInfo();
+  const { config, log, cwd, apiDir } = await getProjectInfo();
+  const segments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
   let templates = config.moduleTemplates as Required<typeof config.moduleTemplates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
   // replace c by controller, s by service, everything else keeps the same

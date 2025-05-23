@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
-import _ from 'lodash';
+import _, { keyBy } from 'lodash';
 import { VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
 import prettify from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
@@ -9,6 +9,7 @@ import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import type { ClientImports } from './getTemplateClientImports.mjs';
 import type { PackageJson } from 'type-fest';
 import { ROOT_SEGMENT_SCHEMA_NAME, SEGMENTS_SCHEMA_DIR_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import type { Segment } from '../locateSegments.mjs';
 
 export default async function writeOneClientFile({
   cwd,
@@ -25,6 +26,7 @@ export default async function writeOneClientFile({
   outCwdRelativeDir,
   origin,
   templateDef,
+  locatedSegments,
 }: {
   cwd: string;
   projectInfo: ProjectInfo;
@@ -45,9 +47,11 @@ export default async function writeOneClientFile({
   outCwdRelativeDir: string;
   origin: string | null;
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
+  locatedSegments: Segment[];
 }) {
-  const { config, apiRoot, segments } = projectInfo;
+  const { config, apiRoot } = projectInfo;
   const { templateFilePath, relativeDir } = clientTemplateFile;
+  const locatedSegmentsByName = keyBy(locatedSegments, 'segmentName');
 
   const outPath = path.resolve(
     cwd,
@@ -77,15 +81,18 @@ export default async function writeOneClientFile({
         ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME), config.schemaOutDir)
         : path.relative(outCwdRelativeDir, config.schemaOutDir),
     segmentMeta: Object.fromEntries(
-      segments.map(({ segmentName: sName, routeFilePath }) => {
-        const segmentImportPath = path.relative(
-          path.resolve(
-            cwd,
-            outCwdRelativeDir,
-            typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '.'
-          ),
-          path.resolve(cwd, routeFilePath)
-        );
+      Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
+        const { routeFilePath = null } = locatedSegmentsByName[sName] ?? {};
+        const segmentImportPath = routeFilePath
+          ? path.relative(
+              path.resolve(
+                cwd,
+                outCwdRelativeDir,
+                typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '.'
+              ),
+              path.resolve(cwd, routeFilePath)
+            )
+          : null;
         const { origin: configOrigin, rootEntry: configRootEntry } = {
           ...(config.segmentConfig ? config.segmentConfig[sName] : {}),
           ...(templateDef.segmentConfig ? templateDef.segmentConfig[sName] : {}),

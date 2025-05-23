@@ -326,7 +326,10 @@ export class VovkDev {
   }, 500);
 
   #generate = debounce(
-    () => generate({ projectInfo: this.#projectInfo, fullSchema: this.#fullSchema }).then(this.#onFirstTimeGenerate),
+    () =>
+      generate({ projectInfo: this.#projectInfo, fullSchema: this.#fullSchema, locatedSegments: this.#segments }).then(
+        this.#onFirstTimeGenerate
+      ),
     1000
   );
 
@@ -407,13 +410,11 @@ export class VovkDev {
 
     const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
 
-    await ensureSchemaFiles(
-      this.#projectInfo,
-      schemaOutAbsolutePath,
-      this.#segments.map((s) => s.segmentName)
-    );
+    const segmentNames = this.#segments.map((s) => s.segmentName);
 
-    await ensureClient(this.#projectInfo);
+    await ensureSchemaFiles(this.#projectInfo, schemaOutAbsolutePath, segmentNames);
+
+    await ensureClient(this.#projectInfo, this.#segments);
 
     const MAX_ATTEMPTS = 5;
     const DELAY = 5000;
