@@ -14,7 +14,7 @@ import type WithZodClientController from './WithZodClientController.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 describe('Client validation with custom AJV options', () => {
-  it('Should handle body validation on client with localize and options', async () => {
+  it('Should handle body validation on client: with localize and options', async () => {
     const result = await WithZodClientControllerRPC.handleBody({
       body: { hello: 'world' },
     });
@@ -36,7 +36,7 @@ describe('Client validation with custom AJV options', () => {
     });
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid body on client for http:.*\. data\/hello darf nicht länger als 5 Zeichen sein/
+      /Ajv validation failed. Invalid body on client: data\/hello darf nicht länger als 5 Zeichen sein/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -62,7 +62,7 @@ describe('Zod-to-JSONchema constraints', async () => {
         });
       });
 
-      await rejects.toThrow(new RegExp(`Zod validation failed. Invalid body on server for http:.*\\. At "${key}.*`));
+      await rejects.toThrow(new RegExp(`Zod validation failed. Invalid body on server: "${key}.*`));
       await rejects.toThrowError(HttpException);
 
       ({ rejects } = expectPromise(async () => {
@@ -70,7 +70,7 @@ describe('Zod-to-JSONchema constraints', async () => {
           body: constrainingObject,
         });
       }));
-      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));
+      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client. data\\/${key}.*`));
     });
   }
 });
@@ -130,7 +130,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid body on server for http:.*. At "hello".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid body on server: "hello".*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -141,7 +141,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid body on client for http:.*\. data\/hello.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid body on client: data\/hello.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -162,7 +162,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid params on server for http:.*\. At "foo".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid params on server: "foo".*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -174,7 +174,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid params on client for http:.*\. data\/foo.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid params on client: data\/foo.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -194,7 +194,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid query on server for http:.*\. At "search".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid query on server: "search".*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -205,7 +205,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid query on client for http:.*\. data\/search.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid query on client: data\/search.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -229,7 +229,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid query on server for http:.*. At "x".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid query on server: "x".*/);
 
     ({ rejects } = expectPromise(async () => {
       await WithZodClientControllerRPC.handleNestedQuery({
@@ -240,7 +240,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid query on client for http:.*\. data\/x.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid query on client: data\/x.*/);
   });
 
   it('Should handle output validation on server', async () => {
@@ -256,7 +256,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid output on server for http:.*\. At "hello".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid output on server: "hello".*/);
   });
 
   it('Should handle stream', async () => {
@@ -293,7 +293,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Zod validation failed. Invalid iteration #0 on server for http:.*\. At "value".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid iteration #0 on server: "value".*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -328,7 +328,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Zod validation failed. Invalid iteration #2 on server for http:.*\. At "value".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid iteration #2 on server: "value".*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -366,7 +366,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid query on server for http:.*\. At "search".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid query on server: "search".*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -377,7 +377,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Zod validation failed. Invalid body on server for http:.*\. At "hello".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid body on server: "hello".*/);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
   });
@@ -389,7 +389,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Zod validation failed. Invalid body on server for http:.*\. At "hello".*/);
+    await rejects.toThrow(/Zod validation failed. Invalid body on server: "hello".*/);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
   });

@@ -39,10 +39,16 @@ export class VovkDev {
 
   #onFirstTimeGenerate: (() => void) | null = null;
 
+  #schemaOut: string | null = null;
+
+  constructor({ schemaOut }: { schemaOut: string | undefined }) {
+    this.#schemaOut = schemaOut ?? null;
+  }
+
   #watchSegments = (callback: () => void) => {
     const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
     const { cwd, log, config, apiDir } = this.#projectInfo;
-    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
+    const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
     const apiDirAbsolutePath = path.join(cwd, apiDir);
     const getSegmentName = (filePath: string) => path.relative(apiDirAbsolutePath, filePath).replace(segmentReg, '');
     log.debug(`Watching segments at ${apiDirAbsolutePath}`);
@@ -187,7 +193,7 @@ export class VovkDev {
         new Promise((resolve) => this.#watchSegments(() => resolve(0))),
       ]);
 
-      const schemaOutAbsolutePath = path.join(cwd, this.#projectInfo.config.schemaOutDir);
+      const schemaOutAbsolutePath = path.join(cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
 
       if (isInitial) {
         callback();
@@ -342,7 +348,7 @@ export class VovkDev {
 
     log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
 
-    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
+    const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
     const segment = this.#segments.find((s) => s.segmentName === segmentName);
 
     if (!segment) {
@@ -408,7 +414,7 @@ export class VovkDev {
       log.error(`Unhandled Rejection: ${String(reason)}`);
     });
 
-    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
+    const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
 
     const segmentNames = this.#segments.map((s) => s.segmentName);
 
@@ -457,5 +463,7 @@ export class VovkDev {
 }
 const env = process.env as VovkEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
-  void new VovkDev().start({ exit: env.__VOVK_EXIT__ === 'true' });
+  void new VovkDev({ schemaOut: env.__VOVK_SCHEMA_OUT_FLAG__ || undefined }).start({
+    exit: env.__VOVK_EXIT__ === 'true',
+  });
 }

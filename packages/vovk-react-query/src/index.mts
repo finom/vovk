@@ -83,7 +83,7 @@ export function createRPC<T, OPTS extends Record<string, KnownAny> = VovkDefault
   rpcModuleName: string,
   options?: VovkClientOptions<OPTS>
 ) {
-  const rpc = originalCreateRPC<T, OPTS>(fullSchema, segmentName, rpcModuleName, options);
+  const RPC = originalCreateRPC<T, OPTS>(fullSchema, segmentName, rpcModuleName, options);
 
   // TODO Refactor
   type ClientWithQuery = {
@@ -109,6 +109,6 @@ export function createRPC<T, OPTS extends Record<string, KnownAny> = VovkDefault
   };
 
   return Object.fromEntries(
-    Object.entries(rpc).map(([key, value]) => [key, withUseQuery(value as KnownAny)])
+    Object.entries(RPC).map(([key, value]) => [key, withUseQuery(value as KnownAny)])
   ) as unknown as ClientWithQuery;
 }

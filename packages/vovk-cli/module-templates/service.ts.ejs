@@ -9,7 +9,7 @@ sourceName: <%= vars.ServiceName %>
 ---
 
 import type { VovkBody, VovkQuery } from 'vovk';
-import type <%= vars.rpcModuleName %> from './<%= vars.rpcModuleName %><%= t.resolutionExt %>';
+import type <%= vars.rpcModuleName %> from './<%= vars.rpcModuleName %><%= t.nodeNextResolutionTsExt %>';
 
 export default class <%= vars.ServiceName %> {
   static get<%= t.TheThings %> = (search: VovkQuery<typeof <%= vars.rpcModuleName %>.get<%= t.TheThings %>>['search']) => {

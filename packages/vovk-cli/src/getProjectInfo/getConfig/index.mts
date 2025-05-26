@@ -68,12 +68,12 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     prettifyClient: (env.VOVK_PRETTIFY_CLIENT ? !!env.VOVK_PRETTIFY_CLIENT : null) ?? conf.prettifyClient ?? false,
     devHttps: (env.VOVK_DEV_HTTPS ? !!env.VOVK_DEV_HTTPS : null) ?? conf.devHttps ?? false,
     moduleTemplates: {
-      service: 'vovk-cli/module-templates/service.ts.ejs',
-      controller: 'vovk-cli/module-templates/controller.ts.ejs',
+      service: 'vovk-cli/module-templates/Service.ts.ejs',
+      controller: 'vovk-cli/module-templates/Controller.ts.ejs',
       ...conf.moduleTemplates,
     },
     libs: conf.libs ?? {},
-    segmentConfig: {},
+    segmentConfig: conf.segmentConfig ?? {},
   };
 
   if (typeof conf.emitConfig === 'undefined') {

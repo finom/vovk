@@ -29,19 +29,16 @@ export const defaultStreamHandler = async (response: Response): Promise<VovkStre
 
     while (true) {
       let value: Uint8Array | undefined;
-      let done = false;
 
       try {
+        let done;
         ({ value, done } = await reader.read());
+        if (done) break;
       } catch (error) {
         await reader.cancel();
         const err = new Error('Stream error. ' + String(error));
         err.cause = error;
         throw err;
-      }
-
-      if (done) {
-        return;
       }
 
       // typeof value === 'number' is a workaround for React Native

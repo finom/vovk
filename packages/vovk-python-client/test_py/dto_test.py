@@ -44,7 +44,7 @@ class TestDto(unittest.TestCase):
                 body={"hello": "wrong_length"},  # type: ignore
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body on server for http://\S+\. hello must be shorter than or equal to 5 characters")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body on server. hello must be shorter than or equal to 5 characters")
     
     def test_query(self) -> None:
         data: WithDtoClientControllerRPC.HandleQueryQuery = WithDtoClientControllerRPC.handle_query(
@@ -63,7 +63,7 @@ class TestDto(unittest.TestCase):
                 query={"search": "wrong_length"},  # type: ignore
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query on server for http://\S+\. search must be shorter than or equal to 5 characters")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query on server. search must be shorter than or equal to 5 characters")
     
     def test_nested_query(self) -> None:
         NESTED_QUERY_EXAMPLE: WithDtoClientControllerRPC.HandleNestedQueryQuery = {
@@ -87,7 +87,7 @@ class TestDto(unittest.TestCase):
                 query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context1.exception), r"Validation failed\. Invalid query on server for http://\S+\. x must be shorter.*")
+        self.assertRegex(str(context1.exception), r"Validation failed\. Invalid query on server. x must be shorter.*")
 
         with self.assertRaises(ValidationError) as context2:
             WithDtoClientControllerRPC.handle_nested_query(
@@ -112,7 +112,7 @@ class TestDto(unittest.TestCase):
                 params={"foo": "foo", "bar": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params on server for http://\S+\. bar must be shorter than or equal to 5 characters")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params on server. bar must be shorter than or equal to 5 characters")
 
     def test_output(self) -> None:
         data: WithDtoClientControllerRPC.HandleOutputOutput = WithDtoClientControllerRPC.handle_output(
@@ -124,7 +124,7 @@ class TestDto(unittest.TestCase):
             WithDtoClientControllerRPC.handle_output(
                 query={"helloOutput": "worldx"},
             )
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output on server for http://\S+\. hello must be shorter than or equal to 5 characters")
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output on server. hello must be shorter than or equal to 5 characters")
 
     def test_stream(self) -> None: ## TODO: StreamException???
         iterator: Generator[WithDtoClientControllerRPC.HandleStreamIteration, None, None] = WithDtoClientControllerRPC.handle_stream(
@@ -142,7 +142,7 @@ class TestDto(unittest.TestCase):
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0 on server for http://\S+\. value must be one of the following values: a, b, c, d")
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0 on server. value must be one of the following values: a, b, c, d")
 
     def test_constraints(self) -> None:
         # List of keys that are not supported
@@ -180,7 +180,7 @@ class TestDto(unittest.TestCase):
                 )
             self.assertRegex(
                 str(context1.exception), 
-                rf"Validation failed\. Invalid body on server for http://\S+\. {key}.*",
+                rf"Validation failed\. Invalid body on server. {key}.*",
             )
             
             # Test with client validation enabled

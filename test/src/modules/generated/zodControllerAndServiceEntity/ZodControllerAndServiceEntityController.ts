@@ -2,7 +2,7 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod/v4';
 
-import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntityService.ts';
+import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntityService';
 
 @prefix('zod-controller-and-service-entities')
 export default class ZodControllerAndServiceEntityController {

@@ -32,9 +32,13 @@ export async function getFullSchemaFromJSON(
 
     // Use glob to get all JSON files recursively
     const files = await glob(`${segmentsDir}/**/*.json`);
+    const filePathhs = [];
+    for await (const filePath of files) {
+      filePathhs.push(filePath);
+    }
 
     // Process each JSON file
-    for await (const filePath of files.toSorted()) {
+    for (const filePath of filePathhs.toSorted()) {
       try {
         const content = await readFile(filePath, 'utf-8');
         const jsonData = JSON.parse(content);

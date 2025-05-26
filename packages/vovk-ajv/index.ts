@@ -44,8 +44,8 @@ const validate = ({
       ajvLocalize[localize](ajv.errors);
       throw new HttpException(
         HttpStatus.NULL,
-        `Ajv validation failed. Invalid ${type} on client for ${endpoint}. ${ajv.errorsText()}`,
-        { data, errors: ajv.errors }
+        `Ajv validation failed. Invalid ${type} on client: ${ajv.errorsText()}`,
+        { data, errors: ajv.errors, endpoint }
       );
     }
   }

@@ -10,16 +10,20 @@ export default class OpenApiController {
   })
   @openapi.error(HttpStatus.I_AM_A_TEAPOT, 'I am a teapot error')
   static getFromSchema() {
-    return fromSchema('api', schema, {
-      info: {
-        title: 'Hello, OpenAPI!',
-        version: '1.0.0',
-      },
-      servers: [
-        {
-          url: 'http://localhost:3000',
+    return fromSchema({
+      rootEntry: 'api',
+      schema,
+      openAPIObject: {
+        info: {
+          title: 'Hello, OpenAPI!',
+          version: '1.0.0',
         },
-      ],
+        servers: [
+          {
+            url: 'http://localhost:3000',
+          },
+        ],
+      },
     });
   }
 }

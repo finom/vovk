@@ -95,7 +95,7 @@ export function getConstrainingObject(key: string | null) {
     str_datetime: '2023-01-01T12:00:00Z', // Valid: ISO datetime
 
     // Array validations
-    arr_minItems: ['item1', 'item2'], // Valid: at least 1 item
+    arr_minItems: ['item1', 'item2'], // Valid: least 1 item
     arr_maxItems: ['item1', 'item2', 'item3'], // Valid: max 10 items
 
     // Object validations

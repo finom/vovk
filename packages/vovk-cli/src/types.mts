@@ -11,6 +11,7 @@ export type VovkModuleRenderResult = {
 
 /* CLI Commands */
 export interface DevOptions {
+  schemaOut?: string;
   nextDev?: boolean;
   exit?: boolean;
 }
@@ -18,6 +19,7 @@ export interface DevOptions {
 export interface GenerateOptions {
   prettify?: boolean;
   config?: string;
+  schema?: string;
   composedFrom?: string[];
   composedOut?: string;
   composedOnly?: boolean;
@@ -32,6 +34,7 @@ export interface GenerateOptions {
 
 export interface BundleOptions extends Partial<Omit<VovkStrictConfig['bundle'], 'requires'>> {
   config?: string;
+  schema?: string;
 }
 
 export interface InitOptions {
@@ -71,5 +74,6 @@ export type VovkEnv = {
   VOVK_PRETTIFY_CLIENT?: string;
   VOVK_DEV_HTTPS?: string;
   __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
+  __VOVK_SCHEMA_OUT_FLAG__?: string;
   __VOVK_EXIT__?: 'true' | 'false';
 };

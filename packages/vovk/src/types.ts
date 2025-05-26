@@ -300,19 +300,21 @@ type BundleConfig = {
     }
 );
 
+type SegmentConfig = Record<string, { origin?: string; rootEntry?: string; segmentNameOverride?: string }>;
+
 export type ClientTemplateDef = {
   extends?: string;
   templatePath?: string | null;
   origin?: string | null;
   composedClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
-  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>; // TODO: not documented
+  segmentConfig?: false | SegmentConfig;
   requires?: Record<string, string>;
 };
 
-export type VovkConfig = {
+type VovkUserConfig = {
   $schema?: typeof VovkSchemaIdEnum.CONFIG | string;
-  emitConfig?: boolean | (keyof VovkStrictConfig)[];
+  emitConfig?: boolean | (keyof VovkStrictConfig | string)[];
   schemaOutDir?: string;
   composedClient?: ClientConfigFull;
   segmentedClient?: ClientConfigSegmented;
@@ -336,15 +338,18 @@ export type VovkConfig = {
     [key: string]: string | undefined;
   };
   libs?: Record<string, KnownAny>;
-  /** @todo this is an experimental feature */
-  segmentConfig?: false | Record<string, { origin?: string; rootEntry?: boolean }>;
+  segmentConfig?: false | SegmentConfig;
+};
+
+export type VovkConfig = VovkUserConfig & {
+  [key: string]: KnownAny;
 };
 
 export type VovkStrictConfig = Required<
-  Omit<VovkConfig, 'emitConfig' | 'libs' | 'imports' | 'composedClient' | 'segmentedClient' | 'bundle'>
+  Omit<VovkUserConfig, 'emitConfig' | 'libs' | 'imports' | 'composedClient' | 'segmentedClient' | 'bundle'>
 > & {
-  emitConfig: (keyof VovkStrictConfig)[];
-  bundle: RequireAllExcept<Exclude<VovkConfig['bundle'], undefined>, 'includeSegments' | 'excludeSegments'>;
+  emitConfig: (keyof VovkStrictConfig | string)[];
+  bundle: RequireAllExcept<Exclude<VovkUserConfig['bundle'], undefined>, 'includeSegments' | 'excludeSegments'>;
   imports: {
     fetcher: [string, string] | [string];
     validateOnClient: [string, string] | [string] | null;

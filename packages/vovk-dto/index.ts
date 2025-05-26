@@ -144,7 +144,7 @@ function withDto<
 
       return addDefinitions(applySchemaFixes(schema), schemas);
     },
-    validate: async (data, dto, { type, req, status, i }) => {
+    validate: async (data, dto, { type, status, i }) => {
       const instance = plainToInstance(dto, data, options?.classTransformOptions);
       const errors: ValidationError[] = await validate(instance as object, options?.validatorOptions);
 
@@ -156,7 +156,7 @@ function withDto<
             .join(', ') || errors.toString();
         throw new HttpException(
           status ?? HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${err}`,
+          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${err}`,
           { errorStr: errors.toString() }
         );
       }

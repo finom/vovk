@@ -1,5 +1,5 @@
 import type { VovkBody, VovkQuery } from 'vovk';
-import type ZodControllerAndServiceEntityController from './ZodControllerAndServiceEntityController.ts';
+import type ZodControllerAndServiceEntityController from './ZodControllerAndServiceEntityController';
 
 export default class ZodControllerAndServiceEntityService {
   static getZodControllerAndServiceEntities = (

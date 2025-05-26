@@ -2,7 +2,7 @@ import { prefix, get, put, post, del } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
-import YupControllerAndServiceEntityService from './YupControllerAndServiceEntityService.ts';
+import YupControllerAndServiceEntityService from './YupControllerAndServiceEntityService';
 
 @prefix('yup-controller-and-service-entities')
 export default class YupControllerAndServiceEntityController {

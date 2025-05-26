@@ -34,6 +34,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
   rpcModuleName: string,
   options?: VovkClientOptions<OPTS>
 ): VovkClient<T, OPTS> => {
+  const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];
   if (!segmentSchema) throw new Error(`Unable to create RPC object. Segment schema is missing. Check client template.`);
   const controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
@@ -55,9 +56,13 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
       query: { [key: string]: string };
     }) => {
       const mainPrefix =
-        (apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/') +
-        (apiRoot.endsWith('/') ? apiRoot : `${apiRoot}/`) +
-        (segmentName ? `${segmentName}/` : '');
+        [
+          apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
+          apiRoot,
+          segmentNamePath,
+        ]
+          .filter(Boolean)
+          .join('/') + '/';
       return mainPrefix + getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query);
     };
 
@@ -128,6 +133,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
     handler.segmentSchema = segmentSchema;
     handler.fullSchema = schema;
     handler.isRPC = true;
+    handler.path = [segmentNamePath, controllerPrefix, path].filter(Boolean).join('/');
 
     // @ts-expect-error TODO
     client[staticMethodName] = handler;

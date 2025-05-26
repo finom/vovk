@@ -27,6 +27,7 @@ export default async function writeOneClientFile({
   origin,
   templateDef,
   locatedSegments,
+  isNodeNextResolution,
 }: {
   cwd: string;
   projectInfo: ProjectInfo;
@@ -48,6 +49,7 @@ export default async function writeOneClientFile({
   origin: string | null;
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
   locatedSegments: Segment[];
+  isNodeNextResolution: boolean;
 }) {
   const { config, apiRoot } = projectInfo;
   const { templateFilePath, relativeDir } = clientTemplateFile;
@@ -76,6 +78,12 @@ export default async function writeOneClientFile({
     imports,
     schema: fullSchema,
     VovkSchemaIdEnum,
+    nodeNextResolutionExt: {
+      ts: isNodeNextResolution ? '.ts' : '',
+      js: isNodeNextResolution ? '.js' : '',
+      cjs: isNodeNextResolution ? '.cjs' : '',
+      mjs: isNodeNextResolution ? '.mjs' : '',
+    },
     schemaOutDir:
       typeof segmentName === 'string'
         ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME), config.schemaOutDir)
@@ -93,7 +101,11 @@ export default async function writeOneClientFile({
               path.resolve(cwd, routeFilePath)
             )
           : null;
-        const { origin: configOrigin, rootEntry: configRootEntry } = {
+        const {
+          origin: segmentConfigOrigin,
+          rootEntry: segmentConfigRootEntry,
+          segmentNameOverride,
+        } = {
           ...(config.segmentConfig ? config.segmentConfig[sName] : {}),
           ...(templateDef.segmentConfig ? templateDef.segmentConfig[sName] : {}),
         };
@@ -101,11 +113,12 @@ export default async function writeOneClientFile({
           sName,
           {
             segmentApiRoot:
-              configOrigin || configRootEntry
-                ? `${configOrigin ?? origin}/${configRootEntry ?? config.rootEntry}`
+              segmentConfigOrigin || segmentConfigRootEntry
+                ? `${segmentConfigOrigin ?? origin}/${segmentConfigRootEntry ?? config.rootEntry}`
                 : null,
             routeFilePath,
             segmentImportPath,
+            segmentNameOverride,
           },
         ];
       })

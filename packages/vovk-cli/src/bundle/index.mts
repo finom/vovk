@@ -65,7 +65,7 @@ export default async function bundle({
 
   const outDirAbsolute = path.resolve(cwd, outDir);
 
-  log.info(`Bundled index.ts to ${chalkHighlightThing(outDirAbsolute)}`);
+  log.debug(`Bundled index.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
   await build({
     entry: path.join(tsFullClientOutAbsoluteDirInput, './schema.ts'),
@@ -77,7 +77,7 @@ export default async function bundle({
     sourcemap,
   });
 
-  log.info(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
+  log.debug(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
   const requiresGroup = groupBy(Object.entries(bundleConfig.requires), ([, relativePath]) => relativePath);
 
@@ -91,6 +91,7 @@ export default async function bundle({
       cliGenerateOptions: {
         composedFrom: group.map(([templateName]) => templateName),
         composedOut: path.resolve(outDir, relativePath),
+        composedOnly: true,
       },
     });
   }
@@ -106,5 +107,5 @@ export default async function bundle({
     );
   }
 
-  log.info(`Bundled TypeScript client to ${outDirAbsolute}`);
+  log.info(`Bundled TypeScript client to ${chalkHighlightThing(outDirAbsolute)}`);
 }

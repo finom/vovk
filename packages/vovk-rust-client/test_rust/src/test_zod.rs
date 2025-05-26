@@ -1,7 +1,10 @@
 #[cfg(test)]
 pub mod test_zod {
+    use core::panic;
+
     use generated_rust_client::with_zod_client_controller_rpc;
     use crate::get_constraining_object;
+    use generated_rust_client::HttpException;
      
     // #[ignore = "needs external database"] | #[should_panic(expected = "Invalid input")]
     #[test]
@@ -306,7 +309,7 @@ pub mod test_zod {
         // Test successful streaming
         let values = vec!["a", "b", "c", "d"];
         
-        let stream: Box<dyn Iterator<Item = with_zod_client_controller_rpc::handle_stream_::iteration>> = with_zod_client_controller_rpc::handle_stream(
+        let stream_response: Result<Box<dyn Iterator<Item = with_zod_client_controller_rpc::handle_stream_::iteration>>, HttpException> = with_zod_client_controller_rpc::handle_stream(
             (),
             with_zod_client_controller_rpc::handle_stream_::query {
                 values: values.iter().map(|s| s.to_string()).collect(),
@@ -316,17 +319,22 @@ pub mod test_zod {
             None,
             false,
         );
-        
-        for (i, result) in stream.enumerate() {
-            assert_eq!(
-                serde_json::to_value(&result).unwrap(), 
-                serde_json::json!({"value": values[i]})
-            );
+
+        match stream_response {
+            Ok(stream) => {
+                // Iterate through the stream and check values
+                for (i, result) in stream.enumerate() {
+                    assert_eq!(
+                        serde_json::to_value(&result).unwrap(), 
+                        serde_json::json!({"value": values[i]})
+                    );
+                }
+            },
+            Err(e) => panic!("Error initiating stream: {:?}", e),
         }
-        
         // Test streaming error
         let error_values = vec!["wrong_length", "f", "g", "h"];
-        let error_stream = with_zod_client_controller_rpc::handle_stream(
+        let error_stream_response = with_zod_client_controller_rpc::handle_stream(
             (),
             with_zod_client_controller_rpc::handle_stream_::query {
                 values: error_values.iter().map(|s| s.to_string()).collect(),
@@ -337,13 +345,20 @@ pub mod test_zod {
             false,
         );
         // Iterate through the error_stream and expect it to fail with Zod validation error
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            for (i, _) in error_stream.enumerate() {
-                println!("Item {} processed", i);
+        match error_stream_response {
+            Ok(stream) => {
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    for (i, _) in stream.enumerate() {
+                        println!("Item {} processed", i);
+                    }
+                }));
+                assert!(result.is_err(), "Expected an error during stream iteration but none occurred");
+
             }
-        }));
-        
-        assert!(result.is_err(), "Expected an error during stream iteration but none occurred");
+            Err(e) => {
+                panic!("Error initiating stream: {:?}", e);
+            }
+        }        
     }
 
     #[test]

@@ -9,7 +9,7 @@ import {
   type VovkOutput,
   type VovkIteration,
 } from 'vovk';
-import type WithDtoClientController from './WithDtoClientController';
+import type WithDtoClientController from './WithDtoClientController.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type {
   HandleAllBodyDto,
@@ -51,14 +51,14 @@ describe('DTO-to-JSONchema constraints', async () => {
           disableClientValidation: true,
         });
       });
-      await rejects.toThrow(new RegExp(`Validation failed. Invalid body on server for http:.*\\. ${key}.*`));
+      await rejects.toThrow(new RegExp(`Validation failed. Invalid body on server: ${key}.*`));
       await rejects.toThrowError(HttpException);
       ({ rejects } = expectPromise(async () => {
         await WithDtoClientControllerRPC.handleSchemaConstraints({
           body: constrainingObject,
         });
       }));
-      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));
+      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client: data\\/${key}.*`));
     });
   }
 });
@@ -157,7 +157,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid body on server for http:.*. hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid body on server: hello.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -168,7 +168,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid body on client for http:.*\. data\/hello.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid body on client: data\/hello.*/);
     await rejects.toThrowError(HttpException);
 
     await ({ rejects } = expectPromise(async () => {
@@ -179,7 +179,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid body on client for http:.*\. hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid body on client: hello.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -200,7 +200,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid params on server for http:.*\. foo.*/);
+    await rejects.toThrow(/Validation failed. Invalid params on server: foo.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -212,7 +212,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid params on client for http:.*\. data\/foo.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid params on client: data\/foo.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -224,7 +224,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid params on client for http:.*\. foo.*/);
+    await rejects.toThrow(/Validation failed. Invalid params on client: foo.*/);
   });
 
   it('Should handle query validation on server and client', async () => {
@@ -243,7 +243,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid query on server for http:.*\. search.*/);
+    await rejects.toThrow(/Validation failed. Invalid query on server: search.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -254,7 +254,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid query on client for http:.*\. data\/search.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid query on client: data\/search.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -265,7 +265,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid query on client for http:.*\. search must be shorter.*/);
+    await rejects.toThrow(/Validation failed. Invalid query on client: search must be shorter.*/);
   });
 
   it('Should handle nested queries on server and client', async () => {
@@ -299,7 +299,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid query on server for http:.*. x.*/);
+    await rejects.toThrow(/Validation failed. Invalid query on server: x.*/);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleNestedQuery({
@@ -310,7 +310,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid query on client for http:.*\. data\/x.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid query on client: data\/x.*/);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleNestedQueryClient({
@@ -322,7 +322,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid query on client for http:.*\. x.*/);
+    await rejects.toThrow(/Validation failed. Invalid query on client: x.*/);
   });
 
   it('Should handle output validation on server', async () => {
@@ -338,7 +338,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid output on server for http:.*\. hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid output on server: hello.*/);
   });
 
   it('Should handle stream', async () => {
@@ -375,7 +375,7 @@ describe('Validation with with vovk-dto', () => {
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Validation failed. Invalid iteration #0 on server for http:.*\. value.*/);
+    await rejects.toThrow(/Validation failed. Invalid iteration #0 on server: value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -405,7 +405,7 @@ describe('Validation with with vovk-dto', () => {
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Validation failed. Invalid iteration #2 on server for http:.*\. value.*/);
+    await rejects.toThrow(/Validation failed. Invalid iteration #2 on server: value.*/);
     deepStrictEqual(expected, expectedCollected);
   });
 
@@ -439,7 +439,7 @@ describe('Validation with with vovk-dto', () => {
         disableClientValidation: true,
       });
     });
-    await rejects.toThrow(/Validation failed. Invalid query on server for http:.*\. search.*/);
+    await rejects.toThrow(/Validation failed. Invalid query on server: search.*/);
     await rejects.toThrowError(HttpException);
 
     null as unknown as VovkReturnType<
@@ -455,7 +455,7 @@ describe('Validation with with vovk-dto', () => {
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Validation failed. Invalid body on server for http:.*\. hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid body on server: hello.*/);
     strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
     strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
     // @ts-expect-error Expect error
@@ -468,7 +468,7 @@ describe('Validation with with vovk-dto', () => {
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Validation failed. Invalid body on server for http:.*\. hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid body on server: hello.*/);
     strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
     // @ts-expect-error Expect error

@@ -76,7 +76,7 @@ export function createFetcher<T extends Record<string, KnownAny> = Record<string
       response = await fetch(endpoint, requestInit);
     } catch (e) {
       // handle network errors
-      throw new HttpException(HttpStatus.NULL, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE, {
+      throw new HttpException(HttpStatus.NULL, ((e as Error)?.message ?? DEFAULT_ERROR_MESSAGE) + ' ' + endpoint, {
         body,
         query,
         params,

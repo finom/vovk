@@ -44,7 +44,7 @@ class TestYup(unittest.TestCase):
                 body={"hello": "wrong_length"},  # type: ignore
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Yup validation failed\. Invalid body on server for http://\S+\. hello must be at most 5 characters")
+        self.assertRegex(str(context2.exception), r"Yup validation failed\. Invalid body on server. hello must be at most 5 characters")
     
     def test_query(self) -> None:
         data: WithYupClientControllerRPC.HandleQueryQuery = WithYupClientControllerRPC.handle_query(
@@ -63,7 +63,7 @@ class TestYup(unittest.TestCase):
                 query={"search": "wrong_length"},  # type: ignore
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Yup validation failed\. Invalid query on server for http://\S+\. search must be at most 5 characters")
+        self.assertRegex(str(context2.exception), r"Yup validation failed\. Invalid query on server. search must be at most 5 characters")
     
     def test_nested_query(self) -> None:
         NESTED_QUERY_EXAMPLE: WithYupClientControllerRPC.HandleNestedQueryQuery = {
@@ -104,7 +104,7 @@ class TestYup(unittest.TestCase):
                 query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context1.exception), r"Yup validation failed\. Invalid query on server for http://\S+\. x must be.*")
+        self.assertRegex(str(context1.exception), r"Yup validation failed\. Invalid query on server. x must be.*")
 
         with self.assertRaises(ValidationError) as context2:
             WithYupClientControllerRPC.handle_nested_query(
@@ -129,7 +129,7 @@ class TestYup(unittest.TestCase):
                 params={"foo": "foo", "bar": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Yup validation failed\. Invalid params on server for http://\S+\. bar must be at most 5 characters")
+        self.assertRegex(str(context2.exception), r"Yup validation failed\. Invalid params on server. bar must be at most 5 characters")
 
     def test_output(self) -> None:
         data: WithYupClientControllerRPC.HandleOutputOutput = WithYupClientControllerRPC.handle_output(
@@ -141,7 +141,7 @@ class TestYup(unittest.TestCase):
             WithYupClientControllerRPC.handle_output(
                 query={"helloOutput": "wrong_length"}
             )
-        self.assertRegex(str(context.exception), r"Yup validation failed\. Invalid output on server for http://\S+\. hello must be at most 5 characters")
+        self.assertRegex(str(context.exception), r"Yup validation failed\. Invalid output on server. hello must be at most 5 characters")
 
     def test_stream(self) -> None: ## TODO: StreamException????
         iterator: Generator[WithYupClientControllerRPC.HandleStreamIteration, None, None] = WithYupClientControllerRPC.handle_stream(
@@ -159,7 +159,7 @@ class TestYup(unittest.TestCase):
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Yup validation failed\. Invalid iteration #0 on server for http://\S+\. value must be at most 5 characters")
+        self.assertRegex(str(context.exception), r"Yup validation failed\. Invalid iteration #0 on server. value must be at most 5 characters")
     def test_constraints(self) -> None:
         # List of keys that are not supported
         not_supported = ["num_multipleOf", "logical_anyOf", "obj_strict", "str_datetime"]
@@ -186,7 +186,7 @@ class TestYup(unittest.TestCase):
                 )
             self.assertRegex(
                 str(context1.exception), 
-                rf"Yup validation failed\. Invalid body on server for http://\S+\. {key}.*",
+                rf"Yup validation failed\. Invalid body on server. {key}.*",
                 
             )
             

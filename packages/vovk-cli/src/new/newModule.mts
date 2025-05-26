@@ -46,9 +46,8 @@ export default async function newModule({
 }) {
   const { config, log, cwd, apiDir } = await getProjectInfo();
   const segments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
-  const tsConfigResult = await getTsconfig(cwd);
   const isNodeNextResolution = ['node16', 'nodenext'].includes(
-    tsConfigResult?.config?.compilerOptions?.moduleResolution?.toLowerCase() ?? ''
+    (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
   );
   let templates = config.moduleTemplates as Required<typeof config.moduleTemplates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
@@ -133,7 +132,7 @@ export default async function newModule({
         await fs.mkdir(absoluteModuleDir, { recursive: true });
         await fs.writeFile(absoluteModulePath, prettiedCode);
         log.info(
-          `Created ${chalkHighlightThing(fileName)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
+          `Created${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
         );
       }
     }
@@ -168,7 +167,7 @@ export default async function newModule({
       }
 
       log.info(
-        `Added${empty ? ' empty' : ''} ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
+        `Added ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
       );
     }
   }

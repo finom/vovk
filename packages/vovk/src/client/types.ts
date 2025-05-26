@@ -89,6 +89,7 @@ type ClientMethod<
     ? Promise<R>
     : StaticMethodReturnPromise<T>) & {
   isRPC: true;
+  path: string;
   schema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
@@ -145,5 +146,6 @@ export type VovkValidateOnClient = (
 export type VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
   fetcher?: VovkClientFetcher<OPTS>;
   validateOnClient?: VovkValidateOnClient;
+  segmentNameOverride?: string;
   defaultOptions?: Partial<OPTS>;
 };

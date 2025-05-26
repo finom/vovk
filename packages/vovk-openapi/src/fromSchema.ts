@@ -1,20 +1,28 @@
 import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
 import { HttpStatus } from 'vovk';
 import type { HttpMethod, KnownAny, VovkSchema } from 'vovk';
-import { createCodeExamples } from './createCodeExamples';
+import { sample } from '@stoplight/json-schema-sampler';
+import { type CodeSamplePackageJson, createCodeExamples } from './createCodeExamples';
 
 export type SimpleJsonSchema = {
   type: 'object';
   description?: string;
   properties: Record<string, KnownAny>;
   required?: string[];
+  examples?: KnownAny[];
 };
 
-export function fromSchema(
-  apiRoot: string,
-  fullSchema: VovkSchema,
-  extendWith?: Partial<OpenAPIObject>
-): OpenAPIObject {
+export function fromSchema({
+  rootEntry,
+  schema: fullSchema,
+  openAPIObject = {},
+  package: packageJson = { name: 'vovk-client' },
+}: {
+  rootEntry: string;
+  schema: VovkSchema;
+  openAPIObject?: Partial<OpenAPIObject>;
+  package?: CodeSamplePackageJson;
+}): OpenAPIObject {
   const paths: PathsObject = {};
 
   for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments)) {
@@ -25,8 +33,10 @@ export function fromSchema(
           const bodyValidation = h?.validation?.body as SimpleJsonSchema | undefined;
           const paramsValidation = h?.validation?.params as SimpleJsonSchema | undefined;
           const outputValidation = h?.validation?.output as SimpleJsonSchema | undefined;
+          const iterationValidation = h?.validation?.iteration as SimpleJsonSchema | undefined;
 
           const { ts, rs, py } = createCodeExamples({
+            package: packageJson,
             handlerName,
             handlerSchema: h,
             controllerSchema: c,
@@ -53,7 +63,7 @@ export function fromSchema(
 
           const path =
             '/' +
-            [apiRoot.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path]
+            [rootEntry.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path]
               .filter(Boolean)
               .join('/')
               .replace(/:([a-zA-Z0-9_]+)/g, '{$1}');
@@ -63,17 +73,17 @@ export function fromSchema(
             'x-codeSamples': [
               ...(h.openapi['x-codeSamples'] ?? []),
               {
-                label: 'Typescript client',
+                label: 'TypeScript RPC',
                 lang: 'typescript',
                 source: ts,
               },
               {
-                label: 'Python client',
+                label: 'Python RPC',
                 lang: 'python',
                 source: py,
               },
               {
-                label: 'Rust client',
+                label: 'Rust RPC',
                 lang: 'rust',
                 source: rs,
               },
@@ -91,6 +101,31 @@ export function fromSchema(
                       content: {
                         'application/json': {
                           schema: outputValidation,
+                        },
+                      },
+                    },
+                    ...h.openapi?.responses,
+                  },
+                }
+              : {}),
+            ...(iterationValidation && 'type' in iterationValidation && 'properties' in iterationValidation
+              ? {
+                  responses: {
+                    200: {
+                      description:
+                        'description' in iterationValidation ? iterationValidation.description : 'JSON Lines response',
+                      content: {
+                        'application/jsonl': {
+                          schema: {
+                            ...iterationValidation,
+                            examples: iterationValidation.examples ?? [
+                              [
+                                JSON.stringify(sample(iterationValidation)),
+                                JSON.stringify(sample(iterationValidation)),
+                                JSON.stringify(sample(iterationValidation)),
+                              ].join('\n'),
+                            ],
+                          },
                         },
                       },
                     },
@@ -118,14 +153,15 @@ export function fromSchema(
   }
 
   return {
-    ...extendWith,
+    ...openAPIObject,
     openapi: '3.1.0',
-    info: extendWith?.info ?? {
-      title: 'API',
-      version: '1.0.0',
+    info: {
+      title: packageJson?.description ?? 'API',
+      version: packageJson?.version ?? '0.0.1',
+      ...openAPIObject?.info,
     },
     components: {
-      ...extendWith?.components,
+      ...openAPIObject?.components,
       schemas: {
         HttpStatus: {
           type: 'integer',
@@ -158,7 +194,7 @@ export function fromSchema(
           required: ['statusCode', 'message', 'isError'],
           additionalProperties: false,
         },
-        ...extendWith?.components?.schemas,
+        ...openAPIObject?.components?.schemas,
       },
     },
     paths,

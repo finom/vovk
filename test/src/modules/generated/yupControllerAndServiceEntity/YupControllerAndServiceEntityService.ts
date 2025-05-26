@@ -1,5 +1,5 @@
 import type { VovkBody, VovkQuery } from 'vovk';
-import type YupControllerAndServiceEntityController from './YupControllerAndServiceEntityController.ts';
+import type YupControllerAndServiceEntityController from './YupControllerAndServiceEntityController';
 
 export default class YupControllerAndServiceEntityService {
   static getYupControllerAndServiceEntities = (

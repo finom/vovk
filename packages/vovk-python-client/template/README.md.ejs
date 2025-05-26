@@ -27,7 +27,7 @@ pip install <%= t.package.name.replace(/-/g, '_') %>
 
 <%- handlerSchema.openapi?.description ? `${handlerSchema.openapi.description}` : '' %>
 
-Endpoint: `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
+`<%= handlerSchema.httpMethod %> <%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
 
 ```py
 <%- vars.createCodeExamples({

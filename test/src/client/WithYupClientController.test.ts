@@ -34,14 +34,14 @@ describe('Yup-to-JSONchema constraints', async () => {
           disableClientValidation: true,
         });
       });
-      await rejects.toThrow(new RegExp(`Yup validation failed. Invalid body on server for http:.*\\. ${key}.*`));
+      await rejects.toThrow(new RegExp(`Yup validation failed. Invalid body on server: ${key}.*`));
       await rejects.toThrowError(HttpException);
       ({ rejects } = expectPromise(async () => {
         await WithYupClientControllerRPC.handleSchemaConstraints({
           body: constrainingObject,
         });
       }));
-      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client for http:.*\\. data\\/${key}.*`));
+      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client. data\\/${key}.*`));
     });
   }
 });
@@ -101,7 +101,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid body on server for http:.*. hello.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid body on server: hello.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -112,7 +112,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid body on client for http:.*\. data\/hello.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid body on client: data\/hello.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -133,7 +133,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid params on server for http:.*\. foo.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid params on server: foo.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -145,7 +145,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid params on client for http:.*\. data\/foo.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid params on client: data\/foo.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -165,7 +165,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid query on server for http:.*\. search.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid query on server: search.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -176,7 +176,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid query on client for http:.*\. data\/search.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid query on client: data\/search.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -200,7 +200,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid query on server for http:.*. x.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid query on server: x.*/);
 
     ({ rejects } = expectPromise(async () => {
       await WithYupClientControllerRPC.handleNestedQuery({
@@ -211,7 +211,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid query on client for http:.*\. data\/x.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid query on client: data\/x.*/);
   });
 
   it('Should handle output validation on server', async () => {
@@ -227,7 +227,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Yup validation failed. Invalid output on server for http:.*\. hello.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid output on server: hello.*/);
   });
 
   it('Should handle stream', async () => {
@@ -264,7 +264,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Yup validation failed. Invalid iteration #0 on server for http:.*\. value.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid iteration #0 on server: value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -294,7 +294,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Yup validation failed. Invalid iteration #2 on server for http:.*\. value.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid iteration #2 on server: value.*/);
     deepStrictEqual(expected, expectedCollected);
   });
 
@@ -327,7 +327,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
         disableClientValidation: true,
       });
     });
-    await rejects.toThrow(/Yup validation failed. Invalid query on server for http:.*\. search.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid query on server: search.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -338,7 +338,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Yup validation failed. Invalid body on server for http:.*\. hello.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid body on server: hello.*/);
     strictEqual(WithYupClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
     strictEqual(WithYupClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
   });
@@ -350,7 +350,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Yup validation failed. Invalid body on server for http:.*\. hello.*/);
+    await rejects.toThrow(/Yup validation failed. Invalid body on server: hello.*/);
     strictEqual(WithYupClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithYupClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
   });

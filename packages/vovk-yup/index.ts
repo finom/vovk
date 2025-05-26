@@ -144,13 +144,13 @@ function withYup<
     getJSONSchemaFromModel: (model) => {
       return enrichWithDescriptions(applySchemaFixes(convertSchema(model)), model.describe());
     },
-    validate: async (data, model, { type, req, i }) => {
+    validate: async (data, model, { type, i }) => {
       try {
         await model.validate(data, options?.validateOptions);
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Yup validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
+          `Yup validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${getErrorText(e)}`,
           { [type]: data }
         );
       }

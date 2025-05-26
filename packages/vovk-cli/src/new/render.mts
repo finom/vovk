@@ -58,7 +58,12 @@ export default async function render(
     config,
     withService,
     segmentName,
-    resolutionExt: isNodeNextResolution ? '.ts' : '',
+    nodeNextResolutionExt: {
+      ts: isNodeNextResolution ? '.ts' : '',
+      js: isNodeNextResolution ? '.js' : '',
+      cjs: isNodeNextResolution ? '.cjs' : '',
+      mjs: isNodeNextResolution ? '.mjs' : '',
+    },
     defaultDir: getModuleDirName(segmentName, theThing),
 
     // libraries

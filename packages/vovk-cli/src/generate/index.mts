@@ -15,6 +15,7 @@ import mergePackages from './mergePackages.mjs';
 import writeOneClientFile from './writeOneClientFile.mjs';
 import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mts';
+import { getTsconfig } from 'get-tsconfig';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -110,7 +111,15 @@ export default async function generate({
   locatedSegments: Segment[];
   cliGenerateOptions?: GenerateOptions;
 }) {
+  fullSchema = {
+    ...fullSchema,
+    // sort segments by name to avoid unnecessary rendering
+    segments: Object.fromEntries(Object.entries(fullSchema.segments).sort(([a], [b]) => a.localeCompare(b))),
+  };
   const { config, cwd, log } = projectInfo;
+  const isNodeNextResolution = ['node16', 'nodenext'].includes(
+    (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
+  );
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
     !!cliGenerateOptions?.composedFrom ||
@@ -154,6 +163,7 @@ export default async function generate({
         });
 
         const packageJson = await mergePackages({
+          log,
           cwd,
           config,
           packages: [config.composedClient.package as PackageJson, templateDef.composedClient?.package as PackageJson],
@@ -175,6 +185,7 @@ export default async function generate({
           origin: config.origin ?? templateDef?.origin ?? null,
           templateDef,
           locatedSegments,
+          isNodeNextResolution,
         });
 
         const outAbsoluteDir = path.join(cwd, outCwdRelativeDir);
@@ -237,6 +248,7 @@ export default async function generate({
             const packageJson = await mergePackages({
               cwd,
               config,
+              log,
               packages: [
                 config.segmentedClient.packages?.[segmentName] as PackageJson,
                 templateDef.segmentedClient?.packages?.[segmentName] as PackageJson,
@@ -259,6 +271,7 @@ export default async function generate({
               origin: config.origin ?? templateDef?.origin ?? null,
               templateDef,
               locatedSegments,
+              isNodeNextResolution,
             });
 
             return {

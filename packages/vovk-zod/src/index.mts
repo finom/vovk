@@ -11,11 +11,11 @@ import {
 const getErrorText = (e: unknown) => {
   if (e instanceof z.ZodError) {
     return e.issues
-      .map((issue, i) => {
+      .map((issue) => {
         const path = issue.path.length ? `${issue.path.join('.')}` : '';
         const message = issue.message;
 
-        return `${i ? 'at' : 'At'} "${path}": "${message}"`;
+        return `"${path}": "${message}"`;
       })
       .join('; ');
   }
@@ -76,13 +76,13 @@ function withZod<
       __iteration: ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny;
     },
     getJSONSchemaFromModel: (model) => z.toJSONSchema(model, options?.toJSONSchemaParams),
-    validate: async (data, model, { type, req, i }) => {
+    validate: async (data, model, { type, i }) => {
       try {
         model.parse(data);
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
+          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${getErrorText(e)}`,
           { [type]: data, error: e }
         );
       }

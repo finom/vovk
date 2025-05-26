@@ -4,7 +4,7 @@
     "noEmit": false
   },
   "include": ["src/index.mts"],
-  "exclude": ["dist"],
+  "exclude": ["dist", "node_modules", "**/dist/**"],
   "paths": {
     "react/*": ["../../node_modules/react/*"]
   }

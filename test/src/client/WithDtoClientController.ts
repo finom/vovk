@@ -230,7 +230,7 @@ export default class WithDtoClientController {
   });
 
   // The tests are run on nodejs without TS compilator so decorators are not supported and it's not possible import a DTO at .test.ts file
-  // this endpoint and other ones ended with "Client" implement a proxy to be able to test errors on client side
+  // this endpoint and other ones ended with "Client" implement a proxy to be able to test errors on client: side
   @post('all/:foo/:bar/client')
   static handleAllClient = async (
     req: VovkRequest<HandleAllBodyDto, HandleAllQueryDto>,

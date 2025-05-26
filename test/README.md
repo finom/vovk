@@ -1,3 +1,3 @@
 # Vovk.ts tests
 
-Implemented with [Jest](https://jestjs.io/) (for now).
+Implemented with `node:assert` and `node:test`.

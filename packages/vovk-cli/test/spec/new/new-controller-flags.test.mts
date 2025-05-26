@@ -23,7 +23,7 @@ await describe('CLI new controller and flags', async () => {
       });`,
     ]);
     await runAtProjectDir(
-      '../dist/index.mjs new controller megaUser --template=../test/spec/new/custom-controller.ts.ejs'
+      '../dist/index.mjs new controller megaUser --template=../test/spec/new/custom-Controller.ts.ejs'
     );
 
     await assertFile('src/modules/megaUser/MegaUserController.ts', `// hello megaUser`);

@@ -34,8 +34,9 @@ program
   .argument('[nextArgs...]', 'extra arguments for the dev command')
   .option('--next-dev', 'start schema watcher and Next.js with automatic port allocation')
   .option('--exit', 'kill the processe when schema and client is generated')
+  .option('--schema-out <path>', 'path to schema output directory (default: .vovk-schema)')
   .action(async (nextArgs: string[], options: DevOptions) => {
-    const { nextDev, exit = false } = options;
+    const { nextDev, exit = false, schemaOut } = options;
     const portAttempts = 30;
     const PORT = !nextDev
       ? process.env.PORT
@@ -65,6 +66,7 @@ program
             env: {
               PORT,
               __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
+              __VOVK_SCHEMA_OUT_FLAG__: schemaOut ?? '',
               __VOVK_EXIT__: exit ? 'true' : 'false',
             } satisfies VovkEnv,
           },
@@ -81,7 +83,7 @@ program
         // do nothing, all processes are killed
       }
     } else {
-      void new VovkDev().start({ exit });
+      void new VovkDev({ schemaOut }).start({ exit });
     }
   });
 
@@ -100,13 +102,16 @@ program
   .option('--segmented-include-segments <segments...>', 'include segments in segmented client')
   .option('--segmented-exclude-segments <segments...>', 'exclude segments in segmented client')
   .option('--prettify', 'prettify output files')
+  .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
   .option('--config <config>', 'path to config file')
   .action(async (cliGenerateOptions: GenerateOptions) => {
     const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.config, srcRootRequired: false });
     const { cwd, config, log, apiDir } = projectInfo;
     const locatedSegments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
-    const schemaOutAbsolutePath = path.join(cwd, config.schemaOutDir);
-    const fullSchema = await getFullSchemaFromJSON(schemaOutAbsolutePath, log);
+    const fullSchema = await getFullSchemaFromJSON(
+      path.resolve(cwd, cliGenerateOptions?.schema ?? config.schemaOutDir),
+      log
+    );
 
     await generate({
       projectInfo,
@@ -127,11 +132,15 @@ program
   .option('--ts-client-out-dir <path>', 'path to output directory for TypeScript client')
   .option('--dont-delete-ts-client-out-dir-after', 'do not delete TypeScript client output directory after bundling')
   .option('--config <config>', 'path to config file')
+  .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
   .option('--sourcemap', 'generate sourcemaps')
   .action(async (cliBundleOptions: BundleOptions) => {
     const projectInfo = await getProjectInfo({ configPath: cliBundleOptions.config, srcRootRequired: false });
     const { cwd, config, log } = projectInfo;
-    const fullSchema = await getFullSchemaFromJSON(path.resolve(cwd, config.schemaOutDir), log);
+    const fullSchema = await getFullSchemaFromJSON(
+      path.resolve(cwd, cliBundleOptions?.schema ?? config.schemaOutDir),
+      log
+    );
 
     await bundle({
       projectInfo,

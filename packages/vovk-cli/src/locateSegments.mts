@@ -27,7 +27,7 @@ export default async function locateSegments({
 
   // Read the contents of the directory
   try {
-    list = (await fs.readdir(dir)).sort();
+    list = (await fs.readdir(dir)).toSorted();
   } catch {
     // do nothing
     return results;

@@ -37,6 +37,7 @@ import { createDecorator } from './createDecorator.js';
 import { JSONLinesResponse } from './JSONLinesResponse.js';
 import { generateStaticAPI } from './utils/generateStaticAPI.js';
 import { withValidation } from './utils/withValidation.js';
+import { multitenant } from './utils/multitenant.js';
 
 export {
   type KnownAny,
@@ -74,6 +75,7 @@ export {
   createFetcher,
   generateStaticAPI,
   withValidation,
+  multitenant,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initVovk } = createVovkApp();

@@ -1,6 +1,7 @@
 use serde::{Serialize, de::DeserializeOwned};
 use reqwest::blocking::Client;
 use reqwest::Method;
+use core::panic;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -329,7 +330,7 @@ pub fn http_request_stream<T, B, Q, P>(
     headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
-) -> Box<dyn Iterator<Item = T>> 
+) -> Result<Box<dyn Iterator<Item = T>>, HttpException> 
 where 
     T: DeserializeOwned + 'static,
     B: Serialize + ?Sized,
@@ -337,7 +338,7 @@ where
     P: Serialize + ?Sized,
 {
     // Prepare the request using the helper function
-    let (request, _) = match prepare_request(
+    let (request, _) = prepare_request(
         default_api_root,
         segment_name,
         controller_name,
@@ -348,16 +349,18 @@ where
         headers,
         api_root,
         disable_client_validation,
-    ) {
-        Ok(req) => req,
-        Err(e) => panic!("{}", e),
-    };
+    ).map_err(|e| HttpException {
+        message: e.to_string(),
+        status_code: 0,
+        cause: None,
+    })?;
     
     // Send the request
-    let response = match request.send() {
-        Ok(res) => res,
-        Err(e) => panic!("{}", e),
-    };
+    let response = request.send().map_err(|e| HttpException {
+        message: e.to_string(),
+        status_code: 0,
+        cause: None,
+    })?;
     
     // Create the streaming iterator
     let json_stream = JsonlStream {
@@ -373,19 +376,21 @@ where
                         .as_str()
                         .unwrap_or("Unknown error")
                         .to_string();
-                    panic!("{}", message);
+                    panic!("Error from server: {}", message);
                 } else {
                     match serde_json::from_value::<T>(value) {
                         Ok(typed_value) => typed_value,
-                        Err(e) => panic!("{}", e),
+                        Err(e) => panic!("Failed to deserialize value: {}", e),
                     }
                 }
             },
-            Err(e) => panic!("{}", e),
+            Err(e) => {
+                panic!("Error reading from stream: {}", e);
+            }
         }
     });
     
-    Box::new(typed_stream)
+    Ok(Box::new(typed_stream))
 }
 
 // Helper function to build query strings from nested JSON
@@ -437,62 +442,37 @@ impl Iterator for JsonlStream {
     type Item = Result<Value, Box<dyn Error>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            if let Some(line_end) = self.buffer.find('\n') {
-                let line = self.buffer[..line_end].to_string();
-                self.buffer = self.buffer[line_end + 1..].to_string();
-                if !line.is_empty() {
-                    match serde_json::from_str::<Value>(&line) {
-                        Ok(value) => {
-                            if value.get("isError").is_some() {
-                                let message = value["reason"]
-                                    .as_str()
-                                    .unwrap_or("Unknown error")
-                                    .to_string();
-                                return Some(Err(Box::new(HttpException {
-                                    message,
-                                    status_code: 0,
-                                    cause: None,
-                                })));
-                            }
-                            return Some(Ok(value));
-                        }
-                        Err(e) => return Some(Err(Box::new(e))),
-                    }
+        use std::io::BufRead;
+        
+        self.buffer.clear();
+        match self.reader.read_line(&mut self.buffer) {
+            Ok(0) => None, // End of stream
+            Ok(_) => {
+                let line = self.buffer.trim();
+                if line.is_empty() {
+                    return self.next(); // Skip empty lines
                 }
-            } else {
-                match std::io::Read::read_to_string(&mut self.reader, &mut self.buffer) {
-                    Ok(0) => {
-                        if !self.buffer.is_empty() {
-                            let line = std::mem::take(&mut self.buffer);
-                            if !line.is_empty() {
-                                match serde_json::from_str::<Value>(&line) {
-                                    Ok(value) => {
-                                        if value.get("isError").is_some() {
-                                            let message = value["reason"]
-                                                .as_str()
-                                                .unwrap_or("Unknown error")
-                                                .to_string();
-                                            return Some(Err(Box::new(HttpException {
-                                                message,
-                                                status_code: 0,
-                                                cause: None,
-                                            })));
-                                        }
-                                        return Some(Ok(value));
-                                    }
-                                    Err(e) => return Some(Err(Box::new(e))),
-                                }
-                            }
+                
+                match serde_json::from_str::<Value>(line) {
+                    Ok(value) => {
+                        if value.get("isError").is_some() {
+                            let message = value["message"]
+                                .as_str()
+                                .unwrap_or("Unknown error")
+                                .to_string();
+                            Some(Err(Box::new(HttpException {
+                                message,
+                                status_code: 0,
+                                cause: None,
+                            })))
+                        } else {
+                            Some(Ok(value))
                         }
-                        return None;
-                    }
-                    Ok(_) => {
-                        // Continue the loop to process more data
-                    }
-                    Err(e) => return Some(Err(Box::new(e))),
+                    },
+                    Err(e) => Some(Err(Box::new(e))),
                 }
-            }
+            },
+            Err(e) => Some(Err(Box::new(e))),
         }
     }
 }
