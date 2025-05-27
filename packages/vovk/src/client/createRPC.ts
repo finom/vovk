@@ -55,15 +55,15 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => {
-      const mainPrefix =
-        [
-          apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
-          apiRoot,
-          segmentNamePath,
-        ]
-          .filter(Boolean)
-          .join('/') + '/';
-      return mainPrefix + getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query);
+      const endpoint = [
+        apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
+        apiRoot,
+        segmentNamePath,
+        getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query),
+      ]
+        .filter(Boolean)
+        .join('/');
+      return endpoint;
     };
 
     const handler = (

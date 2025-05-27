@@ -164,7 +164,7 @@ export function createVovkApp() {
     async function GET_DEV(req: NextRequest, data: { params: Promise<Record<string, string[]>> }) {
       const params = await data.params;
       if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
-        const schema = getSchema(options);
+        const schema = await getSchema(options);
         return vovkApp.respond(200, { schema });
       }
       return vovkApp.GET(req, data);

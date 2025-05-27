@@ -2,7 +2,7 @@ import { createVovkApp } from './createVovkApp.js';
 import {
   HttpStatus,
   HttpMethod,
-  VovkSchemaIdEnum, // TODO: not documented
+  VovkSchemaIdEnum,
   type KnownAny,
   type VovkErrorResponse,
   type VovkRequest,
@@ -33,7 +33,7 @@ import {
   createFetcher,
 } from './client/index.js';
 import { HttpException } from './HttpException.js';
-import { createDecorator } from './createDecorator.js';
+import { createDecorator } from './utils/createDecorator.js';
 import { JSONLinesResponse } from './JSONLinesResponse.js';
 import { generateStaticAPI } from './utils/generateStaticAPI.js';
 import { withValidation } from './utils/withValidation.js';

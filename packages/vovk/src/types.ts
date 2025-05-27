@@ -19,7 +19,7 @@ export type VovkHandlerSchema<T = KnownAny> = {
     iteration?: T;
   };
   openapi?: OperationObject;
-  misc?: Record<string, KnownAny>;
+  misc?: Record<string, KnownAny> | Promise<Record<string, KnownAny>>;
 };
 
 export type VovkControllerSchema<T = KnownAny> = {

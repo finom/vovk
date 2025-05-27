@@ -1,22 +1,32 @@
 import { type VovkSegmentSchema, type VovkController, type StaticClass, VovkSchemaIdEnum } from '../types.js';
 
-export function getControllerSchema(controller: VovkController, rpcModuleName: string, exposeValidation: boolean) {
+export async function getControllerSchema(
+  controller: VovkController,
+  rpcModuleName: string,
+  exposeValidation: boolean
+) {
+  const handlers = exposeValidation
+    ? controller._handlers
+    : Object.fromEntries(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
+      );
+  await Promise.all(
+    Object.values(handlers)
+      .filter(({ misc }) => misc instanceof Promise)
+      .map(async (schema) => {
+        schema.misc = await schema.misc;
+      })
+  );
   return {
     rpcModuleName,
     originalControllerName: controller.name,
     prefix: controller._prefix ?? '',
-    handlers: {
-      ...(exposeValidation
-        ? controller._handlers
-        : Object.fromEntries(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
-          )),
-    },
+    handlers,
   };
 }
 
-export default function getSchema(options: {
+export default async function getSchema(options: {
   emitSchema?: boolean;
   segmentName?: string;
   controllers: Record<string, StaticClass>;
@@ -34,7 +44,7 @@ export default function getSchema(options: {
   if (!emitSchema) return schema;
 
   for (const [rpcModuleName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
-    schema.controllers[rpcModuleName] = getControllerSchema(controller, rpcModuleName, exposeValidation);
+    schema.controllers[rpcModuleName] = await getControllerSchema(controller, rpcModuleName, exposeValidation);
   }
 
   return schema;
