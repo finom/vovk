@@ -132,8 +132,13 @@ function withDto<
     skipSchemaEmission,
     validateEachIteration,
     handle: handle as T & {
-      __output: OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny;
-      __iteration: ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny;
+      __types: {
+        body: BODY_DTO extends ClassConstructor<infer U> ? U : KnownAny;
+        query: QUERY_DTO extends ClassConstructor<infer U> ? U : KnownAny;
+        params: PARAMS_DTO extends ClassConstructor<infer U> ? U : KnownAny;
+        output: OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny;
+        iteration: ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny;
+      };
     },
     getJSONSchemaFromModel: (dto) => {
       const schema = {

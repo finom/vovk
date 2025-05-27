@@ -72,8 +72,13 @@ function withZod<
     skipSchemaEmission,
     validateEachIteration,
     handle: handle as T & {
-      __output: ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny;
-      __iteration: ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny;
+      __types: {
+        body: ZOD_BODY extends ZodType ? z.infer<ZOD_BODY> : KnownAny;
+        query: ZOD_QUERY extends ZodType ? z.infer<ZOD_QUERY> : KnownAny;
+        params: ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : Record<string, string>;
+        output: ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny;
+        iteration: ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny;
+      };
     },
     getJSONSchemaFromModel: (model) => z.toJSONSchema(model, options?.toJSONSchemaParams),
     validate: async (data, model, { type, i }) => {

@@ -56,15 +56,20 @@ const assignSchema = ({
 
   const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
     _controller: VovkController;
+    func?: (req: KnownAny, params: KnownAny) => KnownAny;
+    schema?: VovkHandlerSchema;
     _sourceMethod?: ((...args: KnownAny) => KnownAny) & {
       _getSchema?: (controller: VovkController) => VovkHandlerSchema;
+      func?: (req: KnownAny, params: KnownAny) => KnownAny;
+      schema?: VovkHandlerSchema;
     };
   };
 
   originalMethod._controller = controller;
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
   const schema = originalMethod._sourceMethod._getSchema?.(controller);
-
+  originalMethod.schema = schema;
+  originalMethod.func = originalMethod._sourceMethod?.func;
   controller._handlers = {
     ...controller._handlers,
     [propertyKey]: {
@@ -75,7 +80,7 @@ const assignSchema = ({
     },
   };
 
-  methods[path] = controller[propertyKey] as RouteHandler;
+  methods[path] = originalMethod as RouteHandler;
   methods[path]._options = options;
 
   controller._handlersMetadata = {

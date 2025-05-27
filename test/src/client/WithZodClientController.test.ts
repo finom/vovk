@@ -447,3 +447,70 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     });
   });
 });
+
+// NOTE: Not implemented for Yup and Dto
+describe('Controller method as function with func', () => {
+  it('Should be able to use controller method as function with HTTP decorator', async () => {
+    const result = await WithZodClientControllerRPC.handleAllAsFunction({
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'foo', bar: 'bar' },
+    });
+
+    const expected = {
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'foo', bar: 'bar' },
+      vovkParams: { foo: 'foo', bar: 'bar' },
+    };
+
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleAllAsFunction> satisfies typeof expected;
+    null as unknown as VovkOutput<typeof WithZodClientControllerRPC.handleAllAsFunction> satisfies typeof expected;
+    null as unknown as VovkOutput<typeof WithZodClientController.handleAllAsFunction> satisfies typeof expected;
+
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleAllAsFunction> satisfies null;
+    // @ts-expect-error Expect error
+    null as unknown as VovkOutput<typeof WithZodClientControllerRPC.handleAllAsFunction> satisfies null;
+    // @ts-expect-error Expect error
+    null as unknown as VovkOutput<typeof WithZodClientController.handleAllAsFunction> satisfies null;
+
+    deepStrictEqual(result satisfies typeof expected, expected);
+  });
+
+  it('Should be able to use controller method as function without HTTP decorator', async () => {
+    const result = await WithZodClientControllerRPC.handleAllNoHttpAsFunction({
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'foo', bar: 'bar' },
+    });
+
+    const expected = {
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'foo', bar: 'bar' },
+      vovkParams: { foo: 'foo', bar: 'bar' },
+    };
+
+    null as unknown as VovkReturnType<
+      typeof WithZodClientControllerRPC.handleAllNoHttpAsFunction
+    > satisfies typeof expected;
+    null as unknown as VovkOutput<
+      typeof WithZodClientControllerRPC.handleAllNoHttpAsFunction
+    > satisfies typeof expected;
+    null as unknown as VovkOutput<typeof WithZodClientController.handleAllNoHttpAsFunction> satisfies typeof expected;
+
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleAllNoHttpAsFunction> satisfies null;
+    // @ts-expect-error Expect error
+    null as unknown as VovkOutput<typeof WithZodClientControllerRPC.handleAllNoHttpAsFunction> satisfies null;
+    // @ts-expect-error Expect error
+    null as unknown as VovkOutput<typeof WithZodClientController.handleAllNoHttpAsFunction> satisfies null;
+
+    deepStrictEqual(result satisfies typeof expected, expected);
+  });
+
+  it.skip('disableClientValidation in Controller.handler.func', () => {
+    // TODO
+  });
+});

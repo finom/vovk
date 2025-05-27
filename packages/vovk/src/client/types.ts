@@ -44,8 +44,13 @@ type StaticMethodOption<
   T extends ((
     ...args: KnownAny[]
   ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
-    __output?: KnownAny;
-    __iteration?: KnownAny;
+    __types?: {
+      body?: KnownAny;
+      query?: KnownAny;
+      params?: KnownAny;
+      output?: KnownAny;
+      iteration?: KnownAny;
+    };
   },
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
@@ -72,8 +77,13 @@ type ClientMethod<
   T extends ((
     ...args: KnownAny[]
   ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
-    __output?: KnownAny;
-    __iteration?: KnownAny;
+    __types?: {
+      body?: KnownAny;
+      query?: KnownAny;
+      params?: KnownAny;
+      output?: KnownAny;
+      iteration?: KnownAny;
+    };
   },
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
@@ -94,8 +104,7 @@ type ClientMethod<
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkSchema;
-  __output: T['__output'];
-  __iteration: T['__iteration'];
+  __types?: T['__types'];
 };
 
 type OmitNever<T> = {

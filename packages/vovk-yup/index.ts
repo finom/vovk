@@ -138,8 +138,13 @@ function withYup<
     skipSchemaEmission,
     validateEachIteration,
     handle: handle as T & {
-      __output: YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny;
-      __iteration: YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny;
+      __types: {
+        body: YUP_BODY extends Yup.Schema<infer U> ? U : KnownAny;
+        query: YUP_QUERY extends Yup.Schema<infer U> ? U : KnownAny;
+        params: YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>;
+        output: YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny;
+        iteration: YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny;
+      };
     },
     getJSONSchemaFromModel: (model) => {
       return enrichWithDescriptions(applySchemaFixes(convertSchema(model)), model.describe());

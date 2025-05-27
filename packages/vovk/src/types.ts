@@ -141,17 +141,13 @@ export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownA
       ? Y
       : never;
 
-export type VovkOutput<
-  T extends ((...args: KnownAny) => KnownAny) & {
-    __output?: KnownAny;
-  },
-> = T['__output'];
+export type VovkOutput<T> = T extends { __types?: { output?: infer O } } ? O : KnownAny;
 
-export type VovkIteration<
-  T extends ((...args: KnownAny) => KnownAny) & {
-    __iteration?: KnownAny;
-  },
-> = T['__iteration'];
+export type VovkIteration<T> = T extends {
+  __types?: { iteration?: infer I };
+}
+  ? I
+  : KnownAny;
 
 export type VovkClientBody<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['body'];
 

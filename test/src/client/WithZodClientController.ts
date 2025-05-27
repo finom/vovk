@@ -13,6 +13,18 @@ import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod/v4';
 
+const HandleAllInput = {
+  body: z.object({ hello: z.string() }),
+  query: z.object({ search: z.string() }),
+  params: z.object({ foo: z.string(), bar: z.string() }),
+  output: z.object({
+    body: z.object({ hello: z.string() }),
+    query: z.object({ search: z.string() }),
+    params: z.object({ foo: z.string(), bar: z.string() }),
+    vovkParams: z.object({ foo: z.string(), bar: z.string() }),
+  }),
+};
+
 export const ConstrainingModel = z.object({
   enum_value: z.enum(['a', 'b', 'c']),
   // Number validations not in Rust
@@ -78,19 +90,11 @@ export default class WithZodClientController {
   @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/:foo/:bar')
   static handleAll = withZod({
-    body: z.object({ hello: z.string() }),
-    query: z.object({ search: z.string() }),
-    params: z.object({ foo: z.string(), bar: z.string() }),
-    output: z.object({
-      body: z.object({ hello: z.string() }),
-      query: z.object({ search: z.string() }),
-      params: z.object({ foo: z.string(), bar: z.string() }),
-      vovkParams: z.object({ foo: z.string(), bar: z.string() }),
-    }),
-    handle: async (req, params) => {
-      const body = await req.json();
-      const search = req.nextUrl.searchParams.get('search');
-      const vovkParams = req.vovk.params();
+    ...HandleAllInput,
+    handle: async ({ vovk }, params) => {
+      const body = await vovk.body();
+      const { search } = vovk.query();
+      const vovkParams = vovk.params();
       return WithZodClientService.handleAll({
         body,
         query: { search },
@@ -256,6 +260,47 @@ export default class WithZodClientController {
       for (const value of req.vovk.query().values) {
         yield { value };
       }
+    },
+  });
+
+  static handleAllNoHTTP = withZod({
+    ...HandleAllInput,
+    handle: async ({ vovk }, params) => {
+      const body = await vovk.body();
+      const { search } = vovk.query();
+      const vovkParams = vovk.params();
+      return WithZodClientService.handleAll({
+        body,
+        query: { search },
+        params,
+        vovkParams,
+      });
+    },
+  });
+
+  @post('all-as-func/:foo/:bar')
+  static handleAllAsFunction = withZod({
+    ...HandleAllInput,
+    disableServerSideValidationKeys: true,
+    async handle(req, params) {
+      return WithZodClientController.handleAll.func({
+        body: await req.vovk.body(),
+        query: req.vovk.query(),
+        params,
+      });
+    },
+  });
+
+  @post('all-no-http-as-func/:foo/:bar')
+  static handleAllNoHttpAsFunction = withZod({
+    ...HandleAllInput,
+    disableServerSideValidationKeys: true,
+    async handle(req, params) {
+      return WithZodClientController.handleAllNoHTTP.func({
+        body: await req.vovk.body(),
+        query: req.vovk.query(),
+        params,
+      });
     },
   });
 }

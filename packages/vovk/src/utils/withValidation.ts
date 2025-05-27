@@ -1,11 +1,24 @@
 import { HttpException } from '../HttpException.js';
 import { HttpStatus, VovkHandlerSchema, VovkValidationType, type KnownAny, type VovkRequest } from '../types.js';
+import reqMeta from './reqMeta.js';
 import { setHandlerSchema } from './setHandlerSchema.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 
+type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
+
+type Meta = { __disableValidation?: boolean };
+
 export function withValidation<
-  T extends (req: KnownAny, params: KnownAny) => KnownAny,
+  T extends ((req: KnownAny, params: KnownAny) => KnownAny) & {
+    __types: {
+      body: KnownAny;
+      query: KnownAny;
+      params: KnownAny;
+      output: KnownAny;
+      iteration: KnownAny;
+    };
+  },
   BODY_MODEL,
   QUERY_MODEL,
   PARAMS_MODEL,
@@ -42,7 +55,7 @@ export function withValidation<
     model: NonNullable<BODY_MODEL | QUERY_MODEL | PARAMS_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
     meta: {
       type: VovkValidationType;
-      req: VovkRequest<KnownAny, KnownAny>;
+      req: VovkRequestAny;
       status?: number;
       i?: number;
     }
@@ -56,8 +69,12 @@ export function withValidation<
         : (disableServerSideValidation ?? []);
   const skipSchemaEmissionKeys =
     skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
-  const outputHandler = async (req: VovkRequest<KnownAny, KnownAny>, handlerParams: Parameters<T>[1]) => {
+  const outputHandler = async (req: VovkRequestAny, handlerParams: Parameters<T>[1]) => {
+    const { __disableValidation } = req.vovk.meta<Meta>();
     const data = await handle(req, handlerParams);
+    if (__disableValidation) {
+      return data;
+    }
     if (output && iteration) {
       throw new HttpException(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -105,30 +122,68 @@ export function withValidation<
     return data;
   };
 
-  const resultHandler = async (req: VovkRequest<KnownAny, KnownAny>, handlerParams: Parameters<T>[1]) => {
-    if (body && !disableServerSideValidationKeys.includes('body')) {
-      const data = await req.json();
-      const instance = (await validate(data, body, { type: 'body', req })) ?? data;
+  const resultHandler = (async (req: VovkRequestAny, handlerParams: Parameters<T>[1]) => {
+    const { __disableValidation } = req.vovk.meta<Meta>();
+    if (!__disableValidation) {
+      if (body && !disableServerSideValidationKeys.includes('body')) {
+        const data = await req.vovk.body();
+        const instance = (await validate(data, body, { type: 'body', req })) ?? data;
 
-      // redeclare to add ability to call req.json() again
-      req.json = () => Promise.resolve(data);
-      req.vovk.body = () => Promise.resolve(instance);
-    }
+        // redeclare to add ability to call req.json() again
+        req.json = () => Promise.resolve(data);
+        req.vovk.body = () => Promise.resolve(instance);
+      }
 
-    if (query && !disableServerSideValidationKeys.includes('query')) {
-      const data = req.vovk.query();
-      const instance = (await validate(data, query, { type: 'query', req })) ?? data;
-      req.vovk.query = () => instance;
-    }
+      if (query && !disableServerSideValidationKeys.includes('query')) {
+        const data = req.vovk.query();
+        const instance = (await validate(data, query, { type: 'query', req })) ?? data;
+        req.vovk.query = () => instance;
+      }
 
-    if (params && !disableServerSideValidationKeys.includes('params')) {
-      const data = req.vovk.params();
-      const instance = (await validate(data, params, { type: 'params', req })) ?? data;
-      req.vovk.params = () => instance;
+      if (params && !disableServerSideValidationKeys.includes('params')) {
+        const data = req.vovk.params();
+        const instance = (await validate(data, params, { type: 'params', req })) ?? data;
+        req.vovk.params = () => instance;
+      }
     }
 
     return outputHandler(req, handlerParams);
+  }) as T & {
+    schema: VovkHandlerSchema;
   };
+
+  function func(input: {
+    body?: T['__types']['body'];
+    query?: T['__types']['query'];
+    params?: T['__types']['params'];
+    disableValidation?: boolean;
+  }) {
+    const fakeReq: Pick<VovkRequest<typeof body, typeof query, typeof params>, 'vovk'> = {
+      vovk: {
+        body: () => Promise.resolve(input.body as T['__types']['body']),
+        query: () => input.query as T['__types']['query'],
+        params: () => input.params as T['__types']['params'],
+        meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq as VovkRequestAny, meta),
+        form: () => {
+          throw new Error('Form data is not supported in this context.');
+        },
+      },
+    };
+
+    fakeReq.vovk.meta<Meta>({ __disableValidation: input.disableValidation });
+
+    return resultHandler(fakeReq, input.params ?? {});
+  }
+
+  const models = {
+    body,
+    query,
+    params,
+    output,
+    iteration,
+  };
+
+  const resultHandlerEnhanced = Object.assign(resultHandler, { func, models });
 
   if (getJSONSchemaFromModel) {
     const validation: VovkHandlerSchema['validation'] = {};
@@ -147,8 +202,8 @@ export function withValidation<
     if (iteration && !skipSchemaEmissionKeys.includes('iteration')) {
       validation.iteration = getJSONSchemaFromModel(iteration, { type: 'iteration' });
     }
-    setHandlerSchema(resultHandler, { validation });
+    setHandlerSchema(resultHandlerEnhanced, { validation });
   }
 
-  return resultHandler as T;
+  return resultHandlerEnhanced;
 }

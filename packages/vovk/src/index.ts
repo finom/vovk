@@ -38,6 +38,7 @@ import { JSONLinesResponse } from './JSONLinesResponse.js';
 import { generateStaticAPI } from './utils/generateStaticAPI.js';
 import { withValidation } from './utils/withValidation.js';
 import { multitenant } from './utils/multitenant.js';
+import { createLLMFunctions } from './utils/createLLMFunctions.js';
 
 export {
   type KnownAny,
@@ -76,6 +77,7 @@ export {
   generateStaticAPI,
   withValidation,
   multitenant,
+  createLLMFunctions,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initVovk } = createVovkApp();
