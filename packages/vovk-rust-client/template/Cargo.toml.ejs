@@ -1,20 +1,41 @@
-[package]
-name = "<%= t.package.name.replace(/-/g, '_') %>"
-version = "<%= t.package.version %>"
-<% if (t.package.description) { %>
-description = "<%= t.package.description %>"
-<% } %>
-<% if (t.package.license) { %>
-license = "<%= t.package.license || 'UNLICENSED' %>"
-<% } %>
-<% if (t.package.repository) { %>
-repository = "<%= typeof t.package.repository === 'string' ? t.package.repository : t.package.repository.url %>"
-<% } %>
-<% if (t.package.homepage) { %>
-homepage = "<%= t.package.homepage %>"
-<% } %>
-<% 
-let authors = [];
+<%
+const data = {
+  package: {
+    name: t.package.name.replace(/-/g, '_'),
+    version: t.package.version,
+    edition: "2021"
+  },
+  dependencies: {
+    serde: { version: "1.0", features: ["derive"] },
+    serde_json: "1.0",
+    reqwest: { version: "0.11", features: ["blocking", "json"] },
+    jsonschema: "0.17",
+    urlencoding: "2.1",
+    once_cell: "1.17"
+  }
+};
+
+// Add optional fields to package section
+if (t.package.description) {
+  data.package.description = t.package.description;
+}
+
+if (t.package.license) {
+  data.package.license = t.package.license || 'UNLICENSED';
+}
+
+if (t.package.repository) {
+  data.package.repository = typeof t.package.repository === 'string' 
+    ? t.package.repository 
+    : t.package.repository.url;
+}
+
+if (t.package.homepage) {
+  data.package.homepage = t.package.homepage;
+}
+
+// Build authors array
+const authors = [];
 if (t.package.author) {
   if (typeof t.package.author === 'string') {
     authors.push(t.package.author);
@@ -24,6 +45,7 @@ if (t.package.author) {
     authors.push(author);
   }
 }
+
 if (t.package.contributors && t.package.contributors.length) {
   t.package.contributors.forEach(contributor => {
     if (typeof contributor === 'string') {
@@ -35,24 +57,27 @@ if (t.package.contributors && t.package.contributors.length) {
     }
   });
 }
+
+if (authors.length) {
+  data.package.authors = authors;
+}
+
+// Add keywords if they exist
+if (t.package.keywords && t.package.keywords.length) {
+  data.package.keywords = t.package.keywords;
+}
+
+// Add bugs if they exist
+if (t.package.bugs) {
+  if (!data.package.metadata) {
+    data.package.metadata = {};
+  }
+  
+  data.package.metadata.package = {
+    bugs: typeof t.package.bugs === 'string' 
+      ? t.package.bugs 
+      : t.package.bugs.url
+  };
+}
 %>
-<% if (authors.length) { %>
-authors = <%- JSON.stringify(authors) %>
-<% } %>
-<% if (t.package.keywords && t.package.keywords.length) { %>
-keywords = <%- JSON.stringify(t.package.keywords) %>
-<% } %>
-edition = "2021"
-
-<% if (t.package.bugs) { %>
-[package.metadata.package]
-bugs = "<%= typeof t.package.bugs === 'string' ? t.package.bugs : t.package.bugs.url %>"
-<% } %>
-
-[dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-reqwest = { version = "0.11", features = ["blocking", "json"] }
-jsonschema = "0.17"
-urlencoding = "2.1"
-once_cell = "1.17"
+<%- t.TOML.stringify(data) %>

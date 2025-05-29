@@ -57,14 +57,17 @@
         "getZodControllerOnlyEntities": {
           "validation": {
             "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
                 "search": {
                   "type": "string"
                 }
               },
-              "required": ["search"],
-              "$schema": "https://json-schema.org/draft/2020-12/schema"
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
             }
           },
           "path": "",
@@ -73,6 +76,7 @@
         "updateZodControllerOnlyEntity": {
           "validation": {
             "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
                 "foo": {
@@ -86,28 +90,36 @@
                   ]
                 }
               },
-              "required": ["foo"],
-              "$schema": "https://json-schema.org/draft/2020-12/schema"
+              "required": [
+                "foo"
+              ],
+              "additionalProperties": false
             },
             "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
                 "q": {
                   "type": "string"
                 }
               },
-              "required": ["q"],
-              "$schema": "https://json-schema.org/draft/2020-12/schema"
+              "required": [
+                "q"
+              ],
+              "additionalProperties": false
             },
             "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
                 "id": {
                   "type": "string"
                 }
               },
-              "required": ["id"],
-              "$schema": "https://json-schema.org/draft/2020-12/schema"
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
             }
           },
           "path": ":id",
@@ -131,14 +143,17 @@
         "getZodControllerAndServiceEntities": {
           "validation": {
             "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
                 "search": {
                   "type": "string"
                 }
               },
-              "required": ["search"],
-              "$schema": "https://json-schema.org/draft/2020-12/schema"
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
             }
           },
           "path": "",
@@ -147,6 +162,7 @@
         "updateZodControllerAndServiceEntity": {
           "validation": {
             "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
                 "foo": {
@@ -160,28 +176,36 @@
                   ]
                 }
               },
-              "required": ["foo"],
-              "$schema": "https://json-schema.org/draft/2020-12/schema"
+              "required": [
+                "foo"
+              ],
+              "additionalProperties": false
             },
             "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
                 "q": {
                   "type": "string"
                 }
               },
-              "required": ["q"],
-              "$schema": "https://json-schema.org/draft/2020-12/schema"
+              "required": [
+                "q"
+              ],
+              "additionalProperties": false
             },
             "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
                 "id": {
                   "type": "string"
                 }
               },
-              "required": ["id"],
-              "$schema": "https://json-schema.org/draft/2020-12/schema"
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
             }
           },
           "path": ":id",
@@ -223,11 +247,18 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -278,11 +309,18 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -323,7 +361,9 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "",
@@ -337,11 +377,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -352,7 +397,9 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             }
           },
           "path": ":id",
@@ -384,7 +431,9 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "",
@@ -398,11 +447,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -413,7 +467,9 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             }
           },
           "path": ":id",

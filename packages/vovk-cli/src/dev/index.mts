@@ -13,11 +13,11 @@ import writeOneSegmentSchemaFile from './writeOneSegmentSchemaFile.mjs';
 import logDiffResult from './logDiffResult.mjs';
 import ensureClient from '../generate/ensureClient.mjs';
 import getProjectInfo, { ProjectInfo } from '../getProjectInfo/index.mjs';
-import generate from '../generate/index.mjs';
-import locateSegments, { Segment } from '../locateSegments.mjs';
+import { generate } from '../generate/generate.mjs';
+import { locateSegments, type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import writeConfigJson from './writeConfigJson.mjs';
+import writeMetaJson from './writeMetaJson.mjs';
 import type { VovkEnv } from '../types.mjs';
 
 export class VovkDev {
@@ -28,7 +28,12 @@ export class VovkDev {
   #fullSchema: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {},
-    config: {},
+    meta: {
+      $schema: VovkSchemaIdEnum.META,
+      config: {
+        $schema: VovkSchemaIdEnum.CONFIG,
+      },
+    },
   };
 
   #isWatching = false;
@@ -202,7 +207,7 @@ export class VovkDev {
         this.#generate();
       }
 
-      await writeConfigJson(schemaOutAbsolutePath, this.#projectInfo);
+      await writeMetaJson(schemaOutAbsolutePath, this.#projectInfo);
 
       isInitial = false;
     }, 1000);

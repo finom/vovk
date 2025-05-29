@@ -44,13 +44,7 @@ await describe('ensureSchemaFiles', async () => {
     let files = glob.sync('**/*.json', { cwd: tmpDir });
     assert.deepStrictEqual(
       files.sort(),
-      [
-        'config.json',
-        'segments/segment1.json',
-        'segments/segment2.json',
-        'segments/folder1/segment3.json',
-        'segments/folder2/segment4.json',
-      ].sort()
+      ['_meta.json', 'segment1.json', 'segment2.json', 'folder1/segment3.json', 'folder2/segment4.json'].sort()
     );
 
     // Update the segments list (segment2 and segment3 remain, segment1 and segment4 are removed, segment5 is added)
@@ -63,7 +57,7 @@ await describe('ensureSchemaFiles', async () => {
     files = glob.sync('**/*.json', { cwd: tmpDir });
     assert.deepStrictEqual(
       files.sort(),
-      ['config.json', 'segments/folder1/segment3.json', 'segments/segment2.json', 'segments/segment5.json'].sort()
+      ['_meta.json', 'folder1/segment3.json', 'segment2.json', 'segment5.json'].sort()
     );
 
     // Check if old files are removed

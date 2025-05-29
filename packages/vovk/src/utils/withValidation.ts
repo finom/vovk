@@ -152,12 +152,13 @@ export function withValidation<
     schema: VovkHandlerSchema;
   };
 
-  function func(input: {
-    body?: T['__types']['body'];
-    query?: T['__types']['query'];
-    params?: T['__types']['params'];
-    disableValidation?: boolean;
-  }) {
+  function func(
+    input: {
+      disableValidation?: boolean;
+    } & (undefined extends typeof body ? { body?: T['__types']['body'] } : { body: T['__types']['body'] }) &
+      (undefined extends typeof query ? { query?: T['__types']['query'] } : { query: T['__types']['query'] }) &
+      (undefined extends typeof params ? { params?: T['__types']['params'] } : { params: T['__types']['params'] })
+  ): ReturnType<T> {
     const fakeReq: Pick<VovkRequest<typeof body, typeof query, typeof params>, 'vovk'> = {
       vovk: {
         body: () => Promise.resolve(input.body as T['__types']['body']),

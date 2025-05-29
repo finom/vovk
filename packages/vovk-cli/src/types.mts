@@ -18,8 +18,10 @@ export interface DevOptions {
 
 export interface GenerateOptions {
   prettify?: boolean;
-  config?: string;
-  schema?: string;
+  configPath?: string;
+  schemaPath?: string;
+  openapiSpec?: string;
+  watch?: boolean | string;
   composedFrom?: string[];
   composedOut?: string;
   composedOnly?: boolean;
@@ -35,6 +37,7 @@ export interface GenerateOptions {
 export interface BundleOptions extends Partial<Omit<VovkStrictConfig['bundle'], 'requires'>> {
   config?: string;
   schema?: string;
+  openapiSpec?: string;
 }
 
 export interface InitOptions {

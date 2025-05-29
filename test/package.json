@@ -27,15 +27,15 @@
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
     "vovk-client": "^0.0.4-draft.81",
-    "zod": "^3.25.23"
+    "zod": "^3.25.36"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@tailwindcss/postcss": "^4.1.6",
-    "@types/node": "^22.15.17",
+    "@tailwindcss/postcss": "^4.1.8",
+    "@types/node": "^22.15.24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10",

@@ -86,7 +86,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
 
   const log = getLogger(config.logLevel);
 
-  if (error) log.error(`Error reading config: ${String(error)}`);
+  if (error) log.warn(`Unable to load config. Using default values.`);
 
   return { config, srcRoot, configAbsolutePaths, userConfig, log };
 }

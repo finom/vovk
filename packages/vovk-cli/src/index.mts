@@ -6,15 +6,14 @@ import { Command } from 'commander';
 import concurrently from 'concurrently';
 import getAvailablePort from './utils/getAvailablePort.mjs';
 import getProjectInfo from './getProjectInfo/index.mjs';
-import generate from './generate/index.mjs';
-import bundle from './bundle/index.mjs';
+import { VovkGenerate } from './generate/index.mjs';
+import { bundle } from './bundle/index.mjs';
 import { VovkDev } from './dev/index.mjs';
-import newComponents from './new/index.mjs';
+import { newComponents } from './new/index.mjs';
 import type { BundleOptions, DevOptions, GenerateOptions, NewOptions } from './types.mjs';
-import initProgram from './initProgram.mjs';
-import { getFullSchemaFromJSON } from './generate/getFullSchemaFromJSON.mjs';
+import { initProgram } from './initProgram.mjs';
+import { getProjectFullSchema } from './generate/getProjectFullSchema.mjs';
 import type { VovkEnv } from './types.mjs';
-import locateSegments from './locateSegments.mjs';
 export type { VovkEnv };
 
 const program = new Command();
@@ -90,7 +89,7 @@ program
 program
   .command('generate')
   .alias('g')
-  .description('Generate RPC client from schema')
+  .description('generate RPC client from schema')
   .option('--out, --composed-out <path>', 'path to output directory for composed client')
   .option('--from, --composed-from <templates...>', 'client template names for composed client')
   .option('--include, --composed-include-segments <segments...>', 'include segments in composed client')
@@ -102,30 +101,26 @@ program
   .option('--segmented-include-segments <segments...>', 'include segments in segmented client')
   .option('--segmented-exclude-segments <segments...>', 'exclude segments in segmented client')
   .option('--prettify', 'prettify output files')
-  .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
-  .option('--config <config>', 'path to config file')
+  .option('--schema, --schema-path <path>', 'path to schema folder (default: ./.vovk-schema)')
+  .option('--config, --config-path <config>', 'path to config file')
+  .option(
+    '--watch <s>',
+    'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URL'
+  )
+  .option('--openapi, --openapi-spec <openapi_path_or_url>', 'use OpenAPI schema instead of Vovk schema')
   .action(async (cliGenerateOptions: GenerateOptions) => {
-    const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.config, srcRootRequired: false });
-    const { cwd, config, log, apiDir } = projectInfo;
-    const locatedSegments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
-    const fullSchema = await getFullSchemaFromJSON(
-      path.resolve(cwd, cliGenerateOptions?.schema ?? config.schemaOutDir),
-      log
-    );
-
-    await generate({
+    const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.configPath, srcRootRequired: false });
+    await new VovkGenerate({
       projectInfo,
-      fullSchema,
       forceNothingWrittenLog: true,
       cliGenerateOptions,
-      locatedSegments,
-    });
+    }).start();
   });
 
 program
   .command('bundle')
   .alias('b')
-  .description('Generate TypeScrtipt RPC and bundle it')
+  .description('generate TypeScrtipt RPC and bundle it')
   .option('--out, --out-dir <path>', 'path to output directory for bundle')
   .option('--include, --include-segments <segments...>', 'include segments')
   .option('--exclude, --exclude-segments <segments...>', 'exclude segments')
@@ -134,10 +129,11 @@ program
   .option('--config <config>', 'path to config file')
   .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
   .option('--sourcemap', 'generate sourcemaps')
+  .option('--openapi, --openapi-spec <openapi_path_or_url>', 'use OpenAPI schema instead of Vovk schema')
   .action(async (cliBundleOptions: BundleOptions) => {
     const projectInfo = await getProjectInfo({ configPath: cliBundleOptions.config, srcRootRequired: false });
     const { cwd, config, log } = projectInfo;
-    const fullSchema = await getFullSchemaFromJSON(
+    const fullSchema = await getProjectFullSchema(
       path.resolve(cwd, cliBundleOptions?.schema ?? config.schemaOutDir),
       log
     );

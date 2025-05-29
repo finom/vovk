@@ -2,7 +2,7 @@ import newModule from './newModule.mjs';
 import newSegment from './newSegment.mjs';
 import type { NewOptions } from '../types.mjs';
 
-export default async function newComponents(
+export async function newComponents(
   components: string[],
   { dryRun, dir, templates, overwrite, noSegmentUpdate, empty, static: isStaticSegment }: NewOptions
 ) {

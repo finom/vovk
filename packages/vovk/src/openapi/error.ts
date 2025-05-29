@@ -1,5 +1,5 @@
-import { createDecorator, HttpStatus } from 'vovk';
-import { fromSchema } from './fromSchema';
+import { HttpStatus, type VovkHandlerSchema } from '../types';
+import { createDecorator } from '../utils/createDecorator';
 
 const statusDisplayText = {
   [HttpStatus.NULL]: 'Error',
@@ -53,7 +53,7 @@ const statusDisplayText = {
   [HttpStatus.HTTP_VERSION_NOT_SUPPORTED]: 'HTTP Version Not Supported',
 };
 export const error = createDecorator(null, (status: HttpStatus, message: string) => {
-  return (handlerSchema) => {
+  return (handlerSchema: VovkHandlerSchema | null) => {
     return {
       ...handlerSchema,
       openapi: {
@@ -96,5 +96,3 @@ export const error = createDecorator(null, (status: HttpStatus, message: string)
     };
   };
 });
-
-export { fromSchema };

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { VovkSchema, VovkStrictConfig } from 'vovk';
-import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 export type ClientImports = {
   fetcher: string;
@@ -41,24 +41,24 @@ export default function getTemplateClientImports({
       Object.values(fullSchema.segments).map((segment) => [
         segment.segmentName,
         {
-          fetcher: getImportPath(imports.fetcher[0], segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME),
-          createRPC: getImportPath(imports.createRPC[0], segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME),
+          fetcher: getImportPath(imports.fetcher[0], segment.segmentName || ROOT_SEGMENT_FILE_NAME),
+          createRPC: getImportPath(imports.createRPC[0], segment.segmentName || ROOT_SEGMENT_FILE_NAME),
           validateOnClient: imports.validateOnClient
-            ? getImportPath(imports.validateOnClient[0], segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME)
+            ? getImportPath(imports.validateOnClient[0], segment.segmentName || ROOT_SEGMENT_FILE_NAME)
             : null,
           module: {
             fetcher: getImportPath(
               imports.fetcher[1] ?? imports.fetcher[0],
-              segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME
+              segment.segmentName || ROOT_SEGMENT_FILE_NAME
             ),
             createRPC: getImportPath(
               imports.createRPC[1] ?? imports.createRPC[0],
-              segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME
+              segment.segmentName || ROOT_SEGMENT_FILE_NAME
             ),
             validateOnClient: imports.validateOnClient
               ? getImportPath(
                   imports.validateOnClient[1] ?? imports.validateOnClient[0],
-                  segment.segmentName || ROOT_SEGMENT_SCHEMA_NAME
+                  segment.segmentName || ROOT_SEGMENT_FILE_NAME
                 )
               : null,
           },

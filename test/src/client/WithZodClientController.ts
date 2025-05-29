@@ -61,7 +61,14 @@ export const ConstrainingModel = z.object({
 
   // Logical compositions
   logical_anyOf: z.union([z.string().max(5), z.number(), z.boolean()]), // One of these types
-  logical_allOf: z.intersection(z.object({ a: z.string() }), z.object({ b: z.number() })),
+  logical_allOf: z.intersection(
+    z.object({ a: z.string() }).meta({
+      additionalProperties: true,
+    }),
+    z.object({ b: z.number() }).meta({
+      additionalProperties: true,
+    })
+  ), // Must satisfy both schemas
 });
 
 // check if the "circular" types don't error
@@ -281,7 +288,7 @@ export default class WithZodClientController {
   @post('all-as-func/:foo/:bar')
   static handleAllAsFunction = withZod({
     ...HandleAllInput,
-    disableServerSideValidationKeys: true,
+    disableServerSideValidation: true,
     async handle(req, params) {
       return WithZodClientController.handleAll.func({
         body: await req.vovk.body(),
@@ -294,7 +301,7 @@ export default class WithZodClientController {
   @post('all-no-http-as-func/:foo/:bar')
   static handleAllNoHttpAsFunction = withZod({
     ...HandleAllInput,
-    disableServerSideValidationKeys: true,
+    disableServerSideValidation: true,
     async handle(req, params) {
       return WithZodClientController.handleAllNoHTTP.func({
         body: await req.vovk.body(),

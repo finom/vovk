@@ -1,18 +1,9 @@
 import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
-import { HttpStatus } from 'vovk';
-import type { HttpMethod, KnownAny, VovkSchema } from 'vovk';
 import { sample } from '@stoplight/json-schema-sampler';
-import { type CodeSamplePackageJson, createCodeExamples } from './createCodeExamples';
+import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples';
+import { HttpStatus, type SimpleJsonSchema, type HttpMethod, type VovkSchema } from '../types';
 
-export type SimpleJsonSchema = {
-  type: 'object';
-  description?: string;
-  properties: Record<string, KnownAny>;
-  required?: string[];
-  examples?: KnownAny[];
-};
-
-export function fromSchema({
+export function schemaToOpenAPI({
   rootEntry,
   schema: fullSchema,
   openAPIObject = {},
@@ -68,9 +59,13 @@ export function fromSchema({
               .join('/')
               .replace(/:([a-zA-Z0-9_]+)/g, '{$1}');
           paths[path] = paths[path] ?? {};
-          paths[path][h.httpMethod.toLowerCase() as Lowercase<HttpMethod>] = {
+          const httpMethod = h.httpMethod.toLowerCase() as Lowercase<HttpMethod>;
+          paths[path][httpMethod] ??= {};
+          paths[path][httpMethod] = {
             ...h.openapi,
+            ...paths[path][httpMethod],
             'x-codeSamples': [
+              ...(paths[path][httpMethod]['x-codeSamples'] ?? []),
               ...(h.openapi['x-codeSamples'] ?? []),
               {
                 label: 'TypeScript RPC',
@@ -93,6 +88,11 @@ export function fromSchema({
                   parameters: h.openapi.parameters ?? [...(queryParameters || []), ...(pathParameters || [])],
                 }
               : {}) as OperationObject['parameters']),
+            ...(paths[path][httpMethod].parameters
+              ? {
+                  parameters: paths[path][httpMethod].parameters,
+                }
+              : {}),
             ...(outputValidation && 'type' in outputValidation && 'properties' in outputValidation
               ? {
                   responses: {
@@ -133,6 +133,11 @@ export function fromSchema({
                   },
                 }
               : {}),
+            ...(paths[path][httpMethod].responses
+              ? {
+                  responses: paths[path][httpMethod].responses,
+                }
+              : {}),
             ...(bodyValidation && 'type' in bodyValidation && 'properties' in bodyValidation
               ? {
                   requestBody: h.openapi?.requestBody ?? {
@@ -146,6 +151,12 @@ export function fromSchema({
                   },
                 }
               : {}),
+            ...(paths[path][httpMethod].requestBody
+              ? {
+                  requestBody: paths[path][httpMethod].requestBody,
+                }
+              : {}),
+            tags: paths[path][httpMethod].tags ?? h.openapi?.tags,
           };
         }
       }

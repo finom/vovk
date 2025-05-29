@@ -3,7 +3,7 @@ import { InitOptions } from './types.mjs';
 import { Init } from './init/index.mjs';
 
 // reused at vovk-init
-export default function initProgram(program: Command) {
+export function initProgram(program: Command) {
   return program
     .argument('[prefix]', 'directory to initialize project in', '.')
     .description('Initialize Vovk.ts project')

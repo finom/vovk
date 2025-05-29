@@ -1,152 +1,164 @@
-import { KnownAny, VovkHandlerSchema } from '../types';
+import type { KnownAny, VovkHandlerSchema, VovkLLMFunction } from '../types';
 
-const createLLMFunction = (rpcModuleName: string, handlerName: string, schema: VovkHandlerSchema) => {
-  return {
-    name: `${rpcModuleName}.${handlerName}`,
-    description:
-      [schema.openapi?.summary ?? '', schema.openapi?.description ?? ''].filter(Boolean).join('\n') || handlerName,
-    parameters: {
-      type: 'object',
-      properties: {
-        ...(schema?.validation?.body
-          ? {
-              body: schema.validation.body,
-            }
-          : {}),
-        ...(schema?.validation?.query
-          ? {
-              query: schema.validation.query,
-            }
-          : {}),
-        ...(schema?.validation?.params
-          ? {
-              params: schema.validation.params,
-            }
-          : {}),
-      },
-      required: [
-        ...(schema?.validation?.body ? ['body'] : []),
-        ...(schema?.validation?.query ? ['query'] : []),
-        ...(schema?.validation?.params ? ['params'] : []),
-      ],
-      additionalProperties: false,
-    },
-  };
+type Handler = ((...args: KnownAny[]) => KnownAny) & {
+  func?: (input: KnownAny) => KnownAny;
+  isRPC?: boolean;
+  schema?: VovkHandlerSchema;
 };
 
-const defaultCallRPCMethod = async ({
-  handler,
-  body,
-  query,
-  params,
-}: {
-  schema?: KnownAny;
-  handler: (options: {
-    body?: KnownAny;
-    query?: KnownAny;
-    params?: KnownAny;
-    [key: string]: KnownAny;
-  }) => Promise<KnownAny>;
-  body?: KnownAny;
-  query?: KnownAny;
-  params?: KnownAny;
-}) => {
-  return handler({
-    body,
-    query,
-    params,
-  });
-};
-
-const defaultCallControllerMethod = async ({
-  handler,
-  body,
-  query,
-  params,
-}: {
-  schema?: KnownAny;
-  handler: ((...args: KnownAny[]) => KnownAny) & {
-    func: (req: KnownAny) => KnownAny;
-  };
-  body?: KnownAny;
-  query?: KnownAny;
-  params?: KnownAny;
-}) => {
-  return handler.func({
-    body,
-    query,
-    params,
-  });
-};
-
-export function createLLMFunctions({
+const createLLMFunction = ({
+  rpcModuleName,
+  handlerName,
+  caller,
   modules,
-  callRPCMethod = defaultCallRPCMethod,
-  callControllerMethod = defaultCallControllerMethod,
+  onSuccess,
+  onError,
 }: {
-  modules: Record<string, Record<string, (...args: KnownAny[]) => KnownAny>>;
-  callRPCMethod?: typeof defaultCallRPCMethod;
-  callControllerMethod?: typeof defaultCallControllerMethod;
-}) {
-  const functions = Object.entries(modules)
-    .map(([moduleName, module]) => {
-      return Object.entries(module)
-        .filter(([, handler]) => (handler as unknown as { schema: VovkHandlerSchema }).schema)
-        .map(([handlerName, handler]) => {
-          createLLMFunction(moduleName, handlerName, (handler as unknown as { schema: VovkHandlerSchema }).schema);
-        });
-    })
-    .flat();
-  const run = (
-    functionName: string,
-    input: [
-      {
-        body?: KnownAny;
-        query?: KnownAny;
-        params?: KnownAny;
-      },
-    ]
+  rpcModuleName: string;
+  handlerName: string;
+  caller: typeof defaultCaller;
+  modules: Record<string, Record<string, Handler>>;
+  onSuccess: (result: KnownAny) => void;
+  onError: (error: Error) => void;
+}): VovkLLMFunction => {
+  const module = modules[rpcModuleName];
+  if (!module) {
+    throw new Error(`Module "${rpcModuleName}" not found.`);
+  }
+
+  const handler = module[handlerName];
+  if (!handler) {
+    throw new Error(`Handler "${handlerName}" not found in module "${rpcModuleName}".`);
+  }
+  const { schema } = handler;
+
+  if (!schema || !schema.openapi) {
+    throw new Error(`Handler "${handlerName}" in module "${rpcModuleName}" does not have a valid schema.`);
+  }
+
+  const execute = (
+    input: {
+      body?: KnownAny;
+      query?: KnownAny;
+      params?: KnownAny;
+    },
+    options: KnownAny
   ) => {
-    const [moduleName, handlerName] = functionName.split('.');
+    const { body, query, params } = input;
 
-    const { body, query, params } = input[0];
-    const module = modules[moduleName];
-    if (!module) {
-      throw new Error(`Module "${moduleName}" not found.`);
-    }
-    const handler = module[handlerName] as ((...args: KnownAny[]) => KnownAny) & {
-      schema: VovkHandlerSchema;
-      func: (req: KnownAny) => KnownAny;
-      isRPC?: boolean;
-    };
-    if (!handler) {
-      throw new Error(`Handler "${handlerName}" not found in module "${moduleName}".`);
-    }
-
-    const { schema, isRPC } = handler;
-    if (!schema) {
-      throw new Error(`Schema for handler "${handlerName}" in module "${moduleName}" not found.`);
-    }
-
-    if (isRPC) {
-      return callRPCMethod({
+    return caller(
+      {
         schema,
         handler,
         body,
         query,
         params,
-      });
-    }
-    return callControllerMethod({
-      schema,
+      },
+      options
+    )
+      .then((data) => onSuccess(data) ?? data)
+      .catch((error) => onError?.(error) ?? error);
+  };
+  const parametersProperties = {
+    ...(schema?.validation?.body
+      ? {
+          body: schema.validation.body,
+        }
+      : {}),
+    ...(schema?.validation?.query
+      ? {
+          query: schema.validation.query,
+        }
+      : {}),
+    ...(schema?.validation?.params
+      ? {
+          params: schema.validation.params,
+        }
+      : {}),
+  };
+  return {
+    execute,
+    name: `${rpcModuleName}__${handlerName}`,
+    description:
+      [schema.openapi?.summary ?? '', schema.openapi?.description ?? ''].filter(Boolean).join('\n') || handlerName,
+    ...(Object.keys(parametersProperties).length
+      ? {
+          parameters: {
+            type: 'object',
+            properties: parametersProperties,
+            required: Object.keys(parametersProperties),
+            additionalProperties: false,
+          },
+        }
+      : {}),
+  };
+};
+
+async function defaultCaller(
+  {
+    handler,
+    body,
+    query,
+    params,
+  }: {
+    handler: ((...args: KnownAny[]) => KnownAny) & {
+      func?: (req: KnownAny) => KnownAny;
+      isRPC?: boolean;
+    };
+    body: KnownAny;
+    query: KnownAny;
+    params: KnownAny;
+    schema: VovkHandlerSchema;
+  },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _options: KnownAny
+) {
+  if (handler.isRPC) {
+    return handler({
       handler,
       body,
       query,
       params,
     });
-  };
+  }
+  if (handler.func) {
+    return handler.func({
+      body,
+      query,
+      params,
+    });
+  }
+
+  throw new Error('Handler is not a valid RPC or controller method');
+}
+export function createLLMFunctions({
+  modules,
+  caller = defaultCaller,
+  onSuccess = (result) => result,
+  onError = () => {},
+}: {
+  modules: Record<string, Record<string, (...args: KnownAny[]) => KnownAny>>;
+  caller?: typeof defaultCaller;
+  onSuccess?: (result: KnownAny) => void;
+  onError?: (error: Error) => void;
+}): { functions: VovkLLMFunction[] } {
+  const functions = Object.entries(modules)
+    .map(([rpcModuleName, module]) => {
+      return Object.entries(module)
+        .filter(([, handler]) => (handler as unknown as { schema: VovkHandlerSchema }).schema?.openapi)
+        .map(([handlerName]) =>
+          createLLMFunction({
+            rpcModuleName,
+            handlerName,
+            caller,
+            modules,
+            onSuccess,
+            onError,
+          })
+        );
+    })
+    .flat();
   return {
     functions,
-    run,
   };
 }

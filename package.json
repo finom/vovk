@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "type": "module",
-  "packageManager": "npm@11.3.0",
+  "packageManager": "npm@11.4.1",
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "scripts": {
     "ncu": "turbo run ncu --dangerously-disable-package-manager-check && npm run --prefix test ncu && npm-check-updates -u && npm i",
@@ -40,7 +40,7 @@
     "BREAKING-beta-major": "NPM_TAG=beta VERSION_TYPE=\"premajor --preid=beta\" npm run vpub",
     "draft": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub",
     "draft-notest": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub-notest",
-    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-init vovk-client vovk-react-query vovk-ajv vovk-zod vovk-yup vovk-dto vovk-openapi vovk-python-client vovk-rust-client; do PACKAGE=$PACKAGE npm run draft-notest; done",
+    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-init vovk-client vovk-react-query vovk-ajv vovk-zod vovk-yup vovk-dto vovk-python-client vovk-rust-client; do PACKAGE=$PACKAGE npm run draft-notest; done",
     "draft-patch": "NPM_TAG=draft VERSION_TYPE=\"prepatch --preid=draft\" npm run vpub",
     "draft-minor": "NPM_TAG=draft VERSION_TYPE=\"preminor --preid=draft\" npm run vpub"
   },
@@ -71,12 +71,12 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.9",
     "@testing-library/dom": "^10.4.0",
-    "@types/lodash": "^4.17.16",
-    "@types/node": "^22.15.17",
+    "@types/lodash": "^4.17.17",
+    "@types/node": "^22.15.24",
     "@types/supertest": "^6.0.3",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
-    "eslint": "^9.26.0",
+    "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.0",
     "glob": "^11.0.2",
@@ -84,12 +84,12 @@
     "npm-check-updates": "^18.0.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.3",
-    "puppeteer": "^24.8.2",
+    "puppeteer": "^24.9.0",
     "shx": "^0.4.0",
     "supertest": "^7.1.1",
     "ts-node": "^10.9.2",
     "turbo": "^2.5.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.32.1"
+    "typescript-eslint": "^8.33.0"
   }
 }

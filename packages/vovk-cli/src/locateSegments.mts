@@ -9,7 +9,7 @@ export type Segment = {
   segmentName: string;
 };
 
-export default async function locateSegments({
+export async function locateSegments({
   dir,
   rootDir,
   config,

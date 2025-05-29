@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import type { OperationObject } from 'openapi3-ts/oas31';
+import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
 import type { JSONLinesResponse } from './JSONLinesResponse.js';
 import { VovkStreamAsyncIterable } from './client/types.js';
 import type { PackageJson } from 'type-fest';
@@ -24,7 +24,7 @@ export type VovkHandlerSchema<T = KnownAny> = {
 
 export type VovkControllerSchema<T = KnownAny> = {
   rpcModuleName: string;
-  originalControllerName: string;
+  originalControllerName?: string;
   prefix?: string;
   handlers: Record<string, VovkHandlerSchema<T>>;
 };
@@ -36,10 +36,19 @@ export type VovkSegmentSchema<T = KnownAny> = {
   controllers: Record<string, VovkControllerSchema<T>>;
 };
 
+export type VovkMetaSchema = {
+  $schema: typeof VovkSchemaIdEnum.META | string;
+  config: RequireFields<Partial<VovkStrictConfig>, '$schema'>;
+  package?: PackageJson;
+  apiRoot?: string;
+  openapi?: OpenAPIObject;
+  [key: string]: KnownAny;
+};
+
 export type VovkSchema<T = KnownAny> = {
   $schema: typeof VovkSchemaIdEnum.SCHEMA | string;
-  config: Partial<VovkStrictConfig>;
   segments: Record<string, VovkSegmentSchema<T>>;
+  meta: VovkMetaSchema;
 };
 
 export type VovkErrorResponse = {
@@ -250,7 +259,39 @@ export enum HttpStatus {
   HTTP_VERSION_NOT_SUPPORTED = 505,
 }
 
+// -----
+
+export interface VovkLLMFunction {
+  execute: (
+    input: {
+      body?: KnownAny;
+      query?: KnownAny;
+      params?: KnownAny;
+    },
+    options: KnownAny
+  ) => Promise<KnownAny>;
+  name: string;
+  description: string;
+  parameters?: {
+    type: string;
+    properties: Record<string, KnownAny>;
+    required: string[];
+    additionalProperties: boolean;
+  };
+}
+
+export type SimpleJsonSchema = {
+  type: 'object';
+  description?: string;
+  properties: Record<string, KnownAny>;
+  required?: string[];
+  examples?: KnownAny[];
+};
+
+// -----
+
 export enum VovkSchemaIdEnum {
+  META = 'https://vovk.dev/api/spec/v3/meta.json',
   CONFIG = 'https://vovk.dev/api/spec/v3/config.json',
   SEGMENT = 'https://vovk.dev/api/spec/v3/segment.json',
   SCHEMA = 'https://vovk.dev/api/spec/v3/schema.json',

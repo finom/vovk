@@ -20,6 +20,7 @@ import {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkValidationType,
+  type VovkLLMFunction,
 } from './types.js';
 import {
   type VovkClient,
@@ -32,6 +33,7 @@ import {
   fetcher,
   createFetcher,
 } from './client/index.js';
+import { openapi, openAPIToSchema, schemaToOpenAPI } from './openapi/index.js';
 import { HttpException } from './HttpException.js';
 import { createDecorator } from './utils/createDecorator.js';
 import { JSONLinesResponse } from './JSONLinesResponse.js';
@@ -39,6 +41,7 @@ import { generateStaticAPI } from './utils/generateStaticAPI.js';
 import { withValidation } from './utils/withValidation.js';
 import { multitenant } from './utils/multitenant.js';
 import { createLLMFunctions } from './utils/createLLMFunctions.js';
+import { createCodeExamples } from './utils/createCodeExamples.js';
 
 export {
   type KnownAny,
@@ -64,6 +67,7 @@ export {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkValidationType,
+  type VovkLLMFunction,
   VovkSchemaIdEnum,
   JSONLinesResponse,
   HttpException,
@@ -78,6 +82,10 @@ export {
   withValidation,
   multitenant,
   createLLMFunctions,
+  createCodeExamples,
+  openapi,
+  openAPIToSchema,
+  schemaToOpenAPI,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initVovk } = createVovkApp();

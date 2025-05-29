@@ -7,5 +7,5 @@
     "resolveJsonModule": false
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["dist"]
+  "exclude": ["mjs", "cjs"]
 }

@@ -68,7 +68,7 @@ const validateAll = ({
 };
 
 const getConfig = (schema: VovkSchema) => {
-  const config = schema.config.libs?.ajv as VovkAjvConfig | undefined;
+  const config = schema.meta.config?.libs?.ajv as VovkAjvConfig | undefined;
 
   const options = config?.options ?? {};
   const localize = config?.localize ?? 'en';

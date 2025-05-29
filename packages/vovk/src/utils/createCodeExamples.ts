@@ -1,6 +1,5 @@
-import type { KnownAny, VovkControllerSchema, VovkHandlerSchema } from 'vovk';
-import type { SimpleJsonSchema } from './fromSchema';
 import { sample } from '@stoplight/json-schema-sampler';
+import type { SimpleJsonSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
 
 const stringifyTsSample = (data: KnownAny, pad = 4) =>
   JSON.stringify(data, null, 2)

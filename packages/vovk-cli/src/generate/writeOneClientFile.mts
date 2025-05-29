@@ -3,12 +3,14 @@ import path from 'node:path';
 import ejs from 'ejs';
 import _ from 'lodash';
 import { VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
+import * as YAML from 'yaml';
+import TOML from '@iarna/toml';
 import prettify from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import type { ClientImports } from './getTemplateClientImports.mjs';
 import type { PackageJson } from 'type-fest';
-import { ROOT_SEGMENT_SCHEMA_NAME, SEGMENTS_SCHEMA_DIR_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 
 export default async function writeOneClientFile({
@@ -58,7 +60,7 @@ export default async function writeOneClientFile({
   const outPath = path.resolve(
     cwd,
     outCwdRelativeDir,
-    typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '',
+    typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '',
     relativeDir.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name'),
     path.basename(templateFilePath).replace('.ejs', '')
   );
@@ -72,12 +74,13 @@ export default async function writeOneClientFile({
   const t = {
     _, // lodash
     package: packageJson,
-    ROOT_SEGMENT_SCHEMA_NAME,
-    SEGMENTS_SCHEMA_DIR_NAME,
+    ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports,
     schema: fullSchema,
     VovkSchemaIdEnum,
+    YAML,
+    TOML,
     nodeNextResolutionExt: {
       ts: isNodeNextResolution ? '.ts' : '',
       js: isNodeNextResolution ? '.js' : '',
@@ -86,7 +89,7 @@ export default async function writeOneClientFile({
     },
     schemaOutDir:
       typeof segmentName === 'string'
-        ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_SCHEMA_NAME), config.schemaOutDir)
+        ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME), config.schemaOutDir)
         : path.relative(outCwdRelativeDir, config.schemaOutDir),
     segmentMeta: Object.fromEntries(
       Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
@@ -96,7 +99,7 @@ export default async function writeOneClientFile({
               path.resolve(
                 cwd,
                 outCwdRelativeDir,
-                typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_SCHEMA_NAME : '.'
+                typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'
               ),
               path.resolve(cwd, routeFilePath)
             )

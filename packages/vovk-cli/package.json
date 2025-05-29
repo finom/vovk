@@ -35,14 +35,15 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.156"
+    "vovk": "^3.0.0-draft.178"
   },
   "optionalDependencies": {
     "vovk-python-client": "^0.0.1-draft.36"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.5.1",
-    "@npmcli/package-json": "^6.1.1",
+    "@iarna/toml": "^2.2.5",
+    "@inquirer/prompts": "^7.5.3",
+    "@npmcli/package-json": "^6.2.0",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
@@ -62,17 +63,19 @@
     "loglevel": "^1.9.2",
     "pluralize": "^8.0.0",
     "prettier": "^3.5.3",
-    "rollup": "^4.40.2",
+    "rollup": "^4.41.1",
     "tar-stream": "^3.1.7",
-    "ts-morph": "^25.0.1",
-    "tsdown": "^0.11.7",
+    "ts-morph": "^26.0.0",
+    "tsdown": "^0.12.4",
     "type-fest": "^4.41.0",
-    "undici": "^7.9.0",
-    "vovk-openapi": "^0.0.1-draft.112"
+    "undici": "^7.10.0",
+    "vovk-openapi": "^0.0.1-draft.112",
+    "yaml": "^2.8.0"
   },
   "devDependencies": {
     "@types/concat-stream": "^2.0.3",
     "@types/ejs": "^3.1.5",
+    "@types/js-yaml": "^4.0.9",
     "@types/npmcli__package-json": "^4.0.4",
     "@types/pluralize": "^0.0.33",
     "@types/tar-stream": "^3.1.3",

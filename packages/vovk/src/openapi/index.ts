@@ -1,8 +1,9 @@
 import type { OperationObject } from 'openapi3-ts/oas31';
-import { createDecorator, type KnownAny } from 'vovk';
-import { fromSchema } from './fromSchema';
-import { createCodeExamples } from './createCodeExamples';
+import { schemaToOpenAPI } from './schemaToOpenAPI';
+import { openAPIToSchema } from './openAPIToSchema';
 import { error } from './error';
+import { createDecorator } from '../utils/createDecorator';
+import type { KnownAny } from '../types';
 
 type OperationObjectWithCustomProperties = OperationObject & {
   [key in `${'x' | 'X'}-${string}`]: KnownAny;
@@ -29,4 +30,4 @@ export const openapi = openapiDecorator as typeof openapiDecorator & {
 
 openapi.error = error;
 
-export { fromSchema, createCodeExamples };
+export { schemaToOpenAPI, openAPIToSchema };

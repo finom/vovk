@@ -1,15 +1,19 @@
 {
   "name": "vovk",
-  "version": "3.0.0-draft.156",
+  "version": "3.0.0-draft.178",
   "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "types": "./mjs/index.d.ts",
+  "bin": {
+    "vovk-cli-npx": "./bin/index.mjs"
+  },
   "description": "RESTful RPC for Next.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git"
   },
   "scripts": {
+    "postbuild": "chmod +x ./bin/index.mjs",
     "build": "rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
     "build:esm": "tsc --module NodeNext --outDir mjs --moduleResolution nodenext",
     "build:cjs": "tsc --module commonjs --outDir cjs",
@@ -33,7 +37,10 @@
     "next": "*"
   },
   "devDependencies": {
-    "openapi3-ts": "*",
     "type-fest": "*"
+  },
+  "dependencies": {
+    "@stoplight/json-schema-sampler": "^0.3.0",
+    "openapi3-ts": "^4.4.0"
   }
 }

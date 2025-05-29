@@ -1,4 +1,5 @@
 {
+  "$schema": "https://vovk.dev/api/spec/v3/segment.json",
   "emitSchema": false,
   "segmentName": "",
   "controllers": {}

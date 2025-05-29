@@ -3,42 +3,47 @@ import path from 'node:path';
 import { glob } from 'glob';
 import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import { ROOT_SEGMENT_SCHEMA_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
-export async function getFullSchemaFromJSON(
+export async function getProjectFullSchema(
   schemaOutAbsolutePath: string,
   log: ProjectInfo['log']
 ): Promise<VovkSchema> {
   const result: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
-    config: {},
     segments: {},
+    meta: {
+      $schema: VovkSchemaIdEnum.META,
+      config: {
+        $schema: VovkSchemaIdEnum.CONFIG,
+      },
+    },
   };
 
   // Handle config.json
-  const configPath = path.join(schemaOutAbsolutePath, 'config.json');
+  const metaPath = path.join(schemaOutAbsolutePath, `${META_FILE_NAME}.json`);
   try {
-    const configContent = await readFile(configPath, 'utf-8');
-    result.config = JSON.parse(configContent);
+    const metaContent = await readFile(metaPath, 'utf-8');
+    result.meta = JSON.parse(metaContent);
   } catch {
-    log.warn(`Warning: config.json not found at ${configPath}. Using empty config as fallback.`);
-    result.config = {};
+    log.warn(`Warning: ${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
   }
 
   // Handle segments directory
-  const segmentsDir = path.join(schemaOutAbsolutePath, 'segments');
+  const segmentsDir = path.join(schemaOutAbsolutePath);
   try {
     await access(segmentsDir); // Check if directory exists
 
     // Use glob to get all JSON files recursively
     const files = await glob(`${segmentsDir}/**/*.json`);
-    const filePathhs = [];
+    const filePaths = [];
     for await (const filePath of files) {
-      filePathhs.push(filePath);
+      if (path.basename(filePath) === `${META_FILE_NAME}.json`) continue; // Skip _meta.json
+      filePaths.push(filePath);
     }
 
     // Process each JSON file
-    for (const filePath of filePathhs.toSorted()) {
+    for (const filePath of filePaths.toSorted()) {
       try {
         const content = await readFile(filePath, 'utf-8');
         const jsonData = JSON.parse(content);
@@ -50,7 +55,7 @@ export async function getFullSchemaFromJSON(
           .replace(/\\/g, '/'); // Normalize to forward slashes
 
         // Special case for _root.json
-        if (path.basename(filePath) === `${ROOT_SEGMENT_SCHEMA_NAME}.json` && path.dirname(filePath) === segmentsDir) {
+        if (path.basename(filePath) === `${ROOT_SEGMENT_FILE_NAME}.json` && path.dirname(filePath) === segmentsDir) {
           relativePath = '';
         }
 

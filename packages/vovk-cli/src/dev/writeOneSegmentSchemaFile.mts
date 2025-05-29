@@ -4,8 +4,8 @@ import type { VovkSegmentSchema } from 'vovk';
 import diffSegmentSchema, { type DiffResult } from './diffSegmentSchema.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
-export const ROOT_SEGMENT_SCHEMA_NAME = 'root';
-export const SEGMENTS_SCHEMA_DIR_NAME = 'segments';
+export const ROOT_SEGMENT_FILE_NAME = 'root';
+export const META_FILE_NAME = '_meta';
 
 export default async function writeOneSegmentSchemaFile({
   schemaOutAbsolutePath,
@@ -19,11 +19,7 @@ export default async function writeOneSegmentSchemaFile({
   isCreated: boolean;
   diffResult: DiffResult | null;
 }> {
-  const segmentPath = path.join(
-    schemaOutAbsolutePath,
-    SEGMENTS_SCHEMA_DIR_NAME,
-    `${segmentSchema.segmentName || ROOT_SEGMENT_SCHEMA_NAME}.json`
-  );
+  const segmentPath = path.join(schemaOutAbsolutePath, `${segmentSchema.segmentName || ROOT_SEGMENT_FILE_NAME}.json`);
 
   if (skipIfExists && (await getFileSystemEntryType(segmentPath))) {
     try {

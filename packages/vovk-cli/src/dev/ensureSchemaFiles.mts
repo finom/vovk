@@ -2,13 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import debounce from 'lodash/debounce.js';
 import { VovkSchemaIdEnum } from 'vovk';
-import writeOneSchemaFile, {
-  SEGMENTS_SCHEMA_DIR_NAME,
-  ROOT_SEGMENT_SCHEMA_NAME,
-} from './writeOneSegmentSchemaFile.mjs';
+import writeOneSegmentSchemaFile, { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from './writeOneSegmentSchemaFile.mjs';
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import writeConfigJson from './writeConfigJson.mjs';
+import writeMetaJson from './writeMetaJson.mjs';
 
 /**
  * Ensure that the schema files are created to avoid any import errors.
@@ -20,15 +17,13 @@ export default async function ensureSchemaFiles(
 ): Promise<void> {
   const now = Date.now();
   let hasChanged = false;
-  const schemaJsonOutAbsolutePath = path.join(schemaOutAbsolutePath, SEGMENTS_SCHEMA_DIR_NAME);
-
-  await fs.mkdir(schemaJsonOutAbsolutePath, { recursive: true });
-  await writeConfigJson(schemaOutAbsolutePath, projectInfo);
+  await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
+  await writeMetaJson(schemaOutAbsolutePath, projectInfo);
 
   // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
-      const { isCreated } = await writeOneSchemaFile({
+      const { isCreated } = await writeOneSegmentSchemaFile({
         schemaOutAbsolutePath,
         segmentSchema: {
           $schema: VovkSchemaIdEnum.SEGMENT,
@@ -47,7 +42,10 @@ export default async function ensureSchemaFiles(
   );
 
   // Recursive function to delete unnecessary JSON files and folders
-  async function deleteUnnecessaryJsonFiles(dirPath: string): Promise<void> {
+  async function deleteUnnecessaryJsonFiles(
+    dirPath: string,
+    allow: string[] = [`${META_FILE_NAME}.json`]
+  ): Promise<void> {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
     await Promise.all(
@@ -66,12 +64,13 @@ export default async function ensureSchemaFiles(
             hasChanged = true;
           }
         } else if (entry.isFile() && entry.name.endsWith('.json')) {
-          const relativePath = path.relative(schemaJsonOutAbsolutePath, absolutePath);
+          const relativePath = path.relative(schemaOutAbsolutePath, absolutePath);
           const segmentName = relativePath.replace(/\\/g, '/').slice(0, -5); // Remove '.json' extension
 
           if (
             !segmentNames.includes(segmentName) &&
-            !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_SCHEMA_NAME, ''))
+            !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_FILE_NAME, '')) &&
+            !allow.includes(entry.name)
           ) {
             await fs.unlink(absolutePath);
             projectInfo?.log.debug(`Deleted unnecessary schema file for ${formatLoggedSegmentName(segmentName)}`);
@@ -82,8 +81,7 @@ export default async function ensureSchemaFiles(
     );
   }
 
-  // Start the recursive deletion from the root directory
-  await deleteUnnecessaryJsonFiles(schemaJsonOutAbsolutePath);
+  await deleteUnnecessaryJsonFiles(schemaOutAbsolutePath);
 
   if (hasChanged) projectInfo?.log.info(`Created empty schema files in ${Date.now() - now}ms`);
 }
