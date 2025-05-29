@@ -1,7 +1,55 @@
 import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
 import { sample } from '@stoplight/json-schema-sampler';
 import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples';
-import { HttpStatus, type SimpleJsonSchema, type HttpMethod, type VovkSchema } from '../types';
+import { HttpStatus, type SimpleJsonSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types';
+
+function extractComponents(
+  schema: SimpleJsonSchema | undefined
+): [SimpleJsonSchema | undefined, Record<string, SimpleJsonSchema>] {
+  if (!schema) return [undefined, {}];
+
+  const components: Record<string, SimpleJsonSchema> = {};
+
+  // Function to collect components and replace $refs recursively
+  const process = (obj: SimpleJsonSchema, path: string[] = []): SimpleJsonSchema | SimpleJsonSchema[] => {
+    if (!obj || typeof obj !== 'object') return obj;
+
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return (obj as SimpleJsonSchema[]).map((item) => process(item, path) as SimpleJsonSchema);
+    }
+
+    // Create a copy to modify
+    const result: Record<string, KnownAny> = {};
+
+    Object.entries({ ...obj.definitions, ...obj.$defs }).forEach(([key, value]) => {
+      components[key] = process(value, [...path, key]) as SimpleJsonSchema;
+    });
+
+    // Process all properties
+    for (const [key, value] of Object.entries(obj)) {
+      // Skip already processed special properties
+      if (key === '$defs' || key === 'definitions') continue;
+
+      if (key === '$ref' && typeof value === 'string') {
+        // Extract the component name from the reference
+        const refParts = value.split('/');
+        const refName = refParts[refParts.length - 1];
+        // Replace with component reference
+        result[key] = `#/components/schemas/${refName}`;
+      } else {
+        // Recursively process other properties
+        result[key] = process(value as SimpleJsonSchema, [...path, key]);
+      }
+    }
+
+    return result as SimpleJsonSchema;
+  };
+
+  const processedSchema = process(schema) as SimpleJsonSchema;
+
+  return [processedSchema, components];
+}
 
 export function schemaToOpenAPI({
   rootEntry,
@@ -15,16 +63,27 @@ export function schemaToOpenAPI({
   package?: CodeSamplePackageJson;
 }): OpenAPIObject {
   const paths: PathsObject = {};
+  const components: Record<string, SimpleJsonSchema> = {};
 
   for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments)) {
     for (const c of Object.values(segmentSchema.controllers)) {
       for (const [handlerName, h] of Object.entries(c.handlers)) {
         if (h.openapi) {
-          const queryValidation = h?.validation?.query as SimpleJsonSchema | undefined;
-          const bodyValidation = h?.validation?.body as SimpleJsonSchema | undefined;
-          const paramsValidation = h?.validation?.params as SimpleJsonSchema | undefined;
-          const outputValidation = h?.validation?.output as SimpleJsonSchema | undefined;
-          const iterationValidation = h?.validation?.iteration as SimpleJsonSchema | undefined;
+          const [queryValidation, queryComponents] = extractComponents(h?.validation?.query);
+          const [bodyValidation, bodyComponents] = extractComponents(h?.validation?.body);
+          const [paramsValidation, paramsComponents] = extractComponents(h?.validation?.params);
+          const [outputValidation, outputComponents] = extractComponents(h?.validation?.output);
+          const [iterationValidation, iterationComponents] = extractComponents(h?.validation?.iteration);
+
+          // TODO: Handle name conflicts?
+          Object.assign(
+            components,
+            queryComponents,
+            bodyComponents,
+            paramsComponents,
+            outputComponents,
+            iterationComponents
+          );
 
           const { ts, rs, py } = createCodeExamples({
             package: packageJson,
@@ -172,8 +231,8 @@ export function schemaToOpenAPI({
       ...openAPIObject?.info,
     },
     components: {
-      ...openAPIObject?.components,
       schemas: {
+        ...(openAPIObject?.components?.schemas ?? components),
         HttpStatus: {
           type: 'integer',
           description: 'HTTP status code',

@@ -282,10 +282,14 @@ export interface VovkLLMFunction {
 
 export type SimpleJsonSchema = {
   type: 'object';
+  $ref?: string;
   description?: string;
   properties: Record<string, KnownAny>;
   required?: string[];
   examples?: KnownAny[];
+  // support both
+  $defs?: Record<string, SimpleJsonSchema>;
+  definitions?: Record<string, SimpleJsonSchema>;
 };
 
 // -----

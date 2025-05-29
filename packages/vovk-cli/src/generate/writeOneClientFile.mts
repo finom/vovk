@@ -2,14 +2,14 @@ import fs from 'fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
 import _ from 'lodash';
-import { VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
+import { createCodeExamples, VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
 import * as YAML from 'yaml';
 import TOML from '@iarna/toml';
+import type { PackageJson } from 'type-fest';
 import prettify from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import type { ClientImports } from './getTemplateClientImports.mjs';
-import type { PackageJson } from 'type-fest';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 
@@ -79,6 +79,7 @@ export default async function writeOneClientFile({
     imports,
     schema: fullSchema,
     VovkSchemaIdEnum,
+    createCodeExamples,
     YAML,
     TOML,
     nodeNextResolutionExt: {

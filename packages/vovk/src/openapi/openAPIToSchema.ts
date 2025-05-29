@@ -1,6 +1,63 @@
-import type { OpenAPIObject, OperationObject, ParameterObject, RequestBodyObject } from 'openapi3-ts/oas31';
-import { HttpMethod, type VovkSchema, VovkSchemaIdEnum } from '../types';
+import type {
+  ComponentsObject,
+  OpenAPIObject,
+  OperationObject,
+  ParameterObject,
+  RequestBodyObject,
+} from 'openapi3-ts/oas31';
+import { HttpMethod, KnownAny, SimpleJsonSchema, type VovkSchema, VovkSchemaIdEnum } from '../types';
 import { generateFnName } from './generateFnName';
+
+function applyComponents(schema: SimpleJsonSchema, components: ComponentsObject['schemas']): SimpleJsonSchema {
+  if (!components || !Object.keys(components).length) return schema;
+
+  // Create a deep copy of the schema
+  const result = JSON.parse(JSON.stringify(schema));
+
+  // Initialize $defs if it doesn't exist
+  result.$defs = result.$defs || {};
+
+  // Set to track components we've added to $defs
+  const addedComponents = new Set<string>();
+
+  // Process a schema object and replace $refs
+  function processSchema(obj: KnownAny): KnownAny {
+    if (!obj || typeof obj !== 'object') return obj;
+
+    // Create a new object/array to avoid modifying the input
+    const newObj = Array.isArray(obj) ? [...obj] : { ...obj };
+
+    // Check for $ref
+    if (newObj.$ref && typeof newObj.$ref === 'string' && newObj.$ref.startsWith('#/components/schemas/')) {
+      const componentName = newObj.$ref.replace('#/components/schemas/', '');
+      newObj.$ref = `#/$defs/${componentName}`;
+
+      // Add the component to $defs if not already added
+      if (!addedComponents.has(componentName) && components![componentName]) {
+        addedComponents.add(componentName);
+        result.$defs[componentName] = processSchema(JSON.parse(JSON.stringify(components![componentName])));
+      }
+    }
+
+    // Process properties/items recursively
+    if (Array.isArray(newObj)) {
+      for (let i = 0; i < newObj.length; i++) {
+        newObj[i] = processSchema(newObj[i]);
+      }
+    } else {
+      for (const key in newObj) {
+        if (Object.prototype.hasOwnProperty.call(newObj, key)) {
+          newObj[key] = processSchema(newObj[key]);
+        }
+      }
+    }
+
+    return newObj;
+  }
+
+  // Process the main schema
+  return processSchema(result);
+}
 
 const defaultGetHandlerInfo = ({
   method,
@@ -94,10 +151,10 @@ export function openAPIToSchema({
         path,
         openapi: operation,
         validation: {
-          ...(query && { query }),
-          ...(params && { params }),
-          ...(body && { body }),
-          ...(output && { output }),
+          ...(query && { query: applyComponents(query as SimpleJsonSchema, openAPIObject.components?.schemas) }),
+          ...(params && { params: applyComponents(params as SimpleJsonSchema, openAPIObject.components?.schemas) }),
+          ...(body && { body: applyComponents(body as SimpleJsonSchema, openAPIObject.components?.schemas) }),
+          ...(output && { output: applyComponents(output as SimpleJsonSchema, openAPIObject.components?.schemas) }),
         },
       };
     });

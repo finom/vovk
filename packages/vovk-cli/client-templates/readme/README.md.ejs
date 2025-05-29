@@ -1,10 +1,3 @@
----
-imports: ['vovk-openapi']
----
-<% const vars = {
-    createCodeExamples: t.imports['vovk-openapi'].createCodeExamples,
-}; %>
-
 # <%= t.package.name %> v<%= t.package.version %> ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 
 
@@ -30,7 +23,7 @@ npm install <%= t.package.name %>
 `<%= handlerSchema.httpMethod %> <%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
 
 ```ts
-<%- vars.createCodeExamples({
+<%- t.createCodeExamples({
     handlerSchema,
     handlerName,
     controllerSchema,
