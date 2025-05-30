@@ -7,6 +7,7 @@ import {
   type VovkRequest,
   type KnownAny,
   type VovkValidationType,
+  VovkTypedMethod,
 } from 'vovk';
 import { validationMetadatasToSchemas, targetConstructorToSchema } from 'class-validator-jsonschema';
 export { validateOnClient } from './validateOnClient.js';
@@ -131,15 +132,14 @@ function withDto<
     disableServerSideValidation,
     skipSchemaEmission,
     validateEachIteration,
-    handle: handle as T & {
-      __types: {
-        body: BODY_DTO extends ClassConstructor<infer U> ? U : KnownAny;
-        query: QUERY_DTO extends ClassConstructor<infer U> ? U : KnownAny;
-        params: PARAMS_DTO extends ClassConstructor<infer U> ? U : KnownAny;
-        output: OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny;
-        iteration: ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny;
-      };
-    },
+    handle: handle as VovkTypedMethod<
+      T,
+      BODY_DTO extends ClassConstructor<infer U> ? U : KnownAny,
+      QUERY_DTO extends ClassConstructor<infer U> ? U : KnownAny,
+      PARAMS_DTO extends ClassConstructor<infer U> ? U : KnownAny,
+      OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny,
+      ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny
+    >,
     getJSONSchemaFromModel: (dto) => {
       const schema = {
         'x-isDto': true,

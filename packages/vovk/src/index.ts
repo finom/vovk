@@ -21,6 +21,7 @@ import {
   type VovkStrictConfig,
   type VovkValidationType,
   type VovkLLMFunction,
+  type VovkTypedMethod,
 } from './types.js';
 import {
   type VovkClient,
@@ -68,6 +69,7 @@ export {
   type VovkStrictConfig,
   type VovkValidationType,
   type VovkLLMFunction,
+  type VovkTypedMethod,
   VovkSchemaIdEnum,
   JSONLinesResponse,
   HttpException,

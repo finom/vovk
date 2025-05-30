@@ -3,14 +3,26 @@
   "version": "1.0.0-draft.104",
   "description": "Zod validation for Vovk.ts",
   "main": "./esm/index.mjs",
-  "module": "./esm/index.mjs",
+  "module": "./cjs/index.cjs",
   "types": "./esm/index.d.mts",
   "scripts": {
-    "build": "rm -rf esm && npm run build:esm",
+    "build": "rm -rf esm && npm run build:esm && npm run build:cjs",
     "build:esm": "tsc --outDir esm",
+    "build:cjs": "tsc --outDir cjs --module commonjs --moduleResolution node",
     "tsc": "tsc --noEmit",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u"
+  },
+  "exports": {
+    ".": {
+      "import": "./esm/index.mjs",
+      "require": "./cjs/index.cjs"
+    },
+    "./v3": {
+      "import": "./esm/v3.mjs",
+      "require": "./cjs/v3.cjs",
+      "types": "./esm/v3.d.mts"
+    }
   },
   "keywords": [
     "vovk",
@@ -24,7 +36,8 @@
     "zod": "^3.25.23"
   },
   "dependencies": {
-    "vovk-validate-client-ajv": "^0.0.0-beta.3"
+    "vovk-validate-client-ajv": "^0.0.0-beta.3",
+    "zod-to-json-schema": "^3.24.5"
   },
   "devDependencies": {
     "zod": "^3.25.36"

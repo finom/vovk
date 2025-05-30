@@ -1,4 +1,4 @@
-import z, { type ZodType } from 'zod/v4';
+import { z, type ZodType } from 'zod/v4';
 import {
   withValidation,
   HttpException,
@@ -6,6 +6,7 @@ import {
   type VovkRequest,
   type KnownAny,
   type VovkValidationType,
+  type VovkTypedMethod,
 } from 'vovk';
 
 const getErrorText = (e: unknown) => {
@@ -71,15 +72,14 @@ function withZod<
     disableServerSideValidation,
     skipSchemaEmission,
     validateEachIteration,
-    handle: handle as T & {
-      __types: {
-        body: ZOD_BODY extends ZodType ? z.infer<ZOD_BODY> : KnownAny;
-        query: ZOD_QUERY extends ZodType ? z.infer<ZOD_QUERY> : KnownAny;
-        params: ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : Record<string, string>;
-        output: ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny;
-        iteration: ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny;
-      };
-    },
+    handle: handle as VovkTypedMethod<
+      T,
+      ZOD_BODY extends ZodType ? z.infer<ZOD_BODY> : KnownAny,
+      ZOD_QUERY extends ZodType ? z.infer<ZOD_QUERY> : KnownAny,
+      ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : Record<string, string>,
+      ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny,
+      ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny
+    >,
     getJSONSchemaFromModel: (model) => z.toJSONSchema(model, options?.toJSONSchemaParams),
     validate: async (data, model, { type, i }) => {
       try {

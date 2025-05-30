@@ -6,6 +6,7 @@ import {
   type VovkRequest,
   type KnownAny,
   type VovkValidationType,
+  VovkTypedMethod,
 } from 'vovk';
 import { convertSchema } from '@sodaru/yup-to-json-schema';
 
@@ -137,15 +138,14 @@ function withYup<
     disableServerSideValidation,
     skipSchemaEmission,
     validateEachIteration,
-    handle: handle as T & {
-      __types: {
-        body: YUP_BODY extends Yup.Schema<infer U> ? U : KnownAny;
-        query: YUP_QUERY extends Yup.Schema<infer U> ? U : KnownAny;
-        params: YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>;
-        output: YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny;
-        iteration: YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny;
-      };
-    },
+    handle: handle as VovkTypedMethod<
+      T,
+      YUP_BODY extends Yup.Schema<infer U> ? U : KnownAny,
+      YUP_QUERY extends Yup.Schema<infer U> ? U : KnownAny,
+      YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>,
+      YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny,
+      YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny
+    >,
     getJSONSchemaFromModel: (model) => {
       return enrichWithDescriptions(applySchemaFixes(convertSchema(model)), model.describe());
     },

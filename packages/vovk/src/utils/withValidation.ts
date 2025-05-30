@@ -1,5 +1,12 @@
 import { HttpException } from '../HttpException.js';
-import { HttpStatus, VovkHandlerSchema, VovkValidationType, type KnownAny, type VovkRequest } from '../types.js';
+import {
+  HttpStatus,
+  VovkHandlerSchema,
+  VovkTypedMethod,
+  VovkValidationType,
+  type KnownAny,
+  type VovkRequest,
+} from '../types.js';
 import reqMeta from './reqMeta.js';
 import { setHandlerSchema } from './setHandlerSchema.js';
 
@@ -10,15 +17,7 @@ type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 type Meta = { __disableValidation?: boolean };
 
 export function withValidation<
-  T extends ((req: KnownAny, params: KnownAny) => KnownAny) & {
-    __types: {
-      body: KnownAny;
-      query: KnownAny;
-      params: KnownAny;
-      output: KnownAny;
-      iteration: KnownAny;
-    };
-  },
+  T extends VovkTypedMethod<(req: KnownAny, params: KnownAny) => KnownAny>,
   BODY_MODEL,
   QUERY_MODEL,
   PARAMS_MODEL,

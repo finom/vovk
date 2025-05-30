@@ -128,6 +128,24 @@ export type ControllerStaticMethod<
   _controller?: VovkController;
 };
 
+export type VovkTypedMethod<
+  T extends (...args: KnownAny[]) => KnownAny,
+  B = KnownAny,
+  Q = KnownAny,
+  P = KnownAny,
+  O = KnownAny,
+  I = KnownAny,
+> = T & {
+  __types: {
+    body?: B;
+    query?: Q;
+    params?: P;
+    output?: O;
+    iteration?: I;
+  };
+  isRPC?: boolean;
+};
+
 export type VovkControllerBody<T extends (...args: KnownAny) => KnownAny> = Awaited<
   ReturnType<Parameters<T>[0]['vovk']['body']>
 >;
