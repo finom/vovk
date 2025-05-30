@@ -104,6 +104,10 @@ program
   .option('--schema, --schema-path <path>', 'path to schema folder (default: ./.vovk-schema)')
   .option('--config, --config-path <config>', 'path to config file')
   .option(
+    '--force-ts-standalone',
+    'force TypeScript standalone mode (Next.js environment will be ignored, by default it\'s "true" for non-Next.js directories)'
+  )
+  .option(
     '--watch <s>',
     'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URL'
   )
@@ -130,6 +134,10 @@ program
   .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
   .option('--sourcemap', 'generate sourcemaps')
   .option('--openapi, --openapi-spec <openapi_path_or_url>', 'use OpenAPI schema instead of Vovk schema')
+  .option(
+    '--force-ts-standalone',
+    'force TypeScript standalone mode (Next.js environment will be ignored, by default it\'s "true" for non-Next.js directories)'
+  )
   .action(async (cliBundleOptions: BundleOptions) => {
     const projectInfo = await getProjectInfo({ configPath: cliBundleOptions.config, srcRootRequired: false });
     const { cwd, config, log } = projectInfo;

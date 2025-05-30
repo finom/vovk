@@ -6,6 +6,7 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import getPublicModuleNameFromPath from '../utils/getPublicModuleNameFromPath.mjs';
+import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
 
 export interface ClientTemplateFile {
   templateName: string;
@@ -20,12 +21,14 @@ export default async function getClientTemplateFiles({
   cwd,
   log,
   configKey,
+  isTsStandalone,
   cliGenerateOptions,
 }: {
   config: VovkStrictConfig;
   cwd: string;
   log: ProjectInfo['log'];
   configKey: 'composedClient' | 'segmentedClient';
+  isTsStandalone: boolean;
   cliGenerateOptions?: GenerateOptions;
 }) {
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
@@ -46,7 +49,19 @@ export default async function getClientTemplateFiles({
       throw new Error(`Unknown template name: ${templateName}`);
     }
 
-    usedTemplateDefs[templateName] = config.clientTemplateDefs[templateName];
+    let usedDef = config.clientTemplateDefs[templateName];
+
+    if (usedDef.isTsClient && isTsStandalone) {
+      usedDef = {
+        ...usedDef,
+        requires: {
+          ...usedDef.requires,
+          [BuiltInTemplateName.standaloneTypesTs]: '.',
+        },
+      };
+    }
+
+    usedTemplateDefs[templateName] = usedDef;
   }
 
   const templateFiles: ClientTemplateFile[] = [];

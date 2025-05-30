@@ -3,9 +3,18 @@ import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from '<%= t.imports.fetcher %>';
 import { createRPC } from '<%= t.imports.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
+<% if(t.isTsStandalone) { %>
+import type {
+  <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
+    Segment<%= i %> as Controllers<%= i %>
+  <% }) %>
+} from './types.d<%= t.nodeNextResolutionExt.ts %>';
+<% } else { %>
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
-<% }) %><% if (t.imports.validateOnClient) { %>
+<% }) %>
+<% } %>
+<% if (t.imports.validateOnClient) { %>
 import { validateOnClient } from '<%= t.imports.validateOnClient %>';
 <% } else { %>
 const validateOnClient = undefined;

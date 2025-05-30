@@ -18,9 +18,12 @@ export default async function newSegment({
   overwrite?: boolean;
   dryRun?: boolean;
 }) {
-  const { apiDir, cwd, log, config } = await getProjectInfo();
+  const { apiDirAbsolutePath, log, config } = await getProjectInfo();
+  if (!apiDirAbsolutePath) {
+    throw new Error('No API directory found. Please ensure you are in a Nest.js project.');
+  }
 
-  const absoluteSegmentRoutePath = path.join(cwd, apiDir, segmentName, '[[...vovk]]/route.ts');
+  const absoluteSegmentRoutePath = path.join(apiDirAbsolutePath, segmentName, '[[...vovk]]/route.ts');
 
   if (!overwrite && (await getFileSystemEntryType(absoluteSegmentRoutePath))) {
     throw new Error(

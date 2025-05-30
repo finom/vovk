@@ -116,10 +116,11 @@ export async function generate({
     // sort segments by name to avoid unnecessary rendering
     segments: Object.fromEntries(Object.entries(fullSchema.segments).sort(([a], [b]) => a.localeCompare(b))),
   };
-  const { config, cwd, log } = projectInfo;
+  const { config, cwd, log, srcRoot } = projectInfo;
   const isNodeNextResolution = ['node16', 'nodenext'].includes(
     (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
   );
+  const isTsStandalone = cliGenerateOptions?.forceTsStandalone ?? !srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
     !!cliGenerateOptions?.composedFrom ||
@@ -139,6 +140,7 @@ export async function generate({
       config,
       cwd,
       log,
+      isTsStandalone,
       cliGenerateOptions,
       configKey: 'composedClient',
     });
@@ -186,6 +188,7 @@ export async function generate({
           templateDef,
           locatedSegments,
           isNodeNextResolution,
+          isTsStandalone,
         });
 
         const outAbsoluteDir = path.join(cwd, outCwdRelativeDir);
@@ -220,6 +223,7 @@ export async function generate({
       config,
       cwd,
       log,
+      isTsStandalone,
       cliGenerateOptions,
       configKey: 'segmentedClient',
     });
@@ -272,6 +276,7 @@ export async function generate({
               templateDef,
               locatedSegments,
               isNodeNextResolution,
+              isTsStandalone,
             });
 
             return {

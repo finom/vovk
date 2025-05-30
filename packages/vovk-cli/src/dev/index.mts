@@ -52,9 +52,11 @@ export class VovkDev {
 
   #watchSegments = (callback: () => void) => {
     const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
-    const { cwd, log, config, apiDir } = this.#projectInfo;
+    const { cwd, log, config, apiDirAbsolutePath } = this.#projectInfo;
+    if (!apiDirAbsolutePath) {
+      throw new Error('Unable to watch segments. It looks like CWD is not a Next.js app.');
+    }
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
-    const apiDirAbsolutePath = path.join(cwd, apiDir);
     const getSegmentName = (filePath: string) => path.relative(apiDirAbsolutePath, filePath).replace(segmentReg, '');
     log.debug(`Watching segments at ${apiDirAbsolutePath}`);
     this.#segmentWatcher = chokidar
@@ -188,8 +190,8 @@ export class VovkDev {
 
     const handle = debounce(async () => {
       this.#projectInfo = await getProjectInfo();
-      const { config, apiDir } = this.#projectInfo;
-      this.#segments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
+      const { config, apiDirAbsolutePath } = this.#projectInfo;
+      this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
       await this.#modulesWatcher?.close();
       await this.#segmentWatcher?.close();
 
@@ -391,8 +393,8 @@ export class VovkDev {
   async start({ exit }: { exit: boolean }) {
     const now = Date.now();
     this.#projectInfo = await getProjectInfo();
-    const { log, config, cwd, apiDir } = this.#projectInfo;
-    this.#segments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
+    const { log, config, cwd, apiDirAbsolutePath } = this.#projectInfo;
+    this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     log.info('Starting...');
 
     if (exit) {

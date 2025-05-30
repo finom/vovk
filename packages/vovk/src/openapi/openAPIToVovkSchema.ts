@@ -59,6 +59,10 @@ function applyComponents(schema: SimpleJsonSchema, components: ComponentsObject[
   return processSchema(result);
 }
 
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
 const defaultGetHandlerInfo = ({
   method,
   path,
@@ -72,10 +76,16 @@ const defaultGetHandlerInfo = ({
   defaultModuleName: string;
 }): [string, string] => {
   const operationId = operation.operationId?.replace(/[^a-zA-Z0-9_]/g, '_') ?? null;
-  const match = operationId?.match(/^([A-Z][a-zA-Z0-9]*)_([a-zA-Z0-9_]+)/);
-  const [handlerName, controllerName] = match?.slice(1, 3) ?? [
-    operationId?.match(/^[a-zA-Z][a-zA-Z0-9_]+$/) ? operationId : generateFnName(method, path),
+  const controllerHandlerMatch = operationId?.match(/^([A-Z][a-zA-Z0-9]*)_([a-zA-Z0-9_]+)/);
+  const isSnakeCase = operationId && /^[a-z][a-z0-9_]+$/.test(operationId);
+
+  const [controllerName, handlerName] = controllerHandlerMatch?.slice(1, 3) ?? [
     defaultModuleName,
+    isSnakeCase
+      ? snakeToCamel(operationId)
+      : operationId?.match(/^[a-zA-Z][a-zA-Z0-9_]+$/)
+        ? operationId
+        : generateFnName(method, path),
   ];
 
   const rpcModuleName = controllerName.endsWith('Controller')
@@ -84,7 +94,7 @@ const defaultGetHandlerInfo = ({
   return [rpcModuleName, handlerName];
 };
 
-export function openAPIToSchema({
+export function openAPIToVovkSchema({
   openAPIObject,
   getHandlerInfo = defaultGetHandlerInfo,
   defaultModuleName = 'api',
@@ -145,7 +155,10 @@ export function openAPIToSchema({
 
       // TODO how to utilize ReferenceObject?
       const body = (operation.requestBody as RequestBodyObject)?.content['application/json']?.schema ?? null;
-      const output = operation.responses?.['200']?.content['application/json']?.schema ?? null;
+      const output =
+        operation.responses?.['200']?.content?.['application/json']?.schema ??
+        operation.responses?.['201']?.content?.['application/json']?.schema ??
+        null;
       segment.controllers[rpcModuleName].handlers[handlerName] = {
         httpMethod: method.toUpperCase(),
         path,

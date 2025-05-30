@@ -44,8 +44,8 @@ export default async function newModule({
   overwrite?: boolean;
   empty?: boolean;
 }) {
-  const { config, log, cwd, apiDir } = await getProjectInfo();
-  const segments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
+  const { config, log, cwd, apiDirAbsolutePath } = await getProjectInfo();
+  const segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
   const isNodeNextResolution = ['node16', 'nodenext'].includes(
     (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
   );

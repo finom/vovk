@@ -1,6 +1,6 @@
 import type { OperationObject } from 'openapi3-ts/oas31';
-import { schemaToOpenAPI } from './schemaToOpenAPI';
-import { openAPIToSchema } from './openAPIToSchema';
+import { vovkSchemaToOpenAPI } from './vovkSchemaToOpenAPI';
+import { openAPIToVovkSchema } from './openAPIToVovkSchema';
 import { error } from './error';
 import { createDecorator } from '../utils/createDecorator';
 import type { KnownAny } from '../types';
@@ -30,4 +30,4 @@ export const openapi = openapiDecorator as typeof openapiDecorator & {
 
 openapi.error = error;
 
-export { schemaToOpenAPI, openAPIToSchema };
+export { vovkSchemaToOpenAPI, openAPIToVovkSchema };

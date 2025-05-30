@@ -11,6 +11,9 @@ export enum BuiltInTemplateName {
   schemaCjs = 'schemaCjs',
   schemaJson = 'schemaJson',
 
+  // types
+  standaloneTypesTs = 'standaloneTypesTs',
+
   // misc
   readme = 'readme',
   packageJson = 'packageJson',
@@ -28,20 +31,17 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.ts]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.ts}/`,
       requires: { [BuiltInTemplateName.schemaTs]: '.' },
+      isTsClient: true,
     },
     [BuiltInTemplateName.cjs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.cjs}/`,
       requires: { [BuiltInTemplateName.schemaCjs]: '.' },
+      isTsClient: true,
     },
     [BuiltInTemplateName.mjs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.mjs}/`,
       requires: { [BuiltInTemplateName.schemaCjs]: '.' },
-    },
-    [BuiltInTemplateName.readme]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.readme}/`,
-    },
-    [BuiltInTemplateName.packageJson]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.packageJson}/`,
+      isTsClient: true,
     },
     [BuiltInTemplateName.schemaTs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaTs}/`,
@@ -52,13 +52,23 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.schemaJson]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaJson}/`,
     },
+    [BuiltInTemplateName.standaloneTypesTs]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.standaloneTypesTs}/`,
+      requires: { [BuiltInTemplateName.schemaJson]: '.' },
+    },
+    [BuiltInTemplateName.readme]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.readme}/`,
+    },
+    [BuiltInTemplateName.packageJson]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.packageJson}/`,
+    },
     [BuiltInTemplateName.rs]: {
       templatePath: 'vovk-rust-client/template/',
       composedClient: {
         outDir: 'dist_rust',
       },
       requires: {
-        schemaJson: './data',
+        [BuiltInTemplateName.schemaJson]: './data',
       },
     },
     [BuiltInTemplateName.py]: {
@@ -67,7 +77,7 @@ export default function getTemplateDefs(
         outDir: 'dist_python',
       },
       requires: {
-        schemaJson: './data',
+        [BuiltInTemplateName.schemaJson]: './data',
       },
     },
   };

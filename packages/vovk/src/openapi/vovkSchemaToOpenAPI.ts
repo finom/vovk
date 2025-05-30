@@ -51,7 +51,7 @@ function extractComponents(
   return [processedSchema, components];
 }
 
-export function schemaToOpenAPI({
+export function vovkSchemaToOpenAPI({
   rootEntry,
   schema: fullSchema,
   openAPIObject = {},

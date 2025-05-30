@@ -15,12 +15,14 @@ export async function locateSegments({
   config,
   log,
 }: {
-  dir: string;
+  dir: string | null;
   rootDir?: string;
   config: VovkStrictConfig | null; // config: null is used for testing
   log: ProjectInfo['log'];
 }): Promise<Segment[]> {
   let results: Segment[] = [];
+
+  if (!dir) return results; // If dir is null, return empty results because this isn't a Next.js app
 
   rootDir = rootDir ?? dir;
   let list: string[] = [];

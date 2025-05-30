@@ -19,8 +19,8 @@ export async function bundle({
   fullSchema: VovkSchema;
   cliBundleOptions: BundleOptions;
 }) {
-  const { config, log, cwd, apiDir } = projectInfo;
-  const locatedSegments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
+  const { config, log, cwd, apiDirAbsolutePath } = projectInfo;
+  const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
   const { bundle: bundleConfig } = config;
   const tsFullClientOutAbsoluteDirInput = path.join(cwd, bundleConfig.tsClientOutDir);
 
@@ -52,6 +52,7 @@ export async function bundle({
       composedOnly: true,
       composedIncludeSegments: cliBundleOptions.includeSegments ?? bundleConfig.includeSegments,
       composedExcludeSegments: cliBundleOptions.excludeSegments ?? bundleConfig.excludeSegments,
+      forceTsStandalone: cliBundleOptions.forceTsStandalone,
     },
   });
 

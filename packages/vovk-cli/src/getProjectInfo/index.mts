@@ -24,7 +24,7 @@ export default async function getProjectInfo({
   }
 
   const apiRoot = `${config.origin ?? ''}/${config.rootEntry}`;
-  const apiDir = path.join(srcRoot ?? '.', 'app', config.rootEntry);
+  const apiDirAbsolutePath = srcRoot ? path.resolve(cwd, srcRoot, 'app', config.rootEntry) : null;
 
   if (configAbsolutePaths.length > 1) {
     log.warn(`Multiple config files found. Using the first one: ${configAbsolutePaths[0]}`);
@@ -34,7 +34,7 @@ export default async function getProjectInfo({
     cwd,
     port,
     apiRoot,
-    apiDir,
+    apiDirAbsolutePath,
     srcRoot,
     config,
     log,

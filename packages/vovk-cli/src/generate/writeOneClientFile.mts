@@ -12,6 +12,7 @@ import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import type { ClientImports } from './getTemplateClientImports.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
+import { convertJSONSchemaToTypeScriptDef } from '../utils/convertJSONSchemaToTypeScriptDef.mjs';
 
 export default async function writeOneClientFile({
   cwd,
@@ -30,6 +31,7 @@ export default async function writeOneClientFile({
   templateDef,
   locatedSegments,
   isNodeNextResolution,
+  isTsStandalone,
 }: {
   cwd: string;
   projectInfo: ProjectInfo;
@@ -52,6 +54,7 @@ export default async function writeOneClientFile({
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
   locatedSegments: Segment[];
   isNodeNextResolution: boolean;
+  isTsStandalone: boolean;
 }) {
   const { config, apiRoot } = projectInfo;
   const { templateFilePath, relativeDir } = clientTemplateFile;
@@ -73,6 +76,7 @@ export default async function writeOneClientFile({
   // Data for the EJS templates:
   const t = {
     _, // lodash
+    isTsStandalone,
     package: packageJson,
     ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
@@ -80,6 +84,7 @@ export default async function writeOneClientFile({
     schema: fullSchema,
     VovkSchemaIdEnum,
     createCodeExamples,
+    convertJSONSchemaToTypeScriptDef,
     YAML,
     TOML,
     nodeNextResolutionExt: {

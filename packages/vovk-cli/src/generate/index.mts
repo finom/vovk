@@ -1,6 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { type VovkSchema, openAPIToSchema } from 'vovk';
+import { type VovkSchema, openAPIToVovkSchema } from 'vovk';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import * as YAML from 'yaml';
 import * as chokidar from 'chokidar';
@@ -43,8 +43,8 @@ export class VovkGenerate {
     }
   }
   async generate({ fullSchema }: { fullSchema: VovkSchema }) {
-    const { log, config, apiDir, cwd } = this.#projectInfo;
-    const locatedSegments = await locateSegments({ dir: path.join(cwd, apiDir), config, log });
+    const { log, config, apiDirAbsolutePath } = this.#projectInfo;
+    const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     await generate({
       projectInfo: this.#projectInfo,
       fullSchema,
@@ -81,7 +81,7 @@ export class VovkGenerate {
         ? await this.getOpenApiSpecRemote(openapiSpec)
         : await this.getOpenApiSpecLocal(openapiSpec);
 
-    const fullSchema = openAPIToSchema({ openAPIObject });
+    const fullSchema = openAPIToVovkSchema({ openAPIObject });
 
     return this.generate({ fullSchema });
   }
@@ -220,7 +220,11 @@ export class VovkGenerate {
 
       isPolling = true;
       try {
-        const response = await fetch(openApiSpecUrl);
+        const response = await fetch(openApiSpecUrl, {
+          headers: {
+            Accept: 'application/json, application/yaml',
+          },
+        });
         if (!response.ok) {
           log.error(`Failed to fetch OpenAPI spec: ${response.status} ${response.statusText}`);
           return;

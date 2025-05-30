@@ -351,6 +351,7 @@ export type ClientTemplateDef = {
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   segmentConfig?: false | SegmentConfig;
   requires?: Record<string, string>;
+  isTsClient?: boolean;
 };
 
 type VovkUserConfig = {

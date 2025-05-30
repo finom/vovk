@@ -33,7 +33,7 @@ import {
   fetcher,
   createFetcher,
 } from './client/index.js';
-import { openapi, openAPIToSchema, schemaToOpenAPI } from './openapi/index.js';
+import { openapi, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi/index.js';
 import { HttpException } from './HttpException.js';
 import { createDecorator } from './utils/createDecorator.js';
 import { JSONLinesResponse } from './JSONLinesResponse.js';
@@ -84,8 +84,8 @@ export {
   createLLMFunctions,
   createCodeExamples,
   openapi,
-  openAPIToSchema,
-  schemaToOpenAPI,
+  openAPIToVovkSchema,
+  vovkSchemaToOpenAPI,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initVovk } = createVovkApp();

@@ -22,6 +22,7 @@ export interface GenerateOptions {
   schemaPath?: string;
   openapiSpec?: string;
   watch?: boolean | string;
+  forceTsStandalone?: boolean;
   composedFrom?: string[];
   composedOut?: string;
   composedOnly?: boolean;
@@ -38,6 +39,7 @@ export interface BundleOptions extends Partial<Omit<VovkStrictConfig['bundle'], 
   config?: string;
   schema?: string;
   openapiSpec?: string;
+  forceTsStandalone?: boolean;
 }
 
 export interface InitOptions {
