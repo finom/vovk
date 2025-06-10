@@ -10,9 +10,9 @@ export function createFetcher<T extends Record<string, KnownAny> = Record<string
 }: {
   prepareRequestInit?: (
     init: RequestInit,
-    options: VovkDefaultFetcherOptions<T> & T
+    options: VovkDefaultFetcherOptions<T>
   ) => RequestInit | Promise<RequestInit> | void | Promise<void>;
-  transformResponse?: (resp: unknown, options: VovkDefaultFetcherOptions<T> & T, init: RequestInit) => unknown;
+  transformResponse?: (resp: unknown, options: VovkDefaultFetcherOptions<T>, init: RequestInit) => unknown;
 } = {}) {
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type

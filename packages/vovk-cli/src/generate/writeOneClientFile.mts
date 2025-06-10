@@ -98,7 +98,7 @@ export default async function writeOneClientFile({
         ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME), config.schemaOutDir)
         : path.relative(outCwdRelativeDir, config.schemaOutDir),
     segmentMeta: Object.fromEntries(
-      Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
+      Object.values(fullSchema.segments).map(({ segmentName: sName, forceApiRoot }) => {
         const { routeFilePath = null } = locatedSegmentsByName[sName] ?? {};
         const segmentImportPath = routeFilePath
           ? path.relative(
@@ -122,9 +122,10 @@ export default async function writeOneClientFile({
           sName,
           {
             segmentApiRoot:
-              segmentConfigOrigin || segmentConfigRootEntry
+              forceApiRoot ??
+              (segmentConfigOrigin || segmentConfigRootEntry
                 ? `${segmentConfigOrigin ?? origin}/${segmentConfigRootEntry ?? config.rootEntry}`
-                : null,
+                : null),
             routeFilePath,
             segmentImportPath,
             segmentNameOverride,

@@ -47,6 +47,9 @@ export async function bundle({
     locatedSegments,
     cliGenerateOptions: {
       openapiSpec: cliBundleOptions?.openapiSpec,
+      openapiGetModuleName: cliBundleOptions?.openapiGetModuleName,
+      openapiGetMethodName: cliBundleOptions?.openapiGetMethodName,
+      openapiRootUrl: cliBundleOptions?.openapiRootUrl,
       composedFrom: [BuiltInTemplateName.ts],
       composedOut: tsClientOutDir,
       composedOnly: true,

@@ -2,9 +2,9 @@ import type { VovkRequest, VovkStreamAsyncIterable, KnownAny } from 'vovk';
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment], i) => { %>
 export type Segment<%= i %> = {
   <% Object.values(segment.controllers).forEach((controllerSchema) => { %>
-    <%= controllerSchema.originalControllerName ?? controllerSchema.rpcModuleName + 'Controller' %>: {
+    <%= controllerSchema.originalControllerName ?? controllerSchema.rpcModuleName.replace(/RPC$/, '') + 'Controller' %>: {
     <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handler]) => { %>
-      <%= handlerName %>: (req: VovkRequest<<%- t.convertJSONSchemaToTypeScriptDef(handler.validation?.body) ?? 'KnownAny' %>, <%- t.convertJSONSchemaToTypeScriptDef(handler.validation?.query) ?? 'KnownAny' %>, <%- t.convertJSONSchemaToTypeScriptDef(handler.validation?.params ?? 'KnownAny') %>>) => <%- handler.validation?.output ? `Promise<${t.convertJSONSchemaToTypeScriptDef(handler.validation?.body)}>` : handler.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${t.convertJSONSchemaToTypeScriptDef(handler.validation?.iteration)}>>` : 'Promise<KnownAny>' %>,
+      <%= handlerName %>: (req: VovkRequest<<%- t.convertJSONSchemaToTypeScriptDef(handler.validation?.body) ?? 'null' %>, <%- t.convertJSONSchemaToTypeScriptDef(handler.validation?.query) ?? 'undefined' %>, <%- t.convertJSONSchemaToTypeScriptDef(handler.validation?.params ?? 'undefined') %>>) => <%- handler.validation?.output ? `Promise<${t.convertJSONSchemaToTypeScriptDef(handler.validation?.body)}>` : handler.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${t.convertJSONSchemaToTypeScriptDef(handler.validation?.iteration)}>>` : 'Promise<KnownAny>' %>,
     <% }) %>
     };
   <% }) %>

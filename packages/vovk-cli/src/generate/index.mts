@@ -1,8 +1,5 @@
 import path from 'node:path';
-import fs from 'node:fs/promises';
-import { type VovkSchema, openAPIToVovkSchema } from 'vovk';
-import type { OpenAPIObject } from 'openapi3-ts/oas31';
-import * as YAML from 'yaml';
+import { type VovkSchema } from 'vovk';
 import * as chokidar from 'chokidar';
 import type { GenerateOptions } from '../types.mjs';
 import { getProjectFullSchema } from './getProjectFullSchema.mjs';
@@ -39,10 +36,12 @@ export class VovkGenerate {
         throttleDelay,
       });
     } else {
-      this.generateFromOpenApiSpecOrSchema();
+      this.generate();
     }
   }
-  async generate({ fullSchema }: { fullSchema: VovkSchema }) {
+
+  async generate() {
+    const fullSchema = await this.getFullSchema();
     const { log, config, apiDirAbsolutePath } = this.#projectInfo;
     const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     await generate({
@@ -54,64 +53,11 @@ export class VovkGenerate {
     });
   }
 
-  async generateFromOpenApiSpecOrSchema() {
-    const { openapiSpec, schemaPath } = this.#cliGenerateOptions;
-
-    if (openapiSpec) {
-      return this.generateFromOpenApiSpec(openapiSpec);
-    }
-
-    return this.generateFromSchemaDir(schemaPath);
-  }
-
-  async generateFromSchemaDir(schemaPath: string | undefined) {
+  async getFullSchema(): Promise<VovkSchema> {
     const { log, config, cwd } = this.#projectInfo;
+    const { schemaPath } = this.#cliGenerateOptions;
     const fullSchema = await getProjectFullSchema(path.resolve(cwd, schemaPath ?? config.schemaOutDir), log);
-
-    return this.generate({ fullSchema });
-  }
-
-  async generateFromOpenApiSpec(openapiSpec: string) {
-    if (!openapiSpec) {
-      throw new Error('No OpenAPI spec provided. Please specify an OpenAPI spec using --openapi option.');
-    }
-
-    const openAPIObject =
-      openapiSpec?.startsWith('http://') || openapiSpec?.startsWith('https://')
-        ? await this.getOpenApiSpecRemote(openapiSpec)
-        : await this.getOpenApiSpecLocal(openapiSpec);
-
-    const fullSchema = openAPIToVovkSchema({ openAPIObject });
-
-    return this.generate({ fullSchema });
-  }
-
-  async getOpenApiSpecLocal(openApiSpecFilePath: string): Promise<OpenAPIObject> {
-    const { cwd } = this.#projectInfo;
-    const openApiSpecAbsolutePath = path.resolve(cwd, openApiSpecFilePath);
-    const fileName = path.basename(openApiSpecAbsolutePath);
-    if (!fileName.endsWith('.json') && !fileName.endsWith('.yaml') && !fileName.endsWith('.yml')) {
-      throw new Error(`Invalid OpenAPI spec file format: ${fileName}. Please provide a JSON or YAML file.`);
-    }
-
-    const openApiSpecContent = await fs.readFile(openApiSpecAbsolutePath, 'utf8');
-    return (
-      fileName.endsWith('.json') ? JSON.parse(openApiSpecContent) : YAML.parse(openApiSpecContent)
-    ) as OpenAPIObject;
-  }
-
-  async getOpenApiSpecRemote(openApiSpecUrl: string): Promise<OpenAPIObject> {
-    const resp = await fetch(openApiSpecUrl);
-
-    const text = await resp.text();
-
-    if (!resp.ok) {
-      throw new Error(`Failed to fetch OpenAPI spec from ${openApiSpecUrl}: ${resp.status} ${resp.statusText}`);
-    }
-
-    return text.trim().startsWith('{') || text.trim().startsWith('[')
-      ? (JSON.parse(text) as OpenAPIObject)
-      : (YAML.parse(text) as OpenAPIObject);
+    return fullSchema;
   }
 
   watch({ throttleDelay }: { throttleDelay: number }) {
@@ -147,7 +93,7 @@ export class VovkGenerate {
           const generateCode = async () => {
             try {
               lastGenerationTime = Date.now();
-              await this.generateFromSchemaDir(schemaPath);
+              await this.generate();
               log.debug(`Regenerated from schema changes`);
             } catch (error) {
               log.error(`Failed to regenerate from schema: ${error instanceof Error ? error.message : String(error)}`);
@@ -162,22 +108,33 @@ export class VovkGenerate {
       });
   }
 
-  watchOpenApiSpec({ openApiSpec, throttleDelay }: { openApiSpec: string; throttleDelay: number }) {
-    if (openApiSpec.startsWith('http://') || openApiSpec.startsWith('https://')) {
-      this.watchOpenApiSpecRemote({ openApiSpecUrl: openApiSpec, throttleDelay });
-    } else {
-      const { cwd } = this.#projectInfo;
-      const openApiSpecAbsolutePath = path.resolve(cwd, openApiSpec);
-      this.watchOpenApiSpecLocal({ openApiSpecPath: openApiSpecAbsolutePath, throttleDelay });
+  watchOpenApiSpec({ openApiSpec, throttleDelay }: { openApiSpec: string[]; throttleDelay: number }) {
+    const fileSpecs = openApiSpec.filter((spec) => !spec.startsWith('http://') && !spec.startsWith('https://'));
+    const remoteSpecs = openApiSpec.filter((spec) => spec.startsWith('http://') || spec.startsWith('https://'));
+    if (fileSpecs.length) {
+      this.watchOpenApiSpecLocal({
+        openApiSpecPaths: fileSpecs,
+        throttleDelay,
+      });
+    }
+
+    if (remoteSpecs.length) {
+      remoteSpecs.forEach((spec) => {
+        this.watchOpenApiSpecRemote({
+          openApiSpecUrl: spec,
+          throttleDelay,
+        });
+      });
     }
   }
 
-  watchOpenApiSpecLocal({ openApiSpecPath, throttleDelay }: { openApiSpecPath: string; throttleDelay: number }) {
-    const { log } = this.#projectInfo;
+  watchOpenApiSpecLocal({ openApiSpecPaths, throttleDelay }: { openApiSpecPaths: string[]; throttleDelay: number }) {
+    const { log, cwd } = this.#projectInfo;
     let lastGenerationTime = 0;
 
     chokidar
-      .watch(openApiSpecPath, {
+      .watch(openApiSpecPaths, {
+        cwd,
         persistent: true,
         ignoreInitial: true,
       })
@@ -191,7 +148,7 @@ export class VovkGenerate {
           const generateCode = async () => {
             try {
               lastGenerationTime = Date.now();
-              await this.generateFromOpenApiSpec(openApiSpecPath);
+              await this.generate();
               log.debug(`Regenerated from OpenAPI spec changes`);
             } catch (error) {
               log.error(
@@ -242,7 +199,7 @@ export class VovkGenerate {
           lastContent = content;
 
           try {
-            await this.generateFromOpenApiSpec(openApiSpecUrl);
+            await this.generate();
             log.debug(`Regenerated from remote OpenAPI spec changes`);
           } catch (error) {
             log.error(

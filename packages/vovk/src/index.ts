@@ -1,4 +1,4 @@
-import { createVovkApp } from './createVovkApp.js';
+import { createVovkApp } from './createVovkApp';
 import {
   HttpStatus,
   HttpMethod,
@@ -22,10 +22,9 @@ import {
   type VovkValidationType,
   type VovkLLMFunction,
   type VovkTypedMethod,
-} from './types.js';
+} from './types';
 import {
   type VovkClient,
-  type VovkClientOptions,
   type VovkClientFetcher,
   type VovkDefaultFetcherOptions,
   type VovkValidateOnClient,
@@ -33,16 +32,17 @@ import {
   createRPC,
   fetcher,
   createFetcher,
-} from './client/index.js';
-import { openapi, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi/index.js';
-import { HttpException } from './HttpException.js';
-import { createDecorator } from './utils/createDecorator.js';
-import { JSONLinesResponse } from './JSONLinesResponse.js';
-import { generateStaticAPI } from './utils/generateStaticAPI.js';
-import { withValidation } from './utils/withValidation.js';
-import { multitenant } from './utils/multitenant.js';
-import { createLLMFunctions } from './utils/createLLMFunctions.js';
-import { createCodeExamples } from './utils/createCodeExamples.js';
+} from './client/index';
+import { openapi, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi/index';
+import { HttpException } from './HttpException';
+import { createDecorator } from './utils/createDecorator';
+import { JSONLinesResponse } from './JSONLinesResponse';
+import { generateStaticAPI } from './utils/generateStaticAPI';
+import { withValidationLibrary } from './utils/withValidationLibrary';
+import { withStandard } from './utils/withStandard';
+import { multitenant } from './utils/multitenant';
+import { createLLMFunctions } from './utils/createLLMFunctions';
+import { createCodeExamples } from './utils/createCodeExamples';
 
 export {
   type KnownAny,
@@ -61,7 +61,6 @@ export {
   type VovkParams,
   type VovkYieldType,
   type VovkReturnType,
-  type VovkClientOptions,
   type VovkControllerSchema,
   type VovkHandlerSchema,
   type VovkSchema,
@@ -81,7 +80,8 @@ export {
   fetcher,
   createFetcher,
   generateStaticAPI,
-  withValidation,
+  withValidationLibrary,
+  withStandard,
   multitenant,
   createLLMFunctions,
   createCodeExamples,

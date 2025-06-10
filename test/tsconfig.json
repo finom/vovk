@@ -30,7 +30,7 @@
       /* "vovk/*": ["../packages/vovk/*"],
       "vovk-cli/*": ["../packages/vovk-cli/*"],
       "vovk-validate-client-ajv/*": ["../packages/vovk-ajv/*"],
-      "vovk-python-client/*": ["../packages/vovk-python-client/*"], */
+      "vovk-python/*": ["../packages/vovk-python/*"], */
       "next/*": ["./node_modules/next/*"]
     },
     "target": "ES2017",

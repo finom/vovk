@@ -1,6 +1,6 @@
 import { z, type ZodSchema } from 'zod/v3';
 import {
-  withValidation,
+  withValidationLibrary,
   HttpException,
   HttpStatus,
   type VovkRequest,
@@ -8,7 +8,7 @@ import {
   type VovkValidationType,
   type VovkTypedMethod,
 } from 'vovk';
-import zodToJsonSchema from 'zod-to-json-schema';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
 const getErrorText = (e: unknown) =>
   (e as z.ZodError).errors?.map((er) => `${er.message} (${er.path.join('/')})`).join(', ') ?? String(e);
@@ -46,7 +46,7 @@ function withZod<
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
 }) {
-  return withValidation({
+  return withValidationLibrary({
     body,
     query,
     params,
@@ -63,17 +63,7 @@ function withZod<
       ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
       ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny
     >,
-    /*
-    handle: handle as VovkTypedMethod<
-          T,
-          ZOD_BODY extends ZodType ? z.infer<ZOD_BODY> : KnownAny,
-          ZOD_QUERY extends ZodType ? z.infer<ZOD_QUERY> : KnownAny,
-          ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : Record<string, string>,
-          ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny,
-          ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny
-        >,
-    */
-    getJSONSchemaFromModel: (model) => zodToJsonSchema(model, { errorMessages: true }),
+    toJSONSchema: (model) => zodToJsonSchema(model, { errorMessages: true }),
     validate: async (data, model, { type, req, i }) => {
       try {
         model.parse(data);
@@ -88,6 +78,6 @@ function withZod<
   });
 }
 
-withZod.formData = null as unknown as z.ZodType<FormData>;
+withZod.formData = { type: 'object', 'x-formData': true, additionalProperties: true } as unknown as z.ZodType<FormData>;
 
 export { withZod };

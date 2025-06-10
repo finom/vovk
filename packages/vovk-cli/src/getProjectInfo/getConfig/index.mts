@@ -5,6 +5,7 @@ import getUserConfig from './getUserConfig.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 import type { VovkEnv } from '../../types.mjs';
 import getTemplateDefs, { BuiltInTemplateName } from './getTemplateDefs.mjs';
+import { normalizeOpenAPIRootModules } from '../../utils/normalizeOpenAPIRootModules.mjs';
 
 export default async function getConfig({ configPath, cwd }: { configPath?: string; cwd: string }) {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({
@@ -74,6 +75,12 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     },
     libs: conf.libs ?? {},
     segmentConfig: conf.segmentConfig ?? {},
+    extendClientWithOpenAPI: {
+      rootModules: await normalizeOpenAPIRootModules({
+        rootModules: conf.extendClientWithOpenAPI?.rootModules ?? [],
+        cwd,
+      }),
+    },
   };
 
   if (typeof conf.emitConfig === 'undefined') {

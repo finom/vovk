@@ -70,7 +70,7 @@ type StaticMethodOption<
     }
   > | void) &
   (Partial<
-    F extends VovkDefaultFetcherOptions<infer U> ? Omit<U, keyof VovkDefaultFetcherOptions<OPTS>> : void
+    F extends VovkDefaultFetcherOptions<infer U> ? Omit<U, keyof VovkDefaultFetcherOptions<OPTS>> : unknown
   > | void);
 
 type ClientMethod<
@@ -117,9 +117,9 @@ type VovkClientWithNever<T, OPTS extends { [key: string]: KnownAny }> = {
 
 export type VovkClient<T, OPTS extends { [key: string]: KnownAny }> = OmitNever<VovkClientWithNever<T, OPTS>>;
 
-export type VovkClientFetcher<OPTS, T = KnownAny> = (
+export type VovkClientFetcher<OPTS> = (
   options: {
-    name: keyof T;
+    name: string;
     httpMethod: HttpMethod;
     getEndpoint: (data: {
       apiRoot: string;
@@ -137,24 +137,17 @@ export type VovkClientFetcher<OPTS, T = KnownAny> = (
   } & OPTS
 ) => KnownAny;
 
-export interface VovkDefaultFetcherOptions<T> {
+export type VovkDefaultFetcherOptions<T> = T & {
   apiRoot?: string;
   disableClientValidation?: boolean;
   validateOnClient?: VovkValidateOnClient;
   fetcher?: VovkClientFetcher<T>;
   interpretAs?: string;
   init?: RequestInit;
-}
+};
 
 export type VovkValidateOnClient = (
   input: { body?: unknown; query?: unknown; params?: unknown; endpoint: string },
   validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>,
   fullSchema: VovkSchema
 ) => void | Promise<void>;
-
-export type VovkClientOptions<OPTS extends Record<string, KnownAny> = Record<string, never>> = {
-  fetcher?: VovkClientFetcher<OPTS>;
-  validateOnClient?: VovkValidateOnClient;
-  segmentNameOverride?: string;
-  defaultOptions?: Partial<OPTS>;
-};

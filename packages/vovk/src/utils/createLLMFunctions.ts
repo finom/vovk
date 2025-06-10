@@ -142,9 +142,9 @@ export function createLLMFunctions({
   onSuccess?: (result: KnownAny) => void;
   onError?: (error: Error) => void;
 }): { functions: VovkLLMFunction[] } {
-  const functions = Object.entries(modules)
+  const functions = Object.entries(modules ?? {})
     .map(([rpcModuleName, module]) => {
-      return Object.entries(module)
+      return Object.entries(module ?? {})
         .filter(([, handler]) => (handler as unknown as { schema: VovkHandlerSchema }).schema?.openapi)
         .map(([handlerName]) =>
           createLLMFunction({

@@ -20,7 +20,10 @@ export interface GenerateOptions {
   prettify?: boolean;
   configPath?: string;
   schemaPath?: string;
-  openapiSpec?: string;
+  openapiSpec?: string[];
+  openapiGetModuleName?: string[];
+  openapiGetMethodName?: string[];
+  openapiRootUrl?: string[];
   watch?: boolean | string;
   forceTsStandalone?: boolean;
   composedFrom?: string[];
@@ -38,7 +41,10 @@ export interface GenerateOptions {
 export interface BundleOptions extends Partial<Omit<VovkStrictConfig['bundle'], 'requires'>> {
   config?: string;
   schema?: string;
-  openapiSpec?: string;
+  openapiSpec?: string[];
+  openapiGetModuleName?: string[];
+  openapiGetMethodName?: string[];
+  openapiRootUrl?: string[];
   forceTsStandalone?: boolean;
 }
 

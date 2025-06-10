@@ -16,7 +16,7 @@ type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 
 type Meta = { __disableValidation?: boolean };
 
-export function withValidation<
+export function withValidationLibrary<
   T extends VovkTypedMethod<(req: KnownAny, params: KnownAny) => KnownAny>,
   BODY_MODEL,
   QUERY_MODEL,
@@ -33,7 +33,7 @@ export function withValidation<
   output,
   iteration,
   handle,
-  getJSONSchemaFromModel,
+  toJSONSchema,
   validate,
 }: {
   disableServerSideValidation?: boolean | VovkValidationType[];
@@ -45,7 +45,7 @@ export function withValidation<
   output?: OUTPUT_MODEL;
   iteration?: ITERATION_MODEL;
   handle: T;
-  getJSONSchemaFromModel?: (
+  toJSONSchema?: (
     model: NonNullable<BODY_MODEL | QUERY_MODEL | PARAMS_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
     meta: { type: VovkValidationType }
   ) => KnownAny;
@@ -128,7 +128,7 @@ export function withValidation<
         const data = await req.vovk.body();
         const instance = (await validate(data, body, { type: 'body', req })) ?? data;
 
-        // redeclare to add ability to call req.json() again
+        // redeclare to add ability to call req.json() and req.vovk.body() again
         req.json = () => Promise.resolve(data);
         req.vovk.body = () => Promise.resolve(instance);
       }
@@ -185,22 +185,29 @@ export function withValidation<
 
   const resultHandlerEnhanced = Object.assign(resultHandler, { func, models });
 
-  if (getJSONSchemaFromModel) {
+  const isFormDataJsonSchema = (model: KnownAny): model is { type: 'object'; 'x-formData': true } => {
+    return model.type === 'object' && model['x-formData'] === true;
+  };
+
+  if (toJSONSchema) {
+    const getJsonSchema = (model: KnownAny, type: VovkValidationType) =>
+      isFormDataJsonSchema(model) ? model : toJSONSchema(model, { type });
+
     const validation: VovkHandlerSchema['validation'] = {};
     if (body && !skipSchemaEmissionKeys.includes('body')) {
-      validation.body = getJSONSchemaFromModel(body, { type: 'body' });
+      validation.body = getJsonSchema(body, 'body');
     }
     if (query && !skipSchemaEmissionKeys.includes('query')) {
-      validation.query = getJSONSchemaFromModel(query, { type: 'query' });
+      validation.query = getJsonSchema(query, 'query');
     }
     if (params && !skipSchemaEmissionKeys.includes('params')) {
-      validation.params = getJSONSchemaFromModel(params, { type: 'params' });
+      validation.params = getJsonSchema(params, 'params');
     }
     if (output && !skipSchemaEmissionKeys.includes('output')) {
-      validation.output = getJSONSchemaFromModel(output, { type: 'output' });
+      validation.output = getJsonSchema(output, 'output');
     }
     if (iteration && !skipSchemaEmissionKeys.includes('iteration')) {
-      validation.iteration = getJSONSchemaFromModel(iteration, { type: 'iteration' });
+      validation.iteration = getJsonSchema(iteration, 'iteration');
     }
     setHandlerSchema(resultHandlerEnhanced, { validation });
   }

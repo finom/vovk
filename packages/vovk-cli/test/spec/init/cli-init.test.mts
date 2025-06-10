@@ -483,12 +483,12 @@ await describe('CLI init', async () => {
     });
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-rust-client'],
+      dependencies: ['vovk', 'vovk-rust'],
       devDependencies: ['vovk-cli'],
     });
 
     await assertDeps({
-      dependencies: ['vovk-python-client'],
+      dependencies: ['vovk-python'],
       opposite: true,
     });
 

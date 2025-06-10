@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import matter from 'gray-matter';
 import _ from 'lodash';
-import type { VovkSchema, VovkStrictConfig } from 'vovk';
+import { openAPIToVovkSchema, VovkConfig, VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
 import type { PackageJson } from 'type-fest';
 import getClientTemplateFiles from './getClientTemplateFiles.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
@@ -16,6 +16,7 @@ import writeOneClientFile from './writeOneClientFile.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { getTsconfig } from 'get-tsconfig';
+import { normalizeOpenAPIRootModules } from '../utils/normalizeOpenAPIRootModules.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -96,6 +97,24 @@ function logClientGenerationResults({
   }
 }
 
+const cliOptionsToOpenAPIRootModules = ({
+  openapiGetMethodName,
+  openapiGetModuleName,
+  openapiRootUrl,
+  openapiSpec,
+}: GenerateOptions): Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'] => {
+  return (
+    openapiSpec?.map((spec, i) => {
+      return {
+        source: spec.startsWith('http://') || spec.startsWith('https://') ? { url: spec } : { file: spec },
+        apiRoot: openapiRootUrl?.[i] ?? '/',
+        getModuleName: openapiGetModuleName?.[i] ?? undefined,
+        getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
+      };
+    }) || []
+  );
+};
+
 export async function generate({
   isEnsuringClient = false,
   projectInfo,
@@ -117,6 +136,42 @@ export async function generate({
     segments: Object.fromEntries(Object.entries(fullSchema.segments).sort(([a], [b]) => a.localeCompare(b))),
   };
   const { config, cwd, log, srcRoot } = projectInfo;
+  const allOpenAPIRootModules = [
+    ...config.extendClientWithOpenAPI.rootModules,
+    ...cliOptionsToOpenAPIRootModules(cliGenerateOptions ?? {}),
+  ];
+  if (allOpenAPIRootModules.length) {
+    fullSchema = {
+      ...fullSchema,
+      segments: {
+        ...fullSchema.segments,
+        '': {
+          $schema: VovkSchemaIdEnum.SEGMENT,
+          emitSchema: true,
+          segmentName: '',
+          forceApiRoot: allOpenAPIRootModules[0].apiRoot ?? fullSchema.segments['']?.forceApiRoot,
+          controllers: {
+            ...fullSchema.segments['']?.controllers,
+            ...(await normalizeOpenAPIRootModules({ rootModules: allOpenAPIRootModules }))
+              .map(({ source, apiRoot, getModuleName, getMethodName }) => {
+                return openAPIToVovkSchema({
+                  source,
+                  apiRoot,
+                  getModuleName,
+                  getMethodName,
+                }).segments[''].controllers;
+              })
+              .reduce((acc, controllers) => {
+                return {
+                  ...acc,
+                  ...controllers,
+                };
+              }, {}),
+          },
+        },
+      },
+    };
+  }
   const isNodeNextResolution = ['node16', 'nodenext'].includes(
     (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
   );

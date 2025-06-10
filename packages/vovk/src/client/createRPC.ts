@@ -6,7 +6,7 @@ import type {
   HttpMethod,
   VovkSchema,
 } from '../types.js';
-import type { VovkClientOptions, VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types.js';
+import type { VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types.js';
 
 import { fetcher } from './fetcher.js';
 import { defaultHandler } from './defaultHandler.js';
@@ -28,11 +28,11 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   return `${result}${queryStr ? '?' : ''}${queryStr}`;
 };
 
-export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions<Record<string, never>>>(
+export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
   schema: VovkSchema,
   segmentName: string,
   rpcModuleName: string,
-  options?: VovkClientOptions<OPTS>
+  options?: VovkDefaultFetcherOptions<OPTS>
 ): VovkClient<T, OPTS> => {
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];
@@ -44,7 +44,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
   const { fetcher: settingsFetcher = fetcher } = options ?? {};
 
-  for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers)) {
+  for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
     const getEndpoint = ({
       apiRoot,
@@ -72,7 +72,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
         query?: { [key: string]: string };
         params?: { [key: string]: string };
         validateOnClient?: VovkValidateOnClient;
-        fetcher?: VovkClientOptions<OPTS>['fetcher'];
+        fetcher?: VovkDefaultFetcherOptions<OPTS>['fetcher'];
         transform?: (response: unknown) => unknown;
       } & OPTS = {} as OPTS
     ) => {
@@ -98,7 +98,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkDefault
       };
 
       const internalOptions: Parameters<typeof fetcher>[0] = {
-        name: staticMethodName as keyof T,
+        name: staticMethodName,
         httpMethod: httpMethod as HttpMethod,
         getEndpoint,
         validate,

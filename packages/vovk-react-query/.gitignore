@@ -1,10 +1,3 @@
-*.d.ts
-*.ts
-*.js
-*.d.mts
-*.mjs
-*.cts
-*.cjs
 !eslint.config.js
 !vovk.config.test.mjs
 cjs

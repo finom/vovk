@@ -27,7 +27,7 @@ function extractComponents(
     });
 
     // Process all properties
-    for (const [key, value] of Object.entries(obj)) {
+    for (const [key, value] of Object.entries(obj ?? {})) {
       // Skip already processed special properties
       if (key === '$defs' || key === 'definitions') continue;
 
@@ -65,9 +65,9 @@ export function vovkSchemaToOpenAPI({
   const paths: PathsObject = {};
   const components: Record<string, SimpleJsonSchema> = {};
 
-  for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments)) {
+  for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments ?? {})) {
     for (const c of Object.values(segmentSchema.controllers)) {
-      for (const [handlerName, h] of Object.entries(c.handlers)) {
+      for (const [handlerName, h] of Object.entries(c.handlers ?? {})) {
         if (h.openapi) {
           const [queryValidation, queryComponents] = extractComponents(h?.validation?.query);
           const [bodyValidation, bodyComponents] = extractComponents(h?.validation?.body);
@@ -93,7 +93,7 @@ export function vovkSchemaToOpenAPI({
           });
           const queryParameters =
             queryValidation && 'type' in queryValidation && 'properties' in queryValidation
-              ? Object.entries(queryValidation.properties).map(([propName, propSchema]) => ({
+              ? Object.entries(queryValidation.properties ?? {}).map(([propName, propSchema]) => ({
                   name: propName,
                   in: 'query',
                   required: queryValidation.required ? queryValidation.required.includes(propName) : false,
@@ -103,7 +103,7 @@ export function vovkSchemaToOpenAPI({
 
           const pathParameters =
             paramsValidation && 'type' in paramsValidation && 'properties' in paramsValidation
-              ? Object.entries(paramsValidation.properties).map(([propName, propSchema]) => ({
+              ? Object.entries(paramsValidation.properties ?? {}).map(([propName, propSchema]) => ({
                   name: propName,
                   in: 'path',
                   required: paramsValidation.required ? paramsValidation.required.includes(propName) : false,

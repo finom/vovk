@@ -48,10 +48,10 @@ export class Init {
     const devDependencies: string[] = ['vovk-cli'];
 
     if (lang?.includes('py')) {
-      dependencies.push('vovk-python-client');
+      dependencies.push('vovk-python');
     }
     if (lang?.includes('rs')) {
-      dependencies.push('vovk-rust-client');
+      dependencies.push('vovk-rust');
     }
 
     // delete older config files

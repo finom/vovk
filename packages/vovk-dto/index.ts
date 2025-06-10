@@ -1,7 +1,7 @@
 import { validate, type ValidationError, type ValidatorOptions } from 'class-validator';
 import { ClassTransformOptions, plainToInstance, type ClassConstructor } from 'class-transformer';
 import {
-  withValidation,
+  withValidationLibrary,
   HttpException,
   HttpStatus,
   type VovkRequest,
@@ -123,7 +123,7 @@ function withDto<
 }) {
   const schemas = validationMetadatasToSchemas();
 
-  return withValidation({
+  return withValidationLibrary({
     body,
     query,
     params,
@@ -140,7 +140,7 @@ function withDto<
       OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny,
       ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny
     >,
-    getJSONSchemaFromModel: (dto) => {
+    toJSONSchema: (dto) => {
       const schema = {
         'x-isDto': true,
         definitions: {} as Record<string, KnownAny>,
@@ -171,6 +171,6 @@ function withDto<
   });
 }
 
-withDto.formData = null as unknown as typeof FormData;
+withDto.formData = { type: 'object', 'x-formData': true, additionalProperties: true } as unknown as typeof FormData;
 
 export { withDto };

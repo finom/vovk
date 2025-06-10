@@ -182,6 +182,11 @@ export function convertJSONSchemasToRustTypes({
       }
       return 'Vec<String>';
     } else if (schema.type === 'object' || schema.properties) {
+      // Check for x-formData flag
+      if (schema.type === 'object' && schema['x-formData']) {
+        return 'std::collections::HashMap<String, serde_json::Value>';
+      }
+
       // Handle empty objects
       if (schema.type === 'object' && (!schema.properties || Object.keys(schema.properties).length === 0)) {
         return 'serde_json::Value';
@@ -210,6 +215,23 @@ export function convertJSONSchemasToRustTypes({
   function processObject(schema: KnownAny, path: string[], level: number, rootSchema: KnownAny = schema): string {
     if (!schema) {
       return '';
+    }
+
+    // Handle form data objects with x-formData property
+    if (schema.type === 'object' && schema['x-formData']) {
+      const currentName = path[path.length - 1];
+      let code = '';
+
+      // Add documentation comments for the struct
+      code += generateDocComment(schema, level, pad);
+
+      code += `${indentFn(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
+      code += `${indentFn(level)}#[allow(non_snake_case, non_camel_case_types)]\n`;
+      code += `${indentFn(level)}pub struct ${currentName} {\n`;
+      code += `${indentFn(level + 1)}pub data: std::collections::HashMap<String, serde_json::Value>,\n`;
+      code += `${indentFn(level)}}\n\n`;
+
+      return code;
     }
 
     // Handle empty objects
@@ -485,6 +507,7 @@ export function convertJSONSchemasToRustTypes({
   // Start code generation
   let result = `${indentFn(0)}pub mod ${rootName}_ {\n`;
   result += `${indentFn(1)}use serde::{Serialize, Deserialize};\n`;
+  result += `${indentFn(1)}use std::collections::HashMap;\n`;
 
   // Process each schema in the schemas object
   Object.entries(schemas).forEach(([schemaName, schemaObj]) => {

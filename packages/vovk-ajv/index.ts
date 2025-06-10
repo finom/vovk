@@ -19,6 +19,7 @@ const createAjv = (options: Options, target: VovkAjvConfig['target']) => {
   ajvFormats(ajv);
   ajvErrors(ajv);
   ajv.addKeyword('x-isDto');
+  ajv.addKeyword('x-formData');
   return ajv;
 };
 

@@ -1,7 +1,26 @@
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { KnownAny } from 'vovk';
 
 export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | null {
   if (!schema) return null;
+
+  // Helper function to resolve $ref references
+  const resolveRef = (ref: string): JSONSchema7Definition | null => {
+    if (!ref.startsWith('#/')) return null;
+
+    const path = ref.substring(2).split('/');
+    let currentSchema: KnownAny = schema;
+
+    for (const segment of path) {
+      if (!currentSchema || typeof currentSchema !== 'object') {
+        return null;
+      }
+      currentSchema = currentSchema[segment];
+    }
+
+    return currentSchema || null;
+  };
+
   // Helper function to get JSDoc from schema
   const getJSDoc = (schema: JSONSchema7 | boolean, indentation = ''): string => {
     if (typeof schema === 'boolean') {
@@ -18,6 +37,18 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
   const schemaToType = (schema: JSONSchema7 | JSONSchema7Definition, indentation = '  '): string => {
     if (typeof schema === 'boolean') {
       return schema ? 'KnownAny' : 'never';
+    }
+
+    // Handle $ref references - check this first before other properties
+    if (schema.$ref) {
+      const resolvedSchema = resolveRef(schema.$ref);
+      if (resolvedSchema) {
+        return schemaToType(resolvedSchema, indentation);
+      } else {
+        // If we can't resolve the reference, use the reference name as type
+        const refName = schema.$ref.split('/').pop();
+        return refName || 'KnownAny';
+      }
     }
 
     if (schema.enum) {
@@ -89,7 +120,9 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
           const jsDoc = getJSDoc(propSchema, indentation);
           const propType = schemaToType(propSchema, indentation + '  ');
 
-          return `${jsDoc}\n${indentation}${propName}${isOptional ? '?' : ''}: ${propType};${defaultValue}`;
+          return [`${jsDoc}`, `${indentation}${propName}${isOptional ? '?' : ''}: ${propType};${defaultValue}`]
+            .filter(Boolean)
+            .join('\n');
         })
         .join('\n');
 

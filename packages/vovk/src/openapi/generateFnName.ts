@@ -1,5 +1,3 @@
-// types.ts
-
 import { HttpMethod } from '../types';
 
 export interface VerbMapEntry {
@@ -23,25 +21,13 @@ export function capitalize(str: string): string {
   return str[0].toUpperCase() + str.slice(1);
 }
 
-/**
- * Optionally singularize a resource token.
- * Stubbed here—plug in your favorite plural-to-singular library if desired.
- */
-export function singularize(token: string): string {
-  // e.g. return pluralize.singular(token);
-  return token;
-}
-
-export interface GenerateOptions {
+interface GenerateFnNameOptions {
   /** Segments to strip out (e.g. ['api','v1']) */
   ignoreSegments?: string[];
-  /** If true, singularize each resource token */
-  singularizeResources?: boolean;
 }
 
-const DEFAULT_OPTIONS: GenerateOptions = {
+const DEFAULT_OPTIONS: GenerateFnNameOptions = {
   ignoreSegments: ['api'],
-  singularizeResources: false,
 };
 
 /**
@@ -53,8 +39,8 @@ const DEFAULT_OPTIONS: GenerateOptions = {
  *   generateFnName('POST', '/v1/api/orders')            // "createOrders"
  *   generateFnName('PATCH', '/users/{userId}/profile')  // "patchUsersProfileByUserId"
  */
-export function generateFnName(method: HttpMethod, rawPath: string, opts: GenerateOptions = {}): string {
-  const { ignoreSegments, singularizeResources } = {
+export function generateFnName(method: HttpMethod, rawPath: string, opts: GenerateFnNameOptions = {}): string {
+  const { ignoreSegments } = {
     ...DEFAULT_OPTIONS,
     ...opts,
   };
@@ -75,11 +61,7 @@ export function generateFnName(method: HttpMethod, rawPath: string, opts: Genera
     if (match) {
       params.push(match[1]);
     } else {
-      let token = seg;
-      if (singularizeResources) {
-        token = singularize(token);
-      }
-      resources.push(token);
+      resources.push(seg);
     }
   });
 

@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import {
-  withValidation,
+  withValidationLibrary,
   HttpException,
   HttpStatus,
   type VovkRequest,
@@ -129,7 +129,7 @@ function withYup<
     validateOptions?: Yup.ValidateOptions;
   };
 }) {
-  return withValidation({
+  return withValidationLibrary({
     body,
     query,
     params,
@@ -146,7 +146,7 @@ function withYup<
       YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny,
       YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny
     >,
-    getJSONSchemaFromModel: (model) => {
+    toJSONSchema: (model) => {
       return enrichWithDescriptions(applySchemaFixes(convertSchema(model)), model.describe());
     },
     validate: async (data, model, { type, i }) => {
@@ -163,6 +163,10 @@ function withYup<
   });
 }
 
-withYup.formData = null as unknown as Yup.Schema<FormData>;
+withYup.formData = {
+  type: 'object',
+  'x-formData': true,
+  additionalProperties: true,
+} as unknown as Yup.Schema<FormData>;
 
 export { withYup };

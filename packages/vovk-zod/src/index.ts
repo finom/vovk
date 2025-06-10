@@ -1,6 +1,6 @@
 import { z, type ZodType } from 'zod/v4';
 import {
-  withValidation,
+  withValidationLibrary,
   HttpException,
   HttpStatus,
   type VovkRequest,
@@ -63,7 +63,7 @@ function withZod<
     toJSONSchemaParams?: Parameters<typeof z.toJSONSchema>[1];
   };
 }) {
-  return withValidation({
+  return withValidationLibrary({
     body,
     query,
     params,
@@ -80,7 +80,7 @@ function withZod<
       ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny,
       ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny
     >,
-    getJSONSchemaFromModel: (model) => z.toJSONSchema(model, options?.toJSONSchemaParams),
+    toJSONSchema: (model) => z.toJSONSchema(model, options?.toJSONSchemaParams),
     validate: async (data, model, { type, i }) => {
       try {
         model.parse(data);
@@ -95,6 +95,6 @@ function withZod<
   });
 }
 
-withZod.formData = null as unknown as z.ZodType<FormData>;
+withZod.formData = { type: 'object', 'x-formData': true, additionalProperties: true } as unknown as z.ZodType<FormData>;
 
 export { withZod };

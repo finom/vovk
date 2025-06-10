@@ -9,14 +9,14 @@ export function generateStaticAPI(c: Record<string, StaticClass>, slug = 'vovk')
         const handlers = controller._handlers;
         const splitPrefix = controller._prefix?.split('/') ?? [];
 
-        return Object.entries(handlers)
+        return Object.entries(handlers ?? {})
           .map(([name, handler]) => {
             const staticParams = controller._handlersMetadata?.[name]?.staticParams;
 
             if (staticParams?.length) {
               return staticParams.map((paramsItem) => {
                 let path = handler.path;
-                for (const [key, value] of Object.entries(paramsItem)) {
+                for (const [key, value] of Object.entries(paramsItem ?? {})) {
                   path = path.replace(`:${key}`, value);
                 }
                 return { [slug]: [...splitPrefix, ...path.split('/')].filter(Boolean) };

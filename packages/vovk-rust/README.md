@@ -13,6 +13,6 @@
 
 ---
 
-## vovk-python-client [![npm version](https://badge.fury.io/js/vovk-python-client.svg)](https://www.npmjs.com/package/vovk-python-client)
+## vovk-python [![npm version](https://badge.fury.io/js/vovk-python.svg)](https://www.npmjs.com/package/vovk-python)
 
 TODO

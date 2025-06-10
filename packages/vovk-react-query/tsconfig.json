@@ -1,11 +1,14 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "noEmit": false
+    "noEmit": false,
+    "baseUrl": ".",
+    "preserveSymlinks": true,
+    "paths": {
+      "react/*": ["../../node_modules/react/*"],
+      "vovk/*": ["../../node_modules/vovk/mjs/*"],
+    }
   },
-  "include": ["src/index.mts"],
+  "include": ["src/index.ts"],
   "exclude": ["dist", "node_modules", "**/dist/**"],
-  "paths": {
-    "react/*": ["../../node_modules/react/*"]
-  }
 }

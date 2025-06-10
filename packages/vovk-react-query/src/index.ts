@@ -2,7 +2,6 @@ import {
   createRPC as originalCreateRPC,
   type HttpException,
   type KnownAny,
-  type VovkClientOptions,
   type VovkDefaultFetcherOptions,
   type VovkControllerSchema,
   type VovkClient,
@@ -77,15 +76,15 @@ const withUseQuery = <
   });
 };
 
-export function createRPC<T, OPTS extends Record<string, KnownAny> = VovkDefaultFetcherOptions<KnownAny>>(
+export function createRPC<T, OPTS extends Record<string, KnownAny> = KnownAny>(
   fullSchema: VovkSchema,
   segmentName: string,
   rpcModuleName: string,
-  options?: VovkClientOptions<OPTS>
+  options?: VovkDefaultFetcherOptions<OPTS>
 ) {
   const RPC = originalCreateRPC<T, OPTS>(fullSchema, segmentName, rpcModuleName, options);
 
-  // TODO Refactor
+  // TODO: Refactor
   type ClientWithQuery = {
     [Key in keyof VovkClient<T, OPTS>]: VovkClient<T, OPTS>[Key] & {
       useQuery: (

@@ -24,10 +24,6 @@ export const openapiDecorator = createDecorator(
   }
 );
 
-export const openapi = openapiDecorator as typeof openapiDecorator & {
-  error: typeof error;
-};
-
-openapi.error = error;
+export const openapi = Object.assign(openapiDecorator, { error });
 
 export { vovkSchemaToOpenAPI, openAPIToVovkSchema };

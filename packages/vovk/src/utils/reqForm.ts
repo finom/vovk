@@ -8,6 +8,7 @@ export default async function reqForm<T = KnownAny>(req: VovkRequest<KnownAny, K
   }
 
   const body = await req.formData();
+  req.formData = () => Promise.resolve(body);
   const formData: Record<string, string | File | File[]> = {};
 
   for (const [key, value] of body.entries()) {

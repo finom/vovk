@@ -323,13 +323,13 @@ export class VovkDev {
       try {
         ({ schema: segmentSchema } = (await resp.json()) as { schema: VovkSegmentSchema | null });
       } catch (error) {
-        log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error).message}`);
+        log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error)?.message}`);
       }
 
       await this.#handleSegmentSchema(segmentName, segmentSchema);
     } catch (error) {
       log.error(
-        `Error requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}: ${(error as Error).message}`
+        `Error requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}: ${(error as Error)?.message}`
       );
 
       return { isError: true };

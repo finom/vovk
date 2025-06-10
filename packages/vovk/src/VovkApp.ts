@@ -171,7 +171,7 @@ export class VovkApp {
         );
       }
 
-      Object.entries(staticMethods).forEach(([path, staticMethod]) => {
+      Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');
         handlers[fullPath] = { staticMethod, controller };
       });

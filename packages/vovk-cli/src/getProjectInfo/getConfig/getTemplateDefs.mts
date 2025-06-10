@@ -63,7 +63,7 @@ export default function getTemplateDefs(
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.packageJson}/`,
     },
     [BuiltInTemplateName.rs]: {
-      templatePath: 'vovk-rust-client/template/',
+      templatePath: 'vovk-rust/template/',
       composedClient: {
         outDir: 'dist_rust',
       },
@@ -72,7 +72,7 @@ export default function getTemplateDefs(
       },
     },
     [BuiltInTemplateName.py]: {
-      templatePath: 'vovk-python-client/template/',
+      templatePath: 'vovk-python/template/',
       composedClient: {
         outDir: 'dist_python',
       },

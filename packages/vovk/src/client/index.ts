@@ -3,7 +3,6 @@ export { fetcher, createFetcher } from './fetcher.js';
 export type {
   VovkClient,
   VovkClientFetcher,
-  VovkClientOptions,
   VovkDefaultFetcherOptions,
   VovkValidateOnClient,
   VovkStreamAsyncIterable,

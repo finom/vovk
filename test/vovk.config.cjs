@@ -30,7 +30,7 @@ const vovkConfig = {
           name: 'test_generated_python_client',
           version: '0.0.1',
           license: 'MIT',
-          description: 'Vovk Python Client',
+          description: 'Vovk.ts Python Client',
         },
       },
     },
@@ -42,10 +42,25 @@ const vovkConfig = {
           name: 'test_generated_rust_client',
           version: '0.0.1',
           license: 'MIT',
-          description: 'Vovk Rust Client',
+          description: 'Vovk.ts Rust Client',
         },
       },
     },
+  },
+  extendClientWithOpenAPI: {
+    rootModules: [
+      {
+        source: {
+          file: 'http://localhost:3000/api/openapi.json',
+          url: 'http://localhost:3000/api',
+          object: {},
+        },
+        apiRoot: 'http://localhost:3000/api',
+        // vovk g --openapi ShopifyRPC:http://localhost:3000/api/openapi.json --openapi-nestjs http://localhost:3000/api/openapi.json
+        getModuleName: 'nestjs-operation-id',
+        getMethodName: 'nestjs-operation-id', // fn or 'nestjs'
+      },
+    ],
   },
 };
 

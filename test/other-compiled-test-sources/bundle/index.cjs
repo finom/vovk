@@ -1263,16 +1263,16 @@ var require_setHandlerSchema = __commonJS({
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/withValidation.js
-var require_withValidation = __commonJS({
-  '../packages/vovk/dist/utils/withValidation.js'(exports) {
+//#region ../packages/vovk/dist/utils/withValidationLibrary.js
+var require_withValidationLibrary = __commonJS({
+  '../packages/vovk/dist/utils/withValidationLibrary.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.withValidation = withValidation;
+    exports.withValidationLibrary = withValidationLibrary;
     const HttpException_1$1 = require_HttpException();
     const types_1$3 = require_types$2();
     const setHandlerSchema_1 = require_setHandlerSchema();
     const validationTypes = ['body', 'query', 'params', 'output', 'iteration'];
-    function withValidation({
+    function withValidationLibrary({
       disableServerSideValidation,
       skipSchemaEmission,
       validateEachIteration,
@@ -1282,7 +1282,7 @@ var require_withValidation = __commonJS({
       output,
       iteration,
       handle,
-      getJSONSchemaFromModel,
+      toJSONSchema,
       validate: validate$1,
     }) {
       const disableServerSideValidationKeys =
@@ -1369,18 +1369,18 @@ var require_withValidation = __commonJS({
         }
         return outputHandler(req, handlerParams);
       };
-      if (getJSONSchemaFromModel) {
+      if (toJSONSchema) {
         const validation$2 = {};
         if (body && !skipSchemaEmissionKeys.includes('body'))
-          validation$2.body = getJSONSchemaFromModel(body, { type: 'body' });
+          validation$2.body = toJSONSchema(body, { type: 'body' });
         if (query && !skipSchemaEmissionKeys.includes('query'))
-          validation$2.query = getJSONSchemaFromModel(query, { type: 'query' });
+          validation$2.query = toJSONSchema(query, { type: 'query' });
         if (params && !skipSchemaEmissionKeys.includes('params'))
-          validation$2.params = getJSONSchemaFromModel(params, { type: 'params' });
+          validation$2.params = toJSONSchema(params, { type: 'params' });
         if (output && !skipSchemaEmissionKeys.includes('output'))
-          validation$2.output = getJSONSchemaFromModel(output, { type: 'output' });
+          validation$2.output = toJSONSchema(output, { type: 'output' });
         if (iteration && !skipSchemaEmissionKeys.includes('iteration'))
-          validation$2.iteration = getJSONSchemaFromModel(iteration, { type: 'iteration' });
+          validation$2.iteration = toJSONSchema(iteration, { type: 'iteration' });
         (0, setHandlerSchema_1.setHandlerSchema)(resultHandler, { validation: validation$2 });
       }
       return resultHandler;
@@ -1403,7 +1403,7 @@ var require_dist$2 = __commonJS({
       exports.put =
       exports.post =
       exports.get =
-      exports.withValidation =
+      exports.withValidationLibrary =
       exports.generateStaticAPI =
       exports.createFetcher =
       exports.fetcher =
@@ -1482,11 +1482,11 @@ var require_dist$2 = __commonJS({
         return generateStaticAPI_1.generateStaticAPI;
       },
     });
-    const withValidation_1 = require_withValidation();
-    Object.defineProperty(exports, 'withValidation', {
+    const withValidationLibrary_1 = require_withValidationLibrary();
+    Object.defineProperty(exports, 'withValidationLibrary', {
       enumerable: true,
       get: function () {
-        return withValidation_1.withValidation;
+        return withValidationLibrary_1.withValidationLibrary;
       },
     });
     (_a = (0, createVovkApp_1.createVovkApp)()),

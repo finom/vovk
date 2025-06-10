@@ -11,8 +11,9 @@ export async function getControllerSchema(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
       );
+  // TODO: misc is the only async property for experimental purposes, this should be refactored and documented
   await Promise.all(
-    Object.values(handlers)
+    Object.values(handlers ?? {})
       .filter(({ misc }) => misc instanceof Promise)
       .map(async (schema) => {
         schema.misc = await schema.misc;
@@ -31,6 +32,7 @@ export default async function getSchema(options: {
   segmentName?: string;
   controllers: Record<string, StaticClass>;
   exposeValidation?: boolean;
+  forceApiRoot?: string;
 }) {
   const exposeValidation = options?.exposeValidation ?? true;
   const emitSchema = options.emitSchema ?? true;
@@ -41,9 +43,13 @@ export default async function getSchema(options: {
     controllers: {},
   };
 
+  if (options.forceApiRoot) {
+    schema.forceApiRoot = options.forceApiRoot;
+  }
+
   if (!emitSchema) return schema;
 
-  for (const [rpcModuleName, controller] of Object.entries(options.controllers) as [string, VovkController][]) {
+  for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}) as [string, VovkController][]) {
     schema.controllers[rpcModuleName] = await getControllerSchema(controller, rpcModuleName, exposeValidation);
   }
 

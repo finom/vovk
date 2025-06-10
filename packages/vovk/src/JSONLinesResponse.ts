@@ -1,4 +1,4 @@
-import type { headers } from 'next/headers';
+import { headers } from 'next/headers';
 import type { KnownAny, StreamAbortMessage } from './types.js';
 import './utils/shim.js';
 

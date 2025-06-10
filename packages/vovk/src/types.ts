@@ -30,14 +30,15 @@ export type VovkControllerSchema<T = KnownAny> = {
 };
 
 export type VovkSegmentSchema<T = KnownAny> = {
-  $schema: typeof VovkSchemaIdEnum.SEGMENT | string;
+  $schema: typeof VovkSchemaIdEnum.SEGMENT | (string & {});
   emitSchema: boolean;
   segmentName: string;
+  forceApiRoot?: string;
   controllers: Record<string, VovkControllerSchema<T>>;
 };
 
 export type VovkMetaSchema = {
-  $schema: typeof VovkSchemaIdEnum.META | string;
+  $schema: typeof VovkSchemaIdEnum.META | (string & {});
   config: RequireFields<Partial<VovkStrictConfig>, '$schema'>;
   package?: PackageJson;
   apiRoot?: string;
@@ -46,7 +47,7 @@ export type VovkMetaSchema = {
 };
 
 export type VovkSchema<T = KnownAny> = {
-  $schema: typeof VovkSchemaIdEnum.SCHEMA | string;
+  $schema: typeof VovkSchemaIdEnum.SCHEMA | (string & {});
   segments: Record<string, VovkSegmentSchema<T>>;
   meta: VovkMetaSchema;
 };
@@ -176,11 +177,29 @@ export type VovkIteration<T> = T extends {
   ? I
   : KnownAny;
 
-export type VovkClientBody<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['body'];
+export type VovkClientBody<T extends (...args: KnownAny[]) => unknown> = T extends {
+  __types?: {
+    body?: infer B;
+  };
+}
+  ? B
+  : KnownAny;
 
-export type VovkClientQuery<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['query'];
+export type VovkClientQuery<T extends (...args: KnownAny[]) => unknown> = T extends {
+  __types?: {
+    query?: infer Q;
+  };
+}
+  ? Q
+  : KnownAny;
 
-export type VovkClientParams<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[0]['params'];
+export type VovkClientParams<T extends (...args: KnownAny[]) => unknown> = T extends {
+  __types?: {
+    params?: infer P;
+  };
+}
+  ? P
+  : KnownAny;
 
 export type VovkClientYieldType<T extends (...args: KnownAny[]) => unknown> = T extends (
   ...args: KnownAny[]
@@ -372,6 +391,13 @@ export type ClientTemplateDef = {
   isTsClient?: boolean;
 };
 
+export type GetOpenAPINameFn = (config: {
+  operationObject: OperationObject;
+  method: HttpMethod;
+  path: string;
+  openAPIObject: OpenAPIObject;
+}) => string;
+
 type VovkUserConfig = {
   $schema?: typeof VovkSchemaIdEnum.CONFIG | string;
   emitConfig?: boolean | (keyof VovkStrictConfig | string)[];
@@ -399,14 +425,40 @@ type VovkUserConfig = {
   };
   libs?: Record<string, KnownAny>;
   segmentConfig?: false | SegmentConfig;
+  extendClientWithOpenAPI?: {
+    rootModules: {
+      source:
+        | {
+            file: string;
+          }
+        | {
+            url: string;
+          }
+        | {
+            object: OpenAPIObject;
+          };
+      apiRoot?: string;
+      getModuleName?: // if not provided, will use "api"
+      | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
+        | (string & {}) // literal module name, like MedusaRPC
+        | 'api' // declared for documentation purposes as default
+        | GetOpenAPINameFn;
+      getMethodName?: // if not provided, will use 'camel-case-operation-id' if operationId is snake_case, in other cases will use 'auto' strategy
+      | 'nestjs-operation-id' // getUser from 'UserController_getUser' operation ID
+        | 'camel-case-operation-id' // operation ID to camelCase
+        | 'auto' // auto-detect based on operationObject method and path
+        | GetOpenAPINameFn;
+    }[];
+  };
 };
 
-export type VovkConfig = VovkUserConfig & {
-  [key: string]: KnownAny;
-};
+export type VovkConfig = VovkUserConfig;
 
 export type VovkStrictConfig = Required<
-  Omit<VovkUserConfig, 'emitConfig' | 'libs' | 'imports' | 'composedClient' | 'segmentedClient' | 'bundle'>
+  Omit<
+    VovkUserConfig,
+    'emitConfig' | 'libs' | 'imports' | 'composedClient' | 'segmentedClient' | 'bundle' | 'extendClientWithOpenAPI'
+  >
 > & {
   emitConfig: (keyof VovkStrictConfig | string)[];
   bundle: RequireAllExcept<Exclude<VovkUserConfig['bundle'], undefined>, 'includeSegments' | 'excludeSegments'>;
@@ -418,9 +470,19 @@ export type VovkStrictConfig = Required<
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
+  extendClientWithOpenAPI: {
+    rootModules: {
+      source: Exclude<
+        Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'][number]['source'],
+        { file: string } | { url: string } // "object" only
+      >;
+      apiRoot: string;
+      getModuleName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'][number]['getModuleName'];
+      getMethodName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'][number]['getMethodName'];
+    }[];
+  };
 };
 
 // utils
-
-type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
-type RequireAllExcept<T, K extends keyof T> = Required<Omit<T, K>> & Pick<T, K>;
+export type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+export type RequireAllExcept<T, K extends keyof T> = Required<Omit<T, K>> & Pick<T, K>;

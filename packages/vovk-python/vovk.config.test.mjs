@@ -6,9 +6,9 @@ const vovkConfig = {
   clientTemplateDefs: {
     py: {
       extends: 'py',
-      templatePath: '../packages/vovk-python-client/template/',
+      templatePath: '../packages/vovk-python/template/',
       composedClient: {
-        outDir: '../packages/vovk-python-client/test_py/generated_python_client',
+        outDir: '../packages/vovk-python/test_py/generated_python_client',
         package: {
           name: 'test_generated_python_client',
           version: '0.0.1',
