@@ -6,19 +6,21 @@ import { HttpException } from '../HttpException';
 export function withStandard<
   T extends (
     req: REQ,
-    params: PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<PARAMS> : Record<string, string>
+    params: PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferInput<PARAMS> : Record<string, string>
   ) => KnownAny,
-  BODY extends StandardSchemaV1 | undefined = undefined,
-  QUERY extends StandardSchemaV1 | undefined = undefined,
-  OUTPUT extends StandardSchemaV1 | undefined = undefined,
-  PARAMS extends StandardSchemaV1 | undefined = undefined,
-  ITERATION extends StandardSchemaV1 | undefined = undefined,
+  BODY extends StandardSchemaV1,
+  QUERY extends StandardSchemaV1,
+  PARAMS extends StandardSchemaV1,
+  OUTPUT extends StandardSchemaV1,
+  ITERATION extends StandardSchemaV1,
   REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-    BODY extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<BODY> : undefined,
-    QUERY extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<QUERY> : undefined,
-    PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<PARAMS> : undefined
+    BODY extends StandardSchemaV1 ? StandardSchemaV1.InferInput<BODY> : undefined,
+    QUERY extends StandardSchemaV1 ? StandardSchemaV1.InferInput<QUERY> : undefined,
+    PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferInput<PARAMS> : undefined
   >,
+  IS_FORM extends boolean = false,
 >({
+  isForm,
   body,
   query,
   params,
@@ -30,6 +32,7 @@ export function withStandard<
   skipSchemaEmission,
   validateEachIteration,
 }: {
+  isForm?: IS_FORM;
   body?: BODY;
   query?: QUERY;
   params?: PARAMS;
@@ -39,12 +42,10 @@ export function withStandard<
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
-  toJSONSchema: (
-    model: NonNullable<BODY | QUERY | PARAMS | OUTPUT | ITERATION>,
-    meta: { type: VovkValidationType }
-  ) => KnownAny;
+  toJSONSchema: Parameters<typeof withValidationLibrary>[0]['toJSONSchema'];
 }) {
   return withValidationLibrary({
+    isForm,
     body,
     query,
     params,
@@ -57,22 +58,25 @@ export function withStandard<
       T,
       BODY extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<BODY> : KnownAny,
       QUERY extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<QUERY> : KnownAny,
-      PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<PARAMS> : Record<string, string>,
+      PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<PARAMS> : KnownAny,
       OUTPUT extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<OUTPUT> : KnownAny,
-      ITERATION extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<ITERATION> : KnownAny
+      ITERATION extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<ITERATION> : KnownAny,
+      IS_FORM extends true ? true : KnownAny
     >,
     toJSONSchema,
     validate: async (data, model, { type, i }) => {
-      const { issues } = await model['~standard'].validate(data);
-      if (issues?.length) {
+      const result = await model['~standard'].validate(data);
+      if (result.issues?.length) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${issues
+          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${result.issues
             .map(({ message, path }) => `${message}${path ? ` at ${path.join('.')}` : ''}`)
             .join(', ')}`,
-          { [type]: data, error: issues }
+          { [type]: data, result }
         );
       }
+
+      return (result as StandardSchemaV1.SuccessResult<typeof model>).value;
     },
   });
 }

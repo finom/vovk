@@ -95,7 +95,9 @@ function withDto<
     QUERY_DTO extends ClassConstructor<infer U> ? U : undefined,
     PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
   >,
+  IS_FORM extends boolean = false,
 >({
+  isForm,
   body,
   query,
   params,
@@ -107,6 +109,7 @@ function withDto<
   validateEachIteration,
   options,
 }: {
+  isForm?: IS_FORM;
   body?: BODY_DTO;
   query?: QUERY_DTO;
   params?: PARAMS_DTO;
@@ -124,6 +127,7 @@ function withDto<
   const schemas = validationMetadatasToSchemas();
 
   return withValidationLibrary({
+    isForm,
     body,
     query,
     params,
@@ -138,7 +142,8 @@ function withDto<
       QUERY_DTO extends ClassConstructor<infer U> ? U : KnownAny,
       PARAMS_DTO extends ClassConstructor<infer U> ? U : KnownAny,
       OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny,
-      ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny
+      ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny,
+      IS_FORM extends true ? true : KnownAny
     >,
     toJSONSchema: (dto) => {
       const schema = {
@@ -161,7 +166,7 @@ function withDto<
             .join(', ') || errors.toString();
         throw new HttpException(
           status ?? HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${err}`,
+          `DTO validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${err}`,
           { errorStr: errors.toString() }
         );
       }
@@ -170,7 +175,5 @@ function withDto<
     },
   });
 }
-
-withDto.formData = { type: 'object', 'x-formData': true, additionalProperties: true } as unknown as typeof FormData;
 
 export { withDto };

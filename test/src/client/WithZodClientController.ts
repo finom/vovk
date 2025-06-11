@@ -61,14 +61,7 @@ export const ConstrainingModel = z.object({
 
   // Logical compositions
   logical_anyOf: z.union([z.string().max(5), z.number(), z.boolean()]), // One of these types
-  logical_allOf: z.intersection(
-    z.object({ a: z.string() }).meta({
-      additionalProperties: true,
-    }),
-    z.object({ b: z.number() }).meta({
-      additionalProperties: true,
-    })
-  ), // Must satisfy both schemas
+  logical_allOf: z.intersection(z.looseObject({ a: z.string() }), z.looseObject({ b: z.number() })), // Must satisfy both schemas
 });
 
 // check if the "circular" types don't error
@@ -201,10 +194,11 @@ export default class WithZodClientController {
 
   @post.auto()
   static handleFormData = withZod({
-    body: withZod.formData,
+    isForm: true,
+    body: z.object({ hello: z.string().max(5), file: z.file() }),
     query: z.object({ search: z.string() }),
     handle: async (req) => {
-      const formData = await req.vovk.form<{ hello: 'world' }>();
+      const formData = await req.vovk.form();
       const search = req.vovk.query().search;
       return { formData, search };
     },

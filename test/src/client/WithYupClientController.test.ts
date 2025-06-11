@@ -356,7 +356,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
   });
 
   it('Should handle form data', async () => {
-    const formData = new FormData();
+    let formData = new FormData();
     formData.append('hello', 'world');
 
     const result = await WithYupClientControllerRPC.handleFormData({
@@ -373,6 +373,18 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithYupClientControllerRPC.handleFormData> satisfies null;
     deepStrictEqual(result satisfies typeof expected, expected);
+
+    const { rejects } = expectPromise(async () => {
+      formData = new FormData();
+      formData.append('hello', 'wrong_length');
+      await WithYupClientControllerRPC.handleFormData({
+        body: formData,
+        query: { search: 'foo' },
+        disableClientValidation: true,
+      });
+    });
+    await rejects.toThrow(/Yup validation failed. Invalid form on server: hello.*/);
+    await rejects.toThrowError(HttpException);
   });
 
   it.skip('Should store schema at handler.schema', async () => {

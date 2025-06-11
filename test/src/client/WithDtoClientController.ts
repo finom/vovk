@@ -99,7 +99,7 @@ export default class WithDtoClientController {
   });
 
   @get.auto()
-  static handleNestedQueryClient = async (req: VovkRequest<never, HandleNestedQueryDto>) => {
+  static handleNestedQueryClient = async (req: VovkRequest<unknown, HandleNestedQueryDto>) => {
     const query = { ...req.vovk.query() };
 
     const result = await WithDtoClientControllerRPC.handleNestedQuery({
@@ -163,10 +163,11 @@ export default class WithDtoClientController {
 
   @post.auto()
   static handleFormData = withDto({
-    body: withDto.formData,
+    isForm: true,
+    body: HandleAllBodyDto,
     query: HandleQueryQueryDto,
     handle: async (req) => {
-      const formData = await req.vovk.form<{ hello: 'world' }>();
+      const formData = await req.vovk.form();
       const search = req.vovk.query().search;
       return { formData, search };
     },
@@ -260,7 +261,7 @@ export default class WithDtoClientController {
   });
 
   @get.auto()
-  static handleQueryClient = async (req: VovkRequest<never, HandleQueryQueryDto>) => {
+  static handleQueryClient = async (req: VovkRequest<unknown, HandleQueryQueryDto>) => {
     const query = { search: req.nextUrl.searchParams.get('search') };
     return WithDtoClientControllerRPC.handleQuery({
       query: plainToInstance(HandleQueryQueryDto, query),

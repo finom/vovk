@@ -101,7 +101,7 @@ pub mod test_dto {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Validation failed"));
+        assert!(result.err().unwrap().to_string().contains("DTO validation failed"));
     }
     
     // test query validation
@@ -145,7 +145,7 @@ pub mod test_dto {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Validation failed"));
+        assert!(result.err().unwrap().to_string().contains("DTO validation failed"));
     }
 
     #[test]
@@ -209,7 +209,7 @@ pub mod test_dto {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Validation failed"));
+        assert!(result.err().unwrap().to_string().contains("DTO validation failed"));
     }
     
     // test params validation
@@ -254,7 +254,7 @@ pub mod test_dto {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Validation failed"));
+        assert!(result.err().unwrap().to_string().contains("DTO validation failed"));
     }
     
     // test output validation
@@ -287,7 +287,7 @@ pub mod test_dto {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Validation failed"));
+        assert!(result.err().unwrap().to_string().contains("DTO validation failed"));
     }
     
     // test streaming
@@ -410,8 +410,8 @@ pub mod test_dto {
             assert!(result_server.is_err(), "Server validation should fail for key {}", key);
             let err_msg = result_server.err().unwrap().to_string();
             assert!(
-                err_msg.contains("Validation failed") && err_msg.contains(&key), 
-                "Error message should contain 'Validation failed' and '{}', got: {}", key, err_msg
+                err_msg.contains("DTO validation failed") && err_msg.contains(&key), 
+                "Error message should contain 'DTO validation failed' and '{}', got: {}", key, err_msg
             );
             
             // Test with client validation enabled (client-side error)

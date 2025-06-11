@@ -104,7 +104,9 @@ function withYup<
     YUP_QUERY extends Yup.Schema<infer U> ? U : undefined,
     YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>
   >,
+  IS_FORM extends boolean = false,
 >({
+  isForm,
   body,
   query,
   params,
@@ -116,6 +118,7 @@ function withYup<
   validateEachIteration,
   options,
 }: {
+  isForm?: IS_FORM;
   body?: YUP_BODY;
   query?: YUP_QUERY;
   params?: YUP_PARAMS;
@@ -130,6 +133,7 @@ function withYup<
   };
 }) {
   return withValidationLibrary({
+    isForm,
     body,
     query,
     params,
@@ -144,7 +148,8 @@ function withYup<
       YUP_QUERY extends Yup.Schema<infer U> ? U : KnownAny,
       YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>,
       YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny,
-      YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny
+      YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny,
+      IS_FORM extends true ? true : KnownAny
     >,
     toJSONSchema: (model) => {
       return enrichWithDescriptions(applySchemaFixes(convertSchema(model)), model.describe());
@@ -162,11 +167,5 @@ function withYup<
     },
   });
 }
-
-withYup.formData = {
-  type: 'object',
-  'x-formData': true,
-  additionalProperties: true,
-} as unknown as Yup.Schema<FormData>;
 
 export { withYup };

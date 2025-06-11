@@ -2,24 +2,48 @@ import type {
   KnownAny,
   HttpMethod,
   ControllerStaticMethod,
-  VovkControllerBody,
-  VovkControllerQuery,
-  VovkControllerParams,
   VovkHandlerSchema,
   VovkControllerSchema,
   VovkSegmentSchema,
   VovkSchema,
+  VovkRequest,
 } from '../types.js';
 import type { JSONLinesResponse } from '../JSONLinesResponse.js';
 import type { NextResponse } from 'next/server';
 
-export type StaticMethodInput<T extends ControllerStaticMethod> = (VovkControllerBody<T> extends undefined | void
-  ? { body?: undefined }
-  : VovkControllerBody<T> extends null
-    ? { body?: null }
-    : { body: VovkControllerBody<T> }) &
-  (VovkControllerQuery<T> extends undefined | void ? { query?: undefined } : { query: VovkControllerQuery<T> }) &
-  (VovkControllerParams<T> extends undefined | void ? { params?: undefined } : { params: VovkControllerParams<T> });
+type OmitNullable<T> = {
+  [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
+};
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type Empty = {}; // TODO: Remove and replace by "object"
+
+export type StaticMethodInput<
+  T extends ((req: VovkRequest<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
+    __types?: {
+      isForm: boolean;
+    };
+  },
+> = OmitNullable<
+  (Parameters<T>[0] extends VovkRequest<infer BODY, infer QUERY, infer PARAMS>
+    ? (BODY extends Record<KnownAny, KnownAny>
+        ? {
+            body: NonNullable<T['__types']>['isForm'] extends true ? FormData : BODY;
+          }
+        : Empty) &
+        (QUERY extends Record<KnownAny, KnownAny>
+          ? {
+              query: QUERY;
+            }
+          : Empty) &
+        (PARAMS extends Record<KnownAny, KnownAny>
+          ? {
+              params: PARAMS;
+            }
+          : Empty)
+    : Empty) &
+    (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : Empty)
+>;
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
@@ -40,71 +64,70 @@ type StaticMethodReturn<T extends ControllerStaticMethod> =
 
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
-type StaticMethodOption<
-  T extends ((
-    ...args: KnownAny[]
-  ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
-    __types?: {
-      body?: KnownAny;
-      query?: KnownAny;
-      params?: KnownAny;
-      output?: KnownAny;
-      iteration?: KnownAny;
-    };
-  },
+type StaticMethodOptions<
+  T extends (
+    req: VovkRequest<KnownAny, KnownAny, KnownAny>,
+    params: KnownAny
+  ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>,
   OPTS extends Record<string, KnownAny>,
-  STREAM extends KnownAny = unknown,
-  R = KnownAny,
-  F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<KnownAny>,
-> = (StaticMethodInput<T> extends { body?: undefined | null; query?: undefined; params?: undefined }
-  ? unknown
-  : Parameters<T>[0] extends void
-    ? StaticMethodInput<T>['params'] extends object
-      ? { params: StaticMethodInput<T>['params'] }
-      : unknown
-    : StaticMethodInput<T>) &
-  (Partial<
-    OPTS & {
-      transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
-      fetcher: VovkClientFetcher<F>;
-    }
-  > | void) &
-  (Partial<
-    F extends VovkDefaultFetcherOptions<infer U> ? Omit<U, keyof VovkDefaultFetcherOptions<OPTS>> : unknown
-  > | void);
+  STREAM,
+  R,
+  F extends VovkDefaultFetcherOptions<KnownAny>,
+> = Partial<
+  OPTS & {
+    transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
+    fetcher: VovkClientFetcher<F>;
+  }
+>;
+
+type ClientMethodReturn<
+  T extends (
+    req: VovkRequest<KnownAny, KnownAny, KnownAny>,
+    params: KnownAny
+  ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>,
+  STREAM,
+  R,
+> =
+  ReturnType<T> extends
+    | Promise<JSONLinesResponse<infer U>>
+    | JSONLinesResponse<infer U>
+    | Iterator<infer U>
+    | AsyncIterator<infer U>
+    ? Promise<VovkStreamAsyncIterable<U>>
+    : R extends object
+      ? Promise<Awaited<R>>
+      : StaticMethodReturnPromise<T>;
 
 type ClientMethod<
   T extends ((
-    ...args: KnownAny[]
+    req: VovkRequest<KnownAny, KnownAny, KnownAny>,
+    params: KnownAny
   ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
     __types?: {
-      body?: KnownAny;
-      query?: KnownAny;
-      params?: KnownAny;
-      output?: KnownAny;
-      iteration?: KnownAny;
+      body: KnownAny;
+      query: KnownAny;
+      params: KnownAny;
+      output: KnownAny;
+      iteration: KnownAny;
+      isForm: boolean;
     };
   },
   OPTS extends Record<string, KnownAny>,
   STREAM extends KnownAny = unknown,
-> = (<R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(
-  options: StaticMethodOption<T, OPTS, STREAM, R, F>
-) => ReturnType<T> extends
-  | Promise<JSONLinesResponse<infer U>>
-  | JSONLinesResponse<infer U>
-  | Iterator<infer U>
-  | AsyncIterator<infer U>
-  ? Promise<VovkStreamAsyncIterable<U>>
-  : R extends object
-    ? Promise<R>
-    : StaticMethodReturnPromise<T>) & {
+> = (IsEmptyObject<StaticMethodInput<T>> extends true
+  ? <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(
+      options?: Prettify<StaticMethodOptions<T, OPTS, STREAM, R, F>>
+    ) => ClientMethodReturn<T, STREAM, R>
+  : <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(
+      options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, F>>
+    ) => ClientMethodReturn<T, STREAM, R>) & {
   isRPC: true;
   path: string;
   schema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkSchema;
-  __types?: T['__types'];
+  __types: T['__types'];
 };
 
 type OmitNever<T> = {
@@ -137,7 +160,7 @@ export type VovkClientFetcher<OPTS> = (
   } & OPTS
 ) => KnownAny;
 
-export type VovkDefaultFetcherOptions<T> = T & {
+export type VovkDefaultFetcherOptions<T = unknown> = T & {
   apiRoot?: string;
   disableClientValidation?: boolean;
   validateOnClient?: VovkValidateOnClient;
@@ -151,3 +174,18 @@ export type VovkValidateOnClient = (
   validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>,
   fullSchema: VovkSchema
 ) => void | Promise<void>;
+
+// utils
+
+type IsEmptyObject<T> =
+  // first, ensure it really is an object (not a primitive)
+  T extends object
+    ? // then check: does it have any keys?
+      keyof T extends never
+      ? true
+      : false
+    : false;
+
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};

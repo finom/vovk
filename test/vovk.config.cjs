@@ -48,19 +48,7 @@ const vovkConfig = {
     },
   },
   extendClientWithOpenAPI: {
-    rootModules: [
-      {
-        source: {
-          file: 'http://localhost:3000/api/openapi.json',
-          url: 'http://localhost:3000/api',
-          object: {},
-        },
-        apiRoot: 'http://localhost:3000/api',
-        // vovk g --openapi ShopifyRPC:http://localhost:3000/api/openapi.json --openapi-nestjs http://localhost:3000/api/openapi.json
-        getModuleName: 'nestjs-operation-id',
-        getMethodName: 'nestjs-operation-id', // fn or 'nestjs'
-      },
-    ],
+    rootModules: [],
   },
 };
 

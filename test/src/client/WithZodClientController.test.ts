@@ -62,7 +62,7 @@ describe('Zod-to-JSONchema constraints', async () => {
         });
       });
 
-      await rejects.toThrow(new RegExp(`Zod validation failed. Invalid body on server: "${key}.*`));
+      await rejects.toThrow(new RegExp(`Validation failed. Invalid body on server: .*${key}.*`));
       await rejects.toThrowError(HttpException);
 
       ({ rejects } = expectPromise(async () => {
@@ -105,7 +105,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
   });
 
   it('Should handle nothitng', async () => {
-    let result = await WithZodClientControllerRPC.handleNothitng();
+    let result = await WithZodClientControllerRPC.handleNothitng({});
     deepStrictEqual(result satisfies { nothing: 'here' }, { nothing: 'here' });
     result = await WithZodClientControllerRPC.handleNothitng({
       // @ts-expect-error Expect error
@@ -130,7 +130,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid body on server: "hello".*/);
+    await rejects.toThrow(/Validation failed. Invalid body on server: .*hello.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -162,7 +162,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid params on server: "foo".*/);
+    await rejects.toThrow(/Validation failed. Invalid params on server: .*foo.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -194,7 +194,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid query on server: "search".*/);
+    await rejects.toThrow(/Validation failed. Invalid query on server: .*search.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -229,7 +229,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid query on server: "x".*/);
+    await rejects.toThrow(/Validation failed. Invalid query on server: .*x.*/);
 
     ({ rejects } = expectPromise(async () => {
       await WithZodClientControllerRPC.handleNestedQuery({
@@ -256,7 +256,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid output on server: "hello".*/);
+    await rejects.toThrow(/Validation failed. Invalid output on server: .*hello.*/);
   });
 
   it('Should handle stream', async () => {
@@ -293,7 +293,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Zod validation failed. Invalid iteration #0 on server: "value".*/);
+    await rejects.toThrow(/Validation failed. Invalid iteration #0 on server: .*value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -328,7 +328,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Zod validation failed. Invalid iteration #2 on server: "value".*/);
+    await rejects.toThrow(/Validation failed. Invalid iteration #2 on server: .*value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -366,7 +366,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       });
     });
 
-    await rejects.toThrow(/Zod validation failed. Invalid query on server: "search".*/);
+    await rejects.toThrow(/Validation failed. Invalid query on server: .*search.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -377,7 +377,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Zod validation failed. Invalid body on server: "hello".*/);
+    await rejects.toThrow(/Validation failed. Invalid body on server: .*hello.*/);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
   });
@@ -389,14 +389,15 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Zod validation failed. Invalid body on server: "hello".*/);
+    await rejects.toThrow(/Validation failed. Invalid body on server: .*hello.*/);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
   });
 
   it('Should handle form data', async () => {
-    const formData = new FormData();
+    let formData = new FormData();
     formData.append('hello', 'world');
+    formData.append('file', new Blob(['file content'], { type: 'text/plain' }), 'file.txt');
 
     const result = await WithZodClientControllerRPC.handleFormData({
       body: formData,
@@ -412,6 +413,32 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies null;
     deepStrictEqual(result satisfies typeof expected, expected);
+
+    let { rejects } = expectPromise(async () => {
+      formData = new FormData();
+      formData.append('hello', 'wrong_length');
+      formData.append('file', new Blob(['file content'], { type: 'text/plain' }), 'file.txt');
+      await WithZodClientControllerRPC.handleFormData({
+        body: formData,
+        query: { search: 'foo' },
+      });
+    });
+
+    await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+    await rejects.toThrowError(HttpException);
+
+    // No file
+    ({ rejects } = expectPromise(async () => {
+      formData = new FormData();
+      formData.append('hello', 'world');
+      await WithZodClientControllerRPC.handleFormData({
+        body: formData,
+        query: { search: 'foo' },
+      });
+    }));
+
+    await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+    await rejects.toThrowError(HttpException);
   });
 
   it.skip('Should store schema at handler.schema', async () => {

@@ -25,7 +25,9 @@ function withZod<
     ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined,
     ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : undefined
   >,
+  IS_FORM extends boolean = false,
 >({
+  isForm,
   body,
   query,
   params,
@@ -36,6 +38,7 @@ function withZod<
   skipSchemaEmission,
   validateEachIteration,
 }: {
+  isForm?: IS_FORM;
   body?: ZOD_BODY;
   query?: ZOD_QUERY;
   params?: ZOD_PARAMS;
@@ -47,6 +50,7 @@ function withZod<
   validateEachIteration?: boolean;
 }) {
   return withValidationLibrary({
+    isForm,
     body,
     query,
     params,
@@ -61,7 +65,8 @@ function withZod<
       ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : KnownAny,
       ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : Record<string, string>,
       ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
-      ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny
+      ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny,
+      IS_FORM extends true ? true : KnownAny
     >,
     toJSONSchema: (model) => zodToJsonSchema(model, { errorMessages: true }),
     validate: async (data, model, { type, req, i }) => {
@@ -70,14 +75,12 @@ function withZod<
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
+          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
           { [type]: data }
         );
       }
     },
   });
 }
-
-withZod.formData = { type: 'object', 'x-formData': true, additionalProperties: true } as unknown as z.ZodType<FormData>;
 
 export { withZod };

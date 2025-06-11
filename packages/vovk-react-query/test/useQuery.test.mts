@@ -181,7 +181,7 @@ describe('useQuery', () => {
 
     assert.ok(
       result.current.error?.message.match(
-        /Zod validation failed\. Invalid body on server for http:\/\/.* Invalid literal value, expected "world" \(hello\)/
+        /Validation failed\. Invalid body on server for http:\/\/.* Invalid literal value, expected "world" \(hello\)/
       )
     );
     assert.strictEqual(result.current.error?.statusCode, 400);

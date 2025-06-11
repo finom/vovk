@@ -39,8 +39,10 @@ const validate = ({
   endpoint: string;
 }) => {
   if (data && schema) {
+    if (data instanceof FormData && schema['x-formData']) {
+      data = Object.fromEntries(data.entries());
+    }
     const isValid = ajv.validate(schema, data);
-
     if (!isValid) {
       ajvLocalize[localize](ajv.errors);
       throw new HttpException(

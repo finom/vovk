@@ -1,44 +1,24 @@
-import { z, type ZodType } from 'zod/v4';
-import {
-  withValidationLibrary,
-  HttpException,
-  HttpStatus,
-  type VovkRequest,
-  type KnownAny,
-  type VovkValidationType,
-  type VovkTypedMethod,
-} from 'vovk';
-
-const getErrorText = (e: unknown) => {
-  if (e instanceof z.ZodError) {
-    return e.issues
-      .map((issue) => {
-        const path = issue.path.length ? `${issue.path.join('.')}` : '';
-        const message = issue.message;
-
-        return `"${path}": "${message}"`;
-      })
-      .join('; ');
-  }
-
-  if (e instanceof Error) {
-    return e.message;
-  }
-};
+import { z } from 'zod/v4';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
+import { type VovkRequest, type KnownAny, type VovkValidationType, withStandard } from 'vovk';
 
 function withZod<
-  T extends (req: REQ, params: ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : Record<string, string>) => KnownAny,
-  ZOD_BODY extends ZodType<KnownAny> | undefined = undefined,
-  ZOD_QUERY extends ZodType<KnownAny> | undefined = undefined,
-  ZOD_OUTPUT extends ZodType<KnownAny> | undefined = undefined,
-  ZOD_PARAMS extends ZodType<KnownAny> | undefined = undefined,
-  ZOD_ITERATION extends ZodType<KnownAny> | undefined = undefined,
-  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-    ZOD_BODY extends ZodType ? z.infer<ZOD_BODY> : undefined,
-    ZOD_QUERY extends ZodType ? z.infer<ZOD_QUERY> : undefined,
-    ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : undefined
-  >,
+  T extends (
+    req: VovkRequest<
+      BODY extends StandardSchemaV1 ? StandardSchemaV1.InferInput<BODY> : undefined,
+      QUERY extends StandardSchemaV1 ? StandardSchemaV1.InferInput<QUERY> : undefined,
+      PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferInput<PARAMS> : undefined
+    >,
+    params: PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferInput<PARAMS> : Record<string, string>
+  ) => KnownAny,
+  BODY extends StandardSchemaV1,
+  QUERY extends StandardSchemaV1,
+  PARAMS extends StandardSchemaV1,
+  OUTPUT extends StandardSchemaV1,
+  ITERATION extends StandardSchemaV1,
+  IS_FORM extends boolean = false,
 >({
+  isForm,
   body,
   query,
   params,
@@ -50,11 +30,12 @@ function withZod<
   validateEachIteration,
   options,
 }: {
-  body?: ZOD_BODY;
-  query?: ZOD_QUERY;
-  params?: ZOD_PARAMS;
-  output?: ZOD_OUTPUT;
-  iteration?: ZOD_ITERATION;
+  isForm?: IS_FORM;
+  body?: BODY;
+  query?: QUERY;
+  params?: PARAMS;
+  output?: OUTPUT;
+  iteration?: ITERATION;
   handle: T;
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
@@ -63,7 +44,8 @@ function withZod<
     toJSONSchemaParams?: Parameters<typeof z.toJSONSchema>[1];
   };
 }) {
-  return withValidationLibrary({
+  return withStandard({
+    isForm,
     body,
     query,
     params,
@@ -72,29 +54,9 @@ function withZod<
     disableServerSideValidation,
     skipSchemaEmission,
     validateEachIteration,
-    handle: handle as VovkTypedMethod<
-      T,
-      ZOD_BODY extends ZodType ? z.infer<ZOD_BODY> : KnownAny,
-      ZOD_QUERY extends ZodType ? z.infer<ZOD_QUERY> : KnownAny,
-      ZOD_PARAMS extends ZodType ? z.infer<ZOD_PARAMS> : Record<string, string>,
-      ZOD_OUTPUT extends ZodType ? z.infer<ZOD_OUTPUT> : KnownAny,
-      ZOD_ITERATION extends ZodType ? z.infer<ZOD_ITERATION> : KnownAny
-    >,
-    toJSONSchema: (model) => z.toJSONSchema(model, options?.toJSONSchemaParams),
-    validate: async (data, model, { type, i }) => {
-      try {
-        model.parse(data);
-      } catch (e) {
-        throw new HttpException(
-          HttpStatus.BAD_REQUEST,
-          `Zod validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${getErrorText(e)}`,
-          { [type]: data, error: e }
-        );
-      }
-    },
+    handle,
+    toJSONSchema: (model) => Object.assign(z.toJSONSchema(model as z.core.$ZodType, options?.toJSONSchemaParams)),
   });
 }
-
-withZod.formData = { type: 'object', 'x-formData': true, additionalProperties: true } as unknown as z.ZodType<FormData>;
 
 export { withZod };

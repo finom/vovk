@@ -1,18 +1,15 @@
 import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types.js';
-import { HttpStatus, KnownAny } from '../types.js';
+import { HttpStatus } from '../types.js';
 import { HttpException } from '../HttpException.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
-export function createFetcher<T extends Record<string, KnownAny> = Record<string, never>>({
+export function createFetcher<T = unknown, OPTS extends VovkDefaultFetcherOptions<T> = VovkDefaultFetcherOptions<T>>({
   prepareRequestInit,
   transformResponse,
 }: {
-  prepareRequestInit?: (
-    init: RequestInit,
-    options: VovkDefaultFetcherOptions<T>
-  ) => RequestInit | Promise<RequestInit> | void | Promise<void>;
-  transformResponse?: (resp: unknown, options: VovkDefaultFetcherOptions<T>, init: RequestInit) => unknown;
+  prepareRequestInit?: (init: RequestInit, options: OPTS) => RequestInit | Promise<RequestInit> | void | Promise<void>;
+  transformResponse?: (resp: unknown, options: OPTS, init: RequestInit) => unknown;
 } = {}) {
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
@@ -67,7 +64,7 @@ export function createFetcher<T extends Record<string, KnownAny> = Record<string
     }
 
     requestInit = prepareRequestInit
-      ? ((await prepareRequestInit(requestInit, options as typeof options & T)) ?? requestInit)
+      ? ((await prepareRequestInit(requestInit, options as unknown as OPTS)) ?? requestInit)
       : requestInit;
 
     let response: Response;
@@ -99,7 +96,7 @@ export function createFetcher<T extends Record<string, KnownAny> = Record<string
     resp = await resp;
 
     return transformResponse
-      ? ((await transformResponse(resp, options as typeof options & T, requestInit)) ?? resp)
+      ? ((await transformResponse(resp, options as unknown as OPTS, requestInit)) ?? resp)
       : resp;
   };
 

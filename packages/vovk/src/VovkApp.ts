@@ -190,10 +190,10 @@ export class VovkApp {
 
     req.vovk = {
       body: () => req.json(),
-      query: () => reqQuery(req as VovkRequest),
+      query: () => reqQuery(req as VovkRequest<unknown, KnownAny>),
       meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(req, meta),
-      form: <T = KnownAny>() => reqForm<T>(req),
-      params: <T = KnownAny>() => methodParams as T,
+      form: () => reqForm(req),
+      params: () => methodParams,
     };
 
     try {

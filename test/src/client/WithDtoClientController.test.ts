@@ -51,7 +51,7 @@ describe('DTO-to-JSONchema constraints', async () => {
           disableClientValidation: true,
         });
       });
-      await rejects.toThrow(new RegExp(`Validation failed. Invalid body on server: ${key}.*`));
+      await rejects.toThrow(new RegExp(`DTO validation failed. Invalid body on server: ${key}.*`));
       await rejects.toThrowError(HttpException);
       ({ rejects } = expectPromise(async () => {
         await WithDtoClientControllerRPC.handleSchemaConstraints({
@@ -157,11 +157,13 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid body on server: hello.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid body on server: hello.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleBody({
+        query: { search: 'value' },
+        params: { foo: 'foo', bar: 'bar' },
         body: {
           hello: 'wrong_length',
         },
@@ -179,7 +181,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid body on client: hello.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid body on client: hello.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -200,7 +202,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid params on server: foo.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid params on server: foo.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -224,7 +226,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid params on client: foo.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid params on client: foo.*/);
   });
 
   it('Should handle query validation on server and client', async () => {
@@ -243,7 +245,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid query on server: search.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid query on server: search.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -265,7 +267,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid query on client: search must be shorter.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid query on client: search must be shorter.*/);
   });
 
   it('Should handle nested queries on server and client', async () => {
@@ -299,7 +301,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid query on server: x.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid query on server: x.*/);
 
     ({ rejects } = expectPromise(async () => {
       await WithDtoClientControllerRPC.handleNestedQuery({
@@ -322,7 +324,7 @@ describe('Validation with with vovk-dto', () => {
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid query on client: x.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid query on client: x.*/);
   });
 
   it('Should handle output validation on server', async () => {
@@ -338,7 +340,7 @@ describe('Validation with with vovk-dto', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid output on server: hello.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid output on server: hello.*/);
   });
 
   it('Should handle stream', async () => {
@@ -375,7 +377,7 @@ describe('Validation with with vovk-dto', () => {
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Validation failed. Invalid iteration #0 on server: value.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid iteration #0 on server: value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -405,7 +407,7 @@ describe('Validation with with vovk-dto', () => {
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Validation failed. Invalid iteration #2 on server: value.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid iteration #2 on server: value.*/);
     deepStrictEqual(expected, expectedCollected);
   });
 
@@ -439,7 +441,7 @@ describe('Validation with with vovk-dto', () => {
         disableClientValidation: true,
       });
     });
-    await rejects.toThrow(/Validation failed. Invalid query on server: search.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid query on server: search.*/);
     await rejects.toThrowError(HttpException);
 
     null as unknown as VovkReturnType<
@@ -455,7 +457,7 @@ describe('Validation with with vovk-dto', () => {
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Validation failed. Invalid body on server: hello.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid body on server: hello.*/);
     strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
     strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
     // @ts-expect-error Expect error
@@ -468,7 +470,7 @@ describe('Validation with with vovk-dto', () => {
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Validation failed. Invalid body on server: hello.*/);
+    await rejects.toThrow(/DTO validation failed. Invalid body on server: hello.*/);
     strictEqual(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithDtoClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
     // @ts-expect-error Expect error
@@ -476,7 +478,7 @@ describe('Validation with with vovk-dto', () => {
   });
 
   it('Should handle form data', async () => {
-    const formData = new FormData();
+    let formData = new FormData();
     formData.append('hello', 'world');
 
     const result = await WithDtoClientControllerRPC.handleFormData({
@@ -493,6 +495,18 @@ describe('Validation with with vovk-dto', () => {
     // @ts-expect-error Expect error
     null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleFormData> satisfies null;
     deepStrictEqual(result satisfies typeof expected, expected);
+
+    const { rejects } = expectPromise(async () => {
+      formData = new FormData();
+      formData.append('hello', 'wrong_length');
+      await WithDtoClientControllerRPC.handleFormData({
+        body: formData,
+        query: { search: 'value' },
+      });
+    });
+
+    await rejects.toThrow(/Ajv validation failed. Invalid form on client: .*hello.*/);
+    await rejects.toThrowError(HttpException);
   });
 
   it.skip('Should store schema at handler.schema', async () => {

@@ -111,7 +111,6 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         body: input.body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
-        // TS workaround
         fetcher: undefined,
         validateOnClient: undefined,
       };

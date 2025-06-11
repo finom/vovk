@@ -3,6 +3,11 @@
   "include": ["src/index.ts", "src/v3/index.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
-    "noEmit": false
+    "noEmit": false,
+    "baseUrl": ".",
+    "preserveSymlinks": true,
+    "paths": {
+      "vovk/*": ["../../node_modules/vovk/mjs/*"],
+    }
   }
 }

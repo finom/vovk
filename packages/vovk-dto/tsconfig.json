@@ -3,6 +3,8 @@
   "include": ["*.ts"],
   "compilerOptions": {
     "noEmit": false,
-    "declaration": true
+    "declaration": true,
+    "baseUrl": ".",
+    "preserveSymlinks": true,
   }
 }

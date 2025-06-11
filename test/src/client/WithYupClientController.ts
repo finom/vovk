@@ -194,10 +194,11 @@ export default class WithYupClientController {
 
   @post.auto()
   static handleFormData = withYup({
-    body: withYup.formData,
+    isForm: true,
+    body: yup.object({ hello: yup.string().max(5).required() }),
     query: yup.object({ search: yup.string().max(5).required() }),
     handle: async (req) => {
-      const formData = await req.vovk.form<{ hello: 'world' }>();
+      const formData = await req.vovk.form();
       const search = req.vovk.query().search;
       return { formData, search };
     },

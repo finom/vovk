@@ -52,13 +52,13 @@ export default class CommonController {
   }
 
   @get('with-params/:hello')
-  static getWithParams(_req: VovkRequest<undefined>, { hello }: { hello: 'world' }) {
+  static getWithParams(_req: VovkRequest, { hello }: { hello: 'world' }) {
     return { hello };
   }
 
   @post('with-all/:hello')
   static async postWithAll(
-    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue' }>,
+    req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue' }, { hello: 'world' }>,
     params: { hello: 'world' }
   ) {
     const body = await req.json();

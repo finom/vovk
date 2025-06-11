@@ -102,7 +102,7 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
     
     #[test]
@@ -145,7 +145,7 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
 
     #[test]
@@ -225,7 +225,7 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
 
     #[test]
@@ -269,7 +269,7 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
     
     #[test]
@@ -301,7 +301,7 @@ pub mod test_zod {
         );
         
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Zod validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
     
     #[test]
@@ -420,8 +420,8 @@ pub mod test_zod {
             assert!(result_server.is_err(), "Server validation should fail for key {}", key);
             let err_msg = result_server.err().unwrap().to_string();
             assert!(
-                err_msg.contains("Zod validation failed") && err_msg.contains(&key), 
-                "Error message should contain 'Zod validation failed' and '{}', got: {}", key, err_msg
+                err_msg.contains("Validation failed") && err_msg.contains(&key), 
+                "Error message should contain 'Validation failed' and '{}', got: {}", key, err_msg
             );
             
             // Test with client validation enabled (client-side error)

@@ -87,11 +87,8 @@ export type RouteHandler = ((
   _options?: DecoratorOptions;
 };
 
-export interface VovkRequest<
-  BODY extends KnownAny = null,
-  QUERY extends KnownAny = undefined,
-  PARAMS extends KnownAny = undefined,
-> extends Omit<NextRequest, 'json' | 'nextUrl'> {
+export interface VovkRequest<BODY = unknown, QUERY = unknown, PARAMS = unknown>
+  extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<BODY>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
     searchParams: Omit<
@@ -117,17 +114,30 @@ export interface VovkRequest<
     body: () => Promise<BODY>;
     query: () => QUERY;
     meta: <T = Record<KnownAny, KnownAny>>(meta?: T | null) => T;
-    form: <T = KnownAny>() => Promise<T>;
+    form: <T = BODY>() => Promise<T>;
     params: () => PARAMS;
   };
 }
 
 export type ControllerStaticMethod<
-  REQ extends VovkRequest<KnownAny, KnownAny> = VovkRequest<undefined, Record<string, KnownAny>>,
+  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<unknown, unknown, unknown>,
   PARAMS extends { [key: string]: string } = KnownAny,
 > = ((req: REQ, params: PARAMS) => unknown) & {
   _controller?: VovkController;
 };
+
+/*
+((req: REQ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
+    __types?: {
+      body?: KnownAny;
+      query?: KnownAny;
+      params?: KnownAny;
+      output?: KnownAny;
+      iteration?: KnownAny;
+      // isForm?: boolean;
+    };
+  }
+    */
 
 export type VovkTypedMethod<
   T extends (...args: KnownAny[]) => KnownAny,
@@ -136,13 +146,15 @@ export type VovkTypedMethod<
   P = KnownAny,
   O = KnownAny,
   I = KnownAny,
+  IS_FORM extends boolean = false,
 > = T & {
   __types: {
-    body?: B;
-    query?: Q;
-    params?: P;
-    output?: O;
-    iteration?: I;
+    body: B;
+    query: Q;
+    params: P;
+    output: O;
+    iteration: I;
+    isForm: IS_FORM;
   };
   isRPC?: boolean;
 };
@@ -177,29 +189,17 @@ export type VovkIteration<T> = T extends {
   ? I
   : KnownAny;
 
-export type VovkClientBody<T extends (...args: KnownAny[]) => unknown> = T extends {
-  __types?: {
-    body?: infer B;
-  };
-}
+export type VovkClientBody<T extends (opts: KnownAny) => KnownAny> = Parameters<T>[0] extends { body: infer B }
   ? B
-  : KnownAny;
+  : undefined;
 
-export type VovkClientQuery<T extends (...args: KnownAny[]) => unknown> = T extends {
-  __types?: {
-    query?: infer Q;
-  };
-}
+export type VovkClientQuery<T extends (opts: KnownAny) => KnownAny> = Parameters<T>[0] extends { query: infer Q }
   ? Q
-  : KnownAny;
+  : undefined;
 
-export type VovkClientParams<T extends (...args: KnownAny[]) => unknown> = T extends {
-  __types?: {
-    params?: infer P;
-  };
-}
+export type VovkClientParams<T extends (opts: KnownAny) => KnownAny> = Parameters<T>[0] extends { params: infer P }
   ? P
-  : KnownAny;
+  : undefined;
 
 export type VovkClientYieldType<T extends (...args: KnownAny[]) => unknown> = T extends (
   ...args: KnownAny[]

@@ -23,7 +23,9 @@ export function withValidationLibrary<
   PARAMS_MODEL,
   OUTPUT_MODEL,
   ITERATION_MODEL,
+  IS_FORM extends boolean = false,
 >({
+  isForm,
   disableServerSideValidation,
   skipSchemaEmission,
   validateEachIteration,
@@ -36,6 +38,7 @@ export function withValidationLibrary<
   toJSONSchema,
   validate,
 }: {
+  isForm?: IS_FORM;
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
@@ -53,7 +56,7 @@ export function withValidationLibrary<
     data: KnownAny,
     model: NonNullable<BODY_MODEL | QUERY_MODEL | PARAMS_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
     meta: {
-      type: VovkValidationType;
+      type: VovkValidationType | 'form';
       req: VovkRequestAny;
       status?: number;
       i?: number;
@@ -125,12 +128,12 @@ export function withValidationLibrary<
     const { __disableValidation } = req.vovk.meta<Meta>();
     if (!__disableValidation) {
       if (body && !disableServerSideValidationKeys.includes('body')) {
-        const data = await req.vovk.body();
-        const instance = (await validate(data, body, { type: 'body', req })) ?? data;
+        const data = await req.vovk[isForm ? 'form' : 'body']();
+        const instance = (await validate(data, body, { type: isForm ? 'form' : 'body', req })) ?? data;
 
         // redeclare to add ability to call req.json() and req.vovk.body() again
         req.json = () => Promise.resolve(data);
-        req.vovk.body = () => Promise.resolve(instance);
+        req.vovk[isForm ? 'form' : 'body'] = () => Promise.resolve(instance);
       }
 
       if (query && !disableServerSideValidationKeys.includes('query')) {
@@ -185,13 +188,9 @@ export function withValidationLibrary<
 
   const resultHandlerEnhanced = Object.assign(resultHandler, { func, models });
 
-  const isFormDataJsonSchema = (model: KnownAny): model is { type: 'object'; 'x-formData': true } => {
-    return model.type === 'object' && model['x-formData'] === true;
-  };
-
   if (toJSONSchema) {
     const getJsonSchema = (model: KnownAny, type: VovkValidationType) =>
-      isFormDataJsonSchema(model) ? model : toJSONSchema(model, { type });
+      Object.assign(toJSONSchema(model, { type }), isForm ? { 'x-formData': isForm } : {});
 
     const validation: VovkHandlerSchema['validation'] = {};
     if (body && !skipSchemaEmissionKeys.includes('body')) {
