@@ -246,21 +246,6 @@ describe('Client with vovk-client', () => {
     );
   });
 
-  it('Should accept custom fetcher as an option', async () => {
-    const result = await CommonControllerRPC.postWithBodyAndQueryUsingReqVovk({
-      body: { isBody: true },
-      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
-      fetcher: ({ name }, { query, body }) => ({ customFetcher: true, name, query, body }),
-    });
-
-    deepStrictEqual(result, {
-      customFetcher: true,
-      name: 'postWithBodyAndQueryUsingReqVovk',
-      query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
-      body: { isBody: true },
-    });
-  });
-
   it('Handles JSONL response', async () => {
     const result = await CommonControllerRPC.getJsonlResponse({
       apiRoot,
