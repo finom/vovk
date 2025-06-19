@@ -588,7 +588,7 @@ describe('Controller method as function with func', () => {
     deepStrictEqual(result satisfies typeof expected, expected);
   });
 
-  it.skip('disableClientValidation in Controller.handler.func', () => {
+  it.skip('disableClientValidation in Controller.handler.fn', () => {
     // TODO
   });
 });

@@ -296,11 +296,13 @@ export default class WithZodClientController {
     ...HandleAllInput,
     disableServerSideValidation: true,
     async handle(req, params) {
-      return WithZodClientController.handleAll.func({
+      const result = await WithZodClientController.handleAll.fn({
         body: await req.vovk.body(),
         query: req.vovk.query(),
         params,
       });
+
+      return result;
     },
   });
 
@@ -309,11 +311,13 @@ export default class WithZodClientController {
     ...HandleAllInput,
     disableServerSideValidation: true,
     async handle(req, params) {
-      return WithZodClientController.handleAllNoHTTP.func({
+      const result = await WithZodClientController.handleAllNoHTTP.fn({
         body: await req.vovk.body(),
         query: req.vovk.query(),
         params,
       });
+
+      return result;
     },
   });
 }
