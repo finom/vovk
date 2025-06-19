@@ -171,7 +171,7 @@ export class Init {
         options: { validationLibrary, reactQuery, channel, lang, dryRun },
       });
 
-      log.info('Config created successfully at ' + configAbsolutePath);
+      log.info('Config created successfully at ' + chalkHighlightThing(configAbsolutePath));
     } catch (error) {
       log.error(`Failed to create config: ${(error as Error).message}`);
     }

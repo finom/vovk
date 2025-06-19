@@ -4,12 +4,20 @@ import { HttpException } from '../HttpException.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
-export function createFetcher<T = unknown, OPTS extends VovkDefaultFetcherOptions<T> = VovkDefaultFetcherOptions<T>>({
+export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
 }: {
-  prepareRequestInit?: (init: RequestInit, options: OPTS) => RequestInit | Promise<RequestInit> | void | Promise<void>;
-  transformResponse?: (resp: unknown, options: OPTS, init: RequestInit) => unknown;
+  prepareRequestInit?: (
+    init: RequestInit,
+    options: VovkDefaultFetcherOptions<T>
+  ) => RequestInit | Promise<RequestInit> | void | Promise<void>;
+  transformResponse?: (
+    resp: unknown,
+    response: Response,
+    options: VovkDefaultFetcherOptions<T>,
+    init: RequestInit
+  ) => unknown;
 } = {}) {
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
@@ -17,7 +25,7 @@ export function createFetcher<T = unknown, OPTS extends VovkDefaultFetcherOption
     { httpMethod, getEndpoint, validate, defaultHandler, defaultStreamHandler },
     options
   ) => {
-    const { params, query, body, apiRoot = '/api', disableClientValidation, init, interpretAs } = options;
+    const { params, query, body, apiRoot, disableClientValidation, init, interpretAs } = options;
     const endpoint = getEndpoint({ apiRoot, params, query });
     const unusedParams = new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname
       .split('/')
@@ -64,7 +72,7 @@ export function createFetcher<T = unknown, OPTS extends VovkDefaultFetcherOption
     }
 
     requestInit = prepareRequestInit
-      ? ((await prepareRequestInit(requestInit, options as unknown as OPTS)) ?? requestInit)
+      ? ((await prepareRequestInit(requestInit, options as unknown as VovkDefaultFetcherOptions<T>)) ?? requestInit)
       : requestInit;
 
     let response: Response;
@@ -96,7 +104,8 @@ export function createFetcher<T = unknown, OPTS extends VovkDefaultFetcherOption
     resp = await resp;
 
     return transformResponse
-      ? ((await transformResponse(resp, options as unknown as OPTS, requestInit)) ?? resp)
+      ? ((await transformResponse(resp, response, options as unknown as VovkDefaultFetcherOptions<T>, requestInit)) ??
+          resp)
       : resp;
   };
 

@@ -14,7 +14,7 @@ const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'outpu
 
 type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 
-type Meta = { __disableValidation?: boolean };
+type Meta = { __disableClientValidation?: boolean };
 
 export function withValidationLibrary<
   T extends VovkTypedMethod<(req: KnownAny, params: KnownAny) => KnownAny>,
@@ -72,9 +72,9 @@ export function withValidationLibrary<
   const skipSchemaEmissionKeys =
     skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
   const outputHandler = async (req: VovkRequestAny, handlerParams: Parameters<T>[1]) => {
-    const { __disableValidation } = req.vovk.meta<Meta>();
+    const { __disableClientValidation } = req.vovk.meta<Meta>();
     const data = await handle(req, handlerParams);
-    if (__disableValidation) {
+    if (__disableClientValidation) {
       return data;
     }
     if (output && iteration) {
@@ -125,8 +125,8 @@ export function withValidationLibrary<
   };
 
   const resultHandler = (async (req: VovkRequestAny, handlerParams: Parameters<T>[1]) => {
-    const { __disableValidation } = req.vovk.meta<Meta>();
-    if (!__disableValidation) {
+    const { __disableClientValidation } = req.vovk.meta<Meta>();
+    if (!__disableClientValidation) {
       if (body && !disableServerSideValidationKeys.includes('body')) {
         const data = await req.vovk[isForm ? 'form' : 'body']();
         const instance = (await validate(data, body, { type: isForm ? 'form' : 'body', req })) ?? data;
@@ -154,18 +154,30 @@ export function withValidationLibrary<
     schema: VovkHandlerSchema;
   };
 
-  function func(
-    input: {
-      disableValidation?: boolean;
-    } & (undefined extends typeof body ? { body?: T['__types']['body'] } : { body: T['__types']['body'] }) &
-      (undefined extends typeof query ? { query?: T['__types']['query'] } : { query: T['__types']['query'] }) &
-      (undefined extends typeof params ? { params?: T['__types']['params'] } : { params: T['__types']['params'] })
-  ): ReturnType<T> {
+  type FnInput = {
+    disableClientValidation?: boolean;
+  } & (undefined extends typeof body ? { body?: T['__types']['body'] } : { body: T['__types']['body'] }) &
+    (undefined extends typeof query ? { query?: T['__types']['query'] } : { query: T['__types']['query'] }) &
+    (undefined extends typeof params ? { params?: T['__types']['params'] } : { params: T['__types']['params'] });
+
+  type IsInputOptional = undefined extends typeof body
+    ? undefined extends typeof query
+      ? undefined extends typeof params
+        ? true
+        : false
+      : false
+    : false;
+
+  function fn<RETURN_TYPE = ReturnType<T>>(
+    input?: IsInputOptional extends true ? FnInput : never
+  ): IsInputOptional extends true ? RETURN_TYPE : never;
+  function fn<RETURN_TYPE = ReturnType<T>>(input: FnInput): RETURN_TYPE;
+  function fn<RETURN_TYPE = ReturnType<T>>(input?: FnInput): RETURN_TYPE {
     const fakeReq: Pick<VovkRequest<typeof body, typeof query, typeof params>, 'vovk'> = {
       vovk: {
-        body: () => Promise.resolve(input.body as T['__types']['body']),
-        query: () => input.query as T['__types']['query'],
-        params: () => input.params as T['__types']['params'],
+        body: () => Promise.resolve((input?.body ?? {}) as T['__types']['body']),
+        query: () => (input?.query ?? {}) as T['__types']['query'],
+        params: () => (input?.params ?? {}) as T['__types']['params'],
         meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq as VovkRequestAny, meta),
         form: () => {
           throw new Error('Form data is not supported in this context.');
@@ -173,9 +185,9 @@ export function withValidationLibrary<
       },
     };
 
-    fakeReq.vovk.meta<Meta>({ __disableValidation: input.disableValidation });
+    fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation });
 
-    return resultHandler(fakeReq, input.params ?? {});
+    return resultHandler(fakeReq, (input?.params ?? {}) as Parameters<T>[1]) as RETURN_TYPE;
   }
 
   const models = {
@@ -186,11 +198,11 @@ export function withValidationLibrary<
     iteration,
   };
 
-  const resultHandlerEnhanced = Object.assign(resultHandler, { func, models });
+  const resultHandlerEnhanced = Object.assign(resultHandler, { fn, models });
 
   if (toJSONSchema) {
     const getJsonSchema = (model: KnownAny, type: VovkValidationType) =>
-      Object.assign(toJSONSchema(model, { type }), isForm ? { 'x-formData': isForm } : {});
+      Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-formData': isForm } : {});
 
     const validation: VovkHandlerSchema['validation'] = {};
     if (body && !skipSchemaEmissionKeys.includes('body')) {

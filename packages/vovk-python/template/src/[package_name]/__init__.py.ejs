@@ -35,6 +35,7 @@ class <%= rpcModuleName %>: <% Object.entries(controllerSchema.handlers).forEach
             validation?.params ? `params: ${handlerNameOriginalCapitalized}Params,` : ''
         ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
         headers: Optional[Dict[str, str]] = None,
+        files: Dict[str, Any] = None,
         api_root: Optional[str] = None,
         disable_client_validation: bool = False
     ) -> <%= validation?.output ? `${handlerNameOriginalCapitalized}Output` : validation?.iteration ? `Generator[${handlerNameOriginalCapitalized}Iteration, None, None]` : 'Any' %>:
@@ -57,6 +58,7 @@ class <%= rpcModuleName %>: <% Object.entries(controllerSchema.handlers).forEach
                 validation?.params ? 'params=params,' : ''
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n') %>
             headers=headers,
+            files=files,
             api_root=api_root,
             disable_client_validation=disable_client_validation
         )

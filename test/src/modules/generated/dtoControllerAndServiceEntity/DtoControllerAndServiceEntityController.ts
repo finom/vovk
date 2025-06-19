@@ -1,8 +1,8 @@
-import { prefix, get, put, post, del } from 'vovk';
+import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { IsString, IsIn } from 'class-validator';
 
-import DtoControllerAndServiceEntityService from './DtoControllerAndServiceEntityService';
+import DtoControllerAndServiceEntityService from './DtoControllerAndServiceEntityService.ts';
 
 class GetDtoControllerAndServiceEntitiesQueryDto {
   @IsString()
@@ -21,6 +21,9 @@ class UpdateDtoControllerAndServiceEntityQueryDto {
 
 @prefix('dto-controller-and-service-entities')
 export default class DtoControllerAndServiceEntityController {
+  @openapi({
+    summary: 'Get DtoControllerAndServiceEntities',
+  })
   @get()
   static getDtoControllerAndServiceEntities = withDto({
     query: GetDtoControllerAndServiceEntitiesQueryDto,
@@ -31,6 +34,9 @@ export default class DtoControllerAndServiceEntityController {
     },
   });
 
+  @openapi({
+    summary: 'Update DtoControllerAndServiceEntity',
+  })
   @put(':id')
   static updateDtoControllerAndServiceEntity = withDto({
     body: UpdateDtoControllerAndServiceEntityBodyDto,

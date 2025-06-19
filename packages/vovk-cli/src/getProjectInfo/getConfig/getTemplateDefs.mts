@@ -17,6 +17,7 @@ export enum BuiltInTemplateName {
   // misc
   readme = 'readme',
   packageJson = 'packageJson',
+  extensions = 'extensions',
 
   // other languages (packages installed separately)
   rs = 'rs',
@@ -61,6 +62,9 @@ export default function getTemplateDefs(
     },
     [BuiltInTemplateName.packageJson]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.packageJson}/`,
+    },
+    [BuiltInTemplateName.extensions]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.extensions}/`,
     },
     [BuiltInTemplateName.rs]: {
       templatePath: 'vovk-rust/template/',

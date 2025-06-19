@@ -145,7 +145,7 @@ export type VovkClientFetcher<OPTS> = (
     name: string;
     httpMethod: HttpMethod;
     getEndpoint: (data: {
-      apiRoot: string;
+      apiRoot: string | undefined;
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => string;
@@ -160,11 +160,10 @@ export type VovkClientFetcher<OPTS> = (
   } & OPTS
 ) => KnownAny;
 
-export type VovkDefaultFetcherOptions<T = unknown> = T & {
+export type VovkDefaultFetcherOptions<T> = T & {
   apiRoot?: string;
   disableClientValidation?: boolean;
   validateOnClient?: VovkValidateOnClient;
-  fetcher?: VovkClientFetcher<T>;
   interpretAs?: string;
   init?: RequestInit;
 };

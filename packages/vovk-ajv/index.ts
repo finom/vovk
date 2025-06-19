@@ -1,9 +1,9 @@
 import { Ajv, Options } from 'ajv';
 import Ajv2020 from 'ajv/dist/2020';
-import { HttpException, HttpStatus, KnownAny, VovkSchema, type VovkValidateOnClient } from 'vovk';
 import ajvFormats from 'ajv-formats';
 import ajvLocalize from 'ajv-i18n';
 import ajvErrors from 'ajv-errors';
+import { HttpException, HttpStatus, type KnownAny, type VovkSchema, type VovkValidateOnClient } from 'vovk';
 
 type Lang = keyof typeof ajvLocalize;
 
@@ -39,15 +39,23 @@ const validate = ({
   endpoint: string;
 }) => {
   if (data && schema) {
-    if (data instanceof FormData && schema['x-formData']) {
-      data = Object.fromEntries(data.entries());
+    const isForm = data instanceof FormData && schema['x-formData'];
+    if (isForm) {
+      data = Object.fromEntries(
+        data.entries().map(([key, value]: [KnownAny, KnownAny]) => {
+          if (value instanceof File) {
+            return [key, 'File<' + value.name + '>'];
+          }
+          return [key, value];
+        })
+      );
     }
     const isValid = ajv.validate(schema, data);
     if (!isValid) {
       ajvLocalize[localize](ajv.errors);
       throw new HttpException(
         HttpStatus.NULL,
-        `Ajv validation failed. Invalid ${type} on client: ${ajv.errorsText()}`,
+        `Ajv validation failed. Invalid ${isForm ? 'form' : type} on client: ${ajv.errorsText()}`,
         { data, errors: ajv.errors, endpoint }
       );
     }

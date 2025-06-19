@@ -62,10 +62,10 @@ pub struct VovkSegmentSchema {
     pub controllers: HashMap<String, ControllerSchema>,
 }
 
-/// Complete Vovk schema with config and multiple segments
+/// Complete Vovk schema with meta and multiple segments
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VovkSchema {
-    pub config: HashMap<String, Value>,
+    pub meta: HashMap<String, Value>,
     pub segments: HashMap<String, VovkSegmentSchema>,
 }
 

@@ -1,9 +1,12 @@
-import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
+import { prefix, get, put, post, del, openapi, type VovkRequest } from 'vovk';
 
-import NoValidationControllerAndServiceEntityService from './NoValidationControllerAndServiceEntityService';
+import NoValidationControllerAndServiceEntityService from './NoValidationControllerAndServiceEntityService.ts';
 
 @prefix('no-validation-controller-and-service-entities')
 export default class NoValidationControllerAndServiceEntityController {
+  @openapi({
+    summary: 'Get NoValidationControllerAndServiceEntities',
+  })
   @get()
   static getNoValidationControllerAndServiceEntities = async (req: VovkRequest<null, { search: string }>) => {
     const search = req.nextUrl.searchParams.get('search');
@@ -11,6 +14,9 @@ export default class NoValidationControllerAndServiceEntityController {
     return NoValidationControllerAndServiceEntityService.getNoValidationControllerAndServiceEntities(search);
   };
 
+  @openapi({
+    summary: 'Update NoValidationControllerAndServiceEntity',
+  })
   @put(':id')
   static updateNoValidationControllerAndServiceEntity = async (
     req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>,

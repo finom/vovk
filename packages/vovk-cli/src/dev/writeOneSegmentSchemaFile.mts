@@ -5,6 +5,7 @@ import diffSegmentSchema, { type DiffResult } from './diffSegmentSchema.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 
 export const ROOT_SEGMENT_FILE_NAME = 'root';
+export const EXTENSIONS_SEGMENT_NAME = 'extensions';
 export const META_FILE_NAME = '_meta';
 
 export default async function writeOneSegmentSchemaFile({

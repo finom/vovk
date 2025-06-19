@@ -397,7 +397,6 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
   it('Should handle form data', async () => {
     let formData = new FormData();
     formData.append('hello', 'world');
-    formData.append('file', new Blob(['file content'], { type: 'text/plain' }), 'file.txt');
 
     const result = await WithZodClientControllerRPC.handleFormData({
       body: formData,
@@ -414,13 +413,51 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies null;
     deepStrictEqual(result satisfies typeof expected, expected);
 
+    const { rejects } = expectPromise(async () => {
+      formData = new FormData();
+      formData.append('hello', 'wrong_length');
+      await WithZodClientControllerRPC.handleFormData({
+        body: formData,
+        query: { search: 'foo' },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle form data with file', async () => {
+    let formData = new FormData();
+    formData.append('hello', 'world');
+    formData.append('file', new Blob(['file content'], { type: 'text/plain' }), 'file.txt');
+
+    const result = await WithZodClientControllerRPC.handleFormDataWithFile({
+      body: formData,
+      query: { search: 'foo' },
+    });
+    const expected = {
+      formData: {
+        file: {},
+        hello: 'world',
+      },
+      search: 'foo',
+    };
+    null as unknown as VovkReturnType<
+      typeof WithZodClientControllerRPC.handleFormDataWithFile
+    > satisfies typeof expected;
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormDataWithFile> satisfies null;
+    deepStrictEqual(result satisfies typeof expected, expected);
+
     let { rejects } = expectPromise(async () => {
       formData = new FormData();
       formData.append('hello', 'wrong_length');
       formData.append('file', new Blob(['file content'], { type: 'text/plain' }), 'file.txt');
-      await WithZodClientControllerRPC.handleFormData({
+      await WithZodClientControllerRPC.handleFormDataWithFile({
         body: formData,
         query: { search: 'foo' },
+        disableClientValidation: true,
       });
     });
 
@@ -431,13 +468,27 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     ({ rejects } = expectPromise(async () => {
       formData = new FormData();
       formData.append('hello', 'world');
-      await WithZodClientControllerRPC.handleFormData({
+      await WithZodClientControllerRPC.handleFormDataWithFile({
         body: formData,
         query: { search: 'foo' },
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+    await rejects.toThrow(/Ajv validation failed. Invalid form on client: .*file.*/);
+    await rejects.toThrowError(HttpException);
+
+    // No file
+    ({ rejects } = expectPromise(async () => {
+      formData = new FormData();
+      formData.append('hello', 'world');
+      await WithZodClientControllerRPC.handleFormDataWithFile({
+        body: formData,
+        query: { search: 'foo' },
+        disableClientValidation: true,
+      });
+    }));
+
+    await rejects.toThrow(/Validation failed. Invalid form on server: .*file.*/);
     await rejects.toThrowError(HttpException);
   });
 

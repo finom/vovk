@@ -30,7 +30,7 @@ vars.convertJSONSchemasToRustTypes({
         output: validation?.output,
         iteration: validation?.iteration
     }, 
-    rootName: handlerName, 
+    rootName: handlerName,
     pad: 4 
 })
 %>
@@ -43,7 +43,7 @@ vars.convertJSONSchemasToRustTypes({
     validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
 ]).filter(Boolean).map((s) => s.split('\n')).flat().map((s) => ' '.repeat(4) + '/// ' + s).join('\n') %>
     pub fn <%= handlerName %>( 
-        body: <%- validation?.body ? `${handlerName}_::body` : '()' %>,
+        body: <%- validation?.body ? (validation?.body?.['x-formData'] ?'reqwest::blocking::multipart::Form' : `${handlerName}_::body`): '()' %>,
         query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
         params: <%- validation?.params ? `${handlerName}_::params` : '()' %>,
         headers: Option<&HashMap<String, String>>,
@@ -53,7 +53,7 @@ vars.convertJSONSchemasToRustTypes({
         let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
 <%- [
                 validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
-                validation?.body ? `${handlerName}_::body` : '()',
+                validation?.body && !validation?.body?.['x-formData'] ? `${handlerName}_::body` : '()',
                 validation?.query ? `${handlerName}_::query` : '()',
                 validation?.params ? `${handlerName}_::params` : '()'
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
@@ -62,7 +62,8 @@ vars.convertJSONSchemasToRustTypes({
             "<%= segmentName %>",
             "<%= controllerSchema.rpcModuleName %>",
             "<%= handlerNameOriginal %>",
-            Some(&body),
+            <%- !validation?.body || !validation?.body?.['x-formData'] ? `Some(&body)` : 'None' %>,
+            <%- validation?.body && validation?.body?.['x-formData'] ? `Some(body)` : 'None' %>,
             Some(&query),
             Some(&params),
             headers,

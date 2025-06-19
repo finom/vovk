@@ -1,7 +1,10 @@
-import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
+import { prefix, get, put, post, del, openapi, type VovkRequest } from 'vovk';
 
 @prefix('no-validation-controller-only-entities')
 export default class NoValidationControllerOnlyEntityController {
+  @openapi({
+    summary: 'Get NoValidationControllerOnlyEntities',
+  })
   @get()
   static getNoValidationControllerOnlyEntities = async (req: VovkRequest<null, { search: string }>) => {
     const search = req.nextUrl.searchParams.get('search');
@@ -9,6 +12,9 @@ export default class NoValidationControllerOnlyEntityController {
     return { results: [], search };
   };
 
+  @openapi({
+    summary: 'Update NoValidationControllerOnlyEntity',
+  })
   @put(':id')
   static updateNoValidationControllerOnlyEntity = async (
     req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>,

@@ -1,16 +1,13 @@
-'use strict';
-
-//#region .vovk-schema/config.json
-var libs = {};
-var $schema$2 = 'https://vovk.dev/api/schema/v3/config.json';
-var config_default = {
-  libs,
-  $schema: $schema$2,
+//#region .vovk-schema/_meta.json
+var config = {
+  $schema: 'https://vovk.dev/api/spec/v3/config.json',
+  libs: {},
 };
+var _meta_default = { config };
 
 //#endregion
-//#region .vovk-schema/segments/foo/client.json
-var $schema$1 = 'https://vovk.dev/api/schema/v3/segment.json';
+//#region .vovk-schema/foo/client.json
+var $schema$1 = 'https://vovk.dev/api/spec/v3/segment.json';
 var emitSchema$1 = true;
 var segmentName$1 = 'foo/client';
 var controllers$1 = {
@@ -171,35 +168,44 @@ var controllers$1 = {
       handleAll: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { hello: { type: 'string' } },
             required: ['hello'],
+            additionalProperties: false,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
           },
           params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               foo: { type: 'string' },
               bar: { type: 'string' },
             },
             required: ['foo', 'bar'],
+            additionalProperties: false,
           },
           output: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               body: {
                 type: 'object',
                 properties: { hello: { type: 'string' } },
                 required: ['hello'],
+                additionalProperties: false,
               },
               query: {
                 type: 'object',
                 properties: { search: { type: 'string' } },
                 required: ['search'],
+                additionalProperties: false,
               },
               params: {
                 type: 'object',
@@ -208,6 +214,7 @@ var controllers$1 = {
                   bar: { type: 'string' },
                 },
                 required: ['foo', 'bar'],
+                additionalProperties: false,
               },
               vovkParams: {
                 type: 'object',
@@ -216,9 +223,11 @@ var controllers$1 = {
                   bar: { type: 'string' },
                 },
                 required: ['foo', 'bar'],
+                additionalProperties: false,
               },
             },
             required: ['body', 'query', 'params', 'vovkParams'],
+            additionalProperties: false,
           },
         },
         path: 'all/:foo/:bar',
@@ -258,6 +267,7 @@ var controllers$1 = {
       handleQuery: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               search: {
@@ -266,6 +276,7 @@ var controllers$1 = {
               },
             },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'GET',
@@ -274,6 +285,7 @@ var controllers$1 = {
       handleBody: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               hello: {
@@ -282,6 +294,7 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -290,6 +303,7 @@ var controllers$1 = {
       handleParams: {
         validation: {
           params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               foo: {
@@ -302,6 +316,7 @@ var controllers$1 = {
               },
             },
             required: ['foo', 'bar'],
+            additionalProperties: false,
           },
         },
         path: 'x/:foo/:bar/y',
@@ -310,6 +325,7 @@ var controllers$1 = {
       handleNestedQuery: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               x: {
@@ -346,19 +362,24 @@ var controllers$1 = {
                               type: 'object',
                               properties: { deepKey: { type: 'string' } },
                               required: ['deepKey'],
+                              additionalProperties: false,
                             },
                           },
                           required: ['foo'],
+                          additionalProperties: false,
                         },
                       },
                     },
                     required: ['x', 'arrOfObjects'],
+                    additionalProperties: false,
                   },
                 },
                 required: ['f', 'u', 'd'],
+                additionalProperties: false,
               },
             },
             required: ['x', 'y', 'z'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'GET',
@@ -367,11 +388,14 @@ var controllers$1 = {
       handleOutput: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { helloOutput: { type: 'string' } },
             required: ['helloOutput'],
+            additionalProperties: false,
           },
           output: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               hello: {
@@ -380,6 +404,7 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'GET',
@@ -388,6 +413,7 @@ var controllers$1 = {
       handleStream: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               values: {
@@ -396,8 +422,10 @@ var controllers$1 = {
               },
             },
             required: ['values'],
+            additionalProperties: false,
           },
           iteration: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               value: {
@@ -406,6 +434,7 @@ var controllers$1 = {
               },
             },
             required: ['value'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'GET',
@@ -414,9 +443,13 @@ var controllers$1 = {
       handleSchemaConstraints: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
-              enum_value: { enum: ['a', 'b', 'c'] },
+              enum_value: {
+                type: 'string',
+                enum: ['a', 'b', 'c'],
+              },
               num_minimum: {
                 type: 'number',
                 minimum: 1,
@@ -457,7 +490,6 @@ var controllers$1 = {
               },
               str_pattern: {
                 type: 'string',
-                format: 'regex',
                 pattern: '^[A-Z][a-z]*$',
               },
               str_email: {
@@ -499,12 +531,13 @@ var controllers$1 = {
                   optionalField: { type: 'number' },
                 },
                 required: ['requiredField'],
+                additionalProperties: false,
               },
               obj_strict: {
                 type: 'object',
                 properties: { knownField: { type: 'string' } },
                 required: ['knownField'],
-                additionalProperties: { not: {} },
+                additionalProperties: false,
               },
               logical_anyOf: {
                 anyOf: [
@@ -522,11 +555,13 @@ var controllers$1 = {
                     type: 'object',
                     properties: { a: { type: 'string' } },
                     required: ['a'],
+                    additionalProperties: {},
                   },
                   {
                     type: 'object',
                     properties: { b: { type: 'number' } },
                     required: ['b'],
+                    additionalProperties: {},
                   },
                 ],
               },
@@ -554,6 +589,7 @@ var controllers$1 = {
               'logical_anyOf',
               'logical_allOf',
             ],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -566,18 +602,8 @@ var controllers$1 = {
       },
       handleFormData: {
         validation: {
-          query: {
-            type: 'object',
-            properties: { search: { type: 'string' } },
-            required: ['search'],
-          },
-        },
-        httpMethod: 'POST',
-        path: 'handle-form-data',
-      },
-      disableServerSideValidationBool: {
-        validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               hello: {
@@ -586,11 +612,71 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
+            additionalProperties: false,
+            'x-formData': true,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
+          },
+        },
+        httpMethod: 'POST',
+        path: 'handle-form-data',
+      },
+      handleFormDataWithFile: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+              file: {
+                type: 'string',
+                format: 'binary',
+                contentEncoding: 'binary',
+              },
+            },
+            required: ['hello', 'file'],
+            additionalProperties: false,
+            'x-formData': true,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
+          },
+        },
+        httpMethod: 'POST',
+        path: 'handle-form-data-with-file',
+      },
+      disableServerSideValidationBool: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+            },
+            required: ['hello'],
+            additionalProperties: false,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -599,6 +685,7 @@ var controllers$1 = {
       disableServerSideValidationStrings: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               hello: {
@@ -607,8 +694,10 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
+            additionalProperties: false,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               search: {
@@ -617,6 +706,7 @@ var controllers$1 = {
               },
             },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -630,9 +720,11 @@ var controllers$1 = {
       skipSchemaEmissionStrings: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -641,6 +733,7 @@ var controllers$1 = {
       validateEachIteration: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               values: {
@@ -649,8 +742,10 @@ var controllers$1 = {
               },
             },
             required: ['values'],
+            additionalProperties: false,
           },
           iteration: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               value: {
@@ -659,10 +754,147 @@ var controllers$1 = {
               },
             },
             required: ['value'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
         path: 'validate-each-iteration',
+      },
+      handleAllAsFunction: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { hello: { type: 'string' } },
+            required: ['hello'],
+            additionalProperties: false,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
+          },
+          params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              foo: { type: 'string' },
+              bar: { type: 'string' },
+            },
+            required: ['foo', 'bar'],
+            additionalProperties: false,
+          },
+          output: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              body: {
+                type: 'object',
+                properties: { hello: { type: 'string' } },
+                required: ['hello'],
+                additionalProperties: false,
+              },
+              query: {
+                type: 'object',
+                properties: { search: { type: 'string' } },
+                required: ['search'],
+                additionalProperties: false,
+              },
+              params: {
+                type: 'object',
+                properties: {
+                  foo: { type: 'string' },
+                  bar: { type: 'string' },
+                },
+                required: ['foo', 'bar'],
+                additionalProperties: false,
+              },
+              vovkParams: {
+                type: 'object',
+                properties: {
+                  foo: { type: 'string' },
+                  bar: { type: 'string' },
+                },
+                required: ['foo', 'bar'],
+                additionalProperties: false,
+              },
+            },
+            required: ['body', 'query', 'params', 'vovkParams'],
+            additionalProperties: false,
+          },
+        },
+        path: 'all-as-func/:foo/:bar',
+        httpMethod: 'POST',
+      },
+      handleAllNoHttpAsFunction: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { hello: { type: 'string' } },
+            required: ['hello'],
+            additionalProperties: false,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
+          },
+          params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              foo: { type: 'string' },
+              bar: { type: 'string' },
+            },
+            required: ['foo', 'bar'],
+            additionalProperties: false,
+          },
+          output: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              body: {
+                type: 'object',
+                properties: { hello: { type: 'string' } },
+                required: ['hello'],
+                additionalProperties: false,
+              },
+              query: {
+                type: 'object',
+                properties: { search: { type: 'string' } },
+                required: ['search'],
+                additionalProperties: false,
+              },
+              params: {
+                type: 'object',
+                properties: {
+                  foo: { type: 'string' },
+                  bar: { type: 'string' },
+                },
+                required: ['foo', 'bar'],
+                additionalProperties: false,
+              },
+              vovkParams: {
+                type: 'object',
+                properties: {
+                  foo: { type: 'string' },
+                  bar: { type: 'string' },
+                },
+                required: ['foo', 'bar'],
+                additionalProperties: false,
+              },
+            },
+            required: ['body', 'query', 'params', 'vovkParams'],
+            additionalProperties: false,
+          },
+        },
+        path: 'all-no-http-as-func/:foo/:bar',
+        httpMethod: 'POST',
       },
     },
   },
@@ -1064,6 +1296,17 @@ var controllers$1 = {
       },
       handleFormData: {
         validation: {
+          body: {
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+            },
+            required: ['hello'],
+            'x-formData': true,
+          },
           query: {
             type: 'object',
             properties: {
@@ -1312,7 +1555,25 @@ var controllers$1 = {
         validation: {
           query: {
             'x-isDto': true,
-            definitions: {},
+            definitions: {
+              ZDto: {
+                properties: {
+                  f: { type: 'string' },
+                  u: {
+                    items: { type: 'string' },
+                    type: 'array',
+                  },
+                  d: { $ref: '#/definitions/DDto' },
+                },
+                type: 'object',
+                required: ['f', 'u', 'd'],
+              },
+              DDto: {
+                properties: { x: { type: 'string' } },
+                type: 'object',
+                required: ['x'],
+              },
+            },
             properties: {
               x: {
                 type: 'string',
@@ -1322,9 +1583,10 @@ var controllers$1 = {
                 items: { type: 'string' },
                 type: 'array',
               },
+              z: { $ref: '#/definitions/ZDto' },
             },
             type: 'object',
-            required: ['x', 'y'],
+            required: ['x', 'y', 'z'],
           },
         },
         httpMethod: 'GET',
@@ -1397,7 +1659,24 @@ var controllers$1 = {
         validation: {
           body: {
             'x-isDto': true,
-            definitions: {},
+            definitions: {
+              RequiredObject: {
+                properties: {
+                  requiredField: {
+                    type: 'string',
+                    not: { type: 'null' },
+                  },
+                  optionalField: { type: 'number' },
+                },
+                type: 'object',
+                required: ['requiredField'],
+              },
+              StrictObject: {
+                properties: { knownField: { type: 'string' } },
+                type: 'object',
+                required: ['knownField'],
+              },
+            },
             properties: {
               enum_value: {
                 type: 'string',
@@ -1468,6 +1747,8 @@ var controllers$1 = {
                 maxItems: 10,
                 minItems: 1,
               },
+              obj_required: { $ref: '#/definitions/RequiredObject' },
+              obj_strict: { $ref: '#/definitions/StrictObject' },
               logical_allOf: { type: 'object' },
             },
             type: 'object',
@@ -1489,6 +1770,8 @@ var controllers$1 = {
               'str_datetime',
               'arr_minItems',
               'arr_maxItems',
+              'obj_required',
+              'obj_strict',
               'logical_allOf',
             ],
           },
@@ -1503,6 +1786,19 @@ var controllers$1 = {
       },
       handleFormData: {
         validation: {
+          body: {
+            'x-isDto': true,
+            definitions: {},
+            properties: {
+              hello: {
+                maxLength: 5,
+                type: 'string',
+              },
+            },
+            type: 'object',
+            required: ['hello'],
+            'x-formData': true,
+          },
           query: {
             'x-isDto': true,
             definitions: {},
@@ -1758,8 +2054,8 @@ var client_default = {
 };
 
 //#endregion
-//#region .vovk-schema/segments/generated.json
-var $schema = 'https://vovk.dev/api/schema/v3/segment.json';
+//#region .vovk-schema/generated.json
+var $schema = 'https://vovk.dev/api/spec/v3/segment.json';
 var emitSchema = true;
 var segmentName = 'generated';
 var controllers = {
@@ -1771,10 +2067,12 @@ var controllers = {
       getNoValidationControllerOnlyEntities: {
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get NoValidationControllerOnlyEntities' },
       },
       updateNoValidationControllerOnlyEntity: {
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update NoValidationControllerOnlyEntity' },
       },
       createNoValidationControllerOnlyEntity: {
         path: '',
@@ -1794,10 +2092,12 @@ var controllers = {
       getNoValidationControllerAndServiceEntities: {
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get NoValidationControllerAndServiceEntities' },
       },
       updateNoValidationControllerAndServiceEntity: {
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update NoValidationControllerAndServiceEntity' },
       },
       createNoValidationControllerAndServiceEntity: {
         path: '',
@@ -1817,34 +2117,57 @@ var controllers = {
       getZodControllerOnlyEntities: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get ZodControllerOnlyEntities' },
       },
       updateZodControllerOnlyEntity: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
-            properties: { foo: { anyOf: [{ const: 'bar' }, { const: 'baz' }] } },
+            properties: {
+              foo: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    const: 'bar',
+                  },
+                  {
+                    type: 'string',
+                    const: 'baz',
+                  },
+                ],
+              },
+            },
             required: ['foo'],
+            additionalProperties: false,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { q: { type: 'string' } },
             required: ['q'],
+            additionalProperties: false,
           },
           params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { id: { type: 'string' } },
             required: ['id'],
+            additionalProperties: false,
           },
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update ZodControllerOnlyEntity' },
       },
       createZodControllerOnlyEntity: {
         path: '',
@@ -1864,34 +2187,57 @@ var controllers = {
       getZodControllerAndServiceEntities: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get ZodControllerAndServiceEntities' },
       },
       updateZodControllerAndServiceEntity: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
-            properties: { foo: { anyOf: [{ const: 'bar' }, { const: 'baz' }] } },
+            properties: {
+              foo: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    const: 'bar',
+                  },
+                  {
+                    type: 'string',
+                    const: 'baz',
+                  },
+                ],
+              },
+            },
             required: ['foo'],
+            additionalProperties: false,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { q: { type: 'string' } },
             required: ['q'],
+            additionalProperties: false,
           },
           params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { id: { type: 'string' } },
             required: ['id'],
+            additionalProperties: false,
           },
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update ZodControllerAndServiceEntity' },
       },
       createZodControllerAndServiceEntity: {
         path: '',
@@ -1918,6 +2264,7 @@ var controllers = {
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get YupControllerOnlyEntities' },
       },
       updateYupControllerOnlyEntity: {
         validation: {
@@ -1939,6 +2286,7 @@ var controllers = {
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update YupControllerOnlyEntity' },
       },
       createYupControllerOnlyEntity: {
         path: '',
@@ -1965,6 +2313,7 @@ var controllers = {
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get YupControllerAndServiceEntities' },
       },
       updateYupControllerAndServiceEntity: {
         validation: {
@@ -1986,6 +2335,7 @@ var controllers = {
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update YupControllerAndServiceEntity' },
       },
       createYupControllerAndServiceEntity: {
         path: '',
@@ -2014,6 +2364,7 @@ var controllers = {
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get DtoControllerOnlyEntities' },
       },
       updateDtoControllerOnlyEntity: {
         validation: {
@@ -2039,6 +2390,7 @@ var controllers = {
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update DtoControllerOnlyEntity' },
       },
       createDtoControllerOnlyEntity: {
         path: '',
@@ -2067,6 +2419,7 @@ var controllers = {
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get DtoControllerAndServiceEntities' },
       },
       updateDtoControllerAndServiceEntity: {
         validation: {
@@ -2092,6 +2445,7 @@ var controllers = {
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update DtoControllerAndServiceEntity' },
       },
       createDtoControllerAndServiceEntity: {
         path: '',
@@ -2112,16 +2466,20 @@ var generated_default = {
 };
 
 //#endregion
-//#region .tmp-ts-rpc/fullSchema.ts
+//#region tmp_ts_rpc/schema.ts
 const segments = {
   'foo/client': client_default,
   generated: generated_default,
 };
-const fullSchema = {
-  $schema: 'https://vovk.dev/api/schema/v3/full.json',
-  config: config_default,
+const schema = {
+  $schema: 'https://vovk.dev/api/spec/v3/schema.json',
   segments,
+  meta: {
+    $schema: 'https://vovk.dev/api/spec/v3/meta.json',
+    apiRoot: 'http://localhost:3000/api',
+    ..._meta_default,
+  },
 };
 
 //#endregion
-exports.fullSchema = fullSchema;
+exports.schema = schema;

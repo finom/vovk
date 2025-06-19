@@ -7,27 +7,28 @@
   "author": "Andrey Gubanov",
   "scripts": {
     "ncu": "npm-check-updates -u && npm i",
-    "dev": "npm run generate-modules-from-templates && node ../packages/vovk-cli/dist/index.mjs dev --next-dev",
-    "dev-exit": "npm run generate-modules-from-templates && node ../packages/vovk-cli/dist/index.mjs dev --next-dev --exit",
+    "dev": "npm run generate-modules-from-templates && npm run build-other-compiled-sources && node ../packages/vovk-cli/dist/index.mjs dev --next-dev",
+    "dev-exit": "npm run generate-modules-from-templates && npm run build-other-compiled-sources && node ../packages/vovk-cli/dist/index.mjs dev --next-dev --exit",
     "build": "NODE_ENV=test next build",
     "start": "NODE_ENV=test next start",
     "lint": "next lint",
     "generate": "node ../packages/vovk-cli/dist/index.mjs generate",
     "bundle": "node ../packages/vovk-cli/dist/index.mjs bundle --dont-delete-ts-client-out-dir-after",
     "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --composed-schema-json --template=python --composed-schema-json --out ./python",
-    "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh"
+    "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh",
+    "build-other-compiled-sources": "rm -rf other-compiled-test-sources && node ../packages/vovk-cli/dist/index.mjs bundle && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
   },
   "type": "module",
   "dependencies": {
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "dto-mapped-types": "^0.0.7",
-    "next": "^15.3.2",
+    "next": "^15.3.3",
     "react": "^19",
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
     "vovk-client": "^0.0.4-draft.81",
-    "zod": "^3.25.36"
+    "zod": "^3.25.61"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",
@@ -35,11 +36,11 @@
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
     "@tailwindcss/postcss": "^4.1.8",
-    "@types/node": "^22.15.24",
+    "@types/node": "^24.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
-    "eslint-config-next": "15.3.2",
+    "eslint-config-next": "15.3.3",
     "openapi3-ts": "^4.4.0",
     "postcss": "^8",
     "tailwind": "^4.0.0",

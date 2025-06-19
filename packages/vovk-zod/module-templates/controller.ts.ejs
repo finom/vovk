@@ -9,15 +9,18 @@ sourceName: <%= vars.RpcModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { prefix, get, put, post, del } from 'vovk';
+import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod/v4';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionTsExt %>';
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.RpcModuleName %> {
+    @openapi({
+      summary: 'Get <%= t.TheThings %>',
+    })
     @get()
     static get<%= t.TheThings %> = withZod({
         query: z.object({ search: z.string() }), 
@@ -31,6 +34,9 @@ export default class <%= vars.RpcModuleName %> {
         }
     });
 
+    @openapi({
+        summary: 'Update <%= t.TheThing %>',
+    })
     @put(':id')
     static update<%= t.TheThing %> = withZod({
         body: z.object({

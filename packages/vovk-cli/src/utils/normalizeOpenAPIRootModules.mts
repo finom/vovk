@@ -31,15 +31,15 @@ async function getOpenApiSpecRemote(openApiSpecUrl: string): Promise<OpenAPIObje
 }
 
 export async function normalizeOpenAPIRootModules({
-  rootModules,
+  extensionModules,
   cwd = process.cwd(),
 }: {
-  rootModules: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'];
+  extensionModules: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['extensionModules'];
   cwd?: string;
-}): Promise<VovkStrictConfig['extendClientWithOpenAPI']['rootModules']> {
-  if (rootModules) {
+}): Promise<VovkStrictConfig['extendClientWithOpenAPI']['extensionModules']> {
+  if (extensionModules) {
     const modules = await Promise.all(
-      rootModules.map(async ({ source, apiRoot, getModuleName, getMethodName }) => {
+      extensionModules.map(async ({ source, apiRoot, getModuleName, getMethodName }) => {
         let openAPIObject: OpenAPIObject;
         if ('url' in source) {
           openAPIObject = await getOpenApiSpecRemote(source.url);

@@ -1,9 +1,12 @@
-import { prefix, get, put, post, del } from 'vovk';
+import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod/v4';
 
 @prefix('zod-controller-only-entities')
 export default class ZodControllerOnlyEntityController {
+  @openapi({
+    summary: 'Get ZodControllerOnlyEntities',
+  })
   @get()
   static getZodControllerOnlyEntities = withZod({
     query: z.object({ search: z.string() }),
@@ -14,6 +17,9 @@ export default class ZodControllerOnlyEntityController {
     },
   });
 
+  @openapi({
+    summary: 'Update ZodControllerOnlyEntity',
+  })
   @put(':id')
   static updateZodControllerOnlyEntity = withZod({
     body: z.object({

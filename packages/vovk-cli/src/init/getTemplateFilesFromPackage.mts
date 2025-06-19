@@ -34,7 +34,10 @@ export default async function getTemplateFilesFromPackage(
       (fileName) => fileName.startsWith('module-templates/') && !fileName.endsWith('/') && fileName.endsWith('.ts.ejs')
     )
     .map((fileName) => [
-      fileName.substring('module-templates/'.length).replace(/\.ts\.ejs$/, ''),
+      fileName
+        .substring('module-templates/'.length)
+        .replace(/\.ts\.ejs$/, '')
+        .toLowerCase(),
       `${packageName}/${fileName}`,
     ]);
 

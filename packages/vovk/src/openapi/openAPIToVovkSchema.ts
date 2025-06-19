@@ -12,6 +12,8 @@ import {
 import { generateFnName } from './generateFnName';
 import { camelCase } from '../utils/camelCase';
 
+const EXTENSIONS_SEGMENT_NAME = 'extensions';
+
 // fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: KnownAny): KnownAny {
   if (obj === null || typeof obj !== 'object') return obj;
@@ -87,14 +89,15 @@ const getNamesNestJS = (operationObject: OperationObject): [string, string] => {
   if (!controllerHandlerMatch) {
     throw new Error(`Invalid operationId format for NestJS: ${operationId}`);
   }
-  return controllerHandlerMatch.slice(1, 3) as [string, string];
+  const [controllerName, handlerName] = controllerHandlerMatch.slice(1, 3) as [string, string];
+  return [controllerName.replace(/Controller$/, 'RPC'), handlerName];
 };
 
 const normalizeGetModuleName = (
-  getModuleName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'][number]['getModuleName']
+  getModuleName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['extensionModules'][number]['getModuleName']
 ) => {
   if (getModuleName === 'nestjs-operation-id') {
-    getModuleName = (operationObject: OperationObject) => getNamesNestJS(operationObject)[0];
+    getModuleName = ({ operationObject }: { operationObject: OperationObject }) => getNamesNestJS(operationObject)[0];
   } else if (typeof getModuleName === 'string') {
     const moduleName = getModuleName;
     getModuleName = () => moduleName;
@@ -106,10 +109,10 @@ const normalizeGetModuleName = (
 };
 
 const normalizeGetMethodName = (
-  getMethodName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'][number]['getMethodName']
+  getMethodName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['extensionModules'][number]['getMethodName']
 ) => {
   if (getMethodName === 'nestjs-operation-id') {
-    getMethodName = (operationObject: OperationObject) => getNamesNestJS(operationObject)[1];
+    getMethodName = ({ operationObject }: { operationObject: OperationObject }) => getNamesNestJS(operationObject)[1];
   } else if (getMethodName === 'camel-case-operation-id') {
     getMethodName = ({ operationObject }: Parameters<GetOpenAPINameFn>[0]) => {
       const operationId = operationObject.operationId;
@@ -137,7 +140,7 @@ export function openAPIToVovkSchema({
   source: { object: openAPIObject },
   getModuleName = 'api',
   getMethodName = 'auto',
-}: VovkStrictConfig['extendClientWithOpenAPI']['rootModules'][number]): VovkSchema {
+}: VovkStrictConfig['extendClientWithOpenAPI']['extensionModules'][number]): VovkSchema {
   const forceApiRoot = apiRoot ?? openAPIObject.servers?.[0]?.url;
 
   if (!forceApiRoot) {
@@ -146,11 +149,10 @@ export function openAPIToVovkSchema({
   const schema: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {
-      '': {
+      [EXTENSIONS_SEGMENT_NAME]: {
         $schema: VovkSchemaIdEnum.SEGMENT,
         emitSchema: true,
-        segmentName: '',
-        forceApiRoot,
+        segmentName: EXTENSIONS_SEGMENT_NAME,
         controllers: {},
       },
     },
@@ -162,7 +164,7 @@ export function openAPIToVovkSchema({
       openapi: openAPIObject,
     },
   };
-  const segment = schema.segments[''];
+  const segment = schema.segments[EXTENSIONS_SEGMENT_NAME];
   getModuleName = normalizeGetModuleName(getModuleName);
   getMethodName = normalizeGetMethodName(getMethodName);
   return Object.entries(openAPIObject.paths ?? {}).reduce((acc, [path, operations]) => {
@@ -181,6 +183,7 @@ export function openAPIToVovkSchema({
         operationObject: operation,
       });
       segment.controllers[rpcModuleName] ??= {
+        forceApiRoot,
         rpcModuleName,
         handlers: {},
       };

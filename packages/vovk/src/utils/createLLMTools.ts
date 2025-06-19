@@ -1,27 +1,39 @@
-import type { KnownAny, VovkHandlerSchema, VovkLLMFunction } from '../types';
+import type { KnownAny, VovkHandlerSchema, VovkLLMTool } from '../types';
 
 type Handler = ((...args: KnownAny[]) => KnownAny) & {
-  func?: (input: KnownAny) => KnownAny;
+  fn?: (input: KnownAny) => KnownAny;
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
 };
 
-const createLLMFunction = ({
+type CallerInput = {
+  handler: Handler;
+  body: KnownAny;
+  query: KnownAny;
+  params: KnownAny;
+  schema: VovkHandlerSchema;
+  init?: RequestInit;
+  handlerName: string;
+  rpcModuleName: string;
+};
+
+const createLLMTool = ({
   rpcModuleName,
   handlerName,
   caller,
-  modules,
-  onSuccess,
+  module,
+  init,
+  onExecute,
   onError,
 }: {
   rpcModuleName: string;
   handlerName: string;
   caller: typeof defaultCaller;
-  modules: Record<string, Record<string, Handler>>;
-  onSuccess: (result: KnownAny) => void;
-  onError: (error: Error) => void;
-}): VovkLLMFunction => {
-  const module = modules[rpcModuleName];
+  module: Record<string, Handler>;
+  init: RequestInit | undefined;
+  onExecute: (result: KnownAny, callerInput: CallerInput, options: KnownAny) => void;
+  onError: (error: Error, callerInput: CallerInput, options: KnownAny) => void;
+}): VovkLLMTool => {
   if (!module) {
     throw new Error(`Module "${rpcModuleName}" not found.`);
   }
@@ -46,18 +58,20 @@ const createLLMFunction = ({
   ) => {
     const { body, query, params } = input;
 
-    return caller(
-      {
-        schema,
-        handler,
-        body,
-        query,
-        params,
-      },
-      options
-    )
-      .then((data) => onSuccess(data) ?? data)
-      .catch((error) => onError?.(error) ?? error);
+    const callerInput: CallerInput = {
+      schema,
+      handler,
+      body,
+      query,
+      params,
+      init,
+      handlerName,
+      rpcModuleName,
+    };
+
+    return caller(callerInput, options)
+      .then((data) => onExecute(data, callerInput, options) ?? data)
+      .catch((error) => onError?.(error, callerInput, options) ?? error);
   };
   const parametersProperties = {
     ...(schema?.validation?.body
@@ -95,21 +109,7 @@ const createLLMFunction = ({
 };
 
 async function defaultCaller(
-  {
-    handler,
-    body,
-    query,
-    params,
-  }: {
-    handler: ((...args: KnownAny[]) => KnownAny) & {
-      func?: (req: KnownAny) => KnownAny;
-      isRPC?: boolean;
-    };
-    body: KnownAny;
-    query: KnownAny;
-    params: KnownAny;
-    schema: VovkHandlerSchema;
-  },
+  { handler, body, query, params, init }: CallerInput,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _options: KnownAny
 ) {
@@ -119,10 +119,11 @@ async function defaultCaller(
       body,
       query,
       params,
+      init,
     });
   }
-  if (handler.func) {
-    return handler.func({
+  if (handler.fn) {
+    return handler.fn({
       body,
       query,
       params,
@@ -131,34 +132,45 @@ async function defaultCaller(
 
   throw new Error('Handler is not a valid RPC or controller method');
 }
-export function createLLMFunctions({
+export function createLLMTools({
   modules,
   caller = defaultCaller,
-  onSuccess = (result) => result,
+  onExecute = (result) => result,
   onError = () => {},
 }: {
-  modules: Record<string, Record<string, (...args: KnownAny[]) => KnownAny>>;
+  modules: Record<string, object | [object, { init?: RequestInit }]>;
   caller?: typeof defaultCaller;
-  onSuccess?: (result: KnownAny) => void;
-  onError?: (error: Error) => void;
-}): { functions: VovkLLMFunction[] } {
-  const functions = Object.entries(modules ?? {})
-    .map(([rpcModuleName, module]) => {
+  onExecute?: (result: KnownAny, callerInput: CallerInput, options: KnownAny) => void;
+  onError?: (error: Error, callerInput: CallerInput, options: KnownAny) => void;
+}): { tools: VovkLLMTool[] } {
+  const moduleWithConfig = modules as
+    | Record<string, Record<string, Handler>>
+    | Record<string, [Record<string, Handler>, { init?: RequestInit }]>;
+  const tools = Object.entries(moduleWithConfig ?? {})
+    .map(([rpcModuleName, moduleWithconfig]) => {
+      let init: RequestInit | undefined;
+      let module: Record<string, Handler>;
+      if (Array.isArray(moduleWithconfig)) {
+        [module, { init }] = moduleWithconfig;
+      } else {
+        module = moduleWithconfig;
+      }
       return Object.entries(module ?? {})
-        .filter(([, handler]) => (handler as unknown as { schema: VovkHandlerSchema }).schema?.openapi)
+        .filter(([, handler]) => (handler as { schema?: VovkHandlerSchema } | undefined)?.schema?.openapi)
         .map(([handlerName]) =>
-          createLLMFunction({
+          createLLMTool({
             rpcModuleName,
             handlerName,
             caller,
-            modules,
-            onSuccess,
+            module,
+            init,
+            onExecute,
             onError,
           })
         );
     })
     .flat();
   return {
-    functions,
+    tools,
   };
 }

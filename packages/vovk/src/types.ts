@@ -26,6 +26,7 @@ export type VovkControllerSchema<T = KnownAny> = {
   rpcModuleName: string;
   originalControllerName?: string;
   prefix?: string;
+  forceApiRoot?: string;
   handlers: Record<string, VovkHandlerSchema<T>>;
 };
 
@@ -64,7 +65,6 @@ export type VovkControllerInternal = {
   _prefix?: VovkControllerSchema['prefix'];
   _handlers: VovkControllerSchema['handlers'];
   _handlersMetadata?: Record<string, { staticParams?: Record<string, string>[] }>;
-  _activated?: true;
   _onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
 };
 
@@ -298,7 +298,7 @@ export enum HttpStatus {
 
 // -----
 
-export interface VovkLLMFunction {
+export interface VovkLLMTool {
   execute: (
     input: {
       body?: KnownAny;
@@ -426,7 +426,7 @@ type VovkUserConfig = {
   libs?: Record<string, KnownAny>;
   segmentConfig?: false | SegmentConfig;
   extendClientWithOpenAPI?: {
-    rootModules: {
+    extensionModules: {
       source:
         | {
             file: string;
@@ -440,7 +440,7 @@ type VovkUserConfig = {
       apiRoot?: string;
       getModuleName?: // if not provided, will use "api"
       | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
-        | (string & {}) // literal module name, like MedusaRPC
+        | (string & {}) // literal module name, like MedusaRPC, GithubReposRPC, etc.
         | 'api' // declared for documentation purposes as default
         | GetOpenAPINameFn;
       getMethodName?: // if not provided, will use 'camel-case-operation-id' if operationId is snake_case, in other cases will use 'auto' strategy
@@ -461,7 +461,7 @@ export type VovkStrictConfig = Required<
   >
 > & {
   emitConfig: (keyof VovkStrictConfig | string)[];
-  bundle: RequireAllExcept<Exclude<VovkUserConfig['bundle'], undefined>, 'includeSegments' | 'excludeSegments'>;
+  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>;
   imports: {
     fetcher: [string, string] | [string];
     validateOnClient: [string, string] | [string] | null;
@@ -471,14 +471,14 @@ export type VovkStrictConfig = Required<
   composedClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
   extendClientWithOpenAPI: {
-    rootModules: {
+    extensionModules: {
       source: Exclude<
-        Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'][number]['source'],
+        NonNullable<VovkConfig['extendClientWithOpenAPI']>['extensionModules'][number]['source'],
         { file: string } | { url: string } // "object" only
       >;
       apiRoot: string;
-      getModuleName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'][number]['getModuleName'];
-      getMethodName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'][number]['getMethodName'];
+      getModuleName: NonNullable<VovkConfig['extendClientWithOpenAPI']>['extensionModules'][number]['getModuleName'];
+      getMethodName: NonNullable<VovkConfig['extendClientWithOpenAPI']>['extensionModules'][number]['getMethodName'];
     }[];
   };
 };

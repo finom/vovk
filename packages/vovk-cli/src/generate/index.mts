@@ -32,9 +32,7 @@ export class VovkGenerate {
     const { watch } = this.#cliGenerateOptions;
     if (watch) {
       const throttleDelay = typeof watch === 'boolean' ? THROTTLE_DELAY : parseFloat(watch) * 1e3 || THROTTLE_DELAY;
-      this.watch({
-        throttleDelay,
-      });
+      this.watch({ throttleDelay });
     } else {
       this.generate();
     }

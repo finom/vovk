@@ -6,9 +6,9 @@ import type {
   HttpMethod,
   VovkSchema,
 } from '../types.js';
-import type { VovkClient, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types.js';
+import type { VovkClient, VovkClientFetcher, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types.js';
 
-import { fetcher } from './fetcher.js';
+import { fetcher as defaultFetcher } from './fetcher.js';
 import { defaultHandler } from './defaultHandler.js';
 import { defaultStreamHandler } from './defaultStreamHandler.js';
 import serializeQuery from '../utils/serializeQuery.js';
@@ -32,17 +32,17 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   schema: VovkSchema,
   segmentName: string,
   rpcModuleName: string,
+  fetcher: VovkClientFetcher<OPTS> = defaultFetcher,
   options?: VovkDefaultFetcherOptions<OPTS>
 ): VovkClient<T, OPTS> => {
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];
-  if (!segmentSchema) throw new Error(`Unable to create RPC object. Segment schema is missing. Check client template.`);
+  if (!segmentSchema) throw new Error(`Unable to create RPC module. Segment schema is missing. Check client template.`);
   const controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
   const client = {} as VovkClient<T, OPTS>;
   if (!controllerSchema)
-    throw new Error(`Unable to create RPC object. Controller schema is missing. Check client template.`);
+    throw new Error(`Unable to create RPC module. Controller schema is missing. Check client template.`);
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
-  const { fetcher: settingsFetcher = fetcher } = options ?? {};
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
@@ -51,18 +51,20 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       params,
       query,
     }: {
-      apiRoot: string;
+      apiRoot?: string;
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => {
+      apiRoot = apiRoot ?? controllerSchema.forceApiRoot ?? options?.apiRoot ?? '/api';
       const endpoint = [
         apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
         apiRoot,
-        segmentNamePath,
+        controllerSchema.forceApiRoot ? '' : segmentNamePath,
         getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query),
       ]
         .filter(Boolean)
-        .join('/');
+        .join('/')
+        .replace(/([^:])\/+/g, '$1/'); // replace // by / but not for protocols (http://, https://)
       return endpoint;
     };
 
@@ -72,11 +74,9 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         query?: { [key: string]: string };
         params?: { [key: string]: string };
         validateOnClient?: VovkValidateOnClient;
-        fetcher?: VovkDefaultFetcherOptions<OPTS>['fetcher'];
         transform?: (response: unknown) => unknown;
       } & OPTS = {} as OPTS
     ) => {
-      const fetcher = input.fetcher ?? settingsFetcher;
       const validate = async ({
         body,
         query,
@@ -106,17 +106,12 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         defaultStreamHandler,
       };
       const internalInput = {
-        ...options?.defaultOptions,
+        ...options,
         ...input,
         body: input.body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
-        fetcher: undefined,
-        validateOnClient: undefined,
       };
-
-      delete internalInput.fetcher;
-      delete internalInput.validateOnClient;
 
       if (!fetcher) throw new Error('Fetcher is not provided');
 

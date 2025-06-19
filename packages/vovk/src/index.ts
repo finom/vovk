@@ -20,7 +20,7 @@ import {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkValidationType,
-  type VovkLLMFunction,
+  type VovkLLMTool,
   type VovkTypedMethod,
 } from './types';
 import {
@@ -41,7 +41,7 @@ import { generateStaticAPI } from './utils/generateStaticAPI';
 import { withValidationLibrary } from './utils/withValidationLibrary';
 import { withStandard } from './utils/withStandard';
 import { multitenant } from './utils/multitenant';
-import { createLLMFunctions } from './utils/createLLMFunctions';
+import { createLLMTools } from './utils/createLLMTools';
 import { createCodeExamples } from './utils/createCodeExamples';
 
 export {
@@ -67,7 +67,7 @@ export {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkValidationType,
-  type VovkLLMFunction,
+  type VovkLLMTool,
   type VovkTypedMethod,
   VovkSchemaIdEnum,
   JSONLinesResponse,
@@ -83,7 +83,7 @@ export {
   withValidationLibrary,
   withStandard,
   multitenant,
-  createLLMFunctions,
+  createLLMTools,
   createCodeExamples,
   openapi,
   openAPIToVovkSchema,

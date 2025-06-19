@@ -1,5 +1,5 @@
 import type { VovkBody, VovkQuery } from 'vovk';
-import type NoValidationControllerAndServiceEntityController from './NoValidationControllerAndServiceEntityController';
+import type NoValidationControllerAndServiceEntityController from './NoValidationControllerAndServiceEntityController.ts';
 
 export default class NoValidationControllerAndServiceEntityService {
   static getNoValidationControllerAndServiceEntities = (

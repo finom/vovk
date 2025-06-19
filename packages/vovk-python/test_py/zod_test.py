@@ -46,7 +46,7 @@ class TestZod(unittest.TestCase):
                 body={"hello": "wrong_length"}, 
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body on server. At \"hello\":.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body on server. .*hello.*")
     
     def test_query(self) -> None:
         data: WithZodClientControllerRPC.HandleQueryQuery = WithZodClientControllerRPC.handle_query(
@@ -65,7 +65,7 @@ class TestZod(unittest.TestCase):
                 query={"search": "wrong_length"},  
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query on server. At \"search\":.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query on server. .*search.*")
 
     def test_nested_query(self) -> None:
         NESTED_QUERY_EXAMPLE: WithZodClientControllerRPC.HandleNestedQueryQuery = {
@@ -106,7 +106,7 @@ class TestZod(unittest.TestCase):
                 query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context1.exception), r"Validation failed\. Invalid query on server. At \"x\".*")
+        self.assertRegex(str(context1.exception), r"Validation failed\. Invalid query on server. .*at x.*")
 
         with self.assertRaises(ValidationError) as context2:
             WithZodClientControllerRPC.handle_nested_query(
@@ -131,7 +131,7 @@ class TestZod(unittest.TestCase):
                 params={"foo": "foo", "bar": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params on server. At \"bar\":.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params on server. .*bar.*")
 
     def test_output(self) -> None:
         data: WithZodClientControllerRPC.HandleOutputOutput = WithZodClientControllerRPC.handle_output(
@@ -143,7 +143,64 @@ class TestZod(unittest.TestCase):
             WithZodClientControllerRPC.handle_output(
                 query={"helloOutput": "wrong_length"},
             )
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output on server. At \"hello\":.*")
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output on server. .*hello.*")
+
+    def test_form(self) -> None:
+        """  
+        it('Should handle form data', async () => {
+            let formData = new FormData();
+            formData.append('hello', 'world');
+
+            const result = await WithZodClientControllerRPC.handleFormData({
+            body: formData,
+            query: { search: 'foo' },
+            });
+            const expected = {
+            formData: {
+                hello: 'world',
+            },
+            search: 'foo',
+            };
+            null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies typeof expected;
+            // @ts-expect-error Expect error
+            null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies null;
+            deepStrictEqual(result satisfies typeof expected, expected);
+
+            const { rejects } = expectPromise(async () => {
+            formData = new FormData();
+            formData.append('hello', 'wrong_length');
+            await WithZodClientControllerRPC.handleFormData({
+                body: formData,
+                query: { search: 'foo' },
+                disableClientValidation: true,
+            });
+            });
+
+            await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+            await rejects.toThrowError(HttpException);
+        });
+        """
+        data: WithZodClientControllerRPC.HandleFormDataBody = WithZodClientControllerRPC.handle_form_data(
+            body={"hello": "world"},
+            query={"search": "value"},
+        )
+        self.assertEqual(data, {'formData': {'hello': 'world'}, 'search': 'value'})
+
+        with self.assertRaises(ValidationError) as context:
+            WithZodClientControllerRPC.handle_form_data(
+                body={"hello": "wrong_length"},
+                query={"search": "value"},
+            )
+        
+        self.assertIn("'wrong_length' is too long", str(context.exception).lower())
+
+        with self.assertRaises(HttpException) as context2:
+            WithZodClientControllerRPC.handle_form_data(
+                body={"hello": "wrong_length"},
+                query={"search": "value"},
+                disable_client_validation=True
+            )
+        self.assertRegex(str(context2.exception), r"Validation failed. Invalid form on server. .*hello.*")
 
     def test_stream(self) -> None: ## TODO: StreamException????
         iterator: Generator[WithZodClientControllerRPC.HandleStreamIteration, None, None] = WithZodClientControllerRPC.handle_stream(
@@ -161,7 +218,7 @@ class TestZod(unittest.TestCase):
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0 on server. At \"value\".*")
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0 on server. .*value.*")
     def test_constraints(self) -> None:
         # List of keys that are not supported
         not_supported: List[str] = []
@@ -188,8 +245,7 @@ class TestZod(unittest.TestCase):
                 )
             self.assertRegex(
                 str(context1.exception), 
-                rf"Validation failed\. Invalid body on server. At \"{key}.*",
-                
+                rf"Validation failed\. Invalid body on server. .*{key}.*",
             )
             
             # Test with client validation enabled

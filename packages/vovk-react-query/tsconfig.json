@@ -6,9 +6,9 @@
     "preserveSymlinks": true,
     "paths": {
       "react/*": ["../../node_modules/react/*"],
-      "vovk/*": ["../../node_modules/vovk/mjs/*"],
+      "vovk/*": ["../../node_modules/vovk/mjs/*"]
     }
   },
   "include": ["src/index.ts"],
-  "exclude": ["dist", "node_modules", "**/dist/**"],
+  "exclude": ["dist", "node_modules", "**/dist/**"]
 }

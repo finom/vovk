@@ -1,10 +1,6 @@
-//#region .tmp-ts-rpc/fullSchema.d.ts
-declare const fullSchema: {
+//#region tmp_ts_rpc/schema.d.ts
+declare const schema: {
   $schema: string;
-  config: {
-    libs: {};
-    $schema: string;
-  };
   segments: {
     'foo/client': {
       $schema: string;
@@ -170,6 +166,7 @@ declare const fullSchema: {
             handleAll: {
               validation: {
                 body: {
+                  $schema: string;
                   type: string;
                   properties: {
                     hello: {
@@ -177,8 +174,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     search: {
@@ -186,8 +185,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 params: {
+                  $schema: string;
                   type: string;
                   properties: {
                     foo: {
@@ -198,8 +199,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 output: {
+                  $schema: string;
                   type: string;
                   properties: {
                     body: {
@@ -210,6 +213,7 @@ declare const fullSchema: {
                         };
                       };
                       required: string[];
+                      additionalProperties: boolean;
                     };
                     query: {
                       type: string;
@@ -219,6 +223,7 @@ declare const fullSchema: {
                         };
                       };
                       required: string[];
+                      additionalProperties: boolean;
                     };
                     params: {
                       type: string;
@@ -231,6 +236,7 @@ declare const fullSchema: {
                         };
                       };
                       required: string[];
+                      additionalProperties: boolean;
                     };
                     vovkParams: {
                       type: string;
@@ -243,9 +249,11 @@ declare const fullSchema: {
                         };
                       };
                       required: string[];
+                      additionalProperties: boolean;
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               path: string;
@@ -290,6 +298,7 @@ declare const fullSchema: {
             handleQuery: {
               validation: {
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     search: {
@@ -298,6 +307,7 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -306,6 +316,7 @@ declare const fullSchema: {
             handleBody: {
               validation: {
                 body: {
+                  $schema: string;
                   type: string;
                   properties: {
                     hello: {
@@ -314,6 +325,7 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -322,6 +334,7 @@ declare const fullSchema: {
             handleParams: {
               validation: {
                 params: {
+                  $schema: string;
                   type: string;
                   properties: {
                     foo: {
@@ -334,6 +347,7 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               path: string;
@@ -342,6 +356,7 @@ declare const fullSchema: {
             handleNestedQuery: {
               validation: {
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     x: {
@@ -394,19 +409,24 @@ declare const fullSchema: {
                                       };
                                     };
                                     required: string[];
+                                    additionalProperties: boolean;
                                   };
                                 };
                                 required: string[];
+                                additionalProperties: boolean;
                               };
                             };
                           };
                           required: string[];
+                          additionalProperties: boolean;
                         };
                       };
                       required: string[];
+                      additionalProperties: boolean;
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -415,6 +435,7 @@ declare const fullSchema: {
             handleOutput: {
               validation: {
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     helloOutput: {
@@ -422,8 +443,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 output: {
+                  $schema: string;
                   type: string;
                   properties: {
                     hello: {
@@ -432,6 +455,7 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -440,6 +464,7 @@ declare const fullSchema: {
             handleStream: {
               validation: {
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     values: {
@@ -450,8 +475,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 iteration: {
+                  $schema: string;
                   type: string;
                   properties: {
                     value: {
@@ -460,6 +487,7 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -468,9 +496,11 @@ declare const fullSchema: {
             handleSchemaConstraints: {
               validation: {
                 body: {
+                  $schema: string;
                   type: string;
                   properties: {
                     enum_value: {
+                      type: string;
                       enum: string[];
                     };
                     num_minimum: {
@@ -513,7 +543,6 @@ declare const fullSchema: {
                     };
                     str_pattern: {
                       type: string;
-                      format: string;
                       pattern: string;
                     };
                     str_email: {
@@ -560,6 +589,7 @@ declare const fullSchema: {
                         };
                       };
                       required: string[];
+                      additionalProperties: boolean;
                     };
                     obj_strict: {
                       type: string;
@@ -569,9 +599,7 @@ declare const fullSchema: {
                         };
                       };
                       required: string[];
-                      additionalProperties: {
-                        not: {};
-                      };
+                      additionalProperties: boolean;
                     };
                     logical_anyOf: {
                       anyOf: (
@@ -596,6 +624,7 @@ declare const fullSchema: {
                               b?: undefined;
                             };
                             required: string[];
+                            additionalProperties: {};
                           }
                         | {
                             type: string;
@@ -606,11 +635,13 @@ declare const fullSchema: {
                               a?: undefined;
                             };
                             required: string[];
+                            additionalProperties: {};
                           }
                       )[];
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -623,7 +654,21 @@ declare const fullSchema: {
             };
             handleFormData: {
               validation: {
+                body: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                      maxLength: number;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                  'x-formData': boolean;
+                };
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     search: {
@@ -631,6 +676,42 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
+                };
+              };
+              httpMethod: string;
+              path: string;
+            };
+            handleFormDataWithFile: {
+              validation: {
+                body: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                      maxLength: number;
+                    };
+                    file: {
+                      type: string;
+                      format: string;
+                      contentEncoding: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                  'x-formData': boolean;
+                };
+                query: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    search: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -639,6 +720,7 @@ declare const fullSchema: {
             disableServerSideValidationBool: {
               validation: {
                 body: {
+                  $schema: string;
                   type: string;
                   properties: {
                     hello: {
@@ -647,8 +729,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     search: {
@@ -656,6 +740,7 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -664,6 +749,7 @@ declare const fullSchema: {
             disableServerSideValidationStrings: {
               validation: {
                 body: {
+                  $schema: string;
                   type: string;
                   properties: {
                     hello: {
@@ -672,8 +758,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     search: {
@@ -682,6 +770,7 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -695,6 +784,7 @@ declare const fullSchema: {
             skipSchemaEmissionStrings: {
               validation: {
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     search: {
@@ -702,6 +792,7 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
@@ -710,6 +801,7 @@ declare const fullSchema: {
             validateEachIteration: {
               validation: {
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     values: {
@@ -720,8 +812,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 iteration: {
+                  $schema: string;
                   type: string;
                   properties: {
                     value: {
@@ -730,10 +824,203 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               httpMethod: string;
               path: string;
+            };
+            handleAllAsFunction: {
+              validation: {
+                body: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+                query: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    search: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+                params: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    foo: {
+                      type: string;
+                    };
+                    bar: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+                output: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    body: {
+                      type: string;
+                      properties: {
+                        hello: {
+                          type: string;
+                        };
+                      };
+                      required: string[];
+                      additionalProperties: boolean;
+                    };
+                    query: {
+                      type: string;
+                      properties: {
+                        search: {
+                          type: string;
+                        };
+                      };
+                      required: string[];
+                      additionalProperties: boolean;
+                    };
+                    params: {
+                      type: string;
+                      properties: {
+                        foo: {
+                          type: string;
+                        };
+                        bar: {
+                          type: string;
+                        };
+                      };
+                      required: string[];
+                      additionalProperties: boolean;
+                    };
+                    vovkParams: {
+                      type: string;
+                      properties: {
+                        foo: {
+                          type: string;
+                        };
+                        bar: {
+                          type: string;
+                        };
+                      };
+                      required: string[];
+                      additionalProperties: boolean;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+              };
+              path: string;
+              httpMethod: string;
+            };
+            handleAllNoHttpAsFunction: {
+              validation: {
+                body: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+                query: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    search: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+                params: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    foo: {
+                      type: string;
+                    };
+                    bar: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+                output: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    body: {
+                      type: string;
+                      properties: {
+                        hello: {
+                          type: string;
+                        };
+                      };
+                      required: string[];
+                      additionalProperties: boolean;
+                    };
+                    query: {
+                      type: string;
+                      properties: {
+                        search: {
+                          type: string;
+                        };
+                      };
+                      required: string[];
+                      additionalProperties: boolean;
+                    };
+                    params: {
+                      type: string;
+                      properties: {
+                        foo: {
+                          type: string;
+                        };
+                        bar: {
+                          type: string;
+                        };
+                      };
+                      required: string[];
+                      additionalProperties: boolean;
+                    };
+                    vovkParams: {
+                      type: string;
+                      properties: {
+                        foo: {
+                          type: string;
+                        };
+                        bar: {
+                          type: string;
+                        };
+                      };
+                      required: string[];
+                      additionalProperties: boolean;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+              };
+              path: string;
+              httpMethod: string;
             };
           };
         };
@@ -1186,6 +1473,17 @@ declare const fullSchema: {
             };
             handleFormData: {
               validation: {
+                body: {
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                      maxLength: number;
+                    };
+                  };
+                  required: string[];
+                  'x-formData': boolean;
+                };
                 query: {
                   type: string;
                   properties: {
@@ -1449,7 +1747,35 @@ declare const fullSchema: {
               validation: {
                 query: {
                   'x-isDto': boolean;
-                  definitions: {};
+                  definitions: {
+                    ZDto: {
+                      properties: {
+                        f: {
+                          type: string;
+                        };
+                        u: {
+                          items: {
+                            type: string;
+                          };
+                          type: string;
+                        };
+                        d: {
+                          $ref: string;
+                        };
+                      };
+                      type: string;
+                      required: string[];
+                    };
+                    DDto: {
+                      properties: {
+                        x: {
+                          type: string;
+                        };
+                      };
+                      type: string;
+                      required: string[];
+                    };
+                  };
                   properties: {
                     x: {
                       type: string;
@@ -1460,6 +1786,9 @@ declare const fullSchema: {
                         type: string;
                       };
                       type: string;
+                    };
+                    z: {
+                      $ref: string;
                     };
                   };
                   type: string;
@@ -1542,7 +1871,32 @@ declare const fullSchema: {
               validation: {
                 body: {
                   'x-isDto': boolean;
-                  definitions: {};
+                  definitions: {
+                    RequiredObject: {
+                      properties: {
+                        requiredField: {
+                          type: string;
+                          not: {
+                            type: string;
+                          };
+                        };
+                        optionalField: {
+                          type: string;
+                        };
+                      };
+                      type: string;
+                      required: string[];
+                    };
+                    StrictObject: {
+                      properties: {
+                        knownField: {
+                          type: string;
+                        };
+                      };
+                      type: string;
+                      required: string[];
+                    };
+                  };
                   properties: {
                     enum_value: {
                       type: string;
@@ -1619,6 +1973,12 @@ declare const fullSchema: {
                       maxItems: number;
                       minItems: number;
                     };
+                    obj_required: {
+                      $ref: string;
+                    };
+                    obj_strict: {
+                      $ref: string;
+                    };
                     logical_allOf: {
                       type: string;
                     };
@@ -1637,6 +1997,19 @@ declare const fullSchema: {
             };
             handleFormData: {
               validation: {
+                body: {
+                  'x-isDto': boolean;
+                  definitions: {};
+                  properties: {
+                    hello: {
+                      maxLength: number;
+                      type: string;
+                    };
+                  };
+                  type: string;
+                  required: string[];
+                  'x-formData': boolean;
+                };
                 query: {
                   'x-isDto': boolean;
                   definitions: {};
@@ -1903,10 +2276,16 @@ declare const fullSchema: {
             getNoValidationControllerOnlyEntities: {
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             updateNoValidationControllerOnlyEntity: {
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             createNoValidationControllerOnlyEntity: {
               path: string;
@@ -1926,10 +2305,16 @@ declare const fullSchema: {
             getNoValidationControllerAndServiceEntities: {
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             updateNoValidationControllerAndServiceEntity: {
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             createNoValidationControllerAndServiceEntity: {
               path: string;
@@ -1949,6 +2334,7 @@ declare const fullSchema: {
             getZodControllerOnlyEntities: {
               validation: {
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     search: {
@@ -1956,25 +2342,33 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             updateZodControllerOnlyEntity: {
               validation: {
                 body: {
+                  $schema: string;
                   type: string;
                   properties: {
                     foo: {
                       anyOf: {
+                        type: string;
                         const: string;
                       }[];
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     q: {
@@ -1982,8 +2376,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 params: {
+                  $schema: string;
                   type: string;
                   properties: {
                     id: {
@@ -1991,10 +2387,14 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             createZodControllerOnlyEntity: {
               path: string;
@@ -2014,6 +2414,7 @@ declare const fullSchema: {
             getZodControllerAndServiceEntities: {
               validation: {
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     search: {
@@ -2021,25 +2422,33 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             updateZodControllerAndServiceEntity: {
               validation: {
                 body: {
+                  $schema: string;
                   type: string;
                   properties: {
                     foo: {
                       anyOf: {
+                        type: string;
                         const: string;
                       }[];
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 query: {
+                  $schema: string;
                   type: string;
                   properties: {
                     q: {
@@ -2047,8 +2456,10 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
                 params: {
+                  $schema: string;
                   type: string;
                   properties: {
                     id: {
@@ -2056,10 +2467,14 @@ declare const fullSchema: {
                     };
                   };
                   required: string[];
+                  additionalProperties: boolean;
                 };
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             createZodControllerAndServiceEntity: {
               path: string;
@@ -2090,6 +2505,9 @@ declare const fullSchema: {
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             updateYupControllerOnlyEntity: {
               validation: {
@@ -2115,6 +2533,9 @@ declare const fullSchema: {
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             createYupControllerOnlyEntity: {
               path: string;
@@ -2145,6 +2566,9 @@ declare const fullSchema: {
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             updateYupControllerAndServiceEntity: {
               validation: {
@@ -2170,6 +2594,9 @@ declare const fullSchema: {
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             createYupControllerAndServiceEntity: {
               path: string;
@@ -2202,6 +2629,9 @@ declare const fullSchema: {
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             updateDtoControllerOnlyEntity: {
               validation: {
@@ -2231,6 +2661,9 @@ declare const fullSchema: {
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             createDtoControllerOnlyEntity: {
               path: string;
@@ -2263,6 +2696,9 @@ declare const fullSchema: {
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             updateDtoControllerAndServiceEntity: {
               validation: {
@@ -2292,6 +2728,9 @@ declare const fullSchema: {
               };
               path: string;
               httpMethod: string;
+              openapi: {
+                summary: string;
+              };
             };
             createDtoControllerAndServiceEntity: {
               path: string;
@@ -2306,5 +2745,14 @@ declare const fullSchema: {
       };
     };
   };
-}; //#endregion
-export { fullSchema };
+  meta: {
+    config: {
+      $schema: string;
+      libs: {};
+    };
+    $schema: string;
+    apiRoot: string;
+  };
+};
+//#endregion
+export { schema };

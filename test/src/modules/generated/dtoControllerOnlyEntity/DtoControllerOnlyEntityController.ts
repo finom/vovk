@@ -1,4 +1,4 @@
-import { prefix, get, put, post, del } from 'vovk';
+import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { IsString, IsIn } from 'class-validator';
 
@@ -19,6 +19,9 @@ class UpdateDtoControllerOnlyEntityQueryDto {
 
 @prefix('dto-controller-only-entities')
 export default class DtoControllerOnlyEntityController {
+  @openapi({
+    summary: 'Get DtoControllerOnlyEntities',
+  })
   @get()
   static getDtoControllerOnlyEntities = withDto({
     query: GetDtoControllerOnlyEntitiesQueryDto,
@@ -29,6 +32,9 @@ export default class DtoControllerOnlyEntityController {
     },
   });
 
+  @openapi({
+    summary: 'Update DtoControllerOnlyEntity',
+  })
   @put(':id')
   static updateDtoControllerOnlyEntity = withDto({
     body: UpdateDtoControllerOnlyEntityBodyDto,

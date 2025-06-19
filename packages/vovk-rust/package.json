@@ -1,6 +1,6 @@
 {
   "name": "vovk-rust",
-  "version": "0.0.1-draft.30",
+  "version": "0.0.1-draft.31",
   "description": "Vovk.ts Rust client",
   "scripts": {
     "build": "tsc",

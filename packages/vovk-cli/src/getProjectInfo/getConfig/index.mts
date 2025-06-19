@@ -76,8 +76,8 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     libs: conf.libs ?? {},
     segmentConfig: conf.segmentConfig ?? {},
     extendClientWithOpenAPI: {
-      rootModules: await normalizeOpenAPIRootModules({
-        rootModules: conf.extendClientWithOpenAPI?.rootModules ?? [],
+      extensionModules: await normalizeOpenAPIRootModules({
+        extensionModules: conf.extendClientWithOpenAPI?.extensionModules ?? [],
         cwd,
       }),
     },

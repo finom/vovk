@@ -38,83 +38,90 @@ var __toESM = (mod, isNodeMode, target) => (
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
 //#endregion
-//#region ../packages/vovk/dist/types.js
-var require_types$2 = __commonJS({
-  '../packages/vovk/dist/types.js'(exports) {
+//#region ../packages/vovk/mjs/types.js
+var require_types$3 = __commonJS({
+  '../packages/vovk/mjs/types.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.HttpStatus = exports.HttpMethod = void 0;
-    var HttpMethod;
-    (function (HttpMethod$1) {
-      HttpMethod$1['GET'] = 'GET';
-      HttpMethod$1['POST'] = 'POST';
-      HttpMethod$1['PUT'] = 'PUT';
-      HttpMethod$1['PATCH'] = 'PATCH';
-      HttpMethod$1['DELETE'] = 'DELETE';
-      HttpMethod$1['HEAD'] = 'HEAD';
-      HttpMethod$1['OPTIONS'] = 'OPTIONS';
-    })(HttpMethod || (exports.HttpMethod = HttpMethod = {}));
-    var HttpStatus;
-    (function (HttpStatus$1) {
-      HttpStatus$1[(HttpStatus$1['NULL'] = 0)] = 'NULL';
-      HttpStatus$1[(HttpStatus$1['CONTINUE'] = 100)] = 'CONTINUE';
-      HttpStatus$1[(HttpStatus$1['SWITCHING_PROTOCOLS'] = 101)] = 'SWITCHING_PROTOCOLS';
-      HttpStatus$1[(HttpStatus$1['PROCESSING'] = 102)] = 'PROCESSING';
-      HttpStatus$1[(HttpStatus$1['EARLYHINTS'] = 103)] = 'EARLYHINTS';
-      HttpStatus$1[(HttpStatus$1['OK'] = 200)] = 'OK';
-      HttpStatus$1[(HttpStatus$1['CREATED'] = 201)] = 'CREATED';
-      HttpStatus$1[(HttpStatus$1['ACCEPTED'] = 202)] = 'ACCEPTED';
-      HttpStatus$1[(HttpStatus$1['NON_AUTHORITATIVE_INFORMATION'] = 203)] = 'NON_AUTHORITATIVE_INFORMATION';
-      HttpStatus$1[(HttpStatus$1['NO_CONTENT'] = 204)] = 'NO_CONTENT';
-      HttpStatus$1[(HttpStatus$1['RESET_CONTENT'] = 205)] = 'RESET_CONTENT';
-      HttpStatus$1[(HttpStatus$1['PARTIAL_CONTENT'] = 206)] = 'PARTIAL_CONTENT';
-      HttpStatus$1[(HttpStatus$1['AMBIGUOUS'] = 300)] = 'AMBIGUOUS';
-      HttpStatus$1[(HttpStatus$1['MOVED_PERMANENTLY'] = 301)] = 'MOVED_PERMANENTLY';
-      HttpStatus$1[(HttpStatus$1['FOUND'] = 302)] = 'FOUND';
-      HttpStatus$1[(HttpStatus$1['SEE_OTHER'] = 303)] = 'SEE_OTHER';
-      HttpStatus$1[(HttpStatus$1['NOT_MODIFIED'] = 304)] = 'NOT_MODIFIED';
-      HttpStatus$1[(HttpStatus$1['TEMPORARY_REDIRECT'] = 307)] = 'TEMPORARY_REDIRECT';
-      HttpStatus$1[(HttpStatus$1['PERMANENT_REDIRECT'] = 308)] = 'PERMANENT_REDIRECT';
-      HttpStatus$1[(HttpStatus$1['BAD_REQUEST'] = 400)] = 'BAD_REQUEST';
-      HttpStatus$1[(HttpStatus$1['UNAUTHORIZED'] = 401)] = 'UNAUTHORIZED';
-      HttpStatus$1[(HttpStatus$1['PAYMENT_REQUIRED'] = 402)] = 'PAYMENT_REQUIRED';
-      HttpStatus$1[(HttpStatus$1['FORBIDDEN'] = 403)] = 'FORBIDDEN';
-      HttpStatus$1[(HttpStatus$1['NOT_FOUND'] = 404)] = 'NOT_FOUND';
-      HttpStatus$1[(HttpStatus$1['METHOD_NOT_ALLOWED'] = 405)] = 'METHOD_NOT_ALLOWED';
-      HttpStatus$1[(HttpStatus$1['NOT_ACCEPTABLE'] = 406)] = 'NOT_ACCEPTABLE';
-      HttpStatus$1[(HttpStatus$1['PROXY_AUTHENTICATION_REQUIRED'] = 407)] = 'PROXY_AUTHENTICATION_REQUIRED';
-      HttpStatus$1[(HttpStatus$1['REQUEST_TIMEOUT'] = 408)] = 'REQUEST_TIMEOUT';
-      HttpStatus$1[(HttpStatus$1['CONFLICT'] = 409)] = 'CONFLICT';
-      HttpStatus$1[(HttpStatus$1['GONE'] = 410)] = 'GONE';
-      HttpStatus$1[(HttpStatus$1['LENGTH_REQUIRED'] = 411)] = 'LENGTH_REQUIRED';
-      HttpStatus$1[(HttpStatus$1['PRECONDITION_FAILED'] = 412)] = 'PRECONDITION_FAILED';
-      HttpStatus$1[(HttpStatus$1['PAYLOAD_TOO_LARGE'] = 413)] = 'PAYLOAD_TOO_LARGE';
-      HttpStatus$1[(HttpStatus$1['URI_TOO_LONG'] = 414)] = 'URI_TOO_LONG';
-      HttpStatus$1[(HttpStatus$1['UNSUPPORTED_MEDIA_TYPE'] = 415)] = 'UNSUPPORTED_MEDIA_TYPE';
-      HttpStatus$1[(HttpStatus$1['REQUESTED_RANGE_NOT_SATISFIABLE'] = 416)] = 'REQUESTED_RANGE_NOT_SATISFIABLE';
-      HttpStatus$1[(HttpStatus$1['EXPECTATION_FAILED'] = 417)] = 'EXPECTATION_FAILED';
-      HttpStatus$1[(HttpStatus$1['I_AM_A_TEAPOT'] = 418)] = 'I_AM_A_TEAPOT';
-      HttpStatus$1[(HttpStatus$1['MISDIRECTED'] = 421)] = 'MISDIRECTED';
-      HttpStatus$1[(HttpStatus$1['UNPROCESSABLE_ENTITY'] = 422)] = 'UNPROCESSABLE_ENTITY';
-      HttpStatus$1[(HttpStatus$1['FAILED_DEPENDENCY'] = 424)] = 'FAILED_DEPENDENCY';
-      HttpStatus$1[(HttpStatus$1['PRECONDITION_REQUIRED'] = 428)] = 'PRECONDITION_REQUIRED';
-      HttpStatus$1[(HttpStatus$1['TOO_MANY_REQUESTS'] = 429)] = 'TOO_MANY_REQUESTS';
-      HttpStatus$1[(HttpStatus$1['INTERNAL_SERVER_ERROR'] = 500)] = 'INTERNAL_SERVER_ERROR';
-      HttpStatus$1[(HttpStatus$1['NOT_IMPLEMENTED'] = 501)] = 'NOT_IMPLEMENTED';
-      HttpStatus$1[(HttpStatus$1['BAD_GATEWAY'] = 502)] = 'BAD_GATEWAY';
-      HttpStatus$1[(HttpStatus$1['SERVICE_UNAVAILABLE'] = 503)] = 'SERVICE_UNAVAILABLE';
-      HttpStatus$1[(HttpStatus$1['GATEWAY_TIMEOUT'] = 504)] = 'GATEWAY_TIMEOUT';
-      HttpStatus$1[(HttpStatus$1['HTTP_VERSION_NOT_SUPPORTED'] = 505)] = 'HTTP_VERSION_NOT_SUPPORTED';
-    })(HttpStatus || (exports.HttpStatus = HttpStatus = {}));
+    exports.VovkSchemaIdEnum = exports.HttpStatus = exports.HttpMethod = void 0;
+    var HttpMethod$1;
+    (function (HttpMethod$2) {
+      HttpMethod$2['GET'] = 'GET';
+      HttpMethod$2['POST'] = 'POST';
+      HttpMethod$2['PUT'] = 'PUT';
+      HttpMethod$2['PATCH'] = 'PATCH';
+      HttpMethod$2['DELETE'] = 'DELETE';
+      HttpMethod$2['HEAD'] = 'HEAD';
+      HttpMethod$2['OPTIONS'] = 'OPTIONS';
+    })(HttpMethod$1 || (exports.HttpMethod = HttpMethod$1 = {}));
+    var HttpStatus$1;
+    (function (HttpStatus$2) {
+      HttpStatus$2[(HttpStatus$2['NULL'] = 0)] = 'NULL';
+      HttpStatus$2[(HttpStatus$2['CONTINUE'] = 100)] = 'CONTINUE';
+      HttpStatus$2[(HttpStatus$2['SWITCHING_PROTOCOLS'] = 101)] = 'SWITCHING_PROTOCOLS';
+      HttpStatus$2[(HttpStatus$2['PROCESSING'] = 102)] = 'PROCESSING';
+      HttpStatus$2[(HttpStatus$2['EARLYHINTS'] = 103)] = 'EARLYHINTS';
+      HttpStatus$2[(HttpStatus$2['OK'] = 200)] = 'OK';
+      HttpStatus$2[(HttpStatus$2['CREATED'] = 201)] = 'CREATED';
+      HttpStatus$2[(HttpStatus$2['ACCEPTED'] = 202)] = 'ACCEPTED';
+      HttpStatus$2[(HttpStatus$2['NON_AUTHORITATIVE_INFORMATION'] = 203)] = 'NON_AUTHORITATIVE_INFORMATION';
+      HttpStatus$2[(HttpStatus$2['NO_CONTENT'] = 204)] = 'NO_CONTENT';
+      HttpStatus$2[(HttpStatus$2['RESET_CONTENT'] = 205)] = 'RESET_CONTENT';
+      HttpStatus$2[(HttpStatus$2['PARTIAL_CONTENT'] = 206)] = 'PARTIAL_CONTENT';
+      HttpStatus$2[(HttpStatus$2['AMBIGUOUS'] = 300)] = 'AMBIGUOUS';
+      HttpStatus$2[(HttpStatus$2['MOVED_PERMANENTLY'] = 301)] = 'MOVED_PERMANENTLY';
+      HttpStatus$2[(HttpStatus$2['FOUND'] = 302)] = 'FOUND';
+      HttpStatus$2[(HttpStatus$2['SEE_OTHER'] = 303)] = 'SEE_OTHER';
+      HttpStatus$2[(HttpStatus$2['NOT_MODIFIED'] = 304)] = 'NOT_MODIFIED';
+      HttpStatus$2[(HttpStatus$2['TEMPORARY_REDIRECT'] = 307)] = 'TEMPORARY_REDIRECT';
+      HttpStatus$2[(HttpStatus$2['PERMANENT_REDIRECT'] = 308)] = 'PERMANENT_REDIRECT';
+      HttpStatus$2[(HttpStatus$2['BAD_REQUEST'] = 400)] = 'BAD_REQUEST';
+      HttpStatus$2[(HttpStatus$2['UNAUTHORIZED'] = 401)] = 'UNAUTHORIZED';
+      HttpStatus$2[(HttpStatus$2['PAYMENT_REQUIRED'] = 402)] = 'PAYMENT_REQUIRED';
+      HttpStatus$2[(HttpStatus$2['FORBIDDEN'] = 403)] = 'FORBIDDEN';
+      HttpStatus$2[(HttpStatus$2['NOT_FOUND'] = 404)] = 'NOT_FOUND';
+      HttpStatus$2[(HttpStatus$2['METHOD_NOT_ALLOWED'] = 405)] = 'METHOD_NOT_ALLOWED';
+      HttpStatus$2[(HttpStatus$2['NOT_ACCEPTABLE'] = 406)] = 'NOT_ACCEPTABLE';
+      HttpStatus$2[(HttpStatus$2['PROXY_AUTHENTICATION_REQUIRED'] = 407)] = 'PROXY_AUTHENTICATION_REQUIRED';
+      HttpStatus$2[(HttpStatus$2['REQUEST_TIMEOUT'] = 408)] = 'REQUEST_TIMEOUT';
+      HttpStatus$2[(HttpStatus$2['CONFLICT'] = 409)] = 'CONFLICT';
+      HttpStatus$2[(HttpStatus$2['GONE'] = 410)] = 'GONE';
+      HttpStatus$2[(HttpStatus$2['LENGTH_REQUIRED'] = 411)] = 'LENGTH_REQUIRED';
+      HttpStatus$2[(HttpStatus$2['PRECONDITION_FAILED'] = 412)] = 'PRECONDITION_FAILED';
+      HttpStatus$2[(HttpStatus$2['PAYLOAD_TOO_LARGE'] = 413)] = 'PAYLOAD_TOO_LARGE';
+      HttpStatus$2[(HttpStatus$2['URI_TOO_LONG'] = 414)] = 'URI_TOO_LONG';
+      HttpStatus$2[(HttpStatus$2['UNSUPPORTED_MEDIA_TYPE'] = 415)] = 'UNSUPPORTED_MEDIA_TYPE';
+      HttpStatus$2[(HttpStatus$2['REQUESTED_RANGE_NOT_SATISFIABLE'] = 416)] = 'REQUESTED_RANGE_NOT_SATISFIABLE';
+      HttpStatus$2[(HttpStatus$2['EXPECTATION_FAILED'] = 417)] = 'EXPECTATION_FAILED';
+      HttpStatus$2[(HttpStatus$2['I_AM_A_TEAPOT'] = 418)] = 'I_AM_A_TEAPOT';
+      HttpStatus$2[(HttpStatus$2['MISDIRECTED'] = 421)] = 'MISDIRECTED';
+      HttpStatus$2[(HttpStatus$2['UNPROCESSABLE_ENTITY'] = 422)] = 'UNPROCESSABLE_ENTITY';
+      HttpStatus$2[(HttpStatus$2['FAILED_DEPENDENCY'] = 424)] = 'FAILED_DEPENDENCY';
+      HttpStatus$2[(HttpStatus$2['PRECONDITION_REQUIRED'] = 428)] = 'PRECONDITION_REQUIRED';
+      HttpStatus$2[(HttpStatus$2['TOO_MANY_REQUESTS'] = 429)] = 'TOO_MANY_REQUESTS';
+      HttpStatus$2[(HttpStatus$2['INTERNAL_SERVER_ERROR'] = 500)] = 'INTERNAL_SERVER_ERROR';
+      HttpStatus$2[(HttpStatus$2['NOT_IMPLEMENTED'] = 501)] = 'NOT_IMPLEMENTED';
+      HttpStatus$2[(HttpStatus$2['BAD_GATEWAY'] = 502)] = 'BAD_GATEWAY';
+      HttpStatus$2[(HttpStatus$2['SERVICE_UNAVAILABLE'] = 503)] = 'SERVICE_UNAVAILABLE';
+      HttpStatus$2[(HttpStatus$2['GATEWAY_TIMEOUT'] = 504)] = 'GATEWAY_TIMEOUT';
+      HttpStatus$2[(HttpStatus$2['HTTP_VERSION_NOT_SUPPORTED'] = 505)] = 'HTTP_VERSION_NOT_SUPPORTED';
+    })(HttpStatus$1 || (exports.HttpStatus = HttpStatus$1 = {}));
+    var VovkSchemaIdEnum$1;
+    (function (VovkSchemaIdEnum$2) {
+      VovkSchemaIdEnum$2['META'] = 'https://vovk.dev/api/spec/v3/meta.json';
+      VovkSchemaIdEnum$2['CONFIG'] = 'https://vovk.dev/api/spec/v3/config.json';
+      VovkSchemaIdEnum$2['SEGMENT'] = 'https://vovk.dev/api/spec/v3/segment.json';
+      VovkSchemaIdEnum$2['SCHEMA'] = 'https://vovk.dev/api/spec/v3/schema.json';
+    })(VovkSchemaIdEnum$1 || (exports.VovkSchemaIdEnum = VovkSchemaIdEnum$1 = {}));
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/HttpException.js
-var require_HttpException = __commonJS({
-  '../packages/vovk/dist/HttpException.js'(exports) {
+//#region ../packages/vovk/mjs/HttpException.js
+var require_HttpException$1 = __commonJS({
+  '../packages/vovk/mjs/HttpException.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.HttpException = void 0;
-    var HttpException = class extends Error {
+    var HttpException$1 = class extends Error {
       statusCode;
       message;
       cause;
@@ -125,14 +132,15 @@ var require_HttpException = __commonJS({
         this.cause = cause;
       }
     };
-    exports.HttpException = HttpException;
+    exports.HttpException = HttpException$1;
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/shim.js
-var require_shim = __commonJS({
-  '../packages/vovk/dist/utils/shim.js'() {
+//#region ../packages/vovk/mjs/utils/shim.js
+var require_shim$1 = __commonJS({
+  '../packages/vovk/mjs/utils/shim.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
     if (typeof Symbol.dispose !== 'symbol')
       Object.defineProperty(Symbol, 'dispose', {
         configurable: false,
@@ -151,13 +159,13 @@ var require_shim = __commonJS({
 });
 
 //#endregion
-//#region ../packages/vovk/dist/JSONLinesResponse.js
-var require_JSONLinesResponse = __commonJS({
-  '../packages/vovk/dist/JSONLinesResponse.js'(exports) {
+//#region ../packages/vovk/mjs/JSONLinesResponse.js
+var require_JSONLinesResponse$1 = __commonJS({
+  '../packages/vovk/mjs/JSONLinesResponse.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.JSONLinesResponse = void 0;
-    require_shim();
-    var JSONLinesResponse = class extends Response {
+    require_shim$1();
+    var JSONLinesResponse$1 = class extends Response {
       isClosed = false;
       controller;
       encoder;
@@ -210,16 +218,16 @@ var require_JSONLinesResponse = __commonJS({
         this.close();
       }
     };
-    exports.JSONLinesResponse = JSONLinesResponse;
+    exports.JSONLinesResponse = JSONLinesResponse$1;
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/parseQuery.js
-var require_parseQuery = __commonJS({
-  '../packages/vovk/dist/utils/parseQuery.js'(exports) {
+//#region ../packages/vovk/mjs/utils/parseQuery.js
+var require_parseQuery$1 = __commonJS({
+  '../packages/vovk/mjs/utils/parseQuery.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.default = parseQuery;
+    exports.default = parseQuery$1;
     /**
      * Parse a bracket-based key (e.g. "z[d][0][x]" or "arr[]")
      * into an array of path segments (strings or special push-markers).
@@ -227,7 +235,7 @@ var require_parseQuery = __commonJS({
      * Example: "z[d][0][x]" => ["z", "d", "0", "x"]
      * Example: "arr[]"      => ["arr", "" ]  // "" indicates "push" onto array
      */
-    function parseKey(key) {
+    function parseKey$1(key) {
       const segments$1 = [];
       const topKeyMatch = key.match(/^([^[\]]+)/);
       if (topKeyMatch) segments$1.push(topKeyMatch[1]);
@@ -243,7 +251,7 @@ var require_parseQuery = __commonJS({
      * - If segment is empty "" => push to array
      * - Else => object property
      */
-    function setValue(obj, path, value) {
+    function setValue$1(obj, path, value) {
       let current = obj;
       for (let i = 0; i < path.length; i++) {
         const segment = path[i];
@@ -303,7 +311,7 @@ var require_parseQuery = __commonJS({
      * @param queryString - The raw query string (e.g. location.search.slice(1))
      * @returns           - A nested object representing the query params
      */
-    function parseQuery(queryString) {
+    function parseQuery$1(queryString) {
       const result = {};
       if (!queryString) return result;
       const pairs = queryString.replace(/^\?/, '').split('&');
@@ -311,8 +319,8 @@ var require_parseQuery = __commonJS({
         const [rawKey, rawVal = ''] = pair.split('=');
         const decodedKey = decodeURIComponent(rawKey);
         const decodedVal = decodeURIComponent(rawVal);
-        const pathSegments = parseKey(decodedKey);
-        setValue(result, pathSegments, decodedVal);
+        const pathSegments = parseKey$1(decodedKey);
+        setValue$1(result, pathSegments, decodedVal);
       }
       return result;
     }
@@ -320,52 +328,53 @@ var require_parseQuery = __commonJS({
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/reqQuery.js
-var require_reqQuery = __commonJS({
-  '../packages/vovk/dist/utils/reqQuery.js'(exports) {
-    var __importDefault$4 =
+//#region ../packages/vovk/mjs/utils/reqQuery.js
+var require_reqQuery$1 = __commonJS({
+  '../packages/vovk/mjs/utils/reqQuery.js'(exports) {
+    var __importDefault$10 =
       (void 0 && (void 0).__importDefault) ||
       function (mod) {
         return mod && mod.__esModule ? mod : { default: mod };
       };
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.default = reqQuery;
-    const parseQuery_1 = __importDefault$4(require_parseQuery());
-    function reqQuery(req) {
-      return (0, parseQuery_1.default)(req.nextUrl.search);
+    exports.default = reqQuery$1;
+    const parseQuery_js_1$1 = __importDefault$10(require_parseQuery$1());
+    function reqQuery$1(req) {
+      return (0, parseQuery_js_1$1.default)(req.nextUrl.search);
     }
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/reqMeta.js
-var require_reqMeta = __commonJS({
-  '../packages/vovk/dist/utils/reqMeta.js'(exports) {
+//#region ../packages/vovk/mjs/utils/reqMeta.js
+var require_reqMeta$1 = __commonJS({
+  '../packages/vovk/mjs/utils/reqMeta.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.default = reqMeta;
-    const metaMap = new WeakMap();
-    function reqMeta(req, meta) {
+    exports.default = reqMeta$1;
+    const metaMap$1 = /* @__PURE__ */ new WeakMap();
+    function reqMeta$1(req, meta) {
       if (meta)
-        metaMap.set(req, {
-          ...metaMap.get(req),
+        metaMap$1.set(req, {
+          ...metaMap$1.get(req),
           ...meta,
         });
-      else if (meta === null) metaMap.delete(req);
-      return metaMap.get(req) ?? {};
+      else if (meta === null) metaMap$1.delete(req);
+      return metaMap$1.get(req) ?? {};
     }
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/reqForm.js
-var require_reqForm = __commonJS({
-  '../packages/vovk/dist/utils/reqForm.js'(exports) {
+//#region ../packages/vovk/mjs/utils/reqForm.js
+var require_reqForm$1 = __commonJS({
+  '../packages/vovk/mjs/utils/reqForm.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.default = reqForm;
-    const formMap = new WeakMap();
-    async function reqForm(req) {
-      if (formMap.has(req)) return formMap.get(req);
+    exports.default = reqForm$1;
+    const formMap$1 = /* @__PURE__ */ new WeakMap();
+    async function reqForm$1(req) {
+      if (formMap$1.has(req)) return formMap$1.get(req);
       const body = await req.formData();
+      req.formData = () => Promise.resolve(body);
       const formData = {};
       for (const [key, value] of body.entries())
         if (value instanceof File)
@@ -374,32 +383,32 @@ var require_reqForm = __commonJS({
             else formData[key] = [formData[key], value];
           else formData[key] = value;
         else formData[key] = value.toString();
-      formMap.set(req, formData);
+      formMap$1.set(req, formData);
       return formData;
     }
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/VovkApp.js
-var require_VovkApp = __commonJS({
-  '../packages/vovk/dist/VovkApp.js'(exports) {
-    var __importDefault$3 =
+//#region ../packages/vovk/mjs/VovkApp.js
+var require_VovkApp$1 = __commonJS({
+  '../packages/vovk/mjs/VovkApp.js'(exports) {
+    var __importDefault$9 =
       (void 0 && (void 0).__importDefault) ||
       function (mod) {
         return mod && mod.__esModule ? mod : { default: mod };
       };
-    var _a$1;
+    var _a$3;
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.VovkApp = void 0;
-    const types_1$7 = require_types$2();
-    const HttpException_1$5 = require_HttpException();
-    const JSONLinesResponse_1$1 = require_JSONLinesResponse();
-    const reqQuery_1 = __importDefault$3(require_reqQuery());
-    const reqMeta_1 = __importDefault$3(require_reqMeta());
-    const reqForm_1 = __importDefault$3(require_reqForm());
-    const headers_1 = __require('next/headers');
-    var VovkApp = class {
+    const types_js_1$11 = require_types$3();
+    const HttpException_js_1$9 = require_HttpException$1();
+    const JSONLinesResponse_js_1$1 = require_JSONLinesResponse$1();
+    const reqQuery_js_1$1 = __importDefault$9(require_reqQuery$1());
+    const reqMeta_js_1$3 = __importDefault$9(require_reqMeta$1());
+    const reqForm_js_1$1 = __importDefault$9(require_reqForm$1());
+    const headers_1$1 = __require('next/headers');
+    var VovkApp$1 = class {
       static getHeadersFromOptions(options) {
         if (!options) return {};
         const corsHeaders = {
@@ -414,27 +423,27 @@ var require_VovkApp = __commonJS({
         return headers;
       }
       routes = {
-        GET: new Map(),
-        POST: new Map(),
-        PUT: new Map(),
-        PATCH: new Map(),
-        DELETE: new Map(),
-        HEAD: new Map(),
-        OPTIONS: new Map(),
+        GET: /* @__PURE__ */ new Map(),
+        POST: /* @__PURE__ */ new Map(),
+        PUT: /* @__PURE__ */ new Map(),
+        PATCH: /* @__PURE__ */ new Map(),
+        DELETE: /* @__PURE__ */ new Map(),
+        HEAD: /* @__PURE__ */ new Map(),
+        OPTIONS: /* @__PURE__ */ new Map(),
       };
-      GET = async (req, data) => this.#callMethod(types_1$7.HttpMethod.GET, req, await data.params);
-      POST = async (req, data) => this.#callMethod(types_1$7.HttpMethod.POST, req, await data.params);
-      PUT = async (req, data) => this.#callMethod(types_1$7.HttpMethod.PUT, req, await data.params);
-      PATCH = async (req, data) => this.#callMethod(types_1$7.HttpMethod.PATCH, req, await data.params);
-      DELETE = async (req, data) => this.#callMethod(types_1$7.HttpMethod.DELETE, req, await data.params);
-      HEAD = async (req, data) => this.#callMethod(types_1$7.HttpMethod.HEAD, req, await data.params);
-      OPTIONS = async (req, data) => this.#callMethod(types_1$7.HttpMethod.OPTIONS, req, await data.params);
+      GET = async (req, data) => this.#callMethod(types_js_1$11.HttpMethod.GET, req, await data.params);
+      POST = async (req, data) => this.#callMethod(types_js_1$11.HttpMethod.POST, req, await data.params);
+      PUT = async (req, data) => this.#callMethod(types_js_1$11.HttpMethod.PUT, req, await data.params);
+      PATCH = async (req, data) => this.#callMethod(types_js_1$11.HttpMethod.PATCH, req, await data.params);
+      DELETE = async (req, data) => this.#callMethod(types_js_1$11.HttpMethod.DELETE, req, await data.params);
+      HEAD = async (req, data) => this.#callMethod(types_js_1$11.HttpMethod.HEAD, req, await data.params);
+      OPTIONS = async (req, data) => this.#callMethod(types_js_1$11.HttpMethod.OPTIONS, req, await data.params);
       respond = (status, body, options) => {
         return new Response(JSON.stringify(body), {
           status,
           headers: {
             'content-type': 'application/json',
-            ..._a$1.getHeadersFromOptions(options),
+            ..._a$3.getHeadersFromOptions(options),
           },
         });
       };
@@ -474,8 +483,8 @@ var require_VovkApp = __commonJS({
               if (routeSegment.startsWith(':')) {
                 const parameter = routeSegment.slice(1);
                 if (parameter in methodParams)
-                  throw new HttpException_1$5.HttpException(
-                    types_1$7.HttpStatus.INTERNAL_SERVER_ERROR,
+                  throw new HttpException_js_1$9.HttpException(
+                    types_js_1$11.HttpStatus.INTERNAL_SERVER_ERROR,
                     `Duplicate parameter "${parameter}" at ${p}`
                   );
                 methodParams[parameter] = pathSegment;
@@ -484,8 +493,8 @@ var require_VovkApp = __commonJS({
             return true;
           });
         if (methodKeys.length > 1)
-          throw new HttpException_1$5.HttpException(
-            types_1$7.HttpStatus.INTERNAL_SERVER_ERROR,
+          throw new HttpException_js_1$9.HttpException(
+            types_js_1$11.HttpStatus.INTERNAL_SERVER_ERROR,
             `Conflicting routes found: ${methodKeys.join(', ')}`
           );
         const [methodKey] = methodKeys;
@@ -507,11 +516,11 @@ var require_VovkApp = __commonJS({
         controllers$2.forEach((staticMethods, controller$1) => {
           const prefix = controller$1._prefix ?? '';
           if (!controller$1._activated)
-            throw new HttpException_1$5.HttpException(
-              types_1$7.HttpStatus.INTERNAL_SERVER_ERROR,
+            throw new HttpException_js_1$9.HttpException(
+              types_js_1$11.HttpStatus.INTERNAL_SERVER_ERROR,
               `Controller "${controller$1.name}" found but not activated`
             );
-          Object.entries(staticMethods).forEach(([path$1, staticMethod$1]) => {
+          Object.entries(staticMethods ?? {}).forEach(([path$1, staticMethod$1]) => {
             const fullPath = [prefix, path$1].filter(Boolean).join('/');
             handlers[fullPath] = {
               staticMethod: staticMethod$1,
@@ -526,15 +535,15 @@ var require_VovkApp = __commonJS({
         });
         if (!handler)
           return this.#respondWithError(
-            types_1$7.HttpStatus.NOT_FOUND,
+            types_js_1$11.HttpStatus.NOT_FOUND,
             `${Object.keys(handlers)} - Route ${path.join('/')} is not found`
           );
         const { staticMethod, controller } = handler;
         req.vovk = {
           body: () => req.json(),
-          query: () => (0, reqQuery_1.default)(req),
-          meta: (meta) => (0, reqMeta_1.default)(req, meta),
-          form: () => (0, reqForm_1.default)(req),
+          query: () => (0, reqQuery_js_1$1.default)(req),
+          meta: (meta) => (0, reqMeta_js_1$3.default)(req, meta),
+          form: () => (0, reqForm_js_1$1.default)(req),
           params: () => methodParams,
         };
         try {
@@ -546,8 +555,8 @@ var require_VovkApp = __commonJS({
             ((Reflect.has(result, Symbol.iterator) && typeof result[Symbol.iterator] === 'function') ||
               (Reflect.has(result, Symbol.asyncIterator) && typeof result[Symbol.asyncIterator] === 'function'));
           if (isIterator && !(result instanceof Array)) {
-            const streamResponse = new JSONLinesResponse_1$1.JSONLinesResponse(await (0, headers_1.headers)(), {
-              headers: { ..._a$1.getHeadersFromOptions(staticMethod._options) },
+            const streamResponse = new JSONLinesResponse_js_1$1.JSONLinesResponse(await (0, headers_1$1.headers)(), {
+              headers: { ..._a$3.getHeadersFromOptions(staticMethod._options) },
             });
             (async () => {
               try {
@@ -569,85 +578,92 @@ var require_VovkApp = __commonJS({
             console.error(onErrorError);
           }
           if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
-            const statusCode = err.statusCode || types_1$7.HttpStatus.INTERNAL_SERVER_ERROR;
+            const statusCode = err.statusCode || types_js_1$11.HttpStatus.INTERNAL_SERVER_ERROR;
             return this.#respondWithError(statusCode, err.message, staticMethod._options, err.cause);
           }
           throw e;
         }
       };
     };
-    exports.VovkApp = VovkApp;
-    _a$1 = VovkApp;
+    exports.VovkApp = VovkApp$1;
+    _a$3 = VovkApp$1;
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/getSchema.js
-var require_getSchema = __commonJS({
-  '../packages/vovk/dist/utils/getSchema.js'(exports) {
+//#region ../packages/vovk/mjs/utils/getSchema.js
+var require_getSchema$1 = __commonJS({
+  '../packages/vovk/mjs/utils/getSchema.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.getControllerSchema = getControllerSchema;
-    exports.default = getSchema;
-    function getControllerSchema(controller, rpcModuleName, exposeValidation) {
+    exports.getControllerSchema = getControllerSchema$1;
+    exports.default = getSchema$1;
+    const types_js_1$10 = require_types$3();
+    async function getControllerSchema$1(controller, rpcModuleName, exposeValidation) {
+      const handlers = exposeValidation
+        ? controller._handlers
+        : Object.fromEntries(
+            Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
+          );
+      await Promise.all(
+        Object.values(handlers ?? {})
+          .filter(({ misc }) => misc instanceof Promise)
+          .map(async (schema$1) => {
+            schema$1.misc = await schema$1.misc;
+          })
+      );
       return {
         rpcModuleName,
         originalControllerName: controller.name,
         prefix: controller._prefix ?? '',
-        handlers: {
-          ...(exposeValidation
-            ? controller._handlers
-            : Object.fromEntries(
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
-              )),
-        },
+        handlers,
       };
     }
-    function getSchema(options) {
+    async function getSchema$1(options) {
       const exposeValidation = options?.exposeValidation ?? true;
       const emitSchema$2 = options.emitSchema ?? true;
-      const schema = {
-        $schema: `https://vovk.dev/api/schema/v3/segment.json`,
+      const schema$1 = {
+        $schema: types_js_1$10.VovkSchemaIdEnum.SEGMENT,
         emitSchema: emitSchema$2,
         segmentName: options.segmentName ?? '',
         controllers: {},
       };
-      if (!emitSchema$2) return schema;
-      for (const [rpcModuleName, controller] of Object.entries(options.controllers))
-        schema.controllers[rpcModuleName] = getControllerSchema(controller, rpcModuleName, exposeValidation);
-      return schema;
+      if (options.forceApiRoot) schema$1.forceApiRoot = options.forceApiRoot;
+      if (!emitSchema$2) return schema$1;
+      for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}))
+        schema$1.controllers[rpcModuleName] = await getControllerSchema$1(controller, rpcModuleName, exposeValidation);
+      return schema$1;
     }
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/createVovkApp.js
-var require_createVovkApp = __commonJS({
-  '../packages/vovk/dist/createVovkApp.js'(exports) {
-    var __importDefault$2 =
+//#region ../packages/vovk/mjs/createVovkApp.js
+var require_createVovkApp$1 = __commonJS({
+  '../packages/vovk/mjs/createVovkApp.js'(exports) {
+    var __importDefault$8 =
       (void 0 && (void 0).__importDefault) ||
       function (mod) {
         return mod && mod.__esModule ? mod : { default: mod };
       };
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.createVovkApp = createVovkApp;
-    const VovkApp_1 = require_VovkApp();
-    const types_1$6 = require_types$2();
-    const getSchema_1 = __importDefault$2(require_getSchema());
-    const trimPath$1 = (path) => path.trim().replace(/^\/|\/$/g, '');
-    const isClass = (func) => typeof func === 'function' && /class/.test(func.toString());
-    const toKebabCase = (str$2) =>
+    exports.createVovkApp = createVovkApp$1;
+    const VovkApp_js_1$1 = require_VovkApp$1();
+    const types_js_1$9 = require_types$3();
+    const getSchema_js_1$1 = __importDefault$8(require_getSchema$1());
+    const trimPath$3 = (path) => path.trim().replace(/^\/|\/$/g, '');
+    const isClass$1 = (func) => typeof func === 'function' && /class/.test(func.toString());
+    const toKebabCase$1 = (str$2) =>
       str$2
         .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
         .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1-$2')
         .toLowerCase()
         .replace(/^-/, '');
-    const assignSchema = ({ controller, propertyKey, path, options, httpMethod, vovkApp }) => {
+    const assignSchema$1 = ({ controller, propertyKey, path, options, httpMethod, vovkApp }) => {
       if (typeof window !== 'undefined')
         throw new Error(
           'Decorators are intended for server-side use only. You have probably imported a controller on the client-side.'
         );
-      if (!isClass(controller)) {
+      if (!isClass$1(controller)) {
         let decoratorName = httpMethod.toLowerCase();
         if (decoratorName === 'delete') decoratorName = 'del';
         throw new Error(
@@ -659,17 +675,19 @@ var require_createVovkApp = __commonJS({
       const originalMethod = controller[propertyKey];
       originalMethod._controller = controller;
       originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
-      const schema = originalMethod._sourceMethod._getSchema?.(controller);
+      const schema$1 = originalMethod._sourceMethod._getSchema?.(controller);
+      originalMethod.schema = schema$1;
+      originalMethod.func = originalMethod._sourceMethod?.func;
       controller._handlers = {
         ...controller._handlers,
         [propertyKey]: {
-          ...schema,
+          ...schema$1,
           ...(controller._handlers ?? {})[propertyKey],
           path,
           httpMethod,
         },
       };
-      methods[path] = controller[propertyKey];
+      methods[path] = originalMethod;
       methods[path]._options = options;
       controller._handlersMetadata = {
         ...controller._handlersMetadata,
@@ -679,14 +697,14 @@ var require_createVovkApp = __commonJS({
         },
       };
     };
-    function createVovkApp() {
-      const vovkApp = new VovkApp_1.VovkApp();
+    function createVovkApp$1() {
+      const vovkApp = new VovkApp_js_1$1.VovkApp();
       const createHTTPDecorator = (httpMethod) => {
         function decoratorCreator(givenPath = '', options) {
-          const path = trimPath$1(givenPath);
+          const path = trimPath$3(givenPath);
           function decorator(givenTarget, propertyKey) {
             const controller = givenTarget;
-            assignSchema({
+            assignSchema$1({
               controller,
               propertyKey,
               path,
@@ -710,9 +728,9 @@ var require_createVovkApp = __commonJS({
               },
             };
             const properties = Object.keys(controller._handlers[propertyKey]?.validation?.params?.properties ?? {});
-            const kebab = toKebabCase(propertyKey);
+            const kebab = toKebabCase$1(propertyKey);
             const path = properties.length ? `${kebab}/${properties.map((prop) => `:${prop}`).join('/')}` : kebab;
-            assignSchema({
+            assignSchema$1({
               controller,
               propertyKey,
               path,
@@ -728,7 +746,7 @@ var require_createVovkApp = __commonJS({
         return enhancedDecoratorCreator;
       };
       const prefix = (givenPath = '') => {
-        const path = trimPath$1(givenPath);
+        const path = trimPath$3(givenPath);
         return (givenTarget) => {
           const controller = givenTarget;
           controller._prefix = path;
@@ -736,7 +754,8 @@ var require_createVovkApp = __commonJS({
         };
       };
       const initVovk = (options) => {
-        for (const [rpcModuleName, controller] of Object.entries(options.controllers)) {
+        options.segmentName = trimPath$3(options.segmentName ?? '');
+        for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {})) {
           controller._rpcModuleName = rpcModuleName;
           controller._activated = true;
           controller._onError = options?.onError;
@@ -744,8 +763,8 @@ var require_createVovkApp = __commonJS({
         async function GET_DEV(req, data) {
           const params = await data.params;
           if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
-            const schema = (0, getSchema_1.default)(options);
-            return vovkApp.respond(200, { schema });
+            const schema$1 = await (0, getSchema_js_1$1.default)(options);
+            return vovkApp.respond(200, { schema: schema$1 });
           }
           return vovkApp.GET(req, data);
         }
@@ -760,13 +779,13 @@ var require_createVovkApp = __commonJS({
         };
       };
       return {
-        get: createHTTPDecorator(types_1$6.HttpMethod.GET),
-        post: createHTTPDecorator(types_1$6.HttpMethod.POST),
-        put: createHTTPDecorator(types_1$6.HttpMethod.PUT),
-        patch: createHTTPDecorator(types_1$6.HttpMethod.PATCH),
-        del: createHTTPDecorator(types_1$6.HttpMethod.DELETE),
-        head: createHTTPDecorator(types_1$6.HttpMethod.HEAD),
-        options: createHTTPDecorator(types_1$6.HttpMethod.OPTIONS),
+        get: createHTTPDecorator(types_js_1$9.HttpMethod.GET),
+        post: createHTTPDecorator(types_js_1$9.HttpMethod.POST),
+        put: createHTTPDecorator(types_js_1$9.HttpMethod.PUT),
+        patch: createHTTPDecorator(types_js_1$9.HttpMethod.PATCH),
+        del: createHTTPDecorator(types_js_1$9.HttpMethod.DELETE),
+        head: createHTTPDecorator(types_js_1$9.HttpMethod.HEAD),
+        options: createHTTPDecorator(types_js_1$9.HttpMethod.OPTIONS),
         prefix,
         initVovk,
       };
@@ -775,36 +794,38 @@ var require_createVovkApp = __commonJS({
 });
 
 //#endregion
-//#region ../packages/vovk/dist/client/fetcher.js
-var require_fetcher = __commonJS({
-  '../packages/vovk/dist/client/fetcher.js'(exports) {
+//#region ../packages/vovk/mjs/client/fetcher.js
+var require_fetcher$1 = __commonJS({
+  '../packages/vovk/mjs/client/fetcher.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.fetcher = exports.DEFAULT_ERROR_MESSAGE = void 0;
-    exports.createFetcher = createFetcher;
-    const types_1$5 = require_types$2();
-    const HttpException_1$4 = require_HttpException();
+    exports.createFetcher = createFetcher$1;
+    const types_js_1$8 = require_types$3();
+    const HttpException_js_1$8 = require_HttpException$1();
     exports.DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
-    function createFetcher({ prepareRequestInit, transformResponse } = {}) {
+    function createFetcher$1({ prepareRequestInit, transformResponse } = {}) {
       const newFetcher = async (
         {
           httpMethod,
           getEndpoint,
           validate: validate$1,
-          defaultHandler: defaultHandler$1,
-          defaultStreamHandler: defaultStreamHandler$1,
+          defaultHandler: defaultHandler$2,
+          defaultStreamHandler: defaultStreamHandler$2,
         },
         options
       ) => {
-        const { params, query, body, apiRoot = '/api', disableClientValidation, init, interpretAs } = options;
+        const { params, query, body, apiRoot, disableClientValidation, init, interpretAs } = options;
         const endpoint = getEndpoint({
           apiRoot,
           params,
           query,
         });
-        const unusedParams = new URL(endpoint).pathname.split('/').filter((segment) => segment.startsWith(':'));
+        const unusedParams = new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname
+          .split('/')
+          .filter((segment) => segment.startsWith(':'));
         if (unusedParams.length)
-          throw new HttpException_1$4.HttpException(
-            types_1$5.HttpStatus.NULL,
+          throw new HttpException_js_1$8.HttpException(
+            types_js_1$8.HttpStatus.NULL,
             `Unused params: ${unusedParams.join(', ')} in ${endpoint}`,
             {
               body,
@@ -822,9 +843,9 @@ var require_fetcher = __commonJS({
               endpoint,
             });
           } catch (e) {
-            if (e instanceof HttpException_1$4.HttpException) throw e;
-            throw new HttpException_1$4.HttpException(
-              types_1$5.HttpStatus.NULL,
+            if (e instanceof HttpException_js_1$8.HttpException) throw e;
+            throw new HttpException_js_1$8.HttpException(
+              types_js_1$8.HttpStatus.NULL,
               e.message ?? exports.DEFAULT_ERROR_MESSAGE,
               {
                 body,
@@ -844,14 +865,16 @@ var require_fetcher = __commonJS({
         };
         if (body instanceof FormData) requestInit.body = body;
         else if (body) requestInit.body = JSON.stringify(body);
-        requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, options) : requestInit;
+        requestInit = prepareRequestInit
+          ? ((await prepareRequestInit(requestInit, options)) ?? requestInit)
+          : requestInit;
         let response;
         try {
           response = await fetch(endpoint, requestInit);
         } catch (e) {
-          throw new HttpException_1$4.HttpException(
-            types_1$5.HttpStatus.NULL,
-            e?.message ?? exports.DEFAULT_ERROR_MESSAGE,
+          throw new HttpException_js_1$8.HttpException(
+            types_js_1$8.HttpStatus.NULL,
+            (e?.message ?? exports.DEFAULT_ERROR_MESSAGE) + ' ' + endpoint,
             {
               body,
               query,
@@ -862,36 +885,36 @@ var require_fetcher = __commonJS({
         }
         const contentType = interpretAs ?? response.headers.get('content-type');
         let resp;
-        if (contentType?.startsWith('application/jsonl')) resp = defaultStreamHandler$1(response);
-        else if (contentType?.startsWith('application/json')) resp = defaultHandler$1(response);
+        if (contentType?.startsWith('application/jsonl')) resp = defaultStreamHandler$2(response);
+        else if (contentType?.startsWith('application/json')) resp = defaultHandler$2(response);
         else resp = response;
         resp = await resp;
-        return transformResponse ? await transformResponse(resp, options, requestInit) : resp;
+        return transformResponse ? ((await transformResponse(resp, options, requestInit)) ?? resp) : resp;
       };
       return newFetcher;
     }
-    exports.fetcher = createFetcher();
+    exports.fetcher = createFetcher$1();
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/client/defaultHandler.js
-var require_defaultHandler = __commonJS({
-  '../packages/vovk/dist/client/defaultHandler.js'(exports) {
+//#region ../packages/vovk/mjs/client/defaultHandler.js
+var require_defaultHandler$1 = __commonJS({
+  '../packages/vovk/mjs/client/defaultHandler.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.defaultHandler = exports.DEFAULT_ERROR_MESSAGE = void 0;
-    const HttpException_1$3 = require_HttpException();
+    const HttpException_js_1$7 = require_HttpException$1();
     exports.DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultHandler';
-    const defaultHandler = async (response) => {
+    const defaultHandler$1 = async (response) => {
       let result;
       try {
         result = await response.json();
       } catch (e) {
-        throw new HttpException_1$3.HttpException(response.status, e?.message ?? exports.DEFAULT_ERROR_MESSAGE);
+        throw new HttpException_js_1$7.HttpException(response.status, e?.message ?? exports.DEFAULT_ERROR_MESSAGE);
       }
       if (!response.ok) {
         const errorResponse = result;
-        throw new HttpException_1$3.HttpException(
+        throw new HttpException_js_1$7.HttpException(
           response.status,
           errorResponse?.message ?? exports.DEFAULT_ERROR_MESSAGE,
           errorResponse?.cause
@@ -899,31 +922,31 @@ var require_defaultHandler = __commonJS({
       }
       return result;
     };
-    exports.defaultHandler = defaultHandler;
+    exports.defaultHandler = defaultHandler$1;
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/client/defaultStreamHandler.js
-var require_defaultStreamHandler = __commonJS({
-  '../packages/vovk/dist/client/defaultStreamHandler.js'(exports) {
+//#region ../packages/vovk/mjs/client/defaultStreamHandler.js
+var require_defaultStreamHandler$1 = __commonJS({
+  '../packages/vovk/mjs/client/defaultStreamHandler.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.defaultStreamHandler = exports.DEFAULT_ERROR_MESSAGE = void 0;
-    const types_1$4 = require_types$2();
-    const HttpException_1$2 = require_HttpException();
-    require_shim();
+    const types_js_1$7 = require_types$3();
+    const HttpException_js_1$6 = require_HttpException$1();
+    require_shim$1();
     exports.DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
-    const defaultStreamHandler = async (response) => {
+    const defaultStreamHandler$1 = async (response) => {
       if (!response.ok) {
         let result;
         try {
           result = await response.json();
         } catch {}
-        throw new HttpException_1$2.HttpException(response.status, result.message ?? exports.DEFAULT_ERROR_MESSAGE);
+        throw new HttpException_js_1$6.HttpException(response.status, result.message ?? exports.DEFAULT_ERROR_MESSAGE);
       }
       if (!response.body)
-        throw new HttpException_1$2.HttpException(
-          types_1$4.HttpStatus.NULL,
+        throw new HttpException_js_1$6.HttpException(
+          types_js_1$7.HttpStatus.NULL,
           'Stream body is falsy. Check your controller code.'
         );
       const reader = response.body.getReader();
@@ -932,16 +955,16 @@ var require_defaultStreamHandler = __commonJS({
         let prepend = '';
         while (true) {
           let value;
-          let done = false;
           try {
+            let done;
             ({ value, done } = await reader.read());
-          } catch (error$39) {
+            if (done) break;
+          } catch (error$41) {
             await reader.cancel();
-            const err = new Error('Stream error. ' + String(error$39));
-            err.cause = error$39;
+            const err = new Error('Stream error. ' + String(error$41));
+            err.cause = error$41;
             throw err;
           }
-          if (done) return;
           const string = typeof value === 'number' ? String.fromCharCode(value) : new TextDecoder().decode(value);
           prepend += string;
           const lines = prepend.split('\n').filter(Boolean);
@@ -975,16 +998,16 @@ var require_defaultStreamHandler = __commonJS({
         },
       };
     };
-    exports.defaultStreamHandler = defaultStreamHandler;
+    exports.defaultStreamHandler = defaultStreamHandler$1;
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/serializeQuery.js
-var require_serializeQuery = __commonJS({
-  '../packages/vovk/dist/utils/serializeQuery.js'(exports) {
+//#region ../packages/vovk/mjs/utils/serializeQuery.js
+var require_serializeQuery$1 = __commonJS({
+  '../packages/vovk/mjs/utils/serializeQuery.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.default = serializeQuery;
+    exports.default = serializeQuery$1;
     /**
      * Recursively build query parameters from an object.
      *
@@ -992,7 +1015,7 @@ var require_serializeQuery = __commonJS({
      * @param value    - The current value to serialize
      * @returns        - An array of `key=value` strings
      */
-    function buildParams(key, value) {
+    function buildParams$1(key, value) {
       if (value === null || value === void 0) return [];
       if (typeof value === 'object') {
         if (Array.isArray(value))
@@ -1008,11 +1031,11 @@ var require_serializeQuery = __commonJS({
            */
           return value.flatMap((v, i) => {
             const newKey = `${key}[${i}]`;
-            return buildParams(newKey, v);
+            return buildParams$1(newKey, v);
           });
         return Object.keys(value).flatMap((k) => {
           const newKey = `${key}[${k}]`;
-          return buildParams(newKey, value[k]);
+          return buildParams$1(newKey, value[k]);
         });
       }
       return [`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`];
@@ -1028,13 +1051,13 @@ var require_serializeQuery = __commonJS({
      * @param obj - The input object to be serialized
      * @returns   - A bracket-based query string (without leading "?")
      */
-    function serializeQuery(obj) {
+    function serializeQuery$1(obj) {
       if (!obj || typeof obj !== 'object') return '';
       const segments$1 = [];
       for (const key in obj)
         if (Object.prototype.hasOwnProperty.call(obj, key)) {
           const value = obj[key];
-          segments$1.push(...buildParams(key, value));
+          segments$1.push(...buildParams$1(key, value));
         }
       return segments$1.join('&');
     }
@@ -1042,51 +1065,55 @@ var require_serializeQuery = __commonJS({
 });
 
 //#endregion
-//#region ../packages/vovk/dist/client/createRPC.js
-var require_createRPC = __commonJS({
-  '../packages/vovk/dist/client/createRPC.js'(exports) {
-    var __importDefault$1 =
+//#region ../packages/vovk/mjs/client/createRPC.js
+var require_createRPC$1 = __commonJS({
+  '../packages/vovk/mjs/client/createRPC.js'(exports) {
+    var __importDefault$7 =
       (void 0 && (void 0).__importDefault) ||
       function (mod) {
         return mod && mod.__esModule ? mod : { default: mod };
       };
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.createRPC = void 0;
-    const fetcher_1$1 = require_fetcher();
-    const defaultHandler_1 = require_defaultHandler();
-    const defaultStreamHandler_1 = require_defaultStreamHandler();
-    const serializeQuery_1 = __importDefault$1(require_serializeQuery());
-    const trimPath = (path) => path.trim().replace(/^\/|\/$/g, '');
-    const getHandlerPath = (endpoint, params, query) => {
+    const fetcher_js_1$3 = require_fetcher$1();
+    const defaultHandler_js_1$1 = require_defaultHandler$1();
+    const defaultStreamHandler_js_1$1 = require_defaultStreamHandler$1();
+    const serializeQuery_js_1$1 = __importDefault$7(require_serializeQuery$1());
+    const trimPath$2 = (path) => path.trim().replace(/^\/|\/$/g, '');
+    const getHandlerPath$1 = (endpoint, params, query) => {
       let result = endpoint;
-      const queryStr = query ? (0, serializeQuery_1.default)(query) : null;
+      const queryStr = query ? (0, serializeQuery_js_1$1.default)(query) : null;
       for (const [key, value] of Object.entries(params ?? {})) result = result.replace(`:${key}`, value);
       return `${result}${queryStr ? '?' : ''}${queryStr}`;
     };
-    const createRPC$1 = (fullSchema$1, segmentName$2, rpcModuleName, options) => {
-      const segmentSchema = fullSchema$1.segments[segmentName$2];
+    const createRPC$2 = (schema$1, segmentName$2, rpcModuleName, fetcher$1 = fetcher_js_1$3.fetcher, options) => {
+      const segmentNamePath = options?.segmentNameOverride ?? segmentName$2;
+      const segmentSchema = schema$1.segments[segmentName$2];
       if (!segmentSchema)
-        throw new Error(`Unable to create RPC object. Segment schema is missing. Check client template.`);
-      const controllerSchema = fullSchema$1.segments[segmentName$2]?.controllers[rpcModuleName];
+        throw new Error(`Unable to create RPC module. Segment schema is missing. Check client template.`);
+      const controllerSchema = schema$1.segments[segmentName$2]?.controllers[rpcModuleName];
       const client = {};
       if (!controllerSchema)
-        throw new Error(`Unable to create RPC object. Controller schema is missing. Check client template.`);
-      const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
-      const { fetcher: settingsFetcher = fetcher_1$1.fetcher } = options ?? {};
-      for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers)) {
-        const { path, httpMethod, validation: validation$2 } = handlerSchema;
+        throw new Error(`Unable to create RPC module. Controller schema is missing. Check client template.`);
+      const controllerPrefix = trimPath$2(controllerSchema.prefix ?? '');
+      for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
+        const { path, httpMethod, validation: validation$3 } = handlerSchema;
         const getEndpoint = ({ apiRoot, params, query }) => {
-          const mainPrefix =
-            (apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/') +
-            (apiRoot.endsWith('/') ? apiRoot : `${apiRoot}/`) +
-            (segmentName$2 ? `${segmentName$2}/` : '');
-          return mainPrefix + getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query);
+          apiRoot ??= options?.apiRoot ?? '/api';
+          const endpoint = [
+            apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
+            apiRoot,
+            segmentNamePath,
+            getHandlerPath$1([controllerPrefix, path].filter(Boolean).join('/'), params, query),
+          ]
+            .filter(Boolean)
+            .join('/');
+          return endpoint;
         };
         const handler = (input = {}) => {
-          const fetcher$1 = input.fetcher ?? settingsFetcher;
           const validate$1 = async ({ body, query, params, endpoint }) => {
             const validateOnClient$1 = input.validateOnClient ?? options?.validateOnClient;
-            if (validateOnClient$1 && validation$2) {
+            if (validateOnClient$1 && validation$3) {
               if (typeof validateOnClient$1 !== 'function') throw new Error('validateOnClient must be a function');
               await validateOnClient$1(
                 {
@@ -1095,8 +1122,8 @@ var require_createRPC = __commonJS({
                   params,
                   endpoint,
                 },
-                validation$2,
-                fullSchema$1
+                validation$3,
+                schema$1
               );
             }
           };
@@ -1105,20 +1132,16 @@ var require_createRPC = __commonJS({
             httpMethod,
             getEndpoint,
             validate: validate$1,
-            defaultHandler: defaultHandler_1.defaultHandler,
-            defaultStreamHandler: defaultStreamHandler_1.defaultStreamHandler,
+            defaultHandler: defaultHandler_js_1$1.defaultHandler,
+            defaultStreamHandler: defaultStreamHandler_js_1$1.defaultStreamHandler,
           };
           const internalInput = {
-            ...options?.defaultOptions,
+            ...options,
             ...input,
             body: input.body ?? null,
             query: input.query ?? {},
             params: input.params ?? {},
-            fetcher: void 0,
-            validateOnClient: void 0,
           };
-          delete internalInput.fetcher;
-          delete internalInput.validateOnClient;
           if (!fetcher$1) throw new Error('Fetcher is not provided');
           const fetcherPromise = fetcher$1(internalOptions, internalInput);
           if (!(fetcherPromise instanceof Promise)) return Promise.resolve(fetcherPromise);
@@ -1127,52 +1150,1820 @@ var require_createRPC = __commonJS({
         handler.schema = handlerSchema;
         handler.controllerSchema = controllerSchema;
         handler.segmentSchema = segmentSchema;
-        handler.fullSchema = fullSchema$1;
+        handler.fullSchema = schema$1;
         handler.isRPC = true;
+        handler.path = [segmentNamePath, controllerPrefix, path].filter(Boolean).join('/');
         client[staticMethodName] = handler;
       }
       return client;
     };
-    exports.createRPC = createRPC$1;
+    exports.createRPC = createRPC$2;
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/client/index.js
-var require_client = __commonJS({
-  '../packages/vovk/dist/client/index.js'(exports) {
+//#region ../packages/vovk/mjs/client/index.js
+var require_client$1 = __commonJS({
+  '../packages/vovk/mjs/client/index.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.createFetcher = exports.fetcher = exports.createRPC = void 0;
-    var createRPC_1 = require_createRPC();
+    var createRPC_js_1$1 = require_createRPC$1();
     Object.defineProperty(exports, 'createRPC', {
       enumerable: true,
       get: function () {
-        return createRPC_1.createRPC;
+        return createRPC_js_1$1.createRPC;
       },
     });
-    var fetcher_1 = require_fetcher();
+    var fetcher_js_1$2 = require_fetcher$1();
     Object.defineProperty(exports, 'fetcher', {
       enumerable: true,
       get: function () {
-        return fetcher_1.fetcher;
+        return fetcher_js_1$2.fetcher;
       },
     });
     Object.defineProperty(exports, 'createFetcher', {
       enumerable: true,
       get: function () {
-        return fetcher_1.createFetcher;
+        return fetcher_js_1$2.createFetcher;
       },
     });
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/createDecorator.js
-var require_createDecorator = __commonJS({
-  '../packages/vovk/dist/createDecorator.js'(exports) {
+//#region ../node_modules/@stoplight/json-schema-sampler/dist/json-schema-sampler.js
+var require_json_schema_sampler = __commonJS({
+  '../node_modules/@stoplight/json-schema-sampler/dist/json-schema-sampler.js'(exports, module) {
+    (function (f) {
+      if (typeof exports === 'object' && typeof module !== 'undefined') module.exports = f();
+      else if (typeof define === 'function' && define.amd) define([], f);
+      else {
+        var g;
+        if (typeof window !== 'undefined') g = window;
+        else if (typeof global !== 'undefined') g = global;
+        else if (typeof self !== 'undefined') g = self;
+        else g = this;
+        g.JSONSchemaSampler = f();
+      }
+    })(function () {
+      var define$1, module$1, exports$1;
+      return (function () {
+        function r(e, n, t) {
+          function o(i$1, f) {
+            if (!n[i$1]) {
+              if (!e[i$1]) {
+                var c = 'function' == typeof __require && __require;
+                if (!f && c) return c(i$1, !0);
+                if (u) return u(i$1, !0);
+                var a = new Error("Cannot find module '" + i$1 + "'");
+                throw ((a.code = 'MODULE_NOT_FOUND'), a);
+              }
+              var p = (n[i$1] = { exports: {} });
+              e[i$1][0].call(
+                p.exports,
+                function (r$1) {
+                  var n$1 = e[i$1][1][r$1];
+                  return o(n$1 || r$1);
+                },
+                p,
+                p.exports,
+                r,
+                e,
+                n,
+                t
+              );
+            }
+            return n[i$1].exports;
+          }
+          for (var u = 'function' == typeof __require && __require, i = 0; i < t.length; i++) o(t[i]);
+          return o;
+        }
+        return r;
+      })()(
+        {
+          1: [
+            function (require$1, module$2, exports$2) {
+              var hasOwn = Object.prototype.hasOwnProperty;
+              var toString$2 = Object.prototype.toString;
+              module$2.exports = function forEach(obj, fn, ctx) {
+                if (toString$2.call(fn) !== '[object Function]') throw new TypeError('iterator must be a function');
+                var l = obj.length;
+                if (l === +l) for (var i = 0; i < l; i++) fn.call(ctx, obj[i], i, obj);
+                else for (var k in obj) if (hasOwn.call(obj, k)) fn.call(ctx, obj[k], k, obj);
+              };
+            },
+            {},
+          ],
+          2: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              var each = require$1('foreach');
+              module$2.exports = api;
+              /**
+               * Convenience wrapper around the api.
+               * Calls `.get` when called with an `object` and a `pointer`.
+               * Calls `.set` when also called with `value`.
+               * If only supplied `object`, returns a partially applied function, mapped to the object.
+               *
+               * @param {Object} obj
+               * @param {String|Array} pointer
+               * @param value
+               * @returns {*}
+               */
+              function api(obj, pointer, value) {
+                if (arguments.length === 3) return api.set(obj, pointer, value);
+                if (arguments.length === 2) return api.get(obj, pointer);
+                var wrapped = api.bind(api, obj);
+                for (var name in api) if (api.hasOwnProperty(name)) wrapped[name] = api[name].bind(wrapped, obj);
+                return wrapped;
+              }
+              /**
+               * Lookup a json pointer in an object
+               *
+               * @param {Object} obj
+               * @param {String|Array} pointer
+               * @returns {*}
+               */
+              api.get = function get(obj, pointer) {
+                var refTokens = Array.isArray(pointer) ? pointer : api.parse(pointer);
+                for (var i = 0; i < refTokens.length; ++i) {
+                  var tok = refTokens[i];
+                  if (!(typeof obj == 'object' && tok in obj)) throw new Error('Invalid reference token: ' + tok);
+                  obj = obj[tok];
+                }
+                return obj;
+              };
+              /**
+               * Sets a value on an object
+               *
+               * @param {Object} obj
+               * @param {String|Array} pointer
+               * @param value
+               */
+              api.set = function set(obj, pointer, value) {
+                var refTokens = Array.isArray(pointer) ? pointer : api.parse(pointer),
+                  nextTok = refTokens[0];
+                if (refTokens.length === 0) throw Error('Can not set the root object');
+                for (var i = 0; i < refTokens.length - 1; ++i) {
+                  var tok = refTokens[i];
+                  if (tok === '__proto__' || tok === 'constructor' || tok === 'prototype') continue;
+                  if (tok === '-' && Array.isArray(obj)) tok = obj.length;
+                  nextTok = refTokens[i + 1];
+                  if (!(tok in obj))
+                    if (nextTok.match(/^(\d+|-)$/)) obj[tok] = [];
+                    else obj[tok] = {};
+                  obj = obj[tok];
+                }
+                if (nextTok === '-' && Array.isArray(obj)) nextTok = obj.length;
+                obj[nextTok] = value;
+                return this;
+              };
+              /**
+               * Removes an attribute
+               *
+               * @param {Object} obj
+               * @param {String|Array} pointer
+               */
+              api.remove = function (obj, pointer) {
+                var refTokens = Array.isArray(pointer) ? pointer : api.parse(pointer);
+                var finalToken = refTokens[refTokens.length - 1];
+                if (finalToken === void 0) throw new Error('Invalid JSON pointer for remove: "' + pointer + '"');
+                var parent = api.get(obj, refTokens.slice(0, -1));
+                if (Array.isArray(parent)) {
+                  var index = +finalToken;
+                  if (finalToken === '' && isNaN(index)) throw new Error('Invalid array index: "' + finalToken + '"');
+                  Array.prototype.splice.call(parent, index, 1);
+                } else delete parent[finalToken];
+              };
+              /**
+               * Returns a (pointer -> value) dictionary for an object
+               *
+               * @param obj
+               * @param {function} descend
+               * @returns {}
+               */
+              api.dict = function dict(obj, descend) {
+                var results = {};
+                api.walk(
+                  obj,
+                  function (value, pointer) {
+                    results[pointer] = value;
+                  },
+                  descend
+                );
+                return results;
+              };
+              /**
+               * Iterates over an object
+               * Iterator: function (value, pointer) {}
+               *
+               * @param obj
+               * @param {function} iterator
+               * @param {function} descend
+               */
+              api.walk = function walk(obj, iterator, descend) {
+                var refTokens = [];
+                descend =
+                  descend ||
+                  function (value) {
+                    var type = Object.prototype.toString.call(value);
+                    return type === '[object Object]' || type === '[object Array]';
+                  };
+                (function next$1(cur) {
+                  each(cur, function (value, key) {
+                    refTokens.push(String(key));
+                    if (descend(value)) next$1(value);
+                    else iterator(value, api.compile(refTokens));
+                    refTokens.pop();
+                  });
+                })(obj);
+              };
+              /**
+               * Tests if an object has a value for a json pointer
+               *
+               * @param obj
+               * @param pointer
+               * @returns {boolean}
+               */
+              api.has = function has(obj, pointer) {
+                try {
+                  api.get(obj, pointer);
+                } catch (e) {
+                  return false;
+                }
+                return true;
+              };
+              /**
+               * Escapes a reference token
+               *
+               * @param str
+               * @returns {string}
+               */
+              api.escape = function escape$1(str$2) {
+                return str$2.toString().replace(/~/g, '~0').replace(/\//g, '~1');
+              };
+              /**
+               * Unescapes a reference token
+               *
+               * @param str
+               * @returns {string}
+               */
+              api.unescape = function unescape$1(str$2) {
+                return str$2.replace(/~1/g, '/').replace(/~0/g, '~');
+              };
+              /**
+               * Converts a json pointer into a array of reference tokens
+               *
+               * @param pointer
+               * @returns {Array}
+               */
+              api.parse = function parse$1(pointer) {
+                if (pointer === '') return [];
+                if (pointer.charAt(0) !== '/') throw new Error('Invalid JSON pointer: ' + pointer);
+                return pointer.substring(1).split(/\//).map(api.unescape);
+              };
+              /**
+               * Builds a json pointer from a array of reference tokens
+               *
+               * @param refTokens
+               * @returns {string}
+               */
+              api.compile = function compile(refTokens) {
+                if (refTokens.length === 0) return '';
+                return '/' + refTokens.map(api.escape).join('/');
+              };
+            },
+            { foreach: 1 },
+          ],
+          3: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.allOfSample = allOfSample;
+              var _traverse2 = require$1('./traverse');
+              var _utils = require$1('./utils');
+              function ownKeys(object, enumerableOnly) {
+                var keys = Object.keys(object);
+                if (Object.getOwnPropertySymbols) {
+                  var symbols = Object.getOwnPropertySymbols(object);
+                  if (enumerableOnly)
+                    symbols = symbols.filter(function (sym) {
+                      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+                    });
+                  keys.push.apply(keys, symbols);
+                }
+                return keys;
+              }
+              function _objectSpread(target) {
+                for (var i = 1; i < arguments.length; i++) {
+                  var source = arguments[i] != null ? arguments[i] : {};
+                  if (i % 2)
+                    ownKeys(Object(source), true).forEach(function (key) {
+                      _defineProperty(target, key, source[key]);
+                    });
+                  else if (Object.getOwnPropertyDescriptors)
+                    Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+                  else
+                    ownKeys(Object(source)).forEach(function (key) {
+                      Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+                    });
+                }
+                return target;
+              }
+              function _defineProperty(obj, key, value) {
+                if (key in obj)
+                  Object.defineProperty(obj, key, {
+                    value,
+                    enumerable: true,
+                    configurable: true,
+                    writable: true,
+                  });
+                else obj[key] = value;
+                return obj;
+              }
+              function _typeof(obj) {
+                '@babel/helpers - typeof';
+                if (typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol')
+                  _typeof = function _typeof$1(obj$1) {
+                    return typeof obj$1;
+                  };
+                else
+                  _typeof = function _typeof$1(obj$1) {
+                    return obj$1 &&
+                      typeof Symbol === 'function' &&
+                      obj$1.constructor === Symbol &&
+                      obj$1 !== Symbol.prototype
+                      ? 'symbol'
+                      : typeof obj$1;
+                  };
+                return _typeof(obj);
+              }
+              function _toConsumableArray(arr) {
+                return (
+                  _arrayWithoutHoles(arr) ||
+                  _iterableToArray(arr) ||
+                  _unsupportedIterableToArray(arr) ||
+                  _nonIterableSpread()
+                );
+              }
+              function _nonIterableSpread() {
+                throw new TypeError(
+                  'Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.'
+                );
+              }
+              function _iterableToArray(iter) {
+                if (typeof Symbol !== 'undefined' && Symbol.iterator in Object(iter)) return Array.from(iter);
+              }
+              function _arrayWithoutHoles(arr) {
+                if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+              }
+              function _createForOfIteratorHelper(o, allowArrayLike) {
+                var it;
+                if (typeof Symbol === 'undefined' || o[Symbol.iterator] == null) {
+                  if (
+                    Array.isArray(o) ||
+                    (it = _unsupportedIterableToArray(o)) ||
+                    (allowArrayLike && o && typeof o.length === 'number')
+                  ) {
+                    if (it) o = it;
+                    var i = 0;
+                    var F = function F$1() {};
+                    return {
+                      s: F,
+                      n: function n() {
+                        if (i >= o.length) return { done: true };
+                        return {
+                          done: false,
+                          value: o[i++],
+                        };
+                      },
+                      e: function e(_e) {
+                        throw _e;
+                      },
+                      f: F,
+                    };
+                  }
+                  throw new TypeError(
+                    'Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.'
+                  );
+                }
+                var normalCompletion = true,
+                  didErr = false,
+                  err;
+                return {
+                  s: function s() {
+                    it = o[Symbol.iterator]();
+                  },
+                  n: function n() {
+                    var step = it.next();
+                    normalCompletion = step.done;
+                    return step;
+                  },
+                  e: function e(_e2) {
+                    didErr = true;
+                    err = _e2;
+                  },
+                  f: function f() {
+                    try {
+                      if (!normalCompletion && it.return != null) it.return();
+                    } finally {
+                      if (didErr) throw err;
+                    }
+                  },
+                };
+              }
+              function _unsupportedIterableToArray(o, minLen) {
+                if (!o) return;
+                if (typeof o === 'string') return _arrayLikeToArray(o, minLen);
+                var n = Object.prototype.toString.call(o).slice(8, -1);
+                if (n === 'Object' && o.constructor) n = o.constructor.name;
+                if (n === 'Map' || n === 'Set') return Array.from(o);
+                if (n === 'Arguments' || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))
+                  return _arrayLikeToArray(o, minLen);
+              }
+              function _arrayLikeToArray(arr, len) {
+                if (len == null || len > arr.length) len = arr.length;
+                for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+                return arr2;
+              }
+              function allOfSample(into, children, options, doc, context) {
+                var res = (0, _traverse2.traverse)(into, options, doc);
+                var subSamples = [];
+                var _iterator = _createForOfIteratorHelper(children),
+                  _step;
+                try {
+                  for (_iterator.s(); !(_step = _iterator.n()).done; ) {
+                    var subSchema = _step.value;
+                    var _traverse$2 = (0, _traverse2.traverse)(
+                        _objectSpread({ type: res.type }, subSchema),
+                        options,
+                        doc,
+                        context
+                      ),
+                      type = _traverse$2.type,
+                      readOnly = _traverse$2.readOnly,
+                      writeOnly = _traverse$2.writeOnly,
+                      value = _traverse$2.value;
+                    if (res.type && type && type !== res.type) {
+                      console.warn("allOf: schemas with different types can't be merged");
+                      res.type = type;
+                    }
+                    res.type = res.type || type;
+                    res.readOnly = res.readOnly || readOnly;
+                    res.writeOnly = res.writeOnly || writeOnly;
+                    if (value != null) subSamples.push(value);
+                  }
+                } catch (err) {
+                  _iterator.e(err);
+                } finally {
+                  _iterator.f();
+                }
+                if (res.type === 'object') {
+                  res.value = _utils.mergeDeep.apply(
+                    void 0,
+                    [res.value || {}].concat(
+                      _toConsumableArray(
+                        subSamples.filter(function (sample) {
+                          return _typeof(sample) === 'object';
+                        })
+                      )
+                    )
+                  );
+                  return res;
+                } else {
+                  if (res.type === 'array') {
+                    if (!options.quiet)
+                      console.warn('JSON Schema Sampler: found allOf with "array" type. Result may be incorrect');
+                  }
+                  var lastSample = subSamples[subSamples.length - 1];
+                  res.value = lastSample != null ? lastSample : res.value;
+                  return res;
+                }
+              }
+            },
+            {
+              './traverse': 12,
+              './utils': 13,
+            },
+          ],
+          4: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.inferType = inferType;
+              var schemaKeywordTypes = {
+                multipleOf: 'number',
+                maximum: 'number',
+                exclusiveMaximum: 'number',
+                minimum: 'number',
+                exclusiveMinimum: 'number',
+                maxLength: 'string',
+                minLength: 'string',
+                pattern: 'string',
+                items: 'array',
+                maxItems: 'array',
+                minItems: 'array',
+                uniqueItems: 'array',
+                additionalItems: 'array',
+                maxProperties: 'object',
+                minProperties: 'object',
+                required: 'object',
+                additionalProperties: 'object',
+                properties: 'object',
+                patternProperties: 'object',
+                dependencies: 'object',
+              };
+              function inferType(schema$1) {
+                if (schema$1.type !== void 0)
+                  return Array.isArray(schema$1.type)
+                    ? schema$1.type.length === 0
+                      ? null
+                      : schema$1.type[0]
+                    : schema$1.type;
+                var keywords = Object.keys(schemaKeywordTypes);
+                for (var i = 0; i < keywords.length; i++) {
+                  var keyword$1 = keywords[i];
+                  var type = schemaKeywordTypes[keyword$1];
+                  if (schema$1[keyword$1] !== void 0) return type;
+                }
+                return null;
+              }
+            },
+            {},
+          ],
+          5: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.sample = sample;
+              exports$2._registerSampler = _registerSampler;
+              Object.defineProperty(exports$2, 'SchemaSizeExceededError', {
+                enumerable: true,
+                get: function get() {
+                  return _traverse$2.SchemaSizeExceededError;
+                },
+              });
+              Object.defineProperty(exports$2, 'inferType', {
+                enumerable: true,
+                get: function get() {
+                  return _infer.inferType;
+                },
+              });
+              exports$2._samplers = void 0;
+              var _traverse$2 = require$1('./traverse');
+              var _index = require$1('./samplers/index');
+              var _infer = require$1('./infer');
+              var _samplers = {};
+              exports$2._samplers = _samplers;
+              var defaults = {
+                skipReadOnly: false,
+                maxSampleDepth: 15,
+                ticks: 1e3,
+              };
+              function sample(schema$1, options) {
+                var doc = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : schema$1;
+                defaults.startingTicks = defaults.ticks;
+                var opts = Object.assign({}, defaults, options);
+                (0, _traverse$2.clearCache)();
+                return (0, _traverse$2.traverse)(schema$1, opts, doc).value;
+              }
+              function _registerSampler(type, sampler) {
+                _samplers[type] = sampler;
+              }
+              _registerSampler('array', _index.sampleArray);
+              _registerSampler('boolean', _index.sampleBoolean);
+              _registerSampler('integer', _index.sampleNumber);
+              _registerSampler('number', _index.sampleNumber);
+              _registerSampler('object', _index.sampleObject);
+              _registerSampler('string', _index.sampleString);
+            },
+            {
+              './infer': 4,
+              './samplers/index': 8,
+              './traverse': 12,
+            },
+          ],
+          6: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.sampleArray = sampleArray;
+              var _traverse2 = require$1('../traverse');
+              function sampleArray(schema$1) {
+                var options = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
+                var doc = arguments.length > 2 ? arguments[2] : void 0;
+                var context = arguments.length > 3 ? arguments[3] : void 0;
+                var depth = (context && context.depth) || 1;
+                var arrayLength = Math.min(
+                  'maxItems' in schema$1 ? schema$1.maxItems : Infinity,
+                  schema$1.minItems || 1
+                );
+                var items = schema$1.items || schema$1.contains;
+                if (Array.isArray(items)) arrayLength = Math.max(arrayLength, items.length);
+                var itemSchemaGetter = function itemSchemaGetter$1(itemNumber) {
+                  if (Array.isArray(schema$1.items)) return items[itemNumber] || {};
+                  return items || {};
+                };
+                var res = [];
+                if (!items) return res;
+                for (var i = 0; i < arrayLength; i++) {
+                  var itemSchema = itemSchemaGetter(i);
+                  var _traverse$2 = (0, _traverse2.traverse)(itemSchema, options, doc, { depth: depth + 1 }),
+                    sample = _traverse$2.value;
+                  res.push(sample);
+                }
+                return res;
+              }
+            },
+            { '../traverse': 12 },
+          ],
+          7: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.sampleBoolean = sampleBoolean;
+              function sampleBoolean(schema$1) {
+                return true;
+              }
+            },
+            {},
+          ],
+          8: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              Object.defineProperty(exports$2, 'sampleArray', {
+                enumerable: true,
+                get: function get() {
+                  return _array.sampleArray;
+                },
+              });
+              Object.defineProperty(exports$2, 'sampleBoolean', {
+                enumerable: true,
+                get: function get() {
+                  return _boolean.sampleBoolean;
+                },
+              });
+              Object.defineProperty(exports$2, 'sampleNumber', {
+                enumerable: true,
+                get: function get() {
+                  return _number.sampleNumber;
+                },
+              });
+              Object.defineProperty(exports$2, 'sampleObject', {
+                enumerable: true,
+                get: function get() {
+                  return _object.sampleObject;
+                },
+              });
+              Object.defineProperty(exports$2, 'sampleString', {
+                enumerable: true,
+                get: function get() {
+                  return _string.sampleString;
+                },
+              });
+              var _array = require$1('./array');
+              var _boolean = require$1('./boolean');
+              var _number = require$1('./number');
+              var _object = require$1('./object');
+              var _string = require$1('./string');
+            },
+            {
+              './array': 6,
+              './boolean': 7,
+              './number': 9,
+              './object': 10,
+              './string': 11,
+            },
+          ],
+          9: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.sampleNumber = sampleNumber;
+              function sampleNumber(schema$1) {
+                if ('minimum' in schema$1) return schema$1.minimum;
+                var res = 0;
+                if ('exclusiveMinimum' in schema$1) {
+                  res = schema$1.exclusiveMinimum + 1;
+                  if (res === schema$1.exclusiveMaximum) res = (res + schema$1.exclusiveMaximum - 1) / 2;
+                } else if ('exclusiveMaximum' in schema$1) res = schema$1.exclusiveMaximum - 1;
+                else if ('maximum' in schema$1) res = schema$1.maximum;
+                return res;
+              }
+            },
+            {},
+          ],
+          10: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.sampleObject = sampleObject;
+              var _traverse$2 = require$1('../traverse');
+              function _typeof(obj) {
+                '@babel/helpers - typeof';
+                if (typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol')
+                  _typeof = function _typeof$1(obj$1) {
+                    return typeof obj$1;
+                  };
+                else
+                  _typeof = function _typeof$1(obj$1) {
+                    return obj$1 &&
+                      typeof Symbol === 'function' &&
+                      obj$1.constructor === Symbol &&
+                      obj$1 !== Symbol.prototype
+                      ? 'symbol'
+                      : typeof obj$1;
+                  };
+                return _typeof(obj);
+              }
+              function sampleObject(schema$1) {
+                var options = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
+                var doc = arguments.length > 2 ? arguments[2] : void 0;
+                var context = arguments.length > 3 ? arguments[3] : void 0;
+                var res = {};
+                var depth = (context && context.depth) || 1;
+                if (schema$1 && _typeof(schema$1.properties) === 'object') {
+                  var requiredKeys = Array.isArray(schema$1.required) ? schema$1.required : [];
+                  var requiredKeyDict = requiredKeys.reduce(function (dict, key) {
+                    dict[key] = true;
+                    return dict;
+                  }, {});
+                  Object.keys(schema$1.properties).forEach(function (propertyName) {
+                    if (options.skipNonRequired && !requiredKeyDict.hasOwnProperty(propertyName)) return;
+                    var sample = (0, _traverse$2.traverse)(schema$1.properties[propertyName], options, doc, {
+                      propertyName,
+                      depth: depth + 1,
+                    });
+                    if (options.skipReadOnly && sample.readOnly) return;
+                    if (options.skipWriteOnly && sample.writeOnly) return;
+                    res[propertyName] = sample.value;
+                  });
+                }
+                if (schema$1 && _typeof(schema$1.additionalProperties) === 'object') {
+                  res.property1 = (0, _traverse$2.traverse)(schema$1.additionalProperties, options, doc, {
+                    depth: depth + 1,
+                  }).value;
+                  res.property2 = (0, _traverse$2.traverse)(schema$1.additionalProperties, options, doc, {
+                    depth: depth + 1,
+                  }).value;
+                }
+                return res;
+              }
+            },
+            { '../traverse': 12 },
+          ],
+          11: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.sampleString = sampleString;
+              var _utils = require$1('../utils');
+              var passwordSymbols = 'qwerty!@#$%^123456';
+              function emailSample() {
+                return 'user@example.com';
+              }
+              function idnEmailSample() {
+                return 'пользователь@пример.ру';
+              }
+              function passwordSample(min, max) {
+                var res = 'pa$$word';
+                if (min > res.length) {
+                  res += '_';
+                  res += (0, _utils.ensureMinLength)(passwordSymbols, min - res.length).substring(0, min - res.length);
+                }
+                return res;
+              }
+              function commonDateTimeSample(_ref) {
+                var min = _ref.min,
+                  max = _ref.max,
+                  omitTime = _ref.omitTime,
+                  omitDate = _ref.omitDate;
+                var res = (0, _utils.toRFCDateTime)(
+                  /* @__PURE__ */ new Date('2019-08-24T14:15:22.123Z'),
+                  omitTime,
+                  omitDate,
+                  false
+                );
+                if (res.length < min)
+                  console.warn('Using minLength = '.concat(min, ' is incorrect with format "date-time"'));
+                if (max && res.length > max)
+                  console.warn('Using maxLength = '.concat(max, ' is incorrect with format "date-time"'));
+                return res;
+              }
+              function dateTimeSample(min, max) {
+                return commonDateTimeSample({
+                  min,
+                  max,
+                  omitTime: false,
+                  omitDate: false,
+                });
+              }
+              function dateSample(min, max) {
+                return commonDateTimeSample({
+                  min,
+                  max,
+                  omitTime: true,
+                  omitDate: false,
+                });
+              }
+              function timeSample(min, max) {
+                return commonDateTimeSample({
+                  min,
+                  max,
+                  omitTime: false,
+                  omitDate: true,
+                }).slice(1);
+              }
+              function defaultSample(min, max) {
+                var res = (0, _utils.ensureMinLength)('string', min);
+                if (max && res.length > max) res = res.substring(0, max);
+                return res;
+              }
+              function ipv4Sample() {
+                return '192.168.0.1';
+              }
+              function ipv6Sample() {
+                return '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
+              }
+              function hostnameSample() {
+                return 'example.com';
+              }
+              function idnHostnameSample() {
+                return 'пример.ру';
+              }
+              function uriSample() {
+                return 'http://example.com';
+              }
+              function uriReferenceSample() {
+                return '../dictionary';
+              }
+              function uriTemplateSample() {
+                return 'http://example.com/{endpoint}';
+              }
+              function iriSample() {
+                return 'http://пример.ру';
+              }
+              function iriReferenceSample() {
+                return '../словарь';
+              }
+              function uuidSample(_min, _max, propertyName) {
+                return (0, _utils.uuid)(propertyName || 'id');
+              }
+              function jsonPointerSample() {
+                return '/json/pointer';
+              }
+              function relativeJsonPointerSample() {
+                return '1/relative/json/pointer';
+              }
+              function regexSample() {
+                return '/regex/';
+              }
+              var stringFormats = {
+                email: emailSample,
+                'idn-email': idnEmailSample,
+                password: passwordSample,
+                'date-time': dateTimeSample,
+                date: dateSample,
+                time: timeSample,
+                ipv4: ipv4Sample,
+                ipv6: ipv6Sample,
+                hostname: hostnameSample,
+                'idn-hostname': idnHostnameSample,
+                iri: iriSample,
+                'iri-reference': iriReferenceSample,
+                uri: uriSample,
+                'uri-reference': uriReferenceSample,
+                'uri-template': uriTemplateSample,
+                uuid: uuidSample,
+                default: defaultSample,
+                'json-pointer': jsonPointerSample,
+                'relative-json-pointer': relativeJsonPointerSample,
+                regex: regexSample,
+              };
+              function sampleString(schema$1, options, doc, context) {
+                var format$3 = schema$1.format || 'default';
+                var sampler = stringFormats[format$3] || defaultSample;
+                var propertyName = context && context.propertyName;
+                return sampler(schema$1.minLength | 0, schema$1.maxLength, propertyName);
+              }
+            },
+            { '../utils': 13 },
+          ],
+          12: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.clearCache = clearCache;
+              exports$2.SchemaSizeExceededError = SchemaSizeExceededError;
+              exports$2.traverse = traverse$4;
+              var _jsonSchemaSampler = require$1('./json-schema-sampler');
+              var _allOf = require$1('./allOf');
+              var _infer = require$1('./infer');
+              var _utils = require$1('./utils');
+              var _jsonPointer = _interopRequireDefault(require$1('json-pointer'));
+              function _interopRequireDefault(obj) {
+                return obj && obj.__esModule ? obj : { default: obj };
+              }
+              function ownKeys(object, enumerableOnly) {
+                var keys = Object.keys(object);
+                if (Object.getOwnPropertySymbols) {
+                  var symbols = Object.getOwnPropertySymbols(object);
+                  if (enumerableOnly)
+                    symbols = symbols.filter(function (sym) {
+                      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+                    });
+                  keys.push.apply(keys, symbols);
+                }
+                return keys;
+              }
+              function _objectSpread(target) {
+                for (var i = 1; i < arguments.length; i++) {
+                  var source = arguments[i] != null ? arguments[i] : {};
+                  if (i % 2)
+                    ownKeys(Object(source), true).forEach(function (key) {
+                      _defineProperty(target, key, source[key]);
+                    });
+                  else if (Object.getOwnPropertyDescriptors)
+                    Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+                  else
+                    ownKeys(Object(source)).forEach(function (key) {
+                      Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+                    });
+                }
+                return target;
+              }
+              function _defineProperty(obj, key, value) {
+                if (key in obj)
+                  Object.defineProperty(obj, key, {
+                    value,
+                    enumerable: true,
+                    configurable: true,
+                    writable: true,
+                  });
+                else obj[key] = value;
+                return obj;
+              }
+              var $refCache = {};
+              var seenSchemasStack = [];
+              function clearCache() {
+                $refCache = {};
+                seenSchemasStack = [];
+              }
+              function SchemaSizeExceededError(message) {
+                Error.call(this, message);
+              }
+              SchemaSizeExceededError.prototype = Object.create(Error.prototype);
+              SchemaSizeExceededError.prototype.constructor = SchemaSizeExceededError;
+              function traverse$4(schema$1, options, doc, context) {
+                options.ticks -= 1;
+                if (options.ticks === 0)
+                  throw new SchemaSizeExceededError(
+                    'Schema size exceeded: over '.concat(
+                      options.startingTicks,
+                      ' properties. For more info, visit https://docs.stoplight.io/docs/platform/zumkfdc16oypw-json-schema-editor#generate-examples'
+                    )
+                  );
+                if (seenSchemasStack.includes(schema$1))
+                  return (0, _utils.getResultForCircular)((0, _infer.inferType)(schema$1));
+                seenSchemasStack.push(schema$1);
+                if (context && context.depth > options.maxSampleDepth) {
+                  (0, _utils.popSchemaStack)(seenSchemasStack, context);
+                  return (0, _utils.getResultForCircular)((0, _infer.inferType)(schema$1));
+                }
+                if (schema$1.$ref) {
+                  var ref = decodeURIComponent(schema$1.$ref);
+                  if (ref.startsWith('#')) ref = ref.substring(1);
+                  var referenced = _jsonPointer.default.get(doc, ref);
+                  var result;
+                  if ($refCache[ref] !== true) {
+                    $refCache[ref] = true;
+                    result = traverse$4(referenced, options, doc, context);
+                    $refCache[ref] = false;
+                  } else {
+                    var referencedType = (0, _infer.inferType)(referenced);
+                    result = (0, _utils.getResultForCircular)(referencedType);
+                  }
+                  (0, _utils.popSchemaStack)(seenSchemasStack, context);
+                  return result;
+                }
+                if (schema$1.example !== void 0) {
+                  (0, _utils.popSchemaStack)(seenSchemasStack, context);
+                  return {
+                    value: schema$1.example,
+                    readOnly: schema$1.readOnly,
+                    writeOnly: schema$1.writeOnly,
+                    type: schema$1.type,
+                  };
+                }
+                if (schema$1.allOf !== void 0) {
+                  (0, _utils.popSchemaStack)(seenSchemasStack, context);
+                  return (0, _allOf.allOfSample)(
+                    _objectSpread(_objectSpread({}, schema$1), {}, { allOf: void 0 }),
+                    schema$1.allOf,
+                    options,
+                    doc,
+                    context
+                  );
+                }
+                if (schema$1.oneOf && schema$1.oneOf.length) {
+                  if (schema$1.anyOf) {
+                    if (!options.quiet)
+                      console.warn('oneOf and anyOf are not supported on the same level. Skipping anyOf');
+                  }
+                  (0, _utils.popSchemaStack)(seenSchemasStack, context);
+                  return traverse$4(schema$1.oneOf[0], options, doc, context);
+                }
+                if (schema$1.anyOf && schema$1.anyOf.length) {
+                  (0, _utils.popSchemaStack)(seenSchemasStack, context);
+                  return traverse$4(schema$1.anyOf[0], options, doc, context);
+                }
+                if (schema$1.if && schema$1.then)
+                  return traverse$4((0, _utils.mergeDeep)(schema$1.if, schema$1.then), options, doc, context);
+                var example = null;
+                var type = null;
+                if (schema$1.default !== void 0) example = schema$1.default;
+                else if (schema$1.const !== void 0) example = schema$1.const;
+                else if (schema$1.enum !== void 0 && schema$1.enum.length) example = schema$1.enum[0];
+                else if (schema$1.examples !== void 0 && schema$1.examples.length) example = schema$1.examples[0];
+                else {
+                  type = schema$1.type;
+                  if (Array.isArray(type) && schema$1.type.length > 0) type = schema$1.type[0];
+                  if (!type) type = (0, _infer.inferType)(schema$1);
+                  var sampler = _jsonSchemaSampler._samplers[type];
+                  if (sampler) example = sampler(schema$1, options, doc, context);
+                }
+                (0, _utils.popSchemaStack)(seenSchemasStack, context);
+                return {
+                  value: example,
+                  readOnly: schema$1.readOnly,
+                  writeOnly: schema$1.writeOnly,
+                  type,
+                };
+              }
+            },
+            {
+              './allOf': 3,
+              './infer': 4,
+              './json-schema-sampler': 5,
+              './utils': 13,
+              'json-pointer': 2,
+            },
+          ],
+          13: [
+            function (require$1, module$2, exports$2) {
+              'use strict';
+              Object.defineProperty(exports$2, '__esModule', { value: true });
+              exports$2.toRFCDateTime = toRFCDateTime;
+              exports$2.ensureMinLength = ensureMinLength;
+              exports$2.mergeDeep = mergeDeep;
+              exports$2.uuid = uuid;
+              exports$2.getResultForCircular = getResultForCircular;
+              exports$2.popSchemaStack = popSchemaStack;
+              function _typeof(obj) {
+                '@babel/helpers - typeof';
+                if (typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol')
+                  _typeof = function _typeof$1(obj$1) {
+                    return typeof obj$1;
+                  };
+                else
+                  _typeof = function _typeof$1(obj$1) {
+                    return obj$1 &&
+                      typeof Symbol === 'function' &&
+                      obj$1.constructor === Symbol &&
+                      obj$1 !== Symbol.prototype
+                      ? 'symbol'
+                      : typeof obj$1;
+                  };
+                return _typeof(obj);
+              }
+              function pad(number) {
+                if (number < 10) return '0' + number;
+                return number;
+              }
+              function toRFCDateTime(date$1, omitTime, omitDate, milliseconds) {
+                var res = omitDate
+                  ? ''
+                  : date$1.getUTCFullYear() + '-' + pad(date$1.getUTCMonth() + 1) + '-' + pad(date$1.getUTCDate());
+                if (!omitTime)
+                  res +=
+                    'T' +
+                    pad(date$1.getUTCHours()) +
+                    ':' +
+                    pad(date$1.getUTCMinutes()) +
+                    ':' +
+                    pad(date$1.getUTCSeconds()) +
+                    (milliseconds ? '.' + (date$1.getUTCMilliseconds() / 1e3).toFixed(3).slice(2, 5) : '') +
+                    'Z';
+                return res;
+              }
+              function ensureMinLength(sample, min) {
+                if (min > sample.length) return sample.repeat(Math.trunc(min / sample.length) + 1).substring(0, min);
+                return sample;
+              }
+              function mergeDeep() {
+                var isObject = function isObject$1(obj) {
+                  return obj && _typeof(obj) === 'object';
+                };
+                for (var _len = arguments.length, objects = new Array(_len), _key = 0; _key < _len; _key++)
+                  objects[_key] = arguments[_key];
+                return objects.reduce(
+                  function (prev, obj) {
+                    Object.keys(obj).forEach(function (key) {
+                      var pVal = prev[key];
+                      var oVal = obj[key];
+                      if (isObject(pVal) && isObject(oVal)) prev[key] = mergeDeep(pVal, oVal);
+                      else prev[key] = oVal;
+                    });
+                    return prev;
+                  },
+                  Array.isArray(objects[objects.length - 1]) ? [] : {}
+                );
+              }
+              function uuid(str$2) {
+                var hash = hashCode(str$2);
+                var random = jsf32(hash, hash, hash, hash);
+                var uuid$1 = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                  var r = (random() * 16) % 16 | 0;
+                  return (c == 'x' ? r : (r & 3) | 8).toString(16);
+                });
+                return uuid$1;
+              }
+              function getResultForCircular(type) {
+                return { value: type === 'object' ? {} : type === 'array' ? [] : void 0 };
+              }
+              function popSchemaStack(seenSchemasStack, context) {
+                if (context) seenSchemasStack.pop();
+              }
+              function hashCode(str$2) {
+                var hash = 0;
+                if (str$2.length == 0) return hash;
+                for (var i = 0; i < str$2.length; i++) {
+                  var char = str$2.charCodeAt(i);
+                  hash = (hash << 5) - hash + char;
+                  hash = hash & hash;
+                }
+                return hash;
+              }
+              function jsf32(a, b, c, d) {
+                return function () {
+                  a |= 0;
+                  b |= 0;
+                  c |= 0;
+                  d |= 0;
+                  var t = (a - ((b << 27) | (b >>> 5))) | 0;
+                  a = b ^ ((c << 17) | (c >>> 15));
+                  b = (c + d) | 0;
+                  c = (d + t) | 0;
+                  d = (a + t) | 0;
+                  return (d >>> 0) / 4294967296;
+                };
+              }
+            },
+            {},
+          ],
+        },
+        {},
+        [5]
+      )(5);
+    });
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/utils/createCodeExamples.js
+var require_createCodeExamples$1 = __commonJS({
+  '../packages/vovk/mjs/utils/createCodeExamples.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.createDecorator = createDecorator;
-    function createDecorator(handler, initHandler) {
+    exports.createCodeExamples = createCodeExamples$1;
+    const json_schema_sampler_1$3 = require_json_schema_sampler();
+    const stringifyTsSample$1 = (data, pad = 4) =>
+      JSON.stringify(data, null, 2)
+        .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
+        .split('\n')
+        .map((line$2, i, a) =>
+          i === 0 ? line$2 : i === a.length - 1 ? ' '.repeat(pad) + line$2 : ' '.repeat(pad + 2) + line$2
+        )
+        .join('\n');
+    const stringifyPySample$1 = (data, pad = 4) =>
+      JSON.stringify(data, null, 2)
+        .split('\n')
+        .map((line$2, i, a) =>
+          i === 0 ? line$2 : i === a.length - 1 ? ' '.repeat(pad) + line$2 : ' '.repeat(pad + 2) + line$2
+        )
+        .join('\n');
+    const toSnakeCase$1 = (str$2) =>
+      str$2
+        .replace(/-/g, '_')
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2')
+        .toLowerCase()
+        .replace(/^_/, '');
+    function createCodeExamples$1({ handlerName, handlerSchema, controllerSchema, package: packageJson }) {
+      const queryValidation = handlerSchema?.validation?.query;
+      const bodyValidation = handlerSchema?.validation?.body;
+      const paramsValidation = handlerSchema?.validation?.params;
+      const outputValidation = handlerSchema?.validation?.output;
+      const iterationValidation = handlerSchema?.validation?.iteration;
+      const queryFake = queryValidation && (0, json_schema_sampler_1$3.sample)(queryValidation);
+      const bodyFake = bodyValidation && (0, json_schema_sampler_1$3.sample)(bodyValidation);
+      const paramsFake = paramsValidation && (0, json_schema_sampler_1$3.sample)(paramsValidation);
+      const outputFake = outputValidation && (0, json_schema_sampler_1$3.sample)(outputValidation);
+      const iterationFake = iterationValidation && (0, json_schema_sampler_1$3.sample)(iterationValidation);
+      const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
+      const rpcName = controllerSchema.rpcModuleName;
+      const handlerNameSnake = toSnakeCase$1(handlerName);
+      const rpcNameSnake = toSnakeCase$1(rpcName);
+      const packageName = packageJson?.name || 'vovk-client';
+      const packageNameSnake = toSnakeCase$1(packageName);
+      const tsArgs = hasArg
+        ? `{
+${paramsFake ? `    params: ${stringifyTsSample$1(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifyTsSample$1(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifyTsSample$1(queryFake)},\n` : ''}}`
+        : '';
+      const TS_CODE = `import { ${rpcName} } from '${packageName}';
+
+${iterationFake ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
+${
+  outputFake
+    ? `
+console.log(response); 
+/* 
+${stringifyTsSample$1(outputFake, 0)}
+*/`
+    : ''
+}${
+        iterationFake
+          ? `
+for await (const item of response) {
+    console.log(item); 
+    /*
+    ${stringifyTsSample$1(iterationFake, 4)}
+    */
+}`
+          : ''
+      }`;
+      const PY_CODE = `from ${packageJson?.py_name ?? packageNameSnake} import ${rpcName}
+
+response = ${rpcName}.${handlerNameSnake}(${hasArg ? `\n    params=${paramsFake ? stringifyPySample$1(paramsFake) : 'None'},\n` : ''}${bodyFake ? `    body=${stringifyPySample$1(bodyFake)},\n` : ''}${queryFake ? `    query=${stringifyPySample$1(queryFake)},\n` : ''})
+
+${
+  outputFake
+    ? `print(response)\n${JSON.stringify(outputFake, null, 2)
+        .split('\n')
+        .map((s) => `# ${s}`)
+        .join('\n')}`
+    : ''
+}${
+        iterationFake
+          ? `for i, item in enumerate(response):
+    print(f"iteration #{i}:\\n {item}") 
+    # iteration #0: 
+${JSON.stringify(iterationFake, null, 2)
+  .split('\n')
+  .map((s) => `    # ${s}`)
+  .join('\n')}`
+          : ''
+      }`;
+      const serdeUnwrap = (fake) => `from_value(json!(${fake})).unwrap()`;
+      const RS_CODE = `use ${packageJson?.rs_name ?? packageNameSnake}::${rpcNameSnake};
+use serde_json::{ from_value, json };
+
+pub fn main() {
+  let response = ${rpcNameSnake}::${handlerNameSnake}(
+    ${bodyFake ? serdeUnwrap(stringifyPySample$1(bodyFake)) : '()'}, /* body */ 
+    ${queryFake ? serdeUnwrap(stringifyPySample$1(queryFake)) : '()'}, /* query */ 
+    ${paramsFake ? serdeUnwrap(stringifyPySample$1(paramsFake)) : '()'}, /* params */ 
+    None, /* headers (HashMap) */ 
+    None, /* api_root */ 
+    false, /* disable_client_validation */
+  );
+
+  ${
+    outputFake
+      ? `match response {
+    Ok(output) => println!("{:?}", output),
+    /* 
+    output ${stringifyPySample$1(outputFake, 4)} 
+    */
+    Err(e) => println!("error: {:?}", e),
+  }`
+      : ''
+  }${
+    iterationFake
+      ? `match response {
+      Ok(stream) => {
+        for (i, item) in stream.enumerate() {
+          println!("#{}: {:?}", i, item);
+          /*
+          #0: iteration ${stringifyTsSample$1(iterationFake, 10)}
+          */
+        }
+      },
+      Err(e) => println!("Error initiating stream: {:?}", e),
+  }`
+      : ''
+  }
+}`;
+      return {
+        ts: TS_CODE.trim(),
+        py: PY_CODE.trim(),
+        rs: RS_CODE.trim(),
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/openapi/vovkSchemaToOpenAPI.js
+var require_vovkSchemaToOpenAPI$1 = __commonJS({
+  '../packages/vovk/mjs/openapi/vovkSchemaToOpenAPI.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.vovkSchemaToOpenAPI = vovkSchemaToOpenAPI$1;
+    const json_schema_sampler_1$2 = require_json_schema_sampler();
+    const createCodeExamples_1$3 = require_createCodeExamples$1();
+    const types_1$11 = require_types$3();
+    function extractComponents$1(schema$1) {
+      if (!schema$1) return [void 0, {}];
+      const components = {};
+      const process$1 = (obj, path = []) => {
+        if (!obj || typeof obj !== 'object') return obj;
+        if (Array.isArray(obj)) return obj.map((item) => process$1(item, path));
+        const result = {};
+        Object.entries({
+          ...obj.definitions,
+          ...obj.$defs,
+        }).forEach(([key, value]) => {
+          components[key] = process$1(value, [...path, key]);
+        });
+        for (const [key, value] of Object.entries(obj ?? {})) {
+          if (key === '$defs' || key === 'definitions') continue;
+          if (key === '$ref' && typeof value === 'string') {
+            const refParts = value.split('/');
+            const refName = refParts[refParts.length - 1];
+            result[key] = `#/components/schemas/${refName}`;
+          } else result[key] = process$1(value, [...path, key]);
+        }
+        return result;
+      };
+      const processedSchema = process$1(schema$1);
+      return [processedSchema, components];
+    }
+    function vovkSchemaToOpenAPI$1({
+      rootEntry,
+      schema: fullSchema,
+      openAPIObject = {},
+      package: packageJson = { name: 'vovk-client' },
+    }) {
+      const paths = {};
+      const components = {};
+      for (const [segmentName$2, segmentSchema] of Object.entries(fullSchema.segments ?? {}))
+        for (const c of Object.values(segmentSchema.controllers))
+          for (const [handlerName, h] of Object.entries(c.handlers ?? {}))
+            if (h.openapi) {
+              const [queryValidation, queryComponents] = extractComponents$1(h?.validation?.query);
+              const [bodyValidation, bodyComponents] = extractComponents$1(h?.validation?.body);
+              const [paramsValidation, paramsComponents] = extractComponents$1(h?.validation?.params);
+              const [outputValidation, outputComponents] = extractComponents$1(h?.validation?.output);
+              const [iterationValidation, iterationComponents] = extractComponents$1(h?.validation?.iteration);
+              Object.assign(
+                components,
+                queryComponents,
+                bodyComponents,
+                paramsComponents,
+                outputComponents,
+                iterationComponents
+              );
+              const { ts, rs, py } = (0, createCodeExamples_1$3.createCodeExamples)({
+                package: packageJson,
+                handlerName,
+                handlerSchema: h,
+                controllerSchema: c,
+              });
+              const queryParameters =
+                queryValidation && 'type' in queryValidation && 'properties' in queryValidation
+                  ? Object.entries(queryValidation.properties ?? {}).map(([propName, propSchema]) => ({
+                      name: propName,
+                      in: 'query',
+                      required: queryValidation.required ? queryValidation.required.includes(propName) : false,
+                      schema: propSchema,
+                    }))
+                  : null;
+              const pathParameters =
+                paramsValidation && 'type' in paramsValidation && 'properties' in paramsValidation
+                  ? Object.entries(paramsValidation.properties ?? {}).map(([propName, propSchema]) => ({
+                      name: propName,
+                      in: 'path',
+                      required: paramsValidation.required ? paramsValidation.required.includes(propName) : false,
+                      schema: propSchema,
+                    }))
+                  : null;
+              const path =
+                '/' +
+                [rootEntry.replace(/^\/+|\/+$/g, ''), segmentName$2, c.prefix, h.path]
+                  .filter(Boolean)
+                  .join('/')
+                  .replace(/:([a-zA-Z0-9_]+)/g, '{$1}');
+              paths[path] = paths[path] ?? {};
+              const httpMethod = h.httpMethod.toLowerCase();
+              paths[path][httpMethod] ??= {};
+              paths[path][httpMethod] = {
+                ...h.openapi,
+                ...paths[path][httpMethod],
+                'x-codeSamples': [
+                  ...(paths[path][httpMethod]['x-codeSamples'] ?? []),
+                  ...(h.openapi['x-codeSamples'] ?? []),
+                  {
+                    label: 'TypeScript RPC',
+                    lang: 'typescript',
+                    source: ts,
+                  },
+                  {
+                    label: 'Python RPC',
+                    lang: 'python',
+                    source: py,
+                  },
+                  {
+                    label: 'Rust RPC',
+                    lang: 'rust',
+                    source: rs,
+                  },
+                ],
+                ...(queryParameters || pathParameters
+                  ? { parameters: h.openapi.parameters ?? [...(queryParameters || []), ...(pathParameters || [])] }
+                  : {}),
+                ...(paths[path][httpMethod].parameters ? { parameters: paths[path][httpMethod].parameters } : {}),
+                ...(outputValidation && 'type' in outputValidation && 'properties' in outputValidation
+                  ? {
+                      responses: {
+                        200: {
+                          description: 'description' in outputValidation ? outputValidation.description : 'Success',
+                          content: { 'application/json': { schema: outputValidation } },
+                        },
+                        ...h.openapi?.responses,
+                      },
+                    }
+                  : {}),
+                ...(iterationValidation && 'type' in iterationValidation && 'properties' in iterationValidation
+                  ? {
+                      responses: {
+                        200: {
+                          description:
+                            'description' in iterationValidation
+                              ? iterationValidation.description
+                              : 'JSON Lines response',
+                          content: {
+                            'application/jsonl': {
+                              schema: {
+                                ...iterationValidation,
+                                examples: iterationValidation.examples ?? [
+                                  [
+                                    JSON.stringify((0, json_schema_sampler_1$2.sample)(iterationValidation)),
+                                    JSON.stringify((0, json_schema_sampler_1$2.sample)(iterationValidation)),
+                                    JSON.stringify((0, json_schema_sampler_1$2.sample)(iterationValidation)),
+                                  ].join('\n'),
+                                ],
+                              },
+                            },
+                          },
+                        },
+                        ...h.openapi?.responses,
+                      },
+                    }
+                  : {}),
+                ...(paths[path][httpMethod].responses ? { responses: paths[path][httpMethod].responses } : {}),
+                ...(bodyValidation && 'type' in bodyValidation && 'properties' in bodyValidation
+                  ? {
+                      requestBody: h.openapi?.requestBody ?? {
+                        description: 'description' in bodyValidation ? bodyValidation.description : 'Request body',
+                        required: true,
+                        content: { 'application/json': { schema: bodyValidation } },
+                      },
+                    }
+                  : {}),
+                ...(paths[path][httpMethod].requestBody ? { requestBody: paths[path][httpMethod].requestBody } : {}),
+                tags: paths[path][httpMethod].tags ?? h.openapi?.tags,
+              };
+            }
+      return {
+        ...openAPIObject,
+        openapi: '3.1.0',
+        info: {
+          title: packageJson?.description ?? 'API',
+          version: packageJson?.version ?? '0.0.1',
+          ...openAPIObject?.info,
+        },
+        components: {
+          schemas: {
+            ...(openAPIObject?.components?.schemas ?? components),
+            HttpStatus: {
+              type: 'integer',
+              description: 'HTTP status code',
+              enum: Object.keys(types_1$11.HttpStatus)
+                .map((k) => types_1$11.HttpStatus[k])
+                .filter(Boolean)
+                .filter((v) => typeof v === 'number'),
+            },
+            VovkErrorResponse: {
+              type: 'object',
+              description: 'Vovk error response',
+              properties: {
+                cause: { description: 'Error cause of any shape' },
+                statusCode: { $ref: '#/components/schemas/HttpStatus' },
+                message: {
+                  type: 'string',
+                  description: 'Error message',
+                },
+                isError: {
+                  type: 'boolean',
+                  const: true,
+                  description: 'Indicates that this object represents an error',
+                },
+              },
+              required: ['statusCode', 'message', 'isError'],
+              additionalProperties: false,
+            },
+            ...openAPIObject?.components?.schemas,
+          },
+        },
+        paths,
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/openapi/generateFnName.js
+var require_generateFnName$1 = __commonJS({
+  '../packages/vovk/mjs/openapi/generateFnName.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.VERB_MAP = void 0;
+    exports.capitalize = capitalize$1;
+    exports.generateFnName = generateFnName$1;
+    exports.VERB_MAP = {
+      GET: {
+        noParams: 'list',
+        withParams: 'get',
+      },
+      POST: { default: 'create' },
+      PUT: { default: 'update' },
+      PATCH: { default: 'patch' },
+      DELETE: { default: 'delete' },
+      HEAD: { default: 'head' },
+      OPTIONS: { default: 'options' },
+    };
+    function capitalize$1(str$2) {
+      if (str$2.length === 0) return '';
+      return str$2[0].toUpperCase() + str$2.slice(1);
+    }
+    const DEFAULT_OPTIONS$1 = { ignoreSegments: ['api'] };
+    /**
+     * Turn an HTTP method + OpenAPI path into a camelCased function name.
+     *
+     * Examples:
+     *   generateFnName('GET', '/users')                     // "listUsers"
+     *   generateFnName('GET', '/users/{id}')                // "getUsersById"
+     *   generateFnName('POST', '/v1/api/orders')            // "createOrders"
+     *   generateFnName('PATCH', '/users/{userId}/profile')  // "patchUsersProfileByUserId"
+     */
+    function generateFnName$1(method, rawPath, opts = {}) {
+      const { ignoreSegments } = {
+        ...DEFAULT_OPTIONS$1,
+        ...opts,
+      };
+      const parts = rawPath
+        .replace(/^\/|\/$/g, '')
+        .split('/')
+        .filter((seg) => !ignoreSegments?.includes(seg.toLowerCase()))
+        .filter(Boolean);
+      const resources = [];
+      const params = [];
+      parts.forEach((seg) => {
+        const match = seg.match(/^{?([^}]+)}?$/);
+        if (match) params.push(match[1]);
+        else resources.push(seg);
+      });
+      let baseVerb;
+      if (method === 'GET') baseVerb = params.length ? exports.VERB_MAP.GET.withParams : exports.VERB_MAP.GET.noParams;
+      else baseVerb = exports.VERB_MAP[method].default;
+      const resourcePart = resources.map(capitalize$1).join('');
+      const byParams = params.length ? 'By' + params.map(capitalize$1).join('') : '';
+      const rawName = `${baseVerb}${resourcePart}${byParams}`;
+      return rawName[0].toLowerCase() + rawName.slice(1);
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/utils/camelCase.js
+var require_camelCase$1 = __commonJS({
+  '../packages/vovk/mjs/utils/camelCase.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.camelCase = camelCase$1;
+    function toString$1(value) {
+      return value == null ? '' : String(value);
+    }
+    const reUnicodeWord$1 = /[\p{Lu}]{2,}(?=[\p{Lu}][\p{Ll}]+[0-9]*|\b)|[\p{Lu}]?[\p{Ll}]+[0-9]*|[\p{Lu}]|[0-9]+/gu;
+    /**
+     * Splits string into an array of words based on Unicode word boundaries
+     * @param {string} str
+     * @returns {string[]}
+     */
+    function unicodeWords$1(str$2) {
+      return str$2.match(reUnicodeWord$1) || [];
+    }
+    /**
+     * Converts string to camel case.
+     * @param {*} input - The value to convert to camel case.
+     * @returns {string}
+     */
+    function camelCase$1(input) {
+      const str$2 = toString$1(input);
+      const sanitized = str$2.replace(/[\s_-]+/g, ' ').trim();
+      const words = unicodeWords$1(sanitized);
+      return words
+        .map((word, index) => {
+          const lower = word.toLowerCase();
+          if (index === 0) return lower;
+          return lower.charAt(0).toUpperCase() + lower.slice(1);
+        })
+        .join('');
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/openapi/openAPIToVovkSchema.js
+var require_openAPIToVovkSchema$1 = __commonJS({
+  '../packages/vovk/mjs/openapi/openAPIToVovkSchema.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.openAPIToVovkSchema = openAPIToVovkSchema$1;
+    const types_1$10 = require_types$3();
+    const generateFnName_1$1 = require_generateFnName$1();
+    const camelCase_1$1 = require_camelCase$1();
+    function cloneJSON$1(obj) {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) return obj.map(cloneJSON$1);
+      const result = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (value instanceof Date || value instanceof RegExp || typeof value === 'function') continue;
+        result[key] = cloneJSON$1(value);
+      }
+      return result;
+    }
+    function applyComponents$1(schema$1, components) {
+      if (!components || !Object.keys(components).length) return schema$1;
+      const result = cloneJSON$1(schema$1);
+      result.$defs = result.$defs || {};
+      const addedComponents = /* @__PURE__ */ new Set();
+      function processSchema(obj) {
+        if (!obj || typeof obj !== 'object') return obj;
+        const newObj = Array.isArray(obj) ? [...obj] : { ...obj };
+        if (newObj.$ref && typeof newObj.$ref === 'string' && newObj.$ref.startsWith('#/components/schemas/')) {
+          const componentName = newObj.$ref.replace('#/components/schemas/', '');
+          newObj.$ref = `#/$defs/${componentName}`;
+          if (!addedComponents.has(componentName) && components[componentName]) {
+            addedComponents.add(componentName);
+            result.$defs[componentName] = processSchema(cloneJSON$1(components[componentName]));
+          }
+        }
+        if (Array.isArray(newObj)) for (let i = 0; i < newObj.length; i++) newObj[i] = processSchema(newObj[i]);
+        else
+          for (const key in newObj)
+            if (Object.prototype.hasOwnProperty.call(newObj, key)) newObj[key] = processSchema(newObj[key]);
+        return newObj;
+      }
+      return processSchema(result);
+    }
+    const getNamesNestJS$1 = (operationObject) => {
+      const operationId = operationObject.operationId;
+      if (!operationId) throw new Error('Operation ID is required for NestJS module name generation');
+      const controllerHandlerMatch = operationId?.match(/^([A-Z][a-zA-Z0-9]*)_([a-zA-Z0-9_]+)/);
+      if (!controllerHandlerMatch) throw new Error(`Invalid operationId format for NestJS: ${operationId}`);
+      return controllerHandlerMatch.slice(1, 3);
+    };
+    const normalizeGetModuleName$1 = (getModuleName) => {
+      if (getModuleName === 'nestjs-operation-id')
+        getModuleName = (operationObject) => getNamesNestJS$1(operationObject)[0];
+      else if (typeof getModuleName === 'string') {
+        const moduleName = getModuleName;
+        getModuleName = () => moduleName;
+      } else if (typeof getModuleName !== 'function')
+        throw new Error('getModuleName must be a function or one of the predefined strings');
+      return getModuleName;
+    };
+    const normalizeGetMethodName$1 = (getMethodName) => {
+      if (getMethodName === 'nestjs-operation-id')
+        getMethodName = (operationObject) => getNamesNestJS$1(operationObject)[1];
+      else if (getMethodName === 'camel-case-operation-id')
+        getMethodName = ({ operationObject }) => {
+          const operationId = operationObject.operationId;
+          if (!operationId) throw new Error('Operation ID is required for camel-case method name generation');
+          return (0, camelCase_1$1.camelCase)(operationId);
+        };
+      else if (getMethodName === 'auto')
+        getMethodName = ({ operationObject, method, path }) => {
+          const operationId = operationObject.operationId;
+          const isSnakeCase = operationId && /^[a-z][a-z0-9_]+$/.test(operationId);
+          return isSnakeCase
+            ? (0, camelCase_1$1.camelCase)(operationId)
+            : (0, generateFnName_1$1.generateFnName)(method, path);
+        };
+      else if (typeof getMethodName !== 'function')
+        throw new Error('getMethodName must be a function or one of the predefined strings');
+      return getMethodName;
+    };
+    function openAPIToVovkSchema$1({
+      apiRoot,
+      source: { object: openAPIObject },
+      getModuleName = 'api',
+      getMethodName = 'auto',
+    }) {
+      const forceApiRoot = apiRoot ?? openAPIObject.servers?.[0]?.url;
+      if (!forceApiRoot) throw new Error('API root URL is required in OpenAPI configuration');
+      const schema$1 = {
+        $schema: types_1$10.VovkSchemaIdEnum.SCHEMA,
+        segments: {
+          '': {
+            $schema: types_1$10.VovkSchemaIdEnum.SEGMENT,
+            emitSchema: true,
+            segmentName: '',
+            forceApiRoot,
+            controllers: {},
+          },
+        },
+        meta: {
+          $schema: types_1$10.VovkSchemaIdEnum.META,
+          config: { $schema: types_1$10.VovkSchemaIdEnum.CONFIG },
+          openapi: openAPIObject,
+        },
+      };
+      const segment = schema$1.segments[''];
+      getModuleName = normalizeGetModuleName$1(getModuleName);
+      getMethodName = normalizeGetMethodName$1(getMethodName);
+      return Object.entries(openAPIObject.paths ?? {}).reduce((acc, [path, operations]) => {
+        Object.entries(operations ?? {}).forEach(([method, operation]) => {
+          const rpcModuleName = getModuleName({
+            method: method.toUpperCase(),
+            path,
+            openAPIObject,
+            operationObject: operation,
+          });
+          const handlerName = getMethodName({
+            method: method.toUpperCase(),
+            path,
+            openAPIObject,
+            operationObject: operation,
+          });
+          segment.controllers[rpcModuleName] ??= {
+            rpcModuleName,
+            handlers: {},
+          };
+          const queryProperties = operation.parameters?.filter((p) => p.in === 'query') ?? null;
+          const pathProperties = operation.parameters?.filter((p) => p.in === 'path') ?? null;
+          const query = queryProperties?.length
+            ? {
+                type: 'object',
+                properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema])),
+                required: queryProperties.filter((p) => p.required).map((p) => p.name),
+              }
+            : null;
+          const params = pathProperties?.length
+            ? {
+                type: 'object',
+                properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema])),
+                required: pathProperties.filter((p) => p.required).map((p) => p.name),
+              }
+            : null;
+          const body = operation.requestBody?.content['application/json']?.schema ?? null;
+          const output =
+            operation.responses?.['200']?.content?.['application/json']?.schema ??
+            operation.responses?.['201']?.content?.['application/json']?.schema ??
+            null;
+          segment.controllers[rpcModuleName].handlers[handlerName] = {
+            httpMethod: method.toUpperCase(),
+            path,
+            openapi: operation,
+            validation: {
+              ...(query && { query: applyComponents$1(query, openAPIObject.components?.schemas) }),
+              ...(params && { params: applyComponents$1(params, openAPIObject.components?.schemas) }),
+              ...(body && { body: applyComponents$1(body, openAPIObject.components?.schemas) }),
+              ...(output && { output: applyComponents$1(output, openAPIObject.components?.schemas) }),
+            },
+          };
+        });
+        return acc;
+      }, schema$1);
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/utils/createDecorator.js
+var require_createDecorator$1 = __commonJS({
+  '../packages/vovk/mjs/utils/createDecorator.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.createDecorator = createDecorator$1;
+    function createDecorator$1(handler, initHandler) {
       return function decoratorCreator(...args) {
         return function decorator(target, propertyKey) {
           const controller = target;
@@ -1181,14 +2972,16 @@ var require_createDecorator = __commonJS({
             throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
           const sourceMethod = originalMethod._sourceMethod ?? originalMethod;
           const method = function method$1(req, params) {
-            const next = async () => {
+            const next$1 = async () => {
               return await originalMethod.call(controller, req, params);
             };
-            return handler ? handler.call(controller, req, next, ...args) : next();
+            return handler ? handler.call(controller, req, next$1, ...args) : next$1();
           };
           controller[propertyKey] = method;
           method._controller = controller;
           method._sourceMethod = sourceMethod;
+          method.schema = originalMethod.schema;
+          method.func = originalMethod.func;
           originalMethod._controller = controller;
           const handlerSchema = controller._handlers?.[propertyKey] ?? null;
           const initResultReturn = initHandler?.call(controller, ...args);
@@ -1212,12 +3005,153 @@ var require_createDecorator = __commonJS({
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/generateStaticAPI.js
-var require_generateStaticAPI = __commonJS({
-  '../packages/vovk/dist/utils/generateStaticAPI.js'(exports) {
+//#region ../packages/vovk/mjs/openapi/error.js
+var require_error$1 = __commonJS({
+  '../packages/vovk/mjs/openapi/error.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.generateStaticAPI = generateStaticAPI;
-    function generateStaticAPI(c, slug = 'vovk') {
+    exports.error = void 0;
+    const types_1$9 = require_types$3();
+    const createDecorator_1$5 = require_createDecorator$1();
+    const statusDisplayText$1 = {
+      [types_1$9.HttpStatus.NULL]: 'Error',
+      [types_1$9.HttpStatus.CONTINUE]: 'Continue',
+      [types_1$9.HttpStatus.SWITCHING_PROTOCOLS]: 'Switching Protocols',
+      [types_1$9.HttpStatus.PROCESSING]: 'Processing',
+      [types_1$9.HttpStatus.EARLYHINTS]: 'Early Hints',
+      [types_1$9.HttpStatus.OK]: 'OK',
+      [types_1$9.HttpStatus.CREATED]: 'Created',
+      [types_1$9.HttpStatus.ACCEPTED]: 'Accepted',
+      [types_1$9.HttpStatus.NON_AUTHORITATIVE_INFORMATION]: 'Non Authoritative Information',
+      [types_1$9.HttpStatus.NO_CONTENT]: 'No Content',
+      [types_1$9.HttpStatus.RESET_CONTENT]: 'Reset Content',
+      [types_1$9.HttpStatus.PARTIAL_CONTENT]: 'Partial Content',
+      [types_1$9.HttpStatus.AMBIGUOUS]: 'Ambiguous',
+      [types_1$9.HttpStatus.MOVED_PERMANENTLY]: 'Moved Permanently',
+      [types_1$9.HttpStatus.FOUND]: 'Found',
+      [types_1$9.HttpStatus.SEE_OTHER]: 'See Other',
+      [types_1$9.HttpStatus.NOT_MODIFIED]: 'Not Modified',
+      [types_1$9.HttpStatus.TEMPORARY_REDIRECT]: 'Temporary Redirect',
+      [types_1$9.HttpStatus.PERMANENT_REDIRECT]: 'Permanent Redirect',
+      [types_1$9.HttpStatus.BAD_REQUEST]: 'Bad Request',
+      [types_1$9.HttpStatus.UNAUTHORIZED]: 'Unauthorized',
+      [types_1$9.HttpStatus.PAYMENT_REQUIRED]: 'Payment Required',
+      [types_1$9.HttpStatus.FORBIDDEN]: 'Forbidden',
+      [types_1$9.HttpStatus.NOT_FOUND]: 'Not Found',
+      [types_1$9.HttpStatus.METHOD_NOT_ALLOWED]: 'Method Not Allowed',
+      [types_1$9.HttpStatus.NOT_ACCEPTABLE]: 'Not Acceptable',
+      [types_1$9.HttpStatus.PROXY_AUTHENTICATION_REQUIRED]: 'Proxy Authentication Required',
+      [types_1$9.HttpStatus.REQUEST_TIMEOUT]: 'Request Timeout',
+      [types_1$9.HttpStatus.CONFLICT]: 'Conflict',
+      [types_1$9.HttpStatus.GONE]: 'Gone',
+      [types_1$9.HttpStatus.LENGTH_REQUIRED]: 'Length Required',
+      [types_1$9.HttpStatus.PRECONDITION_FAILED]: 'Precondition Failed',
+      [types_1$9.HttpStatus.PAYLOAD_TOO_LARGE]: 'Payload Too Large',
+      [types_1$9.HttpStatus.URI_TOO_LONG]: 'URI Too Long',
+      [types_1$9.HttpStatus.UNSUPPORTED_MEDIA_TYPE]: 'Unsupported Media Type',
+      [types_1$9.HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE]: 'Requested Range Not Satisfiable',
+      [types_1$9.HttpStatus.EXPECTATION_FAILED]: 'Expectation Failed',
+      [types_1$9.HttpStatus.I_AM_A_TEAPOT]: 'I am a teapot',
+      [types_1$9.HttpStatus.MISDIRECTED]: 'Misdirected',
+      [types_1$9.HttpStatus.UNPROCESSABLE_ENTITY]: 'Unprocessable Entity',
+      [types_1$9.HttpStatus.FAILED_DEPENDENCY]: 'Failed Dependency',
+      [types_1$9.HttpStatus.PRECONDITION_REQUIRED]: 'Precondition Required',
+      [types_1$9.HttpStatus.TOO_MANY_REQUESTS]: 'Too Many Requests',
+      [types_1$9.HttpStatus.INTERNAL_SERVER_ERROR]: 'Internal Server Error',
+      [types_1$9.HttpStatus.NOT_IMPLEMENTED]: 'Not Implemented',
+      [types_1$9.HttpStatus.BAD_GATEWAY]: 'Bad Gateway',
+      [types_1$9.HttpStatus.SERVICE_UNAVAILABLE]: 'Service Unavailable',
+      [types_1$9.HttpStatus.GATEWAY_TIMEOUT]: 'Gateway Timeout',
+      [types_1$9.HttpStatus.HTTP_VERSION_NOT_SUPPORTED]: 'HTTP Version Not Supported',
+    };
+    exports.error = (0, createDecorator_1$5.createDecorator)(null, (status, message) => {
+      return (handlerSchema) => {
+        return {
+          ...handlerSchema,
+          openapi: {
+            ...handlerSchema?.openapi,
+            responses: {
+              ...handlerSchema?.openapi?.responses,
+              [status]: {
+                description: `${status} ${statusDisplayText$1[status]}`,
+                content: {
+                  'application/json': {
+                    schema: {
+                      allOf: [
+                        { $ref: '#/components/schemas/VovkErrorResponse' },
+                        {
+                          type: 'object',
+                          properties: {
+                            message: {
+                              type: 'string',
+                              enum: [
+                                message,
+                                ...(handlerSchema?.openapi?.responses?.[status]?.content?.['application/json']?.schema
+                                  ?.allOf?.[1]?.properties?.message?.enum ?? []),
+                              ],
+                            },
+                            statusCode: {
+                              type: 'integer',
+                              enum: [status],
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        };
+      };
+    });
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/openapi/index.js
+var require_openapi$1 = __commonJS({
+  '../packages/vovk/mjs/openapi/index.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.openAPIToVovkSchema = exports.vovkSchemaToOpenAPI = exports.openapi = exports.openapiDecorator = void 0;
+    const vovkSchemaToOpenAPI_1$1 = require_vovkSchemaToOpenAPI$1();
+    Object.defineProperty(exports, 'vovkSchemaToOpenAPI', {
+      enumerable: true,
+      get: function () {
+        return vovkSchemaToOpenAPI_1$1.vovkSchemaToOpenAPI;
+      },
+    });
+    const openAPIToVovkSchema_1$1 = require_openAPIToVovkSchema$1();
+    Object.defineProperty(exports, 'openAPIToVovkSchema', {
+      enumerable: true,
+      get: function () {
+        return openAPIToVovkSchema_1$1.openAPIToVovkSchema;
+      },
+    });
+    const error_1$1 = require_error$1();
+    const createDecorator_1$4 = require_createDecorator$1();
+    exports.openapiDecorator = (0, createDecorator_1$4.createDecorator)(null, (openAPIOperationObject = {}) => {
+      return (handlerSchema) => {
+        return {
+          ...handlerSchema,
+          openapi: {
+            ...handlerSchema?.openapi,
+            ...openAPIOperationObject,
+          },
+        };
+      };
+    });
+    exports.openapi = Object.assign(exports.openapiDecorator, { error: error_1$1.error });
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/utils/generateStaticAPI.js
+var require_generateStaticAPI$1 = __commonJS({
+  '../packages/vovk/mjs/utils/generateStaticAPI.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.generateStaticAPI = generateStaticAPI$1;
+    function generateStaticAPI$1(c, slug = 'vovk') {
       const controllers$2 = c;
       return [
         { [slug]: ['_schema_'] },
@@ -1225,13 +3159,13 @@ var require_generateStaticAPI = __commonJS({
           .map((controller) => {
             const handlers = controller._handlers;
             const splitPrefix = controller._prefix?.split('/') ?? [];
-            return Object.entries(handlers)
+            return Object.entries(handlers ?? {})
               .map(([name, handler]) => {
                 const staticParams = controller._handlersMetadata?.[name]?.staticParams;
                 if (staticParams?.length)
                   return staticParams.map((paramsItem) => {
                     let path = handler.path;
-                    for (const [key, value] of Object.entries(paramsItem)) path = path.replace(`:${key}`, value);
+                    for (const [key, value] of Object.entries(paramsItem ?? {})) path = path.replace(`:${key}`, value);
                     return { [slug]: [...splitPrefix, ...path.split('/')].filter(Boolean) };
                   });
                 return [{ [slug]: [...splitPrefix, ...handler.path.split('/')].filter(Boolean) }];
@@ -1245,12 +3179,12 @@ var require_generateStaticAPI = __commonJS({
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/setHandlerSchema.js
-var require_setHandlerSchema = __commonJS({
-  '../packages/vovk/dist/utils/setHandlerSchema.js'(exports) {
+//#region ../packages/vovk/mjs/utils/setHandlerSchema.js
+var require_setHandlerSchema$1 = __commonJS({
+  '../packages/vovk/mjs/utils/setHandlerSchema.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.setHandlerSchema = setHandlerSchema;
-    async function setHandlerSchema(h, schema) {
+    exports.setHandlerSchema = setHandlerSchema$1;
+    async function setHandlerSchema$1(h, schema$1) {
       h._getSchema = (controller) => {
         if (!controller)
           throw new Error(
@@ -1258,23 +3192,30 @@ var require_setHandlerSchema = __commonJS({
           );
         const handlerName = Object.getOwnPropertyNames(controller).find((key) => controller[key]._sourceMethod === h);
         if (!handlerName) throw new Error('Error setting client validators. Handler not found.');
-        return schema;
+        return schema$1;
       };
     }
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/utils/withValidationLibrary.js
-var require_withValidationLibrary = __commonJS({
-  '../packages/vovk/dist/utils/withValidationLibrary.js'(exports) {
+//#region ../packages/vovk/mjs/utils/withValidationLibrary.js
+var require_withValidationLibrary$1 = __commonJS({
+  '../packages/vovk/mjs/utils/withValidationLibrary.js'(exports) {
+    var __importDefault$6 =
+      (void 0 && (void 0).__importDefault) ||
+      function (mod) {
+        return mod && mod.__esModule ? mod : { default: mod };
+      };
     Object.defineProperty(exports, '__esModule', { value: true });
-    exports.withValidationLibrary = withValidationLibrary;
-    const HttpException_1$1 = require_HttpException();
-    const types_1$3 = require_types$2();
-    const setHandlerSchema_1 = require_setHandlerSchema();
-    const validationTypes = ['body', 'query', 'params', 'output', 'iteration'];
-    function withValidationLibrary({
+    exports.withValidationLibrary = withValidationLibrary$1;
+    const HttpException_js_1$5 = require_HttpException$1();
+    const types_js_1$6 = require_types$3();
+    const reqMeta_js_1$2 = __importDefault$6(require_reqMeta$1());
+    const setHandlerSchema_js_1$1 = require_setHandlerSchema$1();
+    const validationTypes$1 = ['body', 'query', 'params', 'output', 'iteration'];
+    function withValidationLibrary$1({
+      isForm,
       disableServerSideValidation,
       skipSchemaEmission,
       validateEachIteration,
@@ -1291,21 +3232,27 @@ var require_withValidationLibrary = __commonJS({
         disableServerSideValidation === false
           ? []
           : disableServerSideValidation === true
-            ? validationTypes
+            ? validationTypes$1
             : (disableServerSideValidation ?? []);
       const skipSchemaEmissionKeys =
-        skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
+        skipSchemaEmission === false
+          ? []
+          : skipSchemaEmission === true
+            ? validationTypes$1
+            : (skipSchemaEmission ?? []);
       const outputHandler = async (req, handlerParams) => {
+        const { __disableValidation } = req.vovk.meta();
         const data = await handle(req, handlerParams);
+        if (__disableValidation) return data;
         if (output && iteration)
-          throw new HttpException_1$1.HttpException(
-            types_1$3.HttpStatus.INTERNAL_SERVER_ERROR,
+          throw new HttpException_js_1$5.HttpException(
+            types_js_1$6.HttpStatus.INTERNAL_SERVER_ERROR,
             "Output and iteration are mutually exclusive. You can't use them together."
           );
         if (output && !disableServerSideValidationKeys.includes('output')) {
           if (!data)
-            throw new HttpException_1$1.HttpException(
-              types_1$3.HttpStatus.INTERNAL_SERVER_ERROR,
+            throw new HttpException_js_1$5.HttpException(
+              types_js_1$6.HttpStatus.INTERNAL_SERVER_ERROR,
               'Output is required. You probably forgot to return something from your handler.'
             );
           await validate$1(data, output, {
@@ -1315,8 +3262,8 @@ var require_withValidationLibrary = __commonJS({
         }
         if (iteration && !disableServerSideValidationKeys.includes('iteration')) {
           if (!data || typeof data[Symbol.asyncIterator] !== 'function')
-            throw new HttpException_1$1.HttpException(
-              types_1$3.HttpStatus.INTERNAL_SERVER_ERROR,
+            throw new HttpException_js_1$5.HttpException(
+              types_js_1$6.HttpStatus.INTERNAL_SERVER_ERROR,
               'Data is not an async iterable but iteration validation is defined.'
             );
           return (async function* () {
@@ -1334,67 +3281,346 @@ var require_withValidationLibrary = __commonJS({
             }
           })();
         } else if (validateEachIteration)
-          throw new HttpException_1$1.HttpException(
-            types_1$3.HttpStatus.INTERNAL_SERVER_ERROR,
+          throw new HttpException_js_1$5.HttpException(
+            types_js_1$6.HttpStatus.INTERNAL_SERVER_ERROR,
             'validateEachIteration is set but iteration is not defined.'
           );
         return data;
       };
       const resultHandler = async (req, handlerParams) => {
-        if (body && !disableServerSideValidationKeys.includes('body')) {
-          const data = await req.json();
-          const instance =
-            (await validate$1(data, body, {
-              type: 'body',
-              req,
-            })) ?? data;
-          req.json = () => Promise.resolve(data);
-          req.vovk.body = () => Promise.resolve(instance);
-        }
-        if (query && !disableServerSideValidationKeys.includes('query')) {
-          const data = req.vovk.query();
-          const instance =
-            (await validate$1(data, query, {
-              type: 'query',
-              req,
-            })) ?? data;
-          req.vovk.query = () => instance;
-        }
-        if (params && !disableServerSideValidationKeys.includes('params')) {
-          const data = req.vovk.params();
-          const instance =
-            (await validate$1(data, params, {
-              type: 'params',
-              req,
-            })) ?? data;
-          req.vovk.params = () => instance;
+        const { __disableValidation } = req.vovk.meta();
+        if (!__disableValidation) {
+          if (body && !disableServerSideValidationKeys.includes('body')) {
+            const data = await req.vovk[isForm ? 'form' : 'body']();
+            const instance =
+              (await validate$1(data, body, {
+                type: isForm ? 'form' : 'body',
+                req,
+              })) ?? data;
+            req.json = () => Promise.resolve(data);
+            req.vovk[isForm ? 'form' : 'body'] = () => Promise.resolve(instance);
+          }
+          if (query && !disableServerSideValidationKeys.includes('query')) {
+            const data = req.vovk.query();
+            const instance =
+              (await validate$1(data, query, {
+                type: 'query',
+                req,
+              })) ?? data;
+            req.vovk.query = () => instance;
+          }
+          if (params && !disableServerSideValidationKeys.includes('params')) {
+            const data = req.vovk.params();
+            const instance =
+              (await validate$1(data, params, {
+                type: 'params',
+                req,
+              })) ?? data;
+            req.vovk.params = () => instance;
+          }
         }
         return outputHandler(req, handlerParams);
       };
-      if (toJSONSchema) {
-        const validation$2 = {};
-        if (body && !skipSchemaEmissionKeys.includes('body'))
-          validation$2.body = toJSONSchema(body, { type: 'body' });
-        if (query && !skipSchemaEmissionKeys.includes('query'))
-          validation$2.query = toJSONSchema(query, { type: 'query' });
-        if (params && !skipSchemaEmissionKeys.includes('params'))
-          validation$2.params = toJSONSchema(params, { type: 'params' });
-        if (output && !skipSchemaEmissionKeys.includes('output'))
-          validation$2.output = toJSONSchema(output, { type: 'output' });
-        if (iteration && !skipSchemaEmissionKeys.includes('iteration'))
-          validation$2.iteration = toJSONSchema(iteration, { type: 'iteration' });
-        (0, setHandlerSchema_1.setHandlerSchema)(resultHandler, { validation: validation$2 });
+      function func(input) {
+        const fakeReq = {
+          vovk: {
+            body: () => Promise.resolve(input.body),
+            query: () => input.query,
+            params: () => input.params,
+            meta: (meta) => (0, reqMeta_js_1$2.default)(fakeReq, meta),
+            form: () => {
+              throw new Error('Form data is not supported in this context.');
+            },
+          },
+        };
+        fakeReq.vovk.meta({ __disableValidation: input.disableValidation });
+        return resultHandler(fakeReq, input.params ?? {});
       }
-      return resultHandler;
+      const models = {
+        body,
+        query,
+        params,
+        output,
+        iteration,
+      };
+      const resultHandlerEnhanced = Object.assign(resultHandler, {
+        func,
+        models,
+      });
+      if (toJSONSchema) {
+        const getJsonSchema = (model, type) =>
+          Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-formData': isForm } : {});
+        const validation$3 = {};
+        if (body && !skipSchemaEmissionKeys.includes('body')) validation$3.body = getJsonSchema(body, 'body');
+        if (query && !skipSchemaEmissionKeys.includes('query')) validation$3.query = getJsonSchema(query, 'query');
+        if (params && !skipSchemaEmissionKeys.includes('params')) validation$3.params = getJsonSchema(params, 'params');
+        if (output && !skipSchemaEmissionKeys.includes('output')) validation$3.output = getJsonSchema(output, 'output');
+        if (iteration && !skipSchemaEmissionKeys.includes('iteration'))
+          validation$3.iteration = getJsonSchema(iteration, 'iteration');
+        (0, setHandlerSchema_js_1$1.setHandlerSchema)(resultHandlerEnhanced, { validation: validation$3 });
+      }
+      return resultHandlerEnhanced;
     }
   },
 });
 
 //#endregion
-//#region ../packages/vovk/dist/index.js
-var require_dist$2 = __commonJS({
-  '../packages/vovk/dist/index.js'(exports) {
-    var _a;
+//#region ../packages/vovk/mjs/utils/withStandard.js
+var require_withStandard$1 = __commonJS({
+  '../packages/vovk/mjs/utils/withStandard.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.withStandard = withStandard$1;
+    const types_1$8 = require_types$3();
+    const withValidationLibrary_1$3 = require_withValidationLibrary$1();
+    const HttpException_1$3 = require_HttpException$1();
+    function withStandard$1({
+      isForm,
+      body,
+      query,
+      params,
+      output,
+      iteration,
+      handle,
+      toJSONSchema,
+      disableServerSideValidation,
+      skipSchemaEmission,
+      validateEachIteration,
+    }) {
+      return (0, withValidationLibrary_1$3.withValidationLibrary)({
+        isForm,
+        body,
+        query,
+        params,
+        output,
+        iteration,
+        disableServerSideValidation,
+        skipSchemaEmission,
+        validateEachIteration,
+        handle,
+        toJSONSchema,
+        validate: async (data, model, { type, i }) => {
+          const result = await model['~standard'].validate(data);
+          if (result.issues?.length)
+            throw new HttpException_1$3.HttpException(
+              types_1$8.HttpStatus.BAD_REQUEST,
+              `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${result.issues.map(({ message, path }) => `${message}${path ? ` at ${path.join('.')}` : ''}`).join(', ')}`,
+              {
+                [type]: data,
+                result,
+              }
+            );
+          return result.value;
+        },
+      });
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/utils/multitenant.js
+var require_multitenant$1 = __commonJS({
+  '../packages/vovk/mjs/utils/multitenant.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.multitenant = multitenant$1;
+    const getReservedPaths$1 = (overrides) => {
+      return Object.keys(overrides).filter((key) => !key.includes('[') && !key.includes(']'));
+    };
+    /**
+     * Convert a pattern with [placeholders] to a regex pattern and extract placeholder names
+     */
+    const patternToRegex$1 = (pattern) => {
+      const paramNames = [];
+      const regexPattern = pattern
+        .replace(/\[([^\]]+)\]/g, (_$2, name) => {
+          paramNames.push(name);
+          return '([^.]+)';
+        })
+        .replace(/\./g, '\\.');
+      return {
+        regex: new RegExp(`^${regexPattern}$`),
+        paramNames,
+      };
+    };
+    function multitenant$1(config$1) {
+      const { requestUrl, requestHost, targetHost, overrides } = config$1;
+      const urlObj = new URL(requestUrl);
+      const pathname = urlObj.pathname.slice(1);
+      if (pathname.endsWith('_schema_'))
+        return {
+          action: null,
+          destination: null,
+          message: 'Schema endpoint, bypassing overrides',
+          subdomains: null,
+        };
+      const pathSegments = pathname.split('/').filter(Boolean);
+      const reservedPaths = getReservedPaths$1(overrides);
+      for (let i = 0; i < pathSegments.length; i++) {
+        const segment = pathSegments[i];
+        if (reservedPaths.includes(segment)) {
+          const destinationHost = `${segment}.${targetHost}`;
+          const beforeSegments = pathSegments.slice(0, i);
+          const afterSegments = pathSegments.slice(i + 1);
+          const newPath = [...beforeSegments, ...afterSegments].join('/');
+          const destinationUrl = new URL(`${urlObj.protocol}//${destinationHost}`);
+          if (newPath) destinationUrl.pathname = `/${newPath}`;
+          destinationUrl.search = urlObj.search;
+          return {
+            action: 'redirect',
+            destination: destinationUrl.toString(),
+            message: `Redirecting to ${segment} subdomain`,
+            subdomains: null,
+          };
+        }
+      }
+      for (const pattern in overrides) {
+        const fullPattern = `${pattern}.${targetHost}`;
+        const { regex: regex$1, paramNames } = patternToRegex$1(fullPattern);
+        const match = requestHost.match(regex$1);
+        if (match) {
+          const overrideRules = overrides[pattern];
+          const params = {};
+          if (match.length > 1) for (let i = 0; i < paramNames.length; i++) params[paramNames[i]] = match[i + 1];
+          for (const rule of overrideRules)
+            if (pathname === rule.from || pathname.startsWith(`${rule.from}/`)) {
+              let destination = pathname.replace(rule.from, rule.to);
+              if (Object.keys(params).length > 0)
+                Object.entries(params).forEach(([key, value]) => {
+                  destination = destination.replace(`[${key}]`, value);
+                });
+              const wildcardSubdomains = paramNames.length > 0 ? params : null;
+              return {
+                action: 'rewrite',
+                destination: `${urlObj.protocol}//${urlObj.host}/${destination}${urlObj.search}`,
+                message: `Rewriting to ${destination}`,
+                subdomains: wildcardSubdomains,
+              };
+            }
+        }
+      }
+      if (pathSegments.length > 0 && reservedPaths.includes(pathSegments[0])) {
+        const reservedPath = pathSegments[0];
+        const restPath = pathSegments.slice(1).join('/');
+        const destinationHost = `${reservedPath}.${targetHost}`;
+        const destinationUrl = new URL(`${urlObj.protocol}//${destinationHost}`);
+        if (restPath) destinationUrl.pathname = `/${restPath}`;
+        destinationUrl.search = urlObj.search;
+        return {
+          action: 'redirect',
+          destination: destinationUrl.toString(),
+          message: `Redirecting to ${reservedPath} subdomain`,
+          subdomains: null,
+        };
+      }
+      return {
+        action: null,
+        destination: null,
+        message: 'No action',
+        subdomains: null,
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/utils/createLLMTools.js
+var require_createLLMTools$1 = __commonJS({
+  '../packages/vovk/mjs/utils/createLLMTools.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.createLLMTools = createLLMTools$1;
+    const createLLMTool$1 = ({ rpcModuleName, handlerName, caller, modules, onSuccess, onError }) => {
+      const module$1 = modules[rpcModuleName];
+      if (!module$1) throw new Error(`Module "${rpcModuleName}" not found.`);
+      const handler = module$1[handlerName];
+      if (!handler) throw new Error(`Handler "${handlerName}" not found in module "${rpcModuleName}".`);
+      const { schema: schema$1 } = handler;
+      if (!schema$1 || !schema$1.openapi)
+        throw new Error(`Handler "${handlerName}" in module "${rpcModuleName}" does not have a valid schema.`);
+      const execute = (input, options) => {
+        const { body, query, params } = input;
+        return caller(
+          {
+            schema: schema$1,
+            handler,
+            body,
+            query,
+            params,
+          },
+          options
+        )
+          .then((data) => onSuccess(data) ?? data)
+          .catch((error$41) => onError?.(error$41) ?? error$41);
+      };
+      const parametersProperties = {
+        ...(schema$1?.validation?.body ? { body: schema$1.validation.body } : {}),
+        ...(schema$1?.validation?.query ? { query: schema$1.validation.query } : {}),
+        ...(schema$1?.validation?.params ? { params: schema$1.validation.params } : {}),
+      };
+      return {
+        execute,
+        name: `${rpcModuleName}__${handlerName}`,
+        description:
+          [schema$1.openapi?.summary ?? '', schema$1.openapi?.description ?? ''].filter(Boolean).join('\n') ||
+          handlerName,
+        ...(Object.keys(parametersProperties).length
+          ? {
+              parameters: {
+                type: 'object',
+                properties: parametersProperties,
+                required: Object.keys(parametersProperties),
+                additionalProperties: false,
+              },
+            }
+          : {}),
+      };
+    };
+    async function defaultCaller$1({ handler, body, query, params }, _options) {
+      if (handler.isRPC)
+        return handler({
+          handler,
+          body,
+          query,
+          params,
+        });
+      if (handler.func)
+        return handler.func({
+          body,
+          query,
+          params,
+        });
+      throw new Error('Handler is not a valid RPC or controller method');
+    }
+    function createLLMTools$1({
+      modules,
+      caller = defaultCaller$1,
+      onSuccess = (result) => result,
+      onError = () => {},
+    }) {
+      const functions = Object.entries(modules ?? {})
+        .map(([rpcModuleName, module$1]) => {
+          return Object.entries(module$1 ?? {})
+            .filter(([, handler]) => handler.schema?.openapi)
+            .map(([handlerName]) =>
+              createLLMTool$1({
+                rpcModuleName,
+                handlerName,
+                caller,
+                modules,
+                onSuccess,
+                onError,
+              })
+            );
+        })
+        .flat();
+      return { functions };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/mjs/index.js
+var require_mjs = __commonJS({
+  '../packages/vovk/mjs/index.js'(exports) {
+    var _a$2;
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.initVovk =
       exports.prefix =
@@ -1405,6 +3631,13 @@ var require_dist$2 = __commonJS({
       exports.put =
       exports.post =
       exports.get =
+      exports.vovkSchemaToOpenAPI =
+      exports.openAPIToVovkSchema =
+      exports.openapi =
+      exports.createCodeExamples =
+      exports.createLLMTools =
+      exports.multitenant =
+      exports.withStandard =
       exports.withValidationLibrary =
       exports.generateStaticAPI =
       exports.createFetcher =
@@ -1416,106 +3649,159 @@ var require_dist$2 = __commonJS({
       exports.HttpStatus =
       exports.HttpException =
       exports.JSONLinesResponse =
+      exports.VovkSchemaIdEnum =
         void 0;
-    const createVovkApp_1 = require_createVovkApp();
+    const createVovkApp_1$1 = require_createVovkApp$1();
     Object.defineProperty(exports, 'createVovkApp', {
       enumerable: true,
       get: function () {
-        return createVovkApp_1.createVovkApp;
+        return createVovkApp_1$1.createVovkApp;
       },
     });
-    const types_1$2 = require_types$2();
+    const types_1$7 = require_types$3();
     Object.defineProperty(exports, 'HttpStatus', {
       enumerable: true,
       get: function () {
-        return types_1$2.HttpStatus;
+        return types_1$7.HttpStatus;
       },
     });
     Object.defineProperty(exports, 'HttpMethod', {
       enumerable: true,
       get: function () {
-        return types_1$2.HttpMethod;
+        return types_1$7.HttpMethod;
       },
     });
-    const client_1 = require_client();
+    Object.defineProperty(exports, 'VovkSchemaIdEnum', {
+      enumerable: true,
+      get: function () {
+        return types_1$7.VovkSchemaIdEnum;
+      },
+    });
+    const index_1$1 = require_client$1();
     Object.defineProperty(exports, 'createRPC', {
       enumerable: true,
       get: function () {
-        return client_1.createRPC;
+        return index_1$1.createRPC;
       },
     });
     Object.defineProperty(exports, 'fetcher', {
       enumerable: true,
       get: function () {
-        return client_1.fetcher;
+        return index_1$1.fetcher;
       },
     });
     Object.defineProperty(exports, 'createFetcher', {
       enumerable: true,
       get: function () {
-        return client_1.createFetcher;
+        return index_1$1.createFetcher;
       },
     });
-    const HttpException_1 = require_HttpException();
+    const index_2$1 = require_openapi$1();
+    Object.defineProperty(exports, 'openapi', {
+      enumerable: true,
+      get: function () {
+        return index_2$1.openapi;
+      },
+    });
+    Object.defineProperty(exports, 'openAPIToVovkSchema', {
+      enumerable: true,
+      get: function () {
+        return index_2$1.openAPIToVovkSchema;
+      },
+    });
+    Object.defineProperty(exports, 'vovkSchemaToOpenAPI', {
+      enumerable: true,
+      get: function () {
+        return index_2$1.vovkSchemaToOpenAPI;
+      },
+    });
+    const HttpException_1$2 = require_HttpException$1();
     Object.defineProperty(exports, 'HttpException', {
       enumerable: true,
       get: function () {
-        return HttpException_1.HttpException;
+        return HttpException_1$2.HttpException;
       },
     });
-    const createDecorator_1 = require_createDecorator();
+    const createDecorator_1$3 = require_createDecorator$1();
     Object.defineProperty(exports, 'createDecorator', {
       enumerable: true,
       get: function () {
-        return createDecorator_1.createDecorator;
+        return createDecorator_1$3.createDecorator;
       },
     });
-    const JSONLinesResponse_1 = require_JSONLinesResponse();
+    const JSONLinesResponse_1$1 = require_JSONLinesResponse$1();
     Object.defineProperty(exports, 'JSONLinesResponse', {
       enumerable: true,
       get: function () {
-        return JSONLinesResponse_1.JSONLinesResponse;
+        return JSONLinesResponse_1$1.JSONLinesResponse;
       },
     });
-    const generateStaticAPI_1 = require_generateStaticAPI();
+    const generateStaticAPI_1$1 = require_generateStaticAPI$1();
     Object.defineProperty(exports, 'generateStaticAPI', {
       enumerable: true,
       get: function () {
-        return generateStaticAPI_1.generateStaticAPI;
+        return generateStaticAPI_1$1.generateStaticAPI;
       },
     });
-    const withValidationLibrary_1 = require_withValidationLibrary();
+    const withValidationLibrary_1$2 = require_withValidationLibrary$1();
     Object.defineProperty(exports, 'withValidationLibrary', {
       enumerable: true,
       get: function () {
-        return withValidationLibrary_1.withValidationLibrary;
+        return withValidationLibrary_1$2.withValidationLibrary;
       },
     });
-    (_a = (0, createVovkApp_1.createVovkApp)()),
-      (exports.get = _a.get),
-      (exports.post = _a.post),
-      (exports.put = _a.put),
-      (exports.patch = _a.patch),
-      (exports.del = _a.del),
-      (exports.head = _a.head),
-      (exports.options = _a.options),
-      (exports.prefix = _a.prefix),
-      (exports.initVovk = _a.initVovk);
+    const withStandard_1$1 = require_withStandard$1();
+    Object.defineProperty(exports, 'withStandard', {
+      enumerable: true,
+      get: function () {
+        return withStandard_1$1.withStandard;
+      },
+    });
+    const multitenant_1$1 = require_multitenant$1();
+    Object.defineProperty(exports, 'multitenant', {
+      enumerable: true,
+      get: function () {
+        return multitenant_1$1.multitenant;
+      },
+    });
+    const createLLMTools_1$1 = require_createLLMTools$1();
+    Object.defineProperty(exports, 'createLLMTools', {
+      enumerable: true,
+      get: function () {
+        return createLLMTools_1$1.createLLMTools;
+      },
+    });
+    const createCodeExamples_1$2 = require_createCodeExamples$1();
+    Object.defineProperty(exports, 'createCodeExamples', {
+      enumerable: true,
+      get: function () {
+        return createCodeExamples_1$2.createCodeExamples;
+      },
+    });
+    (_a$2 = (0, createVovkApp_1$1.createVovkApp)()),
+      (exports.get = _a$2.get),
+      (exports.post = _a$2.post),
+      (exports.put = _a$2.put),
+      (exports.patch = _a$2.patch),
+      (exports.del = _a$2.del),
+      (exports.head = _a$2.head),
+      (exports.options = _a$2.options),
+      (exports.prefix = _a$2.prefix),
+      (exports.initVovk = _a$2.initVovk);
   },
 });
 
 //#endregion
-//#region .vovk-schema/config.json
-var libs = {};
-var $schema$2 = 'https://vovk.dev/api/schema/v3/config.json';
-var config_default = {
-  libs,
-  $schema: $schema$2,
+//#region .vovk-schema/_meta.json
+var config = {
+  $schema: 'https://vovk.dev/api/spec/v3/config.json',
+  libs: {},
 };
+var _meta_default = { config };
 
 //#endregion
-//#region .vovk-schema/segments/foo/client.json
-var $schema$1 = 'https://vovk.dev/api/schema/v3/segment.json';
+//#region .vovk-schema/foo/client.json
+var $schema$1 = 'https://vovk.dev/api/spec/v3/segment.json';
 var emitSchema$1 = true;
 var segmentName$1 = 'foo/client';
 var controllers$1 = {
@@ -1676,35 +3962,44 @@ var controllers$1 = {
       handleAll: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { hello: { type: 'string' } },
             required: ['hello'],
+            additionalProperties: false,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
           },
           params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               foo: { type: 'string' },
               bar: { type: 'string' },
             },
             required: ['foo', 'bar'],
+            additionalProperties: false,
           },
           output: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               body: {
                 type: 'object',
                 properties: { hello: { type: 'string' } },
                 required: ['hello'],
+                additionalProperties: false,
               },
               query: {
                 type: 'object',
                 properties: { search: { type: 'string' } },
                 required: ['search'],
+                additionalProperties: false,
               },
               params: {
                 type: 'object',
@@ -1713,6 +4008,7 @@ var controllers$1 = {
                   bar: { type: 'string' },
                 },
                 required: ['foo', 'bar'],
+                additionalProperties: false,
               },
               vovkParams: {
                 type: 'object',
@@ -1721,9 +4017,11 @@ var controllers$1 = {
                   bar: { type: 'string' },
                 },
                 required: ['foo', 'bar'],
+                additionalProperties: false,
               },
             },
             required: ['body', 'query', 'params', 'vovkParams'],
+            additionalProperties: false,
           },
         },
         path: 'all/:foo/:bar',
@@ -1763,6 +4061,7 @@ var controllers$1 = {
       handleQuery: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               search: {
@@ -1771,6 +4070,7 @@ var controllers$1 = {
               },
             },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'GET',
@@ -1779,6 +4079,7 @@ var controllers$1 = {
       handleBody: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               hello: {
@@ -1787,6 +4088,7 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -1795,6 +4097,7 @@ var controllers$1 = {
       handleParams: {
         validation: {
           params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               foo: {
@@ -1807,6 +4110,7 @@ var controllers$1 = {
               },
             },
             required: ['foo', 'bar'],
+            additionalProperties: false,
           },
         },
         path: 'x/:foo/:bar/y',
@@ -1815,6 +4119,7 @@ var controllers$1 = {
       handleNestedQuery: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               x: {
@@ -1851,19 +4156,24 @@ var controllers$1 = {
                               type: 'object',
                               properties: { deepKey: { type: 'string' } },
                               required: ['deepKey'],
+                              additionalProperties: false,
                             },
                           },
                           required: ['foo'],
+                          additionalProperties: false,
                         },
                       },
                     },
                     required: ['x', 'arrOfObjects'],
+                    additionalProperties: false,
                   },
                 },
                 required: ['f', 'u', 'd'],
+                additionalProperties: false,
               },
             },
             required: ['x', 'y', 'z'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'GET',
@@ -1872,11 +4182,14 @@ var controllers$1 = {
       handleOutput: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { helloOutput: { type: 'string' } },
             required: ['helloOutput'],
+            additionalProperties: false,
           },
           output: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               hello: {
@@ -1885,6 +4198,7 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'GET',
@@ -1893,6 +4207,7 @@ var controllers$1 = {
       handleStream: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               values: {
@@ -1901,8 +4216,10 @@ var controllers$1 = {
               },
             },
             required: ['values'],
+            additionalProperties: false,
           },
           iteration: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               value: {
@@ -1911,6 +4228,7 @@ var controllers$1 = {
               },
             },
             required: ['value'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'GET',
@@ -1919,9 +4237,13 @@ var controllers$1 = {
       handleSchemaConstraints: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
-              enum_value: { enum: ['a', 'b', 'c'] },
+              enum_value: {
+                type: 'string',
+                enum: ['a', 'b', 'c'],
+              },
               num_minimum: {
                 type: 'number',
                 minimum: 1,
@@ -1962,7 +4284,6 @@ var controllers$1 = {
               },
               str_pattern: {
                 type: 'string',
-                format: 'regex',
                 pattern: '^[A-Z][a-z]*$',
               },
               str_email: {
@@ -2004,12 +4325,13 @@ var controllers$1 = {
                   optionalField: { type: 'number' },
                 },
                 required: ['requiredField'],
+                additionalProperties: false,
               },
               obj_strict: {
                 type: 'object',
                 properties: { knownField: { type: 'string' } },
                 required: ['knownField'],
-                additionalProperties: { not: {} },
+                additionalProperties: false,
               },
               logical_anyOf: {
                 anyOf: [
@@ -2027,11 +4349,13 @@ var controllers$1 = {
                     type: 'object',
                     properties: { a: { type: 'string' } },
                     required: ['a'],
+                    additionalProperties: {},
                   },
                   {
                     type: 'object',
                     properties: { b: { type: 'number' } },
                     required: ['b'],
+                    additionalProperties: {},
                   },
                 ],
               },
@@ -2059,6 +4383,7 @@ var controllers$1 = {
               'logical_anyOf',
               'logical_allOf',
             ],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -2071,18 +4396,8 @@ var controllers$1 = {
       },
       handleFormData: {
         validation: {
-          query: {
-            type: 'object',
-            properties: { search: { type: 'string' } },
-            required: ['search'],
-          },
-        },
-        httpMethod: 'POST',
-        path: 'handle-form-data',
-      },
-      disableServerSideValidationBool: {
-        validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               hello: {
@@ -2091,11 +4406,71 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
+            additionalProperties: false,
+            'x-formData': true,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
+          },
+        },
+        httpMethod: 'POST',
+        path: 'handle-form-data',
+      },
+      handleFormDataWithFile: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+              file: {
+                type: 'string',
+                format: 'binary',
+                contentEncoding: 'binary',
+              },
+            },
+            required: ['hello', 'file'],
+            additionalProperties: false,
+            'x-formData': true,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
+          },
+        },
+        httpMethod: 'POST',
+        path: 'handle-form-data-with-file',
+      },
+      disableServerSideValidationBool: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+            },
+            required: ['hello'],
+            additionalProperties: false,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -2104,6 +4479,7 @@ var controllers$1 = {
       disableServerSideValidationStrings: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               hello: {
@@ -2112,8 +4488,10 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
+            additionalProperties: false,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               search: {
@@ -2122,6 +4500,7 @@ var controllers$1 = {
               },
             },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -2135,9 +4514,11 @@ var controllers$1 = {
       skipSchemaEmissionStrings: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
@@ -2146,6 +4527,7 @@ var controllers$1 = {
       validateEachIteration: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               values: {
@@ -2154,8 +4536,10 @@ var controllers$1 = {
               },
             },
             required: ['values'],
+            additionalProperties: false,
           },
           iteration: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: {
               value: {
@@ -2164,10 +4548,147 @@ var controllers$1 = {
               },
             },
             required: ['value'],
+            additionalProperties: false,
           },
         },
         httpMethod: 'POST',
         path: 'validate-each-iteration',
+      },
+      handleAllAsFunction: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { hello: { type: 'string' } },
+            required: ['hello'],
+            additionalProperties: false,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
+          },
+          params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              foo: { type: 'string' },
+              bar: { type: 'string' },
+            },
+            required: ['foo', 'bar'],
+            additionalProperties: false,
+          },
+          output: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              body: {
+                type: 'object',
+                properties: { hello: { type: 'string' } },
+                required: ['hello'],
+                additionalProperties: false,
+              },
+              query: {
+                type: 'object',
+                properties: { search: { type: 'string' } },
+                required: ['search'],
+                additionalProperties: false,
+              },
+              params: {
+                type: 'object',
+                properties: {
+                  foo: { type: 'string' },
+                  bar: { type: 'string' },
+                },
+                required: ['foo', 'bar'],
+                additionalProperties: false,
+              },
+              vovkParams: {
+                type: 'object',
+                properties: {
+                  foo: { type: 'string' },
+                  bar: { type: 'string' },
+                },
+                required: ['foo', 'bar'],
+                additionalProperties: false,
+              },
+            },
+            required: ['body', 'query', 'params', 'vovkParams'],
+            additionalProperties: false,
+          },
+        },
+        path: 'all-as-func/:foo/:bar',
+        httpMethod: 'POST',
+      },
+      handleAllNoHttpAsFunction: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { hello: { type: 'string' } },
+            required: ['hello'],
+            additionalProperties: false,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
+          },
+          params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              foo: { type: 'string' },
+              bar: { type: 'string' },
+            },
+            required: ['foo', 'bar'],
+            additionalProperties: false,
+          },
+          output: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              body: {
+                type: 'object',
+                properties: { hello: { type: 'string' } },
+                required: ['hello'],
+                additionalProperties: false,
+              },
+              query: {
+                type: 'object',
+                properties: { search: { type: 'string' } },
+                required: ['search'],
+                additionalProperties: false,
+              },
+              params: {
+                type: 'object',
+                properties: {
+                  foo: { type: 'string' },
+                  bar: { type: 'string' },
+                },
+                required: ['foo', 'bar'],
+                additionalProperties: false,
+              },
+              vovkParams: {
+                type: 'object',
+                properties: {
+                  foo: { type: 'string' },
+                  bar: { type: 'string' },
+                },
+                required: ['foo', 'bar'],
+                additionalProperties: false,
+              },
+            },
+            required: ['body', 'query', 'params', 'vovkParams'],
+            additionalProperties: false,
+          },
+        },
+        path: 'all-no-http-as-func/:foo/:bar',
+        httpMethod: 'POST',
       },
     },
   },
@@ -2569,6 +5090,17 @@ var controllers$1 = {
       },
       handleFormData: {
         validation: {
+          body: {
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+            },
+            required: ['hello'],
+            'x-formData': true,
+          },
           query: {
             type: 'object',
             properties: {
@@ -2817,7 +5349,25 @@ var controllers$1 = {
         validation: {
           query: {
             'x-isDto': true,
-            definitions: {},
+            definitions: {
+              ZDto: {
+                properties: {
+                  f: { type: 'string' },
+                  u: {
+                    items: { type: 'string' },
+                    type: 'array',
+                  },
+                  d: { $ref: '#/definitions/DDto' },
+                },
+                type: 'object',
+                required: ['f', 'u', 'd'],
+              },
+              DDto: {
+                properties: { x: { type: 'string' } },
+                type: 'object',
+                required: ['x'],
+              },
+            },
             properties: {
               x: {
                 type: 'string',
@@ -2827,9 +5377,10 @@ var controllers$1 = {
                 items: { type: 'string' },
                 type: 'array',
               },
+              z: { $ref: '#/definitions/ZDto' },
             },
             type: 'object',
-            required: ['x', 'y'],
+            required: ['x', 'y', 'z'],
           },
         },
         httpMethod: 'GET',
@@ -2902,7 +5453,24 @@ var controllers$1 = {
         validation: {
           body: {
             'x-isDto': true,
-            definitions: {},
+            definitions: {
+              RequiredObject: {
+                properties: {
+                  requiredField: {
+                    type: 'string',
+                    not: { type: 'null' },
+                  },
+                  optionalField: { type: 'number' },
+                },
+                type: 'object',
+                required: ['requiredField'],
+              },
+              StrictObject: {
+                properties: { knownField: { type: 'string' } },
+                type: 'object',
+                required: ['knownField'],
+              },
+            },
             properties: {
               enum_value: {
                 type: 'string',
@@ -2973,6 +5541,8 @@ var controllers$1 = {
                 maxItems: 10,
                 minItems: 1,
               },
+              obj_required: { $ref: '#/definitions/RequiredObject' },
+              obj_strict: { $ref: '#/definitions/StrictObject' },
               logical_allOf: { type: 'object' },
             },
             type: 'object',
@@ -2994,6 +5564,8 @@ var controllers$1 = {
               'str_datetime',
               'arr_minItems',
               'arr_maxItems',
+              'obj_required',
+              'obj_strict',
               'logical_allOf',
             ],
           },
@@ -3008,6 +5580,19 @@ var controllers$1 = {
       },
       handleFormData: {
         validation: {
+          body: {
+            'x-isDto': true,
+            definitions: {},
+            properties: {
+              hello: {
+                maxLength: 5,
+                type: 'string',
+              },
+            },
+            type: 'object',
+            required: ['hello'],
+            'x-formData': true,
+          },
           query: {
             'x-isDto': true,
             definitions: {},
@@ -3263,8 +5848,8 @@ var client_default = {
 };
 
 //#endregion
-//#region .vovk-schema/segments/generated.json
-var $schema = 'https://vovk.dev/api/schema/v3/segment.json';
+//#region .vovk-schema/generated.json
+var $schema = 'https://vovk.dev/api/spec/v3/segment.json';
 var emitSchema = true;
 var segmentName = 'generated';
 var controllers = {
@@ -3276,10 +5861,12 @@ var controllers = {
       getNoValidationControllerOnlyEntities: {
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get NoValidationControllerOnlyEntities' },
       },
       updateNoValidationControllerOnlyEntity: {
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update NoValidationControllerOnlyEntity' },
       },
       createNoValidationControllerOnlyEntity: {
         path: '',
@@ -3299,10 +5886,12 @@ var controllers = {
       getNoValidationControllerAndServiceEntities: {
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get NoValidationControllerAndServiceEntities' },
       },
       updateNoValidationControllerAndServiceEntity: {
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update NoValidationControllerAndServiceEntity' },
       },
       createNoValidationControllerAndServiceEntity: {
         path: '',
@@ -3322,34 +5911,57 @@ var controllers = {
       getZodControllerOnlyEntities: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get ZodControllerOnlyEntities' },
       },
       updateZodControllerOnlyEntity: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
-            properties: { foo: { anyOf: [{ const: 'bar' }, { const: 'baz' }] } },
+            properties: {
+              foo: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    const: 'bar',
+                  },
+                  {
+                    type: 'string',
+                    const: 'baz',
+                  },
+                ],
+              },
+            },
             required: ['foo'],
+            additionalProperties: false,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { q: { type: 'string' } },
             required: ['q'],
+            additionalProperties: false,
           },
           params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { id: { type: 'string' } },
             required: ['id'],
+            additionalProperties: false,
           },
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update ZodControllerOnlyEntity' },
       },
       createZodControllerOnlyEntity: {
         path: '',
@@ -3369,34 +5981,57 @@ var controllers = {
       getZodControllerAndServiceEntities: {
         validation: {
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { search: { type: 'string' } },
             required: ['search'],
+            additionalProperties: false,
           },
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get ZodControllerAndServiceEntities' },
       },
       updateZodControllerAndServiceEntity: {
         validation: {
           body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
-            properties: { foo: { anyOf: [{ const: 'bar' }, { const: 'baz' }] } },
+            properties: {
+              foo: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    const: 'bar',
+                  },
+                  {
+                    type: 'string',
+                    const: 'baz',
+                  },
+                ],
+              },
+            },
             required: ['foo'],
+            additionalProperties: false,
           },
           query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { q: { type: 'string' } },
             required: ['q'],
+            additionalProperties: false,
           },
           params: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
             type: 'object',
             properties: { id: { type: 'string' } },
             required: ['id'],
+            additionalProperties: false,
           },
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update ZodControllerAndServiceEntity' },
       },
       createZodControllerAndServiceEntity: {
         path: '',
@@ -3423,6 +6058,7 @@ var controllers = {
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get YupControllerOnlyEntities' },
       },
       updateYupControllerOnlyEntity: {
         validation: {
@@ -3444,6 +6080,7 @@ var controllers = {
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update YupControllerOnlyEntity' },
       },
       createYupControllerOnlyEntity: {
         path: '',
@@ -3470,6 +6107,7 @@ var controllers = {
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get YupControllerAndServiceEntities' },
       },
       updateYupControllerAndServiceEntity: {
         validation: {
@@ -3491,6 +6129,7 @@ var controllers = {
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update YupControllerAndServiceEntity' },
       },
       createYupControllerAndServiceEntity: {
         path: '',
@@ -3519,6 +6158,7 @@ var controllers = {
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get DtoControllerOnlyEntities' },
       },
       updateDtoControllerOnlyEntity: {
         validation: {
@@ -3544,6 +6184,7 @@ var controllers = {
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update DtoControllerOnlyEntity' },
       },
       createDtoControllerOnlyEntity: {
         path: '',
@@ -3572,6 +6213,7 @@ var controllers = {
         },
         path: '',
         httpMethod: 'GET',
+        openapi: { summary: 'Get DtoControllerAndServiceEntities' },
       },
       updateDtoControllerAndServiceEntity: {
         validation: {
@@ -3597,6 +6239,7 @@ var controllers = {
         },
         path: ':id',
         httpMethod: 'PUT',
+        openapi: { summary: 'Update DtoControllerAndServiceEntity' },
       },
       createDtoControllerAndServiceEntity: {
         path: '',
@@ -3617,15 +6260,19 @@ var generated_default = {
 };
 
 //#endregion
-//#region .tmp-ts-rpc/fullSchema.ts
+//#region tmp_ts_rpc/schema.ts
 const segments = {
   'foo/client': client_default,
   generated: generated_default,
 };
-const fullSchema = {
-  $schema: 'https://vovk.dev/api/schema/v3/full.json',
-  config: config_default,
+const schema = {
+  $schema: 'https://vovk.dev/api/spec/v3/schema.json',
   segments,
+  meta: {
+    $schema: 'https://vovk.dev/api/spec/v3/meta.json',
+    apiRoot: 'http://localhost:3000/api',
+    ..._meta_default,
+  },
 };
 
 //#endregion
@@ -3682,15 +6329,15 @@ var require_code$3 = __commonJS({
         return item === '' || item === '""';
       }
       get str() {
-        var _a$2;
-        return (_a$2 = this._str) !== null && _a$2 !== void 0
-          ? _a$2
+        var _a$4;
+        return (_a$4 = this._str) !== null && _a$4 !== void 0
+          ? _a$4
           : (this._str = this._items.reduce((s, c) => `${s}${c}`, ''));
       }
       get names() {
-        var _a$2;
-        return (_a$2 = this._names) !== null && _a$2 !== void 0
-          ? _a$2
+        var _a$4;
+        return (_a$4 = this._names) !== null && _a$4 !== void 0
+          ? _a$4
           : (this._names = this._items.reduce((names$2, c) => {
               if (c instanceof Name$1) names$2[c.str] = (names$2[c.str] || 0) + 1;
               return names$2;
@@ -3829,9 +6476,9 @@ var require_scope$1 = __commonJS({
         return `${prefix}${ng.index++}`;
       }
       _nameGroup(prefix) {
-        var _a$2, _b;
+        var _a$4, _b;
         if (
-          ((_b = (_a$2 = this._parent) === null || _a$2 === void 0 ? void 0 : _a$2._prefixes) === null || _b === void 0
+          ((_b = (_a$4 = this._parent) === null || _a$4 === void 0 ? void 0 : _a$4._prefixes) === null || _b === void 0
             ? void 0
             : _b.has(prefix)) ||
           (this._prefixes && !this._prefixes.has(prefix))
@@ -3873,16 +6520,16 @@ var require_scope$1 = __commonJS({
         return new ValueScopeName$1(prefix, this._newName(prefix));
       }
       value(nameOrPrefix, value) {
-        var _a$2;
+        var _a$4;
         if (value.ref === void 0) throw new Error('CodeGen: ref must be passed in value');
         const name = this.toName(nameOrPrefix);
         const { prefix } = name;
-        const valueKey = (_a$2 = value.key) !== null && _a$2 !== void 0 ? _a$2 : value.ref;
+        const valueKey = (_a$4 = value.key) !== null && _a$4 !== void 0 ? _a$4 : value.ref;
         let vs = this._values[prefix];
         if (vs) {
           const _name = vs.get(valueKey);
           if (_name) return _name;
-        } else vs = this._values[prefix] = new Map();
+        } else vs = this._values[prefix] = /* @__PURE__ */ new Map();
         vs.set(valueKey, name);
         const s = this._scope[prefix] || (this._scope[prefix] = []);
         const itemIndex = s.length;
@@ -3920,14 +6567,14 @@ var require_scope$1 = __commonJS({
         for (const prefix in values) {
           const vs = values[prefix];
           if (!vs) continue;
-          const nameSet = (usedValues[prefix] = usedValues[prefix] || new Map());
+          const nameSet = (usedValues[prefix] = usedValues[prefix] || /* @__PURE__ */ new Map());
           vs.forEach((name) => {
             if (nameSet.has(name)) return;
             nameSet.set(name, UsedValueState$1.Started);
             let c = valueCode(name);
             if (c) {
-              const def$60 = this.opts.es5 ? exports.varKinds.var : exports.varKinds.const;
-              code = (0, code_1$28._)`${code}${def$60} ${name} = ${c};${this.opts._n}`;
+              const def$69 = this.opts.es5 ? exports.varKinds.var : exports.varKinds.const;
+              code = (0, code_1$28._)`${code}${def$69} ${name} = ${c};${this.opts._n}`;
             } else if ((c = getCode === null || getCode === void 0 ? void 0 : getCode(name)))
               code = (0, code_1$28._)`${code}${c}${this.opts._n}`;
             else throw new ValueError$1(name);
@@ -4132,9 +6779,9 @@ var require_codegen$1 = __commonJS({
       }
     };
     var Throw$1 = class extends Node$1 {
-      constructor(error$39) {
+      constructor(error$41) {
         super();
-        this.error = error$39;
+        this.error = error$41;
       }
       render({ _n }) {
         return `throw ${this.error};` + _n;
@@ -4232,8 +6879,8 @@ var require_codegen$1 = __commonJS({
         return this;
       }
       optimizeNames(names$2, constants) {
-        var _a$2;
-        this.else = (_a$2 = this.else) === null || _a$2 === void 0 ? void 0 : _a$2.optimizeNames(names$2, constants);
+        var _a$4;
+        this.else = (_a$4 = this.else) === null || _a$4 === void 0 ? void 0 : _a$4.optimizeNames(names$2, constants);
         if (!(super.optimizeNames(names$2, constants) || this.else)) return;
         this.condition = optimizeExpr$1(this.condition, names$2, constants);
         return this;
@@ -4330,16 +6977,16 @@ var require_codegen$1 = __commonJS({
         return code;
       }
       optimizeNodes() {
-        var _a$2, _b;
+        var _a$4, _b;
         super.optimizeNodes();
-        (_a$2 = this.catch) === null || _a$2 === void 0 || _a$2.optimizeNodes();
+        (_a$4 = this.catch) === null || _a$4 === void 0 || _a$4.optimizeNodes();
         (_b = this.finally) === null || _b === void 0 || _b.optimizeNodes();
         return this;
       }
       optimizeNames(names$2, constants) {
-        var _a$2, _b;
+        var _a$4, _b;
         super.optimizeNames(names$2, constants);
-        (_a$2 = this.catch) === null || _a$2 === void 0 || _a$2.optimizeNames(names$2, constants);
+        (_a$4 = this.catch) === null || _a$4 === void 0 || _a$4.optimizeNames(names$2, constants);
         (_b = this.finally) === null || _b === void 0 || _b.optimizeNames(names$2, constants);
         return this;
       }
@@ -4351,9 +6998,9 @@ var require_codegen$1 = __commonJS({
       }
     };
     var Catch$1 = class extends BlockNode$1 {
-      constructor(error$39) {
+      constructor(error$41) {
         super();
-        this.error = error$39;
+        this.error = error$41;
       }
       render(opts) {
         return `catch(${this.error})` + super.render(opts);
@@ -4390,7 +7037,7 @@ var require_codegen$1 = __commonJS({
       }
       scopeValue(prefixOrName, value) {
         const name = this._extScope.value(prefixOrName, value);
-        const vs = this._values[name.prefix] || (this._values[name.prefix] = new Set());
+        const vs = this._values[name.prefix] || (this._values[name.prefix] = /* @__PURE__ */ new Set());
         vs.add(name);
         return name;
       }
@@ -4514,9 +7161,9 @@ var require_codegen$1 = __commonJS({
         this._blockNode(node);
         this.code(tryBody);
         if (catchCode) {
-          const error$39 = this.name('e');
-          this._currNode = node.catch = new Catch$1(error$39);
-          catchCode(error$39);
+          const error$41 = this.name('e');
+          this._currNode = node.catch = new Catch$1(error$41);
+          catchCode(error$41);
         }
         if (finallyCode) {
           this._currNode = node.finally = new Finally$1();
@@ -4524,8 +7171,8 @@ var require_codegen$1 = __commonJS({
         }
         return this._endBlockNode(Catch$1, Finally$1);
       }
-      throw(error$39) {
-        return this._leafNode(new Throw$1(error$39));
+      throw(error$41) {
+        return this._leafNode(new Throw$1(error$41));
       }
       block(body, nodeCount) {
         this._blockStarts.push(this._nodes.length);
@@ -4672,7 +7319,7 @@ var require_util$1 = __commonJS({
       exports.alwaysValidSchema =
       exports.toHash =
         void 0;
-    const codegen_1$74 = require_codegen$1();
+    const codegen_1$79 = require_codegen$1();
     const code_1$26 = require_code$3();
     function toHash$1(arr) {
       const hash = {};
@@ -4680,39 +7327,39 @@ var require_util$1 = __commonJS({
       return hash;
     }
     exports.toHash = toHash$1;
-    function alwaysValidSchema$1(it, schema) {
-      if (typeof schema == 'boolean') return schema;
-      if (Object.keys(schema).length === 0) return true;
-      checkUnknownRules$1(it, schema);
-      return !schemaHasRules$1(schema, it.self.RULES.all);
+    function alwaysValidSchema$1(it, schema$1) {
+      if (typeof schema$1 == 'boolean') return schema$1;
+      if (Object.keys(schema$1).length === 0) return true;
+      checkUnknownRules$1(it, schema$1);
+      return !schemaHasRules$1(schema$1, it.self.RULES.all);
     }
     exports.alwaysValidSchema = alwaysValidSchema$1;
-    function checkUnknownRules$1(it, schema = it.schema) {
-      const { opts, self } = it;
+    function checkUnknownRules$1(it, schema$1 = it.schema) {
+      const { opts, self: self$1 } = it;
       if (!opts.strictSchema) return;
-      if (typeof schema === 'boolean') return;
-      const rules = self.RULES.keywords;
-      for (const key in schema) if (!rules[key]) checkStrictMode$1(it, `unknown keyword: "${key}"`);
+      if (typeof schema$1 === 'boolean') return;
+      const rules = self$1.RULES.keywords;
+      for (const key in schema$1) if (!rules[key]) checkStrictMode$1(it, `unknown keyword: "${key}"`);
     }
     exports.checkUnknownRules = checkUnknownRules$1;
-    function schemaHasRules$1(schema, rules) {
-      if (typeof schema == 'boolean') return !schema;
-      for (const key in schema) if (rules[key]) return true;
+    function schemaHasRules$1(schema$1, rules) {
+      if (typeof schema$1 == 'boolean') return !schema$1;
+      for (const key in schema$1) if (rules[key]) return true;
       return false;
     }
     exports.schemaHasRules = schemaHasRules$1;
-    function schemaHasRulesButRef$1(schema, RULES) {
-      if (typeof schema == 'boolean') return !schema;
-      for (const key in schema) if (key !== '$ref' && RULES.all[key]) return true;
+    function schemaHasRulesButRef$1(schema$1, RULES) {
+      if (typeof schema$1 == 'boolean') return !schema$1;
+      for (const key in schema$1) if (key !== '$ref' && RULES.all[key]) return true;
       return false;
     }
     exports.schemaHasRulesButRef = schemaHasRulesButRef$1;
-    function schemaRefOrVal$1({ topSchemaRef, schemaPath }, schema, keyword$1, $data) {
+    function schemaRefOrVal$1({ topSchemaRef, schemaPath }, schema$1, keyword$1, $data) {
       if (!$data) {
-        if (typeof schema == 'number' || typeof schema == 'boolean') return schema;
-        if (typeof schema == 'string') return (0, codegen_1$74._)`${schema}`;
+        if (typeof schema$1 == 'number' || typeof schema$1 == 'boolean') return schema$1;
+        if (typeof schema$1 == 'string') return (0, codegen_1$79._)`${schema$1}`;
       }
-      return (0, codegen_1$74._)`${topSchemaRef}${schemaPath}${(0, codegen_1$74.getProperty)(keyword$1)}`;
+      return (0, codegen_1$79._)`${topSchemaRef}${schemaPath}${(0, codegen_1$79.getProperty)(keyword$1)}`;
     }
     exports.schemaRefOrVal = schemaRefOrVal$1;
     function unescapeFragment$1(str$2) {
@@ -4742,32 +7389,32 @@ var require_util$1 = __commonJS({
         const res =
           to === void 0
             ? from
-            : to instanceof codegen_1$74.Name
-              ? (from instanceof codegen_1$74.Name ? mergeNames(gen, from, to) : mergeToName(gen, from, to), to)
-              : from instanceof codegen_1$74.Name
+            : to instanceof codegen_1$79.Name
+              ? (from instanceof codegen_1$79.Name ? mergeNames(gen, from, to) : mergeToName(gen, from, to), to)
+              : from instanceof codegen_1$79.Name
                 ? (mergeToName(gen, to, from), from)
                 : mergeValues(from, to);
-        return toName === codegen_1$74.Name && !(res instanceof codegen_1$74.Name) ? resultToName(gen, res) : res;
+        return toName === codegen_1$79.Name && !(res instanceof codegen_1$79.Name) ? resultToName(gen, res) : res;
       };
     }
     exports.mergeEvaluated = {
       props: makeMergeEvaluated$1({
         mergeNames: (gen, from, to) =>
-          gen.if((0, codegen_1$74._)`${to} !== true && ${from} !== undefined`, () => {
+          gen.if((0, codegen_1$79._)`${to} !== true && ${from} !== undefined`, () => {
             gen.if(
-              (0, codegen_1$74._)`${from} === true`,
+              (0, codegen_1$79._)`${from} === true`,
               () => gen.assign(to, true),
               () =>
                 gen
-                  .assign(to, (0, codegen_1$74._)`${to} || {}`)
-                  .code((0, codegen_1$74._)`Object.assign(${to}, ${from})`)
+                  .assign(to, (0, codegen_1$79._)`${to} || {}`)
+                  .code((0, codegen_1$79._)`Object.assign(${to}, ${from})`)
             );
           }),
         mergeToName: (gen, from, to) =>
-          gen.if((0, codegen_1$74._)`${to} !== true`, () => {
+          gen.if((0, codegen_1$79._)`${to} !== true`, () => {
             if (from === true) gen.assign(to, true);
             else {
-              gen.assign(to, (0, codegen_1$74._)`${to} || {}`);
+              gen.assign(to, (0, codegen_1$79._)`${to} || {}`);
               setEvaluated$1(gen, to, from);
             }
           }),
@@ -4782,12 +7429,12 @@ var require_util$1 = __commonJS({
       }),
       items: makeMergeEvaluated$1({
         mergeNames: (gen, from, to) =>
-          gen.if((0, codegen_1$74._)`${to} !== true && ${from} !== undefined`, () =>
-            gen.assign(to, (0, codegen_1$74._)`${from} === true ? true : ${to} > ${from} ? ${to} : ${from}`)
+          gen.if((0, codegen_1$79._)`${to} !== true && ${from} !== undefined`, () =>
+            gen.assign(to, (0, codegen_1$79._)`${from} === true ? true : ${to} > ${from} ? ${to} : ${from}`)
           ),
         mergeToName: (gen, from, to) =>
-          gen.if((0, codegen_1$74._)`${to} !== true`, () =>
-            gen.assign(to, from === true ? true : (0, codegen_1$74._)`${to} > ${from} ? ${to} : ${from}`)
+          gen.if((0, codegen_1$79._)`${to} !== true`, () =>
+            gen.assign(to, from === true ? true : (0, codegen_1$79._)`${to} > ${from} ? ${to} : ${from}`)
           ),
         mergeValues: (from, to) => (from === true ? true : Math.max(from, to)),
         resultToName: (gen, items) => gen.var('items', items),
@@ -4795,14 +7442,14 @@ var require_util$1 = __commonJS({
     };
     function evaluatedPropsToName$1(gen, ps) {
       if (ps === true) return gen.var('props', true);
-      const props = gen.var('props', (0, codegen_1$74._)`{}`);
+      const props = gen.var('props', (0, codegen_1$79._)`{}`);
       if (ps !== void 0) setEvaluated$1(gen, props, ps);
       return props;
     }
     exports.evaluatedPropsToName = evaluatedPropsToName$1;
     function setEvaluated$1(gen, props, ps) {
       Object.keys(ps).forEach((p) =>
-        gen.assign((0, codegen_1$74._)`${props}${(0, codegen_1$74.getProperty)(p)}`, true)
+        gen.assign((0, codegen_1$79._)`${props}${(0, codegen_1$79.getProperty)(p)}`, true)
       );
     }
     exports.setEvaluated = setEvaluated$1;
@@ -4820,18 +7467,18 @@ var require_util$1 = __commonJS({
       Type$2[(Type$2['Str'] = 1)] = 'Str';
     })(Type$1 || (exports.Type = Type$1 = {}));
     function getErrorPath$1(dataProp, dataPropType, jsPropertySyntax) {
-      if (dataProp instanceof codegen_1$74.Name) {
+      if (dataProp instanceof codegen_1$79.Name) {
         const isNumber = dataPropType === Type$1.Num;
         return jsPropertySyntax
           ? isNumber
-            ? (0, codegen_1$74._)`"[" + ${dataProp} + "]"`
-            : (0, codegen_1$74._)`"['" + ${dataProp} + "']"`
+            ? (0, codegen_1$79._)`"[" + ${dataProp} + "]"`
+            : (0, codegen_1$79._)`"['" + ${dataProp} + "']"`
           : isNumber
-            ? (0, codegen_1$74._)`"/" + ${dataProp}`
-            : (0, codegen_1$74._)`"/" + ${dataProp}.replace(/~/g, "~0").replace(/\\//g, "~1")`;
+            ? (0, codegen_1$79._)`"/" + ${dataProp}`
+            : (0, codegen_1$79._)`"/" + ${dataProp}.replace(/~/g, "~0").replace(/\\//g, "~1")`;
       }
       return jsPropertySyntax
-        ? (0, codegen_1$74.getProperty)(dataProp).toString()
+        ? (0, codegen_1$79.getProperty)(dataProp).toString()
         : '/' + escapeJsonPointer$1(dataProp);
     }
     exports.getErrorPath = getErrorPath$1;
@@ -4850,24 +7497,24 @@ var require_util$1 = __commonJS({
 var require_names$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/compile/names.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$73 = require_codegen$1();
+    const codegen_1$78 = require_codegen$1();
     const names$1 = {
-      data: new codegen_1$73.Name('data'),
-      valCxt: new codegen_1$73.Name('valCxt'),
-      instancePath: new codegen_1$73.Name('instancePath'),
-      parentData: new codegen_1$73.Name('parentData'),
-      parentDataProperty: new codegen_1$73.Name('parentDataProperty'),
-      rootData: new codegen_1$73.Name('rootData'),
-      dynamicAnchors: new codegen_1$73.Name('dynamicAnchors'),
-      vErrors: new codegen_1$73.Name('vErrors'),
-      errors: new codegen_1$73.Name('errors'),
-      this: new codegen_1$73.Name('this'),
-      self: new codegen_1$73.Name('self'),
-      scope: new codegen_1$73.Name('scope'),
-      json: new codegen_1$73.Name('json'),
-      jsonPos: new codegen_1$73.Name('jsonPos'),
-      jsonLen: new codegen_1$73.Name('jsonLen'),
-      jsonPart: new codegen_1$73.Name('jsonPart'),
+      data: new codegen_1$78.Name('data'),
+      valCxt: new codegen_1$78.Name('valCxt'),
+      instancePath: new codegen_1$78.Name('instancePath'),
+      parentData: new codegen_1$78.Name('parentData'),
+      parentDataProperty: new codegen_1$78.Name('parentDataProperty'),
+      rootData: new codegen_1$78.Name('rootData'),
+      dynamicAnchors: new codegen_1$78.Name('dynamicAnchors'),
+      vErrors: new codegen_1$78.Name('vErrors'),
+      errors: new codegen_1$78.Name('errors'),
+      this: new codegen_1$78.Name('this'),
+      self: new codegen_1$78.Name('self'),
+      scope: new codegen_1$78.Name('scope'),
+      json: new codegen_1$78.Name('json'),
+      jsonPos: new codegen_1$78.Name('jsonPos'),
+      jsonLen: new codegen_1$78.Name('jsonLen'),
+      jsonPart: new codegen_1$78.Name('jsonPart'),
     };
     exports.default = names$1;
   },
@@ -4885,42 +7532,42 @@ var require_errors$1 = __commonJS({
       exports.keyword$DataError =
       exports.keywordError =
         void 0;
-    const codegen_1$72 = require_codegen$1();
-    const util_1$59 = require_util$1();
-    const names_1$16 = require_names$1();
+    const codegen_1$77 = require_codegen$1();
+    const util_1$63 = require_util$1();
+    const names_1$19 = require_names$1();
     exports.keywordError = {
-      message: ({ keyword: keyword$1 }) => (0, codegen_1$72.str)`must pass "${keyword$1}" keyword validation`,
+      message: ({ keyword: keyword$1 }) => (0, codegen_1$77.str)`must pass "${keyword$1}" keyword validation`,
     };
     exports.keyword$DataError = {
       message: ({ keyword: keyword$1, schemaType }) =>
         schemaType
-          ? (0, codegen_1$72.str)`"${keyword$1}" keyword must be ${schemaType} ($data)`
-          : (0, codegen_1$72.str)`"${keyword$1}" keyword is invalid ($data)`,
+          ? (0, codegen_1$77.str)`"${keyword$1}" keyword must be ${schemaType} ($data)`
+          : (0, codegen_1$77.str)`"${keyword$1}" keyword is invalid ($data)`,
     };
-    function reportError$1(cxt, error$39 = exports.keywordError, errorPaths, overrideAllErrors) {
+    function reportError$1(cxt, error$41 = exports.keywordError, errorPaths, overrideAllErrors) {
       const { it } = cxt;
       const { gen, compositeRule, allErrors } = it;
-      const errObj = errorObjectCode$1(cxt, error$39, errorPaths);
+      const errObj = errorObjectCode$1(cxt, error$41, errorPaths);
       if (overrideAllErrors !== null && overrideAllErrors !== void 0 ? overrideAllErrors : compositeRule || allErrors)
         addError$1(gen, errObj);
-      else returnErrors$1(it, (0, codegen_1$72._)`[${errObj}]`);
+      else returnErrors$1(it, (0, codegen_1$77._)`[${errObj}]`);
     }
     exports.reportError = reportError$1;
-    function reportExtraError$1(cxt, error$39 = exports.keywordError, errorPaths) {
+    function reportExtraError$1(cxt, error$41 = exports.keywordError, errorPaths) {
       const { it } = cxt;
       const { gen, compositeRule, allErrors } = it;
-      const errObj = errorObjectCode$1(cxt, error$39, errorPaths);
+      const errObj = errorObjectCode$1(cxt, error$41, errorPaths);
       addError$1(gen, errObj);
-      if (!(compositeRule || allErrors)) returnErrors$1(it, names_1$16.default.vErrors);
+      if (!(compositeRule || allErrors)) returnErrors$1(it, names_1$19.default.vErrors);
     }
     exports.reportExtraError = reportExtraError$1;
     function resetErrorsCount$1(gen, errsCount) {
-      gen.assign(names_1$16.default.errors, errsCount);
-      gen.if((0, codegen_1$72._)`${names_1$16.default.vErrors} !== null`, () =>
+      gen.assign(names_1$19.default.errors, errsCount);
+      gen.if((0, codegen_1$77._)`${names_1$19.default.vErrors} !== null`, () =>
         gen.if(
           errsCount,
-          () => gen.assign((0, codegen_1$72._)`${names_1$16.default.vErrors}.length`, errsCount),
-          () => gen.assign(names_1$16.default.vErrors, null)
+          () => gen.assign((0, codegen_1$77._)`${names_1$19.default.vErrors}.length`, errsCount),
+          () => gen.assign(names_1$19.default.vErrors, null)
         )
       );
     }
@@ -4929,18 +7576,18 @@ var require_errors$1 = __commonJS({
       /* istanbul ignore if */
       if (errsCount === void 0) throw new Error('ajv implementation error');
       const err = gen.name('err');
-      gen.forRange('i', errsCount, names_1$16.default.errors, (i) => {
-        gen.const(err, (0, codegen_1$72._)`${names_1$16.default.vErrors}[${i}]`);
-        gen.if((0, codegen_1$72._)`${err}.instancePath === undefined`, () =>
+      gen.forRange('i', errsCount, names_1$19.default.errors, (i) => {
+        gen.const(err, (0, codegen_1$77._)`${names_1$19.default.vErrors}[${i}]`);
+        gen.if((0, codegen_1$77._)`${err}.instancePath === undefined`, () =>
           gen.assign(
-            (0, codegen_1$72._)`${err}.instancePath`,
-            (0, codegen_1$72.strConcat)(names_1$16.default.instancePath, it.errorPath)
+            (0, codegen_1$77._)`${err}.instancePath`,
+            (0, codegen_1$77.strConcat)(names_1$19.default.instancePath, it.errorPath)
           )
         );
-        gen.assign((0, codegen_1$72._)`${err}.schemaPath`, (0, codegen_1$72.str)`${it.errSchemaPath}/${keyword$1}`);
+        gen.assign((0, codegen_1$77._)`${err}.schemaPath`, (0, codegen_1$77.str)`${it.errSchemaPath}/${keyword$1}`);
         if (it.opts.verbose) {
-          gen.assign((0, codegen_1$72._)`${err}.schema`, schemaValue);
-          gen.assign((0, codegen_1$72._)`${err}.data`, data);
+          gen.assign((0, codegen_1$77._)`${err}.schema`, schemaValue);
+          gen.assign((0, codegen_1$77._)`${err}.data`, data);
         }
       });
     }
@@ -4948,50 +7595,50 @@ var require_errors$1 = __commonJS({
     function addError$1(gen, errObj) {
       const err = gen.const('err', errObj);
       gen.if(
-        (0, codegen_1$72._)`${names_1$16.default.vErrors} === null`,
-        () => gen.assign(names_1$16.default.vErrors, (0, codegen_1$72._)`[${err}]`),
-        (0, codegen_1$72._)`${names_1$16.default.vErrors}.push(${err})`
+        (0, codegen_1$77._)`${names_1$19.default.vErrors} === null`,
+        () => gen.assign(names_1$19.default.vErrors, (0, codegen_1$77._)`[${err}]`),
+        (0, codegen_1$77._)`${names_1$19.default.vErrors}.push(${err})`
       );
-      gen.code((0, codegen_1$72._)`${names_1$16.default.errors}++`);
+      gen.code((0, codegen_1$77._)`${names_1$19.default.errors}++`);
     }
     function returnErrors$1(it, errs) {
       const { gen, validateName, schemaEnv } = it;
-      if (schemaEnv.$async) gen.throw((0, codegen_1$72._)`new ${it.ValidationError}(${errs})`);
+      if (schemaEnv.$async) gen.throw((0, codegen_1$77._)`new ${it.ValidationError}(${errs})`);
       else {
-        gen.assign((0, codegen_1$72._)`${validateName}.errors`, errs);
+        gen.assign((0, codegen_1$77._)`${validateName}.errors`, errs);
         gen.return(false);
       }
     }
     const E$1 = {
-      keyword: new codegen_1$72.Name('keyword'),
-      schemaPath: new codegen_1$72.Name('schemaPath'),
-      params: new codegen_1$72.Name('params'),
-      propertyName: new codegen_1$72.Name('propertyName'),
-      message: new codegen_1$72.Name('message'),
-      schema: new codegen_1$72.Name('schema'),
-      parentSchema: new codegen_1$72.Name('parentSchema'),
+      keyword: new codegen_1$77.Name('keyword'),
+      schemaPath: new codegen_1$77.Name('schemaPath'),
+      params: new codegen_1$77.Name('params'),
+      propertyName: new codegen_1$77.Name('propertyName'),
+      message: new codegen_1$77.Name('message'),
+      schema: new codegen_1$77.Name('schema'),
+      parentSchema: new codegen_1$77.Name('parentSchema'),
     };
-    function errorObjectCode$1(cxt, error$39, errorPaths) {
+    function errorObjectCode$1(cxt, error$41, errorPaths) {
       const { createErrors } = cxt.it;
-      if (createErrors === false) return (0, codegen_1$72._)`{}`;
-      return errorObject$1(cxt, error$39, errorPaths);
+      if (createErrors === false) return (0, codegen_1$77._)`{}`;
+      return errorObject$1(cxt, error$41, errorPaths);
     }
-    function errorObject$1(cxt, error$39, errorPaths = {}) {
+    function errorObject$1(cxt, error$41, errorPaths = {}) {
       const { gen, it } = cxt;
       const keyValues = [errorInstancePath$1(it, errorPaths), errorSchemaPath$1(cxt, errorPaths)];
-      extraErrorProps$1(cxt, error$39, keyValues);
+      extraErrorProps$1(cxt, error$41, keyValues);
       return gen.object(...keyValues);
     }
     function errorInstancePath$1({ errorPath }, { instancePath }) {
       const instPath = instancePath
-        ? (0, codegen_1$72.str)`${errorPath}${(0, util_1$59.getErrorPath)(instancePath, util_1$59.Type.Str)}`
+        ? (0, codegen_1$77.str)`${errorPath}${(0, util_1$63.getErrorPath)(instancePath, util_1$63.Type.Str)}`
         : errorPath;
-      return [names_1$16.default.instancePath, (0, codegen_1$72.strConcat)(names_1$16.default.instancePath, instPath)];
+      return [names_1$19.default.instancePath, (0, codegen_1$77.strConcat)(names_1$19.default.instancePath, instPath)];
     }
     function errorSchemaPath$1({ keyword: keyword$1, it: { errSchemaPath } }, { schemaPath, parentSchema }) {
-      let schPath = parentSchema ? errSchemaPath : (0, codegen_1$72.str)`${errSchemaPath}/${keyword$1}`;
+      let schPath = parentSchema ? errSchemaPath : (0, codegen_1$77.str)`${errSchemaPath}/${keyword$1}`;
       if (schemaPath)
-        schPath = (0, codegen_1$72.str)`${schPath}${(0, util_1$59.getErrorPath)(schemaPath, util_1$59.Type.Str)}`;
+        schPath = (0, codegen_1$77.str)`${schPath}${(0, util_1$63.getErrorPath)(schemaPath, util_1$63.Type.Str)}`;
       return [E$1.schemaPath, schPath];
     }
     function extraErrorProps$1(cxt, { params, message }, keyValues) {
@@ -4999,14 +7646,14 @@ var require_errors$1 = __commonJS({
       const { opts, propertyName, topSchemaRef, schemaPath } = it;
       keyValues.push(
         [E$1.keyword, keyword$1],
-        [E$1.params, typeof params == 'function' ? params(cxt) : params || (0, codegen_1$72._)`{}`]
+        [E$1.params, typeof params == 'function' ? params(cxt) : params || (0, codegen_1$77._)`{}`]
       );
       if (opts.messages) keyValues.push([E$1.message, typeof message == 'function' ? message(cxt) : message]);
       if (opts.verbose)
         keyValues.push(
           [E$1.schema, schemaValue],
-          [E$1.parentSchema, (0, codegen_1$72._)`${topSchemaRef}${schemaPath}`],
-          [names_1$16.default.data, data]
+          [E$1.parentSchema, (0, codegen_1$77._)`${topSchemaRef}${schemaPath}`],
+          [names_1$19.default.data, data]
         );
       if (propertyName) keyValues.push([E$1.propertyName, propertyName]);
     }
@@ -5020,22 +7667,22 @@ var require_boolSchema$1 = __commonJS({
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.boolOrEmptySchema = exports.topBoolOrEmptySchema = void 0;
     const errors_1$8 = require_errors$1();
-    const codegen_1$71 = require_codegen$1();
-    const names_1$15 = require_names$1();
+    const codegen_1$76 = require_codegen$1();
+    const names_1$18 = require_names$1();
     const boolError$1 = { message: 'boolean schema is false' };
     function topBoolOrEmptySchema$1(it) {
-      const { gen, schema, validateName } = it;
-      if (schema === false) falseSchemaError$1(it, false);
-      else if (typeof schema == 'object' && schema.$async === true) gen.return(names_1$15.default.data);
+      const { gen, schema: schema$1, validateName } = it;
+      if (schema$1 === false) falseSchemaError$1(it, false);
+      else if (typeof schema$1 == 'object' && schema$1.$async === true) gen.return(names_1$18.default.data);
       else {
-        gen.assign((0, codegen_1$71._)`${validateName}.errors`, null);
+        gen.assign((0, codegen_1$76._)`${validateName}.errors`, null);
         gen.return(true);
       }
     }
     exports.topBoolOrEmptySchema = topBoolOrEmptySchema$1;
     function boolOrEmptySchema$1(it, valid) {
-      const { gen, schema } = it;
-      if (schema === false) {
+      const { gen, schema: schema$1 } = it;
+      if (schema$1 === false) {
         gen.var(valid, false);
         falseSchemaError$1(it);
       } else gen.var(valid, true);
@@ -5112,22 +7759,22 @@ var require_applicability$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/compile/validate/applicability.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.shouldUseRule = exports.shouldUseGroup = exports.schemaHasRulesForType = void 0;
-    function schemaHasRulesForType$1({ schema, self }, type) {
-      const group = self.RULES.types[type];
-      return group && group !== true && shouldUseGroup$1(schema, group);
+    function schemaHasRulesForType$1({ schema: schema$1, self: self$1 }, type) {
+      const group = self$1.RULES.types[type];
+      return group && group !== true && shouldUseGroup$1(schema$1, group);
     }
     exports.schemaHasRulesForType = schemaHasRulesForType$1;
-    function shouldUseGroup$1(schema, group) {
-      return group.rules.some((rule) => shouldUseRule$1(schema, rule));
+    function shouldUseGroup$1(schema$1, group) {
+      return group.rules.some((rule) => shouldUseRule$1(schema$1, rule));
     }
     exports.shouldUseGroup = shouldUseGroup$1;
-    function shouldUseRule$1(schema, rule) {
-      var _a$2;
+    function shouldUseRule$1(schema$1, rule) {
+      var _a$4;
       return (
-        schema[rule.keyword] !== void 0 ||
-        ((_a$2 = rule.definition.implements) === null || _a$2 === void 0
+        schema$1[rule.keyword] !== void 0 ||
+        ((_a$4 = rule.definition.implements) === null || _a$4 === void 0
           ? void 0
-          : _a$2.some((kwd) => schema[kwd] !== void 0))
+          : _a$4.some((kwd) => schema$1[kwd] !== void 0))
       );
     }
     exports.shouldUseRule = shouldUseRule$1;
@@ -5150,21 +7797,21 @@ var require_dataType$1 = __commonJS({
     const rules_1$3 = require_rules$1();
     const applicability_1$3 = require_applicability$1();
     const errors_1$7 = require_errors$1();
-    const codegen_1$70 = require_codegen$1();
-    const util_1$58 = require_util$1();
+    const codegen_1$75 = require_codegen$1();
+    const util_1$62 = require_util$1();
     var DataType$1;
     (function (DataType$2) {
       DataType$2[(DataType$2['Correct'] = 0)] = 'Correct';
       DataType$2[(DataType$2['Wrong'] = 1)] = 'Wrong';
     })(DataType$1 || (exports.DataType = DataType$1 = {}));
-    function getSchemaTypes$1(schema) {
-      const types = getJSONTypes$1(schema.type);
+    function getSchemaTypes$1(schema$1) {
+      const types = getJSONTypes$1(schema$1.type);
       const hasNull = types.includes('null');
       if (hasNull) {
-        if (schema.nullable === false) throw new Error('type: null contradicts nullable: false');
+        if (schema$1.nullable === false) throw new Error('type: null contradicts nullable: false');
       } else {
-        if (!types.length && schema.nullable !== void 0) throw new Error('"nullable" cannot be used without "type"');
-        if (schema.nullable === true) types.push('null');
+        if (!types.length && schema$1.nullable !== void 0) throw new Error('"nullable" cannot be used without "type"');
+        if (schema$1.nullable === true) types.push('null');
       }
       return types;
     }
@@ -5197,22 +7844,22 @@ var require_dataType$1 = __commonJS({
     }
     function coerceData$1(it, types, coerceTo) {
       const { gen, data, opts } = it;
-      const dataType = gen.let('dataType', (0, codegen_1$70._)`typeof ${data}`);
-      const coerced = gen.let('coerced', (0, codegen_1$70._)`undefined`);
+      const dataType = gen.let('dataType', (0, codegen_1$75._)`typeof ${data}`);
+      const coerced = gen.let('coerced', (0, codegen_1$75._)`undefined`);
       if (opts.coerceTypes === 'array')
-        gen.if((0, codegen_1$70._)`${dataType} == 'object' && Array.isArray(${data}) && ${data}.length == 1`, () =>
+        gen.if((0, codegen_1$75._)`${dataType} == 'object' && Array.isArray(${data}) && ${data}.length == 1`, () =>
           gen
-            .assign(data, (0, codegen_1$70._)`${data}[0]`)
-            .assign(dataType, (0, codegen_1$70._)`typeof ${data}`)
+            .assign(data, (0, codegen_1$75._)`${data}[0]`)
+            .assign(dataType, (0, codegen_1$75._)`typeof ${data}`)
             .if(checkDataTypes$1(types, data, opts.strictNumbers), () => gen.assign(coerced, data))
         );
-      gen.if((0, codegen_1$70._)`${coerced} !== undefined`);
+      gen.if((0, codegen_1$75._)`${coerced} !== undefined`);
       for (const t of coerceTo)
         if (COERCIBLE$1.has(t) || (t === 'array' && opts.coerceTypes === 'array')) coerceSpecificType(t);
       gen.else();
       reportTypeError$1(it);
       gen.endIf();
-      gen.if((0, codegen_1$70._)`${coerced} !== undefined`, () => {
+      gen.if((0, codegen_1$75._)`${coerced} !== undefined`, () => {
         gen.assign(data, coerced);
         assignParentData$1(it, coerced);
       });
@@ -5220,80 +7867,80 @@ var require_dataType$1 = __commonJS({
         switch (t) {
           case 'string':
             gen
-              .elseIf((0, codegen_1$70._)`${dataType} == "number" || ${dataType} == "boolean"`)
-              .assign(coerced, (0, codegen_1$70._)`"" + ${data}`)
-              .elseIf((0, codegen_1$70._)`${data} === null`)
-              .assign(coerced, (0, codegen_1$70._)`""`);
+              .elseIf((0, codegen_1$75._)`${dataType} == "number" || ${dataType} == "boolean"`)
+              .assign(coerced, (0, codegen_1$75._)`"" + ${data}`)
+              .elseIf((0, codegen_1$75._)`${data} === null`)
+              .assign(coerced, (0, codegen_1$75._)`""`);
             return;
           case 'number':
             gen
               .elseIf(
-                (0, codegen_1$70._)`${dataType} == "boolean" || ${data} === null
+                (0, codegen_1$75._)`${dataType} == "boolean" || ${data} === null
               || (${dataType} == "string" && ${data} && ${data} == +${data})`
               )
-              .assign(coerced, (0, codegen_1$70._)`+${data}`);
+              .assign(coerced, (0, codegen_1$75._)`+${data}`);
             return;
           case 'integer':
             gen
               .elseIf(
-                (0, codegen_1$70._)`${dataType} === "boolean" || ${data} === null
+                (0, codegen_1$75._)`${dataType} === "boolean" || ${data} === null
               || (${dataType} === "string" && ${data} && ${data} == +${data} && !(${data} % 1))`
               )
-              .assign(coerced, (0, codegen_1$70._)`+${data}`);
+              .assign(coerced, (0, codegen_1$75._)`+${data}`);
             return;
           case 'boolean':
             gen
-              .elseIf((0, codegen_1$70._)`${data} === "false" || ${data} === 0 || ${data} === null`)
+              .elseIf((0, codegen_1$75._)`${data} === "false" || ${data} === 0 || ${data} === null`)
               .assign(coerced, false)
-              .elseIf((0, codegen_1$70._)`${data} === "true" || ${data} === 1`)
+              .elseIf((0, codegen_1$75._)`${data} === "true" || ${data} === 1`)
               .assign(coerced, true);
             return;
           case 'null':
-            gen.elseIf((0, codegen_1$70._)`${data} === "" || ${data} === 0 || ${data} === false`);
+            gen.elseIf((0, codegen_1$75._)`${data} === "" || ${data} === 0 || ${data} === false`);
             gen.assign(coerced, null);
             return;
           case 'array':
             gen
               .elseIf(
-                (0, codegen_1$70._)`${dataType} === "string" || ${dataType} === "number"
+                (0, codegen_1$75._)`${dataType} === "string" || ${dataType} === "number"
               || ${dataType} === "boolean" || ${data} === null`
               )
-              .assign(coerced, (0, codegen_1$70._)`[${data}]`);
+              .assign(coerced, (0, codegen_1$75._)`[${data}]`);
         }
       }
     }
     function assignParentData$1({ gen, parentData, parentDataProperty }, expr) {
-      gen.if((0, codegen_1$70._)`${parentData} !== undefined`, () =>
-        gen.assign((0, codegen_1$70._)`${parentData}[${parentDataProperty}]`, expr)
+      gen.if((0, codegen_1$75._)`${parentData} !== undefined`, () =>
+        gen.assign((0, codegen_1$75._)`${parentData}[${parentDataProperty}]`, expr)
       );
     }
     function checkDataType$1(dataType, data, strictNums, correct = DataType$1.Correct) {
-      const EQ = correct === DataType$1.Correct ? codegen_1$70.operators.EQ : codegen_1$70.operators.NEQ;
+      const EQ = correct === DataType$1.Correct ? codegen_1$75.operators.EQ : codegen_1$75.operators.NEQ;
       let cond;
       switch (dataType) {
         case 'null':
-          return (0, codegen_1$70._)`${data} ${EQ} null`;
+          return (0, codegen_1$75._)`${data} ${EQ} null`;
         case 'array':
-          cond = (0, codegen_1$70._)`Array.isArray(${data})`;
+          cond = (0, codegen_1$75._)`Array.isArray(${data})`;
           break;
         case 'object':
-          cond = (0, codegen_1$70._)`${data} && typeof ${data} == "object" && !Array.isArray(${data})`;
+          cond = (0, codegen_1$75._)`${data} && typeof ${data} == "object" && !Array.isArray(${data})`;
           break;
         case 'integer':
-          cond = numCond((0, codegen_1$70._)`!(${data} % 1) && !isNaN(${data})`);
+          cond = numCond((0, codegen_1$75._)`!(${data} % 1) && !isNaN(${data})`);
           break;
         case 'number':
           cond = numCond();
           break;
         default:
-          return (0, codegen_1$70._)`typeof ${data} ${EQ} ${dataType}`;
+          return (0, codegen_1$75._)`typeof ${data} ${EQ} ${dataType}`;
       }
-      return correct === DataType$1.Correct ? cond : (0, codegen_1$70.not)(cond);
-      function numCond(_cond = codegen_1$70.nil) {
-        return (0, codegen_1$70.and)(
-          (0, codegen_1$70._)`typeof ${data} == "number"`,
+      return correct === DataType$1.Correct ? cond : (0, codegen_1$75.not)(cond);
+      function numCond(_cond = codegen_1$75.nil) {
+        return (0, codegen_1$75.and)(
+          (0, codegen_1$75._)`typeof ${data} == "number"`,
           _cond,
-          strictNums ? (0, codegen_1$70._)`isFinite(${data})` : codegen_1$70.nil
+          strictNums ? (0, codegen_1$75._)`isFinite(${data})` : codegen_1$75.nil
         );
       }
     }
@@ -5301,25 +7948,25 @@ var require_dataType$1 = __commonJS({
     function checkDataTypes$1(dataTypes, data, strictNums, correct) {
       if (dataTypes.length === 1) return checkDataType$1(dataTypes[0], data, strictNums, correct);
       let cond;
-      const types = (0, util_1$58.toHash)(dataTypes);
+      const types = (0, util_1$62.toHash)(dataTypes);
       if (types.array && types.object) {
-        const notObj = (0, codegen_1$70._)`typeof ${data} != "object"`;
-        cond = types.null ? notObj : (0, codegen_1$70._)`!${data} || ${notObj}`;
+        const notObj = (0, codegen_1$75._)`typeof ${data} != "object"`;
+        cond = types.null ? notObj : (0, codegen_1$75._)`!${data} || ${notObj}`;
         delete types.null;
         delete types.array;
         delete types.object;
-      } else cond = codegen_1$70.nil;
+      } else cond = codegen_1$75.nil;
       if (types.number) delete types.integer;
-      for (const t in types) cond = (0, codegen_1$70.and)(cond, checkDataType$1(t, data, strictNums, correct));
+      for (const t in types) cond = (0, codegen_1$75.and)(cond, checkDataType$1(t, data, strictNums, correct));
       return cond;
     }
     exports.checkDataTypes = checkDataTypes$1;
     const typeError$1 = {
-      message: ({ schema }) => `must be ${schema}`,
-      params: ({ schema, schemaValue }) =>
-        typeof schema == 'string'
-          ? (0, codegen_1$70._)`{type: ${schema}}`
-          : (0, codegen_1$70._)`{type: ${schemaValue}}`,
+      message: ({ schema: schema$1 }) => `must be ${schema$1}`,
+      params: ({ schema: schema$1, schemaValue }) =>
+        typeof schema$1 == 'string'
+          ? (0, codegen_1$75._)`{type: ${schema$1}}`
+          : (0, codegen_1$75._)`{type: ${schemaValue}}`,
     };
     function reportTypeError$1(it) {
       const cxt = getTypeErrorContext$1(it);
@@ -5327,16 +7974,16 @@ var require_dataType$1 = __commonJS({
     }
     exports.reportTypeError = reportTypeError$1;
     function getTypeErrorContext$1(it) {
-      const { gen, data, schema } = it;
-      const schemaCode = (0, util_1$58.schemaRefOrVal)(it, schema, 'type');
+      const { gen, data, schema: schema$1 } = it;
+      const schemaCode = (0, util_1$62.schemaRefOrVal)(it, schema$1, 'type');
       return {
         gen,
         keyword: 'type',
         data,
-        schema: schema.type,
+        schema: schema$1.type,
         schemaCode,
         schemaValue: schemaCode,
-        parentSchema: schema,
+        parentSchema: schema$1,
         params: {},
         it,
       };
@@ -5350,8 +7997,8 @@ var require_defaults$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/compile/validate/defaults.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.assignDefaults = void 0;
-    const codegen_1$69 = require_codegen$1();
-    const util_1$57 = require_util$1();
+    const codegen_1$74 = require_codegen$1();
+    const util_1$61 = require_util$1();
     function assignDefaults$1(it, ty) {
       const { properties, items } = it.schema;
       if (ty === 'object' && properties)
@@ -5362,15 +8009,15 @@ var require_defaults$1 = __commonJS({
     function assignDefault$1(it, prop, defaultValue) {
       const { gen, compositeRule, data, opts } = it;
       if (defaultValue === void 0) return;
-      const childData = (0, codegen_1$69._)`${data}${(0, codegen_1$69.getProperty)(prop)}`;
+      const childData = (0, codegen_1$74._)`${data}${(0, codegen_1$74.getProperty)(prop)}`;
       if (compositeRule) {
-        (0, util_1$57.checkStrictMode)(it, `default is ignored for: ${childData}`);
+        (0, util_1$61.checkStrictMode)(it, `default is ignored for: ${childData}`);
         return;
       }
-      let condition = (0, codegen_1$69._)`${childData} === undefined`;
+      let condition = (0, codegen_1$74._)`${childData} === undefined`;
       if (opts.useDefaults === 'empty')
-        condition = (0, codegen_1$69._)`${condition} || ${childData} === null || ${childData} === ""`;
-      gen.if(condition, (0, codegen_1$69._)`${childData} = ${(0, codegen_1$69.stringify)(defaultValue)}`);
+        condition = (0, codegen_1$74._)`${condition} || ${childData} === null || ${childData} === ""`;
+      gen.if(condition, (0, codegen_1$74._)`${childData} = ${(0, codegen_1$74.stringify)(defaultValue)}`);
     }
   },
 });
@@ -5394,24 +8041,24 @@ var require_code$2 = __commonJS({
       exports.checkMissingProp =
       exports.checkReportMissingProp =
         void 0;
-    const codegen_1$68 = require_codegen$1();
-    const util_1$56 = require_util$1();
-    const names_1$14 = require_names$1();
+    const codegen_1$73 = require_codegen$1();
+    const util_1$60 = require_util$1();
+    const names_1$17 = require_names$1();
     const util_2$3 = require_util$1();
     function checkReportMissingProp$1(cxt, prop) {
       const { gen, data, it } = cxt;
       gen.if(noPropertyInData$1(gen, data, prop, it.opts.ownProperties), () => {
-        cxt.setParams({ missingProperty: (0, codegen_1$68._)`${prop}` }, true);
+        cxt.setParams({ missingProperty: (0, codegen_1$73._)`${prop}` }, true);
         cxt.error();
       });
     }
     exports.checkReportMissingProp = checkReportMissingProp$1;
     function checkMissingProp$1({ gen, data, it: { opts } }, properties, missing) {
-      return (0, codegen_1$68.or)(
+      return (0, codegen_1$73.or)(
         ...properties.map((prop) =>
-          (0, codegen_1$68.and)(
+          (0, codegen_1$73.and)(
             noPropertyInData$1(gen, data, prop, opts.ownProperties),
-            (0, codegen_1$68._)`${missing} = ${prop}`
+            (0, codegen_1$73._)`${missing} = ${prop}`
           )
         )
       );
@@ -5425,23 +8072,23 @@ var require_code$2 = __commonJS({
     function hasPropFunc$1(gen) {
       return gen.scopeValue('func', {
         ref: Object.prototype.hasOwnProperty,
-        code: (0, codegen_1$68._)`Object.prototype.hasOwnProperty`,
+        code: (0, codegen_1$73._)`Object.prototype.hasOwnProperty`,
       });
     }
     exports.hasPropFunc = hasPropFunc$1;
     function isOwnProperty$1(gen, data, property) {
-      return (0, codegen_1$68._)`${hasPropFunc$1(gen)}.call(${data}, ${property})`;
+      return (0, codegen_1$73._)`${hasPropFunc$1(gen)}.call(${data}, ${property})`;
     }
     exports.isOwnProperty = isOwnProperty$1;
     function propertyInData$1(gen, data, property, ownProperties) {
-      const cond = (0, codegen_1$68._)`${data}${(0, codegen_1$68.getProperty)(property)} !== undefined`;
-      return ownProperties ? (0, codegen_1$68._)`${cond} && ${isOwnProperty$1(gen, data, property)}` : cond;
+      const cond = (0, codegen_1$73._)`${data}${(0, codegen_1$73.getProperty)(property)} !== undefined`;
+      return ownProperties ? (0, codegen_1$73._)`${cond} && ${isOwnProperty$1(gen, data, property)}` : cond;
     }
     exports.propertyInData = propertyInData$1;
     function noPropertyInData$1(gen, data, property, ownProperties) {
-      const cond = (0, codegen_1$68._)`${data}${(0, codegen_1$68.getProperty)(property)} === undefined`;
+      const cond = (0, codegen_1$73._)`${data}${(0, codegen_1$73.getProperty)(property)} === undefined`;
       return ownProperties
-        ? (0, codegen_1$68.or)(cond, (0, codegen_1$68.not)(isOwnProperty$1(gen, data, property)))
+        ? (0, codegen_1$73.or)(cond, (0, codegen_1$73.not)(isOwnProperty$1(gen, data, property)))
         : cond;
     }
     exports.noPropertyInData = noPropertyInData$1;
@@ -5450,7 +8097,7 @@ var require_code$2 = __commonJS({
     }
     exports.allSchemaProperties = allSchemaProperties$1;
     function schemaProperties$1(it, schemaMap) {
-      return allSchemaProperties$1(schemaMap).filter((p) => !(0, util_1$56.alwaysValidSchema)(it, schemaMap[p]));
+      return allSchemaProperties$1(schemaMap).filter((p) => !(0, util_1$60.alwaysValidSchema)(it, schemaMap[p]));
     }
     exports.schemaProperties = schemaProperties$1;
     function callValidateCode$1(
@@ -5460,22 +8107,22 @@ var require_code$2 = __commonJS({
       passSchema
     ) {
       const dataAndSchema = passSchema
-        ? (0, codegen_1$68._)`${schemaCode}, ${data}, ${topSchemaRef}${schemaPath}`
+        ? (0, codegen_1$73._)`${schemaCode}, ${data}, ${topSchemaRef}${schemaPath}`
         : data;
       const valCxt = [
-        [names_1$14.default.instancePath, (0, codegen_1$68.strConcat)(names_1$14.default.instancePath, errorPath)],
-        [names_1$14.default.parentData, it.parentData],
-        [names_1$14.default.parentDataProperty, it.parentDataProperty],
-        [names_1$14.default.rootData, names_1$14.default.rootData],
+        [names_1$17.default.instancePath, (0, codegen_1$73.strConcat)(names_1$17.default.instancePath, errorPath)],
+        [names_1$17.default.parentData, it.parentData],
+        [names_1$17.default.parentDataProperty, it.parentDataProperty],
+        [names_1$17.default.rootData, names_1$17.default.rootData],
       ];
-      if (it.opts.dynamicRef) valCxt.push([names_1$14.default.dynamicAnchors, names_1$14.default.dynamicAnchors]);
-      const args = (0, codegen_1$68._)`${dataAndSchema}, ${gen.object(...valCxt)}`;
-      return context !== codegen_1$68.nil
-        ? (0, codegen_1$68._)`${func}.call(${context}, ${args})`
-        : (0, codegen_1$68._)`${func}(${args})`;
+      if (it.opts.dynamicRef) valCxt.push([names_1$17.default.dynamicAnchors, names_1$17.default.dynamicAnchors]);
+      const args = (0, codegen_1$73._)`${dataAndSchema}, ${gen.object(...valCxt)}`;
+      return context !== codegen_1$73.nil
+        ? (0, codegen_1$73._)`${func}.call(${context}, ${args})`
+        : (0, codegen_1$73._)`${func}(${args})`;
     }
     exports.callValidateCode = callValidateCode$1;
-    const newRegExp$1 = (0, codegen_1$68._)`new RegExp`;
+    const newRegExp$1 = (0, codegen_1$73._)`new RegExp`;
     function usePattern$1({ gen, it: { opts } }, pattern) {
       const u = opts.unicodeRegExp ? 'u' : '';
       const { regExp } = opts.code;
@@ -5484,7 +8131,7 @@ var require_code$2 = __commonJS({
         key: rx.toString(),
         ref: rx,
         code: (0,
-        codegen_1$68._)`${regExp.code === 'new RegExp' ? newRegExp$1 : (0, util_2$3.useFunc)(gen, regExp)}(${pattern}, ${u})`,
+        codegen_1$73._)`${regExp.code === 'new RegExp' ? newRegExp$1 : (0, util_2$3.useFunc)(gen, regExp)}(${pattern}, ${u})`,
       });
     }
     exports.usePattern = usePattern$1;
@@ -5500,31 +8147,31 @@ var require_code$2 = __commonJS({
       validateItems(() => gen.break());
       return valid;
       function validateItems(notValid) {
-        const len = gen.const('len', (0, codegen_1$68._)`${data}.length`);
+        const len = gen.const('len', (0, codegen_1$73._)`${data}.length`);
         gen.forRange('i', 0, len, (i) => {
           cxt.subschema(
             {
               keyword: keyword$1,
               dataProp: i,
-              dataPropType: util_1$56.Type.Num,
+              dataPropType: util_1$60.Type.Num,
             },
             valid
           );
-          gen.if((0, codegen_1$68.not)(valid), notValid);
+          gen.if((0, codegen_1$73.not)(valid), notValid);
         });
       }
     }
     exports.validateArray = validateArray$1;
     function validateUnion$1(cxt) {
-      const { gen, schema, keyword: keyword$1, it } = cxt;
+      const { gen, schema: schema$1, keyword: keyword$1, it } = cxt;
       /* istanbul ignore if */
-      if (!Array.isArray(schema)) throw new Error('ajv implementation error');
-      const alwaysValid = schema.some((sch) => (0, util_1$56.alwaysValidSchema)(it, sch));
+      if (!Array.isArray(schema$1)) throw new Error('ajv implementation error');
+      const alwaysValid = schema$1.some((sch) => (0, util_1$60.alwaysValidSchema)(it, sch));
       if (alwaysValid && !it.opts.unevaluated) return;
       const valid = gen.let('valid', false);
       const schValid = gen.name('_valid');
       gen.block(() =>
-        schema.forEach((_sch, i) => {
+        schema$1.forEach((_sch, i) => {
           const schCxt = cxt.subschema(
             {
               keyword: keyword$1,
@@ -5533,9 +8180,9 @@ var require_code$2 = __commonJS({
             },
             schValid
           );
-          gen.assign(valid, (0, codegen_1$68._)`${valid} || ${schValid}`);
+          gen.assign(valid, (0, codegen_1$73._)`${valid} || ${schValid}`);
           const merged = cxt.mergeValidEvaluated(schCxt, schValid);
-          if (!merged) gen.if((0, codegen_1$68.not)(valid));
+          if (!merged) gen.if((0, codegen_1$73.not)(valid));
         })
       );
       cxt.result(
@@ -5558,20 +8205,20 @@ var require_keyword$1 = __commonJS({
       exports.funcKeywordCode =
       exports.macroKeywordCode =
         void 0;
-    const codegen_1$67 = require_codegen$1();
-    const names_1$13 = require_names$1();
+    const codegen_1$72 = require_codegen$1();
+    const names_1$16 = require_names$1();
     const code_1$25 = require_code$2();
     const errors_1$6 = require_errors$1();
-    function macroKeywordCode$1(cxt, def$60) {
-      const { gen, keyword: keyword$1, schema, parentSchema, it } = cxt;
-      const macroSchema = def$60.macro.call(it.self, schema, parentSchema, it);
+    function macroKeywordCode$1(cxt, def$69) {
+      const { gen, keyword: keyword$1, schema: schema$1, parentSchema, it } = cxt;
+      const macroSchema = def$69.macro.call(it.self, schema$1, parentSchema, it);
       const schemaRef = useKeyword$1(gen, keyword$1, macroSchema);
       if (it.opts.validateSchema !== false) it.self.validateSchema(macroSchema, true);
       const valid = gen.name('valid');
       cxt.subschema(
         {
           schema: macroSchema,
-          schemaPath: codegen_1$67.nil,
+          schemaPath: codegen_1$72.nil,
           errSchemaPath: `${it.errSchemaPath}/${keyword$1}`,
           topSchemaRef: schemaRef,
           compositeRule: true,
@@ -5581,84 +8228,84 @@ var require_keyword$1 = __commonJS({
       cxt.pass(valid, () => cxt.error(true));
     }
     exports.macroKeywordCode = macroKeywordCode$1;
-    function funcKeywordCode$1(cxt, def$60) {
-      var _a$2;
-      const { gen, keyword: keyword$1, schema, parentSchema, $data, it } = cxt;
-      checkAsyncKeyword$1(it, def$60);
+    function funcKeywordCode$1(cxt, def$69) {
+      var _a$4;
+      const { gen, keyword: keyword$1, schema: schema$1, parentSchema, $data, it } = cxt;
+      checkAsyncKeyword$1(it, def$69);
       const validate$1 =
-        !$data && def$60.compile ? def$60.compile.call(it.self, schema, parentSchema, it) : def$60.validate;
+        !$data && def$69.compile ? def$69.compile.call(it.self, schema$1, parentSchema, it) : def$69.validate;
       const validateRef = useKeyword$1(gen, keyword$1, validate$1);
       const valid = gen.let('valid');
       cxt.block$data(valid, validateKeyword);
-      cxt.ok((_a$2 = def$60.valid) !== null && _a$2 !== void 0 ? _a$2 : valid);
+      cxt.ok((_a$4 = def$69.valid) !== null && _a$4 !== void 0 ? _a$4 : valid);
       function validateKeyword() {
-        if (def$60.errors === false) {
+        if (def$69.errors === false) {
           assignValid();
-          if (def$60.modifying) modifyData$1(cxt);
+          if (def$69.modifying) modifyData$1(cxt);
           reportErrs(() => cxt.error());
         } else {
-          const ruleErrs = def$60.async ? validateAsync() : validateSync();
-          if (def$60.modifying) modifyData$1(cxt);
+          const ruleErrs = def$69.async ? validateAsync() : validateSync();
+          if (def$69.modifying) modifyData$1(cxt);
           reportErrs(() => addErrs$1(cxt, ruleErrs));
         }
       }
       function validateAsync() {
         const ruleErrs = gen.let('ruleErrs', null);
         gen.try(
-          () => assignValid((0, codegen_1$67._)`await `),
+          () => assignValid((0, codegen_1$72._)`await `),
           (e) =>
             gen.assign(valid, false).if(
-              (0, codegen_1$67._)`${e} instanceof ${it.ValidationError}`,
-              () => gen.assign(ruleErrs, (0, codegen_1$67._)`${e}.errors`),
+              (0, codegen_1$72._)`${e} instanceof ${it.ValidationError}`,
+              () => gen.assign(ruleErrs, (0, codegen_1$72._)`${e}.errors`),
               () => gen.throw(e)
             )
         );
         return ruleErrs;
       }
       function validateSync() {
-        const validateErrs = (0, codegen_1$67._)`${validateRef}.errors`;
+        const validateErrs = (0, codegen_1$72._)`${validateRef}.errors`;
         gen.assign(validateErrs, null);
-        assignValid(codegen_1$67.nil);
+        assignValid(codegen_1$72.nil);
         return validateErrs;
       }
-      function assignValid(_await = def$60.async ? (0, codegen_1$67._)`await ` : codegen_1$67.nil) {
-        const passCxt = it.opts.passContext ? names_1$13.default.this : names_1$13.default.self;
-        const passSchema = !(('compile' in def$60 && !$data) || def$60.schema === false);
+      function assignValid(_await = def$69.async ? (0, codegen_1$72._)`await ` : codegen_1$72.nil) {
+        const passCxt = it.opts.passContext ? names_1$16.default.this : names_1$16.default.self;
+        const passSchema = !(('compile' in def$69 && !$data) || def$69.schema === false);
         gen.assign(
           valid,
-          (0, codegen_1$67._)`${_await}${(0, code_1$25.callValidateCode)(cxt, validateRef, passCxt, passSchema)}`,
-          def$60.modifying
+          (0, codegen_1$72._)`${_await}${(0, code_1$25.callValidateCode)(cxt, validateRef, passCxt, passSchema)}`,
+          def$69.modifying
         );
       }
       function reportErrs(errors) {
-        var _a$3;
-        gen.if((0, codegen_1$67.not)((_a$3 = def$60.valid) !== null && _a$3 !== void 0 ? _a$3 : valid), errors);
+        var _a$5;
+        gen.if((0, codegen_1$72.not)((_a$5 = def$69.valid) !== null && _a$5 !== void 0 ? _a$5 : valid), errors);
       }
     }
     exports.funcKeywordCode = funcKeywordCode$1;
     function modifyData$1(cxt) {
       const { gen, data, it } = cxt;
-      gen.if(it.parentData, () => gen.assign(data, (0, codegen_1$67._)`${it.parentData}[${it.parentDataProperty}]`));
+      gen.if(it.parentData, () => gen.assign(data, (0, codegen_1$72._)`${it.parentData}[${it.parentDataProperty}]`));
     }
     function addErrs$1(cxt, errs) {
       const { gen } = cxt;
       gen.if(
-        (0, codegen_1$67._)`Array.isArray(${errs})`,
+        (0, codegen_1$72._)`Array.isArray(${errs})`,
         () => {
           gen
             .assign(
-              names_1$13.default.vErrors,
+              names_1$16.default.vErrors,
               (0,
-              codegen_1$67._)`${names_1$13.default.vErrors} === null ? ${errs} : ${names_1$13.default.vErrors}.concat(${errs})`
+              codegen_1$72._)`${names_1$16.default.vErrors} === null ? ${errs} : ${names_1$16.default.vErrors}.concat(${errs})`
             )
-            .assign(names_1$13.default.errors, (0, codegen_1$67._)`${names_1$13.default.vErrors}.length`);
+            .assign(names_1$16.default.errors, (0, codegen_1$72._)`${names_1$16.default.vErrors}.length`);
           (0, errors_1$6.extendErrors)(cxt);
         },
         () => cxt.error()
       );
     }
-    function checkAsyncKeyword$1({ schemaEnv }, def$60) {
-      if (def$60.async && !schemaEnv.$async) throw new Error('async keyword in sync schema');
+    function checkAsyncKeyword$1({ schemaEnv }, def$69) {
+      if (def$69.async && !schemaEnv.$async) throw new Error('async keyword in sync schema');
     }
     function useKeyword$1(gen, keyword$1, result) {
       if (result === void 0) throw new Error(`keyword "${keyword$1}" failed to compile`);
@@ -5668,41 +8315,41 @@ var require_keyword$1 = __commonJS({
           ? { ref: result }
           : {
               ref: result,
-              code: (0, codegen_1$67.stringify)(result),
+              code: (0, codegen_1$72.stringify)(result),
             }
       );
     }
-    function validSchemaType$1(schema, schemaType, allowUndefined = false) {
+    function validSchemaType$1(schema$1, schemaType, allowUndefined = false) {
       return (
         !schemaType.length ||
         schemaType.some((st) =>
           st === 'array'
-            ? Array.isArray(schema)
+            ? Array.isArray(schema$1)
             : st === 'object'
-              ? schema && typeof schema == 'object' && !Array.isArray(schema)
-              : typeof schema == st || (allowUndefined && typeof schema == 'undefined')
+              ? schema$1 && typeof schema$1 == 'object' && !Array.isArray(schema$1)
+              : typeof schema$1 == st || (allowUndefined && typeof schema$1 == 'undefined')
         )
       );
     }
     exports.validSchemaType = validSchemaType$1;
-    function validateKeywordUsage$1({ schema, opts, self, errSchemaPath }, def$60, keyword$1) {
+    function validateKeywordUsage$1({ schema: schema$1, opts, self: self$1, errSchemaPath }, def$69, keyword$1) {
       /* istanbul ignore if */
-      if (Array.isArray(def$60.keyword) ? !def$60.keyword.includes(keyword$1) : def$60.keyword !== keyword$1)
+      if (Array.isArray(def$69.keyword) ? !def$69.keyword.includes(keyword$1) : def$69.keyword !== keyword$1)
         throw new Error('ajv implementation error');
-      const deps = def$60.dependencies;
+      const deps = def$69.dependencies;
       if (
         deps === null || deps === void 0
           ? void 0
-          : deps.some((kwd) => !Object.prototype.hasOwnProperty.call(schema, kwd))
+          : deps.some((kwd) => !Object.prototype.hasOwnProperty.call(schema$1, kwd))
       )
         throw new Error(`parent schema must have dependencies of ${keyword$1}: ${deps.join(',')}`);
-      if (def$60.validateSchema) {
-        const valid = def$60.validateSchema(schema[keyword$1]);
+      if (def$69.validateSchema) {
+        const valid = def$69.validateSchema(schema$1[keyword$1]);
         if (!valid) {
           const msg =
             `keyword "${keyword$1}" value is invalid at path "${errSchemaPath}": ` +
-            self.errorsText(def$60.validateSchema.errors);
-          if (opts.validateSchema === 'log') self.logger.error(msg);
+            self$1.errorsText(def$69.validateSchema.errors);
+          if (opts.validateSchema === 'log') self$1.logger.error(msg);
           else throw new Error(msg);
         }
       }
@@ -5717,31 +8364,34 @@ var require_subschema$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/compile/validate/subschema.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.extendSubschemaMode = exports.extendSubschemaData = exports.getSubschema = void 0;
-    const codegen_1$66 = require_codegen$1();
-    const util_1$55 = require_util$1();
-    function getSubschema$1(it, { keyword: keyword$1, schemaProp, schema, schemaPath, errSchemaPath, topSchemaRef }) {
-      if (keyword$1 !== void 0 && schema !== void 0)
+    const codegen_1$71 = require_codegen$1();
+    const util_1$59 = require_util$1();
+    function getSubschema$1(
+      it,
+      { keyword: keyword$1, schemaProp, schema: schema$1, schemaPath, errSchemaPath, topSchemaRef }
+    ) {
+      if (keyword$1 !== void 0 && schema$1 !== void 0)
         throw new Error('both "keyword" and "schema" passed, only one allowed');
       if (keyword$1 !== void 0) {
         const sch = it.schema[keyword$1];
         return schemaProp === void 0
           ? {
               schema: sch,
-              schemaPath: (0, codegen_1$66._)`${it.schemaPath}${(0, codegen_1$66.getProperty)(keyword$1)}`,
+              schemaPath: (0, codegen_1$71._)`${it.schemaPath}${(0, codegen_1$71.getProperty)(keyword$1)}`,
               errSchemaPath: `${it.errSchemaPath}/${keyword$1}`,
             }
           : {
               schema: sch[schemaProp],
               schemaPath: (0,
-              codegen_1$66._)`${it.schemaPath}${(0, codegen_1$66.getProperty)(keyword$1)}${(0, codegen_1$66.getProperty)(schemaProp)}`,
-              errSchemaPath: `${it.errSchemaPath}/${keyword$1}/${(0, util_1$55.escapeFragment)(schemaProp)}`,
+              codegen_1$71._)`${it.schemaPath}${(0, codegen_1$71.getProperty)(keyword$1)}${(0, codegen_1$71.getProperty)(schemaProp)}`,
+              errSchemaPath: `${it.errSchemaPath}/${keyword$1}/${(0, util_1$59.escapeFragment)(schemaProp)}`,
             };
       }
-      if (schema !== void 0) {
+      if (schema$1 !== void 0) {
         if (schemaPath === void 0 || errSchemaPath === void 0 || topSchemaRef === void 0)
           throw new Error('"schemaPath", "errSchemaPath" and "topSchemaRef" are required with "schema"');
         return {
-          schema,
+          schema: schema$1,
           schemaPath,
           topSchemaRef,
           errSchemaPath,
@@ -5758,17 +8408,17 @@ var require_subschema$1 = __commonJS({
         const { errorPath, dataPathArr, opts } = it;
         const nextData = gen.let(
           'data',
-          (0, codegen_1$66._)`${it.data}${(0, codegen_1$66.getProperty)(dataProp)}`,
+          (0, codegen_1$71._)`${it.data}${(0, codegen_1$71.getProperty)(dataProp)}`,
           true
         );
         dataContextProps(nextData);
         subschema.errorPath = (0,
-        codegen_1$66.str)`${errorPath}${(0, util_1$55.getErrorPath)(dataProp, dpType, opts.jsPropertySyntax)}`;
-        subschema.parentDataProperty = (0, codegen_1$66._)`${dataProp}`;
+        codegen_1$71.str)`${errorPath}${(0, util_1$59.getErrorPath)(dataProp, dpType, opts.jsPropertySyntax)}`;
+        subschema.parentDataProperty = (0, codegen_1$71._)`${dataProp}`;
         subschema.dataPathArr = [...dataPathArr, subschema.parentDataProperty];
       }
       if (data !== void 0) {
-        const nextData = data instanceof codegen_1$66.Name ? data : gen.let('data', data, true);
+        const nextData = data instanceof codegen_1$71.Name ? data : gen.let('data', data, true);
         dataContextProps(nextData);
         if (propertyName !== void 0) subschema.propertyName = propertyName;
       }
@@ -5777,7 +8427,7 @@ var require_subschema$1 = __commonJS({
         subschema.data = _nextData;
         subschema.dataLevel = it.dataLevel + 1;
         subschema.dataTypes = [];
-        it.definedProperties = new Set();
+        it.definedProperties = /* @__PURE__ */ new Set();
         subschema.parentData = it.data;
         subschema.dataNames = [...it.dataNames, _nextData];
       }
@@ -5834,7 +8484,7 @@ var require_fast_deep_equal = __commonJS({
 //#region ../packages/vovk-ajv/node_modules/json-schema-traverse/index.js
 var require_json_schema_traverse$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/json-schema-traverse/index.js'(exports, module) {
-    var traverse$3 = (module.exports = function (schema, opts, cb) {
+    var traverse$3 = (module.exports = function (schema$1, opts, cb) {
       if (typeof opts == 'function') {
         cb = opts;
         opts = {};
@@ -5842,7 +8492,7 @@ var require_json_schema_traverse$1 = __commonJS({
       cb = opts.cb || cb;
       var pre = typeof cb == 'function' ? cb : cb.pre || function () {};
       var post = cb.post || function () {};
-      _traverse$1(opts, pre, post, schema, '', schema);
+      _traverse$1(opts, pre, post, schema$1, '', schema$1);
     });
     traverse$3.keywords = {
       additionalItems: true,
@@ -5892,7 +8542,7 @@ var require_json_schema_traverse$1 = __commonJS({
       opts,
       pre,
       post,
-      schema,
+      schema$1,
       jsonPtr,
       rootSchema,
       parentJsonPtr,
@@ -5900,10 +8550,10 @@ var require_json_schema_traverse$1 = __commonJS({
       parentSchema,
       keyIndex
     ) {
-      if (schema && typeof schema == 'object' && !Array.isArray(schema)) {
-        pre(schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
-        for (var key in schema) {
-          var sch = schema[key];
+      if (schema$1 && typeof schema$1 == 'object' && !Array.isArray(schema$1)) {
+        pre(schema$1, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
+        for (var key in schema$1) {
+          var sch = schema$1[key];
           if (Array.isArray(sch)) {
             if (key in traverse$3.arrayKeywords)
               for (var i = 0; i < sch.length; i++)
@@ -5916,7 +8566,7 @@ var require_json_schema_traverse$1 = __commonJS({
                   rootSchema,
                   jsonPtr,
                   key,
-                  schema,
+                  schema$1,
                   i
                 );
           } else if (key in traverse$3.propsKeywords) {
@@ -5931,13 +8581,13 @@ var require_json_schema_traverse$1 = __commonJS({
                   rootSchema,
                   jsonPtr,
                   key,
-                  schema,
+                  schema$1,
                   prop
                 );
           } else if (key in traverse$3.keywords || (opts.allKeys && !(key in traverse$3.skipKeywords)))
-            _traverse$1(opts, pre, post, sch, jsonPtr + '/' + key, rootSchema, jsonPtr, key, schema);
+            _traverse$1(opts, pre, post, sch, jsonPtr + '/' + key, rootSchema, jsonPtr, key, schema$1);
         }
-        post(schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
+        post(schema$1, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
       }
     }
     function escapeJsonPtr$1(str$2) {
@@ -5958,7 +8608,7 @@ var require_resolve$1 = __commonJS({
       exports.getFullPath =
       exports.inlineRef =
         void 0;
-    const util_1$54 = require_util$1();
+    const util_1$58 = require_util$1();
     const equal$4 = require_fast_deep_equal();
     const traverse$2 = require_json_schema_traverse$1();
     const SIMPLE_INLINED$1 = new Set([
@@ -5979,30 +8629,31 @@ var require_resolve$1 = __commonJS({
       'enum',
       'const',
     ]);
-    function inlineRef$1(schema, limit = true) {
-      if (typeof schema == 'boolean') return true;
-      if (limit === true) return !hasRef$1(schema);
+    function inlineRef$1(schema$1, limit = true) {
+      if (typeof schema$1 == 'boolean') return true;
+      if (limit === true) return !hasRef$1(schema$1);
       if (!limit) return false;
-      return countKeys$1(schema) <= limit;
+      return countKeys$1(schema$1) <= limit;
     }
     exports.inlineRef = inlineRef$1;
     const REF_KEYWORDS$1 = new Set(['$ref', '$recursiveRef', '$recursiveAnchor', '$dynamicRef', '$dynamicAnchor']);
-    function hasRef$1(schema) {
-      for (const key in schema) {
+    function hasRef$1(schema$1) {
+      for (const key in schema$1) {
         if (REF_KEYWORDS$1.has(key)) return true;
-        const sch = schema[key];
+        const sch = schema$1[key];
         if (Array.isArray(sch) && sch.some(hasRef$1)) return true;
         if (typeof sch == 'object' && hasRef$1(sch)) return true;
       }
       return false;
     }
-    function countKeys$1(schema) {
+    function countKeys$1(schema$1) {
       let count = 0;
-      for (const key in schema) {
+      for (const key in schema$1) {
         if (key === '$ref') return Infinity;
         count++;
         if (SIMPLE_INLINED$1.has(key)) continue;
-        if (typeof schema[key] == 'object') (0, util_1$54.eachItem)(schema[key], (sch) => (count += countKeys$1(sch)));
+        if (typeof schema$1[key] == 'object')
+          (0, util_1$58.eachItem)(schema$1[key], (sch) => (count += countKeys$1(sch)));
         if (count === Infinity) return Infinity;
       }
       return count;
@@ -6029,15 +8680,15 @@ var require_resolve$1 = __commonJS({
     }
     exports.resolveUrl = resolveUrl$1;
     const ANCHOR$1 = /^[a-z_][-a-z0-9._]*$/i;
-    function getSchemaRefs$1(schema, baseId) {
-      if (typeof schema == 'boolean') return {};
+    function getSchemaRefs$1(schema$1, baseId) {
+      if (typeof schema$1 == 'boolean') return {};
       const { schemaId, uriResolver } = this.opts;
-      const schId = normalizeId$1(schema[schemaId] || baseId);
+      const schId = normalizeId$1(schema$1[schemaId] || baseId);
       const baseIds = { '': schId };
       const pathPrefix = getFullPath$1(uriResolver, schId, false);
       const localRefs = {};
-      const schemaRefs = new Set();
-      traverse$2(schema, { allKeys: true }, (sch, jsonPtr, _$2, parentJsonPtr) => {
+      const schemaRefs = /* @__PURE__ */ new Set();
+      traverse$2(schema$1, { allKeys: true }, (sch, jsonPtr, _$2, parentJsonPtr) => {
         if (parentJsonPtr === void 0) return;
         const fullPath = pathPrefix + jsonPtr;
         let innerBaseId = baseIds[parentJsonPtr];
@@ -6092,10 +8743,10 @@ var require_validate$1 = __commonJS({
     const defaults_1$1 = require_defaults$1();
     const keyword_1$1 = require_keyword$1();
     const subschema_1$1 = require_subschema$1();
-    const codegen_1$65 = require_codegen$1();
-    const names_1$12 = require_names$1();
+    const codegen_1$70 = require_codegen$1();
+    const names_1$15 = require_names$1();
     const resolve_1$7 = require_resolve$1();
-    const util_1$53 = require_util$1();
+    const util_1$57 = require_util$1();
     const errors_1$5 = require_errors$1();
     function validateFunctionCode$1(it) {
       if (isSchemaObj$1(it)) {
@@ -6108,14 +8759,14 @@ var require_validate$1 = __commonJS({
       validateFunction$1(it, () => (0, boolSchema_1$1.topBoolOrEmptySchema)(it));
     }
     exports.validateFunctionCode = validateFunctionCode$1;
-    function validateFunction$1({ gen, validateName, schema, schemaEnv, opts }, body) {
+    function validateFunction$1({ gen, validateName, schema: schema$1, schemaEnv, opts }, body) {
       if (opts.code.es5)
         gen.func(
           validateName,
-          (0, codegen_1$65._)`${names_1$12.default.data}, ${names_1$12.default.valCxt}`,
+          (0, codegen_1$70._)`${names_1$15.default.data}, ${names_1$15.default.valCxt}`,
           schemaEnv.$async,
           () => {
-            gen.code((0, codegen_1$65._)`"use strict"; ${funcSourceUrl$1(schema, opts)}`);
+            gen.code((0, codegen_1$70._)`"use strict"; ${funcSourceUrl$1(schema$1, opts)}`);
             destructureValCxtES5$1(gen, opts);
             gen.code(body);
           }
@@ -6123,57 +8774,57 @@ var require_validate$1 = __commonJS({
       else
         gen.func(
           validateName,
-          (0, codegen_1$65._)`${names_1$12.default.data}, ${destructureValCxt$1(opts)}`,
+          (0, codegen_1$70._)`${names_1$15.default.data}, ${destructureValCxt$1(opts)}`,
           schemaEnv.$async,
-          () => gen.code(funcSourceUrl$1(schema, opts)).code(body)
+          () => gen.code(funcSourceUrl$1(schema$1, opts)).code(body)
         );
     }
     function destructureValCxt$1(opts) {
       return (0,
-      codegen_1$65._)`{${names_1$12.default.instancePath}="", ${names_1$12.default.parentData}, ${names_1$12.default.parentDataProperty}, ${names_1$12.default.rootData}=${names_1$12.default.data}${opts.dynamicRef ? (0, codegen_1$65._)`, ${names_1$12.default.dynamicAnchors}={}` : codegen_1$65.nil}}={}`;
+      codegen_1$70._)`{${names_1$15.default.instancePath}="", ${names_1$15.default.parentData}, ${names_1$15.default.parentDataProperty}, ${names_1$15.default.rootData}=${names_1$15.default.data}${opts.dynamicRef ? (0, codegen_1$70._)`, ${names_1$15.default.dynamicAnchors}={}` : codegen_1$70.nil}}={}`;
     }
     function destructureValCxtES5$1(gen, opts) {
       gen.if(
-        names_1$12.default.valCxt,
+        names_1$15.default.valCxt,
         () => {
           gen.var(
-            names_1$12.default.instancePath,
-            (0, codegen_1$65._)`${names_1$12.default.valCxt}.${names_1$12.default.instancePath}`
+            names_1$15.default.instancePath,
+            (0, codegen_1$70._)`${names_1$15.default.valCxt}.${names_1$15.default.instancePath}`
           );
           gen.var(
-            names_1$12.default.parentData,
-            (0, codegen_1$65._)`${names_1$12.default.valCxt}.${names_1$12.default.parentData}`
+            names_1$15.default.parentData,
+            (0, codegen_1$70._)`${names_1$15.default.valCxt}.${names_1$15.default.parentData}`
           );
           gen.var(
-            names_1$12.default.parentDataProperty,
-            (0, codegen_1$65._)`${names_1$12.default.valCxt}.${names_1$12.default.parentDataProperty}`
+            names_1$15.default.parentDataProperty,
+            (0, codegen_1$70._)`${names_1$15.default.valCxt}.${names_1$15.default.parentDataProperty}`
           );
           gen.var(
-            names_1$12.default.rootData,
-            (0, codegen_1$65._)`${names_1$12.default.valCxt}.${names_1$12.default.rootData}`
+            names_1$15.default.rootData,
+            (0, codegen_1$70._)`${names_1$15.default.valCxt}.${names_1$15.default.rootData}`
           );
           if (opts.dynamicRef)
             gen.var(
-              names_1$12.default.dynamicAnchors,
-              (0, codegen_1$65._)`${names_1$12.default.valCxt}.${names_1$12.default.dynamicAnchors}`
+              names_1$15.default.dynamicAnchors,
+              (0, codegen_1$70._)`${names_1$15.default.valCxt}.${names_1$15.default.dynamicAnchors}`
             );
         },
         () => {
-          gen.var(names_1$12.default.instancePath, (0, codegen_1$65._)`""`);
-          gen.var(names_1$12.default.parentData, (0, codegen_1$65._)`undefined`);
-          gen.var(names_1$12.default.parentDataProperty, (0, codegen_1$65._)`undefined`);
-          gen.var(names_1$12.default.rootData, names_1$12.default.data);
-          if (opts.dynamicRef) gen.var(names_1$12.default.dynamicAnchors, (0, codegen_1$65._)`{}`);
+          gen.var(names_1$15.default.instancePath, (0, codegen_1$70._)`""`);
+          gen.var(names_1$15.default.parentData, (0, codegen_1$70._)`undefined`);
+          gen.var(names_1$15.default.parentDataProperty, (0, codegen_1$70._)`undefined`);
+          gen.var(names_1$15.default.rootData, names_1$15.default.data);
+          if (opts.dynamicRef) gen.var(names_1$15.default.dynamicAnchors, (0, codegen_1$70._)`{}`);
         }
       );
     }
     function topSchemaObjCode$1(it) {
-      const { schema, opts, gen } = it;
+      const { schema: schema$1, opts, gen } = it;
       validateFunction$1(it, () => {
-        if (opts.$comment && schema.$comment) commentKeyword$1(it);
+        if (opts.$comment && schema$1.$comment) commentKeyword$1(it);
         checkNoDefault$1(it);
-        gen.let(names_1$12.default.vErrors, null);
-        gen.let(names_1$12.default.errors, 0);
+        gen.let(names_1$15.default.vErrors, null);
+        gen.let(names_1$15.default.errors, 0);
         if (opts.unevaluated) resetEvaluated$1(it);
         typeAndKeywords$1(it);
         returnResults$1(it);
@@ -6182,19 +8833,19 @@ var require_validate$1 = __commonJS({
     }
     function resetEvaluated$1(it) {
       const { gen, validateName } = it;
-      it.evaluated = gen.const('evaluated', (0, codegen_1$65._)`${validateName}.evaluated`);
-      gen.if((0, codegen_1$65._)`${it.evaluated}.dynamicProps`, () =>
-        gen.assign((0, codegen_1$65._)`${it.evaluated}.props`, (0, codegen_1$65._)`undefined`)
+      it.evaluated = gen.const('evaluated', (0, codegen_1$70._)`${validateName}.evaluated`);
+      gen.if((0, codegen_1$70._)`${it.evaluated}.dynamicProps`, () =>
+        gen.assign((0, codegen_1$70._)`${it.evaluated}.props`, (0, codegen_1$70._)`undefined`)
       );
-      gen.if((0, codegen_1$65._)`${it.evaluated}.dynamicItems`, () =>
-        gen.assign((0, codegen_1$65._)`${it.evaluated}.items`, (0, codegen_1$65._)`undefined`)
+      gen.if((0, codegen_1$70._)`${it.evaluated}.dynamicItems`, () =>
+        gen.assign((0, codegen_1$70._)`${it.evaluated}.items`, (0, codegen_1$70._)`undefined`)
       );
     }
-    function funcSourceUrl$1(schema, opts) {
-      const schId = typeof schema == 'object' && schema[opts.schemaId];
+    function funcSourceUrl$1(schema$1, opts) {
+      const schId = typeof schema$1 == 'object' && schema$1[opts.schemaId];
       return schId && (opts.code.source || opts.code.process)
-        ? (0, codegen_1$65._)`/*# sourceURL=${schId} */`
-        : codegen_1$65.nil;
+        ? (0, codegen_1$70._)`/*# sourceURL=${schId} */`
+        : codegen_1$70.nil;
     }
     function subschemaCode$1(it, valid) {
       if (isSchemaObj$1(it)) {
@@ -6206,25 +8857,25 @@ var require_validate$1 = __commonJS({
       }
       (0, boolSchema_1$1.boolOrEmptySchema)(it, valid);
     }
-    function schemaCxtHasRules$1({ schema, self }) {
-      if (typeof schema == 'boolean') return !schema;
-      for (const key in schema) if (self.RULES.all[key]) return true;
+    function schemaCxtHasRules$1({ schema: schema$1, self: self$1 }) {
+      if (typeof schema$1 == 'boolean') return !schema$1;
+      for (const key in schema$1) if (self$1.RULES.all[key]) return true;
       return false;
     }
     function isSchemaObj$1(it) {
       return typeof it.schema != 'boolean';
     }
     function subSchemaObjCode$1(it, valid) {
-      const { schema, gen, opts } = it;
-      if (opts.$comment && schema.$comment) commentKeyword$1(it);
+      const { schema: schema$1, gen, opts } = it;
+      if (opts.$comment && schema$1.$comment) commentKeyword$1(it);
       updateContext$1(it);
       checkAsyncSchema$1(it);
-      const errsCount = gen.const('_errs', names_1$12.default.errors);
+      const errsCount = gen.const('_errs', names_1$15.default.errors);
       typeAndKeywords$1(it, errsCount);
-      gen.var(valid, (0, codegen_1$65._)`${errsCount} === ${names_1$12.default.errors}`);
+      gen.var(valid, (0, codegen_1$70._)`${errsCount} === ${names_1$15.default.errors}`);
     }
     function checkKeywords$1(it) {
-      (0, util_1$53.checkUnknownRules)(it);
+      (0, util_1$57.checkUnknownRules)(it);
       checkRefsAndKeywords$1(it);
     }
     function typeAndKeywords$1(it, errsCount) {
@@ -6234,14 +8885,14 @@ var require_validate$1 = __commonJS({
       schemaKeywords$1(it, types, !checkedTypes, errsCount);
     }
     function checkRefsAndKeywords$1(it) {
-      const { schema, errSchemaPath, opts, self } = it;
-      if (schema.$ref && opts.ignoreKeywordsWithRef && (0, util_1$53.schemaHasRulesButRef)(schema, self.RULES))
-        self.logger.warn(`$ref: keywords ignored in schema at path "${errSchemaPath}"`);
+      const { schema: schema$1, errSchemaPath, opts, self: self$1 } = it;
+      if (schema$1.$ref && opts.ignoreKeywordsWithRef && (0, util_1$57.schemaHasRulesButRef)(schema$1, self$1.RULES))
+        self$1.logger.warn(`$ref: keywords ignored in schema at path "${errSchemaPath}"`);
     }
     function checkNoDefault$1(it) {
-      const { schema, opts } = it;
-      if (schema.default !== void 0 && opts.useDefaults && opts.strictSchema)
-        (0, util_1$53.checkStrictMode)(it, 'default is ignored in the schema root');
+      const { schema: schema$1, opts } = it;
+      if (schema$1.default !== void 0 && opts.useDefaults && opts.strictSchema)
+        (0, util_1$57.checkStrictMode)(it, 'default is ignored in the schema root');
     }
     function updateContext$1(it) {
       const schId = it.schema[it.opts.schemaId];
@@ -6250,14 +8901,14 @@ var require_validate$1 = __commonJS({
     function checkAsyncSchema$1(it) {
       if (it.schema.$async && !it.schemaEnv.$async) throw new Error('async schema in sync schema');
     }
-    function commentKeyword$1({ gen, schemaEnv, schema, errSchemaPath, opts }) {
-      const msg = schema.$comment;
-      if (opts.$comment === true) gen.code((0, codegen_1$65._)`${names_1$12.default.self}.logger.log(${msg})`);
+    function commentKeyword$1({ gen, schemaEnv, schema: schema$1, errSchemaPath, opts }) {
+      const msg = schema$1.$comment;
+      if (opts.$comment === true) gen.code((0, codegen_1$70._)`${names_1$15.default.self}.logger.log(${msg})`);
       else if (typeof opts.$comment == 'function') {
-        const schemaPath = (0, codegen_1$65.str)`${errSchemaPath}/$comment`;
+        const schemaPath = (0, codegen_1$70.str)`${errSchemaPath}/$comment`;
         const rootName = gen.scopeValue('root', { ref: schemaEnv.root });
         gen.code(
-          (0, codegen_1$65._)`${names_1$12.default.self}.opts.$comment(${msg}, ${schemaPath}, ${rootName}.schema)`
+          (0, codegen_1$70._)`${names_1$15.default.self}.opts.$comment(${msg}, ${schemaPath}, ${rootName}.schema)`
         );
       }
     }
@@ -6265,24 +8916,24 @@ var require_validate$1 = __commonJS({
       const { gen, schemaEnv, validateName, ValidationError: ValidationError$2, opts } = it;
       if (schemaEnv.$async)
         gen.if(
-          (0, codegen_1$65._)`${names_1$12.default.errors} === 0`,
-          () => gen.return(names_1$12.default.data),
-          () => gen.throw((0, codegen_1$65._)`new ${ValidationError$2}(${names_1$12.default.vErrors})`)
+          (0, codegen_1$70._)`${names_1$15.default.errors} === 0`,
+          () => gen.return(names_1$15.default.data),
+          () => gen.throw((0, codegen_1$70._)`new ${ValidationError$2}(${names_1$15.default.vErrors})`)
         );
       else {
-        gen.assign((0, codegen_1$65._)`${validateName}.errors`, names_1$12.default.vErrors);
+        gen.assign((0, codegen_1$70._)`${validateName}.errors`, names_1$15.default.vErrors);
         if (opts.unevaluated) assignEvaluated$1(it);
-        gen.return((0, codegen_1$65._)`${names_1$12.default.errors} === 0`);
+        gen.return((0, codegen_1$70._)`${names_1$15.default.errors} === 0`);
       }
     }
     function assignEvaluated$1({ gen, evaluated, props, items }) {
-      if (props instanceof codegen_1$65.Name) gen.assign((0, codegen_1$65._)`${evaluated}.props`, props);
-      if (items instanceof codegen_1$65.Name) gen.assign((0, codegen_1$65._)`${evaluated}.items`, items);
+      if (props instanceof codegen_1$70.Name) gen.assign((0, codegen_1$70._)`${evaluated}.props`, props);
+      if (items instanceof codegen_1$70.Name) gen.assign((0, codegen_1$70._)`${evaluated}.items`, items);
     }
     function schemaKeywords$1(it, types, typeErrors, errsCount) {
-      const { gen, schema, data, allErrors, opts, self } = it;
-      const { RULES } = self;
-      if (schema.$ref && (opts.ignoreKeywordsWithRef || !(0, util_1$53.schemaHasRulesButRef)(schema, RULES))) {
+      const { gen, schema: schema$1, data, allErrors, opts, self: self$1 } = it;
+      const { RULES } = self$1;
+      if (schema$1.$ref && (opts.ignoreKeywordsWithRef || !(0, util_1$57.schemaHasRulesButRef)(schema$1, RULES))) {
         gen.block(() => keywordCode$1(it, '$ref', RULES.all.$ref.definition));
         return;
       }
@@ -6292,7 +8943,7 @@ var require_validate$1 = __commonJS({
         groupKeywords(RULES.post);
       });
       function groupKeywords(group) {
-        if (!(0, applicability_1$2.shouldUseGroup)(schema, group)) return;
+        if (!(0, applicability_1$2.shouldUseGroup)(schema$1, group)) return;
         if (group.type) {
           gen.if((0, dataType_2$1.checkDataType)(group.type, data, opts.strictNumbers));
           iterateKeywords$1(it, group);
@@ -6302,19 +8953,19 @@ var require_validate$1 = __commonJS({
           }
           gen.endIf();
         } else iterateKeywords$1(it, group);
-        if (!allErrors) gen.if((0, codegen_1$65._)`${names_1$12.default.errors} === ${errsCount || 0}`);
+        if (!allErrors) gen.if((0, codegen_1$70._)`${names_1$15.default.errors} === ${errsCount || 0}`);
       }
     }
     function iterateKeywords$1(it, group) {
       const {
         gen,
-        schema,
+        schema: schema$1,
         opts: { useDefaults },
       } = it;
       if (useDefaults) (0, defaults_1$1.assignDefaults)(it, group.type);
       gen.block(() => {
         for (const rule of group.rules)
-          if ((0, applicability_1$2.shouldUseRule)(schema, rule))
+          if ((0, applicability_1$2.shouldUseRule)(schema$1, rule))
             keywordCode$1(it, rule.keyword, rule.definition, group.type);
       });
     }
@@ -6367,34 +9018,34 @@ var require_validate$1 = __commonJS({
     function strictTypesError$1(it, msg) {
       const schemaPath = it.schemaEnv.baseId + it.errSchemaPath;
       msg += ` at "${schemaPath}" (strictTypes)`;
-      (0, util_1$53.checkStrictMode)(it, msg, it.opts.strictTypes);
+      (0, util_1$57.checkStrictMode)(it, msg, it.opts.strictTypes);
     }
     var KeywordCxt$1 = class {
-      constructor(it, def$60, keyword$1) {
-        (0, keyword_1$1.validateKeywordUsage)(it, def$60, keyword$1);
+      constructor(it, def$69, keyword$1) {
+        (0, keyword_1$1.validateKeywordUsage)(it, def$69, keyword$1);
         this.gen = it.gen;
         this.allErrors = it.allErrors;
         this.keyword = keyword$1;
         this.data = it.data;
         this.schema = it.schema[keyword$1];
-        this.$data = def$60.$data && it.opts.$data && this.schema && this.schema.$data;
-        this.schemaValue = (0, util_1$53.schemaRefOrVal)(it, this.schema, keyword$1, this.$data);
-        this.schemaType = def$60.schemaType;
+        this.$data = def$69.$data && it.opts.$data && this.schema && this.schema.$data;
+        this.schemaValue = (0, util_1$57.schemaRefOrVal)(it, this.schema, keyword$1, this.$data);
+        this.schemaType = def$69.schemaType;
         this.parentSchema = it.schema;
         this.params = {};
         this.it = it;
-        this.def = def$60;
+        this.def = def$69;
         if (this.$data) this.schemaCode = it.gen.const('vSchema', getData$1(this.$data, it));
         else {
           this.schemaCode = this.schemaValue;
-          if (!(0, keyword_1$1.validSchemaType)(this.schema, def$60.schemaType, def$60.allowUndefined))
-            throw new Error(`${keyword$1} value must be ${JSON.stringify(def$60.schemaType)}`);
+          if (!(0, keyword_1$1.validSchemaType)(this.schema, def$69.schemaType, def$69.allowUndefined))
+            throw new Error(`${keyword$1} value must be ${JSON.stringify(def$69.schemaType)}`);
         }
-        if ('code' in def$60 ? def$60.trackErrors : def$60.errors !== false)
-          this.errsCount = it.gen.const('_errs', names_1$12.default.errors);
+        if ('code' in def$69 ? def$69.trackErrors : def$69.errors !== false)
+          this.errsCount = it.gen.const('_errs', names_1$15.default.errors);
       }
       result(condition, successAction, failAction) {
-        this.failResult((0, codegen_1$65.not)(condition), successAction, failAction);
+        this.failResult((0, codegen_1$70.not)(condition), successAction, failAction);
       }
       failResult(condition, successAction, failAction) {
         this.gen.if(condition);
@@ -6408,7 +9059,7 @@ var require_validate$1 = __commonJS({
         else this.gen.else();
       }
       pass(condition, failAction) {
-        this.failResult((0, codegen_1$65.not)(condition), void 0, failAction);
+        this.failResult((0, codegen_1$70.not)(condition), void 0, failAction);
       }
       fail(condition) {
         if (condition === void 0) {
@@ -6425,7 +9076,7 @@ var require_validate$1 = __commonJS({
         if (!this.$data) return this.fail(condition);
         const { schemaCode } = this;
         this.fail(
-          (0, codegen_1$65._)`${schemaCode} !== undefined && (${(0, codegen_1$65.or)(this.invalid$data(), condition)})`
+          (0, codegen_1$70._)`${schemaCode} !== undefined && (${(0, codegen_1$70.or)(this.invalid$data(), condition)})`
         );
       }
       error(append, errorParams, errorPaths) {
@@ -6454,43 +9105,43 @@ var require_validate$1 = __commonJS({
         if (assign) Object.assign(this.params, obj);
         else this.params = obj;
       }
-      block$data(valid, codeBlock, $dataValid = codegen_1$65.nil) {
+      block$data(valid, codeBlock, $dataValid = codegen_1$70.nil) {
         this.gen.block(() => {
           this.check$data(valid, $dataValid);
           codeBlock();
         });
       }
-      check$data(valid = codegen_1$65.nil, $dataValid = codegen_1$65.nil) {
+      check$data(valid = codegen_1$70.nil, $dataValid = codegen_1$70.nil) {
         if (!this.$data) return;
-        const { gen, schemaCode, schemaType, def: def$60 } = this;
-        gen.if((0, codegen_1$65.or)((0, codegen_1$65._)`${schemaCode} === undefined`, $dataValid));
-        if (valid !== codegen_1$65.nil) gen.assign(valid, true);
-        if (schemaType.length || def$60.validateSchema) {
+        const { gen, schemaCode, schemaType, def: def$69 } = this;
+        gen.if((0, codegen_1$70.or)((0, codegen_1$70._)`${schemaCode} === undefined`, $dataValid));
+        if (valid !== codegen_1$70.nil) gen.assign(valid, true);
+        if (schemaType.length || def$69.validateSchema) {
           gen.elseIf(this.invalid$data());
           this.$dataError();
-          if (valid !== codegen_1$65.nil) gen.assign(valid, false);
+          if (valid !== codegen_1$70.nil) gen.assign(valid, false);
         }
         gen.else();
       }
       invalid$data() {
-        const { gen, schemaCode, schemaType, def: def$60, it } = this;
-        return (0, codegen_1$65.or)(wrong$DataType(), invalid$DataSchema());
+        const { gen, schemaCode, schemaType, def: def$69, it } = this;
+        return (0, codegen_1$70.or)(wrong$DataType(), invalid$DataSchema());
         function wrong$DataType() {
           if (schemaType.length) {
             /* istanbul ignore if */
-            if (!(schemaCode instanceof codegen_1$65.Name)) throw new Error('ajv implementation error');
+            if (!(schemaCode instanceof codegen_1$70.Name)) throw new Error('ajv implementation error');
             const st = Array.isArray(schemaType) ? schemaType : [schemaType];
             return (0,
-            codegen_1$65._)`${(0, dataType_2$1.checkDataTypes)(st, schemaCode, it.opts.strictNumbers, dataType_2$1.DataType.Wrong)}`;
+            codegen_1$70._)`${(0, dataType_2$1.checkDataTypes)(st, schemaCode, it.opts.strictNumbers, dataType_2$1.DataType.Wrong)}`;
           }
-          return codegen_1$65.nil;
+          return codegen_1$70.nil;
         }
         function invalid$DataSchema() {
-          if (def$60.validateSchema) {
-            const validateSchemaRef = gen.scopeValue('validate$data', { ref: def$60.validateSchema });
-            return (0, codegen_1$65._)`!${validateSchemaRef}(${schemaCode})`;
+          if (def$69.validateSchema) {
+            const validateSchemaRef = gen.scopeValue('validate$data', { ref: def$69.validateSchema });
+            return (0, codegen_1$70._)`!${validateSchemaRef}(${schemaCode})`;
           }
-          return codegen_1$65.nil;
+          return codegen_1$70.nil;
         }
       }
       subschema(appl, valid) {
@@ -6510,36 +9161,36 @@ var require_validate$1 = __commonJS({
         const { it, gen } = this;
         if (!it.opts.unevaluated) return;
         if (it.props !== true && schemaCxt.props !== void 0)
-          it.props = util_1$53.mergeEvaluated.props(gen, schemaCxt.props, it.props, toName);
+          it.props = util_1$57.mergeEvaluated.props(gen, schemaCxt.props, it.props, toName);
         if (it.items !== true && schemaCxt.items !== void 0)
-          it.items = util_1$53.mergeEvaluated.items(gen, schemaCxt.items, it.items, toName);
+          it.items = util_1$57.mergeEvaluated.items(gen, schemaCxt.items, it.items, toName);
       }
       mergeValidEvaluated(schemaCxt, valid) {
         const { it, gen } = this;
         if (it.opts.unevaluated && (it.props !== true || it.items !== true)) {
-          gen.if(valid, () => this.mergeEvaluated(schemaCxt, codegen_1$65.Name));
+          gen.if(valid, () => this.mergeEvaluated(schemaCxt, codegen_1$70.Name));
           return true;
         }
       }
     };
     exports.KeywordCxt = KeywordCxt$1;
-    function keywordCode$1(it, keyword$1, def$60, ruleType) {
-      const cxt = new KeywordCxt$1(it, def$60, keyword$1);
-      if ('code' in def$60) def$60.code(cxt, ruleType);
-      else if (cxt.$data && def$60.validate) (0, keyword_1$1.funcKeywordCode)(cxt, def$60);
-      else if ('macro' in def$60) (0, keyword_1$1.macroKeywordCode)(cxt, def$60);
-      else if (def$60.compile || def$60.validate) (0, keyword_1$1.funcKeywordCode)(cxt, def$60);
+    function keywordCode$1(it, keyword$1, def$69, ruleType) {
+      const cxt = new KeywordCxt$1(it, def$69, keyword$1);
+      if ('code' in def$69) def$69.code(cxt, ruleType);
+      else if (cxt.$data && def$69.validate) (0, keyword_1$1.funcKeywordCode)(cxt, def$69);
+      else if ('macro' in def$69) (0, keyword_1$1.macroKeywordCode)(cxt, def$69);
+      else if (def$69.compile || def$69.validate) (0, keyword_1$1.funcKeywordCode)(cxt, def$69);
     }
     const JSON_POINTER$1 = /^\/(?:[^~]|~0|~1)*$/;
     const RELATIVE_JSON_POINTER$1 = /^([0-9]+)(#|\/(?:[^~]|~0|~1)*)?$/;
     function getData$1($data, { dataLevel, dataNames, dataPathArr }) {
       let jsonPointer;
       let data;
-      if ($data === '') return names_1$12.default.rootData;
+      if ($data === '') return names_1$15.default.rootData;
       if ($data[0] === '/') {
         if (!JSON_POINTER$1.test($data)) throw new Error(`Invalid JSON-pointer: ${$data}`);
         jsonPointer = $data;
-        data = names_1$12.default.rootData;
+        data = names_1$15.default.rootData;
       } else {
         const matches = RELATIVE_JSON_POINTER$1.exec($data);
         if (!matches) throw new Error(`Invalid JSON-pointer: ${$data}`);
@@ -6558,8 +9209,8 @@ var require_validate$1 = __commonJS({
       for (const segment of segments$1)
         if (segment) {
           data = (0,
-          codegen_1$65._)`${data}${(0, codegen_1$65.getProperty)((0, util_1$53.unescapeJsonPointer)(segment))}`;
-          expr = (0, codegen_1$65._)`${expr} && ${data}`;
+          codegen_1$70._)`${data}${(0, codegen_1$70.getProperty)((0, util_1$57.unescapeJsonPointer)(segment))}`;
+          expr = (0, codegen_1$70._)`${expr} && ${data}`;
         }
       return expr;
       function errorMsg(pointerType, up) {
@@ -6614,32 +9265,32 @@ var require_compile$1 = __commonJS({
       exports.compileSchema =
       exports.SchemaEnv =
         void 0;
-    const codegen_1$64 = require_codegen$1();
-    const validation_error_1$5 = require_validation_error$1();
-    const names_1$11 = require_names$1();
+    const codegen_1$69 = require_codegen$1();
+    const validation_error_1$6 = require_validation_error$1();
+    const names_1$14 = require_names$1();
     const resolve_1$5 = require_resolve$1();
-    const util_1$52 = require_util$1();
-    const validate_1$8 = require_validate$1();
+    const util_1$56 = require_util$1();
+    const validate_1$9 = require_validate$1();
     var SchemaEnv$1 = class {
       constructor(env) {
-        var _a$2;
+        var _a$4;
         this.refs = {};
         this.dynamicAnchors = {};
-        let schema;
-        if (typeof env.schema == 'object') schema = env.schema;
+        let schema$1;
+        if (typeof env.schema == 'object') schema$1 = env.schema;
         this.schema = env.schema;
         this.schemaId = env.schemaId;
         this.root = env.root || this;
         this.baseId =
-          (_a$2 = env.baseId) !== null && _a$2 !== void 0
-            ? _a$2
+          (_a$4 = env.baseId) !== null && _a$4 !== void 0
+            ? _a$4
             : (0, resolve_1$5.normalizeId)(
-                schema === null || schema === void 0 ? void 0 : schema[env.schemaId || '$id']
+                schema$1 === null || schema$1 === void 0 ? void 0 : schema$1[env.schemaId || '$id']
               );
         this.schemaPath = env.schemaPath;
         this.localRefs = env.localRefs;
         this.meta = env.meta;
-        this.$async = schema === null || schema === void 0 ? void 0 : schema.$async;
+        this.$async = schema$1 === null || schema$1 === void 0 ? void 0 : schema$1.$async;
         this.refs = {};
       }
     };
@@ -6650,7 +9301,7 @@ var require_compile$1 = __commonJS({
       const rootId = (0, resolve_1$5.getFullPath)(this.opts.uriResolver, sch.root.baseId);
       const { es5, lines } = this.opts.code;
       const { ownProperties } = this.opts;
-      const gen = new codegen_1$64.CodeGen(this.scope, {
+      const gen = new codegen_1$69.CodeGen(this.scope, {
         es5,
         lines,
         ownProperties,
@@ -6658,28 +9309,28 @@ var require_compile$1 = __commonJS({
       let _ValidationError;
       if (sch.$async)
         _ValidationError = gen.scopeValue('Error', {
-          ref: validation_error_1$5.default,
-          code: (0, codegen_1$64._)`require("ajv/dist/runtime/validation_error").default`,
+          ref: validation_error_1$6.default,
+          code: (0, codegen_1$69._)`require("ajv/dist/runtime/validation_error").default`,
         });
       const validateName = gen.scopeName('validate');
       sch.validateName = validateName;
       const schemaCxt = {
         gen,
         allErrors: this.opts.allErrors,
-        data: names_1$11.default.data,
-        parentData: names_1$11.default.parentData,
-        parentDataProperty: names_1$11.default.parentDataProperty,
-        dataNames: [names_1$11.default.data],
-        dataPathArr: [codegen_1$64.nil],
+        data: names_1$14.default.data,
+        parentData: names_1$14.default.parentData,
+        parentDataProperty: names_1$14.default.parentDataProperty,
+        dataNames: [names_1$14.default.data],
+        dataPathArr: [codegen_1$69.nil],
         dataLevel: 0,
         dataTypes: [],
-        definedProperties: new Set(),
+        definedProperties: /* @__PURE__ */ new Set(),
         topSchemaRef: gen.scopeValue(
           'schema',
           this.opts.code.source === true
             ? {
                 ref: sch.schema,
-                code: (0, codegen_1$64.stringify)(sch.schema),
+                code: (0, codegen_1$69.stringify)(sch.schema),
               }
             : { ref: sch.schema }
         ),
@@ -6689,21 +9340,21 @@ var require_compile$1 = __commonJS({
         schemaEnv: sch,
         rootId,
         baseId: sch.baseId || rootId,
-        schemaPath: codegen_1$64.nil,
+        schemaPath: codegen_1$69.nil,
         errSchemaPath: sch.schemaPath || (this.opts.jtd ? '' : '#'),
-        errorPath: (0, codegen_1$64._)`""`,
+        errorPath: (0, codegen_1$69._)`""`,
         opts: this.opts,
         self: this,
       };
       let sourceCode;
       try {
         this._compilations.add(sch);
-        (0, validate_1$8.validateFunctionCode)(schemaCxt);
+        (0, validate_1$9.validateFunctionCode)(schemaCxt);
         gen.optimize(this.opts.code.optimize);
         const validateCode = gen.toString();
-        sourceCode = `${gen.scopeRefs(names_1$11.default.scope)}return ${validateCode}`;
+        sourceCode = `${gen.scopeRefs(names_1$14.default.scope)}return ${validateCode}`;
         if (this.opts.code.process) sourceCode = this.opts.code.process(sourceCode, sch);
-        const makeValidate = new Function(`${names_1$11.default.self}`, `${names_1$11.default.scope}`, sourceCode);
+        const makeValidate = new Function(`${names_1$14.default.self}`, `${names_1$14.default.scope}`, sourceCode);
         const validate$1 = makeValidate(this, this.scope.get());
         this.scope.value(validateName, { ref: validate$1 });
         validate$1.errors = null;
@@ -6719,12 +9370,12 @@ var require_compile$1 = __commonJS({
         if (this.opts.unevaluated) {
           const { props, items } = schemaCxt;
           validate$1.evaluated = {
-            props: props instanceof codegen_1$64.Name ? void 0 : props,
-            items: items instanceof codegen_1$64.Name ? void 0 : items,
-            dynamicProps: props instanceof codegen_1$64.Name,
-            dynamicItems: items instanceof codegen_1$64.Name,
+            props: props instanceof codegen_1$69.Name ? void 0 : props,
+            items: items instanceof codegen_1$69.Name ? void 0 : items,
+            dynamicProps: props instanceof codegen_1$69.Name,
+            dynamicItems: items instanceof codegen_1$69.Name,
           };
-          if (validate$1.source) validate$1.source.evaluated = (0, codegen_1$64.stringify)(validate$1.evaluated);
+          if (validate$1.source) validate$1.source.evaluated = (0, codegen_1$69.stringify)(validate$1.evaluated);
         }
         sch.validate = validate$1;
         return sch;
@@ -6739,17 +9390,17 @@ var require_compile$1 = __commonJS({
     }
     exports.compileSchema = compileSchema$1;
     function resolveRef$1(root, baseId, ref) {
-      var _a$2;
+      var _a$4;
       ref = (0, resolve_1$5.resolveUrl)(this.opts.uriResolver, baseId, ref);
       const schOrFunc = root.refs[ref];
       if (schOrFunc) return schOrFunc;
       let _sch = resolve$2.call(this, root, ref);
       if (_sch === void 0) {
-        const schema = (_a$2 = root.localRefs) === null || _a$2 === void 0 ? void 0 : _a$2[ref];
+        const schema$1 = (_a$4 = root.localRefs) === null || _a$4 === void 0 ? void 0 : _a$4[ref];
         const { schemaId } = this.opts;
-        if (schema)
+        if (schema$1)
           _sch = new SchemaEnv$1({
-            schema,
+            schema: schema$1,
             schemaId,
             root,
             baseId,
@@ -6790,12 +9441,12 @@ var require_compile$1 = __commonJS({
       if (typeof (schOrRef === null || schOrRef === void 0 ? void 0 : schOrRef.schema) !== 'object') return;
       if (!schOrRef.validate) compileSchema$1.call(this, schOrRef);
       if (id === (0, resolve_1$5.normalizeId)(ref)) {
-        const { schema } = schOrRef;
+        const { schema: schema$1 } = schOrRef;
         const { schemaId } = this.opts;
-        const schId = schema[schemaId];
+        const schId = schema$1[schemaId];
         if (schId) baseId = (0, resolve_1$5.resolveUrl)(this.opts.uriResolver, baseId, schId);
         return new SchemaEnv$1({
-          schema,
+          schema: schema$1,
           schemaId,
           root,
           baseId,
@@ -6805,28 +9456,28 @@ var require_compile$1 = __commonJS({
     }
     exports.resolveSchema = resolveSchema$1;
     const PREVENT_SCOPE_CHANGE$1 = new Set(['properties', 'patternProperties', 'enum', 'dependencies', 'definitions']);
-    function getJsonPointer$1(parsedRef, { baseId, schema, root }) {
-      var _a$2;
-      if (((_a$2 = parsedRef.fragment) === null || _a$2 === void 0 ? void 0 : _a$2[0]) !== '/') return;
+    function getJsonPointer$1(parsedRef, { baseId, schema: schema$1, root }) {
+      var _a$4;
+      if (((_a$4 = parsedRef.fragment) === null || _a$4 === void 0 ? void 0 : _a$4[0]) !== '/') return;
       for (const part of parsedRef.fragment.slice(1).split('/')) {
-        if (typeof schema === 'boolean') return;
-        const partSchema = schema[(0, util_1$52.unescapeFragment)(part)];
+        if (typeof schema$1 === 'boolean') return;
+        const partSchema = schema$1[(0, util_1$56.unescapeFragment)(part)];
         if (partSchema === void 0) return;
-        schema = partSchema;
-        const schId = typeof schema === 'object' && schema[this.opts.schemaId];
+        schema$1 = partSchema;
+        const schId = typeof schema$1 === 'object' && schema$1[this.opts.schemaId];
         if (!PREVENT_SCOPE_CHANGE$1.has(part) && schId)
           baseId = (0, resolve_1$5.resolveUrl)(this.opts.uriResolver, baseId, schId);
       }
       let env;
-      if (typeof schema != 'boolean' && schema.$ref && !(0, util_1$52.schemaHasRulesButRef)(schema, this.RULES)) {
-        const $ref = (0, resolve_1$5.resolveUrl)(this.opts.uriResolver, baseId, schema.$ref);
+      if (typeof schema$1 != 'boolean' && schema$1.$ref && !(0, util_1$56.schemaHasRulesButRef)(schema$1, this.RULES)) {
+        const $ref = (0, resolve_1$5.resolveUrl)(this.opts.uriResolver, baseId, schema$1.$ref);
         env = resolveSchema$1.call(this, root, $ref);
       }
       const { schemaId } = this.opts;
       env =
         env ||
         new SchemaEnv$1({
-          schema,
+          schema: schema$1,
           schemaId,
           root,
           baseId,
@@ -7488,7 +10139,7 @@ var require_uri$1 = __commonJS({
 
 //#endregion
 //#region ../packages/vovk-ajv/node_modules/ajv/dist/core.js
-var require_core$3 = __commonJS({
+var require_core$4 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/core.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.CodeGen =
@@ -7499,58 +10150,58 @@ var require_core$3 = __commonJS({
       exports._ =
       exports.KeywordCxt =
         void 0;
-    var validate_1$7 = require_validate$1();
+    var validate_1$8 = require_validate$1();
     Object.defineProperty(exports, 'KeywordCxt', {
       enumerable: true,
       get: function () {
-        return validate_1$7.KeywordCxt;
+        return validate_1$8.KeywordCxt;
       },
     });
-    var codegen_1$63 = require_codegen$1();
+    var codegen_1$68 = require_codegen$1();
     Object.defineProperty(exports, '_', {
       enumerable: true,
       get: function () {
-        return codegen_1$63._;
+        return codegen_1$68._;
       },
     });
     Object.defineProperty(exports, 'str', {
       enumerable: true,
       get: function () {
-        return codegen_1$63.str;
+        return codegen_1$68.str;
       },
     });
     Object.defineProperty(exports, 'stringify', {
       enumerable: true,
       get: function () {
-        return codegen_1$63.stringify;
+        return codegen_1$68.stringify;
       },
     });
     Object.defineProperty(exports, 'nil', {
       enumerable: true,
       get: function () {
-        return codegen_1$63.nil;
+        return codegen_1$68.nil;
       },
     });
     Object.defineProperty(exports, 'Name', {
       enumerable: true,
       get: function () {
-        return codegen_1$63.Name;
+        return codegen_1$68.Name;
       },
     });
     Object.defineProperty(exports, 'CodeGen', {
       enumerable: true,
       get: function () {
-        return codegen_1$63.CodeGen;
+        return codegen_1$68.CodeGen;
       },
     });
-    const validation_error_1$4 = require_validation_error$1();
-    const ref_error_1$7 = require_ref_error$1();
+    const validation_error_1$5 = require_validation_error$1();
+    const ref_error_1$8 = require_ref_error$1();
     const rules_1$2 = require_rules$1();
-    const compile_1$5 = require_compile$1();
+    const compile_1$6 = require_compile$1();
     const codegen_2$1 = require_codegen$1();
     const resolve_1$4 = require_resolve$1();
     const dataType_1$4 = require_dataType$1();
-    const util_1$51 = require_util$1();
+    const util_1$55 = require_util$1();
     const $dataRefSchema$1 = require_data$1();
     const uri_1$1 = require_uri$1();
     const defaultRegExp$1 = (str$2, flags) => new RegExp(str$2, flags);
@@ -7595,9 +10246,9 @@ var require_core$3 = __commonJS({
     };
     const MAX_EXPRESSION$1 = 200;
     function requiredOptions$1(o) {
-      var _a$2, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
+      var _a$4, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
       const s = o.strict;
-      const _optz = (_a$2 = o.code) === null || _a$2 === void 0 ? void 0 : _a$2.optimize;
+      const _optz = (_a$4 = o.code) === null || _a$4 === void 0 ? void 0 : _a$4.optimize;
       const optimize$2 = _optz === true || _optz === void 0 ? 1 : _optz || 0;
       const regExp =
         (_c = (_b = o.code) === null || _b === void 0 ? void 0 : _b.regExp) !== null && _c !== void 0
@@ -7644,9 +10295,9 @@ var require_core$3 = __commonJS({
         this.schemas = {};
         this.refs = {};
         this.formats = {};
-        this._compilations = new Set();
+        this._compilations = /* @__PURE__ */ new Set();
         this._loading = {};
-        this._cache = new Map();
+        this._cache = /* @__PURE__ */ new Map();
         opts = this.opts = {
           ...opts,
           ...requiredOptions$1(opts),
@@ -7700,14 +10351,14 @@ var require_core$3 = __commonJS({
         if (!('$async' in v)) this.errors = v.errors;
         return valid;
       }
-      compile(schema, _meta) {
-        const sch = this._addSchema(schema, _meta);
+      compile(schema$1, _meta) {
+        const sch = this._addSchema(schema$1, _meta);
         return sch.validate || this._compileSchemaEnv(sch);
       }
-      compileAsync(schema, meta) {
+      compileAsync(schema$1, meta) {
         if (typeof this.opts.loadSchema != 'function') throw new Error('options.loadSchema should be a function');
         const { loadSchema } = this.opts;
-        return runCompileAsync.call(this, schema, meta);
+        return runCompileAsync.call(this, schema$1, meta);
         async function runCompileAsync(_schema, _meta) {
           await loadMetaSchema.call(this, _schema.$schema);
           const sch = this._addSchema(_schema, _meta);
@@ -7720,7 +10371,7 @@ var require_core$3 = __commonJS({
           try {
             return this._compileSchemaEnv(sch);
           } catch (e) {
-            if (!(e instanceof ref_error_1$7.default)) throw e;
+            if (!(e instanceof ref_error_1$8.default)) throw e;
             checkLoaded.call(this, e);
             await loadMissingSchema.call(this, e.missingSchema);
             return _compileAsync.call(this, sch);
@@ -7744,38 +10395,38 @@ var require_core$3 = __commonJS({
           }
         }
       }
-      addSchema(schema, key, _meta, _validateSchema = this.opts.validateSchema) {
-        if (Array.isArray(schema)) {
-          for (const sch of schema) this.addSchema(sch, void 0, _meta, _validateSchema);
+      addSchema(schema$1, key, _meta, _validateSchema = this.opts.validateSchema) {
+        if (Array.isArray(schema$1)) {
+          for (const sch of schema$1) this.addSchema(sch, void 0, _meta, _validateSchema);
           return this;
         }
         let id;
-        if (typeof schema === 'object') {
+        if (typeof schema$1 === 'object') {
           const { schemaId } = this.opts;
-          id = schema[schemaId];
+          id = schema$1[schemaId];
           if (id !== void 0 && typeof id != 'string') throw new Error(`schema ${schemaId} must be string`);
         }
         key = (0, resolve_1$4.normalizeId)(key || id);
         this._checkUnique(key);
-        this.schemas[key] = this._addSchema(schema, _meta, key, _validateSchema, true);
+        this.schemas[key] = this._addSchema(schema$1, _meta, key, _validateSchema, true);
         return this;
       }
-      addMetaSchema(schema, key, _validateSchema = this.opts.validateSchema) {
-        this.addSchema(schema, key, true, _validateSchema);
+      addMetaSchema(schema$1, key, _validateSchema = this.opts.validateSchema) {
+        this.addSchema(schema$1, key, true, _validateSchema);
         return this;
       }
-      validateSchema(schema, throwOrLogError) {
-        if (typeof schema == 'boolean') return true;
-        let $schema$3;
-        $schema$3 = schema.$schema;
-        if ($schema$3 !== void 0 && typeof $schema$3 != 'string') throw new Error('$schema must be a string');
-        $schema$3 = $schema$3 || this.opts.defaultMeta || this.defaultMeta();
-        if (!$schema$3) {
+      validateSchema(schema$1, throwOrLogError) {
+        if (typeof schema$1 == 'boolean') return true;
+        let $schema$2;
+        $schema$2 = schema$1.$schema;
+        if ($schema$2 !== void 0 && typeof $schema$2 != 'string') throw new Error('$schema must be a string');
+        $schema$2 = $schema$2 || this.opts.defaultMeta || this.defaultMeta();
+        if (!$schema$2) {
           this.logger.warn('meta-schema not available');
           this.errors = null;
           return true;
         }
-        const valid = this.validate($schema$3, schema);
+        const valid = this.validate($schema$2, schema$1);
         if (!valid && throwOrLogError) {
           const message = 'schema is invalid: ' + this.errorsText();
           if (this.opts.validateSchema === 'log') this.logger.error(message);
@@ -7788,11 +10439,11 @@ var require_core$3 = __commonJS({
         while (typeof (sch = getSchEnv$1.call(this, keyRef)) == 'string') keyRef = sch;
         if (sch === void 0) {
           const { schemaId } = this.opts;
-          const root = new compile_1$5.SchemaEnv({
+          const root = new compile_1$6.SchemaEnv({
             schema: {},
             schemaId,
           });
-          sch = compile_1$5.resolveSchema.call(this, root, keyRef);
+          sch = compile_1$6.resolveSchema.call(this, root, keyRef);
           if (!sch) return;
           this.refs[keyRef] = sch;
         }
@@ -7833,35 +10484,35 @@ var require_core$3 = __commonJS({
         }
       }
       addVocabulary(definitions) {
-        for (const def$60 of definitions) this.addKeyword(def$60);
+        for (const def$69 of definitions) this.addKeyword(def$69);
         return this;
       }
-      addKeyword(kwdOrDef, def$60) {
+      addKeyword(kwdOrDef, def$69) {
         let keyword$1;
         if (typeof kwdOrDef == 'string') {
           keyword$1 = kwdOrDef;
-          if (typeof def$60 == 'object') {
+          if (typeof def$69 == 'object') {
             this.logger.warn('these parameters are deprecated, see docs for addKeyword');
-            def$60.keyword = keyword$1;
+            def$69.keyword = keyword$1;
           }
-        } else if (typeof kwdOrDef == 'object' && def$60 === void 0) {
-          def$60 = kwdOrDef;
-          keyword$1 = def$60.keyword;
+        } else if (typeof kwdOrDef == 'object' && def$69 === void 0) {
+          def$69 = kwdOrDef;
+          keyword$1 = def$69.keyword;
           if (Array.isArray(keyword$1) && !keyword$1.length)
             throw new Error('addKeywords: keyword must be string or non-empty array');
         } else throw new Error('invalid addKeywords parameters');
-        checkKeyword$1.call(this, keyword$1, def$60);
-        if (!def$60) {
-          (0, util_1$51.eachItem)(keyword$1, (kwd) => addRule$1.call(this, kwd));
+        checkKeyword$1.call(this, keyword$1, def$69);
+        if (!def$69) {
+          (0, util_1$55.eachItem)(keyword$1, (kwd) => addRule$1.call(this, kwd));
           return this;
         }
-        keywordMetaschema$1.call(this, def$60);
+        keywordMetaschema$1.call(this, def$69);
         const definition = {
-          ...def$60,
-          type: (0, dataType_1$4.getJSONTypes)(def$60.type),
-          schemaType: (0, dataType_1$4.getJSONTypes)(def$60.schemaType),
+          ...def$69,
+          type: (0, dataType_1$4.getJSONTypes)(def$69.type),
+          schemaType: (0, dataType_1$4.getJSONTypes)(def$69.schemaType),
         };
-        (0, util_1$51.eachItem)(
+        (0, util_1$55.eachItem)(
           keyword$1,
           definition.type.length === 0
             ? (k) => addRule$1.call(this, k, definition)
@@ -7883,9 +10534,9 @@ var require_core$3 = __commonJS({
         }
         return this;
       }
-      addFormat(name, format$2) {
-        if (typeof format$2 == 'string') format$2 = new RegExp(format$2);
-        this.formats[name] = format$2;
+      addFormat(name, format$3) {
+        if (typeof format$3 == 'string') format$3 = new RegExp(format$3);
+        this.formats[name] = format$3;
         return this;
       }
       errorsText(errors = this.errors, { separator = ', ', dataVar = 'data' } = {}) {
@@ -7894,22 +10545,22 @@ var require_core$3 = __commonJS({
           .map((e) => `${dataVar}${e.instancePath} ${e.message}`)
           .reduce((text, msg) => text + separator + msg);
       }
-      $dataMetaSchema(metaSchema, keywordsJsonPointers) {
+      $dataMetaSchema(metaSchema$1, keywordsJsonPointers) {
         const rules = this.RULES.all;
-        metaSchema = JSON.parse(JSON.stringify(metaSchema));
+        metaSchema$1 = JSON.parse(JSON.stringify(metaSchema$1));
         for (const jsonPointer of keywordsJsonPointers) {
           const segments$1 = jsonPointer.split('/').slice(1);
-          let keywords = metaSchema;
+          let keywords = metaSchema$1;
           for (const seg of segments$1) keywords = keywords[seg];
           for (const key in rules) {
             const rule = rules[key];
             if (typeof rule != 'object') continue;
             const { $data } = rule.definition;
-            const schema = keywords[key];
-            if ($data && schema) keywords[key] = schemaOrData$1(schema);
+            const schema$1 = keywords[key];
+            if ($data && schema$1) keywords[key] = schemaOrData$1(schema$1);
           }
         }
-        return metaSchema;
+        return metaSchema$1;
       }
       _removeAllSchemas(schemas, regex$1) {
         for (const keyRef in schemas) {
@@ -7923,18 +10574,24 @@ var require_core$3 = __commonJS({
           }
         }
       }
-      _addSchema(schema, meta, baseId, validateSchema = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
+      _addSchema(
+        schema$1,
+        meta,
+        baseId,
+        validateSchema = this.opts.validateSchema,
+        addSchema = this.opts.addUsedSchema
+      ) {
         let id;
         const { schemaId } = this.opts;
-        if (typeof schema == 'object') id = schema[schemaId];
+        if (typeof schema$1 == 'object') id = schema$1[schemaId];
         else if (this.opts.jtd) throw new Error('schema must be object');
-        else if (typeof schema != 'boolean') throw new Error('schema must be object or boolean');
-        let sch = this._cache.get(schema);
+        else if (typeof schema$1 != 'boolean') throw new Error('schema must be object or boolean');
+        let sch = this._cache.get(schema$1);
         if (sch !== void 0) return sch;
         baseId = (0, resolve_1$4.normalizeId)(id || baseId);
-        const localRefs = resolve_1$4.getSchemaRefs.call(this, schema, baseId);
-        sch = new compile_1$5.SchemaEnv({
-          schema,
+        const localRefs = resolve_1$4.getSchemaRefs.call(this, schema$1, baseId);
+        sch = new compile_1$6.SchemaEnv({
+          schema: schema$1,
           schemaId,
           meta,
           baseId,
@@ -7945,7 +10602,7 @@ var require_core$3 = __commonJS({
           if (baseId) this._checkUnique(baseId);
           this.refs[baseId] = sch;
         }
-        if (validateSchema) this.validateSchema(schema, true);
+        if (validateSchema) this.validateSchema(schema$1, true);
         return sch;
       }
       _checkUnique(id) {
@@ -7953,7 +10610,7 @@ var require_core$3 = __commonJS({
       }
       _compileSchemaEnv(sch) {
         if (sch.meta) this._compileMetaSchema(sch);
-        else compile_1$5.compileSchema.call(this, sch);
+        else compile_1$6.compileSchema.call(this, sch);
         /* istanbul ignore if */
         if (!sch.validate) throw new Error('ajv implementation error');
         return sch.validate;
@@ -7962,14 +10619,14 @@ var require_core$3 = __commonJS({
         const currentOpts = this.opts;
         this.opts = this._metaOpts;
         try {
-          compile_1$5.compileSchema.call(this, sch);
+          compile_1$6.compileSchema.call(this, sch);
         } finally {
           this.opts = currentOpts;
         }
       }
     };
-    Ajv$3.ValidationError = validation_error_1$4.default;
-    Ajv$3.MissingRefError = ref_error_1$7.default;
+    Ajv$3.ValidationError = validation_error_1$5.default;
+    Ajv$3.MissingRefError = ref_error_1$8.default;
     exports.default = Ajv$3;
     function checkOptions$1(checkOpts, options, msg, log = 'error') {
       for (const key in checkOpts) {
@@ -7989,8 +10646,8 @@ var require_core$3 = __commonJS({
     }
     function addInitialFormats$1() {
       for (const name in this.opts.formats) {
-        const format$2 = this.opts.formats[name];
-        if (format$2) this.addFormat(name, format$2);
+        const format$3 = this.opts.formats[name];
+        if (format$3) this.addFormat(name, format$3);
       }
     }
     function addInitialKeywords$1(defs) {
@@ -8000,9 +10657,9 @@ var require_core$3 = __commonJS({
       }
       this.logger.warn('keywords option as map is deprecated, pass array');
       for (const keyword$1 in defs) {
-        const def$60 = defs[keyword$1];
-        if (!def$60.keyword) def$60.keyword = keyword$1;
-        this.addKeyword(def$60);
+        const def$69 = defs[keyword$1];
+        if (!def$69.keyword) def$69.keyword = keyword$1;
+        this.addKeyword(def$69);
       }
     }
     function getMetaSchemaOptions$1() {
@@ -8022,18 +10679,18 @@ var require_core$3 = __commonJS({
       throw new Error('logger must implement log, warn and error methods');
     }
     const KEYWORD_NAME$1 = /^[a-z_$][a-z0-9_$:-]*$/i;
-    function checkKeyword$1(keyword$1, def$60) {
+    function checkKeyword$1(keyword$1, def$69) {
       const { RULES } = this;
-      (0, util_1$51.eachItem)(keyword$1, (kwd) => {
+      (0, util_1$55.eachItem)(keyword$1, (kwd) => {
         if (RULES.keywords[kwd]) throw new Error(`Keyword ${kwd} is already defined`);
         if (!KEYWORD_NAME$1.test(kwd)) throw new Error(`Keyword ${kwd} has invalid name`);
       });
-      if (!def$60) return;
-      if (def$60.$data && !('code' in def$60 || 'validate' in def$60))
+      if (!def$69) return;
+      if (def$69.$data && !('code' in def$69 || 'validate' in def$69))
         throw new Error('$data keyword must have "code" or "validate" function');
     }
     function addRule$1(keyword$1, definition, dataType) {
-      var _a$2;
+      var _a$4;
       const post = definition === null || definition === void 0 ? void 0 : definition.post;
       if (dataType && post) throw new Error('keyword with "post" flag cannot have "type"');
       const { RULES } = this;
@@ -8058,7 +10715,7 @@ var require_core$3 = __commonJS({
       if (definition.before) addBeforeRule$1.call(this, ruleGroup, rule, definition.before);
       else ruleGroup.rules.push(rule);
       RULES.all[keyword$1] = rule;
-      (_a$2 = definition.implements) === null || _a$2 === void 0 || _a$2.forEach((kwd) => this.addKeyword(kwd));
+      (_a$4 = definition.implements) === null || _a$4 === void 0 || _a$4.forEach((kwd) => this.addKeyword(kwd));
     }
     function addBeforeRule$1(ruleGroup, rule, before) {
       const i = ruleGroup.rules.findIndex((_rule) => _rule.keyword === before);
@@ -8068,15 +10725,15 @@ var require_core$3 = __commonJS({
         this.logger.warn(`rule ${before} is not defined`);
       }
     }
-    function keywordMetaschema$1(def$60) {
-      let { metaSchema } = def$60;
-      if (metaSchema === void 0) return;
-      if (def$60.$data && this.opts.$data) metaSchema = schemaOrData$1(metaSchema);
-      def$60.validateSchema = this.compile(metaSchema, true);
+    function keywordMetaschema$1(def$69) {
+      let { metaSchema: metaSchema$1 } = def$69;
+      if (metaSchema$1 === void 0) return;
+      if (def$69.$data && this.opts.$data) metaSchema$1 = schemaOrData$1(metaSchema$1);
+      def$69.validateSchema = this.compile(metaSchema$1, true);
     }
     const $dataRef$1 = { $ref: 'https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#' };
-    function schemaOrData$1(schema) {
-      return { anyOf: [schema, $dataRef$1] };
+    function schemaOrData$1(schema$1) {
+      return { anyOf: [schema$1, $dataRef$1] };
     }
   },
 });
@@ -8086,13 +10743,13 @@ var require_core$3 = __commonJS({
 var require_id$2 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/core/id.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const def$59 = {
+    const def$68 = {
       keyword: 'id',
       code() {
         throw new Error('NOT SUPPORTED: keyword "id", use "$id" for schema ID');
       },
     };
-    exports.default = def$59;
+    exports.default = def$68;
   },
 });
 
@@ -8102,28 +10759,28 @@ var require_ref$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/core/ref.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.callRef = exports.getValidate = void 0;
-    const ref_error_1$6 = require_ref_error$1();
+    const ref_error_1$7 = require_ref_error$1();
     const code_1$24 = require_code$2();
-    const codegen_1$62 = require_codegen$1();
-    const names_1$10 = require_names$1();
-    const compile_1$4 = require_compile$1();
-    const util_1$50 = require_util$1();
-    const def$58 = {
+    const codegen_1$67 = require_codegen$1();
+    const names_1$13 = require_names$1();
+    const compile_1$5 = require_compile$1();
+    const util_1$54 = require_util$1();
+    const def$67 = {
       keyword: '$ref',
       schemaType: 'string',
       code(cxt) {
         const { gen, schema: $ref, it } = cxt;
-        const { baseId, schemaEnv: env, validateName, opts, self } = it;
+        const { baseId, schemaEnv: env, validateName, opts, self: self$1 } = it;
         const { root } = env;
         if (($ref === '#' || $ref === '#/') && baseId === root.baseId) return callRootRef();
-        const schOrEnv = compile_1$4.resolveRef.call(self, root, baseId, $ref);
-        if (schOrEnv === void 0) throw new ref_error_1$6.default(it.opts.uriResolver, baseId, $ref);
-        if (schOrEnv instanceof compile_1$4.SchemaEnv) return callValidate(schOrEnv);
+        const schOrEnv = compile_1$5.resolveRef.call(self$1, root, baseId, $ref);
+        if (schOrEnv === void 0) throw new ref_error_1$7.default(it.opts.uriResolver, baseId, $ref);
+        if (schOrEnv instanceof compile_1$5.SchemaEnv) return callValidate(schOrEnv);
         return inlineRefSchema(schOrEnv);
         function callRootRef() {
           if (env === root) return callRef$1(cxt, validateName, env, env.$async);
           const rootName = gen.scopeValue('root', { ref: root });
-          return callRef$1(cxt, (0, codegen_1$62._)`${rootName}.validate`, root, root.$async);
+          return callRef$1(cxt, (0, codegen_1$67._)`${rootName}.validate`, root, root.$async);
         }
         function callValidate(sch) {
           const v = getValidate$1(cxt, sch);
@@ -8135,7 +10792,7 @@ var require_ref$1 = __commonJS({
             opts.code.source === true
               ? {
                   ref: sch,
-                  code: (0, codegen_1$62.stringify)(sch),
+                  code: (0, codegen_1$67.stringify)(sch),
                 }
               : { ref: sch }
           );
@@ -8144,7 +10801,7 @@ var require_ref$1 = __commonJS({
             {
               schema: sch,
               dataTypes: [],
-              schemaPath: codegen_1$62.nil,
+              schemaPath: codegen_1$67.nil,
               topSchemaRef: schName,
               errSchemaPath: $ref,
             },
@@ -8159,13 +10816,13 @@ var require_ref$1 = __commonJS({
       const { gen } = cxt;
       return sch.validate
         ? gen.scopeValue('validate', { ref: sch.validate })
-        : (0, codegen_1$62._)`${gen.scopeValue('wrapper', { ref: sch })}.validate`;
+        : (0, codegen_1$67._)`${gen.scopeValue('wrapper', { ref: sch })}.validate`;
     }
     exports.getValidate = getValidate$1;
     function callRef$1(cxt, v, sch, $async) {
       const { gen, it } = cxt;
       const { allErrors, schemaEnv: env, opts } = it;
-      const passCxt = opts.passContext ? names_1$10.default.this : codegen_1$62.nil;
+      const passCxt = opts.passContext ? names_1$13.default.this : codegen_1$67.nil;
       if ($async) callAsyncRef();
       else callSyncRef();
       function callAsyncRef() {
@@ -8173,12 +10830,12 @@ var require_ref$1 = __commonJS({
         const valid = gen.let('valid');
         gen.try(
           () => {
-            gen.code((0, codegen_1$62._)`await ${(0, code_1$24.callValidateCode)(cxt, v, passCxt)}`);
+            gen.code((0, codegen_1$67._)`await ${(0, code_1$24.callValidateCode)(cxt, v, passCxt)}`);
             addEvaluatedFrom(v);
             if (!allErrors) gen.assign(valid, true);
           },
           (e) => {
-            gen.if((0, codegen_1$62._)`!(${e} instanceof ${it.ValidationError})`, () => gen.throw(e));
+            gen.if((0, codegen_1$67._)`!(${e} instanceof ${it.ValidationError})`, () => gen.throw(e));
             addErrorsFrom(e);
             if (!allErrors) gen.assign(valid, false);
           }
@@ -8193,52 +10850,52 @@ var require_ref$1 = __commonJS({
         );
       }
       function addErrorsFrom(source) {
-        const errs = (0, codegen_1$62._)`${source}.errors`;
+        const errs = (0, codegen_1$67._)`${source}.errors`;
         gen.assign(
-          names_1$10.default.vErrors,
+          names_1$13.default.vErrors,
           (0,
-          codegen_1$62._)`${names_1$10.default.vErrors} === null ? ${errs} : ${names_1$10.default.vErrors}.concat(${errs})`
+          codegen_1$67._)`${names_1$13.default.vErrors} === null ? ${errs} : ${names_1$13.default.vErrors}.concat(${errs})`
         );
-        gen.assign(names_1$10.default.errors, (0, codegen_1$62._)`${names_1$10.default.vErrors}.length`);
+        gen.assign(names_1$13.default.errors, (0, codegen_1$67._)`${names_1$13.default.vErrors}.length`);
       }
       function addEvaluatedFrom(source) {
-        var _a$2;
+        var _a$4;
         if (!it.opts.unevaluated) return;
         const schEvaluated =
-          (_a$2 = sch === null || sch === void 0 ? void 0 : sch.validate) === null || _a$2 === void 0
+          (_a$4 = sch === null || sch === void 0 ? void 0 : sch.validate) === null || _a$4 === void 0
             ? void 0
-            : _a$2.evaluated;
+            : _a$4.evaluated;
         if (it.props !== true)
           if (schEvaluated && !schEvaluated.dynamicProps) {
             if (schEvaluated.props !== void 0)
-              it.props = util_1$50.mergeEvaluated.props(gen, schEvaluated.props, it.props);
+              it.props = util_1$54.mergeEvaluated.props(gen, schEvaluated.props, it.props);
           } else {
-            const props = gen.var('props', (0, codegen_1$62._)`${source}.evaluated.props`);
-            it.props = util_1$50.mergeEvaluated.props(gen, props, it.props, codegen_1$62.Name);
+            const props = gen.var('props', (0, codegen_1$67._)`${source}.evaluated.props`);
+            it.props = util_1$54.mergeEvaluated.props(gen, props, it.props, codegen_1$67.Name);
           }
         if (it.items !== true)
           if (schEvaluated && !schEvaluated.dynamicItems) {
             if (schEvaluated.items !== void 0)
-              it.items = util_1$50.mergeEvaluated.items(gen, schEvaluated.items, it.items);
+              it.items = util_1$54.mergeEvaluated.items(gen, schEvaluated.items, it.items);
           } else {
-            const items = gen.var('items', (0, codegen_1$62._)`${source}.evaluated.items`);
-            it.items = util_1$50.mergeEvaluated.items(gen, items, it.items, codegen_1$62.Name);
+            const items = gen.var('items', (0, codegen_1$67._)`${source}.evaluated.items`);
+            it.items = util_1$54.mergeEvaluated.items(gen, items, it.items, codegen_1$67.Name);
           }
       }
     }
     exports.callRef = callRef$1;
-    exports.default = def$58;
+    exports.default = def$67;
   },
 });
 
 //#endregion
 //#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/core/index.js
-var require_core$2 = __commonJS({
+var require_core$3 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/core/index.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const id_1$1 = require_id$2();
-    const ref_1$1 = require_ref$1();
-    const core$1 = [
+    const ref_1$3 = require_ref$1();
+    const core$2 = [
       '$schema',
       '$id',
       '$defs',
@@ -8246,9 +10903,9 @@ var require_core$2 = __commonJS({
       { keyword: '$comment' },
       'definitions',
       id_1$1.default,
-      ref_1$1.default,
+      ref_1$3.default,
     ];
-    exports.default = core$1;
+    exports.default = core$2;
   },
 });
 
@@ -8257,8 +10914,8 @@ var require_core$2 = __commonJS({
 var require_limitNumber$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/limitNumber.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$61 = require_codegen$1();
-    const ops$2 = codegen_1$61.operators;
+    const codegen_1$66 = require_codegen$1();
+    const ops$2 = codegen_1$66.operators;
     const KWDs$2 = {
       maximum: {
         okStr: '<=',
@@ -8281,24 +10938,24 @@ var require_limitNumber$1 = __commonJS({
         fail: ops$2.LTE,
       },
     };
-    const error$38 = {
+    const error$40 = {
       message: ({ keyword: keyword$1, schemaCode }) =>
-        (0, codegen_1$61.str)`must be ${KWDs$2[keyword$1].okStr} ${schemaCode}`,
+        (0, codegen_1$66.str)`must be ${KWDs$2[keyword$1].okStr} ${schemaCode}`,
       params: ({ keyword: keyword$1, schemaCode }) =>
-        (0, codegen_1$61._)`{comparison: ${KWDs$2[keyword$1].okStr}, limit: ${schemaCode}}`,
+        (0, codegen_1$66._)`{comparison: ${KWDs$2[keyword$1].okStr}, limit: ${schemaCode}}`,
     };
-    const def$57 = {
+    const def$66 = {
       keyword: Object.keys(KWDs$2),
       type: 'number',
       schemaType: 'number',
       $data: true,
-      error: error$38,
+      error: error$40,
       code(cxt) {
         const { keyword: keyword$1, data, schemaCode } = cxt;
-        cxt.fail$data((0, codegen_1$61._)`${data} ${KWDs$2[keyword$1].fail} ${schemaCode} || isNaN(${data})`);
+        cxt.fail$data((0, codegen_1$66._)`${data} ${KWDs$2[keyword$1].fail} ${schemaCode} || isNaN(${data})`);
       },
     };
-    exports.default = def$57;
+    exports.default = def$66;
   },
 });
 
@@ -8307,28 +10964,28 @@ var require_limitNumber$1 = __commonJS({
 var require_multipleOf$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/multipleOf.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$60 = require_codegen$1();
-    const error$37 = {
-      message: ({ schemaCode }) => (0, codegen_1$60.str)`must be multiple of ${schemaCode}`,
-      params: ({ schemaCode }) => (0, codegen_1$60._)`{multipleOf: ${schemaCode}}`,
+    const codegen_1$65 = require_codegen$1();
+    const error$39 = {
+      message: ({ schemaCode }) => (0, codegen_1$65.str)`must be multiple of ${schemaCode}`,
+      params: ({ schemaCode }) => (0, codegen_1$65._)`{multipleOf: ${schemaCode}}`,
     };
-    const def$56 = {
+    const def$65 = {
       keyword: 'multipleOf',
       type: 'number',
       schemaType: 'number',
       $data: true,
-      error: error$37,
+      error: error$39,
       code(cxt) {
         const { gen, data, schemaCode, it } = cxt;
         const prec = it.opts.multipleOfPrecision;
         const res = gen.let('res');
         const invalid = prec
-          ? (0, codegen_1$60._)`Math.abs(Math.round(${res}) - ${res}) > 1e-${prec}`
-          : (0, codegen_1$60._)`${res} !== parseInt(${res})`;
-        cxt.fail$data((0, codegen_1$60._)`(${schemaCode} === 0 || (${res} = ${data}/${schemaCode}, ${invalid}))`);
+          ? (0, codegen_1$65._)`Math.abs(Math.round(${res}) - ${res}) > 1e-${prec}`
+          : (0, codegen_1$65._)`${res} !== parseInt(${res})`;
+        cxt.fail$data((0, codegen_1$65._)`(${schemaCode} === 0 || (${res} = ${data}/${schemaCode}, ${invalid}))`);
       },
     };
-    exports.default = def$56;
+    exports.default = def$65;
   },
 });
 
@@ -8362,33 +11019,33 @@ var require_ucs2length$1 = __commonJS({
 var require_limitLength$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/limitLength.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$59 = require_codegen$1();
-    const util_1$49 = require_util$1();
+    const codegen_1$64 = require_codegen$1();
+    const util_1$53 = require_util$1();
     const ucs2length_1$1 = require_ucs2length$1();
-    const error$36 = {
+    const error$38 = {
       message({ keyword: keyword$1, schemaCode }) {
         const comp = keyword$1 === 'maxLength' ? 'more' : 'fewer';
-        return (0, codegen_1$59.str)`must NOT have ${comp} than ${schemaCode} characters`;
+        return (0, codegen_1$64.str)`must NOT have ${comp} than ${schemaCode} characters`;
       },
-      params: ({ schemaCode }) => (0, codegen_1$59._)`{limit: ${schemaCode}}`,
+      params: ({ schemaCode }) => (0, codegen_1$64._)`{limit: ${schemaCode}}`,
     };
-    const def$55 = {
+    const def$64 = {
       keyword: ['maxLength', 'minLength'],
       type: 'string',
       schemaType: 'number',
       $data: true,
-      error: error$36,
+      error: error$38,
       code(cxt) {
         const { keyword: keyword$1, data, schemaCode, it } = cxt;
-        const op = keyword$1 === 'maxLength' ? codegen_1$59.operators.GT : codegen_1$59.operators.LT;
+        const op = keyword$1 === 'maxLength' ? codegen_1$64.operators.GT : codegen_1$64.operators.LT;
         const len =
           it.opts.unicode === false
-            ? (0, codegen_1$59._)`${data}.length`
-            : (0, codegen_1$59._)`${(0, util_1$49.useFunc)(cxt.gen, ucs2length_1$1.default)}(${data})`;
-        cxt.fail$data((0, codegen_1$59._)`${len} ${op} ${schemaCode}`);
+            ? (0, codegen_1$64._)`${data}.length`
+            : (0, codegen_1$64._)`${(0, util_1$53.useFunc)(cxt.gen, ucs2length_1$1.default)}(${data})`;
+        cxt.fail$data((0, codegen_1$64._)`${len} ${op} ${schemaCode}`);
       },
     };
-    exports.default = def$55;
+    exports.default = def$64;
   },
 });
 
@@ -8398,27 +11055,27 @@ var require_pattern$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/pattern.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const code_1$23 = require_code$2();
-    const codegen_1$58 = require_codegen$1();
-    const error$35 = {
-      message: ({ schemaCode }) => (0, codegen_1$58.str)`must match pattern "${schemaCode}"`,
-      params: ({ schemaCode }) => (0, codegen_1$58._)`{pattern: ${schemaCode}}`,
+    const codegen_1$63 = require_codegen$1();
+    const error$37 = {
+      message: ({ schemaCode }) => (0, codegen_1$63.str)`must match pattern "${schemaCode}"`,
+      params: ({ schemaCode }) => (0, codegen_1$63._)`{pattern: ${schemaCode}}`,
     };
-    const def$54 = {
+    const def$63 = {
       keyword: 'pattern',
       type: 'string',
       schemaType: 'string',
       $data: true,
-      error: error$35,
+      error: error$37,
       code(cxt) {
-        const { data, $data, schema, schemaCode, it } = cxt;
+        const { data, $data, schema: schema$1, schemaCode, it } = cxt;
         const u = it.opts.unicodeRegExp ? 'u' : '';
         const regExp = $data
-          ? (0, codegen_1$58._)`(new RegExp(${schemaCode}, ${u}))`
-          : (0, code_1$23.usePattern)(cxt, schema);
-        cxt.fail$data((0, codegen_1$58._)`!${regExp}.test(${data})`);
+          ? (0, codegen_1$63._)`(new RegExp(${schemaCode}, ${u}))`
+          : (0, code_1$23.usePattern)(cxt, schema$1);
+        cxt.fail$data((0, codegen_1$63._)`!${regExp}.test(${data})`);
       },
     };
-    exports.default = def$54;
+    exports.default = def$63;
   },
 });
 
@@ -8427,27 +11084,27 @@ var require_pattern$1 = __commonJS({
 var require_limitProperties$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/limitProperties.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$57 = require_codegen$1();
-    const error$34 = {
+    const codegen_1$62 = require_codegen$1();
+    const error$36 = {
       message({ keyword: keyword$1, schemaCode }) {
         const comp = keyword$1 === 'maxProperties' ? 'more' : 'fewer';
-        return (0, codegen_1$57.str)`must NOT have ${comp} than ${schemaCode} properties`;
+        return (0, codegen_1$62.str)`must NOT have ${comp} than ${schemaCode} properties`;
       },
-      params: ({ schemaCode }) => (0, codegen_1$57._)`{limit: ${schemaCode}}`,
+      params: ({ schemaCode }) => (0, codegen_1$62._)`{limit: ${schemaCode}}`,
     };
-    const def$53 = {
+    const def$62 = {
       keyword: ['maxProperties', 'minProperties'],
       type: 'object',
       schemaType: 'number',
       $data: true,
-      error: error$34,
+      error: error$36,
       code(cxt) {
         const { keyword: keyword$1, data, schemaCode } = cxt;
-        const op = keyword$1 === 'maxProperties' ? codegen_1$57.operators.GT : codegen_1$57.operators.LT;
-        cxt.fail$data((0, codegen_1$57._)`Object.keys(${data}).length ${op} ${schemaCode}`);
+        const op = keyword$1 === 'maxProperties' ? codegen_1$62.operators.GT : codegen_1$62.operators.LT;
+        cxt.fail$data((0, codegen_1$62._)`Object.keys(${data}).length ${op} ${schemaCode}`);
       },
     };
-    exports.default = def$53;
+    exports.default = def$62;
   },
 });
 
@@ -8457,42 +11114,42 @@ var require_required$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/required.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const code_1$22 = require_code$2();
-    const codegen_1$56 = require_codegen$1();
-    const util_1$48 = require_util$1();
-    const error$33 = {
+    const codegen_1$61 = require_codegen$1();
+    const util_1$52 = require_util$1();
+    const error$35 = {
       message: ({ params: { missingProperty } }) =>
-        (0, codegen_1$56.str)`must have required property '${missingProperty}'`,
-      params: ({ params: { missingProperty } }) => (0, codegen_1$56._)`{missingProperty: ${missingProperty}}`,
+        (0, codegen_1$61.str)`must have required property '${missingProperty}'`,
+      params: ({ params: { missingProperty } }) => (0, codegen_1$61._)`{missingProperty: ${missingProperty}}`,
     };
-    const def$52 = {
+    const def$61 = {
       keyword: 'required',
       type: 'object',
       schemaType: 'array',
       $data: true,
-      error: error$33,
+      error: error$35,
       code(cxt) {
-        const { gen, schema, schemaCode, data, $data, it } = cxt;
+        const { gen, schema: schema$1, schemaCode, data, $data, it } = cxt;
         const { opts } = it;
-        if (!$data && schema.length === 0) return;
-        const useLoop = schema.length >= opts.loopRequired;
+        if (!$data && schema$1.length === 0) return;
+        const useLoop = schema$1.length >= opts.loopRequired;
         if (it.allErrors) allErrorsMode();
         else exitOnErrorMode();
         if (opts.strictRequired) {
           const props = cxt.parentSchema.properties;
           const { definedProperties } = cxt.it;
-          for (const requiredKey of schema)
+          for (const requiredKey of schema$1)
             if (
               (props === null || props === void 0 ? void 0 : props[requiredKey]) === void 0 &&
               !definedProperties.has(requiredKey)
             ) {
               const schemaPath = it.schemaEnv.baseId + it.errSchemaPath;
               const msg = `required property "${requiredKey}" is not defined at "${schemaPath}" (strictRequired)`;
-              (0, util_1$48.checkStrictMode)(it, msg, it.opts.strictRequired);
+              (0, util_1$52.checkStrictMode)(it, msg, it.opts.strictRequired);
             }
         }
         function allErrorsMode() {
-          if (useLoop || $data) cxt.block$data(codegen_1$56.nil, loopAllRequired);
-          else for (const prop of schema) (0, code_1$22.checkReportMissingProp)(cxt, prop);
+          if (useLoop || $data) cxt.block$data(codegen_1$61.nil, loopAllRequired);
+          else for (const prop of schema$1) (0, code_1$22.checkReportMissingProp)(cxt, prop);
         }
         function exitOnErrorMode() {
           const missing = gen.let('missing');
@@ -8501,7 +11158,7 @@ var require_required$1 = __commonJS({
             cxt.block$data(valid, () => loopUntilMissing(missing, valid));
             cxt.ok(valid);
           } else {
-            gen.if((0, code_1$22.checkMissingProp)(cxt, schema, missing));
+            gen.if((0, code_1$22.checkMissingProp)(cxt, schema$1, missing));
             (0, code_1$22.reportMissingProp)(cxt, missing);
             gen.else();
           }
@@ -8519,17 +11176,17 @@ var require_required$1 = __commonJS({
             schemaCode,
             () => {
               gen.assign(valid, (0, code_1$22.propertyInData)(gen, data, missing, opts.ownProperties));
-              gen.if((0, codegen_1$56.not)(valid), () => {
+              gen.if((0, codegen_1$61.not)(valid), () => {
                 cxt.error();
                 gen.break();
               });
             },
-            codegen_1$56.nil
+            codegen_1$61.nil
           );
         }
       },
     };
-    exports.default = def$52;
+    exports.default = def$61;
   },
 });
 
@@ -8538,27 +11195,27 @@ var require_required$1 = __commonJS({
 var require_limitItems$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/limitItems.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$55 = require_codegen$1();
-    const error$32 = {
+    const codegen_1$60 = require_codegen$1();
+    const error$34 = {
       message({ keyword: keyword$1, schemaCode }) {
         const comp = keyword$1 === 'maxItems' ? 'more' : 'fewer';
-        return (0, codegen_1$55.str)`must NOT have ${comp} than ${schemaCode} items`;
+        return (0, codegen_1$60.str)`must NOT have ${comp} than ${schemaCode} items`;
       },
-      params: ({ schemaCode }) => (0, codegen_1$55._)`{limit: ${schemaCode}}`,
+      params: ({ schemaCode }) => (0, codegen_1$60._)`{limit: ${schemaCode}}`,
     };
-    const def$51 = {
+    const def$60 = {
       keyword: ['maxItems', 'minItems'],
       type: 'array',
       schemaType: 'number',
       $data: true,
-      error: error$32,
+      error: error$34,
       code(cxt) {
         const { keyword: keyword$1, data, schemaCode } = cxt;
-        const op = keyword$1 === 'maxItems' ? codegen_1$55.operators.GT : codegen_1$55.operators.LT;
-        cxt.fail$data((0, codegen_1$55._)`${data}.length ${op} ${schemaCode}`);
+        const op = keyword$1 === 'maxItems' ? codegen_1$60.operators.GT : codegen_1$60.operators.LT;
+        cxt.fail$data((0, codegen_1$60._)`${data}.length ${op} ${schemaCode}`);
       },
     };
-    exports.default = def$51;
+    exports.default = def$60;
   },
 });
 
@@ -8579,36 +11236,36 @@ var require_uniqueItems$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/uniqueItems.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const dataType_1$3 = require_dataType$1();
-    const codegen_1$54 = require_codegen$1();
-    const util_1$47 = require_util$1();
+    const codegen_1$59 = require_codegen$1();
+    const util_1$51 = require_util$1();
     const equal_1$5 = require_equal$1();
-    const error$31 = {
+    const error$33 = {
       message: ({ params: { i, j } }) =>
-        (0, codegen_1$54.str)`must NOT have duplicate items (items ## ${j} and ${i} are identical)`,
-      params: ({ params: { i, j } }) => (0, codegen_1$54._)`{i: ${i}, j: ${j}}`,
+        (0, codegen_1$59.str)`must NOT have duplicate items (items ## ${j} and ${i} are identical)`,
+      params: ({ params: { i, j } }) => (0, codegen_1$59._)`{i: ${i}, j: ${j}}`,
     };
-    const def$50 = {
+    const def$59 = {
       keyword: 'uniqueItems',
       type: 'array',
       schemaType: 'boolean',
       $data: true,
-      error: error$31,
+      error: error$33,
       code(cxt) {
-        const { gen, data, $data, schema, parentSchema, schemaCode, it } = cxt;
-        if (!$data && !schema) return;
+        const { gen, data, $data, schema: schema$1, parentSchema, schemaCode, it } = cxt;
+        if (!$data && !schema$1) return;
         const valid = gen.let('valid');
         const itemTypes = parentSchema.items ? (0, dataType_1$3.getSchemaTypes)(parentSchema.items) : [];
-        cxt.block$data(valid, validateUniqueItems, (0, codegen_1$54._)`${schemaCode} === false`);
+        cxt.block$data(valid, validateUniqueItems, (0, codegen_1$59._)`${schemaCode} === false`);
         cxt.ok(valid);
         function validateUniqueItems() {
-          const i = gen.let('i', (0, codegen_1$54._)`${data}.length`);
+          const i = gen.let('i', (0, codegen_1$59._)`${data}.length`);
           const j = gen.let('j');
           cxt.setParams({
             i,
             j,
           });
           gen.assign(valid, true);
-          gen.if((0, codegen_1$54._)`${i} > 1`, () => (canOptimize() ? loopN : loopN2)(i, j));
+          gen.if((0, codegen_1$59._)`${i} > 1`, () => (canOptimize() ? loopN : loopN2)(i, j));
         }
         function canOptimize() {
           return itemTypes.length > 0 && !itemTypes.some((t) => t === 'object' || t === 'array');
@@ -8621,27 +11278,27 @@ var require_uniqueItems$1 = __commonJS({
             it.opts.strictNumbers,
             dataType_1$3.DataType.Wrong
           );
-          const indices = gen.const('indices', (0, codegen_1$54._)`{}`);
-          gen.for((0, codegen_1$54._)`;${i}--;`, () => {
-            gen.let(item, (0, codegen_1$54._)`${data}[${i}]`);
-            gen.if(wrongType, (0, codegen_1$54._)`continue`);
+          const indices = gen.const('indices', (0, codegen_1$59._)`{}`);
+          gen.for((0, codegen_1$59._)`;${i}--;`, () => {
+            gen.let(item, (0, codegen_1$59._)`${data}[${i}]`);
+            gen.if(wrongType, (0, codegen_1$59._)`continue`);
             if (itemTypes.length > 1)
-              gen.if((0, codegen_1$54._)`typeof ${item} == "string"`, (0, codegen_1$54._)`${item} += "_"`);
+              gen.if((0, codegen_1$59._)`typeof ${item} == "string"`, (0, codegen_1$59._)`${item} += "_"`);
             gen
-              .if((0, codegen_1$54._)`typeof ${indices}[${item}] == "number"`, () => {
-                gen.assign(j, (0, codegen_1$54._)`${indices}[${item}]`);
+              .if((0, codegen_1$59._)`typeof ${indices}[${item}] == "number"`, () => {
+                gen.assign(j, (0, codegen_1$59._)`${indices}[${item}]`);
                 cxt.error();
                 gen.assign(valid, false).break();
               })
-              .code((0, codegen_1$54._)`${indices}[${item}] = ${i}`);
+              .code((0, codegen_1$59._)`${indices}[${item}] = ${i}`);
           });
         }
         function loopN2(i, j) {
-          const eql = (0, util_1$47.useFunc)(gen, equal_1$5.default);
+          const eql = (0, util_1$51.useFunc)(gen, equal_1$5.default);
           const outer = gen.name('outer');
-          gen.label(outer).for((0, codegen_1$54._)`;${i}--;`, () =>
-            gen.for((0, codegen_1$54._)`${j} = ${i}; ${j}--;`, () =>
-              gen.if((0, codegen_1$54._)`${eql}(${data}[${i}], ${data}[${j}])`, () => {
+          gen.label(outer).for((0, codegen_1$59._)`;${i}--;`, () =>
+            gen.for((0, codegen_1$59._)`${j} = ${i}; ${j}--;`, () =>
+              gen.if((0, codegen_1$59._)`${eql}(${data}[${i}], ${data}[${j}])`, () => {
                 cxt.error();
                 gen.assign(valid, false).break(outer);
               })
@@ -8650,7 +11307,7 @@ var require_uniqueItems$1 = __commonJS({
         }
       },
     };
-    exports.default = def$50;
+    exports.default = def$59;
   },
 });
 
@@ -8659,27 +11316,27 @@ var require_uniqueItems$1 = __commonJS({
 var require_const$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/const.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$53 = require_codegen$1();
-    const util_1$46 = require_util$1();
+    const codegen_1$58 = require_codegen$1();
+    const util_1$50 = require_util$1();
     const equal_1$4 = require_equal$1();
-    const error$30 = {
+    const error$32 = {
       message: 'must be equal to constant',
-      params: ({ schemaCode }) => (0, codegen_1$53._)`{allowedValue: ${schemaCode}}`,
+      params: ({ schemaCode }) => (0, codegen_1$58._)`{allowedValue: ${schemaCode}}`,
     };
-    const def$49 = {
+    const def$58 = {
       keyword: 'const',
       $data: true,
-      error: error$30,
+      error: error$32,
       code(cxt) {
-        const { gen, data, $data, schemaCode, schema } = cxt;
-        if ($data || (schema && typeof schema == 'object'))
+        const { gen, data, $data, schemaCode, schema: schema$1 } = cxt;
+        if ($data || (schema$1 && typeof schema$1 == 'object'))
           cxt.fail$data(
-            (0, codegen_1$53._)`!${(0, util_1$46.useFunc)(gen, equal_1$4.default)}(${data}, ${schemaCode})`
+            (0, codegen_1$58._)`!${(0, util_1$50.useFunc)(gen, equal_1$4.default)}(${data}, ${schemaCode})`
           );
-        else cxt.fail((0, codegen_1$53._)`${schema} !== ${data}`);
+        else cxt.fail((0, codegen_1$58._)`${schema$1} !== ${data}`);
       },
     };
-    exports.default = def$49;
+    exports.default = def$58;
   },
 });
 
@@ -8688,57 +11345,57 @@ var require_const$1 = __commonJS({
 var require_enum$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/enum.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$52 = require_codegen$1();
-    const util_1$45 = require_util$1();
+    const codegen_1$57 = require_codegen$1();
+    const util_1$49 = require_util$1();
     const equal_1$3 = require_equal$1();
-    const error$29 = {
+    const error$31 = {
       message: 'must be equal to one of the allowed values',
-      params: ({ schemaCode }) => (0, codegen_1$52._)`{allowedValues: ${schemaCode}}`,
+      params: ({ schemaCode }) => (0, codegen_1$57._)`{allowedValues: ${schemaCode}}`,
     };
-    const def$48 = {
+    const def$57 = {
       keyword: 'enum',
       schemaType: 'array',
       $data: true,
-      error: error$29,
+      error: error$31,
       code(cxt) {
-        const { gen, data, $data, schema, schemaCode, it } = cxt;
-        if (!$data && schema.length === 0) throw new Error('enum must have non-empty array');
-        const useLoop = schema.length >= it.opts.loopEnum;
+        const { gen, data, $data, schema: schema$1, schemaCode, it } = cxt;
+        if (!$data && schema$1.length === 0) throw new Error('enum must have non-empty array');
+        const useLoop = schema$1.length >= it.opts.loopEnum;
         let eql;
         const getEql = () =>
-          eql !== null && eql !== void 0 ? eql : (eql = (0, util_1$45.useFunc)(gen, equal_1$3.default));
+          eql !== null && eql !== void 0 ? eql : (eql = (0, util_1$49.useFunc)(gen, equal_1$3.default));
         let valid;
         if (useLoop || $data) {
           valid = gen.let('valid');
           cxt.block$data(valid, loopEnum);
         } else {
           /* istanbul ignore if */
-          if (!Array.isArray(schema)) throw new Error('ajv implementation error');
+          if (!Array.isArray(schema$1)) throw new Error('ajv implementation error');
           const vSchema = gen.const('vSchema', schemaCode);
-          valid = (0, codegen_1$52.or)(...schema.map((_x, i) => equalCode(vSchema, i)));
+          valid = (0, codegen_1$57.or)(...schema$1.map((_x, i) => equalCode(vSchema, i)));
         }
         cxt.pass(valid);
         function loopEnum() {
           gen.assign(valid, false);
           gen.forOf('v', schemaCode, (v) =>
-            gen.if((0, codegen_1$52._)`${getEql()}(${data}, ${v})`, () => gen.assign(valid, true).break())
+            gen.if((0, codegen_1$57._)`${getEql()}(${data}, ${v})`, () => gen.assign(valid, true).break())
           );
         }
         function equalCode(vSchema, i) {
-          const sch = schema[i];
+          const sch = schema$1[i];
           return typeof sch === 'object' && sch !== null
-            ? (0, codegen_1$52._)`${getEql()}(${data}, ${vSchema}[${i}])`
-            : (0, codegen_1$52._)`${data} === ${sch}`;
+            ? (0, codegen_1$57._)`${getEql()}(${data}, ${vSchema}[${i}])`
+            : (0, codegen_1$57._)`${data} === ${sch}`;
         }
       },
     };
-    exports.default = def$48;
+    exports.default = def$57;
   },
 });
 
 //#endregion
 //#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/index.js
-var require_validation$1 = __commonJS({
+var require_validation$2 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/index.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const limitNumber_1$1 = require_limitNumber$1();
@@ -8751,7 +11408,7 @@ var require_validation$1 = __commonJS({
     const uniqueItems_1$1 = require_uniqueItems$1();
     const const_1$1 = require_const$1();
     const enum_1$1 = require_enum$1();
-    const validation$1 = [
+    const validation$2 = [
       limitNumber_1$1.default,
       multipleOf_1$1.default,
       limitLength_1$1.default,
@@ -8771,7 +11428,7 @@ var require_validation$1 = __commonJS({
       const_1$1.default,
       enum_1$1.default,
     ];
-    exports.default = validation$1;
+    exports.default = validation$2;
   },
 });
 
@@ -8781,38 +11438,38 @@ var require_additionalItems$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/additionalItems.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.validateAdditionalItems = void 0;
-    const codegen_1$51 = require_codegen$1();
-    const util_1$44 = require_util$1();
-    const error$28 = {
-      message: ({ params: { len } }) => (0, codegen_1$51.str)`must NOT have more than ${len} items`,
-      params: ({ params: { len } }) => (0, codegen_1$51._)`{limit: ${len}}`,
+    const codegen_1$56 = require_codegen$1();
+    const util_1$48 = require_util$1();
+    const error$30 = {
+      message: ({ params: { len } }) => (0, codegen_1$56.str)`must NOT have more than ${len} items`,
+      params: ({ params: { len } }) => (0, codegen_1$56._)`{limit: ${len}}`,
     };
-    const def$47 = {
+    const def$56 = {
       keyword: 'additionalItems',
       type: 'array',
       schemaType: ['boolean', 'object'],
       before: 'uniqueItems',
-      error: error$28,
+      error: error$30,
       code(cxt) {
         const { parentSchema, it } = cxt;
         const { items } = parentSchema;
         if (!Array.isArray(items)) {
-          (0, util_1$44.checkStrictMode)(it, '"additionalItems" is ignored when "items" is not an array of schemas');
+          (0, util_1$48.checkStrictMode)(it, '"additionalItems" is ignored when "items" is not an array of schemas');
           return;
         }
         validateAdditionalItems$1(cxt, items);
       },
     };
     function validateAdditionalItems$1(cxt, items) {
-      const { gen, schema, data, keyword: keyword$1, it } = cxt;
+      const { gen, schema: schema$1, data, keyword: keyword$1, it } = cxt;
       it.items = true;
-      const len = gen.const('len', (0, codegen_1$51._)`${data}.length`);
-      if (schema === false) {
+      const len = gen.const('len', (0, codegen_1$56._)`${data}.length`);
+      if (schema$1 === false) {
         cxt.setParams({ len: items.length });
-        cxt.pass((0, codegen_1$51._)`${len} <= ${items.length}`);
-      } else if (typeof schema == 'object' && !(0, util_1$44.alwaysValidSchema)(it, schema)) {
-        const valid = gen.var('valid', (0, codegen_1$51._)`${len} <= ${items.length}`);
-        gen.if((0, codegen_1$51.not)(valid), () => validateItems(valid));
+        cxt.pass((0, codegen_1$56._)`${len} <= ${items.length}`);
+      } else if (typeof schema$1 == 'object' && !(0, util_1$48.alwaysValidSchema)(it, schema$1)) {
+        const valid = gen.var('valid', (0, codegen_1$56._)`${len} <= ${items.length}`);
+        gen.if((0, codegen_1$56.not)(valid), () => validateItems(valid));
         cxt.ok(valid);
       }
       function validateItems(valid) {
@@ -8821,16 +11478,16 @@ var require_additionalItems$1 = __commonJS({
             {
               keyword: keyword$1,
               dataProp: i,
-              dataPropType: util_1$44.Type.Num,
+              dataPropType: util_1$48.Type.Num,
             },
             valid
           );
-          if (!it.allErrors) gen.if((0, codegen_1$51.not)(valid), () => gen.break());
+          if (!it.allErrors) gen.if((0, codegen_1$56.not)(valid), () => gen.break());
         });
       }
     }
     exports.validateAdditionalItems = validateAdditionalItems$1;
-    exports.default = def$47;
+    exports.default = def$56;
   },
 });
 
@@ -8840,19 +11497,19 @@ var require_items$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/items.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.validateTuple = void 0;
-    const codegen_1$50 = require_codegen$1();
-    const util_1$43 = require_util$1();
+    const codegen_1$55 = require_codegen$1();
+    const util_1$47 = require_util$1();
     const code_1$21 = require_code$2();
-    const def$46 = {
+    const def$55 = {
       keyword: 'items',
       type: 'array',
       schemaType: ['object', 'array', 'boolean'],
       before: 'uniqueItems',
       code(cxt) {
-        const { schema, it } = cxt;
-        if (Array.isArray(schema)) return validateTuple$1(cxt, 'additionalItems', schema);
+        const { schema: schema$1, it } = cxt;
+        if (Array.isArray(schema$1)) return validateTuple$1(cxt, 'additionalItems', schema$1);
         it.items = true;
-        if ((0, util_1$43.alwaysValidSchema)(it, schema)) return;
+        if ((0, util_1$47.alwaysValidSchema)(it, schema$1)) return;
         cxt.ok((0, code_1$21.validateArray)(cxt));
       },
     };
@@ -8860,12 +11517,12 @@ var require_items$1 = __commonJS({
       const { gen, parentSchema, data, keyword: keyword$1, it } = cxt;
       checkStrictTuple(parentSchema);
       if (it.opts.unevaluated && schArr.length && it.items !== true)
-        it.items = util_1$43.mergeEvaluated.items(gen, schArr.length, it.items);
+        it.items = util_1$47.mergeEvaluated.items(gen, schArr.length, it.items);
       const valid = gen.name('valid');
-      const len = gen.const('len', (0, codegen_1$50._)`${data}.length`);
+      const len = gen.const('len', (0, codegen_1$55._)`${data}.length`);
       schArr.forEach((sch, i) => {
-        if ((0, util_1$43.alwaysValidSchema)(it, sch)) return;
-        gen.if((0, codegen_1$50._)`${len} > ${i}`, () =>
+        if ((0, util_1$47.alwaysValidSchema)(it, sch)) return;
+        gen.if((0, codegen_1$55._)`${len} > ${i}`, () =>
           cxt.subschema(
             {
               keyword: keyword$1,
@@ -8883,12 +11540,12 @@ var require_items$1 = __commonJS({
         const fullTuple = l === sch.minItems && (l === sch.maxItems || sch[extraItems] === false);
         if (opts.strictTuples && !fullTuple) {
           const msg = `"${keyword$1}" is ${l}-tuple, but minItems or maxItems/${extraItems} are not specified or different at path "${errSchemaPath}"`;
-          (0, util_1$43.checkStrictMode)(it, msg, opts.strictTuples);
+          (0, util_1$47.checkStrictMode)(it, msg, opts.strictTuples);
         }
       }
     }
     exports.validateTuple = validateTuple$1;
-    exports.default = def$46;
+    exports.default = def$55;
   },
 });
 
@@ -8898,14 +11555,14 @@ var require_prefixItems$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/prefixItems.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const items_1$3 = require_items$1();
-    const def$45 = {
+    const def$54 = {
       keyword: 'prefixItems',
       type: 'array',
       schemaType: ['array'],
       before: 'uniqueItems',
       code: (cxt) => (0, items_1$3.validateTuple)(cxt, 'items'),
     };
-    exports.default = def$45;
+    exports.default = def$54;
   },
 });
 
@@ -8914,30 +11571,30 @@ var require_prefixItems$1 = __commonJS({
 var require_items2020$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/items2020.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$49 = require_codegen$1();
-    const util_1$42 = require_util$1();
+    const codegen_1$54 = require_codegen$1();
+    const util_1$46 = require_util$1();
     const code_1$20 = require_code$2();
     const additionalItems_1$3 = require_additionalItems$1();
-    const error$27 = {
-      message: ({ params: { len } }) => (0, codegen_1$49.str)`must NOT have more than ${len} items`,
-      params: ({ params: { len } }) => (0, codegen_1$49._)`{limit: ${len}}`,
+    const error$29 = {
+      message: ({ params: { len } }) => (0, codegen_1$54.str)`must NOT have more than ${len} items`,
+      params: ({ params: { len } }) => (0, codegen_1$54._)`{limit: ${len}}`,
     };
-    const def$44 = {
+    const def$53 = {
       keyword: 'items',
       type: 'array',
       schemaType: ['object', 'boolean'],
       before: 'uniqueItems',
-      error: error$27,
+      error: error$29,
       code(cxt) {
-        const { schema, parentSchema, it } = cxt;
+        const { schema: schema$1, parentSchema, it } = cxt;
         const { prefixItems } = parentSchema;
         it.items = true;
-        if ((0, util_1$42.alwaysValidSchema)(it, schema)) return;
+        if ((0, util_1$46.alwaysValidSchema)(it, schema$1)) return;
         if (prefixItems) (0, additionalItems_1$3.validateAdditionalItems)(cxt, prefixItems);
         else cxt.ok((0, code_1$20.validateArray)(cxt));
       },
     };
-    exports.default = def$44;
+    exports.default = def$53;
   },
 });
 
@@ -8946,27 +11603,27 @@ var require_items2020$1 = __commonJS({
 var require_contains$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/contains.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$48 = require_codegen$1();
-    const util_1$41 = require_util$1();
-    const error$26 = {
+    const codegen_1$53 = require_codegen$1();
+    const util_1$45 = require_util$1();
+    const error$28 = {
       message: ({ params: { min, max } }) =>
         max === void 0
-          ? (0, codegen_1$48.str)`must contain at least ${min} valid item(s)`
-          : (0, codegen_1$48.str)`must contain at least ${min} and no more than ${max} valid item(s)`,
+          ? (0, codegen_1$53.str)`must contain at least ${min} valid item(s)`
+          : (0, codegen_1$53.str)`must contain at least ${min} and no more than ${max} valid item(s)`,
       params: ({ params: { min, max } }) =>
         max === void 0
-          ? (0, codegen_1$48._)`{minContains: ${min}}`
-          : (0, codegen_1$48._)`{minContains: ${min}, maxContains: ${max}}`,
+          ? (0, codegen_1$53._)`{minContains: ${min}}`
+          : (0, codegen_1$53._)`{minContains: ${min}, maxContains: ${max}}`,
     };
-    const def$43 = {
+    const def$52 = {
       keyword: 'contains',
       type: 'array',
       schemaType: ['object', 'boolean'],
       before: 'uniqueItems',
       trackErrors: true,
-      error: error$26,
+      error: error$28,
       code(cxt) {
-        const { gen, schema, parentSchema, data, it } = cxt;
+        const { gen, schema: schema$1, parentSchema, data, it } = cxt;
         let min;
         let max;
         const { minContains, maxContains } = parentSchema;
@@ -8974,23 +11631,23 @@ var require_contains$1 = __commonJS({
           min = minContains === void 0 ? 1 : minContains;
           max = maxContains;
         } else min = 1;
-        const len = gen.const('len', (0, codegen_1$48._)`${data}.length`);
+        const len = gen.const('len', (0, codegen_1$53._)`${data}.length`);
         cxt.setParams({
           min,
           max,
         });
         if (max === void 0 && min === 0) {
-          (0, util_1$41.checkStrictMode)(it, `"minContains" == 0 without "maxContains": "contains" keyword ignored`);
+          (0, util_1$45.checkStrictMode)(it, `"minContains" == 0 without "maxContains": "contains" keyword ignored`);
           return;
         }
         if (max !== void 0 && min > max) {
-          (0, util_1$41.checkStrictMode)(it, `"minContains" > "maxContains" is always invalid`);
+          (0, util_1$45.checkStrictMode)(it, `"minContains" > "maxContains" is always invalid`);
           cxt.fail();
           return;
         }
-        if ((0, util_1$41.alwaysValidSchema)(it, schema)) {
-          let cond = (0, codegen_1$48._)`${len} >= ${min}`;
-          if (max !== void 0) cond = (0, codegen_1$48._)`${cond} && ${len} <= ${max}`;
+        if ((0, util_1$45.alwaysValidSchema)(it, schema$1)) {
+          let cond = (0, codegen_1$53._)`${len} >= ${min}`;
+          if (max !== void 0) cond = (0, codegen_1$53._)`${cond} && ${len} <= ${max}`;
           cxt.pass(cond);
           return;
         }
@@ -8999,7 +11656,7 @@ var require_contains$1 = __commonJS({
         if (max === void 0 && min === 1) validateItems(valid, () => gen.if(valid, () => gen.break()));
         else if (min === 0) {
           gen.let(valid, true);
-          if (max !== void 0) gen.if((0, codegen_1$48._)`${data}.length > 0`, validateItemsWithCount);
+          if (max !== void 0) gen.if((0, codegen_1$53._)`${data}.length > 0`, validateItemsWithCount);
         } else {
           gen.let(valid, false);
           validateItemsWithCount();
@@ -9016,7 +11673,7 @@ var require_contains$1 = __commonJS({
               {
                 keyword: 'contains',
                 dataProp: i,
-                dataPropType: util_1$41.Type.Num,
+                dataPropType: util_1$45.Type.Num,
                 compositeRule: true,
               },
               _valid
@@ -9025,17 +11682,17 @@ var require_contains$1 = __commonJS({
           });
         }
         function checkLimits(count) {
-          gen.code((0, codegen_1$48._)`${count}++`);
-          if (max === void 0) gen.if((0, codegen_1$48._)`${count} >= ${min}`, () => gen.assign(valid, true).break());
+          gen.code((0, codegen_1$53._)`${count}++`);
+          if (max === void 0) gen.if((0, codegen_1$53._)`${count} >= ${min}`, () => gen.assign(valid, true).break());
           else {
-            gen.if((0, codegen_1$48._)`${count} > ${max}`, () => gen.assign(valid, false).break());
+            gen.if((0, codegen_1$53._)`${count} > ${max}`, () => gen.assign(valid, false).break());
             if (min === 1) gen.assign(valid, true);
-            else gen.if((0, codegen_1$48._)`${count} >= ${min}`, () => gen.assign(valid, true));
+            else gen.if((0, codegen_1$53._)`${count} >= ${min}`, () => gen.assign(valid, true));
           }
         }
       },
     };
-    exports.default = def$43;
+    exports.default = def$52;
   },
 });
 
@@ -9045,21 +11702,21 @@ var require_dependencies$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/dependencies.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.validateSchemaDeps = exports.validatePropertyDeps = exports.error = void 0;
-    const codegen_1$47 = require_codegen$1();
-    const util_1$40 = require_util$1();
+    const codegen_1$52 = require_codegen$1();
+    const util_1$44 = require_util$1();
     const code_1$19 = require_code$2();
     exports.error = {
       message: ({ params: { property, depsCount, deps } }) => {
         const property_ies = depsCount === 1 ? 'property' : 'properties';
-        return (0, codegen_1$47.str)`must have ${property_ies} ${deps} when property ${property} is present`;
+        return (0, codegen_1$52.str)`must have ${property_ies} ${deps} when property ${property} is present`;
       },
       params: ({ params: { property, depsCount, deps, missingProperty } }) => (0,
-      codegen_1$47._)`{property: ${property},
+      codegen_1$52._)`{property: ${property},
     missingProperty: ${missingProperty},
     depsCount: ${depsCount},
     deps: ${deps}}`,
     };
-    const def$42 = {
+    const def$51 = {
       keyword: 'dependencies',
       type: 'object',
       schemaType: 'object',
@@ -9070,13 +11727,13 @@ var require_dependencies$1 = __commonJS({
         validateSchemaDeps$1(cxt, schDeps);
       },
     };
-    function splitDependencies$1({ schema }) {
+    function splitDependencies$1({ schema: schema$1 }) {
       const propertyDeps = {};
       const schemaDeps = {};
-      for (const key in schema) {
+      for (const key in schema$1) {
         if (key === '__proto__') continue;
-        const deps = Array.isArray(schema[key]) ? propertyDeps : schemaDeps;
-        deps[key] = schema[key];
+        const deps = Array.isArray(schema$1[key]) ? propertyDeps : schemaDeps;
+        deps[key] = schema$1[key];
       }
       return [propertyDeps, schemaDeps];
     }
@@ -9098,7 +11755,7 @@ var require_dependencies$1 = __commonJS({
             for (const depProp of deps) (0, code_1$19.checkReportMissingProp)(cxt, depProp);
           });
         else {
-          gen.if((0, codegen_1$47._)`${hasProperty} && (${(0, code_1$19.checkMissingProp)(cxt, deps, missing)})`);
+          gen.if((0, codegen_1$52._)`${hasProperty} && (${(0, code_1$19.checkMissingProp)(cxt, deps, missing)})`);
           (0, code_1$19.reportMissingProp)(cxt, missing);
           gen.else();
         }
@@ -9109,7 +11766,7 @@ var require_dependencies$1 = __commonJS({
       const { gen, data, keyword: keyword$1, it } = cxt;
       const valid = gen.name('valid');
       for (const prop in schemaDeps) {
-        if ((0, util_1$40.alwaysValidSchema)(it, schemaDeps[prop])) continue;
+        if ((0, util_1$44.alwaysValidSchema)(it, schemaDeps[prop])) continue;
         gen.if(
           (0, code_1$19.propertyInData)(gen, data, prop, it.opts.ownProperties),
           () => {
@@ -9128,7 +11785,7 @@ var require_dependencies$1 = __commonJS({
       }
     }
     exports.validateSchemaDeps = validateSchemaDeps$1;
-    exports.default = def$42;
+    exports.default = def$51;
   },
 });
 
@@ -9137,20 +11794,20 @@ var require_dependencies$1 = __commonJS({
 var require_propertyNames$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/propertyNames.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$46 = require_codegen$1();
-    const util_1$39 = require_util$1();
-    const error$25 = {
+    const codegen_1$51 = require_codegen$1();
+    const util_1$43 = require_util$1();
+    const error$27 = {
       message: 'property name must be valid',
-      params: ({ params }) => (0, codegen_1$46._)`{propertyName: ${params.propertyName}}`,
+      params: ({ params }) => (0, codegen_1$51._)`{propertyName: ${params.propertyName}}`,
     };
-    const def$41 = {
+    const def$50 = {
       keyword: 'propertyNames',
       type: 'object',
       schemaType: ['object', 'boolean'],
-      error: error$25,
+      error: error$27,
       code(cxt) {
-        const { gen, schema, data, it } = cxt;
-        if ((0, util_1$39.alwaysValidSchema)(it, schema)) return;
+        const { gen, schema: schema$1, data, it } = cxt;
+        if ((0, util_1$43.alwaysValidSchema)(it, schema$1)) return;
         const valid = gen.name('valid');
         gen.forIn('key', data, (key) => {
           cxt.setParams({ propertyName: key });
@@ -9164,7 +11821,7 @@ var require_propertyNames$1 = __commonJS({
             },
             valid
           );
-          gen.if((0, codegen_1$46.not)(valid), () => {
+          gen.if((0, codegen_1$51.not)(valid), () => {
             cxt.error(true);
             if (!it.allErrors) gen.break();
           });
@@ -9172,7 +11829,7 @@ var require_propertyNames$1 = __commonJS({
         cxt.ok(valid);
       },
     };
-    exports.default = def$41;
+    exports.default = def$50;
   },
 });
 
@@ -9182,31 +11839,31 @@ var require_additionalProperties$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const code_1$18 = require_code$2();
-    const codegen_1$45 = require_codegen$1();
-    const names_1$9 = require_names$1();
-    const util_1$38 = require_util$1();
-    const error$24 = {
+    const codegen_1$50 = require_codegen$1();
+    const names_1$12 = require_names$1();
+    const util_1$42 = require_util$1();
+    const error$26 = {
       message: 'must NOT have additional properties',
-      params: ({ params }) => (0, codegen_1$45._)`{additionalProperty: ${params.additionalProperty}}`,
+      params: ({ params }) => (0, codegen_1$50._)`{additionalProperty: ${params.additionalProperty}}`,
     };
-    const def$40 = {
+    const def$49 = {
       keyword: 'additionalProperties',
       type: ['object'],
       schemaType: ['boolean', 'object'],
       allowUndefined: true,
       trackErrors: true,
-      error: error$24,
+      error: error$26,
       code(cxt) {
-        const { gen, schema, parentSchema, data, errsCount, it } = cxt;
+        const { gen, schema: schema$1, parentSchema, data, errsCount, it } = cxt;
         /* istanbul ignore if */
         if (!errsCount) throw new Error('ajv implementation error');
         const { allErrors, opts } = it;
         it.props = true;
-        if (opts.removeAdditional !== 'all' && (0, util_1$38.alwaysValidSchema)(it, schema)) return;
+        if (opts.removeAdditional !== 'all' && (0, util_1$42.alwaysValidSchema)(it, schema$1)) return;
         const props = (0, code_1$18.allSchemaProperties)(parentSchema.properties);
         const patProps = (0, code_1$18.allSchemaProperties)(parentSchema.patternProperties);
         checkAdditionalProperties();
-        cxt.ok((0, codegen_1$45._)`${errsCount} === ${names_1$9.default.errors}`);
+        cxt.ok((0, codegen_1$50._)`${errsCount} === ${names_1$12.default.errors}`);
         function checkAdditionalProperties() {
           gen.forIn('key', data, (key) => {
             if (!props.length && !patProps.length) additionalPropertyCode(key);
@@ -9216,43 +11873,43 @@ var require_additionalProperties$1 = __commonJS({
         function isAdditional(key) {
           let definedProp;
           if (props.length > 8) {
-            const propsSchema = (0, util_1$38.schemaRefOrVal)(it, parentSchema.properties, 'properties');
+            const propsSchema = (0, util_1$42.schemaRefOrVal)(it, parentSchema.properties, 'properties');
             definedProp = (0, code_1$18.isOwnProperty)(gen, propsSchema, key);
           } else if (props.length)
-            definedProp = (0, codegen_1$45.or)(...props.map((p) => (0, codegen_1$45._)`${key} === ${p}`));
-          else definedProp = codegen_1$45.nil;
+            definedProp = (0, codegen_1$50.or)(...props.map((p) => (0, codegen_1$50._)`${key} === ${p}`));
+          else definedProp = codegen_1$50.nil;
           if (patProps.length)
-            definedProp = (0, codegen_1$45.or)(
+            definedProp = (0, codegen_1$50.or)(
               definedProp,
-              ...patProps.map((p) => (0, codegen_1$45._)`${(0, code_1$18.usePattern)(cxt, p)}.test(${key})`)
+              ...patProps.map((p) => (0, codegen_1$50._)`${(0, code_1$18.usePattern)(cxt, p)}.test(${key})`)
             );
-          return (0, codegen_1$45.not)(definedProp);
+          return (0, codegen_1$50.not)(definedProp);
         }
         function deleteAdditional(key) {
-          gen.code((0, codegen_1$45._)`delete ${data}[${key}]`);
+          gen.code((0, codegen_1$50._)`delete ${data}[${key}]`);
         }
         function additionalPropertyCode(key) {
-          if (opts.removeAdditional === 'all' || (opts.removeAdditional && schema === false)) {
+          if (opts.removeAdditional === 'all' || (opts.removeAdditional && schema$1 === false)) {
             deleteAdditional(key);
             return;
           }
-          if (schema === false) {
+          if (schema$1 === false) {
             cxt.setParams({ additionalProperty: key });
             cxt.error();
             if (!allErrors) gen.break();
             return;
           }
-          if (typeof schema == 'object' && !(0, util_1$38.alwaysValidSchema)(it, schema)) {
+          if (typeof schema$1 == 'object' && !(0, util_1$42.alwaysValidSchema)(it, schema$1)) {
             const valid = gen.name('valid');
             if (opts.removeAdditional === 'failing') {
               applyAdditionalSchema(key, valid, false);
-              gen.if((0, codegen_1$45.not)(valid), () => {
+              gen.if((0, codegen_1$50.not)(valid), () => {
                 cxt.reset();
                 deleteAdditional(key);
               });
             } else {
               applyAdditionalSchema(key, valid);
-              if (!allErrors) gen.if((0, codegen_1$45.not)(valid), () => gen.break());
+              if (!allErrors) gen.if((0, codegen_1$50.not)(valid), () => gen.break());
             }
           }
         }
@@ -9260,7 +11917,7 @@ var require_additionalProperties$1 = __commonJS({
           const subschema = {
             keyword: 'additionalProperties',
             dataProp: key,
-            dataPropType: util_1$38.Type.Str,
+            dataPropType: util_1$42.Type.Str,
           };
           if (errors === false)
             Object.assign(subschema, {
@@ -9272,7 +11929,7 @@ var require_additionalProperties$1 = __commonJS({
         }
       },
     };
-    exports.default = def$40;
+    exports.default = def$49;
   },
 });
 
@@ -9281,25 +11938,25 @@ var require_additionalProperties$1 = __commonJS({
 var require_properties$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/properties.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const validate_1$6 = require_validate$1();
+    const validate_1$7 = require_validate$1();
     const code_1$17 = require_code$2();
-    const util_1$37 = require_util$1();
+    const util_1$41 = require_util$1();
     const additionalProperties_1$3 = require_additionalProperties$1();
-    const def$39 = {
+    const def$48 = {
       keyword: 'properties',
       type: 'object',
       schemaType: 'object',
       code(cxt) {
-        const { gen, schema, parentSchema, data, it } = cxt;
+        const { gen, schema: schema$1, parentSchema, data, it } = cxt;
         if (it.opts.removeAdditional === 'all' && parentSchema.additionalProperties === void 0)
           additionalProperties_1$3.default.code(
-            new validate_1$6.KeywordCxt(it, additionalProperties_1$3.default, 'additionalProperties')
+            new validate_1$7.KeywordCxt(it, additionalProperties_1$3.default, 'additionalProperties')
           );
-        const allProps = (0, code_1$17.allSchemaProperties)(schema);
+        const allProps = (0, code_1$17.allSchemaProperties)(schema$1);
         for (const prop of allProps) it.definedProperties.add(prop);
         if (it.opts.unevaluated && allProps.length && it.props !== true)
-          it.props = util_1$37.mergeEvaluated.props(gen, (0, util_1$37.toHash)(allProps), it.props);
-        const properties = allProps.filter((p) => !(0, util_1$37.alwaysValidSchema)(it, schema[p]));
+          it.props = util_1$41.mergeEvaluated.props(gen, (0, util_1$41.toHash)(allProps), it.props);
+        const properties = allProps.filter((p) => !(0, util_1$41.alwaysValidSchema)(it, schema$1[p]));
         if (properties.length === 0) return;
         const valid = gen.name('valid');
         for (const prop of properties) {
@@ -9314,7 +11971,7 @@ var require_properties$1 = __commonJS({
           cxt.ok(valid);
         }
         function hasDefault(prop) {
-          return it.opts.useDefaults && !it.compositeRule && schema[prop].default !== void 0;
+          return it.opts.useDefaults && !it.compositeRule && schema$1[prop].default !== void 0;
         }
         function applyPropertySchema(prop) {
           cxt.subschema(
@@ -9328,7 +11985,7 @@ var require_properties$1 = __commonJS({
         }
       },
     };
-    exports.default = def$39;
+    exports.default = def$48;
   },
 });
 
@@ -9338,18 +11995,18 @@ var require_patternProperties$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/patternProperties.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const code_1$16 = require_code$2();
-    const codegen_1$44 = require_codegen$1();
-    const util_1$36 = require_util$1();
+    const codegen_1$49 = require_codegen$1();
+    const util_1$40 = require_util$1();
     const util_2$2 = require_util$1();
-    const def$38 = {
+    const def$47 = {
       keyword: 'patternProperties',
       type: 'object',
       schemaType: 'object',
       code(cxt) {
-        const { gen, schema, data, parentSchema, it } = cxt;
+        const { gen, schema: schema$1, data, parentSchema, it } = cxt;
         const { opts } = it;
-        const patterns = (0, code_1$16.allSchemaProperties)(schema);
-        const alwaysValidPatterns = patterns.filter((p) => (0, util_1$36.alwaysValidSchema)(it, schema[p]));
+        const patterns = (0, code_1$16.allSchemaProperties)(schema$1);
+        const alwaysValidPatterns = patterns.filter((p) => (0, util_1$40.alwaysValidSchema)(it, schema$1[p]));
         if (
           patterns.length === 0 ||
           (alwaysValidPatterns.length === patterns.length && (!it.opts.unevaluated || it.props === true))
@@ -9357,7 +12014,7 @@ var require_patternProperties$1 = __commonJS({
           return;
         const checkProperties = opts.strictSchema && !opts.allowMatchingProperties && parentSchema.properties;
         const valid = gen.name('valid');
-        if (it.props !== true && !(it.props instanceof codegen_1$44.Name))
+        if (it.props !== true && !(it.props instanceof codegen_1$49.Name))
           it.props = (0, util_2$2.evaluatedPropsToName)(gen, it.props);
         const { props } = it;
         validatePatternProperties();
@@ -9375,14 +12032,14 @@ var require_patternProperties$1 = __commonJS({
         function checkMatchingProperties(pat) {
           for (const prop in checkProperties)
             if (new RegExp(pat).test(prop))
-              (0, util_1$36.checkStrictMode)(
+              (0, util_1$40.checkStrictMode)(
                 it,
                 `property ${prop} matches pattern ${pat} (use allowMatchingProperties)`
               );
         }
         function validateProperties(pat) {
           gen.forIn('key', data, (key) => {
-            gen.if((0, codegen_1$44._)`${(0, code_1$16.usePattern)(cxt, pat)}.test(${key})`, () => {
+            gen.if((0, codegen_1$49._)`${(0, code_1$16.usePattern)(cxt, pat)}.test(${key})`, () => {
               const alwaysValid = alwaysValidPatterns.includes(pat);
               if (!alwaysValid)
                 cxt.subschema(
@@ -9394,14 +12051,14 @@ var require_patternProperties$1 = __commonJS({
                   },
                   valid
                 );
-              if (it.opts.unevaluated && props !== true) gen.assign((0, codegen_1$44._)`${props}[${key}]`, true);
-              else if (!alwaysValid && !it.allErrors) gen.if((0, codegen_1$44.not)(valid), () => gen.break());
+              if (it.opts.unevaluated && props !== true) gen.assign((0, codegen_1$49._)`${props}[${key}]`, true);
+              else if (!alwaysValid && !it.allErrors) gen.if((0, codegen_1$49.not)(valid), () => gen.break());
             });
           });
         }
       },
     };
-    exports.default = def$38;
+    exports.default = def$47;
   },
 });
 
@@ -9410,14 +12067,14 @@ var require_patternProperties$1 = __commonJS({
 var require_not$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/not.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const util_1$35 = require_util$1();
-    const def$37 = {
+    const util_1$39 = require_util$1();
+    const def$46 = {
       keyword: 'not',
       schemaType: ['object', 'boolean'],
       trackErrors: true,
       code(cxt) {
-        const { gen, schema, it } = cxt;
-        if ((0, util_1$35.alwaysValidSchema)(it, schema)) {
+        const { gen, schema: schema$1, it } = cxt;
+        if ((0, util_1$39.alwaysValidSchema)(it, schema$1)) {
           cxt.fail();
           return;
         }
@@ -9439,7 +12096,7 @@ var require_not$1 = __commonJS({
       },
       error: { message: 'must NOT be valid' },
     };
-    exports.default = def$37;
+    exports.default = def$46;
   },
 });
 
@@ -9449,14 +12106,14 @@ var require_anyOf$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/anyOf.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const code_1$15 = require_code$2();
-    const def$36 = {
+    const def$45 = {
       keyword: 'anyOf',
       schemaType: 'array',
       trackErrors: true,
       code: code_1$15.validateUnion,
       error: { message: 'must match a schema in anyOf' },
     };
-    exports.default = def$36;
+    exports.default = def$45;
   },
 });
 
@@ -9465,23 +12122,23 @@ var require_anyOf$1 = __commonJS({
 var require_oneOf$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/oneOf.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$43 = require_codegen$1();
-    const util_1$34 = require_util$1();
-    const error$23 = {
+    const codegen_1$48 = require_codegen$1();
+    const util_1$38 = require_util$1();
+    const error$25 = {
       message: 'must match exactly one schema in oneOf',
-      params: ({ params }) => (0, codegen_1$43._)`{passingSchemas: ${params.passing}}`,
+      params: ({ params }) => (0, codegen_1$48._)`{passingSchemas: ${params.passing}}`,
     };
-    const def$35 = {
+    const def$44 = {
       keyword: 'oneOf',
       schemaType: 'array',
       trackErrors: true,
-      error: error$23,
+      error: error$25,
       code(cxt) {
-        const { gen, schema, parentSchema, it } = cxt;
+        const { gen, schema: schema$1, parentSchema, it } = cxt;
         /* istanbul ignore if */
-        if (!Array.isArray(schema)) throw new Error('ajv implementation error');
+        if (!Array.isArray(schema$1)) throw new Error('ajv implementation error');
         if (it.opts.discriminator && parentSchema.discriminator) return;
-        const schArr = schema;
+        const schArr = schema$1;
         const valid = gen.let('valid', false);
         const passing = gen.let('passing', null);
         const schValid = gen.name('_valid');
@@ -9495,7 +12152,7 @@ var require_oneOf$1 = __commonJS({
         function validateOneOf() {
           schArr.forEach((sch, i) => {
             let schCxt;
-            if ((0, util_1$34.alwaysValidSchema)(it, sch)) gen.var(schValid, true);
+            if ((0, util_1$38.alwaysValidSchema)(it, sch)) gen.var(schValid, true);
             else
               schCxt = cxt.subschema(
                 {
@@ -9507,20 +12164,20 @@ var require_oneOf$1 = __commonJS({
               );
             if (i > 0)
               gen
-                .if((0, codegen_1$43._)`${schValid} && ${valid}`)
+                .if((0, codegen_1$48._)`${schValid} && ${valid}`)
                 .assign(valid, false)
-                .assign(passing, (0, codegen_1$43._)`[${passing}, ${i}]`)
+                .assign(passing, (0, codegen_1$48._)`[${passing}, ${i}]`)
                 .else();
             gen.if(schValid, () => {
               gen.assign(valid, true);
               gen.assign(passing, i);
-              if (schCxt) cxt.mergeEvaluated(schCxt, codegen_1$43.Name);
+              if (schCxt) cxt.mergeEvaluated(schCxt, codegen_1$48.Name);
             });
           });
         }
       },
     };
-    exports.default = def$35;
+    exports.default = def$44;
   },
 });
 
@@ -9529,17 +12186,17 @@ var require_oneOf$1 = __commonJS({
 var require_allOf$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/allOf.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const util_1$33 = require_util$1();
-    const def$34 = {
+    const util_1$37 = require_util$1();
+    const def$43 = {
       keyword: 'allOf',
       schemaType: 'array',
       code(cxt) {
-        const { gen, schema, it } = cxt;
+        const { gen, schema: schema$1, it } = cxt;
         /* istanbul ignore if */
-        if (!Array.isArray(schema)) throw new Error('ajv implementation error');
+        if (!Array.isArray(schema$1)) throw new Error('ajv implementation error');
         const valid = gen.name('valid');
-        schema.forEach((sch, i) => {
-          if ((0, util_1$33.alwaysValidSchema)(it, sch)) return;
+        schema$1.forEach((sch, i) => {
+          if ((0, util_1$37.alwaysValidSchema)(it, sch)) return;
           const schCxt = cxt.subschema(
             {
               keyword: 'allOf',
@@ -9552,7 +12209,7 @@ var require_allOf$1 = __commonJS({
         });
       },
     };
-    exports.default = def$34;
+    exports.default = def$43;
   },
 });
 
@@ -9561,21 +12218,21 @@ var require_allOf$1 = __commonJS({
 var require_if$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/if.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$42 = require_codegen$1();
-    const util_1$32 = require_util$1();
-    const error$22 = {
-      message: ({ params }) => (0, codegen_1$42.str)`must match "${params.ifClause}" schema`,
-      params: ({ params }) => (0, codegen_1$42._)`{failingKeyword: ${params.ifClause}}`,
+    const codegen_1$47 = require_codegen$1();
+    const util_1$36 = require_util$1();
+    const error$24 = {
+      message: ({ params }) => (0, codegen_1$47.str)`must match "${params.ifClause}" schema`,
+      params: ({ params }) => (0, codegen_1$47._)`{failingKeyword: ${params.ifClause}}`,
     };
-    const def$33 = {
+    const def$42 = {
       keyword: 'if',
       schemaType: ['object', 'boolean'],
       trackErrors: true,
-      error: error$22,
+      error: error$24,
       code(cxt) {
         const { gen, parentSchema, it } = cxt;
         if (parentSchema.then === void 0 && parentSchema.else === void 0)
-          (0, util_1$32.checkStrictMode)(it, '"if" without "then" and "else" is ignored');
+          (0, util_1$36.checkStrictMode)(it, '"if" without "then" and "else" is ignored');
         const hasThen = hasSchema$1(it, 'then');
         const hasElse = hasSchema$1(it, 'else');
         if (!hasThen && !hasElse) return;
@@ -9588,7 +12245,7 @@ var require_if$1 = __commonJS({
           cxt.setParams({ ifClause });
           gen.if(schValid, validateClause('then', ifClause), validateClause('else', ifClause));
         } else if (hasThen) gen.if(schValid, validateClause('then'));
-        else gen.if((0, codegen_1$42.not)(schValid), validateClause('else'));
+        else gen.if((0, codegen_1$47.not)(schValid), validateClause('else'));
         cxt.pass(valid, () => cxt.error(true));
         function validateIf() {
           const schCxt = cxt.subschema(
@@ -9607,17 +12264,17 @@ var require_if$1 = __commonJS({
             const schCxt = cxt.subschema({ keyword: keyword$1 }, schValid);
             gen.assign(valid, schValid);
             cxt.mergeValidEvaluated(schCxt, valid);
-            if (ifClause) gen.assign(ifClause, (0, codegen_1$42._)`${keyword$1}`);
+            if (ifClause) gen.assign(ifClause, (0, codegen_1$47._)`${keyword$1}`);
             else cxt.setParams({ ifClause: keyword$1 });
           };
         }
       },
     };
     function hasSchema$1(it, keyword$1) {
-      const schema = it.schema[keyword$1];
-      return schema !== void 0 && !(0, util_1$32.alwaysValidSchema)(it, schema);
+      const schema$1 = it.schema[keyword$1];
+      return schema$1 !== void 0 && !(0, util_1$36.alwaysValidSchema)(it, schema$1);
     }
-    exports.default = def$33;
+    exports.default = def$42;
   },
 });
 
@@ -9626,21 +12283,21 @@ var require_if$1 = __commonJS({
 var require_thenElse$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/thenElse.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const util_1$31 = require_util$1();
-    const def$32 = {
+    const util_1$35 = require_util$1();
+    const def$41 = {
       keyword: ['then', 'else'],
       schemaType: ['object', 'boolean'],
       code({ keyword: keyword$1, parentSchema, it }) {
-        if (parentSchema.if === void 0) (0, util_1$31.checkStrictMode)(it, `"${keyword$1}" without "if" is ignored`);
+        if (parentSchema.if === void 0) (0, util_1$35.checkStrictMode)(it, `"${keyword$1}" without "if" is ignored`);
       },
     };
-    exports.default = def$32;
+    exports.default = def$41;
   },
 });
 
 //#endregion
 //#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/index.js
-var require_applicator$1 = __commonJS({
+var require_applicator$2 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/index.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const additionalItems_1$2 = require_additionalItems$1();
@@ -9648,7 +12305,7 @@ var require_applicator$1 = __commonJS({
     const items_1$2 = require_items$1();
     const items2020_1$1 = require_items2020$1();
     const contains_1$1 = require_contains$1();
-    const dependencies_1$1 = require_dependencies$1();
+    const dependencies_1$3 = require_dependencies$1();
     const propertyNames_1$1 = require_propertyNames$1();
     const additionalProperties_1$2 = require_additionalProperties$1();
     const properties_1$1 = require_properties$1();
@@ -9660,7 +12317,7 @@ var require_applicator$1 = __commonJS({
     const if_1$1 = require_if$1();
     const thenElse_1$1 = require_thenElse$1();
     function getApplicator$1(draft2020 = false) {
-      const applicator = [
+      const applicator$1 = [
         not_1$1.default,
         anyOf_1$1.default,
         oneOf_1$1.default,
@@ -9669,14 +12326,14 @@ var require_applicator$1 = __commonJS({
         thenElse_1$1.default,
         propertyNames_1$1.default,
         additionalProperties_1$2.default,
-        dependencies_1$1.default,
+        dependencies_1$3.default,
         properties_1$1.default,
         patternProperties_1$1.default,
       ];
-      if (draft2020) applicator.push(prefixItems_1$1.default, items2020_1$1.default);
-      else applicator.push(additionalItems_1$2.default, items_1$2.default);
-      applicator.push(contains_1$1.default);
-      return applicator;
+      if (draft2020) applicator$1.push(prefixItems_1$1.default, items2020_1$1.default);
+      else applicator$1.push(additionalItems_1$2.default, items_1$2.default);
+      applicator$1.push(contains_1$1.default);
+      return applicator$1;
     }
     exports.default = getApplicator$1;
   },
@@ -9687,102 +12344,102 @@ var require_applicator$1 = __commonJS({
 var require_format$3 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/format/format.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$41 = require_codegen$1();
-    const error$21 = {
-      message: ({ schemaCode }) => (0, codegen_1$41.str)`must match format "${schemaCode}"`,
-      params: ({ schemaCode }) => (0, codegen_1$41._)`{format: ${schemaCode}}`,
+    const codegen_1$46 = require_codegen$1();
+    const error$23 = {
+      message: ({ schemaCode }) => (0, codegen_1$46.str)`must match format "${schemaCode}"`,
+      params: ({ schemaCode }) => (0, codegen_1$46._)`{format: ${schemaCode}}`,
     };
-    const def$31 = {
+    const def$40 = {
       keyword: 'format',
       type: ['number', 'string'],
       schemaType: 'string',
       $data: true,
-      error: error$21,
+      error: error$23,
       code(cxt, ruleType) {
-        const { gen, data, $data, schema, schemaCode, it } = cxt;
-        const { opts, errSchemaPath, schemaEnv, self } = it;
+        const { gen, data, $data, schema: schema$1, schemaCode, it } = cxt;
+        const { opts, errSchemaPath, schemaEnv, self: self$1 } = it;
         if (!opts.validateFormats) return;
         if ($data) validate$DataFormat();
         else validateFormat();
         function validate$DataFormat() {
           const fmts = gen.scopeValue('formats', {
-            ref: self.formats,
+            ref: self$1.formats,
             code: opts.code.formats,
           });
-          const fDef = gen.const('fDef', (0, codegen_1$41._)`${fmts}[${schemaCode}]`);
+          const fDef = gen.const('fDef', (0, codegen_1$46._)`${fmts}[${schemaCode}]`);
           const fType = gen.let('fType');
-          const format$2 = gen.let('format');
+          const format$3 = gen.let('format');
           gen.if(
-            (0, codegen_1$41._)`typeof ${fDef} == "object" && !(${fDef} instanceof RegExp)`,
+            (0, codegen_1$46._)`typeof ${fDef} == "object" && !(${fDef} instanceof RegExp)`,
             () =>
               gen
-                .assign(fType, (0, codegen_1$41._)`${fDef}.type || "string"`)
-                .assign(format$2, (0, codegen_1$41._)`${fDef}.validate`),
-            () => gen.assign(fType, (0, codegen_1$41._)`"string"`).assign(format$2, fDef)
+                .assign(fType, (0, codegen_1$46._)`${fDef}.type || "string"`)
+                .assign(format$3, (0, codegen_1$46._)`${fDef}.validate`),
+            () => gen.assign(fType, (0, codegen_1$46._)`"string"`).assign(format$3, fDef)
           );
-          cxt.fail$data((0, codegen_1$41.or)(unknownFmt(), invalidFmt()));
+          cxt.fail$data((0, codegen_1$46.or)(unknownFmt(), invalidFmt()));
           function unknownFmt() {
-            if (opts.strictSchema === false) return codegen_1$41.nil;
-            return (0, codegen_1$41._)`${schemaCode} && !${format$2}`;
+            if (opts.strictSchema === false) return codegen_1$46.nil;
+            return (0, codegen_1$46._)`${schemaCode} && !${format$3}`;
           }
           function invalidFmt() {
             const callFormat = schemaEnv.$async
-              ? (0, codegen_1$41._)`(${fDef}.async ? await ${format$2}(${data}) : ${format$2}(${data}))`
-              : (0, codegen_1$41._)`${format$2}(${data})`;
+              ? (0, codegen_1$46._)`(${fDef}.async ? await ${format$3}(${data}) : ${format$3}(${data}))`
+              : (0, codegen_1$46._)`${format$3}(${data})`;
             const validData = (0,
-            codegen_1$41._)`(typeof ${format$2} == "function" ? ${callFormat} : ${format$2}.test(${data}))`;
+            codegen_1$46._)`(typeof ${format$3} == "function" ? ${callFormat} : ${format$3}.test(${data}))`;
             return (0,
-            codegen_1$41._)`${format$2} && ${format$2} !== true && ${fType} === ${ruleType} && !${validData}`;
+            codegen_1$46._)`${format$3} && ${format$3} !== true && ${fType} === ${ruleType} && !${validData}`;
           }
         }
         function validateFormat() {
-          const formatDef = self.formats[schema];
+          const formatDef = self$1.formats[schema$1];
           if (!formatDef) {
             unknownFormat();
             return;
           }
           if (formatDef === true) return;
-          const [fmtType, format$2, fmtRef] = getFormat(formatDef);
+          const [fmtType, format$3, fmtRef] = getFormat(formatDef);
           if (fmtType === ruleType) cxt.pass(validCondition());
           function unknownFormat() {
             if (opts.strictSchema === false) {
-              self.logger.warn(unknownMsg());
+              self$1.logger.warn(unknownMsg());
               return;
             }
             throw new Error(unknownMsg());
             function unknownMsg() {
-              return `unknown format "${schema}" ignored in schema at path "${errSchemaPath}"`;
+              return `unknown format "${schema$1}" ignored in schema at path "${errSchemaPath}"`;
             }
           }
           function getFormat(fmtDef$1) {
             const code =
               fmtDef$1 instanceof RegExp
-                ? (0, codegen_1$41.regexpCode)(fmtDef$1)
+                ? (0, codegen_1$46.regexpCode)(fmtDef$1)
                 : opts.code.formats
-                  ? (0, codegen_1$41._)`${opts.code.formats}${(0, codegen_1$41.getProperty)(schema)}`
+                  ? (0, codegen_1$46._)`${opts.code.formats}${(0, codegen_1$46.getProperty)(schema$1)}`
                   : void 0;
             const fmt = gen.scopeValue('formats', {
-              key: schema,
+              key: schema$1,
               ref: fmtDef$1,
               code,
             });
             if (typeof fmtDef$1 == 'object' && !(fmtDef$1 instanceof RegExp))
-              return [fmtDef$1.type || 'string', fmtDef$1.validate, (0, codegen_1$41._)`${fmt}.validate`];
+              return [fmtDef$1.type || 'string', fmtDef$1.validate, (0, codegen_1$46._)`${fmt}.validate`];
             return ['string', fmtDef$1, fmt];
           }
           function validCondition() {
             if (typeof formatDef == 'object' && !(formatDef instanceof RegExp) && formatDef.async) {
               if (!schemaEnv.$async) throw new Error('async format in sync schema');
-              return (0, codegen_1$41._)`await ${fmtRef}(${data})`;
+              return (0, codegen_1$46._)`await ${fmtRef}(${data})`;
             }
-            return typeof format$2 == 'function'
-              ? (0, codegen_1$41._)`${fmtRef}(${data})`
-              : (0, codegen_1$41._)`${fmtRef}.test(${data})`;
+            return typeof format$3 == 'function'
+              ? (0, codegen_1$46._)`${fmtRef}(${data})`
+              : (0, codegen_1$46._)`${fmtRef}.test(${data})`;
           }
         }
       },
     };
-    exports.default = def$31;
+    exports.default = def$40;
   },
 });
 
@@ -9791,9 +12448,9 @@ var require_format$3 = __commonJS({
 var require_format$2 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/format/index.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const format_1$3 = require_format$3();
-    const format$1 = [format_1$3.default];
-    exports.default = format$1;
+    const format_1$4 = require_format$3();
+    const format$2 = [format_1$4.default];
+    exports.default = format$2;
   },
 });
 
@@ -9813,18 +12470,18 @@ var require_metadata$1 = __commonJS({
 var require_draft7$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/draft7.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const core_1$3 = require_core$2();
-    const validation_1$1 = require_validation$1();
-    const applicator_1$1 = require_applicator$1();
-    const format_1$2 = require_format$2();
-    const metadata_1$1 = require_metadata$1();
+    const core_1$5 = require_core$3();
+    const validation_1$2 = require_validation$2();
+    const applicator_1$2 = require_applicator$2();
+    const format_1$3 = require_format$2();
+    const metadata_1$2 = require_metadata$1();
     const draft7Vocabularies$1 = [
-      core_1$3.default,
-      validation_1$1.default,
-      (0, applicator_1$1.default)(),
-      format_1$2.default,
-      metadata_1$1.metadataVocabulary,
-      metadata_1$1.contentVocabulary,
+      core_1$5.default,
+      validation_1$2.default,
+      (0, applicator_1$2.default)(),
+      format_1$3.default,
+      metadata_1$2.metadataVocabulary,
+      metadata_1$2.contentVocabulary,
     ];
     exports.default = draft7Vocabularies$1;
   },
@@ -9832,7 +12489,7 @@ var require_draft7$1 = __commonJS({
 
 //#endregion
 //#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/discriminator/types.js
-var require_types$1 = __commonJS({
+var require_types$2 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/discriminator/types.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.DiscrError = void 0;
@@ -9849,40 +12506,40 @@ var require_types$1 = __commonJS({
 var require_discriminator$1 = __commonJS({
   '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/discriminator/index.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
-    const codegen_1$40 = require_codegen$1();
-    const types_1$1 = require_types$1();
-    const compile_1$3 = require_compile$1();
-    const ref_error_1$5 = require_ref_error$1();
-    const util_1$30 = require_util$1();
-    const error$20 = {
+    const codegen_1$45 = require_codegen$1();
+    const types_1$6 = require_types$2();
+    const compile_1$4 = require_compile$1();
+    const ref_error_1$6 = require_ref_error$1();
+    const util_1$34 = require_util$1();
+    const error$22 = {
       message: ({ params: { discrError, tagName } }) =>
-        discrError === types_1$1.DiscrError.Tag
+        discrError === types_1$6.DiscrError.Tag
           ? `tag "${tagName}" must be string`
           : `value of tag "${tagName}" must be in oneOf`,
       params: ({ params: { discrError, tag, tagName } }) =>
-        (0, codegen_1$40._)`{error: ${discrError}, tag: ${tagName}, tagValue: ${tag}}`,
+        (0, codegen_1$45._)`{error: ${discrError}, tag: ${tagName}, tagValue: ${tag}}`,
     };
-    const def$30 = {
+    const def$39 = {
       keyword: 'discriminator',
       type: 'object',
       schemaType: 'object',
-      error: error$20,
+      error: error$22,
       code(cxt) {
-        const { gen, data, schema, parentSchema, it } = cxt;
+        const { gen, data, schema: schema$1, parentSchema, it } = cxt;
         const { oneOf } = parentSchema;
         if (!it.opts.discriminator) throw new Error('discriminator: requires discriminator option');
-        const tagName = schema.propertyName;
+        const tagName = schema$1.propertyName;
         if (typeof tagName != 'string') throw new Error('discriminator: requires propertyName');
-        if (schema.mapping) throw new Error('discriminator: mapping is not supported');
+        if (schema$1.mapping) throw new Error('discriminator: mapping is not supported');
         if (!oneOf) throw new Error('discriminator: requires oneOf keyword');
         const valid = gen.let('valid', false);
-        const tag = gen.const('tag', (0, codegen_1$40._)`${data}${(0, codegen_1$40.getProperty)(tagName)}`);
+        const tag = gen.const('tag', (0, codegen_1$45._)`${data}${(0, codegen_1$45.getProperty)(tagName)}`);
         gen.if(
-          (0, codegen_1$40._)`typeof ${tag} == "string"`,
+          (0, codegen_1$45._)`typeof ${tag} == "string"`,
           () => validateMapping(),
           () =>
             cxt.error(false, {
-              discrError: types_1$1.DiscrError.Tag,
+              discrError: types_1$6.DiscrError.Tag,
               tag,
               tagName,
             })
@@ -9892,12 +12549,12 @@ var require_discriminator$1 = __commonJS({
           const mapping = getMapping();
           gen.if(false);
           for (const tagValue in mapping) {
-            gen.elseIf((0, codegen_1$40._)`${tag} === ${tagValue}`);
+            gen.elseIf((0, codegen_1$45._)`${tag} === ${tagValue}`);
             gen.assign(valid, applyTagSchema(mapping[tagValue]));
           }
           gen.else();
           cxt.error(false, {
-            discrError: types_1$1.DiscrError.Mapping,
+            discrError: types_1$6.DiscrError.Mapping,
             tag,
             tagName,
           });
@@ -9912,11 +12569,11 @@ var require_discriminator$1 = __commonJS({
             },
             _valid
           );
-          cxt.mergeEvaluated(schCxt, codegen_1$40.Name);
+          cxt.mergeEvaluated(schCxt, codegen_1$45.Name);
           return _valid;
         }
         function getMapping() {
-          var _a$2;
+          var _a$4;
           const oneOfMapping = {};
           const topRequired = hasRequired(parentSchema);
           let tagRequired = true;
@@ -9924,17 +12581,17 @@ var require_discriminator$1 = __commonJS({
             let sch = oneOf[i];
             if (
               (sch === null || sch === void 0 ? void 0 : sch.$ref) &&
-              !(0, util_1$30.schemaHasRulesButRef)(sch, it.self.RULES)
+              !(0, util_1$34.schemaHasRulesButRef)(sch, it.self.RULES)
             ) {
               const ref = sch.$ref;
-              sch = compile_1$3.resolveRef.call(it.self, it.schemaEnv.root, it.baseId, ref);
-              if (sch instanceof compile_1$3.SchemaEnv) sch = sch.schema;
-              if (sch === void 0) throw new ref_error_1$5.default(it.opts.uriResolver, it.baseId, ref);
+              sch = compile_1$4.resolveRef.call(it.self, it.schemaEnv.root, it.baseId, ref);
+              if (sch instanceof compile_1$4.SchemaEnv) sch = sch.schema;
+              if (sch === void 0) throw new ref_error_1$6.default(it.opts.uriResolver, it.baseId, ref);
             }
             const propSch =
-              (_a$2 = sch === null || sch === void 0 ? void 0 : sch.properties) === null || _a$2 === void 0
+              (_a$4 = sch === null || sch === void 0 ? void 0 : sch.properties) === null || _a$4 === void 0
                 ? void 0
-                : _a$2[tagName];
+                : _a$4[tagName];
             if (typeof propSch != 'object')
               throw new Error(
                 `discriminator: oneOf subschemas (or referenced schemas) must have "properties/${tagName}"`
@@ -9960,7 +12617,7 @@ var require_discriminator$1 = __commonJS({
         }
       },
     };
-    exports.default = def$30;
+    exports.default = def$39;
   },
 });
 
@@ -10118,30 +12775,30 @@ var require_ajv$1 = __commonJS({
       exports.KeywordCxt =
       exports.Ajv =
         void 0;
-    const core_1$2 = require_core$3();
+    const core_1$4 = require_core$4();
     const draft7_1$1 = require_draft7$1();
-    const discriminator_1$1 = require_discriminator$1();
+    const discriminator_1$2 = require_discriminator$1();
     const draft7MetaSchema$1 = require_json_schema_draft_07$1();
-    const META_SUPPORT_DATA$1 = ['/properties'];
-    const META_SCHEMA_ID$1 = 'http://json-schema.org/draft-07/schema';
-    var Ajv$2 = class extends core_1$2.default {
+    const META_SUPPORT_DATA$2 = ['/properties'];
+    const META_SCHEMA_ID$2 = 'http://json-schema.org/draft-07/schema';
+    var Ajv$2 = class extends core_1$4.default {
       _addVocabularies() {
         super._addVocabularies();
         draft7_1$1.default.forEach((v) => this.addVocabulary(v));
-        if (this.opts.discriminator) this.addKeyword(discriminator_1$1.default);
+        if (this.opts.discriminator) this.addKeyword(discriminator_1$2.default);
       }
       _addDefaultMetaSchema() {
         super._addDefaultMetaSchema();
         if (!this.opts.meta) return;
-        const metaSchema = this.opts.$data
-          ? this.$dataMetaSchema(draft7MetaSchema$1, META_SUPPORT_DATA$1)
+        const metaSchema$1 = this.opts.$data
+          ? this.$dataMetaSchema(draft7MetaSchema$1, META_SUPPORT_DATA$2)
           : draft7MetaSchema$1;
-        this.addMetaSchema(metaSchema, META_SCHEMA_ID$1, false);
-        this.refs['http://json-schema.org/schema'] = META_SCHEMA_ID$1;
+        this.addMetaSchema(metaSchema$1, META_SCHEMA_ID$2, false);
+        this.refs['http://json-schema.org/schema'] = META_SCHEMA_ID$2;
       }
       defaultMeta() {
         return (this.opts.defaultMeta =
-          super.defaultMeta() || (this.getSchema(META_SCHEMA_ID$1) ? META_SCHEMA_ID$1 : void 0));
+          super.defaultMeta() || (this.getSchema(META_SCHEMA_ID$2) ? META_SCHEMA_ID$2 : void 0));
       }
     };
     exports.Ajv = Ajv$2;
@@ -10149,6 +12806,851 @@ var require_ajv$1 = __commonJS({
     module.exports.Ajv = Ajv$2;
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.default = Ajv$2;
+    var validate_1$6 = require_validate$1();
+    Object.defineProperty(exports, 'KeywordCxt', {
+      enumerable: true,
+      get: function () {
+        return validate_1$6.KeywordCxt;
+      },
+    });
+    var codegen_1$44 = require_codegen$1();
+    Object.defineProperty(exports, '_', {
+      enumerable: true,
+      get: function () {
+        return codegen_1$44._;
+      },
+    });
+    Object.defineProperty(exports, 'str', {
+      enumerable: true,
+      get: function () {
+        return codegen_1$44.str;
+      },
+    });
+    Object.defineProperty(exports, 'stringify', {
+      enumerable: true,
+      get: function () {
+        return codegen_1$44.stringify;
+      },
+    });
+    Object.defineProperty(exports, 'nil', {
+      enumerable: true,
+      get: function () {
+        return codegen_1$44.nil;
+      },
+    });
+    Object.defineProperty(exports, 'Name', {
+      enumerable: true,
+      get: function () {
+        return codegen_1$44.Name;
+      },
+    });
+    Object.defineProperty(exports, 'CodeGen', {
+      enumerable: true,
+      get: function () {
+        return codegen_1$44.CodeGen;
+      },
+    });
+    var validation_error_1$4 = require_validation_error$1();
+    Object.defineProperty(exports, 'ValidationError', {
+      enumerable: true,
+      get: function () {
+        return validation_error_1$4.default;
+      },
+    });
+    var ref_error_1$5 = require_ref_error$1();
+    Object.defineProperty(exports, 'MissingRefError', {
+      enumerable: true,
+      get: function () {
+        return ref_error_1$5.default;
+      },
+    });
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/dynamicAnchor.js
+var require_dynamicAnchor = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/dynamicAnchor.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.dynamicAnchor = void 0;
+    const codegen_1$43 = require_codegen$1();
+    const names_1$11 = require_names$1();
+    const compile_1$3 = require_compile$1();
+    const ref_1$2 = require_ref$1();
+    const def$38 = {
+      keyword: '$dynamicAnchor',
+      schemaType: 'string',
+      code: (cxt) => dynamicAnchor(cxt, cxt.schema),
+    };
+    function dynamicAnchor(cxt, anchor) {
+      const { gen, it } = cxt;
+      it.schemaEnv.root.dynamicAnchors[anchor] = true;
+      const v = (0, codegen_1$43._)`${names_1$11.default.dynamicAnchors}${(0, codegen_1$43.getProperty)(anchor)}`;
+      const validate$1 = it.errSchemaPath === '#' ? it.validateName : _getValidate(cxt);
+      gen.if((0, codegen_1$43._)`!${v}`, () => gen.assign(v, validate$1));
+    }
+    exports.dynamicAnchor = dynamicAnchor;
+    function _getValidate(cxt) {
+      const { schemaEnv, schema: schema$1, self: self$1 } = cxt.it;
+      const { root, baseId, localRefs, meta } = schemaEnv.root;
+      const { schemaId } = self$1.opts;
+      const sch = new compile_1$3.SchemaEnv({
+        schema: schema$1,
+        schemaId,
+        root,
+        baseId,
+        localRefs,
+        meta,
+      });
+      compile_1$3.compileSchema.call(self$1, sch);
+      return (0, ref_1$2.getValidate)(cxt, sch);
+    }
+    exports.default = def$38;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/dynamicRef.js
+var require_dynamicRef = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/dynamicRef.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.dynamicRef = void 0;
+    const codegen_1$42 = require_codegen$1();
+    const names_1$10 = require_names$1();
+    const ref_1$1 = require_ref$1();
+    const def$37 = {
+      keyword: '$dynamicRef',
+      schemaType: 'string',
+      code: (cxt) => dynamicRef(cxt, cxt.schema),
+    };
+    function dynamicRef(cxt, ref) {
+      const { gen, keyword: keyword$1, it } = cxt;
+      if (ref[0] !== '#') throw new Error(`"${keyword$1}" only supports hash fragment reference`);
+      const anchor = ref.slice(1);
+      if (it.allErrors) _dynamicRef();
+      else {
+        const valid = gen.let('valid', false);
+        _dynamicRef(valid);
+        cxt.ok(valid);
+      }
+      function _dynamicRef(valid) {
+        if (it.schemaEnv.root.dynamicAnchors[anchor]) {
+          const v = gen.let(
+            '_v',
+            (0, codegen_1$42._)`${names_1$10.default.dynamicAnchors}${(0, codegen_1$42.getProperty)(anchor)}`
+          );
+          gen.if(v, _callRef(v, valid), _callRef(it.validateName, valid));
+        } else _callRef(it.validateName, valid)();
+      }
+      function _callRef(validate$1, valid) {
+        return valid
+          ? () =>
+              gen.block(() => {
+                (0, ref_1$1.callRef)(cxt, validate$1);
+                gen.let(valid, true);
+              })
+          : () => (0, ref_1$1.callRef)(cxt, validate$1);
+      }
+    }
+    exports.dynamicRef = dynamicRef;
+    exports.default = def$37;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/recursiveAnchor.js
+var require_recursiveAnchor = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/recursiveAnchor.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const dynamicAnchor_1$1 = require_dynamicAnchor();
+    const util_1$33 = require_util$1();
+    const def$36 = {
+      keyword: '$recursiveAnchor',
+      schemaType: 'boolean',
+      code(cxt) {
+        if (cxt.schema) (0, dynamicAnchor_1$1.dynamicAnchor)(cxt, '');
+        else (0, util_1$33.checkStrictMode)(cxt.it, '$recursiveAnchor: false is ignored');
+      },
+    };
+    exports.default = def$36;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/recursiveRef.js
+var require_recursiveRef = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/recursiveRef.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const dynamicRef_1$1 = require_dynamicRef();
+    const def$35 = {
+      keyword: '$recursiveRef',
+      schemaType: 'string',
+      code: (cxt) => (0, dynamicRef_1$1.dynamicRef)(cxt, cxt.schema),
+    };
+    exports.default = def$35;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/index.js
+var require_dynamic = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/dynamic/index.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const dynamicAnchor_1 = require_dynamicAnchor();
+    const dynamicRef_1 = require_dynamicRef();
+    const recursiveAnchor_1 = require_recursiveAnchor();
+    const recursiveRef_1 = require_recursiveRef();
+    const dynamic = [dynamicAnchor_1.default, dynamicRef_1.default, recursiveAnchor_1.default, recursiveRef_1.default];
+    exports.default = dynamic;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/dependentRequired.js
+var require_dependentRequired = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/dependentRequired.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const dependencies_1$2 = require_dependencies$1();
+    const def$34 = {
+      keyword: 'dependentRequired',
+      type: 'object',
+      schemaType: 'object',
+      error: dependencies_1$2.error,
+      code: (cxt) => (0, dependencies_1$2.validatePropertyDeps)(cxt),
+    };
+    exports.default = def$34;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/dependentSchemas.js
+var require_dependentSchemas = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/applicator/dependentSchemas.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const dependencies_1$1 = require_dependencies$1();
+    const def$33 = {
+      keyword: 'dependentSchemas',
+      type: 'object',
+      schemaType: 'object',
+      code: (cxt) => (0, dependencies_1$1.validateSchemaDeps)(cxt),
+    };
+    exports.default = def$33;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/limitContains.js
+var require_limitContains = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/validation/limitContains.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const util_1$32 = require_util$1();
+    const def$32 = {
+      keyword: ['maxContains', 'minContains'],
+      type: 'array',
+      schemaType: 'number',
+      code({ keyword: keyword$1, parentSchema, it }) {
+        if (parentSchema.contains === void 0)
+          (0, util_1$32.checkStrictMode)(it, `"${keyword$1}" without "contains" is ignored`);
+      },
+    };
+    exports.default = def$32;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/next.js
+var require_next = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/next.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const dependentRequired_1 = require_dependentRequired();
+    const dependentSchemas_1 = require_dependentSchemas();
+    const limitContains_1 = require_limitContains();
+    const next = [dependentRequired_1.default, dependentSchemas_1.default, limitContains_1.default];
+    exports.default = next;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/unevaluated/unevaluatedProperties.js
+var require_unevaluatedProperties = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/unevaluated/unevaluatedProperties.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const codegen_1$41 = require_codegen$1();
+    const util_1$31 = require_util$1();
+    const names_1$9 = require_names$1();
+    const error$21 = {
+      message: 'must NOT have unevaluated properties',
+      params: ({ params }) => (0, codegen_1$41._)`{unevaluatedProperty: ${params.unevaluatedProperty}}`,
+    };
+    const def$31 = {
+      keyword: 'unevaluatedProperties',
+      type: 'object',
+      schemaType: ['boolean', 'object'],
+      trackErrors: true,
+      error: error$21,
+      code(cxt) {
+        const { gen, schema: schema$1, data, errsCount, it } = cxt;
+        /* istanbul ignore if */
+        if (!errsCount) throw new Error('ajv implementation error');
+        const { allErrors, props } = it;
+        if (props instanceof codegen_1$41.Name)
+          gen.if((0, codegen_1$41._)`${props} !== true`, () =>
+            gen.forIn('key', data, (key) => gen.if(unevaluatedDynamic(props, key), () => unevaluatedPropCode(key)))
+          );
+        else if (props !== true)
+          gen.forIn('key', data, (key) =>
+            props === void 0
+              ? unevaluatedPropCode(key)
+              : gen.if(unevaluatedStatic(props, key), () => unevaluatedPropCode(key))
+          );
+        it.props = true;
+        cxt.ok((0, codegen_1$41._)`${errsCount} === ${names_1$9.default.errors}`);
+        function unevaluatedPropCode(key) {
+          if (schema$1 === false) {
+            cxt.setParams({ unevaluatedProperty: key });
+            cxt.error();
+            if (!allErrors) gen.break();
+            return;
+          }
+          if (!(0, util_1$31.alwaysValidSchema)(it, schema$1)) {
+            const valid = gen.name('valid');
+            cxt.subschema(
+              {
+                keyword: 'unevaluatedProperties',
+                dataProp: key,
+                dataPropType: util_1$31.Type.Str,
+              },
+              valid
+            );
+            if (!allErrors) gen.if((0, codegen_1$41.not)(valid), () => gen.break());
+          }
+        }
+        function unevaluatedDynamic(evaluatedProps, key) {
+          return (0, codegen_1$41._)`!${evaluatedProps} || !${evaluatedProps}[${key}]`;
+        }
+        function unevaluatedStatic(evaluatedProps, key) {
+          const ps = [];
+          for (const p in evaluatedProps) if (evaluatedProps[p] === true) ps.push((0, codegen_1$41._)`${key} !== ${p}`);
+          return (0, codegen_1$41.and)(...ps);
+        }
+      },
+    };
+    exports.default = def$31;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/unevaluated/unevaluatedItems.js
+var require_unevaluatedItems = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/unevaluated/unevaluatedItems.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const codegen_1$40 = require_codegen$1();
+    const util_1$30 = require_util$1();
+    const error$20 = {
+      message: ({ params: { len } }) => (0, codegen_1$40.str)`must NOT have more than ${len} items`,
+      params: ({ params: { len } }) => (0, codegen_1$40._)`{limit: ${len}}`,
+    };
+    const def$30 = {
+      keyword: 'unevaluatedItems',
+      type: 'array',
+      schemaType: ['boolean', 'object'],
+      error: error$20,
+      code(cxt) {
+        const { gen, schema: schema$1, data, it } = cxt;
+        const items = it.items || 0;
+        if (items === true) return;
+        const len = gen.const('len', (0, codegen_1$40._)`${data}.length`);
+        if (schema$1 === false) {
+          cxt.setParams({ len: items });
+          cxt.fail((0, codegen_1$40._)`${len} > ${items}`);
+        } else if (typeof schema$1 == 'object' && !(0, util_1$30.alwaysValidSchema)(it, schema$1)) {
+          const valid = gen.var('valid', (0, codegen_1$40._)`${len} <= ${items}`);
+          gen.if((0, codegen_1$40.not)(valid), () => validateItems(valid, items));
+          cxt.ok(valid);
+        }
+        it.items = true;
+        function validateItems(valid, from) {
+          gen.forRange('i', from, len, (i) => {
+            cxt.subschema(
+              {
+                keyword: 'unevaluatedItems',
+                dataProp: i,
+                dataPropType: util_1$30.Type.Num,
+              },
+              valid
+            );
+            if (!it.allErrors) gen.if((0, codegen_1$40.not)(valid), () => gen.break());
+          });
+        }
+      },
+    };
+    exports.default = def$30;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/unevaluated/index.js
+var require_unevaluated$1 = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/unevaluated/index.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const unevaluatedProperties_1 = require_unevaluatedProperties();
+    const unevaluatedItems_1 = require_unevaluatedItems();
+    const unevaluated$1 = [unevaluatedProperties_1.default, unevaluatedItems_1.default];
+    exports.default = unevaluated$1;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/draft2020.js
+var require_draft2020 = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/vocabularies/draft2020.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const core_1$3 = require_core$3();
+    const validation_1$1 = require_validation$2();
+    const applicator_1$1 = require_applicator$2();
+    const dynamic_1 = require_dynamic();
+    const next_1 = require_next();
+    const unevaluated_1 = require_unevaluated$1();
+    const format_1$2 = require_format$2();
+    const metadata_1$1 = require_metadata$1();
+    const draft2020Vocabularies = [
+      dynamic_1.default,
+      core_1$3.default,
+      validation_1$1.default,
+      (0, applicator_1$1.default)(true),
+      format_1$2.default,
+      metadata_1$1.metadataVocabulary,
+      metadata_1$1.contentVocabulary,
+      next_1.default,
+      unevaluated_1.default,
+    ];
+    exports.default = draft2020Vocabularies;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/schema.json
+var require_schema = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/schema.json'(exports, module) {
+    module.exports = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: 'https://json-schema.org/draft/2020-12/schema',
+      $vocabulary: {
+        'https://json-schema.org/draft/2020-12/vocab/core': true,
+        'https://json-schema.org/draft/2020-12/vocab/applicator': true,
+        'https://json-schema.org/draft/2020-12/vocab/unevaluated': true,
+        'https://json-schema.org/draft/2020-12/vocab/validation': true,
+        'https://json-schema.org/draft/2020-12/vocab/meta-data': true,
+        'https://json-schema.org/draft/2020-12/vocab/format-annotation': true,
+        'https://json-schema.org/draft/2020-12/vocab/content': true,
+      },
+      $dynamicAnchor: 'meta',
+      title: 'Core and Validation specifications meta-schema',
+      allOf: [
+        { $ref: 'meta/core' },
+        { $ref: 'meta/applicator' },
+        { $ref: 'meta/unevaluated' },
+        { $ref: 'meta/validation' },
+        { $ref: 'meta/meta-data' },
+        { $ref: 'meta/format-annotation' },
+        { $ref: 'meta/content' },
+      ],
+      type: ['object', 'boolean'],
+      $comment:
+        'This meta-schema also defines keywords that have appeared in previous drafts in order to prevent incompatible extensions as they remain in common use.',
+      properties: {
+        definitions: {
+          $comment: '"definitions" has been replaced by "$defs".',
+          type: 'object',
+          additionalProperties: { $dynamicRef: '#meta' },
+          deprecated: true,
+          default: {},
+        },
+        dependencies: {
+          $comment:
+            '"dependencies" has been split and replaced by "dependentSchemas" and "dependentRequired" in order to serve their differing semantics.',
+          type: 'object',
+          additionalProperties: { anyOf: [{ $dynamicRef: '#meta' }, { $ref: 'meta/validation#/$defs/stringArray' }] },
+          deprecated: true,
+          default: {},
+        },
+        $recursiveAnchor: {
+          $comment: '"$recursiveAnchor" has been replaced by "$dynamicAnchor".',
+          $ref: 'meta/core#/$defs/anchorString',
+          deprecated: true,
+        },
+        $recursiveRef: {
+          $comment: '"$recursiveRef" has been replaced by "$dynamicRef".',
+          $ref: 'meta/core#/$defs/uriReferenceString',
+          deprecated: true,
+        },
+      },
+    };
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/applicator.json
+var require_applicator$1 = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/applicator.json'(exports, module) {
+    module.exports = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: 'https://json-schema.org/draft/2020-12/meta/applicator',
+      $vocabulary: { 'https://json-schema.org/draft/2020-12/vocab/applicator': true },
+      $dynamicAnchor: 'meta',
+      title: 'Applicator vocabulary meta-schema',
+      type: ['object', 'boolean'],
+      properties: {
+        prefixItems: { $ref: '#/$defs/schemaArray' },
+        items: { $dynamicRef: '#meta' },
+        contains: { $dynamicRef: '#meta' },
+        additionalProperties: { $dynamicRef: '#meta' },
+        properties: {
+          type: 'object',
+          additionalProperties: { $dynamicRef: '#meta' },
+          default: {},
+        },
+        patternProperties: {
+          type: 'object',
+          additionalProperties: { $dynamicRef: '#meta' },
+          propertyNames: { format: 'regex' },
+          default: {},
+        },
+        dependentSchemas: {
+          type: 'object',
+          additionalProperties: { $dynamicRef: '#meta' },
+          default: {},
+        },
+        propertyNames: { $dynamicRef: '#meta' },
+        if: { $dynamicRef: '#meta' },
+        then: { $dynamicRef: '#meta' },
+        else: { $dynamicRef: '#meta' },
+        allOf: { $ref: '#/$defs/schemaArray' },
+        anyOf: { $ref: '#/$defs/schemaArray' },
+        oneOf: { $ref: '#/$defs/schemaArray' },
+        not: { $dynamicRef: '#meta' },
+      },
+      $defs: {
+        schemaArray: {
+          type: 'array',
+          minItems: 1,
+          items: { $dynamicRef: '#meta' },
+        },
+      },
+    };
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/unevaluated.json
+var require_unevaluated = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/unevaluated.json'(exports, module) {
+    module.exports = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: 'https://json-schema.org/draft/2020-12/meta/unevaluated',
+      $vocabulary: { 'https://json-schema.org/draft/2020-12/vocab/unevaluated': true },
+      $dynamicAnchor: 'meta',
+      title: 'Unevaluated applicator vocabulary meta-schema',
+      type: ['object', 'boolean'],
+      properties: {
+        unevaluatedItems: { $dynamicRef: '#meta' },
+        unevaluatedProperties: { $dynamicRef: '#meta' },
+      },
+    };
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/content.json
+var require_content = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/content.json'(exports, module) {
+    module.exports = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: 'https://json-schema.org/draft/2020-12/meta/content',
+      $vocabulary: { 'https://json-schema.org/draft/2020-12/vocab/content': true },
+      $dynamicAnchor: 'meta',
+      title: 'Content vocabulary meta-schema',
+      type: ['object', 'boolean'],
+      properties: {
+        contentEncoding: { type: 'string' },
+        contentMediaType: { type: 'string' },
+        contentSchema: { $dynamicRef: '#meta' },
+      },
+    };
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/core.json
+var require_core$2 = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/core.json'(exports, module) {
+    module.exports = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: 'https://json-schema.org/draft/2020-12/meta/core',
+      $vocabulary: { 'https://json-schema.org/draft/2020-12/vocab/core': true },
+      $dynamicAnchor: 'meta',
+      title: 'Core vocabulary meta-schema',
+      type: ['object', 'boolean'],
+      properties: {
+        $id: {
+          $ref: '#/$defs/uriReferenceString',
+          $comment: 'Non-empty fragments not allowed.',
+          pattern: '^[^#]*#?$',
+        },
+        $schema: { $ref: '#/$defs/uriString' },
+        $ref: { $ref: '#/$defs/uriReferenceString' },
+        $anchor: { $ref: '#/$defs/anchorString' },
+        $dynamicRef: { $ref: '#/$defs/uriReferenceString' },
+        $dynamicAnchor: { $ref: '#/$defs/anchorString' },
+        $vocabulary: {
+          type: 'object',
+          propertyNames: { $ref: '#/$defs/uriString' },
+          additionalProperties: { type: 'boolean' },
+        },
+        $comment: { type: 'string' },
+        $defs: {
+          type: 'object',
+          additionalProperties: { $dynamicRef: '#meta' },
+        },
+      },
+      $defs: {
+        anchorString: {
+          type: 'string',
+          pattern: '^[A-Za-z_][-A-Za-z0-9._]*$',
+        },
+        uriString: {
+          type: 'string',
+          format: 'uri',
+        },
+        uriReferenceString: {
+          type: 'string',
+          format: 'uri-reference',
+        },
+      },
+    };
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/format-annotation.json
+var require_format_annotation = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/format-annotation.json'(exports, module) {
+    module.exports = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: 'https://json-schema.org/draft/2020-12/meta/format-annotation',
+      $vocabulary: { 'https://json-schema.org/draft/2020-12/vocab/format-annotation': true },
+      $dynamicAnchor: 'meta',
+      title: 'Format vocabulary meta-schema for annotation results',
+      type: ['object', 'boolean'],
+      properties: { format: { type: 'string' } },
+    };
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/meta-data.json
+var require_meta_data = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/meta-data.json'(exports, module) {
+    module.exports = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: 'https://json-schema.org/draft/2020-12/meta/meta-data',
+      $vocabulary: { 'https://json-schema.org/draft/2020-12/vocab/meta-data': true },
+      $dynamicAnchor: 'meta',
+      title: 'Meta-data vocabulary meta-schema',
+      type: ['object', 'boolean'],
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+        default: true,
+        deprecated: {
+          type: 'boolean',
+          default: false,
+        },
+        readOnly: {
+          type: 'boolean',
+          default: false,
+        },
+        writeOnly: {
+          type: 'boolean',
+          default: false,
+        },
+        examples: {
+          type: 'array',
+          items: true,
+        },
+      },
+    };
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/validation.json
+var require_validation$1 = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/meta/validation.json'(exports, module) {
+    module.exports = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: 'https://json-schema.org/draft/2020-12/meta/validation',
+      $vocabulary: { 'https://json-schema.org/draft/2020-12/vocab/validation': true },
+      $dynamicAnchor: 'meta',
+      title: 'Validation vocabulary meta-schema',
+      type: ['object', 'boolean'],
+      properties: {
+        type: {
+          anyOf: [
+            { $ref: '#/$defs/simpleTypes' },
+            {
+              type: 'array',
+              items: { $ref: '#/$defs/simpleTypes' },
+              minItems: 1,
+              uniqueItems: true,
+            },
+          ],
+        },
+        const: true,
+        enum: {
+          type: 'array',
+          items: true,
+        },
+        multipleOf: {
+          type: 'number',
+          exclusiveMinimum: 0,
+        },
+        maximum: { type: 'number' },
+        exclusiveMaximum: { type: 'number' },
+        minimum: { type: 'number' },
+        exclusiveMinimum: { type: 'number' },
+        maxLength: { $ref: '#/$defs/nonNegativeInteger' },
+        minLength: { $ref: '#/$defs/nonNegativeIntegerDefault0' },
+        pattern: {
+          type: 'string',
+          format: 'regex',
+        },
+        maxItems: { $ref: '#/$defs/nonNegativeInteger' },
+        minItems: { $ref: '#/$defs/nonNegativeIntegerDefault0' },
+        uniqueItems: {
+          type: 'boolean',
+          default: false,
+        },
+        maxContains: { $ref: '#/$defs/nonNegativeInteger' },
+        minContains: {
+          $ref: '#/$defs/nonNegativeInteger',
+          default: 1,
+        },
+        maxProperties: { $ref: '#/$defs/nonNegativeInteger' },
+        minProperties: { $ref: '#/$defs/nonNegativeIntegerDefault0' },
+        required: { $ref: '#/$defs/stringArray' },
+        dependentRequired: {
+          type: 'object',
+          additionalProperties: { $ref: '#/$defs/stringArray' },
+        },
+      },
+      $defs: {
+        nonNegativeInteger: {
+          type: 'integer',
+          minimum: 0,
+        },
+        nonNegativeIntegerDefault0: {
+          $ref: '#/$defs/nonNegativeInteger',
+          default: 0,
+        },
+        simpleTypes: { enum: ['array', 'boolean', 'integer', 'null', 'number', 'object', 'string'] },
+        stringArray: {
+          type: 'array',
+          items: { type: 'string' },
+          uniqueItems: true,
+          default: [],
+        },
+      },
+    };
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/index.js
+var require_json_schema_2020_12 = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/refs/json-schema-2020-12/index.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    const metaSchema = require_schema();
+    const applicator = require_applicator$1();
+    const unevaluated = require_unevaluated();
+    const content = require_content();
+    const core$1 = require_core$2();
+    const format$1 = require_format_annotation();
+    const metadata = require_meta_data();
+    const validation$1 = require_validation$1();
+    const META_SUPPORT_DATA$1 = ['/properties'];
+    function addMetaSchema2020($data) {
+      [
+        metaSchema,
+        applicator,
+        unevaluated,
+        content,
+        core$1,
+        with$data(this, format$1),
+        metadata,
+        with$data(this, validation$1),
+      ].forEach((sch) => this.addMetaSchema(sch, void 0, false));
+      return this;
+      function with$data(ajv, sch) {
+        return $data ? ajv.$dataMetaSchema(sch, META_SUPPORT_DATA$1) : sch;
+      }
+    }
+    exports.default = addMetaSchema2020;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk-ajv/node_modules/ajv/dist/2020.js
+var require__2020 = __commonJS({
+  '../packages/vovk-ajv/node_modules/ajv/dist/2020.js'(exports, module) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.MissingRefError =
+      exports.ValidationError =
+      exports.CodeGen =
+      exports.Name =
+      exports.nil =
+      exports.stringify =
+      exports.str =
+      exports._ =
+      exports.KeywordCxt =
+      exports.Ajv2020 =
+        void 0;
+    const core_1$2 = require_core$4();
+    const draft2020_1 = require_draft2020();
+    const discriminator_1$1 = require_discriminator$1();
+    const json_schema_2020_12_1 = require_json_schema_2020_12();
+    const META_SCHEMA_ID$1 = 'https://json-schema.org/draft/2020-12/schema';
+    var Ajv2020 = class extends core_1$2.default {
+      constructor(opts = {}) {
+        super({
+          ...opts,
+          dynamicRef: true,
+          next: true,
+          unevaluated: true,
+        });
+      }
+      _addVocabularies() {
+        super._addVocabularies();
+        draft2020_1.default.forEach((v) => this.addVocabulary(v));
+        if (this.opts.discriminator) this.addKeyword(discriminator_1$1.default);
+      }
+      _addDefaultMetaSchema() {
+        super._addDefaultMetaSchema();
+        const { $data, meta } = this.opts;
+        if (!meta) return;
+        json_schema_2020_12_1.default.call(this, $data);
+        this.refs['http://json-schema.org/schema'] = META_SCHEMA_ID$1;
+      }
+      defaultMeta() {
+        return (this.opts.defaultMeta =
+          super.defaultMeta() || (this.getSchema(META_SCHEMA_ID$1) ? META_SCHEMA_ID$1 : void 0));
+      }
+    };
+    exports.Ajv2020 = Ajv2020;
+    module.exports = exports = Ajv2020;
+    module.exports.Ajv2020 = Ajv2020;
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.default = Ajv2020;
     var validate_1$5 = require_validate$1();
     Object.defineProperty(exports, 'KeywordCxt', {
       enumerable: true,
@@ -10452,15 +13954,15 @@ var require_code$1 = __commonJS({
         return item === '' || item === '""';
       }
       get str() {
-        var _a$2;
-        return (_a$2 = this._str) !== null && _a$2 !== void 0
-          ? _a$2
+        var _a$4;
+        return (_a$4 = this._str) !== null && _a$4 !== void 0
+          ? _a$4
           : (this._str = this._items.reduce((s, c) => `${s}${c}`, ''));
       }
       get names() {
-        var _a$2;
-        return (_a$2 = this._names) !== null && _a$2 !== void 0
-          ? _a$2
+        var _a$4;
+        return (_a$4 = this._names) !== null && _a$4 !== void 0
+          ? _a$4
           : (this._names = this._items.reduce((names$2, c) => {
               if (c instanceof Name) names$2[c.str] = (names$2[c.str] || 0) + 1;
               return names$2;
@@ -10599,9 +14101,9 @@ var require_scope = __commonJS({
         return `${prefix}${ng.index++}`;
       }
       _nameGroup(prefix) {
-        var _a$2, _b;
+        var _a$4, _b;
         if (
-          ((_b = (_a$2 = this._parent) === null || _a$2 === void 0 ? void 0 : _a$2._prefixes) === null || _b === void 0
+          ((_b = (_a$4 = this._parent) === null || _a$4 === void 0 ? void 0 : _a$4._prefixes) === null || _b === void 0
             ? void 0
             : _b.has(prefix)) ||
           (this._prefixes && !this._prefixes.has(prefix))
@@ -10643,16 +14145,16 @@ var require_scope = __commonJS({
         return new ValueScopeName(prefix, this._newName(prefix));
       }
       value(nameOrPrefix, value) {
-        var _a$2;
+        var _a$4;
         if (value.ref === void 0) throw new Error('CodeGen: ref must be passed in value');
         const name = this.toName(nameOrPrefix);
         const { prefix } = name;
-        const valueKey = (_a$2 = value.key) !== null && _a$2 !== void 0 ? _a$2 : value.ref;
+        const valueKey = (_a$4 = value.key) !== null && _a$4 !== void 0 ? _a$4 : value.ref;
         let vs = this._values[prefix];
         if (vs) {
           const _name = vs.get(valueKey);
           if (_name) return _name;
-        } else vs = this._values[prefix] = new Map();
+        } else vs = this._values[prefix] = /* @__PURE__ */ new Map();
         vs.set(valueKey, name);
         const s = this._scope[prefix] || (this._scope[prefix] = []);
         const itemIndex = s.length;
@@ -10690,14 +14192,14 @@ var require_scope = __commonJS({
         for (const prefix in values) {
           const vs = values[prefix];
           if (!vs) continue;
-          const nameSet = (usedValues[prefix] = usedValues[prefix] || new Map());
+          const nameSet = (usedValues[prefix] = usedValues[prefix] || /* @__PURE__ */ new Map());
           vs.forEach((name) => {
             if (nameSet.has(name)) return;
             nameSet.set(name, UsedValueState.Started);
             let c = valueCode(name);
             if (c) {
-              const def$60 = this.opts.es5 ? exports.varKinds.var : exports.varKinds.const;
-              code = (0, code_1$14._)`${code}${def$60} ${name} = ${c};${this.opts._n}`;
+              const def$69 = this.opts.es5 ? exports.varKinds.var : exports.varKinds.const;
+              code = (0, code_1$14._)`${code}${def$69} ${name} = ${c};${this.opts._n}`;
             } else if ((c = getCode === null || getCode === void 0 ? void 0 : getCode(name)))
               code = (0, code_1$14._)`${code}${c}${this.opts._n}`;
             else throw new ValueError(name);
@@ -10902,9 +14404,9 @@ var require_codegen = __commonJS({
       }
     };
     var Throw = class extends Node {
-      constructor(error$39) {
+      constructor(error$41) {
         super();
-        this.error = error$39;
+        this.error = error$41;
       }
       render({ _n }) {
         return `throw ${this.error};` + _n;
@@ -11002,8 +14504,8 @@ var require_codegen = __commonJS({
         return this;
       }
       optimizeNames(names$2, constants) {
-        var _a$2;
-        this.else = (_a$2 = this.else) === null || _a$2 === void 0 ? void 0 : _a$2.optimizeNames(names$2, constants);
+        var _a$4;
+        this.else = (_a$4 = this.else) === null || _a$4 === void 0 ? void 0 : _a$4.optimizeNames(names$2, constants);
         if (!(super.optimizeNames(names$2, constants) || this.else)) return;
         this.condition = optimizeExpr(this.condition, names$2, constants);
         return this;
@@ -11100,16 +14602,16 @@ var require_codegen = __commonJS({
         return code;
       }
       optimizeNodes() {
-        var _a$2, _b;
+        var _a$4, _b;
         super.optimizeNodes();
-        (_a$2 = this.catch) === null || _a$2 === void 0 || _a$2.optimizeNodes();
+        (_a$4 = this.catch) === null || _a$4 === void 0 || _a$4.optimizeNodes();
         (_b = this.finally) === null || _b === void 0 || _b.optimizeNodes();
         return this;
       }
       optimizeNames(names$2, constants) {
-        var _a$2, _b;
+        var _a$4, _b;
         super.optimizeNames(names$2, constants);
-        (_a$2 = this.catch) === null || _a$2 === void 0 || _a$2.optimizeNames(names$2, constants);
+        (_a$4 = this.catch) === null || _a$4 === void 0 || _a$4.optimizeNames(names$2, constants);
         (_b = this.finally) === null || _b === void 0 || _b.optimizeNames(names$2, constants);
         return this;
       }
@@ -11121,9 +14623,9 @@ var require_codegen = __commonJS({
       }
     };
     var Catch = class extends BlockNode {
-      constructor(error$39) {
+      constructor(error$41) {
         super();
-        this.error = error$39;
+        this.error = error$41;
       }
       render(opts) {
         return `catch(${this.error})` + super.render(opts);
@@ -11160,7 +14662,7 @@ var require_codegen = __commonJS({
       }
       scopeValue(prefixOrName, value) {
         const name = this._extScope.value(prefixOrName, value);
-        const vs = this._values[name.prefix] || (this._values[name.prefix] = new Set());
+        const vs = this._values[name.prefix] || (this._values[name.prefix] = /* @__PURE__ */ new Set());
         vs.add(name);
         return name;
       }
@@ -11278,9 +14780,9 @@ var require_codegen = __commonJS({
         this._blockNode(node);
         this.code(tryBody);
         if (catchCode) {
-          const error$39 = this.name('e');
-          this._currNode = node.catch = new Catch(error$39);
-          catchCode(error$39);
+          const error$41 = this.name('e');
+          this._currNode = node.catch = new Catch(error$41);
+          catchCode(error$41);
         }
         if (finallyCode) {
           this._currNode = node.finally = new Finally();
@@ -11288,8 +14790,8 @@ var require_codegen = __commonJS({
         }
         return this._endBlockNode(Catch, Finally);
       }
-      throw(error$39) {
-        return this._leafNode(new Throw(error$39));
+      throw(error$41) {
+        return this._leafNode(new Throw(error$41));
       }
       block(body, nodeCount) {
         this._blockStarts.push(this._nodes.length);
@@ -11444,37 +14946,37 @@ var require_util = __commonJS({
       return hash;
     }
     exports.toHash = toHash;
-    function alwaysValidSchema(it, schema) {
-      if (typeof schema == 'boolean') return schema;
-      if (Object.keys(schema).length === 0) return true;
-      checkUnknownRules(it, schema);
-      return !schemaHasRules(schema, it.self.RULES.all);
+    function alwaysValidSchema(it, schema$1) {
+      if (typeof schema$1 == 'boolean') return schema$1;
+      if (Object.keys(schema$1).length === 0) return true;
+      checkUnknownRules(it, schema$1);
+      return !schemaHasRules(schema$1, it.self.RULES.all);
     }
     exports.alwaysValidSchema = alwaysValidSchema;
-    function checkUnknownRules(it, schema = it.schema) {
-      const { opts, self } = it;
+    function checkUnknownRules(it, schema$1 = it.schema) {
+      const { opts, self: self$1 } = it;
       if (!opts.strictSchema) return;
-      if (typeof schema === 'boolean') return;
-      const rules = self.RULES.keywords;
-      for (const key in schema) if (!rules[key]) checkStrictMode(it, `unknown keyword: "${key}"`);
+      if (typeof schema$1 === 'boolean') return;
+      const rules = self$1.RULES.keywords;
+      for (const key in schema$1) if (!rules[key]) checkStrictMode(it, `unknown keyword: "${key}"`);
     }
     exports.checkUnknownRules = checkUnknownRules;
-    function schemaHasRules(schema, rules) {
-      if (typeof schema == 'boolean') return !schema;
-      for (const key in schema) if (rules[key]) return true;
+    function schemaHasRules(schema$1, rules) {
+      if (typeof schema$1 == 'boolean') return !schema$1;
+      for (const key in schema$1) if (rules[key]) return true;
       return false;
     }
     exports.schemaHasRules = schemaHasRules;
-    function schemaHasRulesButRef(schema, RULES) {
-      if (typeof schema == 'boolean') return !schema;
-      for (const key in schema) if (key !== '$ref' && RULES.all[key]) return true;
+    function schemaHasRulesButRef(schema$1, RULES) {
+      if (typeof schema$1 == 'boolean') return !schema$1;
+      for (const key in schema$1) if (key !== '$ref' && RULES.all[key]) return true;
       return false;
     }
     exports.schemaHasRulesButRef = schemaHasRulesButRef;
-    function schemaRefOrVal({ topSchemaRef, schemaPath }, schema, keyword$1, $data) {
+    function schemaRefOrVal({ topSchemaRef, schemaPath }, schema$1, keyword$1, $data) {
       if (!$data) {
-        if (typeof schema == 'number' || typeof schema == 'boolean') return schema;
-        if (typeof schema == 'string') return (0, codegen_1$38._)`${schema}`;
+        if (typeof schema$1 == 'number' || typeof schema$1 == 'boolean') return schema$1;
+        if (typeof schema$1 == 'string') return (0, codegen_1$38._)`${schema$1}`;
       }
       return (0, codegen_1$38._)`${topSchemaRef}${schemaPath}${(0, codegen_1$38.getProperty)(keyword$1)}`;
     }
@@ -11659,19 +15161,19 @@ var require_errors = __commonJS({
           ? (0, codegen_1$36.str)`"${keyword$1}" keyword must be ${schemaType} ($data)`
           : (0, codegen_1$36.str)`"${keyword$1}" keyword is invalid ($data)`,
     };
-    function reportError(cxt, error$39 = exports.keywordError, errorPaths, overrideAllErrors) {
+    function reportError(cxt, error$41 = exports.keywordError, errorPaths, overrideAllErrors) {
       const { it } = cxt;
       const { gen, compositeRule, allErrors } = it;
-      const errObj = errorObjectCode(cxt, error$39, errorPaths);
+      const errObj = errorObjectCode(cxt, error$41, errorPaths);
       if (overrideAllErrors !== null && overrideAllErrors !== void 0 ? overrideAllErrors : compositeRule || allErrors)
         addError(gen, errObj);
       else returnErrors(it, (0, codegen_1$36._)`[${errObj}]`);
     }
     exports.reportError = reportError;
-    function reportExtraError(cxt, error$39 = exports.keywordError, errorPaths) {
+    function reportExtraError(cxt, error$41 = exports.keywordError, errorPaths) {
       const { it } = cxt;
       const { gen, compositeRule, allErrors } = it;
-      const errObj = errorObjectCode(cxt, error$39, errorPaths);
+      const errObj = errorObjectCode(cxt, error$41, errorPaths);
       addError(gen, errObj);
       if (!(compositeRule || allErrors)) returnErrors(it, names_1$8.default.vErrors);
     }
@@ -11733,15 +15235,15 @@ var require_errors = __commonJS({
       schema: new codegen_1$36.Name('schema'),
       parentSchema: new codegen_1$36.Name('parentSchema'),
     };
-    function errorObjectCode(cxt, error$39, errorPaths) {
+    function errorObjectCode(cxt, error$41, errorPaths) {
       const { createErrors } = cxt.it;
       if (createErrors === false) return (0, codegen_1$36._)`{}`;
-      return errorObject(cxt, error$39, errorPaths);
+      return errorObject(cxt, error$41, errorPaths);
     }
-    function errorObject(cxt, error$39, errorPaths = {}) {
+    function errorObject(cxt, error$41, errorPaths = {}) {
       const { gen, it } = cxt;
       const keyValues = [errorInstancePath(it, errorPaths), errorSchemaPath(cxt, errorPaths)];
-      extraErrorProps(cxt, error$39, keyValues);
+      extraErrorProps(cxt, error$41, keyValues);
       return gen.object(...keyValues);
     }
     function errorInstancePath({ errorPath }, { instancePath }) {
@@ -11786,9 +15288,9 @@ var require_boolSchema = __commonJS({
     const names_1$7 = require_names();
     const boolError = { message: 'boolean schema is false' };
     function topBoolOrEmptySchema(it) {
-      const { gen, schema, validateName } = it;
-      if (schema === false) falseSchemaError(it, false);
-      else if (typeof schema == 'object' && schema.$async === true) gen.return(names_1$7.default.data);
+      const { gen, schema: schema$1, validateName } = it;
+      if (schema$1 === false) falseSchemaError(it, false);
+      else if (typeof schema$1 == 'object' && schema$1.$async === true) gen.return(names_1$7.default.data);
       else {
         gen.assign((0, codegen_1$35._)`${validateName}.errors`, null);
         gen.return(true);
@@ -11796,8 +15298,8 @@ var require_boolSchema = __commonJS({
     }
     exports.topBoolOrEmptySchema = topBoolOrEmptySchema;
     function boolOrEmptySchema(it, valid) {
-      const { gen, schema } = it;
-      if (schema === false) {
+      const { gen, schema: schema$1 } = it;
+      if (schema$1 === false) {
         gen.var(valid, false);
         falseSchemaError(it);
       } else gen.var(valid, true);
@@ -11874,22 +15376,22 @@ var require_applicability = __commonJS({
   '../node_modules/ajv-formats/node_modules/ajv/dist/compile/validate/applicability.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.shouldUseRule = exports.shouldUseGroup = exports.schemaHasRulesForType = void 0;
-    function schemaHasRulesForType({ schema, self }, type) {
-      const group = self.RULES.types[type];
-      return group && group !== true && shouldUseGroup(schema, group);
+    function schemaHasRulesForType({ schema: schema$1, self: self$1 }, type) {
+      const group = self$1.RULES.types[type];
+      return group && group !== true && shouldUseGroup(schema$1, group);
     }
     exports.schemaHasRulesForType = schemaHasRulesForType;
-    function shouldUseGroup(schema, group) {
-      return group.rules.some((rule) => shouldUseRule(schema, rule));
+    function shouldUseGroup(schema$1, group) {
+      return group.rules.some((rule) => shouldUseRule(schema$1, rule));
     }
     exports.shouldUseGroup = shouldUseGroup;
-    function shouldUseRule(schema, rule) {
-      var _a$2;
+    function shouldUseRule(schema$1, rule) {
+      var _a$4;
       return (
-        schema[rule.keyword] !== void 0 ||
-        ((_a$2 = rule.definition.implements) === null || _a$2 === void 0
+        schema$1[rule.keyword] !== void 0 ||
+        ((_a$4 = rule.definition.implements) === null || _a$4 === void 0
           ? void 0
-          : _a$2.some((kwd) => schema[kwd] !== void 0))
+          : _a$4.some((kwd) => schema$1[kwd] !== void 0))
       );
     }
     exports.shouldUseRule = shouldUseRule;
@@ -11919,14 +15421,14 @@ var require_dataType = __commonJS({
       DataType$2[(DataType$2['Correct'] = 0)] = 'Correct';
       DataType$2[(DataType$2['Wrong'] = 1)] = 'Wrong';
     })(DataType || (exports.DataType = DataType = {}));
-    function getSchemaTypes(schema) {
-      const types = getJSONTypes(schema.type);
+    function getSchemaTypes(schema$1) {
+      const types = getJSONTypes(schema$1.type);
       const hasNull = types.includes('null');
       if (hasNull) {
-        if (schema.nullable === false) throw new Error('type: null contradicts nullable: false');
+        if (schema$1.nullable === false) throw new Error('type: null contradicts nullable: false');
       } else {
-        if (!types.length && schema.nullable !== void 0) throw new Error('"nullable" cannot be used without "type"');
-        if (schema.nullable === true) types.push('null');
+        if (!types.length && schema$1.nullable !== void 0) throw new Error('"nullable" cannot be used without "type"');
+        if (schema$1.nullable === true) types.push('null');
       }
       return types;
     }
@@ -12077,10 +15579,10 @@ var require_dataType = __commonJS({
     }
     exports.checkDataTypes = checkDataTypes;
     const typeError = {
-      message: ({ schema }) => `must be ${schema}`,
-      params: ({ schema, schemaValue }) =>
-        typeof schema == 'string'
-          ? (0, codegen_1$34._)`{type: ${schema}}`
+      message: ({ schema: schema$1 }) => `must be ${schema$1}`,
+      params: ({ schema: schema$1, schemaValue }) =>
+        typeof schema$1 == 'string'
+          ? (0, codegen_1$34._)`{type: ${schema$1}}`
           : (0, codegen_1$34._)`{type: ${schemaValue}}`,
     };
     function reportTypeError(it) {
@@ -12089,16 +15591,16 @@ var require_dataType = __commonJS({
     }
     exports.reportTypeError = reportTypeError;
     function getTypeErrorContext(it) {
-      const { gen, data, schema } = it;
-      const schemaCode = (0, util_1$28.schemaRefOrVal)(it, schema, 'type');
+      const { gen, data, schema: schema$1 } = it;
+      const schemaCode = (0, util_1$28.schemaRefOrVal)(it, schema$1, 'type');
       return {
         gen,
         keyword: 'type',
         data,
-        schema: schema.type,
+        schema: schema$1.type,
         schemaCode,
         schemaValue: schemaCode,
-        parentSchema: schema,
+        parentSchema: schema$1,
         params: {},
         it,
       };
@@ -12277,15 +15779,15 @@ var require_code = __commonJS({
     }
     exports.validateArray = validateArray;
     function validateUnion(cxt) {
-      const { gen, schema, keyword: keyword$1, it } = cxt;
+      const { gen, schema: schema$1, keyword: keyword$1, it } = cxt;
       /* istanbul ignore if */
-      if (!Array.isArray(schema)) throw new Error('ajv implementation error');
-      const alwaysValid = schema.some((sch) => (0, util_1$26.alwaysValidSchema)(it, sch));
+      if (!Array.isArray(schema$1)) throw new Error('ajv implementation error');
+      const alwaysValid = schema$1.some((sch) => (0, util_1$26.alwaysValidSchema)(it, sch));
       if (alwaysValid && !it.opts.unevaluated) return;
       const valid = gen.let('valid', false);
       const schValid = gen.name('_valid');
       gen.block(() =>
-        schema.forEach((_sch, i) => {
+        schema$1.forEach((_sch, i) => {
           const schCxt = cxt.subschema(
             {
               keyword: keyword$1,
@@ -12323,9 +15825,9 @@ var require_keyword = __commonJS({
     const names_1$5 = require_names();
     const code_1$11 = require_code();
     const errors_1$2 = require_errors();
-    function macroKeywordCode(cxt, def$60) {
-      const { gen, keyword: keyword$1, schema, parentSchema, it } = cxt;
-      const macroSchema = def$60.macro.call(it.self, schema, parentSchema, it);
+    function macroKeywordCode(cxt, def$69) {
+      const { gen, keyword: keyword$1, schema: schema$1, parentSchema, it } = cxt;
+      const macroSchema = def$69.macro.call(it.self, schema$1, parentSchema, it);
       const schemaRef = useKeyword(gen, keyword$1, macroSchema);
       if (it.opts.validateSchema !== false) it.self.validateSchema(macroSchema, true);
       const valid = gen.name('valid');
@@ -12342,24 +15844,24 @@ var require_keyword = __commonJS({
       cxt.pass(valid, () => cxt.error(true));
     }
     exports.macroKeywordCode = macroKeywordCode;
-    function funcKeywordCode(cxt, def$60) {
-      var _a$2;
-      const { gen, keyword: keyword$1, schema, parentSchema, $data, it } = cxt;
-      checkAsyncKeyword(it, def$60);
+    function funcKeywordCode(cxt, def$69) {
+      var _a$4;
+      const { gen, keyword: keyword$1, schema: schema$1, parentSchema, $data, it } = cxt;
+      checkAsyncKeyword(it, def$69);
       const validate$1 =
-        !$data && def$60.compile ? def$60.compile.call(it.self, schema, parentSchema, it) : def$60.validate;
+        !$data && def$69.compile ? def$69.compile.call(it.self, schema$1, parentSchema, it) : def$69.validate;
       const validateRef = useKeyword(gen, keyword$1, validate$1);
       const valid = gen.let('valid');
       cxt.block$data(valid, validateKeyword);
-      cxt.ok((_a$2 = def$60.valid) !== null && _a$2 !== void 0 ? _a$2 : valid);
+      cxt.ok((_a$4 = def$69.valid) !== null && _a$4 !== void 0 ? _a$4 : valid);
       function validateKeyword() {
-        if (def$60.errors === false) {
+        if (def$69.errors === false) {
           assignValid();
-          if (def$60.modifying) modifyData(cxt);
+          if (def$69.modifying) modifyData(cxt);
           reportErrs(() => cxt.error());
         } else {
-          const ruleErrs = def$60.async ? validateAsync() : validateSync();
-          if (def$60.modifying) modifyData(cxt);
+          const ruleErrs = def$69.async ? validateAsync() : validateSync();
+          if (def$69.modifying) modifyData(cxt);
           reportErrs(() => addErrs(cxt, ruleErrs));
         }
       }
@@ -12382,18 +15884,18 @@ var require_keyword = __commonJS({
         assignValid(codegen_1$31.nil);
         return validateErrs;
       }
-      function assignValid(_await = def$60.async ? (0, codegen_1$31._)`await ` : codegen_1$31.nil) {
+      function assignValid(_await = def$69.async ? (0, codegen_1$31._)`await ` : codegen_1$31.nil) {
         const passCxt = it.opts.passContext ? names_1$5.default.this : names_1$5.default.self;
-        const passSchema = !(('compile' in def$60 && !$data) || def$60.schema === false);
+        const passSchema = !(('compile' in def$69 && !$data) || def$69.schema === false);
         gen.assign(
           valid,
           (0, codegen_1$31._)`${_await}${(0, code_1$11.callValidateCode)(cxt, validateRef, passCxt, passSchema)}`,
-          def$60.modifying
+          def$69.modifying
         );
       }
       function reportErrs(errors) {
-        var _a$3;
-        gen.if((0, codegen_1$31.not)((_a$3 = def$60.valid) !== null && _a$3 !== void 0 ? _a$3 : valid), errors);
+        var _a$5;
+        gen.if((0, codegen_1$31.not)((_a$5 = def$69.valid) !== null && _a$5 !== void 0 ? _a$5 : valid), errors);
       }
     }
     exports.funcKeywordCode = funcKeywordCode;
@@ -12418,8 +15920,8 @@ var require_keyword = __commonJS({
         () => cxt.error()
       );
     }
-    function checkAsyncKeyword({ schemaEnv }, def$60) {
-      if (def$60.async && !schemaEnv.$async) throw new Error('async keyword in sync schema');
+    function checkAsyncKeyword({ schemaEnv }, def$69) {
+      if (def$69.async && !schemaEnv.$async) throw new Error('async keyword in sync schema');
     }
     function useKeyword(gen, keyword$1, result) {
       if (result === void 0) throw new Error(`keyword "${keyword$1}" failed to compile`);
@@ -12433,37 +15935,37 @@ var require_keyword = __commonJS({
             }
       );
     }
-    function validSchemaType(schema, schemaType, allowUndefined = false) {
+    function validSchemaType(schema$1, schemaType, allowUndefined = false) {
       return (
         !schemaType.length ||
         schemaType.some((st) =>
           st === 'array'
-            ? Array.isArray(schema)
+            ? Array.isArray(schema$1)
             : st === 'object'
-              ? schema && typeof schema == 'object' && !Array.isArray(schema)
-              : typeof schema == st || (allowUndefined && typeof schema == 'undefined')
+              ? schema$1 && typeof schema$1 == 'object' && !Array.isArray(schema$1)
+              : typeof schema$1 == st || (allowUndefined && typeof schema$1 == 'undefined')
         )
       );
     }
     exports.validSchemaType = validSchemaType;
-    function validateKeywordUsage({ schema, opts, self, errSchemaPath }, def$60, keyword$1) {
+    function validateKeywordUsage({ schema: schema$1, opts, self: self$1, errSchemaPath }, def$69, keyword$1) {
       /* istanbul ignore if */
-      if (Array.isArray(def$60.keyword) ? !def$60.keyword.includes(keyword$1) : def$60.keyword !== keyword$1)
+      if (Array.isArray(def$69.keyword) ? !def$69.keyword.includes(keyword$1) : def$69.keyword !== keyword$1)
         throw new Error('ajv implementation error');
-      const deps = def$60.dependencies;
+      const deps = def$69.dependencies;
       if (
         deps === null || deps === void 0
           ? void 0
-          : deps.some((kwd) => !Object.prototype.hasOwnProperty.call(schema, kwd))
+          : deps.some((kwd) => !Object.prototype.hasOwnProperty.call(schema$1, kwd))
       )
         throw new Error(`parent schema must have dependencies of ${keyword$1}: ${deps.join(',')}`);
-      if (def$60.validateSchema) {
-        const valid = def$60.validateSchema(schema[keyword$1]);
+      if (def$69.validateSchema) {
+        const valid = def$69.validateSchema(schema$1[keyword$1]);
         if (!valid) {
           const msg =
             `keyword "${keyword$1}" value is invalid at path "${errSchemaPath}": ` +
-            self.errorsText(def$60.validateSchema.errors);
-          if (opts.validateSchema === 'log') self.logger.error(msg);
+            self$1.errorsText(def$69.validateSchema.errors);
+          if (opts.validateSchema === 'log') self$1.logger.error(msg);
           else throw new Error(msg);
         }
       }
@@ -12480,8 +15982,11 @@ var require_subschema = __commonJS({
     exports.extendSubschemaMode = exports.extendSubschemaData = exports.getSubschema = void 0;
     const codegen_1$30 = require_codegen();
     const util_1$25 = require_util();
-    function getSubschema(it, { keyword: keyword$1, schemaProp, schema, schemaPath, errSchemaPath, topSchemaRef }) {
-      if (keyword$1 !== void 0 && schema !== void 0)
+    function getSubschema(
+      it,
+      { keyword: keyword$1, schemaProp, schema: schema$1, schemaPath, errSchemaPath, topSchemaRef }
+    ) {
+      if (keyword$1 !== void 0 && schema$1 !== void 0)
         throw new Error('both "keyword" and "schema" passed, only one allowed');
       if (keyword$1 !== void 0) {
         const sch = it.schema[keyword$1];
@@ -12498,11 +16003,11 @@ var require_subschema = __commonJS({
               errSchemaPath: `${it.errSchemaPath}/${keyword$1}/${(0, util_1$25.escapeFragment)(schemaProp)}`,
             };
       }
-      if (schema !== void 0) {
+      if (schema$1 !== void 0) {
         if (schemaPath === void 0 || errSchemaPath === void 0 || topSchemaRef === void 0)
           throw new Error('"schemaPath", "errSchemaPath" and "topSchemaRef" are required with "schema"');
         return {
-          schema,
+          schema: schema$1,
           schemaPath,
           topSchemaRef,
           errSchemaPath,
@@ -12538,7 +16043,7 @@ var require_subschema = __commonJS({
         subschema.data = _nextData;
         subschema.dataLevel = it.dataLevel + 1;
         subschema.dataTypes = [];
-        it.definedProperties = new Set();
+        it.definedProperties = /* @__PURE__ */ new Set();
         subschema.parentData = it.data;
         subschema.dataNames = [...it.dataNames, _nextData];
       }
@@ -12559,7 +16064,7 @@ var require_subschema = __commonJS({
 //#region ../node_modules/ajv-formats/node_modules/json-schema-traverse/index.js
 var require_json_schema_traverse = __commonJS({
   '../node_modules/ajv-formats/node_modules/json-schema-traverse/index.js'(exports, module) {
-    var traverse$1 = (module.exports = function (schema, opts, cb) {
+    var traverse$1 = (module.exports = function (schema$1, opts, cb) {
       if (typeof opts == 'function') {
         cb = opts;
         opts = {};
@@ -12567,7 +16072,7 @@ var require_json_schema_traverse = __commonJS({
       cb = opts.cb || cb;
       var pre = typeof cb == 'function' ? cb : cb.pre || function () {};
       var post = cb.post || function () {};
-      _traverse(opts, pre, post, schema, '', schema);
+      _traverse(opts, pre, post, schema$1, '', schema$1);
     });
     traverse$1.keywords = {
       additionalItems: true,
@@ -12617,7 +16122,7 @@ var require_json_schema_traverse = __commonJS({
       opts,
       pre,
       post,
-      schema,
+      schema$1,
       jsonPtr,
       rootSchema,
       parentJsonPtr,
@@ -12625,14 +16130,25 @@ var require_json_schema_traverse = __commonJS({
       parentSchema,
       keyIndex
     ) {
-      if (schema && typeof schema == 'object' && !Array.isArray(schema)) {
-        pre(schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
-        for (var key in schema) {
-          var sch = schema[key];
+      if (schema$1 && typeof schema$1 == 'object' && !Array.isArray(schema$1)) {
+        pre(schema$1, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
+        for (var key in schema$1) {
+          var sch = schema$1[key];
           if (Array.isArray(sch)) {
             if (key in traverse$1.arrayKeywords)
               for (var i = 0; i < sch.length; i++)
-                _traverse(opts, pre, post, sch[i], jsonPtr + '/' + key + '/' + i, rootSchema, jsonPtr, key, schema, i);
+                _traverse(
+                  opts,
+                  pre,
+                  post,
+                  sch[i],
+                  jsonPtr + '/' + key + '/' + i,
+                  rootSchema,
+                  jsonPtr,
+                  key,
+                  schema$1,
+                  i
+                );
           } else if (key in traverse$1.propsKeywords) {
             if (sch && typeof sch == 'object')
               for (var prop in sch)
@@ -12645,13 +16161,13 @@ var require_json_schema_traverse = __commonJS({
                   rootSchema,
                   jsonPtr,
                   key,
-                  schema,
+                  schema$1,
                   prop
                 );
           } else if (key in traverse$1.keywords || (opts.allKeys && !(key in traverse$1.skipKeywords)))
-            _traverse(opts, pre, post, sch, jsonPtr + '/' + key, rootSchema, jsonPtr, key, schema);
+            _traverse(opts, pre, post, sch, jsonPtr + '/' + key, rootSchema, jsonPtr, key, schema$1);
         }
-        post(schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
+        post(schema$1, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
       }
     }
     function escapeJsonPtr(str$2) {
@@ -12693,30 +16209,31 @@ var require_resolve = __commonJS({
       'enum',
       'const',
     ]);
-    function inlineRef(schema, limit = true) {
-      if (typeof schema == 'boolean') return true;
-      if (limit === true) return !hasRef(schema);
+    function inlineRef(schema$1, limit = true) {
+      if (typeof schema$1 == 'boolean') return true;
+      if (limit === true) return !hasRef(schema$1);
       if (!limit) return false;
-      return countKeys(schema) <= limit;
+      return countKeys(schema$1) <= limit;
     }
     exports.inlineRef = inlineRef;
     const REF_KEYWORDS = new Set(['$ref', '$recursiveRef', '$recursiveAnchor', '$dynamicRef', '$dynamicAnchor']);
-    function hasRef(schema) {
-      for (const key in schema) {
+    function hasRef(schema$1) {
+      for (const key in schema$1) {
         if (REF_KEYWORDS.has(key)) return true;
-        const sch = schema[key];
+        const sch = schema$1[key];
         if (Array.isArray(sch) && sch.some(hasRef)) return true;
         if (typeof sch == 'object' && hasRef(sch)) return true;
       }
       return false;
     }
-    function countKeys(schema) {
+    function countKeys(schema$1) {
       let count = 0;
-      for (const key in schema) {
+      for (const key in schema$1) {
         if (key === '$ref') return Infinity;
         count++;
         if (SIMPLE_INLINED.has(key)) continue;
-        if (typeof schema[key] == 'object') (0, util_1$24.eachItem)(schema[key], (sch) => (count += countKeys(sch)));
+        if (typeof schema$1[key] == 'object')
+          (0, util_1$24.eachItem)(schema$1[key], (sch) => (count += countKeys(sch)));
         if (count === Infinity) return Infinity;
       }
       return count;
@@ -12743,15 +16260,15 @@ var require_resolve = __commonJS({
     }
     exports.resolveUrl = resolveUrl;
     const ANCHOR = /^[a-z_][-a-z0-9._]*$/i;
-    function getSchemaRefs(schema, baseId) {
-      if (typeof schema == 'boolean') return {};
+    function getSchemaRefs(schema$1, baseId) {
+      if (typeof schema$1 == 'boolean') return {};
       const { schemaId, uriResolver } = this.opts;
-      const schId = normalizeId(schema[schemaId] || baseId);
+      const schId = normalizeId(schema$1[schemaId] || baseId);
       const baseIds = { '': schId };
       const pathPrefix = getFullPath(uriResolver, schId, false);
       const localRefs = {};
-      const schemaRefs = new Set();
-      traverse(schema, { allKeys: true }, (sch, jsonPtr, _$2, parentJsonPtr) => {
+      const schemaRefs = /* @__PURE__ */ new Set();
+      traverse(schema$1, { allKeys: true }, (sch, jsonPtr, _$2, parentJsonPtr) => {
         if (parentJsonPtr === void 0) return;
         const fullPath = pathPrefix + jsonPtr;
         let innerBaseId = baseIds[parentJsonPtr];
@@ -12822,14 +16339,14 @@ var require_validate = __commonJS({
       validateFunction(it, () => (0, boolSchema_1.topBoolOrEmptySchema)(it));
     }
     exports.validateFunctionCode = validateFunctionCode;
-    function validateFunction({ gen, validateName, schema, schemaEnv, opts }, body) {
+    function validateFunction({ gen, validateName, schema: schema$1, schemaEnv, opts }, body) {
       if (opts.code.es5)
         gen.func(
           validateName,
           (0, codegen_1$29._)`${names_1$4.default.data}, ${names_1$4.default.valCxt}`,
           schemaEnv.$async,
           () => {
-            gen.code((0, codegen_1$29._)`"use strict"; ${funcSourceUrl(schema, opts)}`);
+            gen.code((0, codegen_1$29._)`"use strict"; ${funcSourceUrl(schema$1, opts)}`);
             destructureValCxtES5(gen, opts);
             gen.code(body);
           }
@@ -12839,7 +16356,7 @@ var require_validate = __commonJS({
           validateName,
           (0, codegen_1$29._)`${names_1$4.default.data}, ${destructureValCxt(opts)}`,
           schemaEnv.$async,
-          () => gen.code(funcSourceUrl(schema, opts)).code(body)
+          () => gen.code(funcSourceUrl(schema$1, opts)).code(body)
         );
     }
     function destructureValCxt(opts) {
@@ -12882,9 +16399,9 @@ var require_validate = __commonJS({
       );
     }
     function topSchemaObjCode(it) {
-      const { schema, opts, gen } = it;
+      const { schema: schema$1, opts, gen } = it;
       validateFunction(it, () => {
-        if (opts.$comment && schema.$comment) commentKeyword(it);
+        if (opts.$comment && schema$1.$comment) commentKeyword(it);
         checkNoDefault(it);
         gen.let(names_1$4.default.vErrors, null);
         gen.let(names_1$4.default.errors, 0);
@@ -12904,8 +16421,8 @@ var require_validate = __commonJS({
         gen.assign((0, codegen_1$29._)`${it.evaluated}.items`, (0, codegen_1$29._)`undefined`)
       );
     }
-    function funcSourceUrl(schema, opts) {
-      const schId = typeof schema == 'object' && schema[opts.schemaId];
+    function funcSourceUrl(schema$1, opts) {
+      const schId = typeof schema$1 == 'object' && schema$1[opts.schemaId];
       return schId && (opts.code.source || opts.code.process)
         ? (0, codegen_1$29._)`/*# sourceURL=${schId} */`
         : codegen_1$29.nil;
@@ -12920,17 +16437,17 @@ var require_validate = __commonJS({
       }
       (0, boolSchema_1.boolOrEmptySchema)(it, valid);
     }
-    function schemaCxtHasRules({ schema, self }) {
-      if (typeof schema == 'boolean') return !schema;
-      for (const key in schema) if (self.RULES.all[key]) return true;
+    function schemaCxtHasRules({ schema: schema$1, self: self$1 }) {
+      if (typeof schema$1 == 'boolean') return !schema$1;
+      for (const key in schema$1) if (self$1.RULES.all[key]) return true;
       return false;
     }
     function isSchemaObj(it) {
       return typeof it.schema != 'boolean';
     }
     function subSchemaObjCode(it, valid) {
-      const { schema, gen, opts } = it;
-      if (opts.$comment && schema.$comment) commentKeyword(it);
+      const { schema: schema$1, gen, opts } = it;
+      if (opts.$comment && schema$1.$comment) commentKeyword(it);
       updateContext(it);
       checkAsyncSchema(it);
       const errsCount = gen.const('_errs', names_1$4.default.errors);
@@ -12948,13 +16465,13 @@ var require_validate = __commonJS({
       schemaKeywords(it, types, !checkedTypes, errsCount);
     }
     function checkRefsAndKeywords(it) {
-      const { schema, errSchemaPath, opts, self } = it;
-      if (schema.$ref && opts.ignoreKeywordsWithRef && (0, util_1$23.schemaHasRulesButRef)(schema, self.RULES))
-        self.logger.warn(`$ref: keywords ignored in schema at path "${errSchemaPath}"`);
+      const { schema: schema$1, errSchemaPath, opts, self: self$1 } = it;
+      if (schema$1.$ref && opts.ignoreKeywordsWithRef && (0, util_1$23.schemaHasRulesButRef)(schema$1, self$1.RULES))
+        self$1.logger.warn(`$ref: keywords ignored in schema at path "${errSchemaPath}"`);
     }
     function checkNoDefault(it) {
-      const { schema, opts } = it;
-      if (schema.default !== void 0 && opts.useDefaults && opts.strictSchema)
+      const { schema: schema$1, opts } = it;
+      if (schema$1.default !== void 0 && opts.useDefaults && opts.strictSchema)
         (0, util_1$23.checkStrictMode)(it, 'default is ignored in the schema root');
     }
     function updateContext(it) {
@@ -12964,8 +16481,8 @@ var require_validate = __commonJS({
     function checkAsyncSchema(it) {
       if (it.schema.$async && !it.schemaEnv.$async) throw new Error('async schema in sync schema');
     }
-    function commentKeyword({ gen, schemaEnv, schema, errSchemaPath, opts }) {
-      const msg = schema.$comment;
+    function commentKeyword({ gen, schemaEnv, schema: schema$1, errSchemaPath, opts }) {
+      const msg = schema$1.$comment;
       if (opts.$comment === true) gen.code((0, codegen_1$29._)`${names_1$4.default.self}.logger.log(${msg})`);
       else if (typeof opts.$comment == 'function') {
         const schemaPath = (0, codegen_1$29.str)`${errSchemaPath}/$comment`;
@@ -12994,9 +16511,9 @@ var require_validate = __commonJS({
       if (items instanceof codegen_1$29.Name) gen.assign((0, codegen_1$29._)`${evaluated}.items`, items);
     }
     function schemaKeywords(it, types, typeErrors, errsCount) {
-      const { gen, schema, data, allErrors, opts, self } = it;
-      const { RULES } = self;
-      if (schema.$ref && (opts.ignoreKeywordsWithRef || !(0, util_1$23.schemaHasRulesButRef)(schema, RULES))) {
+      const { gen, schema: schema$1, data, allErrors, opts, self: self$1 } = it;
+      const { RULES } = self$1;
+      if (schema$1.$ref && (opts.ignoreKeywordsWithRef || !(0, util_1$23.schemaHasRulesButRef)(schema$1, RULES))) {
         gen.block(() => keywordCode(it, '$ref', RULES.all.$ref.definition));
         return;
       }
@@ -13006,7 +16523,7 @@ var require_validate = __commonJS({
         groupKeywords(RULES.post);
       });
       function groupKeywords(group) {
-        if (!(0, applicability_1.shouldUseGroup)(schema, group)) return;
+        if (!(0, applicability_1.shouldUseGroup)(schema$1, group)) return;
         if (group.type) {
           gen.if((0, dataType_2.checkDataType)(group.type, data, opts.strictNumbers));
           iterateKeywords(it, group);
@@ -13022,13 +16539,13 @@ var require_validate = __commonJS({
     function iterateKeywords(it, group) {
       const {
         gen,
-        schema,
+        schema: schema$1,
         opts: { useDefaults },
       } = it;
       if (useDefaults) (0, defaults_1.assignDefaults)(it, group.type);
       gen.block(() => {
         for (const rule of group.rules)
-          if ((0, applicability_1.shouldUseRule)(schema, rule))
+          if ((0, applicability_1.shouldUseRule)(schema$1, rule))
             keywordCode(it, rule.keyword, rule.definition, group.type);
       });
     }
@@ -13084,27 +16601,27 @@ var require_validate = __commonJS({
       (0, util_1$23.checkStrictMode)(it, msg, it.opts.strictTypes);
     }
     var KeywordCxt = class {
-      constructor(it, def$60, keyword$1) {
-        (0, keyword_1.validateKeywordUsage)(it, def$60, keyword$1);
+      constructor(it, def$69, keyword$1) {
+        (0, keyword_1.validateKeywordUsage)(it, def$69, keyword$1);
         this.gen = it.gen;
         this.allErrors = it.allErrors;
         this.keyword = keyword$1;
         this.data = it.data;
         this.schema = it.schema[keyword$1];
-        this.$data = def$60.$data && it.opts.$data && this.schema && this.schema.$data;
+        this.$data = def$69.$data && it.opts.$data && this.schema && this.schema.$data;
         this.schemaValue = (0, util_1$23.schemaRefOrVal)(it, this.schema, keyword$1, this.$data);
-        this.schemaType = def$60.schemaType;
+        this.schemaType = def$69.schemaType;
         this.parentSchema = it.schema;
         this.params = {};
         this.it = it;
-        this.def = def$60;
+        this.def = def$69;
         if (this.$data) this.schemaCode = it.gen.const('vSchema', getData(this.$data, it));
         else {
           this.schemaCode = this.schemaValue;
-          if (!(0, keyword_1.validSchemaType)(this.schema, def$60.schemaType, def$60.allowUndefined))
-            throw new Error(`${keyword$1} value must be ${JSON.stringify(def$60.schemaType)}`);
+          if (!(0, keyword_1.validSchemaType)(this.schema, def$69.schemaType, def$69.allowUndefined))
+            throw new Error(`${keyword$1} value must be ${JSON.stringify(def$69.schemaType)}`);
         }
-        if ('code' in def$60 ? def$60.trackErrors : def$60.errors !== false)
+        if ('code' in def$69 ? def$69.trackErrors : def$69.errors !== false)
           this.errsCount = it.gen.const('_errs', names_1$4.default.errors);
       }
       result(condition, successAction, failAction) {
@@ -13176,10 +16693,10 @@ var require_validate = __commonJS({
       }
       check$data(valid = codegen_1$29.nil, $dataValid = codegen_1$29.nil) {
         if (!this.$data) return;
-        const { gen, schemaCode, schemaType, def: def$60 } = this;
+        const { gen, schemaCode, schemaType, def: def$69 } = this;
         gen.if((0, codegen_1$29.or)((0, codegen_1$29._)`${schemaCode} === undefined`, $dataValid));
         if (valid !== codegen_1$29.nil) gen.assign(valid, true);
-        if (schemaType.length || def$60.validateSchema) {
+        if (schemaType.length || def$69.validateSchema) {
           gen.elseIf(this.invalid$data());
           this.$dataError();
           if (valid !== codegen_1$29.nil) gen.assign(valid, false);
@@ -13187,7 +16704,7 @@ var require_validate = __commonJS({
         gen.else();
       }
       invalid$data() {
-        const { gen, schemaCode, schemaType, def: def$60, it } = this;
+        const { gen, schemaCode, schemaType, def: def$69, it } = this;
         return (0, codegen_1$29.or)(wrong$DataType(), invalid$DataSchema());
         function wrong$DataType() {
           if (schemaType.length) {
@@ -13200,8 +16717,8 @@ var require_validate = __commonJS({
           return codegen_1$29.nil;
         }
         function invalid$DataSchema() {
-          if (def$60.validateSchema) {
-            const validateSchemaRef = gen.scopeValue('validate$data', { ref: def$60.validateSchema });
+          if (def$69.validateSchema) {
+            const validateSchemaRef = gen.scopeValue('validate$data', { ref: def$69.validateSchema });
             return (0, codegen_1$29._)`!${validateSchemaRef}(${schemaCode})`;
           }
           return codegen_1$29.nil;
@@ -13237,12 +16754,12 @@ var require_validate = __commonJS({
       }
     };
     exports.KeywordCxt = KeywordCxt;
-    function keywordCode(it, keyword$1, def$60, ruleType) {
-      const cxt = new KeywordCxt(it, def$60, keyword$1);
-      if ('code' in def$60) def$60.code(cxt, ruleType);
-      else if (cxt.$data && def$60.validate) (0, keyword_1.funcKeywordCode)(cxt, def$60);
-      else if ('macro' in def$60) (0, keyword_1.macroKeywordCode)(cxt, def$60);
-      else if (def$60.compile || def$60.validate) (0, keyword_1.funcKeywordCode)(cxt, def$60);
+    function keywordCode(it, keyword$1, def$69, ruleType) {
+      const cxt = new KeywordCxt(it, def$69, keyword$1);
+      if ('code' in def$69) def$69.code(cxt, ruleType);
+      else if (cxt.$data && def$69.validate) (0, keyword_1.funcKeywordCode)(cxt, def$69);
+      else if ('macro' in def$69) (0, keyword_1.macroKeywordCode)(cxt, def$69);
+      else if (def$69.compile || def$69.validate) (0, keyword_1.funcKeywordCode)(cxt, def$69);
     }
     const JSON_POINTER = /^\/(?:[^~]|~0|~1)*$/;
     const RELATIVE_JSON_POINTER = /^([0-9]+)(#|\/(?:[^~]|~0|~1)*)?$/;
@@ -13336,24 +16853,24 @@ var require_compile = __commonJS({
     const validate_1$4 = require_validate();
     var SchemaEnv = class {
       constructor(env) {
-        var _a$2;
+        var _a$4;
         this.refs = {};
         this.dynamicAnchors = {};
-        let schema;
-        if (typeof env.schema == 'object') schema = env.schema;
+        let schema$1;
+        if (typeof env.schema == 'object') schema$1 = env.schema;
         this.schema = env.schema;
         this.schemaId = env.schemaId;
         this.root = env.root || this;
         this.baseId =
-          (_a$2 = env.baseId) !== null && _a$2 !== void 0
-            ? _a$2
+          (_a$4 = env.baseId) !== null && _a$4 !== void 0
+            ? _a$4
             : (0, resolve_1$1.normalizeId)(
-                schema === null || schema === void 0 ? void 0 : schema[env.schemaId || '$id']
+                schema$1 === null || schema$1 === void 0 ? void 0 : schema$1[env.schemaId || '$id']
               );
         this.schemaPath = env.schemaPath;
         this.localRefs = env.localRefs;
         this.meta = env.meta;
-        this.$async = schema === null || schema === void 0 ? void 0 : schema.$async;
+        this.$async = schema$1 === null || schema$1 === void 0 ? void 0 : schema$1.$async;
         this.refs = {};
       }
     };
@@ -13387,7 +16904,7 @@ var require_compile = __commonJS({
         dataPathArr: [codegen_1$28.nil],
         dataLevel: 0,
         dataTypes: [],
-        definedProperties: new Set(),
+        definedProperties: /* @__PURE__ */ new Set(),
         topSchemaRef: gen.scopeValue(
           'schema',
           this.opts.code.source === true
@@ -13453,17 +16970,17 @@ var require_compile = __commonJS({
     }
     exports.compileSchema = compileSchema;
     function resolveRef(root, baseId, ref) {
-      var _a$2;
+      var _a$4;
       ref = (0, resolve_1$1.resolveUrl)(this.opts.uriResolver, baseId, ref);
       const schOrFunc = root.refs[ref];
       if (schOrFunc) return schOrFunc;
       let _sch = resolve.call(this, root, ref);
       if (_sch === void 0) {
-        const schema = (_a$2 = root.localRefs) === null || _a$2 === void 0 ? void 0 : _a$2[ref];
+        const schema$1 = (_a$4 = root.localRefs) === null || _a$4 === void 0 ? void 0 : _a$4[ref];
         const { schemaId } = this.opts;
-        if (schema)
+        if (schema$1)
           _sch = new SchemaEnv({
-            schema,
+            schema: schema$1,
             schemaId,
             root,
             baseId,
@@ -13504,12 +17021,12 @@ var require_compile = __commonJS({
       if (typeof (schOrRef === null || schOrRef === void 0 ? void 0 : schOrRef.schema) !== 'object') return;
       if (!schOrRef.validate) compileSchema.call(this, schOrRef);
       if (id === (0, resolve_1$1.normalizeId)(ref)) {
-        const { schema } = schOrRef;
+        const { schema: schema$1 } = schOrRef;
         const { schemaId } = this.opts;
-        const schId = schema[schemaId];
+        const schId = schema$1[schemaId];
         if (schId) baseId = (0, resolve_1$1.resolveUrl)(this.opts.uriResolver, baseId, schId);
         return new SchemaEnv({
-          schema,
+          schema: schema$1,
           schemaId,
           root,
           baseId,
@@ -13519,28 +17036,28 @@ var require_compile = __commonJS({
     }
     exports.resolveSchema = resolveSchema;
     const PREVENT_SCOPE_CHANGE = new Set(['properties', 'patternProperties', 'enum', 'dependencies', 'definitions']);
-    function getJsonPointer(parsedRef, { baseId, schema, root }) {
-      var _a$2;
-      if (((_a$2 = parsedRef.fragment) === null || _a$2 === void 0 ? void 0 : _a$2[0]) !== '/') return;
+    function getJsonPointer(parsedRef, { baseId, schema: schema$1, root }) {
+      var _a$4;
+      if (((_a$4 = parsedRef.fragment) === null || _a$4 === void 0 ? void 0 : _a$4[0]) !== '/') return;
       for (const part of parsedRef.fragment.slice(1).split('/')) {
-        if (typeof schema === 'boolean') return;
-        const partSchema = schema[(0, util_1$22.unescapeFragment)(part)];
+        if (typeof schema$1 === 'boolean') return;
+        const partSchema = schema$1[(0, util_1$22.unescapeFragment)(part)];
         if (partSchema === void 0) return;
-        schema = partSchema;
-        const schId = typeof schema === 'object' && schema[this.opts.schemaId];
+        schema$1 = partSchema;
+        const schId = typeof schema$1 === 'object' && schema$1[this.opts.schemaId];
         if (!PREVENT_SCOPE_CHANGE.has(part) && schId)
           baseId = (0, resolve_1$1.resolveUrl)(this.opts.uriResolver, baseId, schId);
       }
       let env;
-      if (typeof schema != 'boolean' && schema.$ref && !(0, util_1$22.schemaHasRulesButRef)(schema, this.RULES)) {
-        const $ref = (0, resolve_1$1.resolveUrl)(this.opts.uriResolver, baseId, schema.$ref);
+      if (typeof schema$1 != 'boolean' && schema$1.$ref && !(0, util_1$22.schemaHasRulesButRef)(schema$1, this.RULES)) {
+        const $ref = (0, resolve_1$1.resolveUrl)(this.opts.uriResolver, baseId, schema$1.$ref);
         env = resolveSchema.call(this, root, $ref);
       }
       const { schemaId } = this.opts;
       env =
         env ||
         new SchemaEnv({
-          schema,
+          schema: schema$1,
           schemaId,
           root,
           baseId,
@@ -13691,9 +17208,9 @@ var require_core$1 = __commonJS({
     };
     const MAX_EXPRESSION = 200;
     function requiredOptions(o) {
-      var _a$2, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
+      var _a$4, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
       const s = o.strict;
-      const _optz = (_a$2 = o.code) === null || _a$2 === void 0 ? void 0 : _a$2.optimize;
+      const _optz = (_a$4 = o.code) === null || _a$4 === void 0 ? void 0 : _a$4.optimize;
       const optimize$2 = _optz === true || _optz === void 0 ? 1 : _optz || 0;
       const regExp =
         (_c = (_b = o.code) === null || _b === void 0 ? void 0 : _b.regExp) !== null && _c !== void 0
@@ -13740,9 +17257,9 @@ var require_core$1 = __commonJS({
         this.schemas = {};
         this.refs = {};
         this.formats = {};
-        this._compilations = new Set();
+        this._compilations = /* @__PURE__ */ new Set();
         this._loading = {};
-        this._cache = new Map();
+        this._cache = /* @__PURE__ */ new Map();
         opts = this.opts = {
           ...opts,
           ...requiredOptions(opts),
@@ -13796,14 +17313,14 @@ var require_core$1 = __commonJS({
         if (!('$async' in v)) this.errors = v.errors;
         return valid;
       }
-      compile(schema, _meta) {
-        const sch = this._addSchema(schema, _meta);
+      compile(schema$1, _meta) {
+        const sch = this._addSchema(schema$1, _meta);
         return sch.validate || this._compileSchemaEnv(sch);
       }
-      compileAsync(schema, meta) {
+      compileAsync(schema$1, meta) {
         if (typeof this.opts.loadSchema != 'function') throw new Error('options.loadSchema should be a function');
         const { loadSchema } = this.opts;
-        return runCompileAsync.call(this, schema, meta);
+        return runCompileAsync.call(this, schema$1, meta);
         async function runCompileAsync(_schema, _meta) {
           await loadMetaSchema.call(this, _schema.$schema);
           const sch = this._addSchema(_schema, _meta);
@@ -13840,38 +17357,38 @@ var require_core$1 = __commonJS({
           }
         }
       }
-      addSchema(schema, key, _meta, _validateSchema = this.opts.validateSchema) {
-        if (Array.isArray(schema)) {
-          for (const sch of schema) this.addSchema(sch, void 0, _meta, _validateSchema);
+      addSchema(schema$1, key, _meta, _validateSchema = this.opts.validateSchema) {
+        if (Array.isArray(schema$1)) {
+          for (const sch of schema$1) this.addSchema(sch, void 0, _meta, _validateSchema);
           return this;
         }
         let id;
-        if (typeof schema === 'object') {
+        if (typeof schema$1 === 'object') {
           const { schemaId } = this.opts;
-          id = schema[schemaId];
+          id = schema$1[schemaId];
           if (id !== void 0 && typeof id != 'string') throw new Error(`schema ${schemaId} must be string`);
         }
         key = (0, resolve_1.normalizeId)(key || id);
         this._checkUnique(key);
-        this.schemas[key] = this._addSchema(schema, _meta, key, _validateSchema, true);
+        this.schemas[key] = this._addSchema(schema$1, _meta, key, _validateSchema, true);
         return this;
       }
-      addMetaSchema(schema, key, _validateSchema = this.opts.validateSchema) {
-        this.addSchema(schema, key, true, _validateSchema);
+      addMetaSchema(schema$1, key, _validateSchema = this.opts.validateSchema) {
+        this.addSchema(schema$1, key, true, _validateSchema);
         return this;
       }
-      validateSchema(schema, throwOrLogError) {
-        if (typeof schema == 'boolean') return true;
-        let $schema$3;
-        $schema$3 = schema.$schema;
-        if ($schema$3 !== void 0 && typeof $schema$3 != 'string') throw new Error('$schema must be a string');
-        $schema$3 = $schema$3 || this.opts.defaultMeta || this.defaultMeta();
-        if (!$schema$3) {
+      validateSchema(schema$1, throwOrLogError) {
+        if (typeof schema$1 == 'boolean') return true;
+        let $schema$2;
+        $schema$2 = schema$1.$schema;
+        if ($schema$2 !== void 0 && typeof $schema$2 != 'string') throw new Error('$schema must be a string');
+        $schema$2 = $schema$2 || this.opts.defaultMeta || this.defaultMeta();
+        if (!$schema$2) {
           this.logger.warn('meta-schema not available');
           this.errors = null;
           return true;
         }
-        const valid = this.validate($schema$3, schema);
+        const valid = this.validate($schema$2, schema$1);
         if (!valid && throwOrLogError) {
           const message = 'schema is invalid: ' + this.errorsText();
           if (this.opts.validateSchema === 'log') this.logger.error(message);
@@ -13929,33 +17446,33 @@ var require_core$1 = __commonJS({
         }
       }
       addVocabulary(definitions) {
-        for (const def$60 of definitions) this.addKeyword(def$60);
+        for (const def$69 of definitions) this.addKeyword(def$69);
         return this;
       }
-      addKeyword(kwdOrDef, def$60) {
+      addKeyword(kwdOrDef, def$69) {
         let keyword$1;
         if (typeof kwdOrDef == 'string') {
           keyword$1 = kwdOrDef;
-          if (typeof def$60 == 'object') {
+          if (typeof def$69 == 'object') {
             this.logger.warn('these parameters are deprecated, see docs for addKeyword');
-            def$60.keyword = keyword$1;
+            def$69.keyword = keyword$1;
           }
-        } else if (typeof kwdOrDef == 'object' && def$60 === void 0) {
-          def$60 = kwdOrDef;
-          keyword$1 = def$60.keyword;
+        } else if (typeof kwdOrDef == 'object' && def$69 === void 0) {
+          def$69 = kwdOrDef;
+          keyword$1 = def$69.keyword;
           if (Array.isArray(keyword$1) && !keyword$1.length)
             throw new Error('addKeywords: keyword must be string or non-empty array');
         } else throw new Error('invalid addKeywords parameters');
-        checkKeyword.call(this, keyword$1, def$60);
-        if (!def$60) {
+        checkKeyword.call(this, keyword$1, def$69);
+        if (!def$69) {
           (0, util_1$21.eachItem)(keyword$1, (kwd) => addRule.call(this, kwd));
           return this;
         }
-        keywordMetaschema.call(this, def$60);
+        keywordMetaschema.call(this, def$69);
         const definition = {
-          ...def$60,
-          type: (0, dataType_1$1.getJSONTypes)(def$60.type),
-          schemaType: (0, dataType_1$1.getJSONTypes)(def$60.schemaType),
+          ...def$69,
+          type: (0, dataType_1$1.getJSONTypes)(def$69.type),
+          schemaType: (0, dataType_1$1.getJSONTypes)(def$69.schemaType),
         };
         (0, util_1$21.eachItem)(
           keyword$1,
@@ -13979,9 +17496,9 @@ var require_core$1 = __commonJS({
         }
         return this;
       }
-      addFormat(name, format$2) {
-        if (typeof format$2 == 'string') format$2 = new RegExp(format$2);
-        this.formats[name] = format$2;
+      addFormat(name, format$3) {
+        if (typeof format$3 == 'string') format$3 = new RegExp(format$3);
+        this.formats[name] = format$3;
         return this;
       }
       errorsText(errors = this.errors, { separator = ', ', dataVar = 'data' } = {}) {
@@ -13990,22 +17507,22 @@ var require_core$1 = __commonJS({
           .map((e) => `${dataVar}${e.instancePath} ${e.message}`)
           .reduce((text, msg) => text + separator + msg);
       }
-      $dataMetaSchema(metaSchema, keywordsJsonPointers) {
+      $dataMetaSchema(metaSchema$1, keywordsJsonPointers) {
         const rules = this.RULES.all;
-        metaSchema = JSON.parse(JSON.stringify(metaSchema));
+        metaSchema$1 = JSON.parse(JSON.stringify(metaSchema$1));
         for (const jsonPointer of keywordsJsonPointers) {
           const segments$1 = jsonPointer.split('/').slice(1);
-          let keywords = metaSchema;
+          let keywords = metaSchema$1;
           for (const seg of segments$1) keywords = keywords[seg];
           for (const key in rules) {
             const rule = rules[key];
             if (typeof rule != 'object') continue;
             const { $data } = rule.definition;
-            const schema = keywords[key];
-            if ($data && schema) keywords[key] = schemaOrData(schema);
+            const schema$1 = keywords[key];
+            if ($data && schema$1) keywords[key] = schemaOrData(schema$1);
           }
         }
-        return metaSchema;
+        return metaSchema$1;
       }
       _removeAllSchemas(schemas, regex$1) {
         for (const keyRef in schemas) {
@@ -14019,18 +17536,24 @@ var require_core$1 = __commonJS({
           }
         }
       }
-      _addSchema(schema, meta, baseId, validateSchema = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
+      _addSchema(
+        schema$1,
+        meta,
+        baseId,
+        validateSchema = this.opts.validateSchema,
+        addSchema = this.opts.addUsedSchema
+      ) {
         let id;
         const { schemaId } = this.opts;
-        if (typeof schema == 'object') id = schema[schemaId];
+        if (typeof schema$1 == 'object') id = schema$1[schemaId];
         else if (this.opts.jtd) throw new Error('schema must be object');
-        else if (typeof schema != 'boolean') throw new Error('schema must be object or boolean');
-        let sch = this._cache.get(schema);
+        else if (typeof schema$1 != 'boolean') throw new Error('schema must be object or boolean');
+        let sch = this._cache.get(schema$1);
         if (sch !== void 0) return sch;
         baseId = (0, resolve_1.normalizeId)(id || baseId);
-        const localRefs = resolve_1.getSchemaRefs.call(this, schema, baseId);
+        const localRefs = resolve_1.getSchemaRefs.call(this, schema$1, baseId);
         sch = new compile_1$2.SchemaEnv({
-          schema,
+          schema: schema$1,
           schemaId,
           meta,
           baseId,
@@ -14041,7 +17564,7 @@ var require_core$1 = __commonJS({
           if (baseId) this._checkUnique(baseId);
           this.refs[baseId] = sch;
         }
-        if (validateSchema) this.validateSchema(schema, true);
+        if (validateSchema) this.validateSchema(schema$1, true);
         return sch;
       }
       _checkUnique(id) {
@@ -14085,8 +17608,8 @@ var require_core$1 = __commonJS({
     }
     function addInitialFormats() {
       for (const name in this.opts.formats) {
-        const format$2 = this.opts.formats[name];
-        if (format$2) this.addFormat(name, format$2);
+        const format$3 = this.opts.formats[name];
+        if (format$3) this.addFormat(name, format$3);
       }
     }
     function addInitialKeywords(defs) {
@@ -14096,9 +17619,9 @@ var require_core$1 = __commonJS({
       }
       this.logger.warn('keywords option as map is deprecated, pass array');
       for (const keyword$1 in defs) {
-        const def$60 = defs[keyword$1];
-        if (!def$60.keyword) def$60.keyword = keyword$1;
-        this.addKeyword(def$60);
+        const def$69 = defs[keyword$1];
+        if (!def$69.keyword) def$69.keyword = keyword$1;
+        this.addKeyword(def$69);
       }
     }
     function getMetaSchemaOptions() {
@@ -14118,18 +17641,18 @@ var require_core$1 = __commonJS({
       throw new Error('logger must implement log, warn and error methods');
     }
     const KEYWORD_NAME = /^[a-z_$][a-z0-9_$:-]*$/i;
-    function checkKeyword(keyword$1, def$60) {
+    function checkKeyword(keyword$1, def$69) {
       const { RULES } = this;
       (0, util_1$21.eachItem)(keyword$1, (kwd) => {
         if (RULES.keywords[kwd]) throw new Error(`Keyword ${kwd} is already defined`);
         if (!KEYWORD_NAME.test(kwd)) throw new Error(`Keyword ${kwd} has invalid name`);
       });
-      if (!def$60) return;
-      if (def$60.$data && !('code' in def$60 || 'validate' in def$60))
+      if (!def$69) return;
+      if (def$69.$data && !('code' in def$69 || 'validate' in def$69))
         throw new Error('$data keyword must have "code" or "validate" function');
     }
     function addRule(keyword$1, definition, dataType) {
-      var _a$2;
+      var _a$4;
       const post = definition === null || definition === void 0 ? void 0 : definition.post;
       if (dataType && post) throw new Error('keyword with "post" flag cannot have "type"');
       const { RULES } = this;
@@ -14154,7 +17677,7 @@ var require_core$1 = __commonJS({
       if (definition.before) addBeforeRule.call(this, ruleGroup, rule, definition.before);
       else ruleGroup.rules.push(rule);
       RULES.all[keyword$1] = rule;
-      (_a$2 = definition.implements) === null || _a$2 === void 0 || _a$2.forEach((kwd) => this.addKeyword(kwd));
+      (_a$4 = definition.implements) === null || _a$4 === void 0 || _a$4.forEach((kwd) => this.addKeyword(kwd));
     }
     function addBeforeRule(ruleGroup, rule, before) {
       const i = ruleGroup.rules.findIndex((_rule) => _rule.keyword === before);
@@ -14164,15 +17687,15 @@ var require_core$1 = __commonJS({
         this.logger.warn(`rule ${before} is not defined`);
       }
     }
-    function keywordMetaschema(def$60) {
-      let { metaSchema } = def$60;
-      if (metaSchema === void 0) return;
-      if (def$60.$data && this.opts.$data) metaSchema = schemaOrData(metaSchema);
-      def$60.validateSchema = this.compile(metaSchema, true);
+    function keywordMetaschema(def$69) {
+      let { metaSchema: metaSchema$1 } = def$69;
+      if (metaSchema$1 === void 0) return;
+      if (def$69.$data && this.opts.$data) metaSchema$1 = schemaOrData(metaSchema$1);
+      def$69.validateSchema = this.compile(metaSchema$1, true);
     }
     const $dataRef = { $ref: 'https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#' };
-    function schemaOrData(schema) {
-      return { anyOf: [schema, $dataRef] };
+    function schemaOrData(schema$1) {
+      return { anyOf: [schema$1, $dataRef] };
     }
   },
 });
@@ -14209,10 +17732,10 @@ var require_ref = __commonJS({
       schemaType: 'string',
       code(cxt) {
         const { gen, schema: $ref, it } = cxt;
-        const { baseId, schemaEnv: env, validateName, opts, self } = it;
+        const { baseId, schemaEnv: env, validateName, opts, self: self$1 } = it;
         const { root } = env;
         if (($ref === '#' || $ref === '#/') && baseId === root.baseId) return callRootRef();
-        const schOrEnv = compile_1$1.resolveRef.call(self, root, baseId, $ref);
+        const schOrEnv = compile_1$1.resolveRef.call(self$1, root, baseId, $ref);
         if (schOrEnv === void 0) throw new ref_error_1$2.default(it.opts.uriResolver, baseId, $ref);
         if (schOrEnv instanceof compile_1$1.SchemaEnv) return callValidate(schOrEnv);
         return inlineRefSchema(schOrEnv);
@@ -14298,12 +17821,12 @@ var require_ref = __commonJS({
         gen.assign(names_1$2.default.errors, (0, codegen_1$26._)`${names_1$2.default.vErrors}.length`);
       }
       function addEvaluatedFrom(source) {
-        var _a$2;
+        var _a$4;
         if (!it.opts.unevaluated) return;
         const schEvaluated =
-          (_a$2 = sch === null || sch === void 0 ? void 0 : sch.validate) === null || _a$2 === void 0
+          (_a$4 = sch === null || sch === void 0 ? void 0 : sch.validate) === null || _a$4 === void 0
             ? void 0
-            : _a$2.evaluated;
+            : _a$4.evaluated;
         if (it.props !== true)
           if (schEvaluated && !schEvaluated.dynamicProps) {
             if (schEvaluated.props !== void 0)
@@ -14506,11 +18029,11 @@ var require_pattern = __commonJS({
       $data: true,
       error: error$16,
       code(cxt) {
-        const { data, $data, schema, schemaCode, it } = cxt;
+        const { data, $data, schema: schema$1, schemaCode, it } = cxt;
         const u = it.opts.unicodeRegExp ? 'u' : '';
         const regExp = $data
           ? (0, codegen_1$22._)`(new RegExp(${schemaCode}, ${u}))`
-          : (0, code_1$9.usePattern)(cxt, schema);
+          : (0, code_1$9.usePattern)(cxt, schema$1);
         cxt.fail$data((0, codegen_1$22._)`!${regExp}.test(${data})`);
       },
     };
@@ -14567,16 +18090,16 @@ var require_required = __commonJS({
       $data: true,
       error: error$14,
       code(cxt) {
-        const { gen, schema, schemaCode, data, $data, it } = cxt;
+        const { gen, schema: schema$1, schemaCode, data, $data, it } = cxt;
         const { opts } = it;
-        if (!$data && schema.length === 0) return;
-        const useLoop = schema.length >= opts.loopRequired;
+        if (!$data && schema$1.length === 0) return;
+        const useLoop = schema$1.length >= opts.loopRequired;
         if (it.allErrors) allErrorsMode();
         else exitOnErrorMode();
         if (opts.strictRequired) {
           const props = cxt.parentSchema.properties;
           const { definedProperties } = cxt.it;
-          for (const requiredKey of schema)
+          for (const requiredKey of schema$1)
             if (
               (props === null || props === void 0 ? void 0 : props[requiredKey]) === void 0 &&
               !definedProperties.has(requiredKey)
@@ -14588,7 +18111,7 @@ var require_required = __commonJS({
         }
         function allErrorsMode() {
           if (useLoop || $data) cxt.block$data(codegen_1$20.nil, loopAllRequired);
-          else for (const prop of schema) (0, code_1$8.checkReportMissingProp)(cxt, prop);
+          else for (const prop of schema$1) (0, code_1$8.checkReportMissingProp)(cxt, prop);
         }
         function exitOnErrorMode() {
           const missing = gen.let('missing');
@@ -14597,7 +18120,7 @@ var require_required = __commonJS({
             cxt.block$data(valid, () => loopUntilMissing(missing, valid));
             cxt.ok(valid);
           } else {
-            gen.if((0, code_1$8.checkMissingProp)(cxt, schema, missing));
+            gen.if((0, code_1$8.checkMissingProp)(cxt, schema$1, missing));
             (0, code_1$8.reportMissingProp)(cxt, missing);
             gen.else();
           }
@@ -14690,8 +18213,8 @@ var require_uniqueItems = __commonJS({
       $data: true,
       error: error$12,
       code(cxt) {
-        const { gen, data, $data, schema, parentSchema, schemaCode, it } = cxt;
-        if (!$data && !schema) return;
+        const { gen, data, $data, schema: schema$1, parentSchema, schemaCode, it } = cxt;
+        if (!$data && !schema$1) return;
         const valid = gen.let('valid');
         const itemTypes = parentSchema.items ? (0, dataType_1.getSchemaTypes)(parentSchema.items) : [];
         cxt.block$data(valid, validateUniqueItems, (0, codegen_1$18._)`${schemaCode} === false`);
@@ -14767,12 +18290,12 @@ var require_const = __commonJS({
       $data: true,
       error: error$11,
       code(cxt) {
-        const { gen, data, $data, schemaCode, schema } = cxt;
-        if ($data || (schema && typeof schema == 'object'))
+        const { gen, data, $data, schemaCode, schema: schema$1 } = cxt;
+        if ($data || (schema$1 && typeof schema$1 == 'object'))
           cxt.fail$data(
             (0, codegen_1$17._)`!${(0, util_1$16.useFunc)(gen, equal_1$1.default)}(${data}, ${schemaCode})`
           );
-        else cxt.fail((0, codegen_1$17._)`${schema} !== ${data}`);
+        else cxt.fail((0, codegen_1$17._)`${schema$1} !== ${data}`);
       },
     };
     exports.default = def$19;
@@ -14797,9 +18320,9 @@ var require_enum = __commonJS({
       $data: true,
       error: error$10,
       code(cxt) {
-        const { gen, data, $data, schema, schemaCode, it } = cxt;
-        if (!$data && schema.length === 0) throw new Error('enum must have non-empty array');
-        const useLoop = schema.length >= it.opts.loopEnum;
+        const { gen, data, $data, schema: schema$1, schemaCode, it } = cxt;
+        if (!$data && schema$1.length === 0) throw new Error('enum must have non-empty array');
+        const useLoop = schema$1.length >= it.opts.loopEnum;
         let eql;
         const getEql = () =>
           eql !== null && eql !== void 0 ? eql : (eql = (0, util_1$15.useFunc)(gen, equal_1.default));
@@ -14809,9 +18332,9 @@ var require_enum = __commonJS({
           cxt.block$data(valid, loopEnum);
         } else {
           /* istanbul ignore if */
-          if (!Array.isArray(schema)) throw new Error('ajv implementation error');
+          if (!Array.isArray(schema$1)) throw new Error('ajv implementation error');
           const vSchema = gen.const('vSchema', schemaCode);
-          valid = (0, codegen_1$16.or)(...schema.map((_x, i) => equalCode(vSchema, i)));
+          valid = (0, codegen_1$16.or)(...schema$1.map((_x, i) => equalCode(vSchema, i)));
         }
         cxt.pass(valid);
         function loopEnum() {
@@ -14821,7 +18344,7 @@ var require_enum = __commonJS({
           );
         }
         function equalCode(vSchema, i) {
-          const sch = schema[i];
+          const sch = schema$1[i];
           return typeof sch === 'object' && sch !== null
             ? (0, codegen_1$16._)`${getEql()}(${data}, ${vSchema}[${i}])`
             : (0, codegen_1$16._)`${data} === ${sch}`;
@@ -14900,13 +18423,13 @@ var require_additionalItems = __commonJS({
       },
     };
     function validateAdditionalItems(cxt, items) {
-      const { gen, schema, data, keyword: keyword$1, it } = cxt;
+      const { gen, schema: schema$1, data, keyword: keyword$1, it } = cxt;
       it.items = true;
       const len = gen.const('len', (0, codegen_1$15._)`${data}.length`);
-      if (schema === false) {
+      if (schema$1 === false) {
         cxt.setParams({ len: items.length });
         cxt.pass((0, codegen_1$15._)`${len} <= ${items.length}`);
-      } else if (typeof schema == 'object' && !(0, util_1$14.alwaysValidSchema)(it, schema)) {
+      } else if (typeof schema$1 == 'object' && !(0, util_1$14.alwaysValidSchema)(it, schema$1)) {
         const valid = gen.var('valid', (0, codegen_1$15._)`${len} <= ${items.length}`);
         gen.if((0, codegen_1$15.not)(valid), () => validateItems(valid));
         cxt.ok(valid);
@@ -14945,10 +18468,10 @@ var require_items = __commonJS({
       schemaType: ['object', 'array', 'boolean'],
       before: 'uniqueItems',
       code(cxt) {
-        const { schema, it } = cxt;
-        if (Array.isArray(schema)) return validateTuple(cxt, 'additionalItems', schema);
+        const { schema: schema$1, it } = cxt;
+        if (Array.isArray(schema$1)) return validateTuple(cxt, 'additionalItems', schema$1);
         it.items = true;
-        if ((0, util_1$13.alwaysValidSchema)(it, schema)) return;
+        if ((0, util_1$13.alwaysValidSchema)(it, schema$1)) return;
         cxt.ok((0, code_1$7.validateArray)(cxt));
       },
     };
@@ -15025,10 +18548,10 @@ var require_items2020 = __commonJS({
       before: 'uniqueItems',
       error: error$8,
       code(cxt) {
-        const { schema, parentSchema, it } = cxt;
+        const { schema: schema$1, parentSchema, it } = cxt;
         const { prefixItems } = parentSchema;
         it.items = true;
-        if ((0, util_1$12.alwaysValidSchema)(it, schema)) return;
+        if ((0, util_1$12.alwaysValidSchema)(it, schema$1)) return;
         if (prefixItems) (0, additionalItems_1$1.validateAdditionalItems)(cxt, prefixItems);
         else cxt.ok((0, code_1$6.validateArray)(cxt));
       },
@@ -15062,7 +18585,7 @@ var require_contains = __commonJS({
       trackErrors: true,
       error: error$7,
       code(cxt) {
-        const { gen, schema, parentSchema, data, it } = cxt;
+        const { gen, schema: schema$1, parentSchema, data, it } = cxt;
         let min;
         let max;
         const { minContains, maxContains } = parentSchema;
@@ -15084,7 +18607,7 @@ var require_contains = __commonJS({
           cxt.fail();
           return;
         }
-        if ((0, util_1$11.alwaysValidSchema)(it, schema)) {
+        if ((0, util_1$11.alwaysValidSchema)(it, schema$1)) {
           let cond = (0, codegen_1$12._)`${len} >= ${min}`;
           if (max !== void 0) cond = (0, codegen_1$12._)`${cond} && ${len} <= ${max}`;
           cxt.pass(cond);
@@ -15166,13 +18689,13 @@ var require_dependencies = __commonJS({
         validateSchemaDeps(cxt, schDeps);
       },
     };
-    function splitDependencies({ schema }) {
+    function splitDependencies({ schema: schema$1 }) {
       const propertyDeps = {};
       const schemaDeps = {};
-      for (const key in schema) {
+      for (const key in schema$1) {
         if (key === '__proto__') continue;
-        const deps = Array.isArray(schema[key]) ? propertyDeps : schemaDeps;
-        deps[key] = schema[key];
+        const deps = Array.isArray(schema$1[key]) ? propertyDeps : schemaDeps;
+        deps[key] = schema$1[key];
       }
       return [propertyDeps, schemaDeps];
     }
@@ -15245,8 +18768,8 @@ var require_propertyNames = __commonJS({
       schemaType: ['object', 'boolean'],
       error: error$6,
       code(cxt) {
-        const { gen, schema, data, it } = cxt;
-        if ((0, util_1$9.alwaysValidSchema)(it, schema)) return;
+        const { gen, schema: schema$1, data, it } = cxt;
+        if ((0, util_1$9.alwaysValidSchema)(it, schema$1)) return;
         const valid = gen.name('valid');
         gen.forIn('key', data, (key) => {
           cxt.setParams({ propertyName: key });
@@ -15293,12 +18816,12 @@ var require_additionalProperties = __commonJS({
       trackErrors: true,
       error: error$5,
       code(cxt) {
-        const { gen, schema, parentSchema, data, errsCount, it } = cxt;
+        const { gen, schema: schema$1, parentSchema, data, errsCount, it } = cxt;
         /* istanbul ignore if */
         if (!errsCount) throw new Error('ajv implementation error');
         const { allErrors, opts } = it;
         it.props = true;
-        if (opts.removeAdditional !== 'all' && (0, util_1$8.alwaysValidSchema)(it, schema)) return;
+        if (opts.removeAdditional !== 'all' && (0, util_1$8.alwaysValidSchema)(it, schema$1)) return;
         const props = (0, code_1$4.allSchemaProperties)(parentSchema.properties);
         const patProps = (0, code_1$4.allSchemaProperties)(parentSchema.patternProperties);
         checkAdditionalProperties();
@@ -15328,17 +18851,17 @@ var require_additionalProperties = __commonJS({
           gen.code((0, codegen_1$9._)`delete ${data}[${key}]`);
         }
         function additionalPropertyCode(key) {
-          if (opts.removeAdditional === 'all' || (opts.removeAdditional && schema === false)) {
+          if (opts.removeAdditional === 'all' || (opts.removeAdditional && schema$1 === false)) {
             deleteAdditional(key);
             return;
           }
-          if (schema === false) {
+          if (schema$1 === false) {
             cxt.setParams({ additionalProperty: key });
             cxt.error();
             if (!allErrors) gen.break();
             return;
           }
-          if (typeof schema == 'object' && !(0, util_1$8.alwaysValidSchema)(it, schema)) {
+          if (typeof schema$1 == 'object' && !(0, util_1$8.alwaysValidSchema)(it, schema$1)) {
             const valid = gen.name('valid');
             if (opts.removeAdditional === 'failing') {
               applyAdditionalSchema(key, valid, false);
@@ -15386,16 +18909,16 @@ var require_properties = __commonJS({
       type: 'object',
       schemaType: 'object',
       code(cxt) {
-        const { gen, schema, parentSchema, data, it } = cxt;
+        const { gen, schema: schema$1, parentSchema, data, it } = cxt;
         if (it.opts.removeAdditional === 'all' && parentSchema.additionalProperties === void 0)
           additionalProperties_1$1.default.code(
             new validate_1$2.KeywordCxt(it, additionalProperties_1$1.default, 'additionalProperties')
           );
-        const allProps = (0, code_1$3.allSchemaProperties)(schema);
+        const allProps = (0, code_1$3.allSchemaProperties)(schema$1);
         for (const prop of allProps) it.definedProperties.add(prop);
         if (it.opts.unevaluated && allProps.length && it.props !== true)
           it.props = util_1$7.mergeEvaluated.props(gen, (0, util_1$7.toHash)(allProps), it.props);
-        const properties = allProps.filter((p) => !(0, util_1$7.alwaysValidSchema)(it, schema[p]));
+        const properties = allProps.filter((p) => !(0, util_1$7.alwaysValidSchema)(it, schema$1[p]));
         if (properties.length === 0) return;
         const valid = gen.name('valid');
         for (const prop of properties) {
@@ -15410,7 +18933,7 @@ var require_properties = __commonJS({
           cxt.ok(valid);
         }
         function hasDefault(prop) {
-          return it.opts.useDefaults && !it.compositeRule && schema[prop].default !== void 0;
+          return it.opts.useDefaults && !it.compositeRule && schema$1[prop].default !== void 0;
         }
         function applyPropertySchema(prop) {
           cxt.subschema(
@@ -15442,10 +18965,10 @@ var require_patternProperties = __commonJS({
       type: 'object',
       schemaType: 'object',
       code(cxt) {
-        const { gen, schema, data, parentSchema, it } = cxt;
+        const { gen, schema: schema$1, data, parentSchema, it } = cxt;
         const { opts } = it;
-        const patterns = (0, code_1$2.allSchemaProperties)(schema);
-        const alwaysValidPatterns = patterns.filter((p) => (0, util_1$6.alwaysValidSchema)(it, schema[p]));
+        const patterns = (0, code_1$2.allSchemaProperties)(schema$1);
+        const alwaysValidPatterns = patterns.filter((p) => (0, util_1$6.alwaysValidSchema)(it, schema$1[p]));
         if (
           patterns.length === 0 ||
           (alwaysValidPatterns.length === patterns.length && (!it.opts.unevaluated || it.props === true))
@@ -15512,8 +19035,8 @@ var require_not = __commonJS({
       schemaType: ['object', 'boolean'],
       trackErrors: true,
       code(cxt) {
-        const { gen, schema, it } = cxt;
-        if ((0, util_1$5.alwaysValidSchema)(it, schema)) {
+        const { gen, schema: schema$1, it } = cxt;
+        if ((0, util_1$5.alwaysValidSchema)(it, schema$1)) {
           cxt.fail();
           return;
         }
@@ -15573,11 +19096,11 @@ var require_oneOf = __commonJS({
       trackErrors: true,
       error: error$4,
       code(cxt) {
-        const { gen, schema, parentSchema, it } = cxt;
+        const { gen, schema: schema$1, parentSchema, it } = cxt;
         /* istanbul ignore if */
-        if (!Array.isArray(schema)) throw new Error('ajv implementation error');
+        if (!Array.isArray(schema$1)) throw new Error('ajv implementation error');
         if (it.opts.discriminator && parentSchema.discriminator) return;
-        const schArr = schema;
+        const schArr = schema$1;
         const valid = gen.let('valid', false);
         const passing = gen.let('passing', null);
         const schValid = gen.name('_valid');
@@ -15630,11 +19153,11 @@ var require_allOf = __commonJS({
       keyword: 'allOf',
       schemaType: 'array',
       code(cxt) {
-        const { gen, schema, it } = cxt;
+        const { gen, schema: schema$1, it } = cxt;
         /* istanbul ignore if */
-        if (!Array.isArray(schema)) throw new Error('ajv implementation error');
+        if (!Array.isArray(schema$1)) throw new Error('ajv implementation error');
         const valid = gen.name('valid');
-        schema.forEach((sch, i) => {
+        schema$1.forEach((sch, i) => {
           if ((0, util_1$3.alwaysValidSchema)(it, sch)) return;
           const schCxt = cxt.subschema(
             {
@@ -15710,8 +19233,8 @@ var require_if = __commonJS({
       },
     };
     function hasSchema(it, keyword$1) {
-      const schema = it.schema[keyword$1];
-      return schema !== void 0 && !(0, util_1$2.alwaysValidSchema)(it, schema);
+      const schema$1 = it.schema[keyword$1];
+      return schema$1 !== void 0 && !(0, util_1$2.alwaysValidSchema)(it, schema$1);
     }
     exports.default = def$3;
   },
@@ -15756,7 +19279,7 @@ var require_applicator = __commonJS({
     const if_1 = require_if();
     const thenElse_1 = require_thenElse();
     function getApplicator(draft2020 = false) {
-      const applicator = [
+      const applicator$1 = [
         not_1.default,
         anyOf_1.default,
         oneOf_1.default,
@@ -15769,10 +19292,10 @@ var require_applicator = __commonJS({
         properties_1.default,
         patternProperties_1.default,
       ];
-      if (draft2020) applicator.push(prefixItems_1.default, items2020_1.default);
-      else applicator.push(additionalItems_1.default, items_1.default);
-      applicator.push(contains_1.default);
-      return applicator;
+      if (draft2020) applicator$1.push(prefixItems_1.default, items2020_1.default);
+      else applicator$1.push(additionalItems_1.default, items_1.default);
+      applicator$1.push(contains_1.default);
+      return applicator$1;
     }
     exports.default = getApplicator;
   },
@@ -15795,58 +19318,58 @@ var require_format$1 = __commonJS({
       $data: true,
       error: error$2,
       code(cxt, ruleType) {
-        const { gen, data, $data, schema, schemaCode, it } = cxt;
-        const { opts, errSchemaPath, schemaEnv, self } = it;
+        const { gen, data, $data, schema: schema$1, schemaCode, it } = cxt;
+        const { opts, errSchemaPath, schemaEnv, self: self$1 } = it;
         if (!opts.validateFormats) return;
         if ($data) validate$DataFormat();
         else validateFormat();
         function validate$DataFormat() {
           const fmts = gen.scopeValue('formats', {
-            ref: self.formats,
+            ref: self$1.formats,
             code: opts.code.formats,
           });
           const fDef = gen.const('fDef', (0, codegen_1$5._)`${fmts}[${schemaCode}]`);
           const fType = gen.let('fType');
-          const format$2 = gen.let('format');
+          const format$3 = gen.let('format');
           gen.if(
             (0, codegen_1$5._)`typeof ${fDef} == "object" && !(${fDef} instanceof RegExp)`,
             () =>
               gen
                 .assign(fType, (0, codegen_1$5._)`${fDef}.type || "string"`)
-                .assign(format$2, (0, codegen_1$5._)`${fDef}.validate`),
-            () => gen.assign(fType, (0, codegen_1$5._)`"string"`).assign(format$2, fDef)
+                .assign(format$3, (0, codegen_1$5._)`${fDef}.validate`),
+            () => gen.assign(fType, (0, codegen_1$5._)`"string"`).assign(format$3, fDef)
           );
           cxt.fail$data((0, codegen_1$5.or)(unknownFmt(), invalidFmt()));
           function unknownFmt() {
             if (opts.strictSchema === false) return codegen_1$5.nil;
-            return (0, codegen_1$5._)`${schemaCode} && !${format$2}`;
+            return (0, codegen_1$5._)`${schemaCode} && !${format$3}`;
           }
           function invalidFmt() {
             const callFormat = schemaEnv.$async
-              ? (0, codegen_1$5._)`(${fDef}.async ? await ${format$2}(${data}) : ${format$2}(${data}))`
-              : (0, codegen_1$5._)`${format$2}(${data})`;
+              ? (0, codegen_1$5._)`(${fDef}.async ? await ${format$3}(${data}) : ${format$3}(${data}))`
+              : (0, codegen_1$5._)`${format$3}(${data})`;
             const validData = (0,
-            codegen_1$5._)`(typeof ${format$2} == "function" ? ${callFormat} : ${format$2}.test(${data}))`;
-            return (0, codegen_1$5._)`${format$2} && ${format$2} !== true && ${fType} === ${ruleType} && !${validData}`;
+            codegen_1$5._)`(typeof ${format$3} == "function" ? ${callFormat} : ${format$3}.test(${data}))`;
+            return (0, codegen_1$5._)`${format$3} && ${format$3} !== true && ${fType} === ${ruleType} && !${validData}`;
           }
         }
         function validateFormat() {
-          const formatDef = self.formats[schema];
+          const formatDef = self$1.formats[schema$1];
           if (!formatDef) {
             unknownFormat();
             return;
           }
           if (formatDef === true) return;
-          const [fmtType, format$2, fmtRef] = getFormat(formatDef);
+          const [fmtType, format$3, fmtRef] = getFormat(formatDef);
           if (fmtType === ruleType) cxt.pass(validCondition());
           function unknownFormat() {
             if (opts.strictSchema === false) {
-              self.logger.warn(unknownMsg());
+              self$1.logger.warn(unknownMsg());
               return;
             }
             throw new Error(unknownMsg());
             function unknownMsg() {
-              return `unknown format "${schema}" ignored in schema at path "${errSchemaPath}"`;
+              return `unknown format "${schema$1}" ignored in schema at path "${errSchemaPath}"`;
             }
           }
           function getFormat(fmtDef$1) {
@@ -15854,10 +19377,10 @@ var require_format$1 = __commonJS({
               fmtDef$1 instanceof RegExp
                 ? (0, codegen_1$5.regexpCode)(fmtDef$1)
                 : opts.code.formats
-                  ? (0, codegen_1$5._)`${opts.code.formats}${(0, codegen_1$5.getProperty)(schema)}`
+                  ? (0, codegen_1$5._)`${opts.code.formats}${(0, codegen_1$5.getProperty)(schema$1)}`
                   : void 0;
             const fmt = gen.scopeValue('formats', {
-              key: schema,
+              key: schema$1,
               ref: fmtDef$1,
               code,
             });
@@ -15870,7 +19393,7 @@ var require_format$1 = __commonJS({
               if (!schemaEnv.$async) throw new Error('async format in sync schema');
               return (0, codegen_1$5._)`await ${fmtRef}(${data})`;
             }
-            return typeof format$2 == 'function'
+            return typeof format$3 == 'function'
               ? (0, codegen_1$5._)`${fmtRef}(${data})`
               : (0, codegen_1$5._)`${fmtRef}.test(${data})`;
           }
@@ -15927,7 +19450,7 @@ var require_draft7 = __commonJS({
 
 //#endregion
 //#region ../node_modules/ajv-formats/node_modules/ajv/dist/vocabularies/discriminator/types.js
-var require_types = __commonJS({
+var require_types$1 = __commonJS({
   '../node_modules/ajv-formats/node_modules/ajv/dist/vocabularies/discriminator/types.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.DiscrError = void 0;
@@ -15945,13 +19468,13 @@ var require_discriminator = __commonJS({
   '../node_modules/ajv-formats/node_modules/ajv/dist/vocabularies/discriminator/index.js'(exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     const codegen_1$4 = require_codegen();
-    const types_1 = require_types();
+    const types_1$5 = require_types$1();
     const compile_1 = require_compile();
     const ref_error_1$1 = require_ref_error();
     const util_1 = require_util();
     const error$1 = {
       message: ({ params: { discrError, tagName } }) =>
-        discrError === types_1.DiscrError.Tag
+        discrError === types_1$5.DiscrError.Tag
           ? `tag "${tagName}" must be string`
           : `value of tag "${tagName}" must be in oneOf`,
       params: ({ params: { discrError, tag, tagName } }) =>
@@ -15963,12 +19486,12 @@ var require_discriminator = __commonJS({
       schemaType: 'object',
       error: error$1,
       code(cxt) {
-        const { gen, data, schema, parentSchema, it } = cxt;
+        const { gen, data, schema: schema$1, parentSchema, it } = cxt;
         const { oneOf } = parentSchema;
         if (!it.opts.discriminator) throw new Error('discriminator: requires discriminator option');
-        const tagName = schema.propertyName;
+        const tagName = schema$1.propertyName;
         if (typeof tagName != 'string') throw new Error('discriminator: requires propertyName');
-        if (schema.mapping) throw new Error('discriminator: mapping is not supported');
+        if (schema$1.mapping) throw new Error('discriminator: mapping is not supported');
         if (!oneOf) throw new Error('discriminator: requires oneOf keyword');
         const valid = gen.let('valid', false);
         const tag = gen.const('tag', (0, codegen_1$4._)`${data}${(0, codegen_1$4.getProperty)(tagName)}`);
@@ -15977,7 +19500,7 @@ var require_discriminator = __commonJS({
           () => validateMapping(),
           () =>
             cxt.error(false, {
-              discrError: types_1.DiscrError.Tag,
+              discrError: types_1$5.DiscrError.Tag,
               tag,
               tagName,
             })
@@ -15992,7 +19515,7 @@ var require_discriminator = __commonJS({
           }
           gen.else();
           cxt.error(false, {
-            discrError: types_1.DiscrError.Mapping,
+            discrError: types_1$5.DiscrError.Mapping,
             tag,
             tagName,
           });
@@ -16011,7 +19534,7 @@ var require_discriminator = __commonJS({
           return _valid;
         }
         function getMapping() {
-          var _a$2;
+          var _a$4;
           const oneOfMapping = {};
           const topRequired = hasRequired(parentSchema);
           let tagRequired = true;
@@ -16027,9 +19550,9 @@ var require_discriminator = __commonJS({
               if (sch === void 0) throw new ref_error_1$1.default(it.opts.uriResolver, it.baseId, ref);
             }
             const propSch =
-              (_a$2 = sch === null || sch === void 0 ? void 0 : sch.properties) === null || _a$2 === void 0
+              (_a$4 = sch === null || sch === void 0 ? void 0 : sch.properties) === null || _a$4 === void 0
                 ? void 0
-                : _a$2[tagName];
+                : _a$4[tagName];
             if (typeof propSch != 'object')
               throw new Error(
                 `discriminator: oneOf subschemas (or referenced schemas) must have "properties/${tagName}"`
@@ -16228,10 +19751,10 @@ var require_ajv = __commonJS({
       _addDefaultMetaSchema() {
         super._addDefaultMetaSchema();
         if (!this.opts.meta) return;
-        const metaSchema = this.opts.$data
+        const metaSchema$1 = this.opts.$data
           ? this.$dataMetaSchema(draft7MetaSchema, META_SUPPORT_DATA)
           : draft7MetaSchema;
-        this.addMetaSchema(metaSchema, META_SCHEMA_ID, false);
+        this.addMetaSchema(metaSchema$1, META_SCHEMA_ID, false);
         this.refs['http://json-schema.org/schema'] = META_SCHEMA_ID;
       }
       defaultMeta() {
@@ -16350,14 +19873,14 @@ var require_limit = __commonJS({
       error,
       code(cxt) {
         const { gen, data, schemaCode, keyword: keyword$1, it } = cxt;
-        const { opts, self } = it;
+        const { opts, self: self$1 } = it;
         if (!opts.validateFormats) return;
-        const fCxt = new ajv_1$2.KeywordCxt(it, self.RULES.all.format.definition, 'format');
+        const fCxt = new ajv_1$2.KeywordCxt(it, self$1.RULES.all.format.definition, 'format');
         if (fCxt.$data) validate$DataFormat();
         else validateFormat();
         function validate$DataFormat() {
           const fmts = gen.scopeValue('formats', {
-            ref: self.formats,
+            ref: self$1.formats,
             code: opts.code.formats,
           });
           const fmt = gen.const('fmt', (0, codegen_1$2._)`${fmts}[${fCxt.schemaCode}]`);
@@ -16371,16 +19894,16 @@ var require_limit = __commonJS({
           );
         }
         function validateFormat() {
-          const format$2 = fCxt.schema;
-          const fmtDef$1 = self.formats[format$2];
+          const format$3 = fCxt.schema;
+          const fmtDef$1 = self$1.formats[format$3];
           if (!fmtDef$1 || fmtDef$1 === true) return;
           if (typeof fmtDef$1 != 'object' || fmtDef$1 instanceof RegExp || typeof fmtDef$1.compare != 'function')
-            throw new Error(`"${keyword$1}": format "${format$2}" does not define "compare" function`);
+            throw new Error(`"${keyword$1}": format "${format$3}" does not define "compare" function`);
           const fmt = gen.scopeValue('formats', {
-            key: format$2,
+            key: format$3,
             ref: fmtDef$1,
             code: opts.code.formats
-              ? (0, codegen_1$2._)`${opts.code.formats}${(0, codegen_1$2.getProperty)(format$2)}`
+              ? (0, codegen_1$2._)`${opts.code.formats}${(0, codegen_1$2.getProperty)(format$3)}`
               : void 0,
           });
           cxt.fail$data(compareCode(fmt));
@@ -16428,9 +19951,9 @@ var require_dist$1 = __commonJS({
       return f;
     };
     function addFormats(ajv, list, fs, exportName) {
-      var _a$2;
+      var _a$4;
       var _b;
-      ((_a$2 = (_b = ajv.opts.code).formats) !== null && _a$2 !== void 0) ||
+      ((_a$4 = (_b = ajv.opts.code).formats) !== null && _a$4 !== void 0) ||
         (_b.formats = (0, codegen_1$1._)`require("ajv-formats/dist/formats").${exportName}`);
       for (const f of list) ajv.addFormat(f, fs[f]);
     }
@@ -20340,9 +23863,9 @@ var require_dist = __commonJS({
         schemaType: ['string', 'object'],
         post: true,
         code(cxt) {
-          const { gen, data, schema, schemaValue, it } = cxt;
+          const { gen, data, schema: schema$1, schemaValue, it } = cxt;
           if (it.createErrors === false) return;
-          const sch = schema;
+          const sch = schema$1;
           const instancePath = codegen_1.strConcat(names_1.default.instancePath, it.errorPath);
           gen.if(ajv_1$1._`${names_1.default.errors} > 0`, () => {
             if (typeof sch == 'object') {
@@ -20386,7 +23909,7 @@ var require_dist = __commonJS({
           }
           function processKeywordErrors(kwdErrors) {
             const kwdErrs = gen.const('emErrors', ajv_1$1.stringify(kwdErrors));
-            const templates = gen.const('templates', getTemplatesCode(kwdErrors, schema));
+            const templates = gen.const('templates', getTemplatesCode(kwdErrors, schema$1));
             gen.forOf('err', names_1.default.vErrors, (err) =>
               gen.if(matchKeywordError(err, kwdErrs), () =>
                 gen.code(ajv_1$1._`${kwdErrs}[${err}.keyword].push(${err})`).assign(ajv_1$1._`${err}.${used}`, true)
@@ -20424,7 +23947,7 @@ var require_dist = __commonJS({
           function processKeywordPropErrors(kwdPropErrors) {
             const kwdErrs = gen.const('emErrors', ajv_1$1.stringify(kwdPropErrors));
             const templatesCode = [];
-            for (const k in kwdPropErrors) templatesCode.push([k, getTemplatesCode(kwdPropErrors[k], schema[k])]);
+            for (const k in kwdPropErrors) templatesCode.push([k, getTemplatesCode(kwdPropErrors[k], schema$1[k])]);
             const templates = gen.const('templates', gen.object(...templatesCode));
             const kwdPropParams = gen.scopeValue('obj', {
               ref: KEYWORD_PROPERTY_PARAMS,
@@ -20469,22 +23992,22 @@ var require_dist = __commonJS({
               gen.if(
                 isArr,
                 () => {
-                  init(items, schema.items);
+                  init(items, schema$1.items);
                   gen.assign(childKwd, ajv_1$1.str`items`);
                 },
                 () => {
-                  init(props, schema.properties);
+                  init(props, schema$1.properties);
                   gen.assign(childKwd, ajv_1$1.str`properties`);
                 }
               );
               childProp = ajv_1$1._`[${childKwd}]`;
             } else if (items) {
               gen.if(isArr);
-              init(items, schema.items);
+              init(items, schema$1.items);
               childProp = ajv_1$1._`.items`;
             } else if (props) {
               gen.if(codegen_1.and(isObj, codegen_1.not(isArr)));
-              init(props, schema.properties);
+              init(props, schema$1.properties);
               childProp = ajv_1$1._`.properties`;
             }
             gen.forOf('err', names_1.default.vErrors, (err) =>
@@ -20537,7 +24060,6 @@ var require_dist = __commonJS({
               ajv_1$1._`!${err}.${used}`,
               ajv_1$1._`${err}.instancePath === ${instancePath}`,
               ajv_1$1._`${err}.keyword in ${kwdErrs}`,
-              // TODO match the end of the string?
               ajv_1$1._`${err}.schemaPath.indexOf(${it.errSchemaPath}) === 0`,
               ajv_1$1._`/^\\/[^\\/]*$/.test(${err}.schemaPath.slice(${it.errSchemaPath.length}))`
             );
@@ -20642,6 +24164,2615 @@ var require_dist = __commonJS({
 });
 
 //#endregion
+//#region ../packages/vovk/cjs/types.js
+var require_types = __commonJS({
+  '../packages/vovk/cjs/types.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.VovkSchemaIdEnum = exports.HttpStatus = exports.HttpMethod = void 0;
+    var HttpMethod;
+    (function (HttpMethod$2) {
+      HttpMethod$2['GET'] = 'GET';
+      HttpMethod$2['POST'] = 'POST';
+      HttpMethod$2['PUT'] = 'PUT';
+      HttpMethod$2['PATCH'] = 'PATCH';
+      HttpMethod$2['DELETE'] = 'DELETE';
+      HttpMethod$2['HEAD'] = 'HEAD';
+      HttpMethod$2['OPTIONS'] = 'OPTIONS';
+    })(HttpMethod || (exports.HttpMethod = HttpMethod = {}));
+    var HttpStatus;
+    (function (HttpStatus$2) {
+      HttpStatus$2[(HttpStatus$2['NULL'] = 0)] = 'NULL';
+      HttpStatus$2[(HttpStatus$2['CONTINUE'] = 100)] = 'CONTINUE';
+      HttpStatus$2[(HttpStatus$2['SWITCHING_PROTOCOLS'] = 101)] = 'SWITCHING_PROTOCOLS';
+      HttpStatus$2[(HttpStatus$2['PROCESSING'] = 102)] = 'PROCESSING';
+      HttpStatus$2[(HttpStatus$2['EARLYHINTS'] = 103)] = 'EARLYHINTS';
+      HttpStatus$2[(HttpStatus$2['OK'] = 200)] = 'OK';
+      HttpStatus$2[(HttpStatus$2['CREATED'] = 201)] = 'CREATED';
+      HttpStatus$2[(HttpStatus$2['ACCEPTED'] = 202)] = 'ACCEPTED';
+      HttpStatus$2[(HttpStatus$2['NON_AUTHORITATIVE_INFORMATION'] = 203)] = 'NON_AUTHORITATIVE_INFORMATION';
+      HttpStatus$2[(HttpStatus$2['NO_CONTENT'] = 204)] = 'NO_CONTENT';
+      HttpStatus$2[(HttpStatus$2['RESET_CONTENT'] = 205)] = 'RESET_CONTENT';
+      HttpStatus$2[(HttpStatus$2['PARTIAL_CONTENT'] = 206)] = 'PARTIAL_CONTENT';
+      HttpStatus$2[(HttpStatus$2['AMBIGUOUS'] = 300)] = 'AMBIGUOUS';
+      HttpStatus$2[(HttpStatus$2['MOVED_PERMANENTLY'] = 301)] = 'MOVED_PERMANENTLY';
+      HttpStatus$2[(HttpStatus$2['FOUND'] = 302)] = 'FOUND';
+      HttpStatus$2[(HttpStatus$2['SEE_OTHER'] = 303)] = 'SEE_OTHER';
+      HttpStatus$2[(HttpStatus$2['NOT_MODIFIED'] = 304)] = 'NOT_MODIFIED';
+      HttpStatus$2[(HttpStatus$2['TEMPORARY_REDIRECT'] = 307)] = 'TEMPORARY_REDIRECT';
+      HttpStatus$2[(HttpStatus$2['PERMANENT_REDIRECT'] = 308)] = 'PERMANENT_REDIRECT';
+      HttpStatus$2[(HttpStatus$2['BAD_REQUEST'] = 400)] = 'BAD_REQUEST';
+      HttpStatus$2[(HttpStatus$2['UNAUTHORIZED'] = 401)] = 'UNAUTHORIZED';
+      HttpStatus$2[(HttpStatus$2['PAYMENT_REQUIRED'] = 402)] = 'PAYMENT_REQUIRED';
+      HttpStatus$2[(HttpStatus$2['FORBIDDEN'] = 403)] = 'FORBIDDEN';
+      HttpStatus$2[(HttpStatus$2['NOT_FOUND'] = 404)] = 'NOT_FOUND';
+      HttpStatus$2[(HttpStatus$2['METHOD_NOT_ALLOWED'] = 405)] = 'METHOD_NOT_ALLOWED';
+      HttpStatus$2[(HttpStatus$2['NOT_ACCEPTABLE'] = 406)] = 'NOT_ACCEPTABLE';
+      HttpStatus$2[(HttpStatus$2['PROXY_AUTHENTICATION_REQUIRED'] = 407)] = 'PROXY_AUTHENTICATION_REQUIRED';
+      HttpStatus$2[(HttpStatus$2['REQUEST_TIMEOUT'] = 408)] = 'REQUEST_TIMEOUT';
+      HttpStatus$2[(HttpStatus$2['CONFLICT'] = 409)] = 'CONFLICT';
+      HttpStatus$2[(HttpStatus$2['GONE'] = 410)] = 'GONE';
+      HttpStatus$2[(HttpStatus$2['LENGTH_REQUIRED'] = 411)] = 'LENGTH_REQUIRED';
+      HttpStatus$2[(HttpStatus$2['PRECONDITION_FAILED'] = 412)] = 'PRECONDITION_FAILED';
+      HttpStatus$2[(HttpStatus$2['PAYLOAD_TOO_LARGE'] = 413)] = 'PAYLOAD_TOO_LARGE';
+      HttpStatus$2[(HttpStatus$2['URI_TOO_LONG'] = 414)] = 'URI_TOO_LONG';
+      HttpStatus$2[(HttpStatus$2['UNSUPPORTED_MEDIA_TYPE'] = 415)] = 'UNSUPPORTED_MEDIA_TYPE';
+      HttpStatus$2[(HttpStatus$2['REQUESTED_RANGE_NOT_SATISFIABLE'] = 416)] = 'REQUESTED_RANGE_NOT_SATISFIABLE';
+      HttpStatus$2[(HttpStatus$2['EXPECTATION_FAILED'] = 417)] = 'EXPECTATION_FAILED';
+      HttpStatus$2[(HttpStatus$2['I_AM_A_TEAPOT'] = 418)] = 'I_AM_A_TEAPOT';
+      HttpStatus$2[(HttpStatus$2['MISDIRECTED'] = 421)] = 'MISDIRECTED';
+      HttpStatus$2[(HttpStatus$2['UNPROCESSABLE_ENTITY'] = 422)] = 'UNPROCESSABLE_ENTITY';
+      HttpStatus$2[(HttpStatus$2['FAILED_DEPENDENCY'] = 424)] = 'FAILED_DEPENDENCY';
+      HttpStatus$2[(HttpStatus$2['PRECONDITION_REQUIRED'] = 428)] = 'PRECONDITION_REQUIRED';
+      HttpStatus$2[(HttpStatus$2['TOO_MANY_REQUESTS'] = 429)] = 'TOO_MANY_REQUESTS';
+      HttpStatus$2[(HttpStatus$2['INTERNAL_SERVER_ERROR'] = 500)] = 'INTERNAL_SERVER_ERROR';
+      HttpStatus$2[(HttpStatus$2['NOT_IMPLEMENTED'] = 501)] = 'NOT_IMPLEMENTED';
+      HttpStatus$2[(HttpStatus$2['BAD_GATEWAY'] = 502)] = 'BAD_GATEWAY';
+      HttpStatus$2[(HttpStatus$2['SERVICE_UNAVAILABLE'] = 503)] = 'SERVICE_UNAVAILABLE';
+      HttpStatus$2[(HttpStatus$2['GATEWAY_TIMEOUT'] = 504)] = 'GATEWAY_TIMEOUT';
+      HttpStatus$2[(HttpStatus$2['HTTP_VERSION_NOT_SUPPORTED'] = 505)] = 'HTTP_VERSION_NOT_SUPPORTED';
+    })(HttpStatus || (exports.HttpStatus = HttpStatus = {}));
+    var VovkSchemaIdEnum;
+    (function (VovkSchemaIdEnum$2) {
+      VovkSchemaIdEnum$2['META'] = 'https://vovk.dev/api/spec/v3/meta.json';
+      VovkSchemaIdEnum$2['CONFIG'] = 'https://vovk.dev/api/spec/v3/config.json';
+      VovkSchemaIdEnum$2['SEGMENT'] = 'https://vovk.dev/api/spec/v3/segment.json';
+      VovkSchemaIdEnum$2['SCHEMA'] = 'https://vovk.dev/api/spec/v3/schema.json';
+    })(VovkSchemaIdEnum || (exports.VovkSchemaIdEnum = VovkSchemaIdEnum = {}));
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/HttpException.js
+var require_HttpException = __commonJS({
+  '../packages/vovk/cjs/HttpException.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.HttpException = void 0;
+    var HttpException = class extends Error {
+      statusCode;
+      message;
+      cause;
+      constructor(statusCode, message, cause) {
+        super(message);
+        this.statusCode = statusCode;
+        this.message = message;
+        this.cause = cause;
+      }
+    };
+    exports.HttpException = HttpException;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/shim.js
+var require_shim = __commonJS({
+  '../packages/vovk/cjs/utils/shim.js'() {
+    if (typeof Symbol.dispose !== 'symbol')
+      Object.defineProperty(Symbol, 'dispose', {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: Symbol.for('dispose'),
+      });
+    if (typeof Symbol.asyncDispose !== 'symbol')
+      Object.defineProperty(Symbol, 'asyncDispose', {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: Symbol.for('asyncDispose'),
+      });
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/JSONLinesResponse.js
+var require_JSONLinesResponse = __commonJS({
+  '../packages/vovk/cjs/JSONLinesResponse.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.JSONLinesResponse = void 0;
+    require_shim();
+    var JSONLinesResponse = class extends Response {
+      isClosed = false;
+      controller;
+      encoder;
+      readableStream;
+      constructor(requestHeaders, init) {
+        const encoder = new TextEncoder();
+        let readableController;
+        const readableStream = new ReadableStream({
+          cancel: () => {
+            this.isClosed = true;
+          },
+          start: (controller) => {
+            readableController = controller;
+          },
+        });
+        if (!requestHeaders) throw new Error('Request headers are required');
+        const accept = requestHeaders.get('accept');
+        super(readableStream, {
+          ...init,
+          headers: {
+            ...init?.headers,
+            'Content-Type': accept?.includes('application/jsonl')
+              ? 'application/jsonl; charset=utf-8'
+              : 'text/plain; charset=utf-8',
+          },
+        });
+        this.readableStream = readableStream;
+        this.encoder = encoder;
+        this.controller = readableController;
+      }
+      send(data) {
+        const { controller, encoder } = this;
+        if (this.isClosed) return;
+        return controller?.enqueue(encoder.encode(JSON.stringify(data) + '\n'));
+      }
+      close() {
+        const { controller } = this;
+        if (this.isClosed) return;
+        this.isClosed = true;
+        controller?.close();
+      }
+      throw(e) {
+        this.send({
+          isError: true,
+          reason: e instanceof Error ? e.message : e,
+        });
+        return this.close();
+      }
+      [Symbol.dispose]() {
+        this.close();
+      }
+    };
+    exports.JSONLinesResponse = JSONLinesResponse;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/parseQuery.js
+var require_parseQuery = __commonJS({
+  '../packages/vovk/cjs/utils/parseQuery.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.default = parseQuery;
+    /**
+     * Parse a bracket-based key (e.g. "z[d][0][x]" or "arr[]")
+     * into an array of path segments (strings or special push-markers).
+     *
+     * Example: "z[d][0][x]" => ["z", "d", "0", "x"]
+     * Example: "arr[]"      => ["arr", "" ]  // "" indicates "push" onto array
+     */
+    function parseKey(key) {
+      const segments$1 = [];
+      const topKeyMatch = key.match(/^([^[\]]+)/);
+      if (topKeyMatch) segments$1.push(topKeyMatch[1]);
+      else segments$1.push('');
+      const bracketRegex = /\[([^[\]]*)\]/g;
+      let match;
+      while ((match = bracketRegex.exec(key)) !== null) segments$1.push(match[1]);
+      return segments$1;
+    }
+    /**
+     * Recursively set a value in a nested object/array, given a path of segments.
+     * - If segment is numeric => treat as array index
+     * - If segment is empty "" => push to array
+     * - Else => object property
+     */
+    function setValue(obj, path, value) {
+      let current = obj;
+      for (let i = 0; i < path.length; i++) {
+        const segment = path[i];
+        if (i === path.length - 1)
+          if (segment === '') {
+            if (!Array.isArray(current)) current = [];
+            current.push(value);
+          } else if (!isNaN(Number(segment))) {
+            const idx = Number(segment);
+            if (!Array.isArray(current)) current = [];
+            current[idx] = value;
+          } else current[segment] = value;
+        else {
+          const nextSegment = path[i + 1];
+          if (segment === '') {
+            if (!Array.isArray(current)) current = [];
+            if (current.length === 0)
+              current.push(typeof nextSegment === 'string' && !isNaN(Number(nextSegment)) ? [] : {});
+            else if (typeof nextSegment === 'string' && !isNaN(Number(nextSegment))) {
+              if (!Array.isArray(current[current.length - 1])) current[current.length - 1] = [];
+            } else if (typeof current[current.length - 1] !== 'object') current[current.length - 1] = {};
+            current = current[current.length - 1];
+          } else if (!isNaN(Number(segment))) {
+            const idx = Number(segment);
+            if (!Array.isArray(current)) current = [];
+            if (current[idx] === void 0)
+              current[idx] = typeof nextSegment === 'string' && !isNaN(Number(nextSegment)) ? [] : {};
+            current = current[idx];
+          } else {
+            if (current[segment] === void 0)
+              current[segment] = typeof nextSegment === 'string' && !isNaN(Number(nextSegment)) ? [] : {};
+            current = current[segment];
+          }
+        }
+      }
+    }
+    /**
+     * Deserialize a bracket-based query string into an object.
+     *
+     * Supports:
+     *   - Key/value pairs with nested brackets (e.g. "a[b][0]=value")
+     *   - Arrays with empty bracket (e.g. "arr[]=1&arr[]=2")
+     *   - Mixed arrays of objects, etc.
+     *
+     * @example
+     *   parseQuery("x=xx&y[0]=yy&y[1]=uu&z[f]=x&z[u][0]=uu&z[u][1]=xx&z[d][x]=ee")
+     *   => {
+     *        x: "xx",
+     *        y: ["yy", "uu"],
+     *        z: {
+     *          f: "x",
+     *          u: ["uu", "xx"],
+     *          d: { x: "ee" }
+     *        }
+     *      }
+     *
+     * @param queryString - The raw query string (e.g. location.search.slice(1))
+     * @returns           - A nested object representing the query params
+     */
+    function parseQuery(queryString) {
+      const result = {};
+      if (!queryString) return result;
+      const pairs = queryString.replace(/^\?/, '').split('&');
+      for (const pair of pairs) {
+        const [rawKey, rawVal = ''] = pair.split('=');
+        const decodedKey = decodeURIComponent(rawKey);
+        const decodedVal = decodeURIComponent(rawVal);
+        const pathSegments = parseKey(decodedKey);
+        setValue(result, pathSegments, decodedVal);
+      }
+      return result;
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/reqQuery.js
+var require_reqQuery = __commonJS({
+  '../packages/vovk/cjs/utils/reqQuery.js'(exports) {
+    var __importDefault$5 =
+      (void 0 && (void 0).__importDefault) ||
+      function (mod) {
+        return mod && mod.__esModule ? mod : { default: mod };
+      };
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.default = reqQuery;
+    const parseQuery_js_1 = __importDefault$5(require_parseQuery());
+    function reqQuery(req) {
+      return (0, parseQuery_js_1.default)(req.nextUrl.search);
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/reqMeta.js
+var require_reqMeta = __commonJS({
+  '../packages/vovk/cjs/utils/reqMeta.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.default = reqMeta;
+    const metaMap = /* @__PURE__ */ new WeakMap();
+    function reqMeta(req, meta) {
+      if (meta)
+        metaMap.set(req, {
+          ...metaMap.get(req),
+          ...meta,
+        });
+      else if (meta === null) metaMap.delete(req);
+      return metaMap.get(req) ?? {};
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/reqForm.js
+var require_reqForm = __commonJS({
+  '../packages/vovk/cjs/utils/reqForm.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.default = reqForm;
+    const formMap = /* @__PURE__ */ new WeakMap();
+    async function reqForm(req) {
+      if (formMap.has(req)) return formMap.get(req);
+      const body = await req.formData();
+      req.formData = () => Promise.resolve(body);
+      const formData = {};
+      for (const [key, value] of body.entries())
+        if (value instanceof File)
+          if (formData[key])
+            if (Array.isArray(formData[key])) formData[key].push(value);
+            else formData[key] = [formData[key], value];
+          else formData[key] = value;
+        else formData[key] = value.toString();
+      formMap.set(req, formData);
+      return formData;
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/VovkApp.js
+var require_VovkApp = __commonJS({
+  '../packages/vovk/cjs/VovkApp.js'(exports) {
+    var __importDefault$4 =
+      (void 0 && (void 0).__importDefault) ||
+      function (mod) {
+        return mod && mod.__esModule ? mod : { default: mod };
+      };
+    var _a$1;
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.VovkApp = void 0;
+    const types_js_1$5 = require_types();
+    const HttpException_js_1$4 = require_HttpException();
+    const JSONLinesResponse_js_1 = require_JSONLinesResponse();
+    const reqQuery_js_1 = __importDefault$4(require_reqQuery());
+    const reqMeta_js_1$1 = __importDefault$4(require_reqMeta());
+    const reqForm_js_1 = __importDefault$4(require_reqForm());
+    const headers_1 = __require('next/headers');
+    var VovkApp = class {
+      static getHeadersFromOptions(options) {
+        if (!options) return {};
+        const corsHeaders = {
+          'access-control-allow-origin': '*',
+          'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
+          'access-control-allow-headers': 'content-type, authorization',
+        };
+        const headers = {
+          ...(options.cors ? corsHeaders : {}),
+          ...(options.headers ?? {}),
+        };
+        return headers;
+      }
+      routes = {
+        GET: /* @__PURE__ */ new Map(),
+        POST: /* @__PURE__ */ new Map(),
+        PUT: /* @__PURE__ */ new Map(),
+        PATCH: /* @__PURE__ */ new Map(),
+        DELETE: /* @__PURE__ */ new Map(),
+        HEAD: /* @__PURE__ */ new Map(),
+        OPTIONS: /* @__PURE__ */ new Map(),
+      };
+      GET = async (req, data) => this.#callMethod(types_js_1$5.HttpMethod.GET, req, await data.params);
+      POST = async (req, data) => this.#callMethod(types_js_1$5.HttpMethod.POST, req, await data.params);
+      PUT = async (req, data) => this.#callMethod(types_js_1$5.HttpMethod.PUT, req, await data.params);
+      PATCH = async (req, data) => this.#callMethod(types_js_1$5.HttpMethod.PATCH, req, await data.params);
+      DELETE = async (req, data) => this.#callMethod(types_js_1$5.HttpMethod.DELETE, req, await data.params);
+      HEAD = async (req, data) => this.#callMethod(types_js_1$5.HttpMethod.HEAD, req, await data.params);
+      OPTIONS = async (req, data) => this.#callMethod(types_js_1$5.HttpMethod.OPTIONS, req, await data.params);
+      respond = (status, body, options) => {
+        return new Response(JSON.stringify(body), {
+          status,
+          headers: {
+            'content-type': 'application/json',
+            ..._a$1.getHeadersFromOptions(options),
+          },
+        });
+      };
+      #respondWithError = (statusCode, message, options, cause) => {
+        return this.respond(
+          statusCode,
+          {
+            cause,
+            statusCode,
+            message,
+            isError: true,
+          },
+          options
+        );
+      };
+      #getHandler = ({ handlers, path, params }) => {
+        const methodParams = {};
+        if (Object.keys(params).length === 0)
+          return {
+            handler: handlers[''],
+            methodParams,
+          };
+        const allMethodKeys = Object.keys(handlers);
+        let methodKeys = [];
+        const pathStr = path.join('/');
+        methodKeys = allMethodKeys.filter((p) => {
+          if (p.includes(':')) return false;
+          return p === pathStr;
+        });
+        if (!methodKeys.length)
+          methodKeys = allMethodKeys.filter((p) => {
+            const routeSegments = p.split('/');
+            if (routeSegments.length !== path.length) return false;
+            for (let i = 0; i < routeSegments.length; i++) {
+              const routeSegment = routeSegments[i];
+              const pathSegment = path[i];
+              if (routeSegment.startsWith(':')) {
+                const parameter = routeSegment.slice(1);
+                if (parameter in methodParams)
+                  throw new HttpException_js_1$4.HttpException(
+                    types_js_1$5.HttpStatus.INTERNAL_SERVER_ERROR,
+                    `Duplicate parameter "${parameter}" at ${p}`
+                  );
+                methodParams[parameter] = pathSegment;
+              } else if (routeSegment !== pathSegment) return false;
+            }
+            return true;
+          });
+        if (methodKeys.length > 1)
+          throw new HttpException_js_1$4.HttpException(
+            types_js_1$5.HttpStatus.INTERNAL_SERVER_ERROR,
+            `Conflicting routes found: ${methodKeys.join(', ')}`
+          );
+        const [methodKey] = methodKeys;
+        if (methodKey)
+          return {
+            handler: handlers[methodKey],
+            methodParams,
+          };
+        return {
+          handler: null,
+          methodParams,
+        };
+      };
+      #callMethod = async (httpMethod, nextReq, params) => {
+        const req = nextReq;
+        const controllers$2 = this.routes[httpMethod];
+        const path = params[Object.keys(params)[0]];
+        const handlers = {};
+        controllers$2.forEach((staticMethods, controller$1) => {
+          const prefix = controller$1._prefix ?? '';
+          if (!controller$1._activated)
+            throw new HttpException_js_1$4.HttpException(
+              types_js_1$5.HttpStatus.INTERNAL_SERVER_ERROR,
+              `Controller "${controller$1.name}" found but not activated`
+            );
+          Object.entries(staticMethods ?? {}).forEach(([path$1, staticMethod$1]) => {
+            const fullPath = [prefix, path$1].filter(Boolean).join('/');
+            handlers[fullPath] = {
+              staticMethod: staticMethod$1,
+              controller: controller$1,
+            };
+          });
+        });
+        const { handler, methodParams } = this.#getHandler({
+          handlers,
+          path,
+          params,
+        });
+        if (!handler)
+          return this.#respondWithError(
+            types_js_1$5.HttpStatus.NOT_FOUND,
+            `${Object.keys(handlers)} - Route ${path.join('/')} is not found`
+          );
+        const { staticMethod, controller } = handler;
+        req.vovk = {
+          body: () => req.json(),
+          query: () => (0, reqQuery_js_1.default)(req),
+          meta: (meta) => (0, reqMeta_js_1$1.default)(req, meta),
+          form: () => (0, reqForm_js_1.default)(req),
+          params: () => methodParams,
+        };
+        try {
+          await staticMethod._options?.before?.call(controller, req);
+          const result = await staticMethod.call(controller, req, methodParams);
+          const isIterator =
+            typeof result === 'object' &&
+            !!result &&
+            ((Reflect.has(result, Symbol.iterator) && typeof result[Symbol.iterator] === 'function') ||
+              (Reflect.has(result, Symbol.asyncIterator) && typeof result[Symbol.asyncIterator] === 'function'));
+          if (isIterator && !(result instanceof Array)) {
+            const streamResponse = new JSONLinesResponse_js_1.JSONLinesResponse(await (0, headers_1.headers)(), {
+              headers: { ..._a$1.getHeadersFromOptions(staticMethod._options) },
+            });
+            (async () => {
+              try {
+                for await (const chunk of result) streamResponse.send(chunk);
+              } catch (e) {
+                return streamResponse.throw(e);
+              }
+              return streamResponse.close();
+            })();
+            return streamResponse;
+          }
+          if (result instanceof Response) return result;
+          return this.respond(200, result ?? null, staticMethod._options);
+        } catch (e) {
+          const err = e;
+          try {
+            await controller._onError?.(err, req);
+          } catch (onErrorError) {
+            console.error(onErrorError);
+          }
+          if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
+            const statusCode = err.statusCode || types_js_1$5.HttpStatus.INTERNAL_SERVER_ERROR;
+            return this.#respondWithError(statusCode, err.message, staticMethod._options, err.cause);
+          }
+          throw e;
+        }
+      };
+    };
+    exports.VovkApp = VovkApp;
+    _a$1 = VovkApp;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/getSchema.js
+var require_getSchema = __commonJS({
+  '../packages/vovk/cjs/utils/getSchema.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.getControllerSchema = getControllerSchema;
+    exports.default = getSchema;
+    const types_js_1$4 = require_types();
+    async function getControllerSchema(controller, rpcModuleName, exposeValidation) {
+      const handlers = exposeValidation
+        ? controller._handlers
+        : Object.fromEntries(
+            Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
+          );
+      await Promise.all(
+        Object.values(handlers ?? {})
+          .filter(({ misc }) => misc instanceof Promise)
+          .map(async (schema$1) => {
+            schema$1.misc = await schema$1.misc;
+          })
+      );
+      return {
+        rpcModuleName,
+        originalControllerName: controller.name,
+        prefix: controller._prefix ?? '',
+        handlers,
+      };
+    }
+    async function getSchema(options) {
+      const exposeValidation = options?.exposeValidation ?? true;
+      const emitSchema$2 = options.emitSchema ?? true;
+      const schema$1 = {
+        $schema: types_js_1$4.VovkSchemaIdEnum.SEGMENT,
+        emitSchema: emitSchema$2,
+        segmentName: options.segmentName ?? '',
+        controllers: {},
+      };
+      if (options.forceApiRoot) schema$1.forceApiRoot = options.forceApiRoot;
+      if (!emitSchema$2) return schema$1;
+      for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}))
+        schema$1.controllers[rpcModuleName] = await getControllerSchema(controller, rpcModuleName, exposeValidation);
+      return schema$1;
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/createVovkApp.js
+var require_createVovkApp = __commonJS({
+  '../packages/vovk/cjs/createVovkApp.js'(exports) {
+    var __importDefault$3 =
+      (void 0 && (void 0).__importDefault) ||
+      function (mod) {
+        return mod && mod.__esModule ? mod : { default: mod };
+      };
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.createVovkApp = createVovkApp;
+    const VovkApp_js_1 = require_VovkApp();
+    const types_js_1$3 = require_types();
+    const getSchema_js_1 = __importDefault$3(require_getSchema());
+    const trimPath$1 = (path) => path.trim().replace(/^\/|\/$/g, '');
+    const isClass = (func) => typeof func === 'function' && /class/.test(func.toString());
+    const toKebabCase = (str$2) =>
+      str$2
+        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1-$2')
+        .toLowerCase()
+        .replace(/^-/, '');
+    const assignSchema = ({ controller, propertyKey, path, options, httpMethod, vovkApp }) => {
+      if (typeof window !== 'undefined')
+        throw new Error(
+          'Decorators are intended for server-side use only. You have probably imported a controller on the client-side.'
+        );
+      if (!isClass(controller)) {
+        let decoratorName = httpMethod.toLowerCase();
+        if (decoratorName === 'delete') decoratorName = 'del';
+        throw new Error(
+          `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}().`
+        );
+      }
+      const methods = vovkApp.routes[httpMethod].get(controller) ?? {};
+      vovkApp.routes[httpMethod].set(controller, methods);
+      const originalMethod = controller[propertyKey];
+      originalMethod._controller = controller;
+      originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
+      const schema$1 = originalMethod._sourceMethod._getSchema?.(controller);
+      originalMethod.schema = schema$1;
+      originalMethod.func = originalMethod._sourceMethod?.func;
+      controller._handlers = {
+        ...controller._handlers,
+        [propertyKey]: {
+          ...schema$1,
+          ...(controller._handlers ?? {})[propertyKey],
+          path,
+          httpMethod,
+        },
+      };
+      methods[path] = originalMethod;
+      methods[path]._options = options;
+      controller._handlersMetadata = {
+        ...controller._handlersMetadata,
+        [propertyKey]: {
+          ...(controller._handlersMetadata ?? {})[propertyKey],
+          staticParams: options?.staticParams,
+        },
+      };
+    };
+    function createVovkApp() {
+      const vovkApp = new VovkApp_js_1.VovkApp();
+      const createHTTPDecorator = (httpMethod) => {
+        function decoratorCreator(givenPath = '', options) {
+          const path = trimPath$1(givenPath);
+          function decorator(givenTarget, propertyKey) {
+            const controller = givenTarget;
+            assignSchema({
+              controller,
+              propertyKey,
+              path,
+              options,
+              httpMethod,
+              vovkApp,
+            });
+          }
+          return decorator;
+        }
+        const auto = (options) => {
+          function decorator(givenTarget, propertyKey) {
+            const controller = givenTarget;
+            const methods = vovkApp.routes[httpMethod].get(controller) ?? {};
+            vovkApp.routes[httpMethod].set(controller, methods);
+            controller._handlers = {
+              ...controller._handlers,
+              [propertyKey]: {
+                ...(controller._handlers ?? {})[propertyKey],
+                httpMethod,
+              },
+            };
+            const properties = Object.keys(controller._handlers[propertyKey]?.validation?.params?.properties ?? {});
+            const kebab = toKebabCase(propertyKey);
+            const path = properties.length ? `${kebab}/${properties.map((prop) => `:${prop}`).join('/')}` : kebab;
+            assignSchema({
+              controller,
+              propertyKey,
+              path,
+              options,
+              httpMethod,
+              vovkApp,
+            });
+          }
+          return decorator;
+        };
+        const enhancedDecoratorCreator = decoratorCreator;
+        enhancedDecoratorCreator.auto = auto;
+        return enhancedDecoratorCreator;
+      };
+      const prefix = (givenPath = '') => {
+        const path = trimPath$1(givenPath);
+        return (givenTarget) => {
+          const controller = givenTarget;
+          controller._prefix = path;
+          return givenTarget;
+        };
+      };
+      const initVovk = (options) => {
+        options.segmentName = trimPath$1(options.segmentName ?? '');
+        for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {})) {
+          controller._rpcModuleName = rpcModuleName;
+          controller._activated = true;
+          controller._onError = options?.onError;
+        }
+        async function GET_DEV(req, data) {
+          const params = await data.params;
+          if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
+            const schema$1 = await (0, getSchema_js_1.default)(options);
+            return vovkApp.respond(200, { schema: schema$1 });
+          }
+          return vovkApp.GET(req, data);
+        }
+        return {
+          GET: process.env.NODE_ENV === 'development' ? GET_DEV : vovkApp.GET,
+          POST: vovkApp.POST,
+          PUT: vovkApp.PUT,
+          PATCH: vovkApp.PATCH,
+          DELETE: vovkApp.DELETE,
+          HEAD: vovkApp.HEAD,
+          OPTIONS: vovkApp.OPTIONS,
+        };
+      };
+      return {
+        get: createHTTPDecorator(types_js_1$3.HttpMethod.GET),
+        post: createHTTPDecorator(types_js_1$3.HttpMethod.POST),
+        put: createHTTPDecorator(types_js_1$3.HttpMethod.PUT),
+        patch: createHTTPDecorator(types_js_1$3.HttpMethod.PATCH),
+        del: createHTTPDecorator(types_js_1$3.HttpMethod.DELETE),
+        head: createHTTPDecorator(types_js_1$3.HttpMethod.HEAD),
+        options: createHTTPDecorator(types_js_1$3.HttpMethod.OPTIONS),
+        prefix,
+        initVovk,
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/client/fetcher.js
+var require_fetcher = __commonJS({
+  '../packages/vovk/cjs/client/fetcher.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.fetcher = exports.DEFAULT_ERROR_MESSAGE = void 0;
+    exports.createFetcher = createFetcher;
+    const types_js_1$2 = require_types();
+    const HttpException_js_1$3 = require_HttpException();
+    exports.DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
+    function createFetcher({ prepareRequestInit, transformResponse } = {}) {
+      const newFetcher = async (
+        {
+          httpMethod,
+          getEndpoint,
+          validate: validate$1,
+          defaultHandler: defaultHandler$2,
+          defaultStreamHandler: defaultStreamHandler$2,
+        },
+        options
+      ) => {
+        const { params, query, body, apiRoot, disableClientValidation, init, interpretAs } = options;
+        const endpoint = getEndpoint({
+          apiRoot,
+          params,
+          query,
+        });
+        const unusedParams = new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname
+          .split('/')
+          .filter((segment) => segment.startsWith(':'));
+        if (unusedParams.length)
+          throw new HttpException_js_1$3.HttpException(
+            types_js_1$2.HttpStatus.NULL,
+            `Unused params: ${unusedParams.join(', ')} in ${endpoint}`,
+            {
+              body,
+              query,
+              params,
+              endpoint,
+            }
+          );
+        if (!disableClientValidation)
+          try {
+            await validate$1({
+              body,
+              query,
+              params,
+              endpoint,
+            });
+          } catch (e) {
+            if (e instanceof HttpException_js_1$3.HttpException) throw e;
+            throw new HttpException_js_1$3.HttpException(
+              types_js_1$2.HttpStatus.NULL,
+              e.message ?? exports.DEFAULT_ERROR_MESSAGE,
+              {
+                body,
+                query,
+                params,
+                endpoint,
+              }
+            );
+          }
+        let requestInit = {
+          method: httpMethod,
+          ...init,
+          headers: {
+            accept: 'application/jsonl, application/json',
+            ...init?.headers,
+          },
+        };
+        if (body instanceof FormData) requestInit.body = body;
+        else if (body) requestInit.body = JSON.stringify(body);
+        requestInit = prepareRequestInit
+          ? ((await prepareRequestInit(requestInit, options)) ?? requestInit)
+          : requestInit;
+        let response;
+        try {
+          response = await fetch(endpoint, requestInit);
+        } catch (e) {
+          throw new HttpException_js_1$3.HttpException(
+            types_js_1$2.HttpStatus.NULL,
+            (e?.message ?? exports.DEFAULT_ERROR_MESSAGE) + ' ' + endpoint,
+            {
+              body,
+              query,
+              params,
+              endpoint,
+            }
+          );
+        }
+        const contentType = interpretAs ?? response.headers.get('content-type');
+        let resp;
+        if (contentType?.startsWith('application/jsonl')) resp = defaultStreamHandler$2(response);
+        else if (contentType?.startsWith('application/json')) resp = defaultHandler$2(response);
+        else resp = response;
+        resp = await resp;
+        return transformResponse ? ((await transformResponse(resp, options, requestInit)) ?? resp) : resp;
+      };
+      return newFetcher;
+    }
+    exports.fetcher = createFetcher();
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/client/defaultHandler.js
+var require_defaultHandler = __commonJS({
+  '../packages/vovk/cjs/client/defaultHandler.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.defaultHandler = exports.DEFAULT_ERROR_MESSAGE = void 0;
+    const HttpException_js_1$2 = require_HttpException();
+    exports.DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultHandler';
+    const defaultHandler = async (response) => {
+      let result;
+      try {
+        result = await response.json();
+      } catch (e) {
+        throw new HttpException_js_1$2.HttpException(response.status, e?.message ?? exports.DEFAULT_ERROR_MESSAGE);
+      }
+      if (!response.ok) {
+        const errorResponse = result;
+        throw new HttpException_js_1$2.HttpException(
+          response.status,
+          errorResponse?.message ?? exports.DEFAULT_ERROR_MESSAGE,
+          errorResponse?.cause
+        );
+      }
+      return result;
+    };
+    exports.defaultHandler = defaultHandler;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/client/defaultStreamHandler.js
+var require_defaultStreamHandler = __commonJS({
+  '../packages/vovk/cjs/client/defaultStreamHandler.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.defaultStreamHandler = exports.DEFAULT_ERROR_MESSAGE = void 0;
+    const types_js_1$1 = require_types();
+    const HttpException_js_1$1 = require_HttpException();
+    require_shim();
+    exports.DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
+    const defaultStreamHandler = async (response) => {
+      if (!response.ok) {
+        let result;
+        try {
+          result = await response.json();
+        } catch {}
+        throw new HttpException_js_1$1.HttpException(response.status, result.message ?? exports.DEFAULT_ERROR_MESSAGE);
+      }
+      if (!response.body)
+        throw new HttpException_js_1$1.HttpException(
+          types_js_1$1.HttpStatus.NULL,
+          'Stream body is falsy. Check your controller code.'
+        );
+      const reader = response.body.getReader();
+      let canceled = false;
+      async function* asyncIterator() {
+        let prepend = '';
+        while (true) {
+          let value;
+          try {
+            let done;
+            ({ value, done } = await reader.read());
+            if (done) break;
+          } catch (error$41) {
+            await reader.cancel();
+            const err = new Error('Stream error. ' + String(error$41));
+            err.cause = error$41;
+            throw err;
+          }
+          const string = typeof value === 'number' ? String.fromCharCode(value) : new TextDecoder().decode(value);
+          prepend += string;
+          const lines = prepend.split('\n').filter(Boolean);
+          for (const line$2 of lines) {
+            let data;
+            try {
+              data = JSON.parse(line$2);
+              prepend = '';
+            } catch {
+              break;
+            }
+            if (data) {
+              if ('isError' in data && 'reason' in data) {
+                const upcomingError = data.reason;
+                await reader.cancel();
+                if (typeof upcomingError === 'string') throw new Error(upcomingError);
+                throw upcomingError;
+              } else if (!canceled) yield data;
+            }
+          }
+        }
+      }
+      return {
+        status: response.status,
+        [Symbol.asyncIterator]: asyncIterator,
+        [Symbol.dispose]: () => reader.cancel(),
+        [Symbol.asyncDispose]: () => reader.cancel(),
+        cancel: () => {
+          canceled = true;
+          return reader.cancel();
+        },
+      };
+    };
+    exports.defaultStreamHandler = defaultStreamHandler;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/serializeQuery.js
+var require_serializeQuery = __commonJS({
+  '../packages/vovk/cjs/utils/serializeQuery.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.default = serializeQuery;
+    /**
+     * Recursively build query parameters from an object.
+     *
+     * @param key      - The query key so far (e.g. 'user', 'user[0]', 'user[0][name]')
+     * @param value    - The current value to serialize
+     * @returns        - An array of `key=value` strings
+     */
+    function buildParams(key, value) {
+      if (value === null || value === void 0) return [];
+      if (typeof value === 'object') {
+        if (Array.isArray(value))
+          /**
+           * We use index-based bracket notation here:
+           *   e.g. for value = ['aa', 'bb'] and key = 'foo'
+           *   => "foo[0]=aa&foo[1]=bb"
+           *
+           * If you prefer "foo[]=aa&foo[]=bb" style, replace:
+           *   `${key}[${i}]`
+           * with:
+           *   `${key}[]`
+           */
+          return value.flatMap((v, i) => {
+            const newKey = `${key}[${i}]`;
+            return buildParams(newKey, v);
+          });
+        return Object.keys(value).flatMap((k) => {
+          const newKey = `${key}[${k}]`;
+          return buildParams(newKey, value[k]);
+        });
+      }
+      return [`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`];
+    }
+    /**
+     * Serialize a nested object (including arrays, arrays of objects, etc.)
+     * into a bracket-based query string.
+     *
+     * @example
+     *   serializeQuery({ x: 'xx', y: [1, 2], z: { f: 'x' } })
+     *   => "x=xx&y[0]=1&y[1]=2&z[f]=x"
+     *
+     * @param obj - The input object to be serialized
+     * @returns   - A bracket-based query string (without leading "?")
+     */
+    function serializeQuery(obj) {
+      if (!obj || typeof obj !== 'object') return '';
+      const segments$1 = [];
+      for (const key in obj)
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          const value = obj[key];
+          segments$1.push(...buildParams(key, value));
+        }
+      return segments$1.join('&');
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/client/createRPC.js
+var require_createRPC = __commonJS({
+  '../packages/vovk/cjs/client/createRPC.js'(exports) {
+    var __importDefault$2 =
+      (void 0 && (void 0).__importDefault) ||
+      function (mod) {
+        return mod && mod.__esModule ? mod : { default: mod };
+      };
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.createRPC = void 0;
+    const fetcher_js_1$1 = require_fetcher();
+    const defaultHandler_js_1 = require_defaultHandler();
+    const defaultStreamHandler_js_1 = require_defaultStreamHandler();
+    const serializeQuery_js_1 = __importDefault$2(require_serializeQuery());
+    const trimPath = (path) => path.trim().replace(/^\/|\/$/g, '');
+    const getHandlerPath = (endpoint, params, query) => {
+      let result = endpoint;
+      const queryStr = query ? (0, serializeQuery_js_1.default)(query) : null;
+      for (const [key, value] of Object.entries(params ?? {})) result = result.replace(`:${key}`, value);
+      return `${result}${queryStr ? '?' : ''}${queryStr}`;
+    };
+    const createRPC$1 = (schema$1, segmentName$2, rpcModuleName, fetcher$1 = fetcher_js_1$1.fetcher, options) => {
+      const segmentNamePath = options?.segmentNameOverride ?? segmentName$2;
+      const segmentSchema = schema$1.segments[segmentName$2];
+      if (!segmentSchema)
+        throw new Error(`Unable to create RPC module. Segment schema is missing. Check client template.`);
+      const controllerSchema = schema$1.segments[segmentName$2]?.controllers[rpcModuleName];
+      const client = {};
+      if (!controllerSchema)
+        throw new Error(`Unable to create RPC module. Controller schema is missing. Check client template.`);
+      const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
+      for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
+        const { path, httpMethod, validation: validation$3 } = handlerSchema;
+        const getEndpoint = ({ apiRoot, params, query }) => {
+          apiRoot ??= options?.apiRoot ?? '/api';
+          const endpoint = [
+            apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
+            apiRoot,
+            segmentNamePath,
+            getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query),
+          ]
+            .filter(Boolean)
+            .join('/');
+          return endpoint;
+        };
+        const handler = (input = {}) => {
+          const validate$1 = async ({ body, query, params, endpoint }) => {
+            const validateOnClient$1 = input.validateOnClient ?? options?.validateOnClient;
+            if (validateOnClient$1 && validation$3) {
+              if (typeof validateOnClient$1 !== 'function') throw new Error('validateOnClient must be a function');
+              await validateOnClient$1(
+                {
+                  body,
+                  query,
+                  params,
+                  endpoint,
+                },
+                validation$3,
+                schema$1
+              );
+            }
+          };
+          const internalOptions = {
+            name: staticMethodName,
+            httpMethod,
+            getEndpoint,
+            validate: validate$1,
+            defaultHandler: defaultHandler_js_1.defaultHandler,
+            defaultStreamHandler: defaultStreamHandler_js_1.defaultStreamHandler,
+          };
+          const internalInput = {
+            ...options,
+            ...input,
+            body: input.body ?? null,
+            query: input.query ?? {},
+            params: input.params ?? {},
+          };
+          if (!fetcher$1) throw new Error('Fetcher is not provided');
+          const fetcherPromise = fetcher$1(internalOptions, internalInput);
+          if (!(fetcherPromise instanceof Promise)) return Promise.resolve(fetcherPromise);
+          return input.transform ? fetcherPromise.then(input.transform) : fetcherPromise;
+        };
+        handler.schema = handlerSchema;
+        handler.controllerSchema = controllerSchema;
+        handler.segmentSchema = segmentSchema;
+        handler.fullSchema = schema$1;
+        handler.isRPC = true;
+        handler.path = [segmentNamePath, controllerPrefix, path].filter(Boolean).join('/');
+        client[staticMethodName] = handler;
+      }
+      return client;
+    };
+    exports.createRPC = createRPC$1;
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/client/index.js
+var require_client = __commonJS({
+  '../packages/vovk/cjs/client/index.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.createFetcher = exports.fetcher = exports.createRPC = void 0;
+    var createRPC_js_1 = require_createRPC();
+    Object.defineProperty(exports, 'createRPC', {
+      enumerable: true,
+      get: function () {
+        return createRPC_js_1.createRPC;
+      },
+    });
+    var fetcher_js_1 = require_fetcher();
+    Object.defineProperty(exports, 'fetcher', {
+      enumerable: true,
+      get: function () {
+        return fetcher_js_1.fetcher;
+      },
+    });
+    Object.defineProperty(exports, 'createFetcher', {
+      enumerable: true,
+      get: function () {
+        return fetcher_js_1.createFetcher;
+      },
+    });
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/createCodeExamples.js
+var require_createCodeExamples = __commonJS({
+  '../packages/vovk/cjs/utils/createCodeExamples.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.createCodeExamples = createCodeExamples;
+    const json_schema_sampler_1$1 = require_json_schema_sampler();
+    const stringifyTsSample = (data, pad = 4) =>
+      JSON.stringify(data, null, 2)
+        .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
+        .split('\n')
+        .map((line$2, i, a) =>
+          i === 0 ? line$2 : i === a.length - 1 ? ' '.repeat(pad) + line$2 : ' '.repeat(pad + 2) + line$2
+        )
+        .join('\n');
+    const stringifyPySample = (data, pad = 4) =>
+      JSON.stringify(data, null, 2)
+        .split('\n')
+        .map((line$2, i, a) =>
+          i === 0 ? line$2 : i === a.length - 1 ? ' '.repeat(pad) + line$2 : ' '.repeat(pad + 2) + line$2
+        )
+        .join('\n');
+    const toSnakeCase = (str$2) =>
+      str$2
+        .replace(/-/g, '_')
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2')
+        .toLowerCase()
+        .replace(/^_/, '');
+    function createCodeExamples({ handlerName, handlerSchema, controllerSchema, package: packageJson }) {
+      const queryValidation = handlerSchema?.validation?.query;
+      const bodyValidation = handlerSchema?.validation?.body;
+      const paramsValidation = handlerSchema?.validation?.params;
+      const outputValidation = handlerSchema?.validation?.output;
+      const iterationValidation = handlerSchema?.validation?.iteration;
+      const queryFake = queryValidation && (0, json_schema_sampler_1$1.sample)(queryValidation);
+      const bodyFake = bodyValidation && (0, json_schema_sampler_1$1.sample)(bodyValidation);
+      const paramsFake = paramsValidation && (0, json_schema_sampler_1$1.sample)(paramsValidation);
+      const outputFake = outputValidation && (0, json_schema_sampler_1$1.sample)(outputValidation);
+      const iterationFake = iterationValidation && (0, json_schema_sampler_1$1.sample)(iterationValidation);
+      const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
+      const rpcName = controllerSchema.rpcModuleName;
+      const handlerNameSnake = toSnakeCase(handlerName);
+      const rpcNameSnake = toSnakeCase(rpcName);
+      const packageName = packageJson?.name || 'vovk-client';
+      const packageNameSnake = toSnakeCase(packageName);
+      const tsArgs = hasArg
+        ? `{
+${paramsFake ? `    params: ${stringifyTsSample(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifyTsSample(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifyTsSample(queryFake)},\n` : ''}}`
+        : '';
+      const TS_CODE = `import { ${rpcName} } from '${packageName}';
+
+${iterationFake ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
+${
+  outputFake
+    ? `
+console.log(response); 
+/* 
+${stringifyTsSample(outputFake, 0)}
+*/`
+    : ''
+}${
+        iterationFake
+          ? `
+for await (const item of response) {
+    console.log(item); 
+    /*
+    ${stringifyTsSample(iterationFake, 4)}
+    */
+}`
+          : ''
+      }`;
+      const PY_CODE = `from ${packageJson?.py_name ?? packageNameSnake} import ${rpcName}
+
+response = ${rpcName}.${handlerNameSnake}(${hasArg ? `\n    params=${paramsFake ? stringifyPySample(paramsFake) : 'None'},\n` : ''}${bodyFake ? `    body=${stringifyPySample(bodyFake)},\n` : ''}${queryFake ? `    query=${stringifyPySample(queryFake)},\n` : ''})
+
+${
+  outputFake
+    ? `print(response)\n${JSON.stringify(outputFake, null, 2)
+        .split('\n')
+        .map((s) => `# ${s}`)
+        .join('\n')}`
+    : ''
+}${
+        iterationFake
+          ? `for i, item in enumerate(response):
+    print(f"iteration #{i}:\\n {item}") 
+    # iteration #0: 
+${JSON.stringify(iterationFake, null, 2)
+  .split('\n')
+  .map((s) => `    # ${s}`)
+  .join('\n')}`
+          : ''
+      }`;
+      const serdeUnwrap = (fake) => `from_value(json!(${fake})).unwrap()`;
+      const RS_CODE = `use ${packageJson?.rs_name ?? packageNameSnake}::${rpcNameSnake};
+use serde_json::{ from_value, json };
+
+pub fn main() {
+  let response = ${rpcNameSnake}::${handlerNameSnake}(
+    ${bodyFake ? serdeUnwrap(stringifyPySample(bodyFake)) : '()'}, /* body */ 
+    ${queryFake ? serdeUnwrap(stringifyPySample(queryFake)) : '()'}, /* query */ 
+    ${paramsFake ? serdeUnwrap(stringifyPySample(paramsFake)) : '()'}, /* params */ 
+    None, /* headers (HashMap) */ 
+    None, /* api_root */ 
+    false, /* disable_client_validation */
+  );
+
+  ${
+    outputFake
+      ? `match response {
+    Ok(output) => println!("{:?}", output),
+    /* 
+    output ${stringifyPySample(outputFake, 4)} 
+    */
+    Err(e) => println!("error: {:?}", e),
+  }`
+      : ''
+  }${
+    iterationFake
+      ? `match response {
+      Ok(stream) => {
+        for (i, item) in stream.enumerate() {
+          println!("#{}: {:?}", i, item);
+          /*
+          #0: iteration ${stringifyTsSample(iterationFake, 10)}
+          */
+        }
+      },
+      Err(e) => println!("Error initiating stream: {:?}", e),
+  }`
+      : ''
+  }
+}`;
+      return {
+        ts: TS_CODE.trim(),
+        py: PY_CODE.trim(),
+        rs: RS_CODE.trim(),
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/openapi/vovkSchemaToOpenAPI.js
+var require_vovkSchemaToOpenAPI = __commonJS({
+  '../packages/vovk/cjs/openapi/vovkSchemaToOpenAPI.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.vovkSchemaToOpenAPI = vovkSchemaToOpenAPI;
+    const json_schema_sampler_1 = require_json_schema_sampler();
+    const createCodeExamples_1$1 = require_createCodeExamples();
+    const types_1$4 = require_types();
+    function extractComponents(schema$1) {
+      if (!schema$1) return [void 0, {}];
+      const components = {};
+      const process$1 = (obj, path = []) => {
+        if (!obj || typeof obj !== 'object') return obj;
+        if (Array.isArray(obj)) return obj.map((item) => process$1(item, path));
+        const result = {};
+        Object.entries({
+          ...obj.definitions,
+          ...obj.$defs,
+        }).forEach(([key, value]) => {
+          components[key] = process$1(value, [...path, key]);
+        });
+        for (const [key, value] of Object.entries(obj ?? {})) {
+          if (key === '$defs' || key === 'definitions') continue;
+          if (key === '$ref' && typeof value === 'string') {
+            const refParts = value.split('/');
+            const refName = refParts[refParts.length - 1];
+            result[key] = `#/components/schemas/${refName}`;
+          } else result[key] = process$1(value, [...path, key]);
+        }
+        return result;
+      };
+      const processedSchema = process$1(schema$1);
+      return [processedSchema, components];
+    }
+    function vovkSchemaToOpenAPI({
+      rootEntry,
+      schema: fullSchema,
+      openAPIObject = {},
+      package: packageJson = { name: 'vovk-client' },
+    }) {
+      const paths = {};
+      const components = {};
+      for (const [segmentName$2, segmentSchema] of Object.entries(fullSchema.segments ?? {}))
+        for (const c of Object.values(segmentSchema.controllers))
+          for (const [handlerName, h] of Object.entries(c.handlers ?? {}))
+            if (h.openapi) {
+              const [queryValidation, queryComponents] = extractComponents(h?.validation?.query);
+              const [bodyValidation, bodyComponents] = extractComponents(h?.validation?.body);
+              const [paramsValidation, paramsComponents] = extractComponents(h?.validation?.params);
+              const [outputValidation, outputComponents] = extractComponents(h?.validation?.output);
+              const [iterationValidation, iterationComponents] = extractComponents(h?.validation?.iteration);
+              Object.assign(
+                components,
+                queryComponents,
+                bodyComponents,
+                paramsComponents,
+                outputComponents,
+                iterationComponents
+              );
+              const { ts, rs, py } = (0, createCodeExamples_1$1.createCodeExamples)({
+                package: packageJson,
+                handlerName,
+                handlerSchema: h,
+                controllerSchema: c,
+              });
+              const queryParameters =
+                queryValidation && 'type' in queryValidation && 'properties' in queryValidation
+                  ? Object.entries(queryValidation.properties ?? {}).map(([propName, propSchema]) => ({
+                      name: propName,
+                      in: 'query',
+                      required: queryValidation.required ? queryValidation.required.includes(propName) : false,
+                      schema: propSchema,
+                    }))
+                  : null;
+              const pathParameters =
+                paramsValidation && 'type' in paramsValidation && 'properties' in paramsValidation
+                  ? Object.entries(paramsValidation.properties ?? {}).map(([propName, propSchema]) => ({
+                      name: propName,
+                      in: 'path',
+                      required: paramsValidation.required ? paramsValidation.required.includes(propName) : false,
+                      schema: propSchema,
+                    }))
+                  : null;
+              const path =
+                '/' +
+                [rootEntry.replace(/^\/+|\/+$/g, ''), segmentName$2, c.prefix, h.path]
+                  .filter(Boolean)
+                  .join('/')
+                  .replace(/:([a-zA-Z0-9_]+)/g, '{$1}');
+              paths[path] = paths[path] ?? {};
+              const httpMethod = h.httpMethod.toLowerCase();
+              paths[path][httpMethod] ??= {};
+              paths[path][httpMethod] = {
+                ...h.openapi,
+                ...paths[path][httpMethod],
+                'x-codeSamples': [
+                  ...(paths[path][httpMethod]['x-codeSamples'] ?? []),
+                  ...(h.openapi['x-codeSamples'] ?? []),
+                  {
+                    label: 'TypeScript RPC',
+                    lang: 'typescript',
+                    source: ts,
+                  },
+                  {
+                    label: 'Python RPC',
+                    lang: 'python',
+                    source: py,
+                  },
+                  {
+                    label: 'Rust RPC',
+                    lang: 'rust',
+                    source: rs,
+                  },
+                ],
+                ...(queryParameters || pathParameters
+                  ? { parameters: h.openapi.parameters ?? [...(queryParameters || []), ...(pathParameters || [])] }
+                  : {}),
+                ...(paths[path][httpMethod].parameters ? { parameters: paths[path][httpMethod].parameters } : {}),
+                ...(outputValidation && 'type' in outputValidation && 'properties' in outputValidation
+                  ? {
+                      responses: {
+                        200: {
+                          description: 'description' in outputValidation ? outputValidation.description : 'Success',
+                          content: { 'application/json': { schema: outputValidation } },
+                        },
+                        ...h.openapi?.responses,
+                      },
+                    }
+                  : {}),
+                ...(iterationValidation && 'type' in iterationValidation && 'properties' in iterationValidation
+                  ? {
+                      responses: {
+                        200: {
+                          description:
+                            'description' in iterationValidation
+                              ? iterationValidation.description
+                              : 'JSON Lines response',
+                          content: {
+                            'application/jsonl': {
+                              schema: {
+                                ...iterationValidation,
+                                examples: iterationValidation.examples ?? [
+                                  [
+                                    JSON.stringify((0, json_schema_sampler_1.sample)(iterationValidation)),
+                                    JSON.stringify((0, json_schema_sampler_1.sample)(iterationValidation)),
+                                    JSON.stringify((0, json_schema_sampler_1.sample)(iterationValidation)),
+                                  ].join('\n'),
+                                ],
+                              },
+                            },
+                          },
+                        },
+                        ...h.openapi?.responses,
+                      },
+                    }
+                  : {}),
+                ...(paths[path][httpMethod].responses ? { responses: paths[path][httpMethod].responses } : {}),
+                ...(bodyValidation && 'type' in bodyValidation && 'properties' in bodyValidation
+                  ? {
+                      requestBody: h.openapi?.requestBody ?? {
+                        description: 'description' in bodyValidation ? bodyValidation.description : 'Request body',
+                        required: true,
+                        content: { 'application/json': { schema: bodyValidation } },
+                      },
+                    }
+                  : {}),
+                ...(paths[path][httpMethod].requestBody ? { requestBody: paths[path][httpMethod].requestBody } : {}),
+                tags: paths[path][httpMethod].tags ?? h.openapi?.tags,
+              };
+            }
+      return {
+        ...openAPIObject,
+        openapi: '3.1.0',
+        info: {
+          title: packageJson?.description ?? 'API',
+          version: packageJson?.version ?? '0.0.1',
+          ...openAPIObject?.info,
+        },
+        components: {
+          schemas: {
+            ...(openAPIObject?.components?.schemas ?? components),
+            HttpStatus: {
+              type: 'integer',
+              description: 'HTTP status code',
+              enum: Object.keys(types_1$4.HttpStatus)
+                .map((k) => types_1$4.HttpStatus[k])
+                .filter(Boolean)
+                .filter((v) => typeof v === 'number'),
+            },
+            VovkErrorResponse: {
+              type: 'object',
+              description: 'Vovk error response',
+              properties: {
+                cause: { description: 'Error cause of any shape' },
+                statusCode: { $ref: '#/components/schemas/HttpStatus' },
+                message: {
+                  type: 'string',
+                  description: 'Error message',
+                },
+                isError: {
+                  type: 'boolean',
+                  const: true,
+                  description: 'Indicates that this object represents an error',
+                },
+              },
+              required: ['statusCode', 'message', 'isError'],
+              additionalProperties: false,
+            },
+            ...openAPIObject?.components?.schemas,
+          },
+        },
+        paths,
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/openapi/generateFnName.js
+var require_generateFnName = __commonJS({
+  '../packages/vovk/cjs/openapi/generateFnName.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.VERB_MAP = void 0;
+    exports.capitalize = capitalize;
+    exports.generateFnName = generateFnName;
+    exports.VERB_MAP = {
+      GET: {
+        noParams: 'list',
+        withParams: 'get',
+      },
+      POST: { default: 'create' },
+      PUT: { default: 'update' },
+      PATCH: { default: 'patch' },
+      DELETE: { default: 'delete' },
+      HEAD: { default: 'head' },
+      OPTIONS: { default: 'options' },
+    };
+    function capitalize(str$2) {
+      if (str$2.length === 0) return '';
+      return str$2[0].toUpperCase() + str$2.slice(1);
+    }
+    const DEFAULT_OPTIONS = { ignoreSegments: ['api'] };
+    /**
+     * Turn an HTTP method + OpenAPI path into a camelCased function name.
+     *
+     * Examples:
+     *   generateFnName('GET', '/users')                     // "listUsers"
+     *   generateFnName('GET', '/users/{id}')                // "getUsersById"
+     *   generateFnName('POST', '/v1/api/orders')            // "createOrders"
+     *   generateFnName('PATCH', '/users/{userId}/profile')  // "patchUsersProfileByUserId"
+     */
+    function generateFnName(method, rawPath, opts = {}) {
+      const { ignoreSegments } = {
+        ...DEFAULT_OPTIONS,
+        ...opts,
+      };
+      const parts = rawPath
+        .replace(/^\/|\/$/g, '')
+        .split('/')
+        .filter((seg) => !ignoreSegments?.includes(seg.toLowerCase()))
+        .filter(Boolean);
+      const resources = [];
+      const params = [];
+      parts.forEach((seg) => {
+        const match = seg.match(/^{?([^}]+)}?$/);
+        if (match) params.push(match[1]);
+        else resources.push(seg);
+      });
+      let baseVerb;
+      if (method === 'GET') baseVerb = params.length ? exports.VERB_MAP.GET.withParams : exports.VERB_MAP.GET.noParams;
+      else baseVerb = exports.VERB_MAP[method].default;
+      const resourcePart = resources.map(capitalize).join('');
+      const byParams = params.length ? 'By' + params.map(capitalize).join('') : '';
+      const rawName = `${baseVerb}${resourcePart}${byParams}`;
+      return rawName[0].toLowerCase() + rawName.slice(1);
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/camelCase.js
+var require_camelCase = __commonJS({
+  '../packages/vovk/cjs/utils/camelCase.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.camelCase = camelCase;
+    function toString(value) {
+      return value == null ? '' : String(value);
+    }
+    const reUnicodeWord = /[\p{Lu}]{2,}(?=[\p{Lu}][\p{Ll}]+[0-9]*|\b)|[\p{Lu}]?[\p{Ll}]+[0-9]*|[\p{Lu}]|[0-9]+/gu;
+    /**
+     * Splits string into an array of words based on Unicode word boundaries
+     * @param {string} str
+     * @returns {string[]}
+     */
+    function unicodeWords(str$2) {
+      return str$2.match(reUnicodeWord) || [];
+    }
+    /**
+     * Converts string to camel case.
+     * @param {*} input - The value to convert to camel case.
+     * @returns {string}
+     */
+    function camelCase(input) {
+      const str$2 = toString(input);
+      const sanitized = str$2.replace(/[\s_-]+/g, ' ').trim();
+      const words = unicodeWords(sanitized);
+      return words
+        .map((word, index) => {
+          const lower = word.toLowerCase();
+          if (index === 0) return lower;
+          return lower.charAt(0).toUpperCase() + lower.slice(1);
+        })
+        .join('');
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/openapi/openAPIToVovkSchema.js
+var require_openAPIToVovkSchema = __commonJS({
+  '../packages/vovk/cjs/openapi/openAPIToVovkSchema.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.openAPIToVovkSchema = openAPIToVovkSchema;
+    const types_1$3 = require_types();
+    const generateFnName_1 = require_generateFnName();
+    const camelCase_1 = require_camelCase();
+    function cloneJSON(obj) {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) return obj.map(cloneJSON);
+      const result = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (value instanceof Date || value instanceof RegExp || typeof value === 'function') continue;
+        result[key] = cloneJSON(value);
+      }
+      return result;
+    }
+    function applyComponents(schema$1, components) {
+      if (!components || !Object.keys(components).length) return schema$1;
+      const result = cloneJSON(schema$1);
+      result.$defs = result.$defs || {};
+      const addedComponents = /* @__PURE__ */ new Set();
+      function processSchema(obj) {
+        if (!obj || typeof obj !== 'object') return obj;
+        const newObj = Array.isArray(obj) ? [...obj] : { ...obj };
+        if (newObj.$ref && typeof newObj.$ref === 'string' && newObj.$ref.startsWith('#/components/schemas/')) {
+          const componentName = newObj.$ref.replace('#/components/schemas/', '');
+          newObj.$ref = `#/$defs/${componentName}`;
+          if (!addedComponents.has(componentName) && components[componentName]) {
+            addedComponents.add(componentName);
+            result.$defs[componentName] = processSchema(cloneJSON(components[componentName]));
+          }
+        }
+        if (Array.isArray(newObj)) for (let i = 0; i < newObj.length; i++) newObj[i] = processSchema(newObj[i]);
+        else
+          for (const key in newObj)
+            if (Object.prototype.hasOwnProperty.call(newObj, key)) newObj[key] = processSchema(newObj[key]);
+        return newObj;
+      }
+      return processSchema(result);
+    }
+    const getNamesNestJS = (operationObject) => {
+      const operationId = operationObject.operationId;
+      if (!operationId) throw new Error('Operation ID is required for NestJS module name generation');
+      const controllerHandlerMatch = operationId?.match(/^([A-Z][a-zA-Z0-9]*)_([a-zA-Z0-9_]+)/);
+      if (!controllerHandlerMatch) throw new Error(`Invalid operationId format for NestJS: ${operationId}`);
+      return controllerHandlerMatch.slice(1, 3);
+    };
+    const normalizeGetModuleName = (getModuleName) => {
+      if (getModuleName === 'nestjs-operation-id')
+        getModuleName = (operationObject) => getNamesNestJS(operationObject)[0];
+      else if (typeof getModuleName === 'string') {
+        const moduleName = getModuleName;
+        getModuleName = () => moduleName;
+      } else if (typeof getModuleName !== 'function')
+        throw new Error('getModuleName must be a function or one of the predefined strings');
+      return getModuleName;
+    };
+    const normalizeGetMethodName = (getMethodName) => {
+      if (getMethodName === 'nestjs-operation-id')
+        getMethodName = (operationObject) => getNamesNestJS(operationObject)[1];
+      else if (getMethodName === 'camel-case-operation-id')
+        getMethodName = ({ operationObject }) => {
+          const operationId = operationObject.operationId;
+          if (!operationId) throw new Error('Operation ID is required for camel-case method name generation');
+          return (0, camelCase_1.camelCase)(operationId);
+        };
+      else if (getMethodName === 'auto')
+        getMethodName = ({ operationObject, method, path }) => {
+          const operationId = operationObject.operationId;
+          const isSnakeCase = operationId && /^[a-z][a-z0-9_]+$/.test(operationId);
+          return isSnakeCase
+            ? (0, camelCase_1.camelCase)(operationId)
+            : (0, generateFnName_1.generateFnName)(method, path);
+        };
+      else if (typeof getMethodName !== 'function')
+        throw new Error('getMethodName must be a function or one of the predefined strings');
+      return getMethodName;
+    };
+    function openAPIToVovkSchema({
+      apiRoot,
+      source: { object: openAPIObject },
+      getModuleName = 'api',
+      getMethodName = 'auto',
+    }) {
+      const forceApiRoot = apiRoot ?? openAPIObject.servers?.[0]?.url;
+      if (!forceApiRoot) throw new Error('API root URL is required in OpenAPI configuration');
+      const schema$1 = {
+        $schema: types_1$3.VovkSchemaIdEnum.SCHEMA,
+        segments: {
+          '': {
+            $schema: types_1$3.VovkSchemaIdEnum.SEGMENT,
+            emitSchema: true,
+            segmentName: '',
+            forceApiRoot,
+            controllers: {},
+          },
+        },
+        meta: {
+          $schema: types_1$3.VovkSchemaIdEnum.META,
+          config: { $schema: types_1$3.VovkSchemaIdEnum.CONFIG },
+          openapi: openAPIObject,
+        },
+      };
+      const segment = schema$1.segments[''];
+      getModuleName = normalizeGetModuleName(getModuleName);
+      getMethodName = normalizeGetMethodName(getMethodName);
+      return Object.entries(openAPIObject.paths ?? {}).reduce((acc, [path, operations]) => {
+        Object.entries(operations ?? {}).forEach(([method, operation]) => {
+          const rpcModuleName = getModuleName({
+            method: method.toUpperCase(),
+            path,
+            openAPIObject,
+            operationObject: operation,
+          });
+          const handlerName = getMethodName({
+            method: method.toUpperCase(),
+            path,
+            openAPIObject,
+            operationObject: operation,
+          });
+          segment.controllers[rpcModuleName] ??= {
+            rpcModuleName,
+            handlers: {},
+          };
+          const queryProperties = operation.parameters?.filter((p) => p.in === 'query') ?? null;
+          const pathProperties = operation.parameters?.filter((p) => p.in === 'path') ?? null;
+          const query = queryProperties?.length
+            ? {
+                type: 'object',
+                properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema])),
+                required: queryProperties.filter((p) => p.required).map((p) => p.name),
+              }
+            : null;
+          const params = pathProperties?.length
+            ? {
+                type: 'object',
+                properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema])),
+                required: pathProperties.filter((p) => p.required).map((p) => p.name),
+              }
+            : null;
+          const body = operation.requestBody?.content['application/json']?.schema ?? null;
+          const output =
+            operation.responses?.['200']?.content?.['application/json']?.schema ??
+            operation.responses?.['201']?.content?.['application/json']?.schema ??
+            null;
+          segment.controllers[rpcModuleName].handlers[handlerName] = {
+            httpMethod: method.toUpperCase(),
+            path,
+            openapi: operation,
+            validation: {
+              ...(query && { query: applyComponents(query, openAPIObject.components?.schemas) }),
+              ...(params && { params: applyComponents(params, openAPIObject.components?.schemas) }),
+              ...(body && { body: applyComponents(body, openAPIObject.components?.schemas) }),
+              ...(output && { output: applyComponents(output, openAPIObject.components?.schemas) }),
+            },
+          };
+        });
+        return acc;
+      }, schema$1);
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/createDecorator.js
+var require_createDecorator = __commonJS({
+  '../packages/vovk/cjs/utils/createDecorator.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.createDecorator = createDecorator;
+    function createDecorator(handler, initHandler) {
+      return function decoratorCreator(...args) {
+        return function decorator(target, propertyKey) {
+          const controller = target;
+          const originalMethod = controller[propertyKey];
+          if (typeof originalMethod !== 'function')
+            throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
+          const sourceMethod = originalMethod._sourceMethod ?? originalMethod;
+          const method = function method$1(req, params) {
+            const next$1 = async () => {
+              return await originalMethod.call(controller, req, params);
+            };
+            return handler ? handler.call(controller, req, next$1, ...args) : next$1();
+          };
+          controller[propertyKey] = method;
+          method._controller = controller;
+          method._sourceMethod = sourceMethod;
+          method.schema = originalMethod.schema;
+          method.func = originalMethod.func;
+          originalMethod._controller = controller;
+          const handlerSchema = controller._handlers?.[propertyKey] ?? null;
+          const initResultReturn = initHandler?.call(controller, ...args);
+          const initResult =
+            typeof initResultReturn === 'function'
+              ? initResultReturn(handlerSchema, { handlerName: propertyKey })
+              : initResultReturn;
+          controller._handlers = {
+            ...controller._handlers,
+            [propertyKey]: {
+              ...handlerSchema,
+              ...(initResult?.validation ? { validation: initResult.validation } : {}),
+              ...(initResult?.openapi ? { openapi: initResult.openapi } : {}),
+              ...(initResult?.misc ? { misc: initResult.misc } : {}),
+            },
+          };
+        };
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/openapi/error.js
+var require_error = __commonJS({
+  '../packages/vovk/cjs/openapi/error.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.error = void 0;
+    const types_1$2 = require_types();
+    const createDecorator_1$2 = require_createDecorator();
+    const statusDisplayText = {
+      [types_1$2.HttpStatus.NULL]: 'Error',
+      [types_1$2.HttpStatus.CONTINUE]: 'Continue',
+      [types_1$2.HttpStatus.SWITCHING_PROTOCOLS]: 'Switching Protocols',
+      [types_1$2.HttpStatus.PROCESSING]: 'Processing',
+      [types_1$2.HttpStatus.EARLYHINTS]: 'Early Hints',
+      [types_1$2.HttpStatus.OK]: 'OK',
+      [types_1$2.HttpStatus.CREATED]: 'Created',
+      [types_1$2.HttpStatus.ACCEPTED]: 'Accepted',
+      [types_1$2.HttpStatus.NON_AUTHORITATIVE_INFORMATION]: 'Non Authoritative Information',
+      [types_1$2.HttpStatus.NO_CONTENT]: 'No Content',
+      [types_1$2.HttpStatus.RESET_CONTENT]: 'Reset Content',
+      [types_1$2.HttpStatus.PARTIAL_CONTENT]: 'Partial Content',
+      [types_1$2.HttpStatus.AMBIGUOUS]: 'Ambiguous',
+      [types_1$2.HttpStatus.MOVED_PERMANENTLY]: 'Moved Permanently',
+      [types_1$2.HttpStatus.FOUND]: 'Found',
+      [types_1$2.HttpStatus.SEE_OTHER]: 'See Other',
+      [types_1$2.HttpStatus.NOT_MODIFIED]: 'Not Modified',
+      [types_1$2.HttpStatus.TEMPORARY_REDIRECT]: 'Temporary Redirect',
+      [types_1$2.HttpStatus.PERMANENT_REDIRECT]: 'Permanent Redirect',
+      [types_1$2.HttpStatus.BAD_REQUEST]: 'Bad Request',
+      [types_1$2.HttpStatus.UNAUTHORIZED]: 'Unauthorized',
+      [types_1$2.HttpStatus.PAYMENT_REQUIRED]: 'Payment Required',
+      [types_1$2.HttpStatus.FORBIDDEN]: 'Forbidden',
+      [types_1$2.HttpStatus.NOT_FOUND]: 'Not Found',
+      [types_1$2.HttpStatus.METHOD_NOT_ALLOWED]: 'Method Not Allowed',
+      [types_1$2.HttpStatus.NOT_ACCEPTABLE]: 'Not Acceptable',
+      [types_1$2.HttpStatus.PROXY_AUTHENTICATION_REQUIRED]: 'Proxy Authentication Required',
+      [types_1$2.HttpStatus.REQUEST_TIMEOUT]: 'Request Timeout',
+      [types_1$2.HttpStatus.CONFLICT]: 'Conflict',
+      [types_1$2.HttpStatus.GONE]: 'Gone',
+      [types_1$2.HttpStatus.LENGTH_REQUIRED]: 'Length Required',
+      [types_1$2.HttpStatus.PRECONDITION_FAILED]: 'Precondition Failed',
+      [types_1$2.HttpStatus.PAYLOAD_TOO_LARGE]: 'Payload Too Large',
+      [types_1$2.HttpStatus.URI_TOO_LONG]: 'URI Too Long',
+      [types_1$2.HttpStatus.UNSUPPORTED_MEDIA_TYPE]: 'Unsupported Media Type',
+      [types_1$2.HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE]: 'Requested Range Not Satisfiable',
+      [types_1$2.HttpStatus.EXPECTATION_FAILED]: 'Expectation Failed',
+      [types_1$2.HttpStatus.I_AM_A_TEAPOT]: 'I am a teapot',
+      [types_1$2.HttpStatus.MISDIRECTED]: 'Misdirected',
+      [types_1$2.HttpStatus.UNPROCESSABLE_ENTITY]: 'Unprocessable Entity',
+      [types_1$2.HttpStatus.FAILED_DEPENDENCY]: 'Failed Dependency',
+      [types_1$2.HttpStatus.PRECONDITION_REQUIRED]: 'Precondition Required',
+      [types_1$2.HttpStatus.TOO_MANY_REQUESTS]: 'Too Many Requests',
+      [types_1$2.HttpStatus.INTERNAL_SERVER_ERROR]: 'Internal Server Error',
+      [types_1$2.HttpStatus.NOT_IMPLEMENTED]: 'Not Implemented',
+      [types_1$2.HttpStatus.BAD_GATEWAY]: 'Bad Gateway',
+      [types_1$2.HttpStatus.SERVICE_UNAVAILABLE]: 'Service Unavailable',
+      [types_1$2.HttpStatus.GATEWAY_TIMEOUT]: 'Gateway Timeout',
+      [types_1$2.HttpStatus.HTTP_VERSION_NOT_SUPPORTED]: 'HTTP Version Not Supported',
+    };
+    exports.error = (0, createDecorator_1$2.createDecorator)(null, (status, message) => {
+      return (handlerSchema) => {
+        return {
+          ...handlerSchema,
+          openapi: {
+            ...handlerSchema?.openapi,
+            responses: {
+              ...handlerSchema?.openapi?.responses,
+              [status]: {
+                description: `${status} ${statusDisplayText[status]}`,
+                content: {
+                  'application/json': {
+                    schema: {
+                      allOf: [
+                        { $ref: '#/components/schemas/VovkErrorResponse' },
+                        {
+                          type: 'object',
+                          properties: {
+                            message: {
+                              type: 'string',
+                              enum: [
+                                message,
+                                ...(handlerSchema?.openapi?.responses?.[status]?.content?.['application/json']?.schema
+                                  ?.allOf?.[1]?.properties?.message?.enum ?? []),
+                              ],
+                            },
+                            statusCode: {
+                              type: 'integer',
+                              enum: [status],
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        };
+      };
+    });
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/openapi/index.js
+var require_openapi = __commonJS({
+  '../packages/vovk/cjs/openapi/index.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.openAPIToVovkSchema = exports.vovkSchemaToOpenAPI = exports.openapi = exports.openapiDecorator = void 0;
+    const vovkSchemaToOpenAPI_1 = require_vovkSchemaToOpenAPI();
+    Object.defineProperty(exports, 'vovkSchemaToOpenAPI', {
+      enumerable: true,
+      get: function () {
+        return vovkSchemaToOpenAPI_1.vovkSchemaToOpenAPI;
+      },
+    });
+    const openAPIToVovkSchema_1 = require_openAPIToVovkSchema();
+    Object.defineProperty(exports, 'openAPIToVovkSchema', {
+      enumerable: true,
+      get: function () {
+        return openAPIToVovkSchema_1.openAPIToVovkSchema;
+      },
+    });
+    const error_1 = require_error();
+    const createDecorator_1$1 = require_createDecorator();
+    exports.openapiDecorator = (0, createDecorator_1$1.createDecorator)(null, (openAPIOperationObject = {}) => {
+      return (handlerSchema) => {
+        return {
+          ...handlerSchema,
+          openapi: {
+            ...handlerSchema?.openapi,
+            ...openAPIOperationObject,
+          },
+        };
+      };
+    });
+    exports.openapi = Object.assign(exports.openapiDecorator, { error: error_1.error });
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/generateStaticAPI.js
+var require_generateStaticAPI = __commonJS({
+  '../packages/vovk/cjs/utils/generateStaticAPI.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.generateStaticAPI = generateStaticAPI;
+    function generateStaticAPI(c, slug = 'vovk') {
+      const controllers$2 = c;
+      return [
+        { [slug]: ['_schema_'] },
+        ...Object.values(controllers$2)
+          .map((controller) => {
+            const handlers = controller._handlers;
+            const splitPrefix = controller._prefix?.split('/') ?? [];
+            return Object.entries(handlers ?? {})
+              .map(([name, handler]) => {
+                const staticParams = controller._handlersMetadata?.[name]?.staticParams;
+                if (staticParams?.length)
+                  return staticParams.map((paramsItem) => {
+                    let path = handler.path;
+                    for (const [key, value] of Object.entries(paramsItem ?? {})) path = path.replace(`:${key}`, value);
+                    return { [slug]: [...splitPrefix, ...path.split('/')].filter(Boolean) };
+                  });
+                return [{ [slug]: [...splitPrefix, ...handler.path.split('/')].filter(Boolean) }];
+              })
+              .flat();
+          })
+          .flat(),
+      ];
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/setHandlerSchema.js
+var require_setHandlerSchema = __commonJS({
+  '../packages/vovk/cjs/utils/setHandlerSchema.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.setHandlerSchema = setHandlerSchema;
+    async function setHandlerSchema(h, schema$1) {
+      h._getSchema = (controller) => {
+        if (!controller)
+          throw new Error(
+            'Error setting client validators. Controller not found. Did you forget to use an HTTP decorator?'
+          );
+        const handlerName = Object.getOwnPropertyNames(controller).find((key) => controller[key]._sourceMethod === h);
+        if (!handlerName) throw new Error('Error setting client validators. Handler not found.');
+        return schema$1;
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/withValidationLibrary.js
+var require_withValidationLibrary = __commonJS({
+  '../packages/vovk/cjs/utils/withValidationLibrary.js'(exports) {
+    var __importDefault$1 =
+      (void 0 && (void 0).__importDefault) ||
+      function (mod) {
+        return mod && mod.__esModule ? mod : { default: mod };
+      };
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.withValidationLibrary = withValidationLibrary;
+    const HttpException_js_1 = require_HttpException();
+    const types_js_1 = require_types();
+    const reqMeta_js_1 = __importDefault$1(require_reqMeta());
+    const setHandlerSchema_js_1 = require_setHandlerSchema();
+    const validationTypes = ['body', 'query', 'params', 'output', 'iteration'];
+    function withValidationLibrary({
+      isForm,
+      disableServerSideValidation,
+      skipSchemaEmission,
+      validateEachIteration,
+      body,
+      query,
+      params,
+      output,
+      iteration,
+      handle,
+      toJSONSchema,
+      validate: validate$1,
+    }) {
+      const disableServerSideValidationKeys =
+        disableServerSideValidation === false
+          ? []
+          : disableServerSideValidation === true
+            ? validationTypes
+            : (disableServerSideValidation ?? []);
+      const skipSchemaEmissionKeys =
+        skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
+      const outputHandler = async (req, handlerParams) => {
+        const { __disableValidation } = req.vovk.meta();
+        const data = await handle(req, handlerParams);
+        if (__disableValidation) return data;
+        if (output && iteration)
+          throw new HttpException_js_1.HttpException(
+            types_js_1.HttpStatus.INTERNAL_SERVER_ERROR,
+            "Output and iteration are mutually exclusive. You can't use them together."
+          );
+        if (output && !disableServerSideValidationKeys.includes('output')) {
+          if (!data)
+            throw new HttpException_js_1.HttpException(
+              types_js_1.HttpStatus.INTERNAL_SERVER_ERROR,
+              'Output is required. You probably forgot to return something from your handler.'
+            );
+          await validate$1(data, output, {
+            type: 'output',
+            req,
+          });
+        }
+        if (iteration && !disableServerSideValidationKeys.includes('iteration')) {
+          if (!data || typeof data[Symbol.asyncIterator] !== 'function')
+            throw new HttpException_js_1.HttpException(
+              types_js_1.HttpStatus.INTERNAL_SERVER_ERROR,
+              'Data is not an async iterable but iteration validation is defined.'
+            );
+          return (async function* () {
+            let i = 0;
+            for await (const item of data) {
+              if (validateEachIteration || i === 0)
+                await validate$1(item, iteration, {
+                  type: 'iteration',
+                  req,
+                  status: 200,
+                  i,
+                });
+              i++;
+              yield item;
+            }
+          })();
+        } else if (validateEachIteration)
+          throw new HttpException_js_1.HttpException(
+            types_js_1.HttpStatus.INTERNAL_SERVER_ERROR,
+            'validateEachIteration is set but iteration is not defined.'
+          );
+        return data;
+      };
+      const resultHandler = async (req, handlerParams) => {
+        const { __disableValidation } = req.vovk.meta();
+        if (!__disableValidation) {
+          if (body && !disableServerSideValidationKeys.includes('body')) {
+            const data = await req.vovk[isForm ? 'form' : 'body']();
+            const instance =
+              (await validate$1(data, body, {
+                type: isForm ? 'form' : 'body',
+                req,
+              })) ?? data;
+            req.json = () => Promise.resolve(data);
+            req.vovk[isForm ? 'form' : 'body'] = () => Promise.resolve(instance);
+          }
+          if (query && !disableServerSideValidationKeys.includes('query')) {
+            const data = req.vovk.query();
+            const instance =
+              (await validate$1(data, query, {
+                type: 'query',
+                req,
+              })) ?? data;
+            req.vovk.query = () => instance;
+          }
+          if (params && !disableServerSideValidationKeys.includes('params')) {
+            const data = req.vovk.params();
+            const instance =
+              (await validate$1(data, params, {
+                type: 'params',
+                req,
+              })) ?? data;
+            req.vovk.params = () => instance;
+          }
+        }
+        return outputHandler(req, handlerParams);
+      };
+      function func(input) {
+        const fakeReq = {
+          vovk: {
+            body: () => Promise.resolve(input.body),
+            query: () => input.query,
+            params: () => input.params,
+            meta: (meta) => (0, reqMeta_js_1.default)(fakeReq, meta),
+            form: () => {
+              throw new Error('Form data is not supported in this context.');
+            },
+          },
+        };
+        fakeReq.vovk.meta({ __disableValidation: input.disableValidation });
+        return resultHandler(fakeReq, input.params ?? {});
+      }
+      const models = {
+        body,
+        query,
+        params,
+        output,
+        iteration,
+      };
+      const resultHandlerEnhanced = Object.assign(resultHandler, {
+        func,
+        models,
+      });
+      if (toJSONSchema) {
+        const getJsonSchema = (model, type) =>
+          Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-formData': isForm } : {});
+        const validation$3 = {};
+        if (body && !skipSchemaEmissionKeys.includes('body')) validation$3.body = getJsonSchema(body, 'body');
+        if (query && !skipSchemaEmissionKeys.includes('query')) validation$3.query = getJsonSchema(query, 'query');
+        if (params && !skipSchemaEmissionKeys.includes('params')) validation$3.params = getJsonSchema(params, 'params');
+        if (output && !skipSchemaEmissionKeys.includes('output')) validation$3.output = getJsonSchema(output, 'output');
+        if (iteration && !skipSchemaEmissionKeys.includes('iteration'))
+          validation$3.iteration = getJsonSchema(iteration, 'iteration');
+        (0, setHandlerSchema_js_1.setHandlerSchema)(resultHandlerEnhanced, { validation: validation$3 });
+      }
+      return resultHandlerEnhanced;
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/withStandard.js
+var require_withStandard = __commonJS({
+  '../packages/vovk/cjs/utils/withStandard.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.withStandard = withStandard;
+    const types_1$1 = require_types();
+    const withValidationLibrary_1$1 = require_withValidationLibrary();
+    const HttpException_1$1 = require_HttpException();
+    function withStandard({
+      isForm,
+      body,
+      query,
+      params,
+      output,
+      iteration,
+      handle,
+      toJSONSchema,
+      disableServerSideValidation,
+      skipSchemaEmission,
+      validateEachIteration,
+    }) {
+      return (0, withValidationLibrary_1$1.withValidationLibrary)({
+        isForm,
+        body,
+        query,
+        params,
+        output,
+        iteration,
+        disableServerSideValidation,
+        skipSchemaEmission,
+        validateEachIteration,
+        handle,
+        toJSONSchema,
+        validate: async (data, model, { type, i }) => {
+          const result = await model['~standard'].validate(data);
+          if (result.issues?.length)
+            throw new HttpException_1$1.HttpException(
+              types_1$1.HttpStatus.BAD_REQUEST,
+              `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${result.issues.map(({ message, path }) => `${message}${path ? ` at ${path.join('.')}` : ''}`).join(', ')}`,
+              {
+                [type]: data,
+                result,
+              }
+            );
+          return result.value;
+        },
+      });
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/multitenant.js
+var require_multitenant = __commonJS({
+  '../packages/vovk/cjs/utils/multitenant.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.multitenant = multitenant;
+    const getReservedPaths = (overrides) => {
+      return Object.keys(overrides).filter((key) => !key.includes('[') && !key.includes(']'));
+    };
+    /**
+     * Convert a pattern with [placeholders] to a regex pattern and extract placeholder names
+     */
+    const patternToRegex = (pattern) => {
+      const paramNames = [];
+      const regexPattern = pattern
+        .replace(/\[([^\]]+)\]/g, (_$2, name) => {
+          paramNames.push(name);
+          return '([^.]+)';
+        })
+        .replace(/\./g, '\\.');
+      return {
+        regex: new RegExp(`^${regexPattern}$`),
+        paramNames,
+      };
+    };
+    function multitenant(config$1) {
+      const { requestUrl, requestHost, targetHost, overrides } = config$1;
+      const urlObj = new URL(requestUrl);
+      const pathname = urlObj.pathname.slice(1);
+      if (pathname.endsWith('_schema_'))
+        return {
+          action: null,
+          destination: null,
+          message: 'Schema endpoint, bypassing overrides',
+          subdomains: null,
+        };
+      const pathSegments = pathname.split('/').filter(Boolean);
+      const reservedPaths = getReservedPaths(overrides);
+      for (let i = 0; i < pathSegments.length; i++) {
+        const segment = pathSegments[i];
+        if (reservedPaths.includes(segment)) {
+          const destinationHost = `${segment}.${targetHost}`;
+          const beforeSegments = pathSegments.slice(0, i);
+          const afterSegments = pathSegments.slice(i + 1);
+          const newPath = [...beforeSegments, ...afterSegments].join('/');
+          const destinationUrl = new URL(`${urlObj.protocol}//${destinationHost}`);
+          if (newPath) destinationUrl.pathname = `/${newPath}`;
+          destinationUrl.search = urlObj.search;
+          return {
+            action: 'redirect',
+            destination: destinationUrl.toString(),
+            message: `Redirecting to ${segment} subdomain`,
+            subdomains: null,
+          };
+        }
+      }
+      for (const pattern in overrides) {
+        const fullPattern = `${pattern}.${targetHost}`;
+        const { regex: regex$1, paramNames } = patternToRegex(fullPattern);
+        const match = requestHost.match(regex$1);
+        if (match) {
+          const overrideRules = overrides[pattern];
+          const params = {};
+          if (match.length > 1) for (let i = 0; i < paramNames.length; i++) params[paramNames[i]] = match[i + 1];
+          for (const rule of overrideRules)
+            if (pathname === rule.from || pathname.startsWith(`${rule.from}/`)) {
+              let destination = pathname.replace(rule.from, rule.to);
+              if (Object.keys(params).length > 0)
+                Object.entries(params).forEach(([key, value]) => {
+                  destination = destination.replace(`[${key}]`, value);
+                });
+              const wildcardSubdomains = paramNames.length > 0 ? params : null;
+              return {
+                action: 'rewrite',
+                destination: `${urlObj.protocol}//${urlObj.host}/${destination}${urlObj.search}`,
+                message: `Rewriting to ${destination}`,
+                subdomains: wildcardSubdomains,
+              };
+            }
+        }
+      }
+      if (pathSegments.length > 0 && reservedPaths.includes(pathSegments[0])) {
+        const reservedPath = pathSegments[0];
+        const restPath = pathSegments.slice(1).join('/');
+        const destinationHost = `${reservedPath}.${targetHost}`;
+        const destinationUrl = new URL(`${urlObj.protocol}//${destinationHost}`);
+        if (restPath) destinationUrl.pathname = `/${restPath}`;
+        destinationUrl.search = urlObj.search;
+        return {
+          action: 'redirect',
+          destination: destinationUrl.toString(),
+          message: `Redirecting to ${reservedPath} subdomain`,
+          subdomains: null,
+        };
+      }
+      return {
+        action: null,
+        destination: null,
+        message: 'No action',
+        subdomains: null,
+      };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/utils/createLLMTools.js
+var require_createLLMTools = __commonJS({
+  '../packages/vovk/cjs/utils/createLLMTools.js'(exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.createLLMTools = createLLMTools;
+    const createLLMTool = ({ rpcModuleName, handlerName, caller, modules, onSuccess, onError }) => {
+      const module$1 = modules[rpcModuleName];
+      if (!module$1) throw new Error(`Module "${rpcModuleName}" not found.`);
+      const handler = module$1[handlerName];
+      if (!handler) throw new Error(`Handler "${handlerName}" not found in module "${rpcModuleName}".`);
+      const { schema: schema$1 } = handler;
+      if (!schema$1 || !schema$1.openapi)
+        throw new Error(`Handler "${handlerName}" in module "${rpcModuleName}" does not have a valid schema.`);
+      const execute = (input, options) => {
+        const { body, query, params } = input;
+        return caller(
+          {
+            schema: schema$1,
+            handler,
+            body,
+            query,
+            params,
+          },
+          options
+        )
+          .then((data) => onSuccess(data) ?? data)
+          .catch((error$41) => onError?.(error$41) ?? error$41);
+      };
+      const parametersProperties = {
+        ...(schema$1?.validation?.body ? { body: schema$1.validation.body } : {}),
+        ...(schema$1?.validation?.query ? { query: schema$1.validation.query } : {}),
+        ...(schema$1?.validation?.params ? { params: schema$1.validation.params } : {}),
+      };
+      return {
+        execute,
+        name: `${rpcModuleName}__${handlerName}`,
+        description:
+          [schema$1.openapi?.summary ?? '', schema$1.openapi?.description ?? ''].filter(Boolean).join('\n') ||
+          handlerName,
+        ...(Object.keys(parametersProperties).length
+          ? {
+              parameters: {
+                type: 'object',
+                properties: parametersProperties,
+                required: Object.keys(parametersProperties),
+                additionalProperties: false,
+              },
+            }
+          : {}),
+      };
+    };
+    async function defaultCaller({ handler, body, query, params }, _options) {
+      if (handler.isRPC)
+        return handler({
+          handler,
+          body,
+          query,
+          params,
+        });
+      if (handler.func)
+        return handler.func({
+          body,
+          query,
+          params,
+        });
+      throw new Error('Handler is not a valid RPC or controller method');
+    }
+    function createLLMTools({
+      modules,
+      caller = defaultCaller,
+      onSuccess = (result) => result,
+      onError = () => {},
+    }) {
+      const functions = Object.entries(modules ?? {})
+        .map(([rpcModuleName, module$1]) => {
+          return Object.entries(module$1 ?? {})
+            .filter(([, handler]) => handler.schema?.openapi)
+            .map(([handlerName]) =>
+              createLLMTool({
+                rpcModuleName,
+                handlerName,
+                caller,
+                modules,
+                onSuccess,
+                onError,
+              })
+            );
+        })
+        .flat();
+      return { functions };
+    }
+  },
+});
+
+//#endregion
+//#region ../packages/vovk/cjs/index.js
+var require_cjs = __commonJS({
+  '../packages/vovk/cjs/index.js'(exports) {
+    var _a;
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.initVovk =
+      exports.prefix =
+      exports.options =
+      exports.head =
+      exports.del =
+      exports.patch =
+      exports.put =
+      exports.post =
+      exports.get =
+      exports.vovkSchemaToOpenAPI =
+      exports.openAPIToVovkSchema =
+      exports.openapi =
+      exports.createCodeExamples =
+      exports.createLLMTools =
+      exports.multitenant =
+      exports.withStandard =
+      exports.withValidationLibrary =
+      exports.generateStaticAPI =
+      exports.createFetcher =
+      exports.fetcher =
+      exports.createRPC =
+      exports.createDecorator =
+      exports.createVovkApp =
+      exports.HttpMethod =
+      exports.HttpStatus =
+      exports.HttpException =
+      exports.JSONLinesResponse =
+      exports.VovkSchemaIdEnum =
+        void 0;
+    const createVovkApp_1 = require_createVovkApp();
+    Object.defineProperty(exports, 'createVovkApp', {
+      enumerable: true,
+      get: function () {
+        return createVovkApp_1.createVovkApp;
+      },
+    });
+    const types_1 = require_types();
+    Object.defineProperty(exports, 'HttpStatus', {
+      enumerable: true,
+      get: function () {
+        return types_1.HttpStatus;
+      },
+    });
+    Object.defineProperty(exports, 'HttpMethod', {
+      enumerable: true,
+      get: function () {
+        return types_1.HttpMethod;
+      },
+    });
+    Object.defineProperty(exports, 'VovkSchemaIdEnum', {
+      enumerable: true,
+      get: function () {
+        return types_1.VovkSchemaIdEnum;
+      },
+    });
+    const index_1 = require_client();
+    Object.defineProperty(exports, 'createRPC', {
+      enumerable: true,
+      get: function () {
+        return index_1.createRPC;
+      },
+    });
+    Object.defineProperty(exports, 'fetcher', {
+      enumerable: true,
+      get: function () {
+        return index_1.fetcher;
+      },
+    });
+    Object.defineProperty(exports, 'createFetcher', {
+      enumerable: true,
+      get: function () {
+        return index_1.createFetcher;
+      },
+    });
+    const index_2 = require_openapi();
+    Object.defineProperty(exports, 'openapi', {
+      enumerable: true,
+      get: function () {
+        return index_2.openapi;
+      },
+    });
+    Object.defineProperty(exports, 'openAPIToVovkSchema', {
+      enumerable: true,
+      get: function () {
+        return index_2.openAPIToVovkSchema;
+      },
+    });
+    Object.defineProperty(exports, 'vovkSchemaToOpenAPI', {
+      enumerable: true,
+      get: function () {
+        return index_2.vovkSchemaToOpenAPI;
+      },
+    });
+    const HttpException_1 = require_HttpException();
+    Object.defineProperty(exports, 'HttpException', {
+      enumerable: true,
+      get: function () {
+        return HttpException_1.HttpException;
+      },
+    });
+    const createDecorator_1 = require_createDecorator();
+    Object.defineProperty(exports, 'createDecorator', {
+      enumerable: true,
+      get: function () {
+        return createDecorator_1.createDecorator;
+      },
+    });
+    const JSONLinesResponse_1 = require_JSONLinesResponse();
+    Object.defineProperty(exports, 'JSONLinesResponse', {
+      enumerable: true,
+      get: function () {
+        return JSONLinesResponse_1.JSONLinesResponse;
+      },
+    });
+    const generateStaticAPI_1 = require_generateStaticAPI();
+    Object.defineProperty(exports, 'generateStaticAPI', {
+      enumerable: true,
+      get: function () {
+        return generateStaticAPI_1.generateStaticAPI;
+      },
+    });
+    const withValidationLibrary_1 = require_withValidationLibrary();
+    Object.defineProperty(exports, 'withValidationLibrary', {
+      enumerable: true,
+      get: function () {
+        return withValidationLibrary_1.withValidationLibrary;
+      },
+    });
+    const withStandard_1 = require_withStandard();
+    Object.defineProperty(exports, 'withStandard', {
+      enumerable: true,
+      get: function () {
+        return withStandard_1.withStandard;
+      },
+    });
+    const multitenant_1 = require_multitenant();
+    Object.defineProperty(exports, 'multitenant', {
+      enumerable: true,
+      get: function () {
+        return multitenant_1.multitenant;
+      },
+    });
+    const createLLMTools_1 = require_createLLMTools();
+    Object.defineProperty(exports, 'createLLMTools', {
+      enumerable: true,
+      get: function () {
+        return createLLMTools_1.createLLMTools;
+      },
+    });
+    const createCodeExamples_1 = require_createCodeExamples();
+    Object.defineProperty(exports, 'createCodeExamples', {
+      enumerable: true,
+      get: function () {
+        return createCodeExamples_1.createCodeExamples;
+      },
+    });
+    (_a = (0, createVovkApp_1.createVovkApp)()),
+      (exports.get = _a.get),
+      (exports.post = _a.post),
+      (exports.put = _a.put),
+      (exports.patch = _a.patch),
+      (exports.del = _a.del),
+      (exports.head = _a.head),
+      (exports.options = _a.options),
+      (exports.prefix = _a.prefix),
+      (exports.initVovk = _a.initVovk);
+  },
+});
+
+//#endregion
 //#region ../packages/vovk-ajv/index.js
 var require_vovk_ajv = __commonJS({
   '../packages/vovk-ajv/index.js'(exports) {
@@ -20652,41 +26783,53 @@ var require_vovk_ajv = __commonJS({
       };
     Object.defineProperty(exports, '__esModule', { value: true });
     exports.validateOnClient = void 0;
-    const ajv_1 = __importDefault(require_ajv$1());
-    const vovk_1 = require_dist$2();
+    const ajv_1 = require_ajv$1();
+    const _2020_1 = __importDefault(require__2020());
     const ajv_formats_1 = __importDefault(require_dist$1());
     const ajv_i18n_1 = __importDefault(require_localize());
     const ajv_errors_1 = __importDefault(require_dist());
-    const createAjv = (options) => {
-      const ajv = new ajv_1.default({
+    const vovk_1 = require_cjs();
+    const createAjv = (options, target) => {
+      const AjvClass = target === 'draft-2020-12' ? _2020_1.default : ajv_1.Ajv;
+      const ajv = new AjvClass({
         allErrors: true,
         ...options,
       });
       (0, ajv_formats_1.default)(ajv);
       (0, ajv_errors_1.default)(ajv);
       ajv.addKeyword('x-isDto');
+      ajv.addKeyword('x-formData');
       return ajv;
     };
-    const validate = ({ data, schema, ajv, localize = 'en', type, endpoint }) => {
-      if (data && schema) {
-        const isValid = ajv.validate(schema, data);
+    const validate = ({ data, schema: schema$1, ajv, localize = 'en', type, endpoint }) => {
+      if (data && schema$1) {
+        const isForm = data instanceof FormData && schema$1['x-formData'];
+        if (isForm)
+          data = Object.fromEntries(
+            data.entries().map(([key, value]) => {
+              if (value instanceof File) return [key, 'File<' + value.name + '>'];
+              return [key, value];
+            })
+          );
+        const isValid = ajv.validate(schema$1, data);
         if (!isValid) {
           ajv_i18n_1.default[localize](ajv.errors);
           throw new vovk_1.HttpException(
             vovk_1.HttpStatus.NULL,
-            `Ajv validation failed. Invalid ${type} on client for ${endpoint}. ${ajv.errorsText()}`,
+            `Ajv validation failed. Invalid ${isForm ? 'form' : type} on client: ${ajv.errorsText()}`,
             {
               data,
               errors: ajv.errors,
+              endpoint,
             }
           );
         }
       }
     };
-    const validateAll = ({ input, validation: validation$2, ajv, localize = 'en' }) => {
+    const validateAll = ({ input, validation: validation$3, ajv, localize = 'en' }) => {
       validate({
         data: input.body,
-        schema: validation$2.body,
+        schema: validation$3.body,
         ajv,
         localize,
         endpoint: input.endpoint,
@@ -20694,7 +26837,7 @@ var require_vovk_ajv = __commonJS({
       });
       validate({
         data: input.query,
-        schema: validation$2.query,
+        schema: validation$3.query,
         ajv,
         localize,
         endpoint: input.endpoint,
@@ -20702,46 +26845,51 @@ var require_vovk_ajv = __commonJS({
       });
       validate({
         data: input.params,
-        schema: validation$2.params,
+        schema: validation$3.params,
         ajv,
         localize,
         endpoint: input.endpoint,
         type: 'params',
       });
     };
-    const getConfig = (fullSchema$1) => {
-      const config = fullSchema$1.config.libs?.ajv;
-      const options = config?.options || {};
-      const localize = config?.localize || 'en';
+    const getConfig = (schema$1) => {
+      const config$1 = schema$1.meta.config?.libs?.ajv;
+      const options = config$1?.options ?? {};
+      const localize = config$1?.localize ?? 'en';
+      const target = config$1?.target ?? 'draft-2020-12';
       return {
         options,
         localize,
+        target,
       };
     };
     let ajvScope = null;
-    const validateOnClientAjv = (input, validation$2, fullSchema$1) => {
-      const { options, localize } = getConfig(fullSchema$1);
-      if (!ajvScope) ajvScope = createAjv(options);
+    const validateOnClientAjv = (input, validation$3, schema$1) => {
+      const { options, localize, target } = getConfig(schema$1);
+      if (!ajvScope) ajvScope = createAjv(options, target);
       return validateAll({
         input,
-        validation: validation$2,
+        validation: validation$3,
         ajv: ajvScope,
         localize,
       });
     };
     const configure =
-      ({ options: givenOptions, localize: givenLocalize }) =>
-      (input, validation$2, fullSchema$1) => {
-        const { options, localize } = getConfig(fullSchema$1);
-        const ajv = createAjv({
-          ...options,
-          ...givenOptions,
-        });
+      ({ options: givenOptions, localize: givenLocalize, target: givenTarget }) =>
+      (input, validation$3, schema$1) => {
+        const { options, localize, target } = getConfig(schema$1);
+        const ajv = createAjv(
+          {
+            ...options,
+            ...givenOptions,
+          },
+          givenTarget ?? target
+        );
         validateAll({
           input,
-          validation: validation$2,
+          validation: validation$3,
           ajv,
-          localize: givenLocalize || localize,
+          localize: givenLocalize ?? localize,
         });
       };
     exports.validateOnClient = Object.assign(validateOnClientAjv, { configure });
@@ -20749,133 +26897,168 @@ var require_vovk_ajv = __commonJS({
 });
 
 //#endregion
-//#region .tmp-ts-rpc/index.ts
-var import_dist = __toESM(require_dist$2(), 1);
-var import_dist$1 = __toESM(require_dist$2(), 1);
+//#region tmp_ts_rpc/index.ts
+var import_mjs = __toESM(require_mjs(), 1);
+var import_mjs$1 = __toESM(require_mjs(), 1);
 var import_vovk_ajv = __toESM(require_vovk_ajv(), 1);
-const CommonControllerRPC = (0, import_dist$1.createRPC)(fullSchema, 'foo/client', 'CommonControllerRPC', {
-  fetcher: import_dist.fetcher,
-  validateOnClient: import_vovk_ajv.validateOnClient,
-  defaultOptions: { apiRoot: 'http://localhost:3000/api' },
-});
-const StreamingControllerRPC = (0, import_dist$1.createRPC)(fullSchema, 'foo/client', 'StreamingControllerRPC', {
-  fetcher: import_dist.fetcher,
-  validateOnClient: import_vovk_ajv.validateOnClient,
-  defaultOptions: { apiRoot: 'http://localhost:3000/api' },
-});
-const StreamingGeneratorControllerRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const CommonControllerRPC = (0, import_mjs$1.createRPC)(
+  schema,
+  'foo/client',
+  'CommonControllerRPC',
+  import_mjs.fetcher,
+  {
+    validateOnClient: import_vovk_ajv.validateOnClient,
+    apiRoot: 'http://localhost:3000/api',
+  }
+);
+const StreamingControllerRPC = (0, import_mjs$1.createRPC)(
+  schema,
+  'foo/client',
+  'StreamingControllerRPC',
+  import_mjs.fetcher,
+  {
+    validateOnClient: import_vovk_ajv.validateOnClient,
+    apiRoot: 'http://localhost:3000/api',
+  }
+);
+const StreamingGeneratorControllerRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'foo/client',
   'StreamingGeneratorControllerRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
-const CustomSchemaControllerRPC = (0, import_dist$1.createRPC)(fullSchema, 'foo/client', 'CustomSchemaControllerRPC', {
-  fetcher: import_dist.fetcher,
-  validateOnClient: import_vovk_ajv.validateOnClient,
-  defaultOptions: { apiRoot: 'http://localhost:3000/api' },
-});
-const WithZodClientControllerRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const CustomSchemaControllerRPC = (0, import_mjs$1.createRPC)(
+  schema,
+  'foo/client',
+  'CustomSchemaControllerRPC',
+  import_mjs.fetcher,
+  {
+    validateOnClient: import_vovk_ajv.validateOnClient,
+    apiRoot: 'http://localhost:3000/api',
+  }
+);
+const WithZodClientControllerRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'foo/client',
   'WithZodClientControllerRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
-const WithYupClientControllerRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const WithYupClientControllerRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'foo/client',
   'WithYupClientControllerRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
-const WithDtoClientControllerRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const WithDtoClientControllerRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'foo/client',
   'WithDtoClientControllerRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
-const OpenApiControllerRPC = (0, import_dist$1.createRPC)(fullSchema, 'foo/client', 'OpenApiControllerRPC', {
-  fetcher: import_dist.fetcher,
-  validateOnClient: import_vovk_ajv.validateOnClient,
-  defaultOptions: { apiRoot: 'http://localhost:3000/api' },
-});
-const NoValidationControllerOnlyEntityRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const OpenApiControllerRPC = (0, import_mjs$1.createRPC)(
+  schema,
+  'foo/client',
+  'OpenApiControllerRPC',
+  import_mjs.fetcher,
+  {
+    validateOnClient: import_vovk_ajv.validateOnClient,
+    apiRoot: 'http://localhost:3000/api',
+  }
+);
+const NoValidationControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'generated',
   'NoValidationControllerOnlyEntityRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
-const NoValidationControllerAndServiceEntityRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const NoValidationControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'generated',
   'NoValidationControllerAndServiceEntityRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
-const ZodControllerOnlyEntityRPC = (0, import_dist$1.createRPC)(fullSchema, 'generated', 'ZodControllerOnlyEntityRPC', {
-  fetcher: import_dist.fetcher,
-  validateOnClient: import_vovk_ajv.validateOnClient,
-  defaultOptions: { apiRoot: 'http://localhost:3000/api' },
-});
-const ZodControllerAndServiceEntityRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const ZodControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
+  schema,
+  'generated',
+  'ZodControllerOnlyEntityRPC',
+  import_mjs.fetcher,
+  {
+    validateOnClient: import_vovk_ajv.validateOnClient,
+    apiRoot: 'http://localhost:3000/api',
+  }
+);
+const ZodControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'generated',
   'ZodControllerAndServiceEntityRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
-const YupControllerOnlyEntityRPC = (0, import_dist$1.createRPC)(fullSchema, 'generated', 'YupControllerOnlyEntityRPC', {
-  fetcher: import_dist.fetcher,
-  validateOnClient: import_vovk_ajv.validateOnClient,
-  defaultOptions: { apiRoot: 'http://localhost:3000/api' },
-});
-const YupControllerAndServiceEntityRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const YupControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
+  schema,
+  'generated',
+  'YupControllerOnlyEntityRPC',
+  import_mjs.fetcher,
+  {
+    validateOnClient: import_vovk_ajv.validateOnClient,
+    apiRoot: 'http://localhost:3000/api',
+  }
+);
+const YupControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'generated',
   'YupControllerAndServiceEntityRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
-const DtoControllerOnlyEntityRPC = (0, import_dist$1.createRPC)(fullSchema, 'generated', 'DtoControllerOnlyEntityRPC', {
-  fetcher: import_dist.fetcher,
-  validateOnClient: import_vovk_ajv.validateOnClient,
-  defaultOptions: { apiRoot: 'http://localhost:3000/api' },
-});
-const DtoControllerAndServiceEntityRPC = (0, import_dist$1.createRPC)(
-  fullSchema,
+const DtoControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
+  schema,
+  'generated',
+  'DtoControllerOnlyEntityRPC',
+  import_mjs.fetcher,
+  {
+    validateOnClient: import_vovk_ajv.validateOnClient,
+    apiRoot: 'http://localhost:3000/api',
+  }
+);
+const DtoControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
+  schema,
   'generated',
   'DtoControllerAndServiceEntityRPC',
+  import_mjs.fetcher,
   {
-    fetcher: import_dist.fetcher,
     validateOnClient: import_vovk_ajv.validateOnClient,
-    defaultOptions: { apiRoot: 'http://localhost:3000/api' },
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 
@@ -20897,5 +27080,5 @@ export {
   YupControllerOnlyEntityRPC,
   ZodControllerAndServiceEntityRPC,
   ZodControllerOnlyEntityRPC,
-  fullSchema,
+  schema,
 };

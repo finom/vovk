@@ -22,7 +22,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
 
       const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
         _sourceMethod?: (...args: KnownAny) => KnownAny;
-        func?: (req: KnownAny, params: KnownAny) => KnownAny;
+        fn?: (req: KnownAny, params: KnownAny) => KnownAny;
         schema?: VovkHandlerSchema;
       };
       if (typeof originalMethod !== 'function') {
@@ -42,8 +42,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
 
       method._controller = controller;
       method._sourceMethod = sourceMethod;
-      method.schema = originalMethod.schema;
-      method.func = originalMethod.func;
+      method.fn = originalMethod.fn;
       // TODO define internal method type
       (originalMethod as unknown as { _controller: VovkController })._controller = controller;
 
@@ -56,15 +55,18 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
             })
           : initResultReturn;
 
+      const methodSchema = {
+        ...handlerSchema,
+        // avoid override of path and httpMethod
+        ...(initResult?.validation ? { validation: initResult.validation } : {}),
+        ...(initResult?.openapi ? { openapi: initResult.openapi } : {}),
+        ...(initResult?.misc ? { misc: initResult.misc } : {}),
+      };
+      method.schema = methodSchema;
+
       controller._handlers = {
         ...controller._handlers,
-        [propertyKey]: {
-          ...handlerSchema,
-          // avoid override of path and httpMethod
-          ...(initResult?.validation ? { validation: initResult.validation } : {}),
-          ...(initResult?.openapi ? { openapi: initResult.openapi } : {}),
-          ...(initResult?.misc ? { misc: initResult.misc } : {}),
-        },
+        [propertyKey]: methodSchema,
       };
     };
   };

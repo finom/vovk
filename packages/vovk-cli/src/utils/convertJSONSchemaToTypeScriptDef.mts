@@ -4,6 +4,16 @@ import type { KnownAny } from 'vovk';
 export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | null {
   if (!schema) return null;
 
+  // Helper function to escape single quotes in string literals
+  const escapeStringLiteral = (str: string): string => {
+    return str.replace(/'/g, "\\'");
+  };
+
+  // Helper function to escape JSDoc comment closing sequences
+  const escapeJSDocComment = (str: string): string => {
+    return str.replace(/\*\//g, '*\\/');
+  };
+
   // Helper function to resolve $ref references
   const resolveRef = (ref: string): JSONSchema7Definition | null => {
     if (!ref.startsWith('#/')) return null;
@@ -21,6 +31,35 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
     return currentSchema || null;
   };
 
+  // Process schema and any nested definitions
+  const processSchema = (currentSchema: JSONSchema7): JSONSchema7 => {
+    // Merge any $defs into the main schema for reference resolution
+    if (currentSchema.$defs || currentSchema.definitions) {
+      // Create a copy to avoid modifying the original
+      const processedSchema = { ...currentSchema };
+
+      // Support both $defs (JSON Schema 2019-09+) and definitions (older JSON Schema)
+      if (!processedSchema.definitions) {
+        processedSchema.definitions = {};
+      }
+
+      // Copy $defs into definitions for consistent reference resolution
+      if (processedSchema.$defs) {
+        processedSchema.definitions = {
+          ...processedSchema.definitions,
+          ...processedSchema.$defs,
+        };
+      }
+
+      return processedSchema;
+    }
+
+    return currentSchema;
+  };
+
+  // Pre-process the schema to handle definitions
+  const processedSchema = processSchema(schema);
+
   // Helper function to get JSDoc from schema
   const getJSDoc = (schema: JSONSchema7 | boolean, indentation = ''): string => {
     if (typeof schema === 'boolean') {
@@ -30,7 +69,8 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
     if (!description) {
       return '';
     }
-    return `${indentation}/**\n${indentation} * ${description}\n${indentation} */`;
+    const safeDescription = escapeJSDocComment(description);
+    return `${indentation}/**\n${indentation} * ${safeDescription}\n${indentation} */`;
   };
 
   // Helper function to convert schema to TypeScript type
@@ -47,6 +87,8 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
       } else {
         // If we can't resolve the reference, use the reference name as type
         const refName = schema.$ref.split('/').pop();
+        // eslint-disable-next-line no-console
+        console.warn(`Warning: Could not resolve reference ${schema.$ref}`);
         return refName || 'KnownAny';
       }
     }
@@ -55,7 +97,7 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
       return schema.enum
         .map((value) => {
           if (typeof value === 'string') {
-            return `'${value}'`;
+            return `'${escapeStringLiteral(value)}'`;
           } else if (value === null) {
             return 'null';
           } else {
@@ -67,7 +109,7 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
 
     if (schema.const !== undefined) {
       if (typeof schema.const === 'string') {
-        return `'${schema.const}'`;
+        return `'${escapeStringLiteral(schema.const)}'`;
       } else if (schema.const === null) {
         return 'null';
       } else {
@@ -188,13 +230,13 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
       case 'array':
         return 'KnownAny[]'; // For arrays with no items defined
       default:
-        return 'KnownAny';
+        return 'undefined';
     }
   };
 
   // Generate the interface
   const jsDoc = getJSDoc(schema);
-  const interfaceBody = schemaToType(schema);
+  const interfaceBody = schemaToType(processedSchema);
 
   return `${jsDoc}\n${interfaceBody}`;
 }

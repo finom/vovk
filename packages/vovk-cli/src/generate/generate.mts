@@ -13,7 +13,7 @@ import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
 import getTemplateClientImports from './getTemplateClientImports.mjs';
 import mergePackages from './mergePackages.mjs';
 import writeOneClientFile from './writeOneClientFile.mjs';
-import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { EXTENSIONS_SEGMENT_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { getTsconfig } from 'get-tsconfig';
 import { normalizeOpenAPIRootModules } from '../utils/normalizeOpenAPIRootModules.mjs';
@@ -102,7 +102,7 @@ const cliOptionsToOpenAPIRootModules = ({
   openapiGetModuleName,
   openapiRootUrl,
   openapiSpec,
-}: GenerateOptions): Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['rootModules'] => {
+}: GenerateOptions): Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['extensionModules'] => {
   return (
     openapiSpec?.map((spec, i) => {
       return {
@@ -137,29 +137,31 @@ export async function generate({
   };
   const { config, cwd, log, srcRoot } = projectInfo;
   const allOpenAPIRootModules = [
-    ...config.extendClientWithOpenAPI.rootModules,
+    ...config.extendClientWithOpenAPI.extensionModules,
     ...cliOptionsToOpenAPIRootModules(cliGenerateOptions ?? {}),
   ];
+  let hasExtensions = false;
   if (allOpenAPIRootModules.length) {
+    hasExtensions = true;
     fullSchema = {
       ...fullSchema,
       segments: {
         ...fullSchema.segments,
-        '': {
+        [EXTENSIONS_SEGMENT_NAME]: {
           $schema: VovkSchemaIdEnum.SEGMENT,
           emitSchema: true,
-          segmentName: '',
+          segmentName: EXTENSIONS_SEGMENT_NAME,
           forceApiRoot: allOpenAPIRootModules[0].apiRoot ?? fullSchema.segments['']?.forceApiRoot,
           controllers: {
-            ...fullSchema.segments['']?.controllers,
-            ...(await normalizeOpenAPIRootModules({ rootModules: allOpenAPIRootModules }))
+            ...fullSchema.segments[EXTENSIONS_SEGMENT_NAME]?.controllers,
+            ...(await normalizeOpenAPIRootModules({ extensionModules: allOpenAPIRootModules }))
               .map(({ source, apiRoot, getModuleName, getMethodName }) => {
                 return openAPIToVovkSchema({
                   source,
                   apiRoot,
                   getModuleName,
                   getMethodName,
-                }).segments[''].controllers;
+                }).segments[EXTENSIONS_SEGMENT_NAME].controllers;
               })
               .reduce((acc, controllers) => {
                 return {
@@ -175,7 +177,7 @@ export async function generate({
   const isNodeNextResolution = ['node16', 'nodenext'].includes(
     (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
   );
-  const isTsStandalone = cliGenerateOptions?.forceTsStandalone ?? !srcRoot;
+  const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
     !!cliGenerateOptions?.composedFrom ||
@@ -195,7 +197,7 @@ export async function generate({
       config,
       cwd,
       log,
-      isTsStandalone,
+      hasExtensions,
       cliGenerateOptions,
       configKey: 'composedClient',
     });
@@ -243,7 +245,8 @@ export async function generate({
           templateDef,
           locatedSegments,
           isNodeNextResolution,
-          isTsStandalone,
+          hasExtensions,
+          isVovkProject,
         });
 
         const outAbsoluteDir = path.join(cwd, outCwdRelativeDir);
@@ -278,7 +281,7 @@ export async function generate({
       config,
       cwd,
       log,
-      isTsStandalone,
+      hasExtensions,
       cliGenerateOptions,
       configKey: 'segmentedClient',
     });
@@ -331,7 +334,8 @@ export async function generate({
               templateDef,
               locatedSegments,
               isNodeNextResolution,
-              isTsStandalone,
+              hasExtensions,
+              isVovkProject,
             });
 
             return {

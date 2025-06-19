@@ -6,12 +6,12 @@ import { schema } from './schema.cjs';
 import { validateOnClient } from '<%= t.imports.module.validateOnClient %>';
 <% } else { %>
 const validateOnClient = undefined;
-<% } %>
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {
+<% } 
+Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {
   Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %> = createRPC(
-  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>',
-  { fetcher, validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %>defaultOptions: { apiRoot: '<%= segment.segmentApiRoot ?? t.apiRoot %>' } }
+  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', fetcher,
+  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentName === 'extensions' ? '' : `apiRoot: '${segment.segmentApiRoot ?? t.apiRoot}'` %> }
 );
 <% 
   }); 

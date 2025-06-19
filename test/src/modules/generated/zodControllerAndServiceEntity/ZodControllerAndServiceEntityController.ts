@@ -1,11 +1,14 @@
-import { prefix, get, put, post, del } from 'vovk';
+import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod/v4';
 
-import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntityService';
+import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntityService.ts';
 
 @prefix('zod-controller-and-service-entities')
 export default class ZodControllerAndServiceEntityController {
+  @openapi({
+    summary: 'Get ZodControllerAndServiceEntities',
+  })
   @get()
   static getZodControllerAndServiceEntities = withZod({
     query: z.object({ search: z.string() }),
@@ -16,6 +19,9 @@ export default class ZodControllerAndServiceEntityController {
     },
   });
 
+  @openapi({
+    summary: 'Update ZodControllerAndServiceEntity',
+  })
   @put(':id')
   static updateZodControllerAndServiceEntity = withZod({
     body: z.object({

@@ -163,7 +163,6 @@ export function createVovkApp() {
     options.segmentName = trimPath(options.segmentName ?? '');
     for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}) as [string, VovkController][]) {
       controller._rpcModuleName = rpcModuleName;
-      controller._activated = true;
       controller._onError = options?.onError;
     }
 

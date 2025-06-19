@@ -1,9 +1,12 @@
-import { prefix, get, put, post, del } from 'vovk';
+import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
 @prefix('yup-controller-only-entities')
 export default class YupControllerOnlyEntityController {
+  @openapi({
+    summary: 'Get YupControllerOnlyEntities',
+  })
   @get()
   static getYupControllerOnlyEntities = withYup({
     query: yup.object({ search: yup.string() }),
@@ -14,6 +17,9 @@ export default class YupControllerOnlyEntityController {
     },
   });
 
+  @openapi({
+    summary: 'Update YupControllerOnlyEntity',
+  })
   @put(':id')
   static updateYupControllerOnlyEntity = withYup({
     body: yup.object({

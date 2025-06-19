@@ -1,5 +1,6 @@
 import {
   createRPC as originalCreateRPC,
+  fetcher as defaultFetcher,
   type HttpException,
   type KnownAny,
   type VovkDefaultFetcherOptions,
@@ -10,6 +11,7 @@ import {
   type VovkStreamAsyncIterable,
   type VovkSchema,
   type VovkSegmentSchema,
+  type VovkClientFetcher,
 } from 'vovk';
 
 import {
@@ -76,24 +78,36 @@ const withUseQuery = <
   });
 };
 
+// Add utility type to check if all properties are optional
+type AllOptional<T> = object extends T ? true : false;
+
 export function createRPC<T, OPTS extends Record<string, KnownAny> = KnownAny>(
   fullSchema: VovkSchema,
   segmentName: string,
   rpcModuleName: string,
+  fetcher: VovkClientFetcher<OPTS> = defaultFetcher,
   options?: VovkDefaultFetcherOptions<OPTS>
 ) {
-  const RPC = originalCreateRPC<T, OPTS>(fullSchema, segmentName, rpcModuleName, options);
+  const RPC = originalCreateRPC<T, OPTS>(fullSchema, segmentName, rpcModuleName, fetcher, options);
 
   // TODO: Refactor
   type ClientWithQuery = {
     [Key in keyof VovkClient<T, OPTS>]: VovkClient<T, OPTS>[Key] & {
-      useQuery: (
-        input: Parameters<VovkClient<T, OPTS>[Key]>[0],
-        options?: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn' | 'queryKey'>,
-        queryClient?: QueryClient
-      ) => VovkReturnType<VovkClient<T, OPTS>[Key]> extends VovkStreamAsyncIterable<infer U>
-        ? ReturnType<typeof useQuery<U[], HttpException>>
-        : ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>;
+      useQuery: AllOptional<Parameters<VovkClient<T, OPTS>[Key]>[0]> extends true
+        ? (
+            input?: Parameters<VovkClient<T, OPTS>[Key]>[0],
+            options?: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn' | 'queryKey'>,
+            queryClient?: QueryClient
+          ) => VovkReturnType<VovkClient<T, OPTS>[Key]> extends VovkStreamAsyncIterable<infer U>
+            ? ReturnType<typeof useQuery<U[], HttpException>>
+            : ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>
+        : (
+            input: Parameters<VovkClient<T, OPTS>[Key]>[0],
+            options?: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn' | 'queryKey'>,
+            queryClient?: QueryClient
+          ) => VovkReturnType<VovkClient<T, OPTS>[Key]> extends VovkStreamAsyncIterable<infer U>
+            ? ReturnType<typeof useQuery<U[], HttpException>>
+            : ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>;
       useMutation: (
         options?: Omit<UseMutationOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'mutationFn'>,
         queryClient?: QueryClient

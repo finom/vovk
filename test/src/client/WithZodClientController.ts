@@ -195,6 +195,18 @@ export default class WithZodClientController {
   @post.auto()
   static handleFormData = withZod({
     isForm: true,
+    body: z.object({ hello: z.string().max(5) }),
+    query: z.object({ search: z.string() }),
+    handle: async (req) => {
+      const formData = await req.vovk.form();
+      const search = req.vovk.query().search;
+      return { formData, search };
+    },
+  });
+
+  @post.auto()
+  static handleFormDataWithFile = withZod({
+    isForm: true,
     body: z.object({ hello: z.string().max(5), file: z.file() }),
     query: z.object({ search: z.string() }),
     handle: async (req) => {

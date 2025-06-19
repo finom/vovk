@@ -3,17 +3,11 @@
 import type { VovkClientFetcher } from 'vovk';
 import type { fetcher } from '<%= t.imports.module.fetcher %>';
 import type { createRPC } from '<%= t.imports.module.createRPC %>';
-<% if(t.isTsStandalone) { %>
-import type {
-  <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
-    Segment<%= i %> as Controllers<%= i %>
-  <% }) %>
-} from './types.d<%= t.nodeNextResolutionExt.ts %>';
-<% } else { %>
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentName !== t.EXTENSIONS_SEGMENT_NAME) { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
-<% }) %>
-<% } %>
+<% } else { %>
+import type { Controllers as Controllers<%= i %> } from "./<%= t.EXTENSIONS_SEGMENT_NAME %>.d.ts";
+<% }}) %>
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { 
   Object.keys(segment.controllers).forEach((rpcModuleName) => { %>

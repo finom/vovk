@@ -1,11 +1,14 @@
-import { prefix, get, put, post, del } from 'vovk';
+import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
-import YupControllerAndServiceEntityService from './YupControllerAndServiceEntityService';
+import YupControllerAndServiceEntityService from './YupControllerAndServiceEntityService.ts';
 
 @prefix('yup-controller-and-service-entities')
 export default class YupControllerAndServiceEntityController {
+  @openapi({
+    summary: 'Get YupControllerAndServiceEntities',
+  })
   @get()
   static getYupControllerAndServiceEntities = withYup({
     query: yup.object({ search: yup.string() }),
@@ -16,6 +19,9 @@ export default class YupControllerAndServiceEntityController {
     },
   });
 
+  @openapi({
+    summary: 'Update YupControllerAndServiceEntity',
+  })
   @put(':id')
   static updateYupControllerAndServiceEntity = withYup({
     body: yup.object({

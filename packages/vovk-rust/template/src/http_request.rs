@@ -1,6 +1,7 @@
 use serde::{Serialize, de::DeserializeOwned};
 use reqwest::blocking::Client;
 use reqwest::Method;
+use reqwest::blocking::multipart;
 use core::panic;
 use std::collections::HashMap;
 use std::error::Error;
@@ -42,6 +43,7 @@ fn prepare_request<B, Q, P>(
     controller_name: &str,
     handler_name: &str,
     body: Option<&B>,
+    form: Option<multipart::Form>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -107,8 +109,8 @@ where
         .transpose()
         .map_err(|e| format!("Failed to serialize params: {}", e))?;
 
-    // Perform JSON validation if not disabled
-    if !disable_client_validation {
+    // Perform JSON validation if not disabled and no form data is provided
+    if !disable_client_validation && form.is_none() {
         if let Some(body_schema) = validation.get("body") {
             if let Some(ref body_val) = body_value {
                 let schema =
@@ -185,7 +187,7 @@ where
     // Set up request headers
     let mut headers_map = reqwest::header::HeaderMap::new();
     headers_map.insert("Accept", "application/jsonl, application/json".parse().unwrap());
-    if body_value.is_some() {
+    if body_value.is_some() && form.is_none() {
         headers_map.insert("Content-Type", "application/json".parse().unwrap());
     }
 
@@ -215,7 +217,11 @@ where
     // Build the HTTP request
     let client = Client::new();
     let mut request = client.request(method, &url).headers(headers_map);
-    if let Some(body_val) = body_value {
+    
+    // Apply form data or JSON body to the request
+    if let Some(form_data) = form {
+        request = request.multipart(form_data);
+    } else if let Some(body_val) = body_value {
         request = request.json(&body_val);
     }
     
@@ -230,6 +236,7 @@ pub fn http_request<T, B, Q, P>(
     controller_name: &str,
     handler_name: &str,
     body: Option<&B>,
+    form: Option<multipart::Form>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -249,6 +256,7 @@ where
         controller_name,
         handler_name,
         body,
+        form,
         query,
         params,
         headers,
@@ -325,6 +333,7 @@ pub fn http_request_stream<T, B, Q, P>(
     controller_name: &str,
     handler_name: &str,
     body: Option<&B>,
+    form: Option<multipart::Form>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -344,6 +353,7 @@ where
         controller_name,
         handler_name,
         body,
+        form,
         query,
         params,
         headers,

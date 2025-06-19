@@ -8,11 +8,11 @@ fileName: <%= vars.RpcModuleName + '.ts' %>
 sourceName: <%= vars.RpcModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
-import { prefix, get, put, post, del } from 'vovk';
+import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { IsString, IsIn } from 'class-validator';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionTsExt %>';
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>
 
 class Get<%= t.TheThings %>QueryDto {
@@ -32,6 +32,9 @@ class Update<%= t.TheThing %>QueryDto {
 
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.RpcModuleName %> {
+    @openapi({
+      summary: 'Get <%= t.TheThings %>',
+    })
     @get()
     static get<%= t.TheThings %> = withDto({
       query: Get<%= t.TheThings %>QueryDto, 
@@ -45,6 +48,9 @@ export default class <%= vars.RpcModuleName %> {
       }
     });
 
+    @openapi({
+      summary: 'Update <%= t.TheThing %>',
+    })
     @put(':id')
     static update<%= t.TheThing %> = withDto({
         body: Update<%= t.TheThing %>BodyDto,

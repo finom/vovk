@@ -9,13 +9,16 @@ sourceName: <%= vars.rpcModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { prefix, get, put, post, del, type VovkRequest } from 'vovk';
+import { prefix, get, put, post, del, openapi, type VovkRequest } from 'vovk';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.resolutionExt %>';
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.rpcModuleName %> {
+    @openapi({
+        summary: 'Get <%= t.TheThings %>',
+    })
     @get()
     static get<%= t.TheThings %> = async (req: VovkRequest<null, { search: string }>) => {
         const search = req.nextUrl.searchParams.get('search');
@@ -26,6 +29,9 @@ export default class <%= vars.rpcModuleName %> {
         <% } %>
     }
 
+    @openapi({
+        summary: 'Update <%= t.TheThing %>',
+    })
     @put(':id')
     static update<%= t.TheThing %> = async (req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>, params: { id: string }) => {
         const { id } = params;

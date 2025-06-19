@@ -3,7 +3,6 @@ import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../o
 import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
 import {
   HttpStatus,
-  createFetcher,
   type VovkBody,
   type VovkErrorResponse,
   type VovkQuery,
@@ -15,7 +14,6 @@ import { it, describe } from 'node:test';
 import { deepStrictEqual, ok } from 'node:assert';
 import type CommonController from './CommonController.ts';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
-import { VovkClientBody } from '../../../packages/vovk/mjs/types.js';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -131,7 +129,7 @@ describe('Client with vovk-client', () => {
     });
 
     // @ts-expect-error Expect error
-    null as unknown as VovkClientBody<typeof CommonControllerRPC.getWithParams> satisfies { hello: 'world' };
+    null as unknown as VovkBody<typeof CommonControllerRPC.getWithParams> satisfies { hello: 'world' };
     null as unknown as VovkBody<typeof CommonControllerRPC.getWithParams> satisfies undefined;
     // @ts-expect-error Expect error
     null as unknown as VovkBody<typeof CommonController.getWithParams> satisfies { hello: 'world' };
@@ -210,9 +208,7 @@ describe('Client with vovk-client', () => {
       query,
     });
 
-    null as unknown as VovkClientBody<
-      typeof CommonControllerRPC.postWithBodyAndQueryUsingReqVovk
-    > satisfies typeof body;
+    null as unknown as VovkBody<typeof CommonControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies typeof body;
 
     null as unknown as VovkQuery<typeof CommonControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies typeof query;
 
@@ -262,24 +258,6 @@ describe('Client with vovk-client', () => {
       name: 'postWithBodyAndQueryUsingReqVovk',
       query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
       body: { isBody: true },
-    });
-  });
-
-  it('Should work with createFetcher', async () => {
-    const result = await CommonControllerRPC.getHelloWorldHeaders({
-      customFlag: 'foo',
-      // @ts-expect-error TODO: "fetcher" as an argument will not be documented until this TS issue is resolved
-      fetcher: createFetcher<{ customFlag: 'foo' }>({
-        prepareRequestInit: (init) => ({ ...init, headers: { ...init.headers, 'x-test': 'custom' } }),
-        transformResponse: (response, options) => ({ response, customFlag: options.customFlag }),
-      }),
-    });
-
-    deepStrictEqual(result, {
-      customFlag: 'foo',
-      response: {
-        hello: 'custom',
-      },
     });
   });
 

@@ -7,7 +7,7 @@
     "baseUrl": ".",
     "preserveSymlinks": true,
     "paths": {
-      "vovk/*": ["../../node_modules/vovk/mjs/*"],
+      "vovk/*": ["../../node_modules/vovk/mjs/*"]
     }
   }
 }

@@ -164,13 +164,6 @@ export class VovkApp {
     controllers.forEach((staticMethods, controller) => {
       const prefix = controller._prefix ?? '';
 
-      if (!controller._activated) {
-        throw new HttpException(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          `Controller "${controller.name}" found but not activated`
-        );
-      }
-
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');
         handlers[fullPath] = { staticMethod, controller };

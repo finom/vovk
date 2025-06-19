@@ -3,6 +3,7 @@ import json
 import requests
 import jsonschema
 from jsonschema import FormatChecker
+from requests.models import Response
 from typing import Dict, Optional, Any, Generator, Literal, List, TypedDict
 
 class HttpExceptionResponseBody(TypedDict):
@@ -48,10 +49,11 @@ class ApiClient:
         rpc_name: str,
         handler_name: str,
         api_root: Optional[str],
-        body: Optional[Any] = None,
-        query: Optional[Any] = None,
-        params: Optional[Any] = None,
+        body: Optional[Dict[str, Any]] = None,
+        query: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
+        files: Optional[Dict[str, Any]] = None,
         disable_client_validation: bool = False
     ) -> Any:
         """
@@ -80,7 +82,8 @@ class ApiClient:
             params=params,
             headers=headers,
             validation=validation,
-            disable_client_validation=disable_client_validation
+            files=files,
+            disable_client_validation=disable_client_validation,
         )
         
     def make_api_request(
@@ -91,8 +94,9 @@ class ApiClient:
         query: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
+        files: Optional[Dict[str, Any]] = None,
         validation: Optional[Dict[str, Any]] = None,
-        disable_client_validation: bool = False
+        disable_client_validation: bool = False,
     ) -> Any:
         """
         Make an API request with optional validation and parameter handling.
@@ -119,11 +123,11 @@ class ApiClient:
             raise ValueError("URL is required for making an API request")
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
+        is_form = False
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
             # Always use format checker by default
             format_checker = FormatChecker()
-            
             # Validate body
             if validation.get('body'):
                 if body is None:
@@ -141,7 +145,10 @@ class ApiClient:
                 if params is None:
                     raise ValueError("Params are required for validation but not provided")
                 jsonschema.validate(instance=params, schema=validation['params'], format_checker=format_checker)
-        
+
+        if validation and validation.get('body') and validation['body'].get('x-formData', False):
+            is_form = True
+
         # Process URL and substitute path parameters
         processed_url = url
         if params:
@@ -162,22 +169,29 @@ class ApiClient:
             'Accept': 'application/jsonl, application/json'
         }
         
-        if body:
-            request_headers['Content-Type'] = 'application/json'
-        
         # Update with custom headers if provided
         if headers:
             request_headers.update(headers)
         
-        # Make the request
-        response = requests.request(
-            method=http_method.upper(),
-            url=processed_url,
-            headers=request_headers,
-            json=body if body else None,
-            stream=True  # Always stream for consistent handling
-        )
-        
+        response: Response
+        if is_form:
+            response = requests.request(
+                method=http_method.upper(),
+                url=processed_url,
+                headers=request_headers,
+                files=files,
+                data=body,
+                stream=True # Always stream for consistent handling
+            )
+        else:
+            response = requests.request(
+                method=http_method.upper(),
+                url=processed_url,
+                headers=request_headers,
+                json=body,
+                stream=True # Always stream for consistent handling
+            )
+
         # Handle response based on content type
         content_type = response.headers.get('Content-Type', '')
         
