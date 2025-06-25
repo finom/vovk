@@ -44,12 +44,12 @@ export default function logDiffResult(segmentName: string, diffResult: DiffResul
         switch (diffNormalizedItem.type) {
           case 'added':
             projectInfo.log.info(
-              `Schema for RPC ${chalkHighlightThing(diffNormalizedItem.name)} has been ${addedText} at ${formatLoggedSegmentName(segmentName)}`
+              `Schema for RPC module ${chalkHighlightThing(diffNormalizedItem.name)} has been ${addedText} at ${formatLoggedSegmentName(segmentName)}`
             );
             break;
           case 'removed':
             projectInfo.log.info(
-              `Schema for RPC ${chalkHighlightThing(diffNormalizedItem.name)} has been ${removedText} from ${formatLoggedSegmentName(segmentName)}`
+              `Schema for RPC module ${chalkHighlightThing(diffNormalizedItem.name)} has been ${removedText} from ${formatLoggedSegmentName(segmentName)}`
             );
             break;
         }

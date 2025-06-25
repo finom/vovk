@@ -5,7 +5,6 @@ import {
   type KnownAny,
   type VovkDefaultFetcherOptions,
   type VovkControllerSchema,
-  type VovkClient,
   type VovkReturnType,
   type VovkHandlerSchema,
   type VovkStreamAsyncIterable,
@@ -92,31 +91,27 @@ export function createRPC<T, OPTS extends Record<string, KnownAny> = KnownAny>(
 
   // TODO: Refactor
   type ClientWithQuery = {
-    [Key in keyof VovkClient<T, OPTS>]: VovkClient<T, OPTS>[Key] & {
-      useQuery: AllOptional<Parameters<VovkClient<T, OPTS>[Key]>[0]> extends true
+    [Key in keyof typeof RPC]: (typeof RPC)[Key] & {
+      useQuery: AllOptional<Parameters<(typeof RPC)[Key]>[0]> extends true
         ? (
-            input?: Parameters<VovkClient<T, OPTS>[Key]>[0],
-            options?: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn' | 'queryKey'>,
+            input?: Parameters<(typeof RPC)[Key]>[0],
+            options?: Omit<UseQueryOptions<ReturnType<(typeof RPC)[Key]>>, 'queryFn' | 'queryKey'>,
             queryClient?: QueryClient
-          ) => VovkReturnType<VovkClient<T, OPTS>[Key]> extends VovkStreamAsyncIterable<infer U>
+          ) => VovkReturnType<(typeof RPC)[Key]> extends VovkStreamAsyncIterable<infer U>
             ? ReturnType<typeof useQuery<U[], HttpException>>
-            : ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>
+            : ReturnType<typeof useQuery<VovkReturnType<(typeof RPC)[Key]>, HttpException>>
         : (
-            input: Parameters<VovkClient<T, OPTS>[Key]>[0],
-            options?: Omit<UseQueryOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'queryFn' | 'queryKey'>,
+            input: Parameters<(typeof RPC)[Key]>[0],
+            options?: Omit<UseQueryOptions<ReturnType<(typeof RPC)[Key]>>, 'queryFn' | 'queryKey'>,
             queryClient?: QueryClient
-          ) => VovkReturnType<VovkClient<T, OPTS>[Key]> extends VovkStreamAsyncIterable<infer U>
+          ) => VovkReturnType<(typeof RPC)[Key]> extends VovkStreamAsyncIterable<infer U>
             ? ReturnType<typeof useQuery<U[], HttpException>>
-            : ReturnType<typeof useQuery<VovkReturnType<VovkClient<T, OPTS>[Key]>, HttpException>>;
+            : ReturnType<typeof useQuery<VovkReturnType<(typeof RPC)[Key]>, HttpException>>;
       useMutation: (
-        options?: Omit<UseMutationOptions<ReturnType<VovkClient<T, OPTS>[Key]>>, 'mutationFn'>,
+        options?: Omit<UseMutationOptions<ReturnType<(typeof RPC)[Key]>>, 'mutationFn'>,
         queryClient?: QueryClient
       ) => ReturnType<
-        typeof useMutation<
-          VovkReturnType<VovkClient<T, OPTS>[Key]>,
-          HttpException,
-          Parameters<VovkClient<T, OPTS>[Key]>[0]
-        >
+        typeof useMutation<VovkReturnType<(typeof RPC)[Key]>, HttpException, Parameters<(typeof RPC)[Key]>[0]>
       >;
     };
   };

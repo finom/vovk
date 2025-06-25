@@ -14,11 +14,11 @@ type CallerInput = {
   schema: VovkHandlerSchema;
   init?: RequestInit;
   handlerName: string;
-  rpcModuleName: string;
+  moduleName: string;
 };
 
 const createLLMTool = ({
-  rpcModuleName,
+  moduleName,
   handlerName,
   caller,
   module,
@@ -26,7 +26,7 @@ const createLLMTool = ({
   onExecute,
   onError,
 }: {
-  rpcModuleName: string;
+  moduleName: string;
   handlerName: string;
   caller: typeof defaultCaller;
   module: Record<string, Handler>;
@@ -35,17 +35,17 @@ const createLLMTool = ({
   onError: (error: Error, callerInput: CallerInput, options: KnownAny) => void;
 }): VovkLLMTool => {
   if (!module) {
-    throw new Error(`Module "${rpcModuleName}" not found.`);
+    throw new Error(`Module "${moduleName}" not found.`);
   }
 
   const handler = module[handlerName];
   if (!handler) {
-    throw new Error(`Handler "${handlerName}" not found in module "${rpcModuleName}".`);
+    throw new Error(`Handler "${handlerName}" not found in module "${moduleName}".`);
   }
   const { schema } = handler;
 
   if (!schema || !schema.openapi) {
-    throw new Error(`Handler "${handlerName}" in module "${rpcModuleName}" does not have a valid schema.`);
+    throw new Error(`Handler "${handlerName}" in module "${moduleName}" does not have a valid schema.`);
   }
 
   const execute = (
@@ -66,7 +66,7 @@ const createLLMTool = ({
       params,
       init,
       handlerName,
-      rpcModuleName,
+      moduleName,
     };
 
     return caller(callerInput, options)
@@ -91,8 +91,9 @@ const createLLMTool = ({
       : {}),
   };
   return {
+    type: 'function',
     execute,
-    name: `${rpcModuleName}__${handlerName}`,
+    name: `${moduleName}__${handlerName}`,
     description:
       [schema.openapi?.summary ?? '', schema.openapi?.description ?? ''].filter(Boolean).join('\n') || handlerName,
     ...(Object.keys(parametersProperties).length
@@ -147,7 +148,7 @@ export function createLLMTools({
     | Record<string, Record<string, Handler>>
     | Record<string, [Record<string, Handler>, { init?: RequestInit }]>;
   const tools = Object.entries(moduleWithConfig ?? {})
-    .map(([rpcModuleName, moduleWithconfig]) => {
+    .map(([moduleName, moduleWithconfig]) => {
       let init: RequestInit | undefined;
       let module: Record<string, Handler>;
       if (Array.isArray(moduleWithconfig)) {
@@ -159,7 +160,7 @@ export function createLLMTools({
         .filter(([, handler]) => (handler as { schema?: VovkHandlerSchema } | undefined)?.schema?.openapi)
         .map(([handlerName]) =>
           createLLMTool({
-            rpcModuleName,
+            moduleName,
             handlerName,
             caller,
             module,

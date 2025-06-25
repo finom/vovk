@@ -1,6 +1,6 @@
-import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types.js';
-import { HttpStatus } from '../types.js';
-import { HttpException } from '../HttpException.js';
+import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types';
+import { HttpStatus } from '../types';
+import { HttpException } from '../HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
@@ -103,10 +103,11 @@ export function createFetcher<T>({
 
     resp = await resp;
 
-    return transformResponse
-      ? ((await transformResponse(resp, response, options as unknown as VovkDefaultFetcherOptions<T>, requestInit)) ??
-          resp)
+    resp = transformResponse
+      ? await transformResponse(resp, response, options as unknown as VovkDefaultFetcherOptions<T>, requestInit)
       : resp;
+
+    return [resp, response];
   };
 
   return newFetcher;

@@ -32,6 +32,7 @@ import {
   createRPC,
   fetcher,
   createFetcher,
+  progressive,
 } from './client/index';
 import { openapi, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi/index';
 import { HttpException } from './HttpException';
@@ -85,6 +86,7 @@ export {
   multitenant,
   createLLMTools,
   createCodeExamples,
+  progressive,
   openapi,
   openAPIToVovkSchema,
   vovkSchemaToOpenAPI,

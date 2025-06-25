@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponse } from './JSONLinesResponse.js';
-import { VovkStreamAsyncIterable } from './client/types.js';
+import type { JSONLinesResponse } from './JSONLinesResponse';
+import { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -315,6 +315,7 @@ export interface VovkLLMTool {
     required: string[];
     additionalProperties: boolean;
   };
+  type: 'function';
 }
 
 export type SimpleJsonSchema = {

@@ -14,6 +14,71 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
     return str.replace(/\*\//g, '*\\/');
   };
 
+  // Helper function to check if a property name is a valid JavaScript identifier
+  const isValidIdentifier = (name: string): boolean => {
+    // Check if it matches valid JavaScript identifier pattern and is not a reserved word
+    return (
+      /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name) &&
+      ![
+        'break',
+        'case',
+        'catch',
+        'class',
+        'const',
+        'continue',
+        'debugger',
+        'default',
+        'delete',
+        'do',
+        'else',
+        'export',
+        'extends',
+        'false',
+        'finally',
+        'for',
+        'function',
+        'if',
+        'import',
+        'in',
+        'instanceof',
+        'new',
+        'null',
+        'return',
+        'super',
+        'switch',
+        'this',
+        'throw',
+        'true',
+        'try',
+        'typeof',
+        'var',
+        'void',
+        'while',
+        'with',
+        'let',
+        'static',
+        'yield',
+        'enum',
+        'await',
+        'implements',
+        'interface',
+        'package',
+        'private',
+        'protected',
+        'public',
+      ].includes(name)
+    );
+  };
+
+  // Helper function to format property name (with quotes if needed)
+  const formatPropertyName = (name: string): string => {
+    if (isValidIdentifier(name)) {
+      return name;
+    } else {
+      return `'${escapeStringLiteral(name)}'`;
+    }
+  };
+
   // Helper function to resolve $ref references
   const resolveRef = (ref: string): JSONSchema7Definition | null => {
     if (!ref.startsWith('#/')) return null;
@@ -30,35 +95,6 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
 
     return currentSchema || null;
   };
-
-  // Process schema and any nested definitions
-  const processSchema = (currentSchema: JSONSchema7): JSONSchema7 => {
-    // Merge any $defs into the main schema for reference resolution
-    if (currentSchema.$defs || currentSchema.definitions) {
-      // Create a copy to avoid modifying the original
-      const processedSchema = { ...currentSchema };
-
-      // Support both $defs (JSON Schema 2019-09+) and definitions (older JSON Schema)
-      if (!processedSchema.definitions) {
-        processedSchema.definitions = {};
-      }
-
-      // Copy $defs into definitions for consistent reference resolution
-      if (processedSchema.$defs) {
-        processedSchema.definitions = {
-          ...processedSchema.definitions,
-          ...processedSchema.$defs,
-        };
-      }
-
-      return processedSchema;
-    }
-
-    return currentSchema;
-  };
-
-  // Pre-process the schema to handle definitions
-  const processedSchema = processSchema(schema);
 
   // Helper function to get JSDoc from schema
   const getJSDoc = (schema: JSONSchema7 | boolean, indentation = ''): string => {
@@ -153,7 +189,7 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
             const type = propSchema ? 'KnownAny' : 'never';
             const isOptional = !required.includes(propName);
             const jsDoc = getJSDoc(propSchema, indentation);
-            return `${jsDoc}\n${indentation}${propName}${isOptional ? '?' : ''}: ${type};`;
+            return `${jsDoc}\n${indentation}${formatPropertyName(propName)}${isOptional ? '?' : ''}: ${type};`;
           }
 
           const isOptional = !required.includes(propName);
@@ -162,7 +198,10 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
           const jsDoc = getJSDoc(propSchema, indentation);
           const propType = schemaToType(propSchema, indentation + '  ');
 
-          return [`${jsDoc}`, `${indentation}${propName}${isOptional ? '?' : ''}: ${propType};${defaultValue}`]
+          return [
+            `${jsDoc}`,
+            `${indentation}${formatPropertyName(propName)}${isOptional ? '?' : ''}: ${propType};${defaultValue}`,
+          ]
             .filter(Boolean)
             .join('\n');
         })
@@ -236,7 +275,7 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
 
   // Generate the interface
   const jsDoc = getJSDoc(schema);
-  const interfaceBody = schemaToType(processedSchema);
+  const interfaceBody = schemaToType(schema);
 
   return `${jsDoc}\n${interfaceBody}`;
 }

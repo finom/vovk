@@ -5,13 +5,13 @@ import type {
   KnownAny,
   HttpMethod,
   VovkSchema,
-} from '../types.js';
-import type { VovkClient, VovkClientFetcher, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types.js';
+} from '../types';
+import type { VovkClient, VovkClientFetcher, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
 
-import { fetcher as defaultFetcher } from './fetcher.js';
-import { defaultHandler } from './defaultHandler.js';
-import { defaultStreamHandler } from './defaultStreamHandler.js';
-import serializeQuery from '../utils/serializeQuery.js';
+import { fetcher as defaultFetcher } from './fetcher';
+import { defaultHandler } from './defaultHandler';
+import { defaultStreamHandler } from './defaultStreamHandler';
+import serializeQuery from '../utils/serializeQuery';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -68,13 +68,13 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       return endpoint;
     };
 
-    const handler = (
+    const handler = async (
       input: {
         body?: unknown;
         query?: { [key: string]: string };
         params?: { [key: string]: string };
         validateOnClient?: VovkValidateOnClient;
-        transform?: (response: unknown) => unknown;
+        transform?: (respData: unknown, resp: Response) => unknown;
       } & OPTS = {} as OPTS
     ) => {
       const validate = async ({
@@ -115,11 +115,9 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
 
       if (!fetcher) throw new Error('Fetcher is not provided');
 
-      const fetcherPromise = fetcher(internalOptions, internalInput) as Promise<unknown>;
+      const [respData, resp] = await fetcher(internalOptions, internalInput);
 
-      if (!(fetcherPromise instanceof Promise)) return Promise.resolve(fetcherPromise);
-
-      return input.transform ? fetcherPromise.then(input.transform) : fetcherPromise;
+      return input.transform ? input.transform(respData, resp) : respData;
     };
 
     handler.schema = handlerSchema;

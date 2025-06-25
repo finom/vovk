@@ -1,4 +1,4 @@
-import type { KnownAny, VovkController, VovkHandlerSchema } from '../types.js';
+import type { KnownAny, VovkController, VovkHandlerSchema } from '../types';
 
 export async function setHandlerSchema(
   h: ((...args: KnownAny[]) => KnownAny) & {

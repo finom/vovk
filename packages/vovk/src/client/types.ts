@@ -7,8 +7,8 @@ import type {
   VovkSegmentSchema,
   VovkSchema,
   VovkRequest,
-} from '../types.js';
-import type { JSONLinesResponse } from '../JSONLinesResponse.js';
+} from '../types';
+import type { JSONLinesResponse } from '../JSONLinesResponse';
 import type { NextResponse } from 'next/server';
 
 type OmitNullable<T> = {
@@ -75,7 +75,7 @@ type StaticMethodOptions<
   F extends VovkDefaultFetcherOptions<KnownAny>,
 > = Partial<
   OPTS & {
-    transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>) => R;
+    transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>, resp: Response) => R;
     fetcher: VovkClientFetcher<F>;
   }
 >;
@@ -122,7 +122,6 @@ type ClientMethod<
       options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, F>>
     ) => ClientMethodReturn<T, STREAM, R>) & {
   isRPC: true;
-  path: string;
   schema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
@@ -158,7 +157,7 @@ export type VovkClientFetcher<OPTS> = (
     query: { [key: string]: string };
     params: { [key: string]: string };
   } & OPTS
-) => KnownAny;
+) => Promise<[KnownAny, Response]>;
 
 export type VovkDefaultFetcherOptions<T> = T & {
   apiRoot?: string;

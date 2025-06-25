@@ -1,5 +1,5 @@
-import { sample } from '@stoplight/json-schema-sampler';
 import type { SimpleJsonSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
+import { jsonSchemaSampler } from './jsonSchemaSampler';
 
 const stringifyTsSample = (data: KnownAny, pad = 4) =>
   JSON.stringify(data, null, 2)
@@ -35,22 +35,24 @@ export function createCodeExamples({
   handlerSchema,
   controllerSchema,
   package: packageJson,
+  sampler = jsonSchemaSampler,
 }: {
   handlerName: string;
   handlerSchema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   package?: CodeSamplePackageJson;
+  sampler?: (schema: KnownAny) => KnownAny; // e. g. @stoplight/json-schema-sampler
 }) {
   const queryValidation = handlerSchema?.validation?.query as SimpleJsonSchema | undefined;
   const bodyValidation = handlerSchema?.validation?.body as SimpleJsonSchema | undefined;
   const paramsValidation = handlerSchema?.validation?.params as SimpleJsonSchema | undefined;
   const outputValidation = handlerSchema?.validation?.output as SimpleJsonSchema | undefined;
   const iterationValidation = handlerSchema?.validation?.iteration as SimpleJsonSchema | undefined;
-  const queryFake = queryValidation && sample(queryValidation);
-  const bodyFake = bodyValidation && sample(bodyValidation);
-  const paramsFake = paramsValidation && sample(paramsValidation);
-  const outputFake = outputValidation && sample(outputValidation);
-  const iterationFake = iterationValidation && sample(iterationValidation);
+  const queryFake = queryValidation && sampler(queryValidation);
+  const bodyFake = bodyValidation && sampler(bodyValidation);
+  const paramsFake = paramsValidation && sampler(paramsValidation);
+  const outputFake = outputValidation && sampler(outputValidation);
+  const iterationFake = iterationValidation && sampler(iterationValidation);
   const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
   const rpcName = controllerSchema.rpcModuleName;
   const handlerNameSnake = toSnakeCase(handlerName);

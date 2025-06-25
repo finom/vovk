@@ -1,4 +1,4 @@
-import { HttpException } from '../HttpException.js';
+import { HttpException } from '../HttpException';
 import {
   HttpStatus,
   VovkHandlerSchema,
@@ -6,9 +6,9 @@ import {
   VovkValidationType,
   type KnownAny,
   type VovkRequest,
-} from '../types.js';
-import reqMeta from './reqMeta.js';
-import { setHandlerSchema } from './setHandlerSchema.js';
+} from '../types';
+import reqMeta from './reqMeta';
+import { setHandlerSchema } from './setHandlerSchema';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 

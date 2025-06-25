@@ -34,8 +34,6 @@ export default async function newSegment({
   const code = await prettify(
     `import { initVovk${isStaticSegment ? ', generateStaticAPI' : ''} } from 'vovk';
 
-export const runtime = 'edge';
-
 const controllers = {};
 
 export type Controllers = typeof controllers;
