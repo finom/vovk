@@ -2325,7 +2325,7 @@ const schema = {
 	segments,
 	meta: {
 		$schema: "https://vovk.dev/api/spec/v3/meta.json",
-		apiRoot: "http://localhost:3210/api",
+		apiRoot: "http://localhost:3000/api",
 		..._meta_default
 	}
 };

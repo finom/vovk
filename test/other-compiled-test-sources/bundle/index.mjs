@@ -952,10 +952,13 @@ var require_createRPC$1 = __commonJS({ "../packages/vovk/mjs/client/createRPC.js
 	const createRPC$2 = (schema$1, segmentName$2, rpcModuleName, fetcher$1 = fetcher_1$3.fetcher, options) => {
 		const segmentNamePath = options?.segmentNameOverride ?? segmentName$2;
 		const segmentSchema = schema$1.segments[segmentName$2];
-		if (!segmentSchema) throw new Error(`Unable to create RPC module. Segment schema is missing. Check client template.`);
+		if (!segmentSchema) throw new Error(`Unable to create RPC module. Segment schema is missing for segment "${segmentName$2}".`);
 		const controllerSchema = schema$1.segments[segmentName$2]?.controllers[rpcModuleName];
 		const client = {};
-		if (!controllerSchema) throw new Error(`Unable to create RPC module. Controller schema is missing. Check client template.`);
+		if (!controllerSchema) {
+			console.log("schema.segments[segmentName]", schema$1.segments[segmentName$2]);
+			throw new Error(`Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName$2}".`);
+		}
 		const controllerPrefix = trimPath$2(controllerSchema.prefix ?? "");
 		for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
 			const { path, httpMethod, validation: validation$3 } = handlerSchema;
@@ -4715,7 +4718,7 @@ const schema = {
 	segments,
 	meta: {
 		$schema: "https://vovk.dev/api/spec/v3/meta.json",
-		apiRoot: "http://localhost:3210/api",
+		apiRoot: "http://localhost:3000/api",
 		..._meta_default
 	}
 };
@@ -21688,10 +21691,13 @@ var require_createRPC = __commonJS({ "../packages/vovk/cjs/client/createRPC.js"(
 	const createRPC$1 = (schema$1, segmentName$2, rpcModuleName, fetcher$1 = fetcher_1$1.fetcher, options) => {
 		const segmentNamePath = options?.segmentNameOverride ?? segmentName$2;
 		const segmentSchema = schema$1.segments[segmentName$2];
-		if (!segmentSchema) throw new Error(`Unable to create RPC module. Segment schema is missing. Check client template.`);
+		if (!segmentSchema) throw new Error(`Unable to create RPC module. Segment schema is missing for segment "${segmentName$2}".`);
 		const controllerSchema = schema$1.segments[segmentName$2]?.controllers[rpcModuleName];
 		const client = {};
-		if (!controllerSchema) throw new Error(`Unable to create RPC module. Controller schema is missing. Check client template.`);
+		if (!controllerSchema) {
+			console.log("schema.segments[segmentName]", schema$1.segments[segmentName$2]);
+			throw new Error(`Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName$2}".`);
+		}
 		const controllerPrefix = trimPath(controllerSchema.prefix ?? "");
 		for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
 			const { path, httpMethod, validation: validation$3 } = handlerSchema;
@@ -23239,67 +23245,67 @@ var import_mjs$1 = __toESM(require_mjs(), 1);
 var import_vovk_ajv = __toESM(require_vovk_ajv(), 1);
 const CommonControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "CommonControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const StreamingControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "StreamingControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const StreamingGeneratorControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "StreamingGeneratorControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const CustomSchemaControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "CustomSchemaControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const WithZodClientControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "WithZodClientControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const WithYupClientControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "WithYupClientControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const WithDtoClientControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "WithDtoClientControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const OpenApiControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "OpenApiControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const NoValidationControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "NoValidationControllerOnlyEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const NoValidationControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "NoValidationControllerAndServiceEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const ZodControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "ZodControllerOnlyEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const ZodControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "ZodControllerAndServiceEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const YupControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "YupControllerOnlyEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const YupControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "YupControllerAndServiceEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const DtoControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "DtoControllerOnlyEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 const DtoControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "DtoControllerAndServiceEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3210/api"
+	apiRoot: "http://localhost:3000/api"
 });
 
 //#endregion

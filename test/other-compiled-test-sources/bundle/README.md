@@ -20,7 +20,7 @@ npm install test
 
 
 
-`GET http://localhost:3210/api/foo/client/common/get-hello-world-response-object`
+`GET http://localhost:3000/api/foo/client/common/get-hello-world-response-object`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -33,7 +33,7 @@ const response = await CommonControllerRPC.getHelloWorldResponseObject();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/get-hello-world-object-literal`
+`GET http://localhost:3000/api/foo/client/common/get-hello-world-object-literal`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -46,7 +46,7 @@ const response = await CommonControllerRPC.getHelloWorldObjectLiteral();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/get-hello-world-next-response-object-promise`
+`GET http://localhost:3000/api/foo/client/common/get-hello-world-next-response-object-promise`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -59,7 +59,7 @@ const response = await CommonControllerRPC.getHelloWorldNextResponseObjectPromis
 
 
 
-`GET http://localhost:3210/api/foo/client/common/get-hello-world-raw-response-object-promise`
+`GET http://localhost:3000/api/foo/client/common/get-hello-world-raw-response-object-promise`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -72,7 +72,7 @@ const response = await CommonControllerRPC.getHelloWorldRawResponseObjectPromise
 
 
 
-`GET http://localhost:3210/api/foo/client/common/get-hello-world-object-literal-promise`
+`GET http://localhost:3000/api/foo/client/common/get-hello-world-object-literal-promise`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -85,7 +85,7 @@ const response = await CommonControllerRPC.getHelloWorldObjectLiteralPromise();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/get-hello-world-headers`
+`GET http://localhost:3000/api/foo/client/common/get-hello-world-headers`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -98,7 +98,7 @@ const response = await CommonControllerRPC.getHelloWorldHeaders();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/get-hello-world-array`
+`GET http://localhost:3000/api/foo/client/common/get-hello-world-array`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -111,7 +111,7 @@ const response = await CommonControllerRPC.getHelloWorldArray();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/get-hello-world-and-empty-generic`
+`GET http://localhost:3000/api/foo/client/common/get-hello-world-and-empty-generic`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -124,7 +124,7 @@ const response = await CommonControllerRPC.getHelloWorldAndEmptyGeneric();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/with-params/{hello}`
+`GET http://localhost:3000/api/foo/client/common/with-params/{hello}`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -137,7 +137,7 @@ const response = await CommonControllerRPC.getWithParams();
 
 
 
-`POST http://localhost:3210/api/foo/client/common/with-all/{hello}`
+`POST http://localhost:3000/api/foo/client/common/with-all/{hello}`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -150,7 +150,7 @@ const response = await CommonControllerRPC.postWithAll();
 
 
 
-`POST http://localhost:3210/api/foo/client/common/with-all-using-req-vovk`
+`POST http://localhost:3000/api/foo/client/common/with-all-using-req-vovk`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -163,7 +163,7 @@ const response = await CommonControllerRPC.postWithBodyAndQueryUsingReqVovk();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/nested-query`
+`GET http://localhost:3000/api/foo/client/common/nested-query`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -176,7 +176,7 @@ const response = await CommonControllerRPC.getNestedQuery();
 
 
 
-`POST http://localhost:3210/api/foo/client/common/form-data`
+`POST http://localhost:3000/api/foo/client/common/form-data`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -189,7 +189,7 @@ const response = await CommonControllerRPC.postWithFormDataUsingReqVovk();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/error`
+`GET http://localhost:3000/api/foo/client/common/error`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -202,7 +202,7 @@ const response = await CommonControllerRPC.getErrorResponse();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/json-text`
+`GET http://localhost:3000/api/foo/client/common/json-text`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -215,7 +215,7 @@ const response = await CommonControllerRPC.getJsonTextResponse();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/jsonl`
+`GET http://localhost:3000/api/foo/client/common/jsonl`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -228,7 +228,7 @@ const response = await CommonControllerRPC.getJsonlResponse();
 
 
 
-`GET http://localhost:3210/api/foo/client/common/jsonl-text`
+`GET http://localhost:3000/api/foo/client/common/jsonl-text`
 
 ```ts
 import { CommonControllerRPC } from 'test';
@@ -245,7 +245,7 @@ const response = await CommonControllerRPC.getJsonlTextResponse();
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming/post-with-streaming`
+`POST http://localhost:3000/api/foo/client/streaming/post-with-streaming`
 
 ```ts
 import { StreamingControllerRPC } from 'test';
@@ -258,7 +258,7 @@ const response = await StreamingControllerRPC.postWithStreaming();
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming/post-with-streaming-and-immediate-error`
+`POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-immediate-error`
 
 ```ts
 import { StreamingControllerRPC } from 'test';
@@ -271,7 +271,7 @@ const response = await StreamingControllerRPC.postWithStreamingAndImmediateError
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming/post-with-streaming-and-delayed-error`
+`POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-error`
 
 ```ts
 import { StreamingControllerRPC } from 'test';
@@ -284,7 +284,7 @@ const response = await StreamingControllerRPC.postWithStreamingAndDelayedError()
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming/post-with-streaming-and-delayed-custom-error`
+`POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-custom-error`
 
 ```ts
 import { StreamingControllerRPC } from 'test';
@@ -297,7 +297,7 @@ const response = await StreamingControllerRPC.postWithStreamingAndDelayedCustomE
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming/post-with-streaming-and-delayed-unhandled-error`
+`POST http://localhost:3000/api/foo/client/streaming/post-with-streaming-and-delayed-unhandled-error`
 
 ```ts
 import { StreamingControllerRPC } from 'test';
@@ -314,7 +314,7 @@ const response = await StreamingControllerRPC.postWithStreamingAndDelayedUnhandl
 
 
 
-`GET http://localhost:3210/api/foo/client/streaming-generator/get-with-streaming`
+`GET http://localhost:3000/api/foo/client/streaming-generator/get-with-streaming`
 
 ```ts
 import { StreamingGeneratorControllerRPC } from 'test';
@@ -327,7 +327,7 @@ const response = await StreamingGeneratorControllerRPC.getWithStreaming();
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming-generator/post-with-async-streaming`
+`POST http://localhost:3000/api/foo/client/streaming-generator/post-with-async-streaming`
 
 ```ts
 import { StreamingGeneratorControllerRPC } from 'test';
@@ -340,7 +340,7 @@ const response = await StreamingGeneratorControllerRPC.postWithAsyncStreaming();
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming`
+`POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming`
 
 ```ts
 import { StreamingGeneratorControllerRPC } from 'test';
@@ -353,7 +353,7 @@ const response = await StreamingGeneratorControllerRPC.postWithStreaming();
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming-and-immediate-error`
+`POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-immediate-error`
 
 ```ts
 import { StreamingGeneratorControllerRPC } from 'test';
@@ -366,7 +366,7 @@ const response = await StreamingGeneratorControllerRPC.postWithStreamingAndImmed
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming-and-delayed-error`
+`POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-error`
 
 ```ts
 import { StreamingGeneratorControllerRPC } from 'test';
@@ -379,7 +379,7 @@ const response = await StreamingGeneratorControllerRPC.postWithStreamingAndDelay
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming-and-delayed-custom-error`
+`POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-custom-error`
 
 ```ts
 import { StreamingGeneratorControllerRPC } from 'test';
@@ -392,7 +392,7 @@ const response = await StreamingGeneratorControllerRPC.postWithStreamingAndDelay
 
 
 
-`POST http://localhost:3210/api/foo/client/streaming-generator/post-with-streaming-and-delayed-unhandled-error`
+`POST http://localhost:3000/api/foo/client/streaming-generator/post-with-streaming-and-delayed-unhandled-error`
 
 ```ts
 import { StreamingGeneratorControllerRPC } from 'test';
@@ -409,7 +409,7 @@ const response = await StreamingGeneratorControllerRPC.postWithStreamingAndDelay
 
 
 
-`GET http://localhost:3210/api/foo/client/get-with-custom-schema`
+`GET http://localhost:3000/api/foo/client/get-with-custom-schema`
 
 ```ts
 import { CustomSchemaControllerRPC } from 'test';
@@ -426,7 +426,7 @@ const response = await CustomSchemaControllerRPC.getWithCustomSchema();
 
 This is a description
 
-`POST http://localhost:3210/api/foo/client/with-zod/all/{foo}/{bar}`
+`POST http://localhost:3000/api/foo/client/with-zod/all/{foo}/{bar}`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -470,7 +470,7 @@ console.log(response);
 
 
 
-`GET http://localhost:3210/api/foo/client/with-zod/handle-query`
+`GET http://localhost:3000/api/foo/client/with-zod/handle-query`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -487,7 +487,7 @@ const response = await WithZodClientControllerRPC.handleQuery({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/handle-body`
+`POST http://localhost:3000/api/foo/client/with-zod/handle-body`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -504,7 +504,7 @@ const response = await WithZodClientControllerRPC.handleBody({
 
 
 
-`PUT http://localhost:3210/api/foo/client/with-zod/x/{foo}/{bar}/y`
+`PUT http://localhost:3000/api/foo/client/with-zod/x/{foo}/{bar}/y`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -522,7 +522,7 @@ const response = await WithZodClientControllerRPC.handleParams({
 
 
 
-`GET http://localhost:3210/api/foo/client/with-zod/handle-nested-query`
+`GET http://localhost:3000/api/foo/client/with-zod/handle-nested-query`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -556,7 +556,7 @@ const response = await WithZodClientControllerRPC.handleNestedQuery({
 
 
 
-`GET http://localhost:3210/api/foo/client/with-zod/handle-output`
+`GET http://localhost:3000/api/foo/client/with-zod/handle-output`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -580,7 +580,7 @@ console.log(response);
 
 
 
-`GET http://localhost:3210/api/foo/client/with-zod/handle-stream`
+`GET http://localhost:3000/api/foo/client/with-zod/handle-stream`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -608,7 +608,7 @@ for await (const item of response) {
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/handle-schema-constraints`
+`POST http://localhost:3000/api/foo/client/with-zod/handle-schema-constraints`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -656,7 +656,7 @@ const response = await WithZodClientControllerRPC.handleSchemaConstraints({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/handle-nothitng`
+`POST http://localhost:3000/api/foo/client/with-zod/handle-nothitng`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -669,7 +669,7 @@ const response = await WithZodClientControllerRPC.handleNothitng();
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/handle-form-data`
+`POST http://localhost:3000/api/foo/client/with-zod/handle-form-data`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -689,7 +689,7 @@ const response = await WithZodClientControllerRPC.handleFormData({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/handle-form-data-with-file`
+`POST http://localhost:3000/api/foo/client/with-zod/handle-form-data-with-file`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -710,7 +710,7 @@ const response = await WithZodClientControllerRPC.handleFormDataWithFile({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/disable-server-side-validation-bool`
+`POST http://localhost:3000/api/foo/client/with-zod/disable-server-side-validation-bool`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -730,7 +730,7 @@ const response = await WithZodClientControllerRPC.disableServerSideValidationBoo
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/disable-server-side-validation-strings`
+`POST http://localhost:3000/api/foo/client/with-zod/disable-server-side-validation-strings`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -750,7 +750,7 @@ const response = await WithZodClientControllerRPC.disableServerSideValidationStr
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/skip-schema-emission-bool`
+`POST http://localhost:3000/api/foo/client/with-zod/skip-schema-emission-bool`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -763,7 +763,7 @@ const response = await WithZodClientControllerRPC.skipSchemaEmissionBool();
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/skip-schema-emission-strings`
+`POST http://localhost:3000/api/foo/client/with-zod/skip-schema-emission-strings`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -780,7 +780,7 @@ const response = await WithZodClientControllerRPC.skipSchemaEmissionStrings({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/validate-each-iteration`
+`POST http://localhost:3000/api/foo/client/with-zod/validate-each-iteration`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -808,7 +808,7 @@ for await (const item of response) {
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/all-as-func/{foo}/{bar}`
+`POST http://localhost:3000/api/foo/client/with-zod/all-as-func/{foo}/{bar}`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -852,7 +852,7 @@ console.log(response);
 
 
 
-`POST http://localhost:3210/api/foo/client/with-zod/all-no-http-as-func/{foo}/{bar}`
+`POST http://localhost:3000/api/foo/client/with-zod/all-no-http-as-func/{foo}/{bar}`
 
 ```ts
 import { WithZodClientControllerRPC } from 'test';
@@ -900,7 +900,7 @@ console.log(response);
 
 This is a description
 
-`POST http://localhost:3210/api/foo/client/with-yup/all/{foo}/{bar}`
+`POST http://localhost:3000/api/foo/client/with-yup/all/{foo}/{bar}`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -944,7 +944,7 @@ console.log(response);
 
 
 
-`GET http://localhost:3210/api/foo/client/with-yup/handle-query`
+`GET http://localhost:3000/api/foo/client/with-yup/handle-query`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -961,7 +961,7 @@ const response = await WithYupClientControllerRPC.handleQuery({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/handle-body`
+`POST http://localhost:3000/api/foo/client/with-yup/handle-body`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -978,7 +978,7 @@ const response = await WithYupClientControllerRPC.handleBody({
 
 
 
-`PUT http://localhost:3210/api/foo/client/with-yup/x/{foo}/{bar}/y`
+`PUT http://localhost:3000/api/foo/client/with-yup/x/{foo}/{bar}/y`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -996,7 +996,7 @@ const response = await WithYupClientControllerRPC.handleParams({
 
 
 
-`GET http://localhost:3210/api/foo/client/with-yup/handle-nested-query`
+`GET http://localhost:3000/api/foo/client/with-yup/handle-nested-query`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1030,7 +1030,7 @@ const response = await WithYupClientControllerRPC.handleNestedQuery({
 
 
 
-`GET http://localhost:3210/api/foo/client/with-yup/handle-output`
+`GET http://localhost:3000/api/foo/client/with-yup/handle-output`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1054,7 +1054,7 @@ console.log(response);
 
 
 
-`GET http://localhost:3210/api/foo/client/with-yup/handle-stream`
+`GET http://localhost:3000/api/foo/client/with-yup/handle-stream`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1082,7 +1082,7 @@ for await (const item of response) {
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/handle-schema-constraints`
+`POST http://localhost:3000/api/foo/client/with-yup/handle-schema-constraints`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1130,7 +1130,7 @@ const response = await WithYupClientControllerRPC.handleSchemaConstraints({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/handle-nothitng`
+`POST http://localhost:3000/api/foo/client/with-yup/handle-nothitng`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1143,7 +1143,7 @@ const response = await WithYupClientControllerRPC.handleNothitng();
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/handle-form-data`
+`POST http://localhost:3000/api/foo/client/with-yup/handle-form-data`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1163,7 +1163,7 @@ const response = await WithYupClientControllerRPC.handleFormData({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/disable-server-side-validation-bool`
+`POST http://localhost:3000/api/foo/client/with-yup/disable-server-side-validation-bool`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1183,7 +1183,7 @@ const response = await WithYupClientControllerRPC.disableServerSideValidationBoo
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/disable-server-side-validation-strings`
+`POST http://localhost:3000/api/foo/client/with-yup/disable-server-side-validation-strings`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1203,7 +1203,7 @@ const response = await WithYupClientControllerRPC.disableServerSideValidationStr
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/skip-schema-emission-bool`
+`POST http://localhost:3000/api/foo/client/with-yup/skip-schema-emission-bool`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1216,7 +1216,7 @@ const response = await WithYupClientControllerRPC.skipSchemaEmissionBool();
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/skip-schema-emission-strings`
+`POST http://localhost:3000/api/foo/client/with-yup/skip-schema-emission-strings`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1233,7 +1233,7 @@ const response = await WithYupClientControllerRPC.skipSchemaEmissionStrings({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-yup/validate-each-iteration`
+`POST http://localhost:3000/api/foo/client/with-yup/validate-each-iteration`
 
 ```ts
 import { WithYupClientControllerRPC } from 'test';
@@ -1265,7 +1265,7 @@ for await (const item of response) {
 
 This is a description
 
-`POST http://localhost:3210/api/foo/client/with-dto/all/{foo}/{bar}`
+`POST http://localhost:3000/api/foo/client/with-dto/all/{foo}/{bar}`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1309,7 +1309,7 @@ console.log(response);
 
 
 
-`GET http://localhost:3210/api/foo/client/with-dto/handle-nested-query`
+`GET http://localhost:3000/api/foo/client/with-dto/handle-nested-query`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1338,7 +1338,7 @@ const response = await WithDtoClientControllerRPC.handleNestedQuery({
 
 
 
-`GET http://localhost:3210/api/foo/client/with-dto/handle-nested-query-client`
+`GET http://localhost:3000/api/foo/client/with-dto/handle-nested-query-client`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1351,7 +1351,7 @@ const response = await WithDtoClientControllerRPC.handleNestedQueryClient();
 
 
 
-`GET http://localhost:3210/api/foo/client/with-dto/handle-output`
+`GET http://localhost:3000/api/foo/client/with-dto/handle-output`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1375,7 +1375,7 @@ console.log(response);
 
 
 
-`GET http://localhost:3210/api/foo/client/with-dto/handle-output-client`
+`GET http://localhost:3000/api/foo/client/with-dto/handle-output-client`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1388,7 +1388,7 @@ const response = await WithDtoClientControllerRPC.handleOutputClient();
 
 
 
-`GET http://localhost:3210/api/foo/client/with-dto/handle-stream`
+`GET http://localhost:3000/api/foo/client/with-dto/handle-stream`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1416,7 +1416,7 @@ for await (const item of response) {
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/handle-schema-constraints`
+`POST http://localhost:3000/api/foo/client/with-dto/handle-schema-constraints`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1460,7 +1460,7 @@ const response = await WithDtoClientControllerRPC.handleSchemaConstraints({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/handle-nothitng`
+`POST http://localhost:3000/api/foo/client/with-dto/handle-nothitng`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1473,7 +1473,7 @@ const response = await WithDtoClientControllerRPC.handleNothitng();
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/handle-form-data`
+`POST http://localhost:3000/api/foo/client/with-dto/handle-form-data`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1493,7 +1493,7 @@ const response = await WithDtoClientControllerRPC.handleFormData({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/disable-server-side-validation-bool`
+`POST http://localhost:3000/api/foo/client/with-dto/disable-server-side-validation-bool`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1513,7 +1513,7 @@ const response = await WithDtoClientControllerRPC.disableServerSideValidationBoo
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/disable-server-side-validation-strings`
+`POST http://localhost:3000/api/foo/client/with-dto/disable-server-side-validation-strings`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1533,7 +1533,7 @@ const response = await WithDtoClientControllerRPC.disableServerSideValidationStr
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/skip-schema-emission-bool`
+`POST http://localhost:3000/api/foo/client/with-dto/skip-schema-emission-bool`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1546,7 +1546,7 @@ const response = await WithDtoClientControllerRPC.skipSchemaEmissionBool();
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/skip-schema-emission-strings`
+`POST http://localhost:3000/api/foo/client/with-dto/skip-schema-emission-strings`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1563,7 +1563,7 @@ const response = await WithDtoClientControllerRPC.skipSchemaEmissionStrings({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/validate-each-iteration`
+`POST http://localhost:3000/api/foo/client/with-dto/validate-each-iteration`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1591,7 +1591,7 @@ for await (const item of response) {
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/all/{foo}/{bar}/client`
+`POST http://localhost:3000/api/foo/client/with-dto/all/{foo}/{bar}/client`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1604,7 +1604,7 @@ const response = await WithDtoClientControllerRPC.handleAllClient();
 
 
 
-`GET http://localhost:3210/api/foo/client/with-dto/handle-query`
+`GET http://localhost:3000/api/foo/client/with-dto/handle-query`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1621,7 +1621,7 @@ const response = await WithDtoClientControllerRPC.handleQuery({
 
 
 
-`GET http://localhost:3210/api/foo/client/with-dto/handle-query-client`
+`GET http://localhost:3000/api/foo/client/with-dto/handle-query-client`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1634,7 +1634,7 @@ const response = await WithDtoClientControllerRPC.handleQueryClient();
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/handle-body`
+`POST http://localhost:3000/api/foo/client/with-dto/handle-body`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1651,7 +1651,7 @@ const response = await WithDtoClientControllerRPC.handleBody({
 
 
 
-`POST http://localhost:3210/api/foo/client/with-dto/handle-body-client`
+`POST http://localhost:3000/api/foo/client/with-dto/handle-body-client`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1664,7 +1664,7 @@ const response = await WithDtoClientControllerRPC.handleBodyClient();
 
 
 
-`PUT http://localhost:3210/api/foo/client/with-dto/x/{foo}/{bar}/y`
+`PUT http://localhost:3000/api/foo/client/with-dto/x/{foo}/{bar}/y`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1682,7 +1682,7 @@ const response = await WithDtoClientControllerRPC.handleParams({
 
 
 
-`PUT http://localhost:3210/api/foo/client/with-dto/x/{foo}/{bar}/y/client`
+`PUT http://localhost:3000/api/foo/client/with-dto/x/{foo}/{bar}/y/client`
 
 ```ts
 import { WithDtoClientControllerRPC } from 'test';
@@ -1699,7 +1699,7 @@ const response = await WithDtoClientControllerRPC.handleParamsClient();
 
 
 
-`GET http://localhost:3210/api/foo/client/openapi`
+`GET http://localhost:3000/api/foo/client/openapi`
 
 ```ts
 import { OpenApiControllerRPC } from 'test';
@@ -1717,7 +1717,7 @@ const response = await OpenApiControllerRPC.getFromSchema();
 
 
 
-`GET http://localhost:3210/api/generated/no-validation-controller-only-entities`
+`GET http://localhost:3000/api/generated/no-validation-controller-only-entities`
 
 ```ts
 import { NoValidationControllerOnlyEntityRPC } from 'test';
@@ -1730,7 +1730,7 @@ const response = await NoValidationControllerOnlyEntityRPC.getNoValidationContro
 
 
 
-`PUT http://localhost:3210/api/generated/no-validation-controller-only-entities/{id}`
+`PUT http://localhost:3000/api/generated/no-validation-controller-only-entities/{id}`
 
 ```ts
 import { NoValidationControllerOnlyEntityRPC } from 'test';
@@ -1743,7 +1743,7 @@ const response = await NoValidationControllerOnlyEntityRPC.updateNoValidationCon
 
 
 
-`POST http://localhost:3210/api/generated/no-validation-controller-only-entities`
+`POST http://localhost:3000/api/generated/no-validation-controller-only-entities`
 
 ```ts
 import { NoValidationControllerOnlyEntityRPC } from 'test';
@@ -1756,7 +1756,7 @@ const response = await NoValidationControllerOnlyEntityRPC.createNoValidationCon
 
 
 
-`DELETE http://localhost:3210/api/generated/no-validation-controller-only-entities/:id`
+`DELETE http://localhost:3000/api/generated/no-validation-controller-only-entities/:id`
 
 ```ts
 import { NoValidationControllerOnlyEntityRPC } from 'test';
@@ -1773,7 +1773,7 @@ const response = await NoValidationControllerOnlyEntityRPC.deleteNoValidationCon
 
 
 
-`GET http://localhost:3210/api/generated/no-validation-controller-and-service-entities`
+`GET http://localhost:3000/api/generated/no-validation-controller-and-service-entities`
 
 ```ts
 import { NoValidationControllerAndServiceEntityRPC } from 'test';
@@ -1786,7 +1786,7 @@ const response = await NoValidationControllerAndServiceEntityRPC.getNoValidation
 
 
 
-`PUT http://localhost:3210/api/generated/no-validation-controller-and-service-entities/{id}`
+`PUT http://localhost:3000/api/generated/no-validation-controller-and-service-entities/{id}`
 
 ```ts
 import { NoValidationControllerAndServiceEntityRPC } from 'test';
@@ -1799,7 +1799,7 @@ const response = await NoValidationControllerAndServiceEntityRPC.updateNoValidat
 
 
 
-`POST http://localhost:3210/api/generated/no-validation-controller-and-service-entities`
+`POST http://localhost:3000/api/generated/no-validation-controller-and-service-entities`
 
 ```ts
 import { NoValidationControllerAndServiceEntityRPC } from 'test';
@@ -1812,7 +1812,7 @@ const response = await NoValidationControllerAndServiceEntityRPC.createNoValidat
 
 
 
-`DELETE http://localhost:3210/api/generated/no-validation-controller-and-service-entities/:id`
+`DELETE http://localhost:3000/api/generated/no-validation-controller-and-service-entities/:id`
 
 ```ts
 import { NoValidationControllerAndServiceEntityRPC } from 'test';
@@ -1829,7 +1829,7 @@ const response = await NoValidationControllerAndServiceEntityRPC.deleteNoValidat
 
 
 
-`GET http://localhost:3210/api/generated/zod-controller-only-entities`
+`GET http://localhost:3000/api/generated/zod-controller-only-entities`
 
 ```ts
 import { ZodControllerOnlyEntityRPC } from 'test';
@@ -1846,7 +1846,7 @@ const response = await ZodControllerOnlyEntityRPC.getZodControllerOnlyEntities({
 
 
 
-`PUT http://localhost:3210/api/generated/zod-controller-only-entities/{id}`
+`PUT http://localhost:3000/api/generated/zod-controller-only-entities/{id}`
 
 ```ts
 import { ZodControllerOnlyEntityRPC } from 'test';
@@ -1869,7 +1869,7 @@ const response = await ZodControllerOnlyEntityRPC.updateZodControllerOnlyEntity(
 
 
 
-`POST http://localhost:3210/api/generated/zod-controller-only-entities`
+`POST http://localhost:3000/api/generated/zod-controller-only-entities`
 
 ```ts
 import { ZodControllerOnlyEntityRPC } from 'test';
@@ -1882,7 +1882,7 @@ const response = await ZodControllerOnlyEntityRPC.createZodControllerOnlyEntity(
 
 
 
-`DELETE http://localhost:3210/api/generated/zod-controller-only-entities/:id`
+`DELETE http://localhost:3000/api/generated/zod-controller-only-entities/:id`
 
 ```ts
 import { ZodControllerOnlyEntityRPC } from 'test';
@@ -1899,7 +1899,7 @@ const response = await ZodControllerOnlyEntityRPC.deleteZodControllerOnlyEntity(
 
 
 
-`GET http://localhost:3210/api/generated/zod-controller-and-service-entities`
+`GET http://localhost:3000/api/generated/zod-controller-and-service-entities`
 
 ```ts
 import { ZodControllerAndServiceEntityRPC } from 'test';
@@ -1916,7 +1916,7 @@ const response = await ZodControllerAndServiceEntityRPC.getZodControllerAndServi
 
 
 
-`PUT http://localhost:3210/api/generated/zod-controller-and-service-entities/{id}`
+`PUT http://localhost:3000/api/generated/zod-controller-and-service-entities/{id}`
 
 ```ts
 import { ZodControllerAndServiceEntityRPC } from 'test';
@@ -1939,7 +1939,7 @@ const response = await ZodControllerAndServiceEntityRPC.updateZodControllerAndSe
 
 
 
-`POST http://localhost:3210/api/generated/zod-controller-and-service-entities`
+`POST http://localhost:3000/api/generated/zod-controller-and-service-entities`
 
 ```ts
 import { ZodControllerAndServiceEntityRPC } from 'test';
@@ -1952,7 +1952,7 @@ const response = await ZodControllerAndServiceEntityRPC.createZodControllerAndSe
 
 
 
-`DELETE http://localhost:3210/api/generated/zod-controller-and-service-entities/:id`
+`DELETE http://localhost:3000/api/generated/zod-controller-and-service-entities/:id`
 
 ```ts
 import { ZodControllerAndServiceEntityRPC } from 'test';
@@ -1969,7 +1969,7 @@ const response = await ZodControllerAndServiceEntityRPC.deleteZodControllerAndSe
 
 
 
-`GET http://localhost:3210/api/generated/yup-controller-only-entities`
+`GET http://localhost:3000/api/generated/yup-controller-only-entities`
 
 ```ts
 import { YupControllerOnlyEntityRPC } from 'test';
@@ -1986,7 +1986,7 @@ const response = await YupControllerOnlyEntityRPC.getYupControllerOnlyEntities({
 
 
 
-`PUT http://localhost:3210/api/generated/yup-controller-only-entities/{id}`
+`PUT http://localhost:3000/api/generated/yup-controller-only-entities/{id}`
 
 ```ts
 import { YupControllerOnlyEntityRPC } from 'test';
@@ -2006,7 +2006,7 @@ const response = await YupControllerOnlyEntityRPC.updateYupControllerOnlyEntity(
 
 
 
-`POST http://localhost:3210/api/generated/yup-controller-only-entities`
+`POST http://localhost:3000/api/generated/yup-controller-only-entities`
 
 ```ts
 import { YupControllerOnlyEntityRPC } from 'test';
@@ -2019,7 +2019,7 @@ const response = await YupControllerOnlyEntityRPC.createYupControllerOnlyEntity(
 
 
 
-`DELETE http://localhost:3210/api/generated/yup-controller-only-entities/:id`
+`DELETE http://localhost:3000/api/generated/yup-controller-only-entities/:id`
 
 ```ts
 import { YupControllerOnlyEntityRPC } from 'test';
@@ -2036,7 +2036,7 @@ const response = await YupControllerOnlyEntityRPC.deleteYupControllerOnlyEntity(
 
 
 
-`GET http://localhost:3210/api/generated/yup-controller-and-service-entities`
+`GET http://localhost:3000/api/generated/yup-controller-and-service-entities`
 
 ```ts
 import { YupControllerAndServiceEntityRPC } from 'test';
@@ -2053,7 +2053,7 @@ const response = await YupControllerAndServiceEntityRPC.getYupControllerAndServi
 
 
 
-`PUT http://localhost:3210/api/generated/yup-controller-and-service-entities/{id}`
+`PUT http://localhost:3000/api/generated/yup-controller-and-service-entities/{id}`
 
 ```ts
 import { YupControllerAndServiceEntityRPC } from 'test';
@@ -2073,7 +2073,7 @@ const response = await YupControllerAndServiceEntityRPC.updateYupControllerAndSe
 
 
 
-`POST http://localhost:3210/api/generated/yup-controller-and-service-entities`
+`POST http://localhost:3000/api/generated/yup-controller-and-service-entities`
 
 ```ts
 import { YupControllerAndServiceEntityRPC } from 'test';
@@ -2086,7 +2086,7 @@ const response = await YupControllerAndServiceEntityRPC.createYupControllerAndSe
 
 
 
-`DELETE http://localhost:3210/api/generated/yup-controller-and-service-entities/:id`
+`DELETE http://localhost:3000/api/generated/yup-controller-and-service-entities/:id`
 
 ```ts
 import { YupControllerAndServiceEntityRPC } from 'test';
@@ -2103,7 +2103,7 @@ const response = await YupControllerAndServiceEntityRPC.deleteYupControllerAndSe
 
 
 
-`GET http://localhost:3210/api/generated/dto-controller-only-entities`
+`GET http://localhost:3000/api/generated/dto-controller-only-entities`
 
 ```ts
 import { DtoControllerOnlyEntityRPC } from 'test';
@@ -2120,7 +2120,7 @@ const response = await DtoControllerOnlyEntityRPC.getDtoControllerOnlyEntities({
 
 
 
-`PUT http://localhost:3210/api/generated/dto-controller-only-entities/{id}`
+`PUT http://localhost:3000/api/generated/dto-controller-only-entities/{id}`
 
 ```ts
 import { DtoControllerOnlyEntityRPC } from 'test';
@@ -2140,7 +2140,7 @@ const response = await DtoControllerOnlyEntityRPC.updateDtoControllerOnlyEntity(
 
 
 
-`POST http://localhost:3210/api/generated/dto-controller-only-entities`
+`POST http://localhost:3000/api/generated/dto-controller-only-entities`
 
 ```ts
 import { DtoControllerOnlyEntityRPC } from 'test';
@@ -2153,7 +2153,7 @@ const response = await DtoControllerOnlyEntityRPC.createDtoControllerOnlyEntity(
 
 
 
-`DELETE http://localhost:3210/api/generated/dto-controller-only-entities/:id`
+`DELETE http://localhost:3000/api/generated/dto-controller-only-entities/:id`
 
 ```ts
 import { DtoControllerOnlyEntityRPC } from 'test';
@@ -2170,7 +2170,7 @@ const response = await DtoControllerOnlyEntityRPC.deleteDtoControllerOnlyEntity(
 
 
 
-`GET http://localhost:3210/api/generated/dto-controller-and-service-entities`
+`GET http://localhost:3000/api/generated/dto-controller-and-service-entities`
 
 ```ts
 import { DtoControllerAndServiceEntityRPC } from 'test';
@@ -2187,7 +2187,7 @@ const response = await DtoControllerAndServiceEntityRPC.getDtoControllerAndServi
 
 
 
-`PUT http://localhost:3210/api/generated/dto-controller-and-service-entities/{id}`
+`PUT http://localhost:3000/api/generated/dto-controller-and-service-entities/{id}`
 
 ```ts
 import { DtoControllerAndServiceEntityRPC } from 'test';
@@ -2207,7 +2207,7 @@ const response = await DtoControllerAndServiceEntityRPC.updateDtoControllerAndSe
 
 
 
-`POST http://localhost:3210/api/generated/dto-controller-and-service-entities`
+`POST http://localhost:3000/api/generated/dto-controller-and-service-entities`
 
 ```ts
 import { DtoControllerAndServiceEntityRPC } from 'test';
@@ -2220,7 +2220,7 @@ const response = await DtoControllerAndServiceEntityRPC.createDtoControllerAndSe
 
 
 
-`DELETE http://localhost:3210/api/generated/dto-controller-and-service-entities/:id`
+`DELETE http://localhost:3000/api/generated/dto-controller-and-service-entities/:id`
 
 ```ts
 import { DtoControllerAndServiceEntityRPC } from 'test';
