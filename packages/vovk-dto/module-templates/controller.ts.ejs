@@ -51,7 +51,7 @@ export default class <%= vars.RpcModuleName %> {
     @openapi({
       summary: 'Update <%= t.TheThing %>',
     })
-    @put(':id')
+    @put('{id}')
     static update<%= t.TheThing %> = withDto({
         body: Update<%= t.TheThing %>BodyDto,
         query: Update<%= t.TheThing %>QueryDto,

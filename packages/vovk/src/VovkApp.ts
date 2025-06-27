@@ -97,7 +97,7 @@ export class VovkApp {
     path: string[];
     params: Record<string, string[]>;
   }) => {
-    const methodParams: Record<string, string> = {};
+    let methodParams: Record<string, string> = {};
 
     if (Object.keys(params).length === 0) {
       return { handler: handlers[''], methodParams };
@@ -111,7 +111,7 @@ export class VovkApp {
     methodKeys = allMethodKeys
       // First, try to match literal routes exactly.
       .filter((p) => {
-        if (p.includes(':')) return false; // Skip parameterized paths
+        if (p.includes('{')) return false; // Skip parameterized paths
         return p === pathStr;
       });
 
@@ -119,25 +119,36 @@ export class VovkApp {
       methodKeys = allMethodKeys.filter((p) => {
         const routeSegments = p.split('/');
         if (routeSegments.length !== path.length) return false;
+        const params: Record<string, string> = {};
 
         for (let i = 0; i < routeSegments.length; i++) {
           const routeSegment = routeSegments[i];
           const pathSegment = path[i];
 
-          if (routeSegment.startsWith(':')) {
-            const parameter = routeSegment.slice(1);
+          if (routeSegment.includes('{')) {
+            // const parameter = routeSegment.slice(1);
+            const regexPattern = routeSegment
+              .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape special chars
+              .replace(/\\{(\w+)\\}/g, '(?<$1>[^/]+)'); // Replace {var} with named groups
 
-            if (parameter in methodParams) {
-              throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${parameter}" at ${p}`);
+            const values = pathSegment.match(new RegExp(`^${regexPattern}$`))?.groups ?? {};
+
+            for (const parameter in values) {
+              if (!Object.prototype.hasOwnProperty.call(values, parameter)) continue;
+              if (parameter in params) {
+                throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${parameter}" at ${p}`);
+              }
+
+              // If it's a parameterized segment, capture the parameter value.
+              params[parameter] = values[parameter];
             }
-
-            // If it's a parameterized segment, capture the parameter value.
-            methodParams[parameter] = pathSegment;
           } else if (routeSegment !== pathSegment) {
             // If it's a literal segment and it does not match the corresponding path segment, return false.
             return false;
           }
         }
+
+        methodParams = params;
 
         return true;
       });

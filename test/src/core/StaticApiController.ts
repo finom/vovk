@@ -12,7 +12,7 @@ export default class StaticApiController {
     return generateStaticAPI({ controllers: StaticApiController }, 'custom');
   }
 
-  @get('endpoint-three/:a/:b', {
+  @get('endpoint-three/{a}/{b}', {
     staticParams: [
       { a: 'a1', b: 'b1' },
       { a: 'a2', b: 'b2' },

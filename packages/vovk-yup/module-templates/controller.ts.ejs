@@ -37,7 +37,7 @@ export default class <%= vars.RpcModuleName %> {
     @openapi({
         summary: 'Update <%= t.TheThing %>',
     })
-    @put(':id')
+    @put('{id}')
     static update<%= t.TheThing %> = withYup({
         body: yup.object({
             foo: yup.mixed().oneOf(['bar', 'baz']).required(),

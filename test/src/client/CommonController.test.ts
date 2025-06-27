@@ -181,7 +181,7 @@ describe('Client with vovk-client', () => {
   it('Should store handler schema at handler.schema', async () => {
     deepStrictEqual(CommonControllerRPC.postWithAll.schema satisfies VovkHandlerSchema, {
       httpMethod: 'POST',
-      path: 'with-all/:hello',
+      path: 'with-all/{hello}',
     });
   });
 

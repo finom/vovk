@@ -88,7 +88,7 @@ export default class WithZodClientController {
     description: 'This is a description',
   })
   @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
-  @post('all/:foo/:bar')
+  @post('all/{foo}/{bar}')
   static handleAll = withZod({
     ...HandleAllInput,
     handle: async ({ vovk }, params) => {
@@ -120,7 +120,7 @@ export default class WithZodClientController {
     },
   });
 
-  @put('x/:foo/:bar/y')
+  @put('x/{foo}/{bar}/y')
   static handleParams = withZod({
     params: z.object({ foo: z.string().max(5), bar: z.string().max(5) }),
     handle: async (req) => {
@@ -264,6 +264,7 @@ export default class WithZodClientController {
     },
   });
 
+  // validateEachIteration
   @post.auto()
   static validateEachIteration = withZod({
     validateEachIteration: true,
@@ -291,7 +292,7 @@ export default class WithZodClientController {
     },
   });
 
-  @post('all-as-func/:foo/:bar')
+  @post('all-as-func/{foo}/{bar}')
   static handleAllAsFunction = withZod({
     ...HandleAllInput,
     disableServerSideValidation: true,
@@ -306,7 +307,7 @@ export default class WithZodClientController {
     },
   });
 
-  @post('all-no-http-as-func/:foo/:bar')
+  @post('all-no-http-as-func/{foo}/{bar}')
   static handleAllNoHttpAsFunction = withZod({
     ...HandleAllInput,
     disableServerSideValidation: true,

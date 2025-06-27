@@ -23,7 +23,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   let result = endpoint;
   const queryStr = query ? serializeQuery(query) : null;
   for (const [key, value] of Object.entries(params ?? {})) {
-    result = result.replace(`:${key}`, value as string);
+    result = result.replace(`{${key}}`, value as string);
   }
   return `${result}${queryStr ? '?' : ''}${queryStr}`;
 };

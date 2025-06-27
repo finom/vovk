@@ -22,7 +22,7 @@ export default class YupControllerAndServiceEntityController {
   @openapi({
     summary: 'Update YupControllerAndServiceEntity',
   })
-  @put(':id')
+  @put('{id}')
   static updateYupControllerAndServiceEntity = withYup({
     body: yup.object({
       foo: yup.mixed().oneOf(['bar', 'baz']).required(),

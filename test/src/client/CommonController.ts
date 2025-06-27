@@ -51,12 +51,12 @@ export default class CommonController {
     return { hello: 'world' };
   }
 
-  @get('with-params/:hello')
+  @get('with-params/{hello}')
   static getWithParams(_req: VovkRequest, { hello }: { hello: 'world' }) {
     return { hello };
   }
 
-  @post('with-all/:hello')
+  @post('with-all/{hello}')
   static async postWithAll(
     req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue' }, { hello: 'world' }>,
     params: { hello: 'world' }

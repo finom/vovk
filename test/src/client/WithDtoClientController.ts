@@ -61,7 +61,7 @@ export default class WithDtoClientController {
     description: 'This is a description',
   })
   @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
-  @post('all/:foo/:bar')
+  @post('all/{foo}/{bar}')
   static handleAll = withDto({
     body: HandleAllBodyDto,
     query: HandleAllQueryDto,
@@ -232,7 +232,7 @@ export default class WithDtoClientController {
 
   // The tests are run on nodejs without TS compilator so decorators are not supported and it's not possible import a DTO at .test.ts file
   // this endpoint and other ones ended with "Client" implement a proxy to be able to test errors on client: side
-  @post('all/:foo/:bar/client')
+  @post('all/{foo}/{bar}/client')
   static handleAllClient = async (
     req: VovkRequest<HandleAllBodyDto, HandleAllQueryDto>,
     params: HandleAllParamsDto
@@ -286,7 +286,7 @@ export default class WithDtoClientController {
     });
   };
 
-  @put('x/:foo/:bar/y')
+  @put('x/{foo}/{bar}/y')
   static handleParams = withDto({
     params: HandleParamsDto,
     handle: async (req) => {
@@ -294,7 +294,7 @@ export default class WithDtoClientController {
     },
   });
 
-  @put('x/:foo/:bar/y/client')
+  @put('x/{foo}/{bar}/y/client')
   static handleParamsClient = async (_req: VovkRequest, params: HandleParamsDto) => {
     return WithDtoClientControllerRPC.handleParams({
       params: plainToInstance(HandleParamsDto, params),

@@ -153,7 +153,7 @@ class ApiClient:
         processed_url = url
         if params:
             for key, value in params.items():
-                pattern = f":{key}"
+                pattern = f"{{{key}}}"
                 processed_url = processed_url.replace(pattern, str(value))
         
         # Process query parameters if present

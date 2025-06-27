@@ -15,7 +15,7 @@ export default class NoValidationControllerOnlyEntityController {
   @openapi({
     summary: 'Update NoValidationControllerOnlyEntity',
   })
-  @put(':id')
+  @put('{id}')
   static updateNoValidationControllerOnlyEntity = async (
     req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>,
     params: { id: string }

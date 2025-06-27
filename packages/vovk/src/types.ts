@@ -34,7 +34,7 @@ export type VovkSegmentSchema<T = KnownAny> = {
   $schema: typeof VovkSchemaIdEnum.SEGMENT | (string & {});
   emitSchema: boolean;
   segmentName: string;
-  segmentType: 'segment' | 'mixin';
+  segmentType: 'segment' | 'mixin' | (string & {}); // string & {} is used since JSON import resolves to string
   forceApiRoot?: string;
   controllers: Record<string, VovkControllerSchema<T>>;
 };

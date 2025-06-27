@@ -47,9 +47,6 @@ const vovkConfig = {
       },
     },
   },
-  extendClientWithOpenAPI: {
-    rootModules: [],
-  },
 };
 
 module.exports = vovkConfig;

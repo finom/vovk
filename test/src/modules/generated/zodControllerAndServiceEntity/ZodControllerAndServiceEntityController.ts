@@ -22,7 +22,7 @@ export default class ZodControllerAndServiceEntityController {
   @openapi({
     summary: 'Update ZodControllerAndServiceEntity',
   })
-  @put(':id')
+  @put('{id}')
   static updateZodControllerAndServiceEntity = withZod({
     body: z.object({
       foo: z.union([z.literal('bar'), z.literal('baz')]),

@@ -35,7 +35,7 @@ export default class DtoControllerOnlyEntityController {
   @openapi({
     summary: 'Update DtoControllerOnlyEntity',
   })
-  @put(':id')
+  @put('{id}')
   static updateDtoControllerOnlyEntity = withDto({
     body: UpdateDtoControllerOnlyEntityBodyDto,
     query: UpdateDtoControllerOnlyEntityQueryDto,

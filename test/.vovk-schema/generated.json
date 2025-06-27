@@ -2,6 +2,7 @@
   "$schema": "https://vovk.dev/api/spec/v3/segment.json",
   "emitSchema": true,
   "segmentName": "generated",
+  "segmentType": "segment",
   "controllers": {
     "NoValidationControllerOnlyEntityRPC": {
       "rpcModuleName": "NoValidationControllerOnlyEntityRPC",
@@ -16,7 +17,7 @@
           }
         },
         "updateNoValidationControllerOnlyEntity": {
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "PUT",
           "openapi": {
             "summary": "Update NoValidationControllerOnlyEntity"
@@ -45,7 +46,7 @@
           }
         },
         "updateNoValidationControllerAndServiceEntity": {
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "PUT",
           "openapi": {
             "summary": "Update NoValidationControllerAndServiceEntity"
@@ -76,7 +77,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"],
+              "required": [
+                "search"
+              ],
               "additionalProperties": false
             }
           },
@@ -105,7 +108,9 @@
                   ]
                 }
               },
-              "required": ["foo"],
+              "required": [
+                "foo"
+              ],
               "additionalProperties": false
             },
             "query": {
@@ -116,7 +121,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"],
+              "required": [
+                "q"
+              ],
               "additionalProperties": false
             },
             "params": {
@@ -127,11 +134,13 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "PUT",
           "openapi": {
             "summary": "Update ZodControllerOnlyEntity"
@@ -162,7 +171,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"],
+              "required": [
+                "search"
+              ],
               "additionalProperties": false
             }
           },
@@ -191,7 +202,9 @@
                   ]
                 }
               },
-              "required": ["foo"],
+              "required": [
+                "foo"
+              ],
               "additionalProperties": false
             },
             "query": {
@@ -202,7 +215,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"],
+              "required": [
+                "q"
+              ],
               "additionalProperties": false
             },
             "params": {
@@ -213,11 +228,13 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "PUT",
           "openapi": {
             "summary": "Update ZodControllerAndServiceEntity"
@@ -262,11 +279,18 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -278,7 +302,7 @@
               }
             }
           },
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "PUT",
           "openapi": {
             "summary": "Update YupControllerOnlyEntity"
@@ -323,11 +347,18 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -339,7 +370,7 @@
               }
             }
           },
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "PUT",
           "openapi": {
             "summary": "Update YupControllerAndServiceEntity"
@@ -371,7 +402,9 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "",
@@ -388,11 +421,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -403,10 +441,12 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             }
           },
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "PUT",
           "openapi": {
             "summary": "Update DtoControllerOnlyEntity"
@@ -438,7 +478,9 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "",
@@ -455,11 +497,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -470,10 +517,12 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             }
           },
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "PUT",
           "openapi": {
             "summary": "Update DtoControllerAndServiceEntity"

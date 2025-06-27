@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
-import type { KnownAny, StreamAbortMessage } from './types';
-import './utils/shim';
+import type { KnownAny, StreamAbortMessage } from './types.js';
+import './utils/shim.js';
 
 export class JSONLinesResponse<T> extends Response {
   public isClosed = false;
@@ -48,7 +48,6 @@ export class JSONLinesResponse<T> extends Response {
   public send(data: T | StreamAbortMessage) {
     const { controller, encoder } = this;
     if (this.isClosed) return;
-    this.nextValueResolve(data as T);
     return controller?.enqueue(encoder.encode(JSON.stringify(data) + '\n'));
   }
 
@@ -61,7 +60,6 @@ export class JSONLinesResponse<T> extends Response {
 
   public throw(e: KnownAny) {
     this.send({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
-    this.nextValueReject(e);
     return this.close();
   }
 
@@ -71,28 +69,5 @@ export class JSONLinesResponse<T> extends Response {
 
   public [Symbol.asyncDispose]() {
     this.close();
-  }
-
-  private nextValueReject: (_e: KnownAny) => void = () => {};
-
-  private nextValueResolve: (value: T) => void = () => {};
-
-  private nextValue() {
-    const { resolve, reject, promise } = Promise.withResolvers<T>();
-
-    this.nextValueResolve = resolve;
-    this.nextValueReject = reject;
-    return promise;
-  }
-
-  public [Symbol.asyncIterator]() {
-    return {
-      next: async () => {
-        if (this.isClosed) {
-          return { done: true, value: null };
-        }
-        return { done: false, value: await this.nextValue() };
-      },
-    };
   }
 }

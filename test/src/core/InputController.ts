@@ -3,7 +3,7 @@ import { prefix, post } from 'vovk';
 
 @prefix('input')
 export default class InputController {
-  @post('foo/:a/:b/bar/:c')
+  @post('foo/{a}/{b}/bar/{c}')
   static async getFooBar(req: NextRequest, { a, b, c }: { a: string; b: string; c: string }) {
     const body: unknown = await req.json();
     const q1 = req.nextUrl.searchParams.get('q1');

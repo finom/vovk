@@ -81,7 +81,7 @@ export default class WithYupClientController {
     description: 'This is a description',
   })
   @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
-  @post('all/:foo/:bar')
+  @post('all/{foo}/{bar}')
   static handleAll = withYup({
     body: yup.object({ hello: yup.string().max(5).required() }),
     query: yup.object({ search: yup.string().max(5).required() }),
@@ -122,7 +122,7 @@ export default class WithYupClientController {
     handle: async (req) => req.vovk.body(),
   });
 
-  @put('x/:foo/:bar/y')
+  @put('x/{foo}/{bar}/y')
   static handleParams = withYup({
     params: yup.object({ foo: yup.string().max(5).required(), bar: yup.string().max(5).required() }),
     handle: async (req) => req.vovk.params(),

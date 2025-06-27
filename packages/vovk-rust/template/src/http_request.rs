@@ -161,7 +161,7 @@ where
     if let Some(ref params_val) = params_value {
         if let Value::Object(map) = params_val {
             for (key, value) in map {
-                let pattern = format!(":{}", key);
+                let pattern = format!("{{{}}}", key);
                 if let Value::String(s) = value {
                     url = url.replace(&pattern, s);
                 } else {

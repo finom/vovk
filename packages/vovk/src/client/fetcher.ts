@@ -27,9 +27,9 @@ export function createFetcher<T>({
   ) => {
     const { params, query, body, apiRoot, disableClientValidation, init, interpretAs } = options;
     const endpoint = getEndpoint({ apiRoot, params, query });
-    const unusedParams = new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname
-      .split('/')
-      .filter((segment) => segment.startsWith(':'));
+    const unusedParams = Array.from(
+      new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname.matchAll(/\{([^}]+)\}/g)
+    ).map((m) => m[1]);
 
     if (unusedParams.length) {
       throw new HttpException(HttpStatus.NULL, `Unused params: ${unusedParams.join(', ')} in ${endpoint}`, {

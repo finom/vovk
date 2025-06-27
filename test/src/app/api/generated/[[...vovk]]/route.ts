@@ -8,8 +8,6 @@ import YupControllerAndServiceEntityController from '../../../../modules/generat
 import DtoControllerOnlyEntityController from '../../../../modules/generated/dtoControllerOnlyEntity/DtoControllerOnlyEntityController.ts';
 import DtoControllerAndServiceEntityController from '../../../../modules/generated/dtoControllerAndServiceEntity/DtoControllerAndServiceEntityController.ts';
 
-export const runtime = 'edge';
-
 const controllers = {
   NoValidationControllerOnlyEntityRPC: NoValidationControllerOnlyEntityController,
   NoValidationControllerAndServiceEntityRPC: NoValidationControllerAndServiceEntityController,

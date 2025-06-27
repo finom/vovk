@@ -20,7 +20,7 @@ export default class YupControllerOnlyEntityController {
   @openapi({
     summary: 'Update YupControllerOnlyEntity',
   })
-  @put(':id')
+  @put('{id}')
   static updateYupControllerOnlyEntity = withYup({
     body: yup.object({
       foo: yup.mixed().oneOf(['bar', 'baz']).required(),

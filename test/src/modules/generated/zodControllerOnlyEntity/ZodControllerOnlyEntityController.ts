@@ -20,7 +20,7 @@ export default class ZodControllerOnlyEntityController {
   @openapi({
     summary: 'Update ZodControllerOnlyEntity',
   })
-  @put(':id')
+  @put('{id}')
   static updateZodControllerOnlyEntity = withZod({
     body: z.object({
       foo: z.union([z.literal('bar'), z.literal('baz')]),

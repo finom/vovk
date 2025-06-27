@@ -32,7 +32,7 @@ export default class <%= vars.rpcModuleName %> {
     @openapi({
         summary: 'Update <%= t.TheThing %>',
     })
-    @put(':id')
+    @put('{id}')
     static update<%= t.TheThing %> = async (req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>, params: { id: string }) => {
         const { id } = params;
         const body = await req.json();

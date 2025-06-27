@@ -22,6 +22,7 @@ await describe('diffSchema', async () => {
       $schema: VovkSchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
+      segmentType: 'segment',
       controllers: {
         ControllerA: {
           rpcModuleName: 'ControllerA',
@@ -54,6 +55,7 @@ await describe('diffSchema', async () => {
       $schema: VovkSchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
+      segmentType: 'segment',
       controllers: {
         ControllerA: {
           rpcModuleName: 'ControllerA',
@@ -72,6 +74,7 @@ await describe('diffSchema', async () => {
       $schema: VovkSchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
+      segmentType: 'segment',
       controllers: {
         ControllerB: {
           rpcModuleName: 'ControllerB',
@@ -102,6 +105,7 @@ await describe('diffSchema', async () => {
       $schema: VovkSchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
+      segmentType: 'segment',
       controllers: {
         ControllerA: {
           rpcModuleName: 'ControllerA',
@@ -124,6 +128,7 @@ await describe('diffSchema', async () => {
       $schema: VovkSchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
+      segmentType: 'segment',
       controllers: {
         ControllerA: {
           rpcModuleName: 'ControllerA',
@@ -169,6 +174,7 @@ await describe('diffSchema', async () => {
       $schema: VovkSchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
+      segmentType: 'segment',
       controllers: {
         ControllerA: {
           rpcModuleName: 'ControllerA',
@@ -187,6 +193,7 @@ await describe('diffSchema', async () => {
       $schema: VovkSchemaIdEnum.SEGMENT,
       emitSchema: true,
       segmentName: '',
+      segmentType: 'segment',
       controllers: {
         ControllerA: {
           rpcModuleName: 'ControllerA',

@@ -80,14 +80,14 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     const result = await WithZodClientControllerRPC.handleAll({
       body: { hello: 'world' },
       query: { search: 'value' },
-      params: { foo: 'foo', bar: 'bar' },
+      params: { foo: 'foo-val', bar: 'bar-val' },
     });
 
     const expected = {
       body: { hello: 'world' },
       query: { search: 'value' },
-      params: { foo: 'foo', bar: 'bar' },
-      vovkParams: { foo: 'foo', bar: 'bar' },
+      params: { foo: 'foo-val', bar: 'bar-val' },
+      vovkParams: { foo: 'foo-val', bar: 'bar-val' },
     };
 
     null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleAll> satisfies typeof expected;

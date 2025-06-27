@@ -289,10 +289,6 @@ export function convertJSONSchemaToTypeScriptDef(
   const mainType = schemaToType(schema);
   const defsType = defsToType(allDefs);
 
-  console.log('allDefs1', defsType);
-  console.log('allDefs2', allDefs);
-  console.log('mainType', mainType);
-
   return {
     $type: jsDoc ? `${jsDoc}\n${mainType}` : mainType,
     $defs: defsType,
