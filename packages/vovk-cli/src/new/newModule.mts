@@ -93,7 +93,6 @@ export default async function newModule({
   for (const type of what) {
     const templatePath = templates[type]!;
     const templateAbsolutePath = resolveAbsoluteModulePath(templatePath, cwd);
-    console.log('cwd', cwd, templateAbsolutePath);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
 
     const {

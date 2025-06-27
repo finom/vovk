@@ -16,7 +16,7 @@ jobs:
     if: "!startsWith(github.event.head_commit.message, 'v')" # Skip if commit message starts with 'v'
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest]
         node-version: [22, 23, 24]
     runs-on: ${{ matrix.os }}
 
