@@ -13,7 +13,6 @@
     "start": "NODE_ENV=test next start",
     "lint": "next lint",
     "generate": "node ../packages/vovk-cli/dist/index.mjs generate",
-    "pre-test": "npm run build-other-compiled-sources && npm run generate-modules-from-templates",
     "bundle": "node ../packages/vovk-cli/dist/index.mjs bundle --dont-delete-ts-client-out-dir-after",
     "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --composed-schema-json --template=python --composed-schema-json --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh",
