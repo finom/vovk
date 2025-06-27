@@ -119,7 +119,11 @@ function applyComponents(
 
     if (newObj.$ref && typeof newObj.$ref === 'string' && newObj.$ref.startsWith(`#/${key}/`)) {
       const componentName = newObj.$ref.replace(`#/${key}/`, '');
-      newObj.$ref = `#/$defs/${componentName}`;
+      if (components![componentName]) {
+        newObj.$ref = `#/$defs/${componentName}`;
+      } else {
+        delete newObj.$ref; // Remove $ref if component not found (Telegram API has Type $refs that is not defined in components)
+      }
 
       // Add the component to $defs if not already added
       if (!addedComponents.has(componentName) && components![componentName]) {

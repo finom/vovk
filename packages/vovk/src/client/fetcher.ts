@@ -61,6 +61,7 @@ export function createFetcher<T>({
       ...init,
       headers: {
         accept: 'application/jsonl, application/json',
+        ...(body instanceof FormData ? {} : { 'content-type': 'application/json' }),
         ...init?.headers,
       },
     };
@@ -76,6 +77,8 @@ export function createFetcher<T>({
       : requestInit;
 
     let response: Response;
+
+    console.log('endpoint, requestInit', endpoint, requestInit);
 
     try {
       response = await fetch(endpoint, requestInit);

@@ -88,7 +88,7 @@ export function convertJSONSchemaToTypeScriptDef(
   const getRefTypeName = (ref: string): string => {
     if (ref.startsWith('#/definitions/') || ref.startsWith('#/$defs/')) {
       const path = ref.split('/');
-      return `${defsPrefix}__${path[path.length - 1]}`;
+      return `${defsPrefix}__${path[path.length - 1].replace(/[^a-zA-Z0-9_$]/g, '_')}`;
     }
     return 'KnownAny'; // Fallback for external references
   };
@@ -270,7 +270,9 @@ export function convertJSONSchemaToTypeScriptDef(
         if (defSchema) {
           const jsDoc = getJSDoc(defSchema);
           const defType = schemaToType(defSchema);
-          return [jsDoc, `type ${defsPrefix}__${defName} = ${defType};`].filter(Boolean).join('\n');
+          return [jsDoc, `type ${defsPrefix}__${defName.replace(/[^a-zA-Z0-9_$]/g, '_')} = ${defType};`]
+            .filter(Boolean)
+            .join('\n');
         }
         return '';
       })
