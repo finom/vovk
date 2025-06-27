@@ -56,8 +56,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   assertConfig.makeConfig = (validationLibrary: string | null, useReactQuery?: boolean) => {
     const config: VovkConfig = {
       moduleTemplates: {
-        controller: `${validationLibrary ?? 'vovk-cli'}/module-templates/Controller.ts.ejs`,
-        service: 'vovk-cli/module-templates/Service.ts.ejs',
+        controller: `${validationLibrary ?? 'vovk-cli'}/module-templates/controller.ts.ejs`,
+        service: 'vovk-cli/module-templates/service.ts.ejs',
       },
     };
 

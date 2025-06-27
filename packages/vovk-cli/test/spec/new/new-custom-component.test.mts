@@ -75,7 +75,7 @@ await describe('Custom components', async () => {
       ...config,
       moduleTemplates: {
         ...config.moduleTemplates,
-        controller: '../test/spec/new/custom-Controller.ts.ejs',
+        controller: '../test/spec/new/custom-controller.ts.ejs',
         state: '../test/spec/new/custom-state.ts.ejs',
       },
     }));
