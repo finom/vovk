@@ -32,7 +32,7 @@ export default async function newSegment({
   }
 
   const code = await prettify(
-    `import { initVovk${isStaticSegment ? ', generateStaticAPI' : ''} } from 'vovk';
+    `import { initSegment${isStaticSegment ? ', generateStaticAPI' : ''} } from 'vovk';
 
 const controllers = {};
 
@@ -46,7 +46,7 @@ export function generateStaticParams() {
 `
     : ''
 }
-export const { GET${isStaticSegment ? '' : ', POST, PATCH, PUT, HEAD, OPTIONS, DELETE'} } = initVovk({
+export const { GET${isStaticSegment ? '' : ', POST, PATCH, PUT, HEAD, OPTIONS, DELETE'} } = initSegment({
 ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
   controllers,
 });

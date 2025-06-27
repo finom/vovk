@@ -664,7 +664,7 @@ var require_createVovkApp$1 = __commonJS({ "../packages/vovk/mjs/createVovkApp.j
 				return givenTarget;
 			};
 		};
-		const initVovk = (options) => {
+		const initSegment = (options) => {
 			options.segmentName = trimPath$3(options.segmentName ?? "");
 			for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {})) {
 				controller._rpcModuleName = rpcModuleName;
@@ -697,7 +697,7 @@ var require_createVovkApp$1 = __commonJS({ "../packages/vovk/mjs/createVovkApp.j
 			head: createHTTPDecorator(types_1$21.HttpMethod.HEAD),
 			options: createHTTPDecorator(types_1$21.HttpMethod.OPTIONS),
 			prefix,
-			initVovk
+			initSegment
 		};
 	}
 } });
@@ -2251,7 +2251,7 @@ var require_createLLMTools$1 = __commonJS({ "../packages/vovk/mjs/utils/createLL
 var require_mjs = __commonJS({ "../packages/vovk/mjs/index.js"(exports) {
 	var _a$2;
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.initVovk = exports.prefix = exports.options = exports.head = exports.del = exports.patch = exports.put = exports.post = exports.get = exports.vovkSchemaToOpenAPI = exports.openAPIToVovkSchema = exports.openapi = exports.progressive = exports.createCodeExamples = exports.createLLMTools = exports.multitenant = exports.withStandard = exports.withValidationLibrary = exports.generateStaticAPI = exports.createFetcher = exports.fetcher = exports.createRPC = exports.createDecorator = exports.createVovkApp = exports.HttpMethod = exports.HttpStatus = exports.HttpException = exports.JSONLinesResponse = exports.VovkSchemaIdEnum = void 0;
+	exports.initSegment = exports.prefix = exports.options = exports.head = exports.del = exports.patch = exports.put = exports.post = exports.get = exports.vovkSchemaToOpenAPI = exports.openAPIToVovkSchema = exports.openapi = exports.progressive = exports.createCodeExamples = exports.createLLMTools = exports.multitenant = exports.withStandard = exports.withValidationLibrary = exports.generateStaticAPI = exports.createFetcher = exports.fetcher = exports.createRPC = exports.createDecorator = exports.createVovkApp = exports.HttpMethod = exports.HttpStatus = exports.HttpException = exports.JSONLinesResponse = exports.VovkSchemaIdEnum = void 0;
 	const createVovkApp_1$1 = require_createVovkApp$1();
 	Object.defineProperty(exports, "createVovkApp", {
 		enumerable: true,
@@ -2385,7 +2385,7 @@ var require_mjs = __commonJS({ "../packages/vovk/mjs/index.js"(exports) {
 			return createCodeExamples_1$2.createCodeExamples;
 		}
 	});
-	_a$2 = (0, createVovkApp_1$1.createVovkApp)(), exports.get = _a$2.get, exports.post = _a$2.post, exports.put = _a$2.put, exports.patch = _a$2.patch, exports.del = _a$2.del, exports.head = _a$2.head, exports.options = _a$2.options, exports.prefix = _a$2.prefix, exports.initVovk = _a$2.initVovk;
+	_a$2 = (0, createVovkApp_1$1.createVovkApp)(), exports.get = _a$2.get, exports.post = _a$2.post, exports.put = _a$2.put, exports.patch = _a$2.patch, exports.del = _a$2.del, exports.head = _a$2.head, exports.options = _a$2.options, exports.prefix = _a$2.prefix, exports.initSegment = _a$2.initSegment;
 } });
 
 //#endregion
@@ -21400,7 +21400,7 @@ var require_createVovkApp = __commonJS({ "../packages/vovk/cjs/createVovkApp.js"
 				return givenTarget;
 			};
 		};
-		const initVovk = (options) => {
+		const initSegment = (options) => {
 			options.segmentName = trimPath$1(options.segmentName ?? "");
 			for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {})) {
 				controller._rpcModuleName = rpcModuleName;
@@ -21433,7 +21433,7 @@ var require_createVovkApp = __commonJS({ "../packages/vovk/cjs/createVovkApp.js"
 			head: createHTTPDecorator(types_1$8.HttpMethod.HEAD),
 			options: createHTTPDecorator(types_1$8.HttpMethod.OPTIONS),
 			prefix,
-			initVovk
+			initSegment
 		};
 	}
 } });
@@ -22987,7 +22987,7 @@ var require_createLLMTools = __commonJS({ "../packages/vovk/cjs/utils/createLLMT
 var require_cjs = __commonJS({ "../packages/vovk/cjs/index.js"(exports) {
 	var _a;
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.initVovk = exports.prefix = exports.options = exports.head = exports.del = exports.patch = exports.put = exports.post = exports.get = exports.vovkSchemaToOpenAPI = exports.openAPIToVovkSchema = exports.openapi = exports.progressive = exports.createCodeExamples = exports.createLLMTools = exports.multitenant = exports.withStandard = exports.withValidationLibrary = exports.generateStaticAPI = exports.createFetcher = exports.fetcher = exports.createRPC = exports.createDecorator = exports.createVovkApp = exports.HttpMethod = exports.HttpStatus = exports.HttpException = exports.JSONLinesResponse = exports.VovkSchemaIdEnum = void 0;
+	exports.initSegment = exports.prefix = exports.options = exports.head = exports.del = exports.patch = exports.put = exports.post = exports.get = exports.vovkSchemaToOpenAPI = exports.openAPIToVovkSchema = exports.openapi = exports.progressive = exports.createCodeExamples = exports.createLLMTools = exports.multitenant = exports.withStandard = exports.withValidationLibrary = exports.generateStaticAPI = exports.createFetcher = exports.fetcher = exports.createRPC = exports.createDecorator = exports.createVovkApp = exports.HttpMethod = exports.HttpStatus = exports.HttpException = exports.JSONLinesResponse = exports.VovkSchemaIdEnum = void 0;
 	const createVovkApp_1 = require_createVovkApp();
 	Object.defineProperty(exports, "createVovkApp", {
 		enumerable: true,
@@ -23121,7 +23121,7 @@ var require_cjs = __commonJS({ "../packages/vovk/cjs/index.js"(exports) {
 			return createCodeExamples_1.createCodeExamples;
 		}
 	});
-	_a = (0, createVovkApp_1.createVovkApp)(), exports.get = _a.get, exports.post = _a.post, exports.put = _a.put, exports.patch = _a.patch, exports.del = _a.del, exports.head = _a.head, exports.options = _a.options, exports.prefix = _a.prefix, exports.initVovk = _a.initVovk;
+	_a = (0, createVovkApp_1.createVovkApp)(), exports.get = _a.get, exports.post = _a.post, exports.put = _a.put, exports.patch = _a.patch, exports.del = _a.del, exports.head = _a.head, exports.options = _a.options, exports.prefix = _a.prefix, exports.initSegment = _a.initSegment;
 } });
 
 //#endregion

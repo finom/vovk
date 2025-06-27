@@ -17,7 +17,7 @@ await describe('CLI new controller and flags', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -32,7 +32,7 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {
         MegaUserRPC: MegaUserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -46,7 +46,7 @@ await describe('CLI new controller and flags', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -59,7 +59,7 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {
         RacoonRPC: RacoonController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -72,7 +72,7 @@ await describe('CLI new controller and flags', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -91,7 +91,7 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {
         VeryComplexEntityRPC: VeryComplexEntityController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -104,7 +104,7 @@ await describe('CLI new controller and flags', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -123,7 +123,7 @@ await describe('CLI new controller and flags', async () => {
       `const controllers = {
         CoolRedChairRPC: CoolRedChairController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -136,7 +136,7 @@ await describe('CLI new controller and flags', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -145,7 +145,7 @@ await describe('CLI new controller and flags', async () => {
 
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers,
       });`

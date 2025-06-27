@@ -152,7 +152,7 @@ export function createVovkApp() {
     };
   };
 
-  const initVovk = (options: {
+  const initSegment = (options: {
     segmentName?: string;
     controllers: Record<string, StaticClass>;
     exposeValidation?: boolean;
@@ -195,6 +195,6 @@ export function createVovkApp() {
     head: createHTTPDecorator(HttpMethod.HEAD),
     options: createHTTPDecorator(HttpMethod.OPTIONS),
     prefix,
-    initVovk,
+    initSegment,
   };
 }

@@ -29,7 +29,7 @@ await describe('CLI dev', async () => {
         await runAtProjectDir('../dist/index.mjs new segment');
         await assertFile('src/app/api/[[...vovk]]/route.ts', [
           `const controllers = {};`,
-          `initVovk({
+          `initSegment({
                 emitSchema: true,
                 controllers, 
             });`,
@@ -50,7 +50,7 @@ await describe('CLI dev', async () => {
           `const controllers = {
             UserRPC: UserController,
         };`,
-          `initVovk({
+          `initSegment({
             emitSchema: true,
             controllers, 
         });`,

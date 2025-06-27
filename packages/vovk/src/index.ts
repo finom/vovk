@@ -94,4 +94,4 @@ export {
   vovkSchemaToOpenAPI,
 };
 
-export const { get, post, put, patch, del, head, options, prefix, initVovk } = createVovkApp();
+export const { get, post, put, patch, del, head, options, prefix, initSegment } = createVovkApp();

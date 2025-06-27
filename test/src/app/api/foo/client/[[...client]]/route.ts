@@ -1,4 +1,4 @@
-import { initVovk } from 'vovk';
+import { initSegment } from 'vovk';
 
 import CommonController from '../../../../../client/CommonController.ts';
 import StreamingController from '../../../../../client/StreamingController.ts';
@@ -22,7 +22,7 @@ const controllers = {
 
 export type Controllers = typeof controllers;
 
-export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
   segmentName: 'foo/client',
   exposeValidation: true,
   emitSchema: true,

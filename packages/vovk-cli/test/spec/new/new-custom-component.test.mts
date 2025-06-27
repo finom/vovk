@@ -17,7 +17,7 @@ await describe('Custom components', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -44,7 +44,7 @@ await describe('Custom components', async () => {
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -65,7 +65,7 @@ await describe('Custom components', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -91,7 +91,7 @@ import { prefix, get, put, post, del, type VovkRequest } from 'vovk';`,
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,

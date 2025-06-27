@@ -22,7 +22,7 @@ await describe('CLI new controller and service', async () => {
 
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers,
       });`,
@@ -55,7 +55,7 @@ await describe('CLI new controller and service', async () => {
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -75,7 +75,7 @@ await describe('CLI new controller and service', async () => {
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,

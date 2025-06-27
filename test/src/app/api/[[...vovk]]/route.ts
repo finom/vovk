@@ -1,4 +1,4 @@
-import { initVovk } from 'vovk';
+import { initSegment } from 'vovk';
 import trimControllers from '../../../core/TrimControllers.ts';
 import InputController from '../../../core/InputController.ts';
 import CustomDecoratorController from '../../../core/CustomDecoratorController.ts';
@@ -13,7 +13,7 @@ import RedirectController from '../../../core/RedirectController.ts';
 import AutoDecoratorsController from '../../../core/AutoDecoratorsController.ts';
 import StaticApiController from '../../../core/StaticApiController.ts';
 
-export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
   emitSchema: false,
   controllers: {
     ...trimControllers,

@@ -1,4 +1,4 @@
-import { initVovk } from 'vovk';
+import { initSegment } from 'vovk';
 import NoValidationControllerOnlyEntityController from '../../../../modules/generated/noValidationControllerOnlyEntity/NoValidationControllerOnlyEntityController.ts';
 import NoValidationControllerAndServiceEntityController from '../../../../modules/generated/noValidationControllerAndServiceEntity/NoValidationControllerAndServiceEntityController.ts';
 import ZodControllerOnlyEntityController from '../../../../modules/generated/zodControllerOnlyEntity/ZodControllerOnlyEntityController.ts';
@@ -21,7 +21,7 @@ const controllers = {
 
 export type Controllers = typeof controllers;
 
-export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
   segmentName: 'generated',
   emitSchema: true,
   controllers,

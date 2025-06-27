@@ -14,7 +14,7 @@ await describe('CLI new controller only', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -33,7 +33,7 @@ await describe('CLI new controller only', async () => {
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -53,7 +53,7 @@ await describe('CLI new controller only', async () => {
         UserRPC: UserController,
         PostRPC: PostController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -66,7 +66,7 @@ await describe('CLI new controller only', async () => {
     await runAtProjectDir('../dist/index.mjs new segment foo');
     await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         segmentName: 'foo',
         emitSchema: true,
         controllers, 
@@ -86,7 +86,7 @@ await describe('CLI new controller only', async () => {
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         segmentName: 'foo',
         emitSchema: true,
         controllers, 
@@ -100,7 +100,7 @@ await describe('CLI new controller only', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -121,7 +121,7 @@ await describe('CLI new controller only', async () => {
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -134,7 +134,7 @@ await describe('CLI new controller only', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -154,7 +154,7 @@ await describe('CLI new controller only', async () => {
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -167,7 +167,7 @@ await describe('CLI new controller only', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
@@ -187,7 +187,7 @@ await describe('CLI new controller only', async () => {
       `const controllers = {
         UserRPC: UserController,
       };`,
-      `initVovk({
+      `initSegment({
         emitSchema: true,
         controllers, 
       });`,
