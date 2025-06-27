@@ -3,11 +3,13 @@ import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from '<%= t.imports.fetcher %>';
 import { createRPC } from '<%= t.imports.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentName !== t.EXTENSIONS_SEGMENT_NAME) { %>
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
-<% } else { %>
-import type { Controllers as Controllers<%= i %> } from "./<%= t.EXTENSIONS_SEGMENT_NAME %>.d.ts";
-<% }});
+<% }
+});
+if (t.hasMixins) { %>
+import type { Controllers as MixinControllers } from "./mixins.d.ts";
+<% } 
 if (t.imports.validateOnClient) { %>
 import { validateOnClient } from '<%= t.imports.validateOnClient %>';
 <% } else { %>
@@ -16,9 +18,9 @@ const validateOnClient = undefined;
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {     
   Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
-export const <%= rpcModuleName %> = createRPC<Controllers<%= i %>["<%= rpcModuleName %>"], Options>(
+export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], Options>(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', fetcher,
-  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentName === 'extensions' ? '' : `apiRoot: '${segment.segmentApiRoot ?? t.apiRoot}'` %> }
+  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${segment.segmentApiRoot ?? t.apiRoot}'` %> }
 );
 <% }) 
 }) %>

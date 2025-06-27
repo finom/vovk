@@ -22,14 +22,14 @@ export default async function getClientTemplateFiles({
   log,
   configKey,
   cliGenerateOptions,
-  hasExtensions,
+  hasMixins,
 }: {
   config: VovkStrictConfig;
   cwd: string;
   log: ProjectInfo['log'];
   configKey: 'composedClient' | 'segmentedClient';
   cliGenerateOptions?: GenerateOptions;
-  hasExtensions: boolean;
+  hasMixins: boolean;
 }) {
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
   const fromTemplates =
@@ -51,12 +51,12 @@ export default async function getClientTemplateFiles({
 
     let usedDef = config.clientTemplateDefs[templateName];
 
-    if (usedDef.isTsClient && hasExtensions) {
+    if (usedDef.isTsClient && hasMixins) {
       usedDef = {
         ...usedDef,
         requires: {
           ...usedDef.requires,
-          [BuiltInTemplateName.extensions]: '.',
+          [BuiltInTemplateName.mixins]: '.',
         },
       };
     }

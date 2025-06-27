@@ -12,8 +12,6 @@ import {
 import { generateFnName } from './generateFnName';
 import { camelCase } from '../utils/camelCase';
 
-const EXTENSIONS_SEGMENT_NAME = 'extensions';
-
 // fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: KnownAny): KnownAny {
   if (obj === null || typeof obj !== 'object') return obj;
@@ -26,7 +24,81 @@ function cloneJSON(obj: KnownAny): KnownAny {
   return result;
 }
 
-function applyComponents(schema: SimpleJsonSchema, components: ComponentsObject['schemas']): SimpleJsonSchema {
+const oas2ParamToOas31 = (param: ParameterObject): ParameterObject => {
+  /* in: {
+     name: 'petId',
+     in: 'path',
+     description: 'ID of pet to update',
+     required: true,
+     type: 'integer',
+     format: 'int64'
+   }
+     
+   out: {
+      "name": "petId",
+      "in": "path",
+      "description": 'ID of pet to update',
+      "required": true,
+      "schema": {
+        "type": "integer",
+        "format": "int64"
+      } */
+
+  // If the parameter already has a schema, return it as is
+  if (param.schema) {
+    return param;
+  }
+
+  // Create a new object for the result
+  const result: ParameterObject = { ...param };
+
+  // Schema-related properties to move from parameter object to schema object
+  const schemaProps = [
+    'type',
+    'format',
+    'items',
+    'collectionFormat',
+    'default',
+    'maximum',
+    'exclusiveMaximum',
+    'minimum',
+    'exclusiveMinimum',
+    'maxLength',
+    'minLength',
+    'pattern',
+    'maxItems',
+    'minItems',
+    'uniqueItems',
+    'enum',
+    'multipleOf',
+  ];
+
+  // Create schema object
+  const schema: Record<string, unknown> = {};
+
+  // Move properties from parameter to schema
+  for (const prop of schemaProps) {
+    if (prop in param) {
+      // @ts-expect-error - Dynamic property access
+      schema[prop] = param[prop];
+      // @ts-expect-error - Dynamic property access
+      delete result[prop];
+    }
+  }
+
+  // Only add schema if we have properties to include
+  if (Object.keys(schema).length > 0) {
+    result.schema = schema;
+  }
+
+  return result;
+};
+
+function applyComponents(
+  schema: SimpleJsonSchema,
+  key: 'definitions' | 'components/schemas',
+  components: ComponentsObject['schemas']
+): SimpleJsonSchema {
   if (!components || !Object.keys(components).length) return schema;
 
   // Create a deep copy of the schema
@@ -45,15 +117,14 @@ function applyComponents(schema: SimpleJsonSchema, components: ComponentsObject[
     // Create a new object/array to avoid modifying the input
     const newObj = Array.isArray(obj) ? [...obj] : { ...obj };
 
-    // Check for $ref
-    if (newObj.$ref && typeof newObj.$ref === 'string' && newObj.$ref.startsWith('#/components/schemas/')) {
-      const componentName = newObj.$ref.replace('#/components/schemas/', '');
+    if (newObj.$ref && typeof newObj.$ref === 'string' && newObj.$ref.startsWith(`#/${key}/`)) {
+      const componentName = newObj.$ref.replace(`#/${key}/`, '');
       newObj.$ref = `#/$defs/${componentName}`;
 
       // Add the component to $defs if not already added
       if (!addedComponents.has(componentName) && components![componentName]) {
         addedComponents.add(componentName);
-        // TODO: IMPORTANT! Deep copy to avoid mutation issues
+        // TODO: Optimize
         result.$defs[componentName] = processSchema(cloneJSON(components![componentName]));
       }
     }
@@ -93,9 +164,7 @@ const getNamesNestJS = (operationObject: OperationObject): [string, string] => {
   return [controllerName.replace(/Controller$/, 'RPC'), handlerName];
 };
 
-const normalizeGetModuleName = (
-  getModuleName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['extensionModules'][number]['getModuleName']
-) => {
+const normalizeGetModuleName = (getModuleName: NonNullable<VovkConfig['openApiMixins']>[string]['getModuleName']) => {
   if (getModuleName === 'nestjs-operation-id') {
     getModuleName = ({ operationObject }: { operationObject: OperationObject }) => getNamesNestJS(operationObject)[0];
   } else if (typeof getModuleName === 'string') {
@@ -108,9 +177,7 @@ const normalizeGetModuleName = (
   return getModuleName;
 };
 
-const normalizeGetMethodName = (
-  getMethodName: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['extensionModules'][number]['getMethodName']
-) => {
+const normalizeGetMethodName = (getMethodName: NonNullable<VovkConfig['openApiMixins']>[string]['getMethodName']) => {
   if (getMethodName === 'nestjs-operation-id') {
     getMethodName = ({ operationObject }: { operationObject: OperationObject }) => getNamesNestJS(operationObject)[1];
   } else if (getMethodName === 'camel-case-operation-id') {
@@ -124,9 +191,10 @@ const normalizeGetMethodName = (
   } else if (getMethodName === 'auto') {
     getMethodName = ({ operationObject, method, path }: Parameters<GetOpenAPINameFn>[0]) => {
       const operationId = operationObject.operationId;
+      const isCamelCase = operationId && /^[a-z][a-zA-Z0-9]*$/.test(operationId);
       const isSnakeCase = operationId && /^[a-z][a-z0-9_]+$/.test(operationId);
 
-      return isSnakeCase ? camelCase(operationId) : generateFnName(method, path);
+      return isCamelCase ? operationId : isSnakeCase ? camelCase(operationId) : generateFnName(method, path);
     };
   } else if (typeof getMethodName !== 'function') {
     throw new Error('getMethodName must be a function or one of the predefined strings');
@@ -140,8 +208,14 @@ export function openAPIToVovkSchema({
   source: { object: openAPIObject },
   getModuleName = 'api',
   getMethodName = 'auto',
-}: VovkStrictConfig['extendClientWithOpenAPI']['extensionModules'][number]): VovkSchema {
-  const forceApiRoot = apiRoot ?? openAPIObject.servers?.[0]?.url;
+  mixinName = 'mixin',
+}: VovkStrictConfig['openApiMixins'][string] & { mixinName?: string }): VovkSchema {
+  const forceApiRoot =
+    apiRoot ??
+    openAPIObject.servers?.[0]?.url ??
+    ('host' in openAPIObject
+      ? `https://${openAPIObject.host}${'basePath' in openAPIObject ? openAPIObject.basePath : ''}`
+      : null);
 
   if (!forceApiRoot) {
     throw new Error('API root URL is required in OpenAPI configuration');
@@ -149,10 +223,11 @@ export function openAPIToVovkSchema({
   const schema: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {
-      [EXTENSIONS_SEGMENT_NAME]: {
+      [mixinName]: {
         $schema: VovkSchemaIdEnum.SEGMENT,
         emitSchema: true,
-        segmentName: EXTENSIONS_SEGMENT_NAME,
+        segmentName: mixinName,
+        segmentType: 'mixin',
         controllers: {},
       },
     },
@@ -164,7 +239,7 @@ export function openAPIToVovkSchema({
       openapi: openAPIObject,
     },
   };
-  const segment = schema.segments[EXTENSIONS_SEGMENT_NAME];
+  const segment = schema.segments[mixinName];
   getModuleName = normalizeGetModuleName(getModuleName);
   getMethodName = normalizeGetMethodName(getMethodName);
   return Object.entries(openAPIObject.paths ?? {}).reduce((acc, [path, operations]) => {
@@ -193,14 +268,14 @@ export function openAPIToVovkSchema({
       const query = queryProperties?.length
         ? {
             type: 'object',
-            properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema])),
+            properties: Object.fromEntries(queryProperties.map((p) => [p.name, oas2ParamToOas31(p).schema])),
             required: queryProperties.filter((p) => p.required).map((p) => p.name),
           }
         : null;
       const params = pathProperties?.length
         ? {
             type: 'object',
-            properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema])),
+            properties: Object.fromEntries(pathProperties.map((p) => [p.name, oas2ParamToOas31(p).schema])),
             required: pathProperties.filter((p) => p.required).map((p) => p.name),
           }
         : null;
@@ -213,15 +288,28 @@ export function openAPIToVovkSchema({
         null;
       // TODO: "iteration" validation
       // TODO: FormData
+      const componentsKey = openAPIObject.components?.schemas ? 'components/schemas' : 'definitions';
+      const components =
+        openAPIObject.components?.schemas ??
+        ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
+
       segment.controllers[rpcModuleName].handlers[handlerName] = {
         httpMethod: method.toUpperCase(),
         path,
         openapi: operation,
         validation: {
-          ...(query && { query: applyComponents(query as SimpleJsonSchema, openAPIObject.components?.schemas) }),
-          ...(params && { params: applyComponents(params as SimpleJsonSchema, openAPIObject.components?.schemas) }),
-          ...(body && { body: applyComponents(body as SimpleJsonSchema, openAPIObject.components?.schemas) }),
-          ...(output && { output: applyComponents(output as SimpleJsonSchema, openAPIObject.components?.schemas) }),
+          ...(query && {
+            query: applyComponents(query as SimpleJsonSchema, componentsKey, components),
+          }),
+          ...(params && {
+            params: applyComponents(params as SimpleJsonSchema, componentsKey, components),
+          }),
+          ...(body && {
+            body: applyComponents(body as SimpleJsonSchema, componentsKey, components),
+          }),
+          ...(output && {
+            output: applyComponents(output as SimpleJsonSchema, componentsKey, components),
+          }),
         },
       };
     });

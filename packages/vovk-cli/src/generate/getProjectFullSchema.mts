@@ -26,7 +26,7 @@ export async function getProjectFullSchema(
     const metaContent = await readFile(metaPath, 'utf-8');
     result.meta = JSON.parse(metaContent);
   } catch {
-    log.warn(`Warning: ${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
+    log.warn(`${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
   }
 
   // Handle segments directory
@@ -61,11 +61,11 @@ export async function getProjectFullSchema(
 
         result.segments[relativePath] = jsonData;
       } catch (error) {
-        log.warn(`Warning: Failed to process file ${filePath}: ${error}`);
+        log.warn(`Failed to process file ${filePath}: ${error}`);
       }
     }
   } catch {
-    log.warn(`Warning: Segments directory not found at ${segmentsDir}. Using empty segments as fallback.`);
+    log.warn(`Segments directory not found at ${segmentsDir}. Using empty segments as fallback.`);
     result.segments = {};
   }
 

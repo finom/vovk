@@ -5,7 +5,8 @@ import getUserConfig from './getUserConfig.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 import type { VovkEnv } from '../../types.mjs';
 import getTemplateDefs, { BuiltInTemplateName } from './getTemplateDefs.mjs';
-import { normalizeOpenAPIRootModules } from '../../utils/normalizeOpenAPIRootModules.mjs';
+import { normalizeOpenAPIMixins } from '../../utils/normalizeOpenAPIMixins.mjs';
+import chalkHighlightThing from '../../utils/chalkHighlightThing.mjs';
 
 export default async function getConfig({ configPath, cwd }: { configPath?: string; cwd: string }) {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({
@@ -75,12 +76,10 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     },
     libs: conf.libs ?? {},
     segmentConfig: conf.segmentConfig ?? {},
-    extendClientWithOpenAPI: {
-      extensionModules: await normalizeOpenAPIRootModules({
-        extensionModules: conf.extendClientWithOpenAPI?.extensionModules ?? [],
-        cwd,
-      }),
-    },
+    openApiMixins: await normalizeOpenAPIMixins({
+      mixinModules: conf.openApiMixins ?? {},
+      cwd,
+    }),
   };
 
   if (typeof conf.emitConfig === 'undefined') {
@@ -93,7 +92,9 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
 
   const log = getLogger(config.logLevel);
 
-  if (error) log.warn(`Unable to load config. Using default values.`);
+  if (!userConfig) {
+    log.warn(`Unable to load config at ${chalkHighlightThing(cwd)}. Using default values. ${error ?? ''}`);
+  }
 
   return { config, srcRoot, configAbsolutePaths, userConfig, log };
 }

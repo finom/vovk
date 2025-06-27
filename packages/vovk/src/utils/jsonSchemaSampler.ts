@@ -1,6 +1,7 @@
 import { KnownAny } from '../types';
 
 export function jsonSchemaSampler(schema: KnownAny, rootSchema?: KnownAny): KnownAny {
+  if (!schema || typeof schema !== 'object') return null;
   // Use the input schema as the root if not provided
   rootSchema = rootSchema || schema;
 

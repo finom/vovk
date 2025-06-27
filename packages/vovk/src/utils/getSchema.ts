@@ -40,6 +40,7 @@ export default async function getSchema(options: {
     $schema: VovkSchemaIdEnum.SEGMENT,
     emitSchema,
     segmentName: options.segmentName ?? '',
+    segmentType: 'segment',
     controllers: {},
   };
 

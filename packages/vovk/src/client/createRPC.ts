@@ -55,11 +55,12 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       params: { [key: string]: string };
       query: { [key: string]: string };
     }) => {
-      apiRoot = apiRoot ?? controllerSchema.forceApiRoot ?? options?.apiRoot ?? '/api';
+      const forceApiRoot = controllerSchema.forceApiRoot ?? segmentSchema.forceApiRoot;
+      apiRoot = apiRoot ?? forceApiRoot ?? options?.apiRoot ?? '/api';
       const endpoint = [
         apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
         apiRoot,
-        controllerSchema.forceApiRoot ? '' : segmentNamePath,
+        forceApiRoot ? '' : segmentNamePath,
         getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query),
       ]
         .filter(Boolean)

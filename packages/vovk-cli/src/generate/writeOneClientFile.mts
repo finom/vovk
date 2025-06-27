@@ -10,7 +10,7 @@ import prettify from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import type { ClientImports } from './getTemplateClientImports.mjs';
-import { EXTENSIONS_SEGMENT_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { convertJSONSchemaToTypeScriptDef } from '../utils/convertJSONSchemaToTypeScriptDef.mjs';
 
@@ -31,7 +31,7 @@ export default async function writeOneClientFile({
   templateDef,
   locatedSegments,
   isNodeNextResolution,
-  hasExtensions,
+  hasMixins,
   isVovkProject,
 }: {
   cwd: string;
@@ -55,7 +55,7 @@ export default async function writeOneClientFile({
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
   locatedSegments: Segment[];
   isNodeNextResolution: boolean;
-  hasExtensions: boolean;
+  hasMixins: boolean;
   isVovkProject: boolean;
 }) {
   const { config, apiRoot } = projectInfo;
@@ -78,11 +78,10 @@ export default async function writeOneClientFile({
   // Data for the EJS templates:
   const t = {
     _, // lodash
-    hasExtensions,
+    hasMixins,
     isVovkProject,
     package: packageJson,
     ROOT_SEGMENT_FILE_NAME,
-    EXTENSIONS_SEGMENT_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports,
     schema: fullSchema,

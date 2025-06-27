@@ -9,6 +9,7 @@ const getEmptySegmentRecordSchema = (segmentNames: string[]) => {
     result[segmentName] = {
       $schema: VovkSchemaIdEnum.SEGMENT,
       segmentName,
+      segmentType: 'segment',
       emitSchema: false,
       controllers: {},
     };

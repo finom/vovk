@@ -14,6 +14,7 @@ export type VovkAjvConfig = {
 };
 
 const createAjv = (options: Options, target: VovkAjvConfig['target']) => {
+  // TODO auto-detect by https://json-schema.org/draft-07/schema, https://json-schema.org/draft/2020-12/schema
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
   const ajv = new AjvClass({ allErrors: true, ...options });
   ajvFormats(ajv);

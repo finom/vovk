@@ -1,8 +1,13 @@
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import type { KnownAny } from 'vovk';
 
-export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | null {
-  if (!schema) return null;
+export function convertJSONSchemaToTypeScriptDef(
+  schema: JSONSchema7,
+  defsPrefix: string
+): {
+  $type: string;
+  $defs: string;
+} {
+  if (!schema) return { $type: 'null', $defs: 'null' };
 
   // Helper function to escape single quotes in string literals
   const escapeStringLiteral = (str: string): string => {
@@ -79,21 +84,13 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
     }
   };
 
-  // Helper function to resolve $ref references
-  const resolveRef = (ref: string): JSONSchema7Definition | null => {
-    if (!ref.startsWith('#/')) return null;
-
-    const path = ref.substring(2).split('/');
-    let currentSchema: KnownAny = schema;
-
-    for (const segment of path) {
-      if (!currentSchema || typeof currentSchema !== 'object') {
-        return null;
-      }
-      currentSchema = currentSchema[segment];
+  // Helper function to extract type name from $ref
+  const getRefTypeName = (ref: string): string => {
+    if (ref.startsWith('#/definitions/') || ref.startsWith('#/$defs/')) {
+      const path = ref.split('/');
+      return `${defsPrefix}__${path[path.length - 1]}`;
     }
-
-    return currentSchema || null;
+    return 'KnownAny'; // Fallback for external references
   };
 
   // Helper function to get JSDoc from schema
@@ -111,22 +108,16 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
 
   // Helper function to convert schema to TypeScript type
   const schemaToType = (schema: JSONSchema7 | JSONSchema7Definition, indentation = '  '): string => {
+    if (!schema) {
+      return 'null';
+    }
     if (typeof schema === 'boolean') {
       return schema ? 'KnownAny' : 'never';
     }
 
     // Handle $ref references - check this first before other properties
     if (schema.$ref) {
-      const resolvedSchema = resolveRef(schema.$ref);
-      if (resolvedSchema) {
-        return schemaToType(resolvedSchema, indentation);
-      } else {
-        // If we can't resolve the reference, use the reference name as type
-        const refName = schema.$ref.split('/').pop();
-        // eslint-disable-next-line no-console
-        console.warn(`Warning: Could not resolve reference ${schema.$ref}`);
-        return refName || 'KnownAny';
-      }
+      return getRefTypeName(schema.$ref);
     }
 
     if (schema.enum) {
@@ -273,9 +264,37 @@ export function convertJSONSchemaToTypeScriptDef(schema: JSONSchema7): string | 
     }
   };
 
-  // Generate the interface
-  const jsDoc = getJSDoc(schema);
-  const interfaceBody = schemaToType(schema);
+  const defsToType = (defs: Record<string, JSONSchema7Definition>): string => {
+    return Object.entries(defs)
+      .map(([defName, defSchema]) => {
+        if (defSchema) {
+          const jsDoc = getJSDoc(defSchema);
+          const defType = schemaToType(defSchema);
+          return [jsDoc, `type ${defsPrefix}__${defName} = ${defType};`].filter(Boolean).join('\n');
+        }
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  };
 
-  return `${jsDoc}\n${interfaceBody}`;
+  // Process definitions from both $defs and definitions properties
+  const allDefs = {
+    ...(schema.definitions || {}),
+    ...(schema.$defs || {}),
+  };
+
+  // Generate the main type
+  const jsDoc = getJSDoc(schema);
+  const mainType = schemaToType(schema);
+  const defsType = defsToType(allDefs);
+
+  console.log('allDefs1', defsType);
+  console.log('allDefs2', allDefs);
+  console.log('mainType', mainType);
+
+  return {
+    $type: jsDoc ? `${jsDoc}\n${mainType}` : mainType,
+    $defs: defsType,
+  };
 }

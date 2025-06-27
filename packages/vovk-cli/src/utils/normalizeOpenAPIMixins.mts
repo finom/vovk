@@ -30,16 +30,16 @@ async function getOpenApiSpecRemote(openApiSpecUrl: string): Promise<OpenAPIObje
   ) as OpenAPIObject;
 }
 
-export async function normalizeOpenAPIRootModules({
-  extensionModules,
+export async function normalizeOpenAPIMixins({
+  mixinModules,
   cwd = process.cwd(),
 }: {
-  extensionModules: Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['extensionModules'];
+  mixinModules: NonNullable<VovkConfig['openApiMixins']>;
   cwd?: string;
-}): Promise<VovkStrictConfig['extendClientWithOpenAPI']['extensionModules']> {
-  if (extensionModules) {
+}): Promise<VovkStrictConfig['openApiMixins']> {
+  if (mixinModules) {
     const modules = await Promise.all(
-      extensionModules.map(async ({ source, apiRoot, getModuleName, getMethodName }) => {
+      Object.entries(mixinModules).map(async ([mixinName, { source, apiRoot, getModuleName, getMethodName }]) => {
         let openAPIObject: OpenAPIObject;
         if ('url' in source) {
           openAPIObject = await getOpenApiSpecRemote(source.url);
@@ -51,23 +51,18 @@ export async function normalizeOpenAPIRootModules({
           throw new Error('Invalid source type for OpenAPI configuration');
         }
 
-        const apiRootResolved = apiRoot ?? openAPIObject.servers?.[0]?.url;
-
-        if (!apiRootResolved) {
-          throw new Error('API root URL is required in OpenAPI configuration');
-        }
-
         return {
           source: { object: openAPIObject },
-          apiRoot: apiRootResolved,
+          apiRoot,
           getModuleName,
           getMethodName,
+          mixinName,
         };
       })
     );
 
-    return modules;
+    return Object.fromEntries(modules.map((module) => [module.mixinName, module]));
   }
 
-  return [];
+  return {};
 }

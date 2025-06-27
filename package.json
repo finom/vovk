@@ -22,7 +22,7 @@
     "serve:unit": "npm --prefix test run generate && npm --prefix test run dev",
     "lint-nofix": "eslint .",
     "lint": "npm run lint-nofix -- --fix",
-    "build": "npm run rm-dist --prefix packages/vovk && npm run build --prefix packages/vovk && turbo run build --force --dangerously-disable-package-manager-check",
+    "build": "npm run rm-dist --prefix packages/vovk && npm run build --prefix packages/vovk && npm run build --prefix packages/vovk-cli && turbo run build --force --dangerously-disable-package-manager-check",
     "vpub-check-vars": "if [ -z \"$VERSION_TYPE\" ] || [ -z \"$PACKAGE\" ] || [ -z \"$NPM_TAG\" ]; then echo 'Error: some vars are not set'; exit 1; fi;",
     "vpub:version": "npm version --prefix ./packages/$PACKAGE $VERSION_TYPE --no-git-tag-version",
     "vpub:bump-deps": "node --experimental-strip-types ./scripts/bump-dependencies.ts",

@@ -24,6 +24,7 @@ export interface GenerateOptions {
   openapiGetModuleName?: string[];
   openapiGetMethodName?: string[];
   openapiRootUrl?: string[];
+  openapiMixinName?: string[];
   watch?: boolean | string;
   forceTsStandalone?: boolean;
   composedFrom?: string[];
@@ -45,6 +46,7 @@ export interface BundleOptions extends Partial<Omit<VovkStrictConfig['bundle'], 
   openapiGetModuleName?: string[];
   openapiGetMethodName?: string[];
   openapiRootUrl?: string[];
+  openapiMixinName?: string[];
   forceTsStandalone?: boolean;
 }
 

@@ -11,7 +11,7 @@ Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach
   Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %> = createRPC(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', fetcher,
-  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentName === 'extensions' ? '' : `apiRoot: '${segment.segmentApiRoot ?? t.apiRoot}'` %> }
+  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${segment.segmentApiRoot ?? t.apiRoot}'` %> }
 );
 <% 
   }); 

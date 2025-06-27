@@ -7,9 +7,10 @@ export default function formatLoggedSegmentName(
     withChalk = true,
     upperFirst = false,
     isStatic = false,
-  }: { withChalk?: boolean; upperFirst?: boolean; isStatic?: boolean } = {}
+    segmentType = 'segment', // TODO: Apply to all formatLoggedSegmentName invocations
+  }: { withChalk?: boolean; upperFirst?: boolean; isStatic?: boolean; segmentType?: 'segment' | 'mixin' } = {}
 ) {
-  let text = segmentName ? `${isStatic ? 'static ' : ''}segment "${segmentName}"` : 'the root segment';
+  let text = segmentName ? `${isStatic ? 'static ' : ''}${segmentType} "${segmentName}"` : 'the root segment';
   text = upperFirst ? upperFirstLodash(text) : text;
 
   return withChalk ? chalkHighlightThing(text) : text;

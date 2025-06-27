@@ -13,10 +13,10 @@ import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
 import getTemplateClientImports from './getTemplateClientImports.mjs';
 import mergePackages from './mergePackages.mjs';
 import writeOneClientFile from './writeOneClientFile.mjs';
-import { EXTENSIONS_SEGMENT_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { getTsconfig } from 'get-tsconfig';
-import { normalizeOpenAPIRootModules } from '../utils/normalizeOpenAPIRootModules.mjs';
+import { normalizeOpenAPIMixins } from '../utils/normalizeOpenAPIMixins.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -79,10 +79,9 @@ function logClientGenerationResults({
 }): void {
   const writtenResults = results.filter(({ written }) => written);
   const duration = Date.now() - startTime;
+  const groupedByDir = _.groupBy(writtenResults, ({ outAbsoluteDir }) => outAbsoluteDir);
 
   if (writtenResults.length) {
-    const groupedByDir = _.groupBy(writtenResults, ({ outAbsoluteDir }) => outAbsoluteDir);
-
     for (const [outAbsoluteDir, dirResults] of Object.entries(groupedByDir)) {
       const templateNames = _.uniq(dirResults.map(({ templateName }) => templateName));
       log.info(
@@ -93,25 +92,45 @@ function logClientGenerationResults({
     }
   } else if (!isEnsuringClient && fromTemplates.length) {
     const logOrDebug = forceNothingWrittenLog ? log.info : log.debug;
-    logOrDebug(`${clientType} client is up to date and doesn't need to be regenerated (${duration}ms)`);
+    for (const [outAbsoluteDir, dirResults] of Object.entries(groupedByDir)) {
+      const templateNames = _.uniq(dirResults.map(({ templateName }) => templateName));
+      logOrDebug(
+        `${clientType} client that was generated to ${chalkHighlightThing(outAbsoluteDir)} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
+          templateNames.map((s) => `"${s}"`).join(', ')
+        )} is up to date and doesn't need to be regenerated (${duration}ms)`
+      );
+    }
   }
 }
 
-const cliOptionsToOpenAPIRootModules = ({
+const cliOptionsToOpenAPIMixins = ({
   openapiGetMethodName,
   openapiGetModuleName,
   openapiRootUrl,
   openapiSpec,
-}: GenerateOptions): Exclude<VovkConfig['extendClientWithOpenAPI'], undefined>['extensionModules'] => {
-  return (
-    openapiSpec?.map((spec, i) => {
-      return {
-        source: spec.startsWith('http://') || spec.startsWith('https://') ? { url: spec } : { file: spec },
-        apiRoot: openapiRootUrl?.[i] ?? '/',
-        getModuleName: openapiGetModuleName?.[i] ?? undefined,
-        getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
-      };
-    }) || []
+  openapiMixinName,
+}: GenerateOptions): NonNullable<VovkConfig['openApiMixins']> => {
+  return Object.fromEntries(
+    (
+      openapiSpec?.map((spec, i) => {
+        return {
+          source: spec.startsWith('http://') || spec.startsWith('https://') ? { url: spec } : { file: spec },
+          apiRoot: openapiRootUrl?.[i] ?? '/',
+          getModuleName: openapiGetModuleName?.[i] ?? undefined,
+          getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
+          mixinName: openapiMixinName?.[i] ?? `mixin${i + 1}`, // TODO merge mixins with the same name
+        };
+      }) || []
+    ).map(({ source, apiRoot, getModuleName, getMethodName, mixinName }) => [
+      mixinName,
+      {
+        source,
+        apiRoot,
+        getModuleName,
+        getMethodName,
+        mixinName,
+      },
+    ])
   );
 };
 
@@ -136,41 +155,51 @@ export async function generate({
     segments: Object.fromEntries(Object.entries(fullSchema.segments).sort(([a], [b]) => a.localeCompare(b))),
   };
   const { config, cwd, log, srcRoot } = projectInfo;
-  const allOpenAPIRootModules = [
-    ...config.extendClientWithOpenAPI.extensionModules,
-    ...cliOptionsToOpenAPIRootModules(cliGenerateOptions ?? {}),
-  ];
-  let hasExtensions = false;
-  if (allOpenAPIRootModules.length) {
-    hasExtensions = true;
+  const allOpenAPIMixins = {
+    ...config.openApiMixins,
+    ...cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {}),
+  };
+  let hasMixins = false;
+  if (Object.keys(allOpenAPIMixins).length) {
+    const mixins = Object.fromEntries(
+      Object.entries(await normalizeOpenAPIMixins({ mixinModules: allOpenAPIMixins })).map(
+        ([mixinName, { source, apiRoot, getModuleName, getMethodName }]) => {
+          return [
+            mixinName,
+            openAPIToVovkSchema({
+              source,
+              apiRoot,
+              getModuleName,
+              getMethodName,
+              mixinName,
+            }).segments[mixinName],
+          ];
+        }
+      )
+    );
+    hasMixins = true;
     fullSchema = {
       ...fullSchema,
       segments: {
         ...fullSchema.segments,
-        [EXTENSIONS_SEGMENT_NAME]: {
-          $schema: VovkSchemaIdEnum.SEGMENT,
-          emitSchema: true,
-          segmentName: EXTENSIONS_SEGMENT_NAME,
-          forceApiRoot: allOpenAPIRootModules[0].apiRoot ?? fullSchema.segments['']?.forceApiRoot,
-          controllers: {
-            ...fullSchema.segments[EXTENSIONS_SEGMENT_NAME]?.controllers,
-            ...(await normalizeOpenAPIRootModules({ extensionModules: allOpenAPIRootModules }))
-              .map(({ source, apiRoot, getModuleName, getMethodName }) => {
-                return openAPIToVovkSchema({
-                  source,
-                  apiRoot,
-                  getModuleName,
-                  getMethodName,
-                }).segments[EXTENSIONS_SEGMENT_NAME].controllers;
-              })
-              .reduce((acc, controllers) => {
-                return {
-                  ...acc,
-                  ...controllers,
-                };
-              }, {}),
-          },
-        },
+        ...Object.fromEntries(
+          Object.entries(mixins).map(([segmentName, mixin]) => {
+            return [
+              segmentName,
+              {
+                $schema: VovkSchemaIdEnum.SEGMENT,
+                emitSchema: true,
+                segmentType: 'mixin',
+                segmentName,
+                forceApiRoot: mixin?.forceApiRoot, // TODO: Merging with existing segments and using apiRoot doesn't make a lot of sense
+                controllers: {
+                  ...fullSchema.segments[segmentName]?.controllers,
+                  ...mixin?.controllers,
+                },
+              },
+            ];
+          })
+        ),
       },
     };
   }
@@ -197,7 +226,7 @@ export async function generate({
       config,
       cwd,
       log,
-      hasExtensions,
+      hasMixins,
       cliGenerateOptions,
       configKey: 'composedClient',
     });
@@ -245,7 +274,7 @@ export async function generate({
           templateDef,
           locatedSegments,
           isNodeNextResolution,
-          hasExtensions,
+          hasMixins,
           isVovkProject,
         });
 
@@ -281,7 +310,7 @@ export async function generate({
       config,
       cwd,
       log,
-      hasExtensions,
+      hasMixins,
       cliGenerateOptions,
       configKey: 'segmentedClient',
     });
@@ -334,7 +363,7 @@ export async function generate({
               templateDef,
               locatedSegments,
               isNodeNextResolution,
-              hasExtensions,
+              hasMixins,
               isVovkProject,
             });
 

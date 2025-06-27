@@ -2,13 +2,19 @@
 <% if(t.isVovkProject) { %>
 import meta from './<%= t.schemaOutDir %>/_meta.json' with { type: "json" };
 <% } %>
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentName !== t.EXTENSIONS_SEGMENT_NAME) { %>
+<% if(t.hasMixins) { %>
+import mixins from './mixins.json' with { type: "json" };
+<% } %>
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import segment<%= i %> from './<%= t.schemaOutDir %>/<%= segment.segmentName || t.ROOT_SEGMENT_FILE_NAME %>.json' with { type: "json" };
 <% } else { %>
-import segment<%= i %> from './<%= t.EXTENSIONS_SEGMENT_NAME %>.json' with { type: "json" };
+import segment<%= i %> from './<%= segment.segmentName %>.json' with { type: "json" };
 <% }}) %>
 const segments = {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
   '<%= segment.segmentName %>': segment<%= i %>,<% }) %>
+  <% if(t.hasMixins) { %>
+  ...mixins,
+  <% } %>
 };
 
 export const schema = {

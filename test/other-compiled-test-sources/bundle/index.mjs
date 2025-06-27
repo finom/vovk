@@ -26570,12 +26570,7 @@ var require_createLLMTools = __commonJS({
         });
       throw new Error('Handler is not a valid RPC or controller method');
     }
-    function createLLMTools({
-      modules,
-      caller = defaultCaller,
-      onSuccess = (result) => result,
-      onError = () => {},
-    }) {
+    function createLLMTools({ modules, caller = defaultCaller, onSuccess = (result) => result, onError = () => {} }) {
       const functions = Object.entries(modules ?? {})
         .map(([rpcModuleName, module$1]) => {
           return Object.entries(module$1 ?? {})

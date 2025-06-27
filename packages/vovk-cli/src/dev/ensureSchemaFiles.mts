@@ -29,6 +29,7 @@ export default async function ensureSchemaFiles(
           $schema: VovkSchemaIdEnum.SEGMENT,
           emitSchema: false,
           segmentName,
+          segmentType: 'segment',
           controllers: {},
         },
         skipIfExists: true,

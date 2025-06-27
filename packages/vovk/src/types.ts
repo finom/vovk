@@ -34,6 +34,7 @@ export type VovkSegmentSchema<T = KnownAny> = {
   $schema: typeof VovkSchemaIdEnum.SEGMENT | (string & {});
   emitSchema: boolean;
   segmentName: string;
+  segmentType: 'segment' | 'mixin';
   forceApiRoot?: string;
   controllers: Record<string, VovkControllerSchema<T>>;
 };
@@ -426,8 +427,8 @@ type VovkUserConfig = {
   };
   libs?: Record<string, KnownAny>;
   segmentConfig?: false | SegmentConfig;
-  extendClientWithOpenAPI?: {
-    extensionModules: {
+  openApiMixins?: {
+    [mixinName: string]: {
       source:
         | {
             file: string;
@@ -449,7 +450,7 @@ type VovkUserConfig = {
         | 'camel-case-operation-id' // operation ID to camelCase
         | 'auto' // auto-detect based on operationObject method and path
         | GetOpenAPINameFn;
-    }[];
+    };
   };
 };
 
@@ -471,16 +472,16 @@ export type VovkStrictConfig = Required<
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
-  extendClientWithOpenAPI: {
-    extensionModules: {
+  openApiMixins: {
+    [mixinName: string]: {
       source: Exclude<
-        NonNullable<VovkConfig['extendClientWithOpenAPI']>['extensionModules'][number]['source'],
+        NonNullable<VovkConfig['openApiMixins']>[string]['source'],
         { file: string } | { url: string } // "object" only
       >;
-      apiRoot: string;
-      getModuleName: NonNullable<VovkConfig['extendClientWithOpenAPI']>['extensionModules'][number]['getModuleName'];
-      getMethodName: NonNullable<VovkConfig['extendClientWithOpenAPI']>['extensionModules'][number]['getMethodName'];
-    }[];
+      apiRoot?: string; // if not set, uses openapi.servers[0].url or openapi.host + openapi.basePath
+      getModuleName: NonNullable<VovkConfig['openApiMixins']>[string]['getModuleName'];
+      getMethodName: NonNullable<VovkConfig['openApiMixins']>[string]['getMethodName'];
+    };
   };
 };
 

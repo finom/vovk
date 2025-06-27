@@ -1,0 +1,21 @@
+{
+  "name": "vovk-apis",
+  "version": "0.0.0",
+  "description": "3rd party APIs",
+  "scripts": {
+    "build": "node ../vovk-cli/dist/index.mjs generate",
+    "npm-publish": "npm publish",
+    "ncu": "npm-check-updates -u",
+    "pre-test": "echo 'Placeholder'",
+    "test-only": "echo 'Placeholder'",
+    "unit": "echo 'Placeholder'",
+    "test": "echo 'Placeholder'"
+  },
+  "dependencies": {
+    "vovk": "^3.0.0-draft.240",
+    "vovk-ajv": "^0.0.0-draft.65"
+  },
+  "devDependencies": {
+    "vovk-cli": "^0.0.1-draft.247"
+  }
+}
