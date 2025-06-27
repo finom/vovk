@@ -42,7 +42,6 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   const controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
   const client = {} as VovkClient<T, OPTS>;
   if (!controllerSchema) {
-    console.log('schema.segments[segmentName]', schema.segments[segmentName]);
     throw new Error(
       `Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName}".`
     );

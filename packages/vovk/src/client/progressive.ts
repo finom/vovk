@@ -28,8 +28,14 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
     .then(async (result) => {
       for await (const item of result) {
         for (const [key, value] of Object.entries(item)) {
-          if (key in reg && !reg[key].isSettled) {
-            reg[key].isSettled = true;
+          if (key in reg) {
+            if (!reg[key].isSettled) {
+              reg[key].isSettled = true;
+              reg[key].resolve(value);
+            }
+          } else {
+            const { promise, resolve, reject } = Promise.withResolvers<KnownAny>();
+            reg[key] = { resolve, reject, promise, isSettled: true };
             reg[key].resolve(value);
           }
         }
@@ -53,7 +59,6 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
       }
 
       const { promise, resolve, reject } = Promise.withResolvers();
-
       reg[prop] = { resolve, reject, promise, isSettled: false };
       return promise;
     },
