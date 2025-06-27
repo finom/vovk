@@ -37,11 +37,14 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
 ): VovkClient<T, OPTS> => {
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];
-  if (!segmentSchema) throw new Error(`Unable to create RPC module. Segment schema is missing. Check client template.`);
+  if (!segmentSchema)
+    throw new Error(`Unable to create RPC module. Segment schema is missing for segment ${segmentName}.`);
   const controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
   const client = {} as VovkClient<T, OPTS>;
   if (!controllerSchema)
-    throw new Error(`Unable to create RPC module. Controller schema is missing. Check client template.`);
+    throw new Error(
+      `Unable to create RPC module. Controller schema is missing for module ${rpcModuleName} from segment ${segmentName}.`
+    );
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {

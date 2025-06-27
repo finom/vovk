@@ -1342,7 +1342,7 @@ var require_vovkSchemaToOpenAPI$1 = __commonJS({ "../packages/vovk/mjs/openapi/v
 				segmentName$2,
 				c.prefix,
 				h.path
-			].filter(Boolean).join("/").replace(/:([a-zA-Z0-9_]+)/g, "{$1}");
+			].filter(Boolean).join("/");
 			paths[path] = paths[path] ?? {};
 			const httpMethod = h.httpMethod.toLowerCase();
 			paths[path][httpMethod] ??= {};
@@ -22078,7 +22078,7 @@ var require_vovkSchemaToOpenAPI = __commonJS({ "../packages/vovk/cjs/openapi/vov
 				segmentName$2,
 				c.prefix,
 				h.path
-			].filter(Boolean).join("/").replace(/:([a-zA-Z0-9_]+)/g, "{$1}");
+			].filter(Boolean).join("/");
 			paths[path] = paths[path] ?? {};
 			const httpMethod = h.httpMethod.toLowerCase();
 			paths[path][httpMethod] ??= {};
