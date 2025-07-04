@@ -261,29 +261,32 @@ declare const schema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  "400": {
+                  '400': {
                     description: string;
                     content: {
-                      "application/json": {
+                      'application/json': {
                         schema: {
-                          allOf: ({
-                            $ref: string;
-                            type?: undefined;
-                            properties?: undefined;
-                          } | {
-                            type: string;
-                            properties: {
-                              message: {
+                          allOf: (
+                            | {
+                                $ref: string;
+                                type?: undefined;
+                                properties?: undefined;
+                              }
+                            | {
                                 type: string;
-                                enum: string[];
-                              };
-                              statusCode: {
-                                type: string;
-                                enum: number[];
-                              };
-                            };
-                            $ref?: undefined;
-                          })[];
+                                properties: {
+                                  message: {
+                                    type: string;
+                                    enum: string[];
+                                  };
+                                  statusCode: {
+                                    type: string;
+                                    enum: number[];
+                                  };
+                                };
+                                $ref?: undefined;
+                              }
+                          )[];
                         };
                       };
                     };
@@ -600,36 +603,42 @@ declare const schema: {
                       additionalProperties: boolean;
                     };
                     logical_anyOf: {
-                      anyOf: ({
-                        type: string;
-                        maxLength: number;
-                      } | {
-                        type: string;
-                        maxLength?: undefined;
-                      })[];
+                      anyOf: (
+                        | {
+                            type: string;
+                            maxLength: number;
+                          }
+                        | {
+                            type: string;
+                            maxLength?: undefined;
+                          }
+                      )[];
                     };
                     logical_allOf: {
-                      allOf: ({
-                        type: string;
-                        properties: {
-                          a: {
+                      allOf: (
+                        | {
                             type: string;
-                          };
-                          b?: undefined;
-                        };
-                        required: string[];
-                        additionalProperties: {};
-                      } | {
-                        type: string;
-                        properties: {
-                          b: {
+                            properties: {
+                              a: {
+                                type: string;
+                              };
+                              b?: undefined;
+                            };
+                            required: string[];
+                            additionalProperties: {};
+                          }
+                        | {
                             type: string;
-                          };
-                          a?: undefined;
-                        };
-                        required: string[];
-                        additionalProperties: {};
-                      })[];
+                            properties: {
+                              b: {
+                                type: string;
+                              };
+                              a?: undefined;
+                            };
+                            required: string[];
+                            additionalProperties: {};
+                          }
+                      )[];
                     };
                   };
                   required: string[];
@@ -657,7 +666,7 @@ declare const schema: {
                   };
                   required: string[];
                   additionalProperties: boolean;
-                  "x-formData": boolean;
+                  'x-formData': boolean;
                 };
                 query: {
                   $schema: string;
@@ -692,7 +701,7 @@ declare const schema: {
                   };
                   required: string[];
                   additionalProperties: boolean;
-                  "x-formData": boolean;
+                  'x-formData': boolean;
                 };
                 query: {
                   $schema: string;
@@ -1116,29 +1125,32 @@ declare const schema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  "400": {
+                  '400': {
                     description: string;
                     content: {
-                      "application/json": {
+                      'application/json': {
                         schema: {
-                          allOf: ({
-                            $ref: string;
-                            type?: undefined;
-                            properties?: undefined;
-                          } | {
-                            type: string;
-                            properties: {
-                              message: {
+                          allOf: (
+                            | {
+                                $ref: string;
+                                type?: undefined;
+                                properties?: undefined;
+                              }
+                            | {
                                 type: string;
-                                enum: string[];
-                              };
-                              statusCode: {
-                                type: string;
-                                enum: number[];
-                              };
-                            };
-                            $ref?: undefined;
-                          })[];
+                                properties: {
+                                  message: {
+                                    type: string;
+                                    enum: string[];
+                                  };
+                                  statusCode: {
+                                    type: string;
+                                    enum: number[];
+                                  };
+                                };
+                                $ref?: undefined;
+                              }
+                          )[];
                         };
                       };
                     };
@@ -1471,7 +1483,7 @@ declare const schema: {
                     };
                   };
                   required: string[];
-                  "x-formData": boolean;
+                  'x-formData': boolean;
                 };
                 query: {
                   type: string;
@@ -1598,7 +1610,7 @@ declare const schema: {
             handleAll: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1610,7 +1622,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -1622,7 +1634,7 @@ declare const schema: {
                   required: string[];
                 };
                 params: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -1638,7 +1650,7 @@ declare const schema: {
                   required: string[];
                 };
                 output: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {
                     HandleAllBodyDto: {
                       properties: {
@@ -1697,29 +1709,32 @@ declare const schema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  "400": {
+                  '400': {
                     description: string;
                     content: {
-                      "application/json": {
+                      'application/json': {
                         schema: {
-                          allOf: ({
-                            $ref: string;
-                            type?: undefined;
-                            properties?: undefined;
-                          } | {
-                            type: string;
-                            properties: {
-                              message: {
+                          allOf: (
+                            | {
+                                $ref: string;
+                                type?: undefined;
+                                properties?: undefined;
+                              }
+                            | {
                                 type: string;
-                                enum: string[];
-                              };
-                              statusCode: {
-                                type: string;
-                                enum: number[];
-                              };
-                            };
-                            $ref?: undefined;
-                          })[];
+                                properties: {
+                                  message: {
+                                    type: string;
+                                    enum: string[];
+                                  };
+                                  statusCode: {
+                                    type: string;
+                                    enum: number[];
+                                  };
+                                };
+                                $ref?: undefined;
+                              }
+                          )[];
                         };
                       };
                     };
@@ -1732,7 +1747,7 @@ declare const schema: {
             handleNestedQuery: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {
                     ZDto: {
                       properties: {
@@ -1791,7 +1806,7 @@ declare const schema: {
             handleOutput: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     helloOutput: {
@@ -1802,7 +1817,7 @@ declare const schema: {
                   required: string[];
                 };
                 output: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1824,7 +1839,7 @@ declare const schema: {
             handleStream: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     values: {
@@ -1838,7 +1853,7 @@ declare const schema: {
                   required: string[];
                 };
                 iteration: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     value: {
@@ -1856,7 +1871,7 @@ declare const schema: {
             handleSchemaConstraints: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {
                     RequiredObject: {
                       properties: {
@@ -1984,7 +1999,7 @@ declare const schema: {
             handleFormData: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1994,10 +2009,10 @@ declare const schema: {
                   };
                   type: string;
                   required: string[];
-                  "x-formData": boolean;
+                  'x-formData': boolean;
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2015,7 +2030,7 @@ declare const schema: {
             disableServerSideValidationBool: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -2027,7 +2042,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2045,7 +2060,7 @@ declare const schema: {
             disableServerSideValidationStrings: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -2057,7 +2072,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2080,7 +2095,7 @@ declare const schema: {
             skipSchemaEmissionStrings: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2098,7 +2113,7 @@ declare const schema: {
             validateEachIteration: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     values: {
@@ -2110,7 +2125,7 @@ declare const schema: {
                   required: string[];
                 };
                 iteration: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     value: {
@@ -2132,7 +2147,7 @@ declare const schema: {
             handleQuery: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2154,7 +2169,7 @@ declare const schema: {
             handleBody: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -2176,7 +2191,7 @@ declare const schema: {
             handleParams: {
               validation: {
                 params: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -2209,29 +2224,32 @@ declare const schema: {
             getFromSchema: {
               openapi: {
                 responses: {
-                  "418": {
+                  '418': {
                     description: string;
                     content: {
-                      "application/json": {
+                      'application/json': {
                         schema: {
-                          allOf: ({
-                            $ref: string;
-                            type?: undefined;
-                            properties?: undefined;
-                          } | {
-                            type: string;
-                            properties: {
-                              message: {
+                          allOf: (
+                            | {
+                                $ref: string;
+                                type?: undefined;
+                                properties?: undefined;
+                              }
+                            | {
                                 type: string;
-                                enum: string[];
-                              };
-                              statusCode: {
-                                type: string;
-                                enum: number[];
-                              };
-                            };
-                            $ref?: undefined;
-                          })[];
+                                properties: {
+                                  message: {
+                                    type: string;
+                                    enum: string[];
+                                  };
+                                  statusCode: {
+                                    type: string;
+                                    enum: number[];
+                                  };
+                                };
+                                $ref?: undefined;
+                              }
+                          )[];
                         };
                       };
                     };
@@ -2600,7 +2618,7 @@ declare const schema: {
             getDtoControllerOnlyEntities: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2620,7 +2638,7 @@ declare const schema: {
             updateDtoControllerOnlyEntity: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -2632,7 +2650,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     q: {
@@ -2667,7 +2685,7 @@ declare const schema: {
             getDtoControllerAndServiceEntities: {
               validation: {
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2687,7 +2705,7 @@ declare const schema: {
             updateDtoControllerAndServiceEntity: {
               validation: {
                 body: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -2699,7 +2717,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  "x-isDto": boolean;
+                  'x-isDto': boolean;
                   definitions: {};
                   properties: {
                     q: {

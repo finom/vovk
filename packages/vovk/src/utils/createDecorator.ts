@@ -21,9 +21,11 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
       const controller = target as VovkController;
 
       const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
-        _sourceMethod?: (...args: KnownAny) => KnownAny;
+        _sourceMethod?: ((...args: KnownAny) => KnownAny) & { wrapper?: (...args: KnownAny) => KnownAny };
         fn?: (req: KnownAny, params: KnownAny) => KnownAny;
         schema?: VovkHandlerSchema;
+        models?: Record<string, KnownAny>;
+        wrapper?: (...args: KnownAny) => KnownAny;
       };
       if (typeof originalMethod !== 'function') {
         throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
@@ -43,6 +45,8 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
       method._controller = controller;
       method._sourceMethod = sourceMethod;
       method.fn = originalMethod.fn;
+      method.models = originalMethod.models;
+      sourceMethod.wrapper = method;
       // TODO define internal method type
       (originalMethod as unknown as { _controller: VovkController })._controller = controller;
 

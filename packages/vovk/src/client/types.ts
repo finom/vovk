@@ -10,6 +10,8 @@ import type {
 } from '../types';
 import type { JSONLinesResponse } from '../JSONLinesResponse';
 import type { NextResponse } from 'next/server';
+import type { defaultStreamHandler } from './defaultStreamHandler';
+import type { defaultHandler } from './defaultHandler';
 
 type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
@@ -40,7 +42,7 @@ export type StaticMethodInput<
           ? {
               params: PARAMS;
             }
-          : Empty)
+          : Empty) & { meta?: { [key: string]: KnownAny } }
     : Empty) &
     (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : Empty)
 >;
@@ -52,7 +54,8 @@ export type VovkStreamAsyncIterable<T> = {
   [Symbol.dispose](): Promise<void> | void;
   [Symbol.asyncDispose](): Promise<void> | void;
   [Symbol.asyncIterator](): AsyncIterator<T>;
-  cancel: () => Promise<void> | void;
+  onIterate: (cb: (data: T) => void) => () => void;
+  abort: () => Promise<void> | void;
 };
 
 type StaticMethodReturn<T extends ControllerStaticMethod> =
@@ -149,13 +152,15 @@ export type VovkClientFetcher<OPTS> = (
       query: { [key: string]: string };
     }) => string;
     validate: (input: { body?: unknown; query?: unknown; params?: unknown; endpoint: string }) => void | Promise<void>;
-    defaultStreamHandler: (response: Response) => Promise<VovkStreamAsyncIterable<unknown>>;
-    defaultHandler: (response: Response) => Promise<unknown>;
+    defaultStreamHandler: typeof defaultStreamHandler;
+    defaultHandler: typeof defaultHandler;
+    schema: VovkHandlerSchema;
   },
   input: {
     body: unknown;
     query: { [key: string]: string };
     params: { [key: string]: string };
+    meta?: { [key: string]: KnownAny };
   } & OPTS
 ) => Promise<[KnownAny, Response]>;
 

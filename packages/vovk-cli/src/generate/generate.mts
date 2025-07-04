@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import matter from 'gray-matter';
 import _ from 'lodash';
-import { openAPIToVovkSchema, VovkConfig, VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
+import { openAPIToVovkSchema, VovkConfig, type VovkSchema, type VovkStrictConfig } from 'vovk';
 import type { PackageJson } from 'type-fest';
 import getClientTemplateFiles from './getClientTemplateFiles.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
@@ -159,47 +159,22 @@ export async function generate({
     ...config.openApiMixins,
     ...cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {}),
   };
+  /** @deprecated */
   let hasMixins = false;
   if (Object.keys(allOpenAPIMixins).length) {
     const mixins = Object.fromEntries(
-      Object.entries(await normalizeOpenAPIMixins({ mixinModules: allOpenAPIMixins })).map(
-        ([mixinName, { source, apiRoot, getModuleName, getMethodName }]) => {
-          return [
-            mixinName,
-            openAPIToVovkSchema({
-              source,
-              apiRoot,
-              getModuleName,
-              getMethodName,
-              mixinName,
-            }).segments[mixinName],
-          ];
-        }
-      )
+      Object.entries(await normalizeOpenAPIMixins({ mixinModules: allOpenAPIMixins, log })).map(([mixinName, conf]) => [
+        mixinName,
+        openAPIToVovkSchema({ ...conf, mixinName }).segments[mixinName],
+      ])
     );
+
     hasMixins = true;
     fullSchema = {
       ...fullSchema,
       segments: {
         ...fullSchema.segments,
-        ...Object.fromEntries(
-          Object.entries(mixins).map(([segmentName, mixin]) => {
-            return [
-              segmentName,
-              {
-                $schema: VovkSchemaIdEnum.SEGMENT,
-                emitSchema: true,
-                segmentType: 'mixin',
-                segmentName,
-                forceApiRoot: mixin?.forceApiRoot, // TODO: Merging with existing segments and using apiRoot doesn't make a lot of sense
-                controllers: {
-                  ...fullSchema.segments[segmentName]?.controllers,
-                  ...mixin?.controllers,
-                },
-              },
-            ];
-          })
-        ),
+        ...mixins,
       },
     };
   }

@@ -29,6 +29,7 @@ export default async function getClientTemplateFiles({
   log: ProjectInfo['log'];
   configKey: 'composedClient' | 'segmentedClient';
   cliGenerateOptions?: GenerateOptions;
+  /** @deprecated */
   hasMixins: boolean;
 }) {
   const usedTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {};
@@ -63,6 +64,8 @@ export default async function getClientTemplateFiles({
 
     usedTemplateDefs[templateName] = usedDef;
   }
+
+  // $openapi['github']['components']['schemas']['User'];
 
   const templateFiles: ClientTemplateFile[] = [];
   const entries = Object.entries(usedTemplateDefs) as [] as [

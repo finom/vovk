@@ -172,6 +172,11 @@ export class VovkApp {
     const controllers = this.routes[httpMethod];
     const path = params[Object.keys(params)[0]];
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
+    const headersList = await headers();
+    const xMeta = headersList.get('x-meta');
+    const meta: Record<string, KnownAny> = xMeta && JSON.parse(xMeta);
+
+    if (meta) reqMeta(req, { header: meta });
     controllers.forEach((staticMethods, controller) => {
       const prefix = controller._prefix ?? '';
 
@@ -204,16 +209,21 @@ export class VovkApp {
       await staticMethod._options?.before?.call(controller, req);
       const result = await staticMethod.call(controller, req, methodParams);
 
+      if (result instanceof Response) {
+        return result;
+      }
+
       const isIterator =
         typeof result === 'object' &&
         !!result &&
+        !(result instanceof Array) &&
         ((Reflect.has(result, Symbol.iterator) &&
           typeof (result as Iterable<unknown>)[Symbol.iterator] === 'function') ||
           (Reflect.has(result, Symbol.asyncIterator) &&
             typeof (result as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
 
-      if (isIterator && !(result instanceof Array)) {
-        const streamResponse = new JSONLinesResponse(await headers(), {
+      if (isIterator) {
+        const streamResponse = new JSONLinesResponse(req, {
           headers: {
             ...VovkApp.getHeadersFromOptions(staticMethod._options),
           },
@@ -232,10 +242,6 @@ export class VovkApp {
         })();
 
         return streamResponse;
-      }
-
-      if (result instanceof Response) {
-        return result;
       }
 
       return this.respond(200, result ?? null, staticMethod._options);

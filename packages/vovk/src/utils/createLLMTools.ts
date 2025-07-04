@@ -4,6 +4,13 @@ type Handler = ((...args: KnownAny[]) => KnownAny) & {
   fn?: (input: KnownAny) => KnownAny;
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
+  models?: {
+    body?: KnownAny;
+    query?: KnownAny;
+    params?: KnownAny;
+    output?: KnownAny;
+    iteration?: KnownAny;
+  };
 };
 
 type CallerInput = {
@@ -12,7 +19,17 @@ type CallerInput = {
   query: KnownAny;
   params: KnownAny;
   schema: VovkHandlerSchema;
+  models:
+    | {
+        body?: KnownAny;
+        query?: KnownAny;
+        params?: KnownAny;
+        output?: KnownAny;
+        iteration?: KnownAny;
+      }
+    | undefined;
   init?: RequestInit;
+  meta: Record<string, KnownAny> | undefined;
   handlerName: string;
   moduleName: string;
 };
@@ -23,6 +40,7 @@ const createLLMTool = ({
   caller,
   module,
   init,
+  meta,
   onExecute,
   onError,
 }: {
@@ -31,6 +49,7 @@ const createLLMTool = ({
   caller: typeof defaultCaller;
   module: Record<string, Handler>;
   init: RequestInit | undefined;
+  meta: Record<string, KnownAny> | undefined;
   onExecute: (result: KnownAny, callerInput: CallerInput, options: KnownAny) => void;
   onError: (error: Error, callerInput: CallerInput, options: KnownAny) => void;
 }): VovkLLMTool => {
@@ -42,7 +61,7 @@ const createLLMTool = ({
   if (!handler) {
     throw new Error(`Handler "${handlerName}" not found in module "${moduleName}".`);
   }
-  const { schema } = handler;
+  const { schema, models } = handler;
 
   if (!schema || !schema.openapi) {
     throw new Error(`Handler "${handlerName}" in module "${moduleName}" does not have a valid schema.`);
@@ -60,11 +79,13 @@ const createLLMTool = ({
 
     const callerInput: CallerInput = {
       schema,
+      models,
       handler,
       body,
       query,
       params,
       init,
+      meta,
       handlerName,
       moduleName,
     };
@@ -93,24 +114,22 @@ const createLLMTool = ({
   return {
     type: 'function',
     execute,
-    name: `${moduleName}__${handlerName}`,
+    name: `${moduleName}_${handlerName}`,
     description:
-      [schema.openapi?.summary ?? '', schema.openapi?.description ?? ''].filter(Boolean).join('\n') || handlerName,
-    ...(Object.keys(parametersProperties).length
-      ? {
-          parameters: {
-            type: 'object',
-            properties: parametersProperties,
-            required: Object.keys(parametersProperties),
-            additionalProperties: false,
-          },
-        }
-      : {}),
+      schema.openapi?.['x-tool-description'] ??
+      ([schema.openapi?.summary ?? '', schema.openapi?.description ?? ''].filter(Boolean).join('\n') || handlerName),
+    parameters: {
+      type: 'object',
+      properties: parametersProperties,
+      required: Object.keys(parametersProperties),
+      additionalProperties: false,
+    },
+    models,
   };
 };
 
 async function defaultCaller(
-  { handler, body, query, params, init }: CallerInput,
+  { handler, body, query, params, init, meta }: CallerInput,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _options: KnownAny
 ) {
@@ -121,6 +140,7 @@ async function defaultCaller(
       query,
       params,
       init,
+      meta,
     });
   }
   if (handler.fn) {
@@ -128,6 +148,7 @@ async function defaultCaller(
       body,
       query,
       params,
+      meta,
     });
   }
 
@@ -136,17 +157,19 @@ async function defaultCaller(
 export function createLLMTools({
   modules,
   caller = defaultCaller,
+  meta,
   onExecute = (result) => result,
   onError = () => {},
 }: {
   modules: Record<string, object | [object, { init?: RequestInit }]>;
   caller?: typeof defaultCaller;
+  meta?: Record<string, KnownAny>;
   onExecute?: (result: KnownAny, callerInput: CallerInput, options: KnownAny) => void;
   onError?: (error: Error, callerInput: CallerInput, options: KnownAny) => void;
 }): { tools: VovkLLMTool[] } {
   const moduleWithConfig = modules as
-    | Record<string, Record<string, Handler>>
-    | Record<string, [Record<string, Handler>, { init?: RequestInit }]>;
+    | Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>
+    | Record<string, [Record<string, Handler & { schema?: VovkHandlerSchema }>, { init?: RequestInit }]>;
   const tools = Object.entries(moduleWithConfig ?? {})
     .map(([moduleName, moduleWithconfig]) => {
       let init: RequestInit | undefined;
@@ -157,7 +180,7 @@ export function createLLMTools({
         module = moduleWithconfig;
       }
       return Object.entries(module ?? {})
-        .filter(([, handler]) => (handler as { schema?: VovkHandlerSchema } | undefined)?.schema?.openapi)
+        .filter(([, handler]) => handler?.schema?.openapi && !handler?.schema?.openapi?.['x-tool-exclude'])
         .map(([handlerName]) =>
           createLLMTool({
             moduleName,
@@ -165,6 +188,7 @@ export function createLLMTools({
             caller,
             module,
             init,
+            meta,
             onExecute,
             onError,
           })

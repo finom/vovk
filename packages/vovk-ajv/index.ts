@@ -21,6 +21,7 @@ const createAjv = (options: Options, target: VovkAjvConfig['target']) => {
   ajvErrors(ajv);
   ajv.addKeyword('x-isDto');
   ajv.addKeyword('x-formData');
+  ajv.addKeyword('x-tsType');
   return ajv;
 };
 
@@ -40,16 +41,9 @@ const validate = ({
   endpoint: string;
 }) => {
   if (data && schema) {
-    const isForm = data instanceof FormData && schema['x-formData'];
+    const isForm = data instanceof FormData;
     if (isForm) {
-      data = Object.fromEntries(
-        data.entries().map(([key, value]: [KnownAny, KnownAny]) => {
-          if (value instanceof File) {
-            return [key, 'File<' + value.name + '>'];
-          }
-          return [key, value];
-        })
-      );
+      data = Object.fromEntries(data.entries());
     }
     const isValid = ajv.validate(schema, data);
     if (!isValid) {
@@ -80,7 +74,7 @@ const validateAll = ({
 };
 
 const getConfig = (schema: VovkSchema) => {
-  const config = schema.meta.config?.libs?.ajv as VovkAjvConfig | undefined;
+  const config = schema.meta?.config?.libs?.ajv as VovkAjvConfig | undefined;
 
   const options = config?.options ?? {};
   const localize = config?.localize ?? 'en';

@@ -1,11 +1,18 @@
-import { HttpStatus, type VovkErrorResponse } from '../types';
+import { HttpStatus, VovkHandlerSchema, type VovkErrorResponse } from '../types';
 import type { VovkStreamAsyncIterable } from './types';
 import { HttpException } from '../HttpException';
 import '../utils/shim';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
 
-export const defaultStreamHandler = async (response: Response): Promise<VovkStreamAsyncIterable<unknown>> => {
+export const defaultStreamHandler = async ({
+  response,
+  controller,
+}: {
+  response: Response;
+  controller: AbortController;
+  schema: VovkHandlerSchema;
+}): Promise<VovkStreamAsyncIterable<unknown>> => {
   if (!response.ok) {
     let result: unknown;
     try {
@@ -23,6 +30,8 @@ export const defaultStreamHandler = async (response: Response): Promise<VovkStre
 
   // if streaming is too rapid, we need to make sure that the loop is stopped
   let canceled = false;
+
+  const subscribers = new Set<(data: unknown) => void>();
 
   async function* asyncIterator() {
     let prepend = '';
@@ -55,6 +64,9 @@ export const defaultStreamHandler = async (response: Response): Promise<VovkStre
         }
 
         if (data) {
+          subscribers.forEach((cb) => {
+            if (!canceled) cb(data);
+          });
           if ('isError' in data && 'reason' in data) {
             const upcomingError = data.reason;
             await reader.cancel();
@@ -75,11 +87,18 @@ export const defaultStreamHandler = async (response: Response): Promise<VovkStre
   return {
     status: response.status,
     [Symbol.asyncIterator]: asyncIterator,
-    [Symbol.dispose]: () => reader.cancel(),
-    [Symbol.asyncDispose]: () => reader.cancel(),
-    cancel: () => {
+    [Symbol.dispose]: () => controller.abort(),
+    [Symbol.asyncDispose]: () => controller.abort(),
+    onIterate: (cb) => {
+      if (canceled) return () => {};
+      subscribers.add(cb);
+      return () => {
+        subscribers.delete(cb);
+      };
+    },
+    abort: () => {
       canceled = true;
-      return reader.cancel();
+      return controller.abort();
     },
   };
 };

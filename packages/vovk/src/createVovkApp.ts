@@ -38,7 +38,7 @@ const assignSchema = ({
 }) => {
   if (typeof window !== 'undefined') {
     throw new Error(
-      'Decorators are intended for server-side use only. You have probably imported a controller on the client-side.'
+      'HTTP decorators can be used on server-side only. You have probably imported a controller on the client-side.'
     );
   }
 
@@ -56,11 +56,14 @@ const assignSchema = ({
 
   const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
     _controller: VovkController;
-    func?: (req: KnownAny, params: KnownAny) => KnownAny;
+    fn?: (req: KnownAny, params: KnownAny) => KnownAny;
+    models?: Record<string, KnownAny>;
     schema?: VovkHandlerSchema;
     _sourceMethod?: ((...args: KnownAny) => KnownAny) & {
       _getSchema?: (controller: VovkController) => VovkHandlerSchema;
-      func?: (req: KnownAny, params: KnownAny) => KnownAny;
+      wrapper?: (...args: KnownAny) => KnownAny;
+      fn?: (req: KnownAny, params: KnownAny) => KnownAny;
+      models?: Record<string, KnownAny>;
       schema?: VovkHandlerSchema;
     };
   };
@@ -69,7 +72,9 @@ const assignSchema = ({
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
   const schema = originalMethod._sourceMethod._getSchema?.(controller);
   originalMethod.schema = schema;
-  originalMethod.func = originalMethod._sourceMethod?.func;
+  originalMethod.fn = originalMethod._sourceMethod?.fn;
+  originalMethod.models = originalMethod._sourceMethod?.models;
+  originalMethod._sourceMethod.wrapper = originalMethod;
   controller._handlers = {
     ...controller._handlers,
     [propertyKey]: {

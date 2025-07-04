@@ -14,7 +14,7 @@ const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'outpu
 
 type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 
-type Meta = { __disableClientValidation?: boolean };
+type Meta = { __disableClientValidation?: boolean; [key: string]: KnownAny };
 
 export function withValidationLibrary<
   T extends VovkTypedMethod<(req: KnownAny, params: KnownAny) => KnownAny>,
@@ -152,13 +152,16 @@ export function withValidationLibrary<
     return outputHandler(req, handlerParams);
   }) as T & {
     schema: VovkHandlerSchema;
+    wrapper?: (req: VovkRequestAny, params: Parameters<T>[1]) => ReturnType<T>;
   };
 
   type FnInput = {
     disableClientValidation?: boolean;
   } & (undefined extends typeof body ? { body?: T['__types']['body'] } : { body: T['__types']['body'] }) &
     (undefined extends typeof query ? { query?: T['__types']['query'] } : { query: T['__types']['query'] }) &
-    (undefined extends typeof params ? { params?: T['__types']['params'] } : { params: T['__types']['params'] });
+    (undefined extends typeof params ? { params?: T['__types']['params'] } : { params: T['__types']['params'] }) & {
+      meta?: Meta;
+    };
 
   type IsInputOptional = undefined extends typeof body
     ? undefined extends typeof query
@@ -185,17 +188,20 @@ export function withValidationLibrary<
       },
     };
 
-    fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation });
+    fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
 
-    return resultHandler(fakeReq, (input?.params ?? {}) as Parameters<T>[1]) as RETURN_TYPE;
+    return (resultHandler.wrapper ?? resultHandler)(
+      fakeReq as VovkRequestAny,
+      (input?.params ?? {}) as Parameters<T>[1]
+    ) as RETURN_TYPE;
   }
 
   const models = {
-    body,
-    query,
-    params,
-    output,
-    iteration,
+    ...(body !== undefined ? { body } : {}),
+    ...(query !== undefined ? { query } : {}),
+    ...(params !== undefined ? { params } : {}),
+    ...(output !== undefined ? { output } : {}),
+    ...(iteration !== undefined ? { iteration } : {}),
   };
 
   const resultHandlerEnhanced = Object.assign(resultHandler, { fn, models });

@@ -8,7 +8,7 @@ import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segme
 <% }
 });
 if (t.hasMixins) { %>
-import type { Controllers as MixinControllers } from "./mixins.d.ts";
+import type { Controllers as MixinControllers, Mixins } from "./mixins.d.ts";
 <% } 
 if (t.imports.validateOnClient) { %>
 import { validateOnClient } from '<%= t.imports.validateOnClient %>';
@@ -25,3 +25,6 @@ export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin
 <% }) 
 }) %>
 export { schema };
+<% if (t.hasMixins) { %>
+export { Mixins };
+<% } %>

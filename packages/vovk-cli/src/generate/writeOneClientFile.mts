@@ -12,7 +12,7 @@ import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import type { ClientImports } from './getTemplateClientImports.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
-import { convertJSONSchemaToTypeScriptDef } from '../utils/convertJSONSchemaToTypeScriptDef.mjs';
+import { compileJSONSchemaToTypeScriptType } from '../utils/compileJSONSchemaToTypeScriptType.mjs';
 
 export default async function writeOneClientFile({
   cwd,
@@ -87,7 +87,7 @@ export default async function writeOneClientFile({
     schema: fullSchema,
     VovkSchemaIdEnum,
     createCodeExamples,
-    convertJSONSchemaToTypeScriptDef,
+    compileJSONSchemaToTypeScriptType,
     YAML,
     TOML,
     nodeNextResolutionExt: {
@@ -149,11 +149,12 @@ export default async function writeOneClientFile({
 
   // Render the template
   let rendered = templateFilePath.endsWith('.ejs')
-    ? ejs.render(
+    ? await ejs.render(
         content,
         { t },
         {
           filename: templateFilePath,
+          async: true,
         }
       )
     : templateContent;

@@ -1,9 +1,14 @@
-import { type VovkErrorResponse } from '../types';
+import { KnownAny, VovkHandlerSchema } from '../types';
 import { HttpException } from '../HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultHandler';
 
-export const defaultHandler = async (response: Response) => {
+// Helper function to get a value from an object using dot notation path
+const getNestedValue = (obj: KnownAny, path: string): unknown => {
+  return path.split('.').reduce((o, key) => (o && typeof o === 'object' ? o[key] : undefined), obj);
+};
+
+export const defaultHandler = async ({ response, schema }: { response: Response; schema: VovkHandlerSchema }) => {
   let result: unknown;
 
   try {
@@ -14,14 +19,16 @@ export const defaultHandler = async (response: Response) => {
   }
 
   if (!response.ok) {
+    const errorKey =
+      schema.openapi && 'x-errorMessageKey' in schema.openapi
+        ? (schema.openapi['x-errorMessageKey'] as string)
+        : 'message';
     // handle server errors
-    const errorResponse = result as VovkErrorResponse;
-    console.log('errorResponse', errorResponse);
-
+    const errorResponse = result as KnownAny;
     throw new HttpException(
       response.status,
-      errorResponse?.message ?? DEFAULT_ERROR_MESSAGE,
-      errorResponse?.cause ?? errorResponse
+      (getNestedValue(errorResponse, errorKey) as string) ?? DEFAULT_ERROR_MESSAGE,
+      errorResponse?.cause ?? JSON.stringify(result)
     );
   }
 

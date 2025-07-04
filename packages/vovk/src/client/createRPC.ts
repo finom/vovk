@@ -78,6 +78,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         body?: unknown;
         query?: { [key: string]: string };
         params?: { [key: string]: string };
+        meta?: { [key: string]: KnownAny };
         validateOnClient?: VovkValidateOnClient;
         transform?: (respData: unknown, resp: Response) => unknown;
       } & OPTS = {} as OPTS
@@ -109,6 +110,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         validate,
         defaultHandler,
         defaultStreamHandler,
+        schema: handlerSchema,
       };
       const internalInput = {
         ...options,
@@ -116,6 +118,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         body: input.body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
+        meta: input.meta,
       };
 
       if (!fetcher) throw new Error('Fetcher is not provided');

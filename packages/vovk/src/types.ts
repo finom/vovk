@@ -37,6 +37,10 @@ export type VovkSegmentSchema<T = KnownAny> = {
   segmentType: 'segment' | 'mixin' | (string & {}); // string & {} is used since JSON import resolves to string
   forceApiRoot?: string;
   controllers: Record<string, VovkControllerSchema<T>>;
+  meta?: {
+    components?: OpenAPIObject['components'];
+    [key: string]: KnownAny; // additional metadata can be added here
+  };
 };
 
 export type VovkMetaSchema = {
@@ -51,7 +55,7 @@ export type VovkMetaSchema = {
 export type VovkSchema<T = KnownAny> = {
   $schema: typeof VovkSchemaIdEnum.SCHEMA | (string & {});
   segments: Record<string, VovkSegmentSchema<T>>;
-  meta: VovkMetaSchema;
+  meta?: VovkMetaSchema;
 };
 
 export type VovkErrorResponse = {
@@ -108,7 +112,6 @@ export interface VovkRequest<BODY = unknown, QUERY = unknown, PARAMS = unknown>
       ) => void;
       keys: () => IterableIterator<keyof QUERY>;
       values: () => IterableIterator<QUERY[keyof QUERY]>;
-      // TODO (?) append, delete, set
     };
   };
   vovk: {
@@ -311,11 +314,20 @@ export interface VovkLLMTool {
   name: string;
   description: string;
   parameters?: {
-    type: string;
-    properties: Record<string, KnownAny>;
-    required: string[];
-    additionalProperties: boolean;
+    type: 'object';
+    properties?: Record<string, KnownAny>;
+    required?: string[];
+    additionalProperties?: boolean;
   };
+  models:
+    | {
+        body?: KnownAny;
+        query?: KnownAny;
+        params?: KnownAny;
+        output?: KnownAny;
+        iteration?: KnownAny;
+      }
+    | undefined;
   type: 'function';
 }
 
@@ -390,6 +402,7 @@ export type ClientTemplateDef = {
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   segmentConfig?: false | SegmentConfig;
   requires?: Record<string, string>;
+  /** @deprecated */
   isTsClient?: boolean;
 };
 
@@ -435,6 +448,7 @@ type VovkUserConfig = {
           }
         | {
             url: string;
+            fallback?: string;
           }
         | {
             object: OpenAPIObject;
@@ -450,6 +464,7 @@ type VovkUserConfig = {
         | 'camel-case-operation-id' // operation ID to camelCase
         | 'auto' // auto-detect based on operationObject method and path
         | GetOpenAPINameFn;
+      errorMessageKey?: string;
     };
   };
 };

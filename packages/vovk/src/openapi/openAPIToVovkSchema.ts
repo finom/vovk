@@ -1,4 +1,10 @@
-import type { ComponentsObject, OperationObject, ParameterObject, RequestBodyObject } from 'openapi3-ts/oas31';
+import type {
+  ComponentsObject,
+  OperationObject,
+  ParameterObject,
+  RequestBodyObject,
+  SchemaObject,
+} from 'openapi3-ts/oas31';
 import {
   GetOpenAPINameFn,
   HttpMethod,
@@ -11,6 +17,7 @@ import {
 } from '../types';
 import { generateFnName } from './generateFnName';
 import { camelCase } from '../utils/camelCase';
+import { upperFirst } from '../utils/upperFirst';
 
 // fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: KnownAny): KnownAny {
@@ -24,80 +31,11 @@ function cloneJSON(obj: KnownAny): KnownAny {
   return result;
 }
 
-const oas2ParamToOas31 = (param: ParameterObject): ParameterObject => {
-  /* in: {
-     name: 'petId',
-     in: 'path',
-     description: 'ID of pet to update',
-     required: true,
-     type: 'integer',
-     format: 'int64'
-   }
-     
-   out: {
-      "name": "petId",
-      "in": "path",
-      "description": 'ID of pet to update',
-      "required": true,
-      "schema": {
-        "type": "integer",
-        "format": "int64"
-      } */
-
-  // If the parameter already has a schema, return it as is
-  if (param.schema) {
-    return param;
-  }
-
-  // Create a new object for the result
-  const result: ParameterObject = { ...param };
-
-  // Schema-related properties to move from parameter object to schema object
-  const schemaProps = [
-    'type',
-    'format',
-    'items',
-    'collectionFormat',
-    'default',
-    'maximum',
-    'exclusiveMaximum',
-    'minimum',
-    'exclusiveMinimum',
-    'maxLength',
-    'minLength',
-    'pattern',
-    'maxItems',
-    'minItems',
-    'uniqueItems',
-    'enum',
-    'multipleOf',
-  ];
-
-  // Create schema object
-  const schema: Record<string, unknown> = {};
-
-  // Move properties from parameter to schema
-  for (const prop of schemaProps) {
-    if (prop in param) {
-      // @ts-expect-error - Dynamic property access
-      schema[prop] = param[prop];
-      // @ts-expect-error - Dynamic property access
-      delete result[prop];
-    }
-  }
-
-  // Only add schema if we have properties to include
-  if (Object.keys(schema).length > 0) {
-    result.schema = schema;
-  }
-
-  return result;
-};
-
 function applyComponents(
   schema: SimpleJsonSchema,
-  key: 'definitions' | 'components/schemas',
-  components: ComponentsObject['schemas']
+  key: 'components/schemas',
+  components: ComponentsObject['schemas'],
+  mixinName: string
 ): SimpleJsonSchema {
   if (!components || !Object.keys(components).length) return schema;
 
@@ -116,11 +54,13 @@ function applyComponents(
 
     // Create a new object/array to avoid modifying the input
     const newObj = Array.isArray(obj) ? [...obj] : { ...obj };
+    const $ref = newObj.$ref;
 
-    if (newObj.$ref && typeof newObj.$ref === 'string' && newObj.$ref.startsWith(`#/${key}/`)) {
-      const componentName = newObj.$ref.replace(`#/${key}/`, '');
+    if ($ref && typeof $ref === 'string' && $ref.startsWith(`#/${key}/`)) {
+      const componentName = $ref.replace(`#/${key}/`, '');
       if (components![componentName]) {
         newObj.$ref = `#/$defs/${componentName}`;
+        newObj['x-tsType'] ??= `Mixins.${upperFirst(camelCase(mixinName))}.${upperFirst(camelCase(componentName))}`;
       } else {
         delete newObj.$ref; // Remove $ref if component not found (Telegram API has Type $refs that is not defined in components)
       }
@@ -212,8 +152,9 @@ export function openAPIToVovkSchema({
   source: { object: openAPIObject },
   getModuleName = 'api',
   getMethodName = 'auto',
-  mixinName = 'mixin',
-}: VovkStrictConfig['openApiMixins'][string] & { mixinName?: string }): VovkSchema {
+  errorMessageKey,
+  mixinName,
+}: VovkStrictConfig['openApiMixins'][string] & { mixinName: string }): VovkSchema {
   const forceApiRoot =
     apiRoot ??
     openAPIObject.servers?.[0]?.url ??
@@ -233,90 +174,126 @@ export function openAPIToVovkSchema({
         segmentName: mixinName,
         segmentType: 'mixin',
         controllers: {},
+        meta: {
+          components: openAPIObject.components,
+        },
       },
-    },
-    meta: {
-      $schema: VovkSchemaIdEnum.META,
-      config: {
-        $schema: VovkSchemaIdEnum.CONFIG,
-      },
-      openapi: openAPIObject,
     },
   };
   const segment = schema.segments[mixinName];
   getModuleName = normalizeGetModuleName(getModuleName);
   getMethodName = normalizeGetMethodName(getMethodName);
   return Object.entries(openAPIObject.paths ?? {}).reduce((acc, [path, operations]) => {
-    Object.entries(operations ?? {}).forEach(([method, operation]: [string, OperationObject]) => {
-      const rpcModuleName = getModuleName({
-        method: method.toUpperCase() as HttpMethod,
-        path,
-        openAPIObject,
-        operationObject: operation,
+    Object.entries(operations ?? {})
+      .filter(([, operation]) => operation && typeof operation === 'object')
+      .forEach(([method, operation]: [string, OperationObject]) => {
+        const rpcModuleName = getModuleName({
+          method: method.toUpperCase() as HttpMethod,
+          path,
+          openAPIObject,
+          operationObject: operation,
+        });
+
+        const handlerName = getMethodName({
+          method: method.toUpperCase() as HttpMethod,
+          path,
+          openAPIObject,
+          operationObject: operation,
+        });
+        segment.controllers[rpcModuleName] ??= {
+          forceApiRoot,
+          rpcModuleName,
+          handlers: {},
+        };
+        // TODO: how to utilize ReferenceObject?
+        const queryProperties = (operation.parameters as ParameterObject[])?.filter((p) => p.in === 'query') ?? null;
+        const pathProperties = (operation.parameters as ParameterObject[])?.filter((p) => p.in === 'path') ?? null;
+        const query = queryProperties?.length
+          ? {
+              type: 'object',
+              properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema])),
+              required: queryProperties.filter((p) => p.required).map((p) => p.name),
+            }
+          : null;
+        const params = pathProperties?.length
+          ? {
+              type: 'object',
+              properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema])),
+              required: pathProperties.filter((p) => p.required).map((p) => p.name),
+            }
+          : null;
+
+        // TODO: how to utilize ReferenceObject?
+        const requestBodyContent = (operation.requestBody as RequestBodyObject)?.content ?? {};
+        const jsonBody = requestBodyContent['application/json']?.schema ?? null;
+        const formDataBody = requestBodyContent['multipart/form-data']?.schema ?? null;
+        let urlEncodedBody = requestBodyContent['application/x-www-form-urlencoded']?.schema ?? null;
+        if (formDataBody && urlEncodedBody && JSON.stringify(formDataBody) === JSON.stringify(urlEncodedBody)) {
+          urlEncodedBody = null; // Avoid duplication if both form-data and url-encoded bodies are the same
+        }
+        if (formDataBody) {
+          Object.assign(formDataBody, {
+            'x-formData': true,
+            'x-tsType': 'FormData',
+          });
+        }
+        if (urlEncodedBody) {
+          Object.assign(urlEncodedBody, {
+            'x-formData': true,
+            'x-tsType': 'FormData',
+          });
+        }
+        const bodySchemas = [jsonBody, formDataBody, urlEncodedBody].filter(Boolean) as SchemaObject[];
+        const body = !bodySchemas.length
+          ? null
+          : bodySchemas.length === 1
+            ? bodySchemas[0]
+            : {
+                anyOf: bodySchemas,
+              };
+        const output =
+          operation.responses?.['200']?.content?.['application/json']?.schema ??
+          operation.responses?.['201']?.content?.['application/json']?.schema ??
+          null;
+        const iteration =
+          operation.responses?.['200']?.content?.['application/jsonl']?.schema ??
+          operation.responses?.['201']?.content?.['application/jsonl']?.schema ??
+          operation.responses?.['200']?.content?.['application/jsonlines']?.schema ??
+          operation.responses?.['201']?.content?.['application/jsonlines']?.schema ??
+          null;
+
+        if (errorMessageKey) {
+          operation['x-errorMessageKey'] = errorMessageKey;
+        }
+
+        const componentsKey = 'components/schemas';
+        const components =
+          openAPIObject.components?.schemas ??
+          ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
+
+        segment.controllers[rpcModuleName].handlers[handlerName] = {
+          httpMethod: method.toUpperCase(),
+          path,
+          openapi: operation,
+          validation: {
+            ...(query && {
+              query: applyComponents(query as SimpleJsonSchema, componentsKey, components, mixinName),
+            }),
+            ...(params && {
+              params: applyComponents(params as SimpleJsonSchema, componentsKey, components, mixinName),
+            }),
+            ...(body && {
+              body: applyComponents(body as SimpleJsonSchema, componentsKey, components, mixinName),
+            }),
+            ...(output && {
+              output: applyComponents(output as SimpleJsonSchema, componentsKey, components, mixinName),
+            }),
+            ...(iteration && {
+              iteration: applyComponents(iteration as SimpleJsonSchema, componentsKey, components, mixinName),
+            }),
+          },
+        };
       });
-
-      const handlerName = getMethodName({
-        method: method.toUpperCase() as HttpMethod,
-        path,
-        openAPIObject,
-        operationObject: operation,
-      });
-      segment.controllers[rpcModuleName] ??= {
-        forceApiRoot,
-        rpcModuleName,
-        handlers: {},
-      };
-      // TODO: how to utilize ReferenceObject?
-      const queryProperties = (operation.parameters as ParameterObject[])?.filter((p) => p.in === 'query') ?? null;
-      const pathProperties = (operation.parameters as ParameterObject[])?.filter((p) => p.in === 'path') ?? null;
-      const query = queryProperties?.length
-        ? {
-            type: 'object',
-            properties: Object.fromEntries(queryProperties.map((p) => [p.name, oas2ParamToOas31(p).schema])),
-            required: queryProperties.filter((p) => p.required).map((p) => p.name),
-          }
-        : null;
-      const params = pathProperties?.length
-        ? {
-            type: 'object',
-            properties: Object.fromEntries(pathProperties.map((p) => [p.name, oas2ParamToOas31(p).schema])),
-            required: pathProperties.filter((p) => p.required).map((p) => p.name),
-          }
-        : null;
-
-      // TODO: how to utilize ReferenceObject?
-      const body = (operation.requestBody as RequestBodyObject)?.content['application/json']?.schema ?? null;
-      const output =
-        operation.responses?.['200']?.content?.['application/json']?.schema ??
-        operation.responses?.['201']?.content?.['application/json']?.schema ??
-        null;
-      // TODO: "iteration" validation
-      // TODO: FormData
-      const componentsKey = openAPIObject.components?.schemas ? 'components/schemas' : 'definitions';
-      const components =
-        openAPIObject.components?.schemas ??
-        ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
-
-      segment.controllers[rpcModuleName].handlers[handlerName] = {
-        httpMethod: method.toUpperCase(),
-        path,
-        openapi: operation,
-        validation: {
-          ...(query && {
-            query: applyComponents(query as SimpleJsonSchema, componentsKey, components),
-          }),
-          ...(params && {
-            params: applyComponents(params as SimpleJsonSchema, componentsKey, components),
-          }),
-          ...(body && {
-            body: applyComponents(body as SimpleJsonSchema, componentsKey, components),
-          }),
-          ...(output && {
-            output: applyComponents(output as SimpleJsonSchema, componentsKey, components),
-          }),
-        },
-      };
-    });
     return acc;
   }, schema);
 }

@@ -4,6 +4,7 @@ import meta from './<%= t.schemaOutDir %>/_meta.json' with { type: "json" };
 <% } %>
 <% if(t.hasMixins) { %>
 import mixins from './mixins.json' with { type: "json" };
+import type { Mixins } from './mixins.d.ts';
 <% } %>
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import segment<%= i %> from './<%= t.schemaOutDir %>/<%= segment.segmentName || t.ROOT_SEGMENT_FILE_NAME %>.json' with { type: "json" };
@@ -28,3 +29,7 @@ export const schema = {
     <% } %>
   }
 };
+
+<% if (t.hasMixins) { %>
+export { Mixins };
+<% } %>

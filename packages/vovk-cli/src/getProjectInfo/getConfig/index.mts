@@ -76,10 +76,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     },
     libs: conf.libs ?? {},
     segmentConfig: conf.segmentConfig ?? {},
-    openApiMixins: await normalizeOpenAPIMixins({
-      mixinModules: conf.openApiMixins ?? {},
-      cwd,
-    }),
+    openApiMixins: {},
   };
 
   if (typeof conf.emitConfig === 'undefined') {
@@ -91,6 +88,12 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
   } // else it's false and emitConfig already is []
 
   const log = getLogger(config.logLevel);
+
+  config.openApiMixins = await normalizeOpenAPIMixins({
+    mixinModules: conf.openApiMixins ?? {},
+    cwd,
+    log,
+  });
 
   if (!userConfig) {
     log.warn(`Unable to load config at ${chalkHighlightThing(cwd)}. Using default values. ${error ?? ''}`);

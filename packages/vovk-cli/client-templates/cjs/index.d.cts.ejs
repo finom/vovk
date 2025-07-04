@@ -7,7 +7,7 @@ import type { createRPC } from '<%= t.imports.module.createRPC %>';
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
 <% }}) %>
 <% if (t.hasMixins) { %>
-import type { Controllers as MixinControllers } from "./mixins";
+import type { Controllers as MixinControllers, Mixins } from "./mixins";
 <% } %>
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
@@ -17,3 +17,6 @@ export const <%= rpcModuleName %>: ReturnType<typeof createRPC<<%= segment.segme
   <% }) 
 }) %>
 export { schema } from './schema.cjs';
+<% if (t.hasMixins) { %>
+export { Mixins };
+<% } %>
