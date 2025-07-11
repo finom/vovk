@@ -33,10 +33,10 @@ function cloneJSON(obj: KnownAny): KnownAny {
 
 function applyComponents(
   schema: SimpleJsonSchema,
-  key: 'components/schemas',
   components: ComponentsObject['schemas'],
   mixinName: string
 ): SimpleJsonSchema {
+  const key = 'components/schemas';
   if (!components || !Object.keys(components).length) return schema;
 
   // Create a deep copy of the schema
@@ -266,7 +266,6 @@ export function openAPIToVovkSchema({
           operation['x-errorMessageKey'] = errorMessageKey;
         }
 
-        const componentsKey = 'components/schemas';
         const components =
           openAPIObject.components?.schemas ??
           ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
@@ -277,19 +276,19 @@ export function openAPIToVovkSchema({
           openapi: operation,
           validation: {
             ...(query && {
-              query: applyComponents(query as SimpleJsonSchema, componentsKey, components, mixinName),
+              query: applyComponents(query as SimpleJsonSchema, components, mixinName),
             }),
             ...(params && {
-              params: applyComponents(params as SimpleJsonSchema, componentsKey, components, mixinName),
+              params: applyComponents(params as SimpleJsonSchema, components, mixinName),
             }),
             ...(body && {
-              body: applyComponents(body as SimpleJsonSchema, componentsKey, components, mixinName),
+              body: applyComponents(body as SimpleJsonSchema, components, mixinName),
             }),
             ...(output && {
-              output: applyComponents(output as SimpleJsonSchema, componentsKey, components, mixinName),
+              output: applyComponents(output as SimpleJsonSchema, components, mixinName),
             }),
             ...(iteration && {
-              iteration: applyComponents(iteration as SimpleJsonSchema, componentsKey, components, mixinName),
+              iteration: applyComponents(iteration as SimpleJsonSchema, components, mixinName),
             }),
           },
         };

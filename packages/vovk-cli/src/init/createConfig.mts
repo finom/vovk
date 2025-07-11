@@ -29,10 +29,10 @@ export default async function createConfig({
     service: 'vovk-cli/module-templates/service.ts.ejs',
   };
 
-  if (validationLibrary) {
-    config.imports ??= {};
-    config.imports.validateOnClient = 'vovk-ajv';
+  config.imports ??= {};
+  config.imports.validateOnClient = validationLibrary === 'vovk-dto' ? 'vovk-dto/validateOnClient' : 'vovk-ajv';
 
+  if (validationLibrary) {
     try {
       const validationTemplates = await getTemplateFilesFromPackage(validationLibrary, channel);
       Object.assign(moduleTemplates, validationTemplates);

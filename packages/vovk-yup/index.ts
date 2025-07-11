@@ -149,7 +149,7 @@ function withYup<
       YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>,
       YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny,
       YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny,
-      IS_FORM extends true ? true : KnownAny
+      IS_FORM
     >,
     toJSONSchema: (model) => {
       return enrichWithDescriptions(applySchemaFixes(convertSchema(model)), model.describe());

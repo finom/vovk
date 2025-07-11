@@ -1,35 +1,6 @@
 import pick from 'lodash/pick.js';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import type { PackageJson } from 'type-fest';
-import type { VovkStrictConfig } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-
-let cachedPromise: Promise<PackageJson> | undefined;
-
-function getPackageJson(cwd: string, log: ProjectInfo['log']): Promise<PackageJson> {
-  const pkgPath = path.join(cwd, 'package.json');
-
-  // If we have a cached promise, return it
-  if (cachedPromise) {
-    return cachedPromise;
-  }
-
-  const promise = fs
-    .readFile(pkgPath, 'utf8')
-    .then((content) => JSON.parse(content) as PackageJson)
-    .catch(() => {
-      cachedPromise = undefined;
-      log.warn(`Failed to read package.json at ${pkgPath}. Using a fallback.`);
-      return {
-        name: 'unknown',
-      };
-    });
-
-  cachedPromise = promise;
-
-  return promise;
-}
 
 function mergeTwoPackageJsons(base: PackageJson, additional: PackageJson): PackageJson {
   const merged = { ...base, ...additional };
@@ -50,16 +21,13 @@ function mergeTwoPackageJsons(base: PackageJson, additional: PackageJson): Packa
 }
 
 export default async function mergePackages({
-  cwd,
+  rootPackageJson,
   packages,
-  log,
 }: {
-  cwd: string;
-  config: VovkStrictConfig;
-  log: ProjectInfo['log'];
+  rootPackageJson: PackageJson;
   packages: (PackageJson | undefined)[];
+  log: ProjectInfo['log'];
 }): Promise<PackageJson> {
-  const fullPackageJson = await getPackageJson(cwd, log);
   const defaultPackageJson: PackageJson = {
     main: './index.cjs',
     module: './index.mjs',
@@ -76,7 +44,7 @@ export default async function mergePackages({
       },
     },
   };
-  const pickedPackageJson: PackageJson = pick(fullPackageJson, [
+  const pickedPackageJson: PackageJson = pick(rootPackageJson, [
     'name',
     'version',
     'description',

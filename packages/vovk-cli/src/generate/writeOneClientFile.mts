@@ -25,6 +25,7 @@ export default async function writeOneClientFile({
   templateContent,
   matterResult: { data, content },
   package: packageJson,
+  readme,
   isEnsuringClient,
   outCwdRelativeDir,
   origin,
@@ -49,6 +50,7 @@ export default async function writeOneClientFile({
     content: string;
   };
   package: PackageJson;
+  readme: VovkStrictConfig['bundle']['readme'];
   isEnsuringClient: boolean;
   outCwdRelativeDir: string;
   origin: string | null;
@@ -81,6 +83,7 @@ export default async function writeOneClientFile({
     hasMixins,
     isVovkProject,
     package: packageJson,
+    readme,
     ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports,
@@ -124,7 +127,7 @@ export default async function writeOneClientFile({
         return [
           sName,
           {
-            segmentApiRoot:
+            forceApiRoot:
               forceApiRoot ??
               (segmentConfigOrigin || segmentConfigRootEntry
                 ? `${segmentConfigOrigin ?? origin}/${segmentConfigRootEntry ?? config.rootEntry}`

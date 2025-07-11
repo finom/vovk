@@ -15,6 +15,11 @@ export function jsonSchemaSampler(schema: KnownAny, rootSchema?: KnownAny): Know
     return schema.examples[0];
   }
 
+  // Handle const if present
+  if (schema.const !== undefined) {
+    return schema.const;
+  }
+
   // Handle $ref if present
   if (schema.$ref) {
     return handleRef(schema.$ref, rootSchema);

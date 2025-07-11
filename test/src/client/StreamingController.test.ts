@@ -44,7 +44,7 @@ describe('Streaming', () => {
 
     for await (const message of resp) {
       expectedCollected.push(message);
-      if (++count === 2) await resp.cancel();
+      if (++count === 2) await resp.abort();
     }
 
     for await (const message of resp) {
@@ -82,7 +82,7 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
-    await resp.cancel();
+    await resp.abort();
 
     deepStrictEqual(expected, expectedCollected);
   });

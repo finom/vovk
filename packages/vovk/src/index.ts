@@ -41,7 +41,7 @@ import { createDecorator } from './utils/createDecorator';
 import { JSONLinesResponse } from './JSONLinesResponse';
 import { generateStaticAPI } from './utils/generateStaticAPI';
 import { withValidationLibrary } from './utils/withValidationLibrary';
-import { withStandard } from './utils/withStandard';
+import { createStandardValidation } from './utils/createStandardValidation';
 import { multitenant } from './utils/multitenant';
 import { createLLMTools } from './utils/createLLMTools';
 import { createCodeExamples } from './utils/createCodeExamples';
@@ -84,7 +84,7 @@ export {
   createFetcher,
   generateStaticAPI,
   withValidationLibrary,
-  withStandard,
+  createStandardValidation,
   multitenant,
   createLLMTools,
   createCodeExamples,

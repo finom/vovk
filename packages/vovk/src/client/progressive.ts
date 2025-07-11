@@ -1,5 +1,5 @@
 import type { VovkStreamAsyncIterable } from './types';
-import type { KnownAny, VovkIteration } from '../types';
+import type { KnownAny, VovkYieldType } from '../types';
 
 type UnionToIntersection<U> = (U extends KnownAny ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
@@ -12,7 +12,7 @@ type TransformUnionToPromises<T> = PromisifyProperties<UnionToIntersection<T>>;
 export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStreamAsyncIterable<KnownAny>>>(
   fn: T,
   ...args: undefined extends Parameters<T>[0] ? [arg?: Parameters<T>[0]] : [arg: Parameters<T>[0]]
-): TransformUnionToPromises<VovkIteration<T>> {
+): TransformUnionToPromises<VovkYieldType<T>> {
   const [arg] = args;
   const reg: Record<
     string | symbol,
@@ -52,7 +52,7 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
 
       return error;
     });
-  return new Proxy({} as TransformUnionToPromises<VovkIteration<T>>, {
+  return new Proxy({} as TransformUnionToPromises<VovkYieldType<T>>, {
     get(_target, prop) {
       if (prop in reg) {
         return reg[prop].promise;

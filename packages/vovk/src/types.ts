@@ -19,7 +19,7 @@ export type VovkHandlerSchema<T = KnownAny> = {
     iteration?: T;
   };
   openapi?: OperationObject;
-  misc?: Record<string, KnownAny> | Promise<Record<string, KnownAny>>;
+  misc?: Record<string, KnownAny>;
 };
 
 export type VovkControllerSchema<T = KnownAny> = {
@@ -92,8 +92,11 @@ export type RouteHandler = ((
   _options?: DecoratorOptions;
 };
 
-export interface VovkRequest<BODY = unknown, QUERY = unknown, PARAMS = unknown>
-  extends Omit<NextRequest, 'json' | 'nextUrl'> {
+export interface VovkRequest<
+  BODY extends KnownAny = undefined,
+  QUERY extends KnownAny = undefined,
+  PARAMS extends KnownAny = undefined,
+> extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<BODY>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
     searchParams: Omit<
@@ -352,6 +355,10 @@ export enum VovkSchemaIdEnum {
   SCHEMA = 'https://vovk.dev/api/spec/v3/schema.json',
 }
 
+type ReadmeConfig = {
+  banner?: string;
+};
+
 type ClientConfigCommon = {
   enabled?: boolean;
   outDir?: string;
@@ -367,12 +374,14 @@ type ClientConfigCommon = {
     }
 );
 
-type ClientConfigFull = ClientConfigCommon & {
+type ClientConfigComposed = ClientConfigCommon & {
   package?: PackageJson;
+  readme?: ReadmeConfig;
 };
 
 type ClientConfigSegmented = ClientConfigCommon & {
   packages?: Record<string, PackageJson>;
+  readmes?: Record<string, ReadmeConfig>;
 };
 
 type BundleConfig = {
@@ -381,6 +390,8 @@ type BundleConfig = {
   tsClientOutDir?: string;
   dontDeleteTsClientOutDirAfter?: boolean;
   sourcemap?: boolean;
+  package?: PackageJson;
+  readme?: ReadmeConfig;
 } & (
   | {
       excludeSegments?: never;
@@ -398,11 +409,10 @@ export type ClientTemplateDef = {
   extends?: string;
   templatePath?: string | null;
   origin?: string | null;
-  composedClient?: Omit<ClientConfigFull, 'fromTemplates' | 'enabled'>;
+  composedClient?: Omit<ClientConfigComposed, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   segmentConfig?: false | SegmentConfig;
   requires?: Record<string, string>;
-  /** @deprecated */
   isTsClient?: boolean;
 };
 
@@ -417,7 +427,7 @@ type VovkUserConfig = {
   $schema?: typeof VovkSchemaIdEnum.CONFIG | string;
   emitConfig?: boolean | (keyof VovkStrictConfig | string)[];
   schemaOutDir?: string;
-  composedClient?: ClientConfigFull;
+  composedClient?: ClientConfigComposed;
   segmentedClient?: ClientConfigSegmented;
   bundle?: BundleConfig;
   imports?: {
@@ -438,7 +448,10 @@ type VovkUserConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
-  libs?: Record<string, KnownAny>;
+  libs?: {
+    ajv: KnownAny; // set by providing the typedoc comment in config
+    [key: string]: KnownAny;
+  };
   segmentConfig?: false | SegmentConfig;
   openApiMixins?: {
     [mixinName: string]: {
@@ -453,6 +466,8 @@ type VovkUserConfig = {
         | {
             object: OpenAPIObject;
           };
+      package?: PackageJson;
+      readme?: ReadmeConfig;
       apiRoot?: string;
       getModuleName?: // if not provided, will use "api"
       | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
@@ -485,7 +500,7 @@ export type VovkStrictConfig = Required<
     createRPC: [string, string] | [string];
   };
   libs: Record<string, KnownAny>;
-  composedClient: RequireFields<ClientConfigFull, 'enabled' | 'fromTemplates' | 'outDir'>;
+  composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
   openApiMixins: {
     [mixinName: string]: {

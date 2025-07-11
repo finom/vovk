@@ -143,7 +143,7 @@ function withDto<
       PARAMS_DTO extends ClassConstructor<infer U> ? U : KnownAny,
       OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny,
       ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny,
-      IS_FORM extends true ? true : KnownAny
+      IS_FORM
     >,
     toJSONSchema: (dto) => {
       const schema = {

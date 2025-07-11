@@ -1,4 +1,4 @@
-import { z, type ZodSchema } from 'zod/v3';
+import type { z, ZodSchema } from 'zod/v3';
 import {
   withValidationLibrary,
   HttpException,
@@ -66,7 +66,7 @@ function withZod<
       ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : Record<string, string>,
       ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
       ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny,
-      IS_FORM extends true ? true : KnownAny
+      IS_FORM
     >,
     toJSONSchema: (model) => zodToJsonSchema(model, { errorMessages: true }),
     validate: async (data, model, { type, req, i }) => {

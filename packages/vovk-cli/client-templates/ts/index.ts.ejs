@@ -20,7 +20,7 @@ type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
   Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], Options>(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', fetcher,
-  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${segment.segmentApiRoot ?? t.apiRoot}'` %> }
+  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
 );
 <% }) 
 }) %>

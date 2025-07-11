@@ -44,7 +44,7 @@ export class Init {
     }: Omit<InitOptions, 'yes' | 'logLevel'>
   ) {
     const { log, root } = this;
-    const dependencies: string[] = ['vovk', 'vovk-client'];
+    const dependencies: string[] = ['vovk', 'vovk-client', 'vovk-ajv', 'openapi3-ts'];
     const devDependencies: string[] = ['vovk-cli'];
 
     if (lang?.includes('py')) {
@@ -63,10 +63,8 @@ export class Init {
     if (validationLibrary) {
       dependencies.push(
         validationLibrary,
-        'vovk-ajv',
         ...({
           'vovk-zod': ['zod'],
-          'vovk-yup': ['yup'],
           'vovk-dto': ['class-validator', 'class-transformer', 'dto-mapped-types', 'reflect-metadata'],
         }[validationLibrary] ?? [])
       );
@@ -252,11 +250,6 @@ export class Init {
                 name: 'vovk-zod',
                 value: 'vovk-zod',
                 description: 'Use Zod for data validation',
-              },
-              {
-                name: 'vovk-yup',
-                value: 'vovk-yup',
-                description: 'Use Yup for data validation',
               },
               {
                 name: 'vovk-dto',

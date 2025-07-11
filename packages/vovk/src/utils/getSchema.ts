@@ -11,14 +11,7 @@ export async function getControllerSchema(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
       );
-  // TODO: misc is the only async property for experimental purposes, this should be refactored and documented
-  await Promise.all(
-    Object.values(handlers ?? {})
-      .filter(({ misc }) => misc instanceof Promise)
-      .map(async (schema) => {
-        schema.misc = await schema.misc;
-      })
-  );
+
   return {
     rpcModuleName,
     originalControllerName: controller.name,

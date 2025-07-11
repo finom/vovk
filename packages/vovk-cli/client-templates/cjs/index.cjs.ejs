@@ -7,7 +7,7 @@ const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('$
   Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 exports.<%= rpcModuleName %> = createRPC(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', fetcher,
-  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${segment.segmentApiRoot ?? t.apiRoot}'` %> }
+  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
 );
   <% })
 }) %>

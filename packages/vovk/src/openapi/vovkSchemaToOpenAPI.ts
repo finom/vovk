@@ -55,7 +55,7 @@ export function vovkSchemaToOpenAPI({
   rootEntry,
   schema: fullSchema,
   openAPIObject = {},
-  package: packageJson = { name: 'vovk-client' },
+  package: packageJson = { name: 'my-rpc-client' },
   sampler = jsonSchemaSampler,
 }: {
   rootEntry: string;

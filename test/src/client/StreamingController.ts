@@ -1,4 +1,3 @@
-import { headers } from 'next/headers.js';
 import { type VovkRequest, post, prefix } from 'vovk';
 import { JSONLinesResponse } from 'vovk';
 
@@ -11,7 +10,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new JSONLinesResponse<Token>(await headers());
+    const response = new JSONLinesResponse<Token>(req);
 
     void (async () => {
       for (const token of body) {
@@ -31,7 +30,7 @@ export default class StreamingController {
       throw new Error('Immediate error');
     }
 
-    const response = new JSONLinesResponse<Token>(await headers());
+    const response = new JSONLinesResponse<Token>(req);
 
     return response;
   }
@@ -41,7 +40,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new JSONLinesResponse<Token>(await headers());
+    const response = new JSONLinesResponse<Token>(req);
 
     let count = 0;
     void (async () => {
@@ -64,7 +63,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new JSONLinesResponse<Token>(await headers());
+    const response = new JSONLinesResponse<Token>(req);
 
     let count = 0;
     void (async () => {
@@ -87,7 +86,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new JSONLinesResponse<Token>(await headers());
+    const response = new JSONLinesResponse<Token>(req);
 
     let count = 0;
     void (async () => {

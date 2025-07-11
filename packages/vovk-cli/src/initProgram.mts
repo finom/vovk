@@ -22,7 +22,7 @@ export function initProgram(program: Command) {
     )
     .option(
       '--validation-library <library>',
-      'validation library to use ("vovk-zod", "vovk-yup", "vovk-dto" or another); set to "none" to skip'
+      'validation library to use ("vovk-zod", "vovk-dto" or another); set to "none" to skip'
     )
     .option('--react-query', 'use @tanstack/react-query for data fetching inside components')
     .option('--channel <channel>', 'channel to use for fetching packages', 'latest')

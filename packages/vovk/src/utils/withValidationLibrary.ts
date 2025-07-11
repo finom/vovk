@@ -17,7 +17,15 @@ type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 type Meta = { __disableClientValidation?: boolean; [key: string]: KnownAny };
 
 export function withValidationLibrary<
-  T extends VovkTypedMethod<(req: KnownAny, params: KnownAny) => KnownAny>,
+  T extends VovkTypedMethod<
+    (req: KnownAny, params: KnownAny) => KnownAny,
+    KnownAny,
+    KnownAny,
+    KnownAny,
+    KnownAny,
+    KnownAny,
+    boolean
+  >,
   BODY_MODEL,
   QUERY_MODEL,
   PARAMS_MODEL,

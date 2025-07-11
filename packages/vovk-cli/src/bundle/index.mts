@@ -45,6 +45,8 @@ export async function bundle({
     forceNothingWrittenLog: true,
     fullSchema,
     locatedSegments,
+    package: bundleConfig.package,
+    readme: bundleConfig.readme,
     cliGenerateOptions: {
       openapiSpec: cliBundleOptions?.openapiSpec,
       openapiGetModuleName: cliBundleOptions?.openapiGetModuleName,
@@ -93,6 +95,8 @@ export async function bundle({
       forceNothingWrittenLog: true,
       fullSchema,
       locatedSegments,
+      package: bundleConfig.package,
+      readme: bundleConfig.readme,
       cliGenerateOptions: {
         composedFrom: group.map(([templateName]) => templateName),
         composedOut: path.resolve(outDir, relativePath),

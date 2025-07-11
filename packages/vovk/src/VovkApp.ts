@@ -168,7 +168,7 @@ export class VovkApp {
   };
 
   #callMethod = async (httpMethod: HttpMethod, nextReq: NextRequest, params: Record<string, string[]>) => {
-    const req = nextReq as unknown as VovkRequest;
+    const req = nextReq as unknown as VovkRequest<KnownAny, KnownAny, KnownAny>;
     const controllers = this.routes[httpMethod];
     const path = params[Object.keys(params)[0]];
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
@@ -176,7 +176,7 @@ export class VovkApp {
     const xMeta = headersList.get('x-meta');
     const meta: Record<string, KnownAny> = xMeta && JSON.parse(xMeta);
 
-    if (meta) reqMeta(req, { header: meta });
+    if (meta) reqMeta(req, { clientMetaHeader: meta });
     controllers.forEach((staticMethods, controller) => {
       const prefix = controller._prefix ?? '';
 

@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.277",
+  "version": "0.0.1-draft.284",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,43 +35,43 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.297"
+    "vovk": "^3.0.0-draft.316"
   },
   "optionalDependencies": {
     "vovk-python": "^0.0.1-draft.41"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
-    "@inquirer/prompts": "^7.5.3",
+    "@inquirer/prompts": "^7.6.0",
     "@npmcli/package-json": "^6.2.0",
-    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@types/json-schema": "^7.0.15",
     "chalk": "^5.4.1",
     "chokidar": "^4.0.3",
     "clone-deep": "^4.0.1",
     "commander": "^13.1.0",
-    "concurrently": "^9.1.2",
-    "dotenv": "^16.5.0",
+    "concurrently": "^9.2.0",
+    "dotenv": "^17.2.0",
     "ejs": "^3.1.10",
     "get-tsconfig": "^4.10.1",
-    "glob": "^11.0.2",
+    "glob": "^11.0.3",
     "gray-matter": "^4.0.3",
     "inflection": "^3.0.2",
     "jsonc-parser": "^3.3.1",
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
-    "openapi3-ts": "^4.4.0",
+    "openapi3-ts": "^4.5.0",
     "pluralize": "^8.0.0",
-    "prettier": "^3.5.3",
-    "rollup": "^4.43.0",
+    "prettier": "^3.6.2",
+    "rollup": "^4.44.2",
     "tar-stream": "^3.1.7",
     "ts-morph": "^26.0.0",
-    "tsdown": "^0.12.7",
+    "tsdown": "^0.12.9",
     "type-fest": "^4.41.0",
-    "undici": "^7.10.0",
+    "undici": "^7.11.0",
     "vovk-openapi": "^0.0.1-draft.112",
     "yaml": "^2.8.0"
   },
@@ -83,8 +83,8 @@
     "@types/pluralize": "^0.0.33",
     "@types/tar-stream": "^3.1.4",
     "concat-stream": "^2.0.0",
-    "create-next-app": "^15.3.3",
+    "create-next-app": "^15.3.5",
     "node-pty": "^1.0.0",
-    "zod": "^4.0.0-beta.20250505T195954"
+    "zod": "^4.0.5"
   }
 }

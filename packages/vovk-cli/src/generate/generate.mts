@@ -17,6 +17,7 @@ import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { getTsconfig } from 'get-tsconfig';
 import { normalizeOpenAPIMixins } from '../utils/normalizeOpenAPIMixins.mjs';
+import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -80,6 +81,7 @@ function logClientGenerationResults({
   const writtenResults = results.filter(({ written }) => written);
   const duration = Date.now() - startTime;
   const groupedByDir = _.groupBy(writtenResults, ({ outAbsoluteDir }) => outAbsoluteDir);
+  const logOrDebug = forceNothingWrittenLog ? log.info : log.debug;
 
   if (writtenResults.length) {
     for (const [outAbsoluteDir, dirResults] of Object.entries(groupedByDir)) {
@@ -90,16 +92,23 @@ function logClientGenerationResults({
         )} in ${duration}ms`
       );
     }
-  } else if (!isEnsuringClient && fromTemplates.length) {
-    const logOrDebug = forceNothingWrittenLog ? log.info : log.debug;
-    for (const [outAbsoluteDir, dirResults] of Object.entries(groupedByDir)) {
-      const templateNames = _.uniq(dirResults.map(({ templateName }) => templateName));
-      logOrDebug(
-        `${clientType} client that was generated to ${chalkHighlightThing(outAbsoluteDir)} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
-          templateNames.map((s) => `"${s}"`).join(', ')
-        )} is up to date and doesn't need to be regenerated (${duration}ms)`
-      );
+  } else if (fromTemplates.length) {
+    if (!writtenResults.length) {
+      logOrDebug(`${clientType} client${isEnsuringClient ? ' placeholder' : ''} is up to date (${duration}ms)`);
+    } else if (!isEnsuringClient) {
+      for (const [outAbsoluteDir, dirResults] of Object.entries(groupedByDir)) {
+        const templateNames = _.uniq(dirResults.map(({ templateName }) => templateName));
+        logOrDebug(
+          `${clientType} client that was generated to ${chalkHighlightThing(outAbsoluteDir)} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
+            templateNames.map((s) => `"${s}"`).join(', ')
+          )} is up to date and doesn't need to be regenerated (${duration}ms)`
+        );
+      }
     }
+  } else {
+    logOrDebug(
+      `${clientType} client${isEnsuringClient ? ' placeholder' : ''} is not generated because no files were written (${duration}ms)`
+    );
   }
 }
 
@@ -118,7 +127,7 @@ const cliOptionsToOpenAPIMixins = ({
           apiRoot: openapiRootUrl?.[i] ?? '/',
           getModuleName: openapiGetModuleName?.[i] ?? undefined,
           getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
-          mixinName: openapiMixinName?.[i] ?? `mixin${i + 1}`, // TODO merge mixins with the same name
+          mixinName: openapiMixinName?.[i],
         };
       }) || []
     ).map(({ source, apiRoot, getModuleName, getMethodName, mixinName }) => [
@@ -141,6 +150,8 @@ export async function generate({
   fullSchema,
   locatedSegments,
   cliGenerateOptions,
+  package: argPackageJson,
+  readme: argReadme,
 }: {
   isEnsuringClient?: boolean;
   projectInfo: ProjectInfo;
@@ -148,19 +159,19 @@ export async function generate({
   fullSchema: VovkSchema;
   locatedSegments: Segment[];
   cliGenerateOptions?: GenerateOptions;
+  package?: PackageJson;
+  readme?: VovkStrictConfig['bundle']['readme'];
 }) {
   fullSchema = {
     ...fullSchema,
     // sort segments by name to avoid unnecessary rendering
     segments: Object.fromEntries(Object.entries(fullSchema.segments).sort(([a], [b]) => a.localeCompare(b))),
   };
-  const { config, cwd, log, srcRoot } = projectInfo;
+  const { config, cwd, log, srcRoot, packageJson: rootPackageJson } = projectInfo;
   const allOpenAPIMixins = {
     ...config.openApiMixins,
     ...cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {}),
   };
-  /** @deprecated */
-  let hasMixins = false;
   if (Object.keys(allOpenAPIMixins).length) {
     const mixins = Object.fromEntries(
       Object.entries(await normalizeOpenAPIMixins({ mixinModules: allOpenAPIMixins, log })).map(([mixinName, conf]) => [
@@ -169,7 +180,6 @@ export async function generate({
       ])
     );
 
-    hasMixins = true;
     fullSchema = {
       ...fullSchema,
       segments: {
@@ -201,7 +211,6 @@ export async function generate({
       config,
       cwd,
       log,
-      hasMixins,
       cliGenerateOptions,
       configKey: 'composedClient',
     });
@@ -227,22 +236,30 @@ export async function generate({
 
         const packageJson = await mergePackages({
           log,
-          cwd,
-          config,
-          packages: [config.composedClient.package as PackageJson, templateDef.composedClient?.package as PackageJson],
+          rootPackageJson,
+          packages: [config.composedClient.package, templateDef.composedClient?.package, argPackageJson],
         });
+
+        const readme = Object.assign({}, config.composedClient.readme, templateDef.composedClient?.readme, argReadme);
+
+        const composedFullSchema = pickSegmentFullSchema(fullSchema, segmentNames);
+        const hasMixins = Object.values(composedFullSchema.segments).some((segment) => segment.segmentType === 'mixin');
+        if (templateName === BuiltInTemplateName.mixins && !hasMixins) {
+          return null;
+        }
 
         const { written } = await writeOneClientFile({
           cwd,
           projectInfo,
           clientTemplateFile,
-          fullSchema: pickSegmentFullSchema(fullSchema, segmentNames),
+          fullSchema: composedFullSchema,
           prettifyClient: config.prettifyClient,
           segmentName: null,
           imports: clientImports.composedClient,
           templateContent,
           matterResult,
           package: packageJson,
+          readme,
           isEnsuringClient,
           outCwdRelativeDir,
           origin: config.origin ?? templateDef?.origin ?? null,
@@ -253,7 +270,7 @@ export async function generate({
           isVovkProject,
         });
 
-        const outAbsoluteDir = path.join(cwd, outCwdRelativeDir);
+        const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
 
         return {
           written,
@@ -265,7 +282,7 @@ export async function generate({
 
     if (composedClientTemplateFiles.length) {
       logClientGenerationResults({
-        results: composedClientResults,
+        results: composedClientResults.filter((result): result is GenerationResult => !!result),
         log,
         isEnsuringClient,
         forceNothingWrittenLog,
@@ -285,7 +302,6 @@ export async function generate({
       config,
       cwd,
       log,
-      hasMixins,
       cliGenerateOptions,
       configKey: 'segmentedClient',
     });
@@ -312,26 +328,42 @@ export async function generate({
             });
 
             const packageJson = await mergePackages({
-              cwd,
-              config,
               log,
+              rootPackageJson,
               packages: [
-                config.segmentedClient.packages?.[segmentName] as PackageJson,
-                templateDef.segmentedClient?.packages?.[segmentName] as PackageJson,
+                config.segmentedClient.packages?.[segmentName],
+                templateDef.segmentedClient?.packages?.[segmentName],
+                argPackageJson,
               ],
             });
+
+            const readme = Object.assign(
+              {},
+              config.segmentedClient.readmes?.[segmentName],
+              templateDef.segmentedClient?.readmes?.[segmentName],
+              argReadme
+            );
+
+            const segmentedFullSchema = pickSegmentFullSchema(fullSchema, [segmentName]);
+            const hasMixins = Object.values(segmentedFullSchema.segments).some(
+              (segment) => segment.segmentType === 'mixin'
+            );
+            if (templateName === BuiltInTemplateName.mixins && !hasMixins) {
+              return null;
+            }
 
             const { written } = await writeOneClientFile({
               cwd,
               projectInfo,
               clientTemplateFile,
-              fullSchema: pickSegmentFullSchema(fullSchema, [segmentName]),
+              fullSchema: segmentedFullSchema,
               prettifyClient: config.prettifyClient,
               segmentName,
               imports: clientImports.segmentedClient[segmentName],
               templateContent,
               matterResult,
               package: packageJson,
+              readme,
               isEnsuringClient,
               outCwdRelativeDir,
               origin: config.origin ?? templateDef?.origin ?? null,
@@ -348,7 +380,7 @@ export async function generate({
             };
           })
         );
-        const outAbsoluteDir = path.join(cwd, outCwdRelativeDir);
+        const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
 
         // Remove unlisted directories in the output directory
         await removeUnlistedDirectories(
@@ -356,7 +388,7 @@ export async function generate({
           segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME)
         );
         return {
-          written: results.some(({ written }) => written),
+          written: results.filter((result): result is GenerationResult => !!result).some(({ written }) => written),
           templateName,
           outAbsoluteDir,
         };

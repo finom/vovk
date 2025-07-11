@@ -30,7 +30,7 @@ export type StaticMethodInput<
   (Parameters<T>[0] extends VovkRequest<infer BODY, infer QUERY, infer PARAMS>
     ? (BODY extends Record<KnownAny, KnownAny>
         ? {
-            body: NonNullable<T['__types']>['isForm'] extends true ? FormData : BODY;
+            body: T['__types'] extends { isForm: true } ? FormData : BODY;
           }
         : Empty) &
         (QUERY extends Record<KnownAny, KnownAny>
@@ -180,15 +180,15 @@ export type VovkValidateOnClient = (
 
 // utils
 
-type IsEmptyObject<T> =
-  // first, ensure it really is an object (not a primitive)
-  T extends object
-    ? // then check: does it have any keys?
-      keyof T extends never
-      ? true
+type IsEmptyObject<T> = T extends object
+  ? keyof T extends never
+    ? true // Empty object
+    : T extends Partial<T>
+      ? Partial<T> extends T
+        ? true // All properties are optional
+        : false
       : false
-    : false;
-
+  : false;
 type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};

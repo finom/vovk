@@ -4,19 +4,16 @@ import './utils/shim.js';
 export class JSONLinesResponse<T> extends Response {
   public isClosed = false;
 
-  public controller?: ReadableStreamDefaultController;
+  public controller?: ReadableStreamDefaultController | null;
 
-  public readonly encoder: TextEncoder;
+  public readonly encoder: TextEncoder | null;
 
-  public readonly readableStream: ReadableStream;
+  public readonly readableStream: ReadableStream | null;
 
   private iteratorQueue: Array<T | StreamAbortMessage> = [];
   private iteratorResolvers: Array<(value: IteratorResult<T | StreamAbortMessage>) => void> = [];
 
-  constructor(request: Request, init?: ResponseInit) {
-    if (!request) {
-      throw new Error('Request arg is required for JSONLinesResponse');
-    }
+  constructor(request?: Request, init?: ResponseInit) {
     const encoder = new TextEncoder();
     let readableController: ReadableStreamDefaultController;
 
@@ -29,23 +26,24 @@ export class JSONLinesResponse<T> extends Response {
       },
     });
 
-    const accept = request.headers.get('accept');
+    const accept = request?.headers?.get('accept');
 
     super(readableStream, {
       ...init,
       headers: {
-        'content-type': accept?.includes('application/jsonl')
-          ? 'application/jsonl; charset=utf-8'
-          : 'text/plain; charset=utf-8',
+        'content-type':
+          !request || accept?.includes('application/jsonl')
+            ? 'application/jsonl; charset=utf-8'
+            : 'text/plain; charset=utf-8',
         ...init?.headers,
       },
     });
 
-    this.readableStream = readableStream;
-    this.encoder = encoder;
-    this.controller = readableController!;
+    this.readableStream = request ? readableStream : null;
+    this.encoder = request ? encoder : null;
+    this.controller = request ? readableController! : null;
 
-    request.signal.addEventListener('abort', this.close, { once: true });
+    request?.signal?.addEventListener('abort', this.close, { once: true });
   }
 
   public send = (data: T | StreamAbortMessage) => {
@@ -53,7 +51,7 @@ export class JSONLinesResponse<T> extends Response {
     if (this.isClosed) return;
 
     // Enqueue to the ReadableStream
-    controller?.enqueue(encoder.encode(JSON.stringify(data) + '\n'));
+    controller?.enqueue(encoder?.encode(JSON.stringify(data) + '\n'));
 
     // Handle async iterator consumers
     if (this.iteratorResolvers.length > 0) {

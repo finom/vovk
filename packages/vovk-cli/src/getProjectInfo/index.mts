@@ -1,5 +1,6 @@
 import path from 'node:path';
 import getConfig from './getConfig/index.mjs';
+import { getPackageJson } from '../utils/getPackageJson.mjs';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
@@ -19,6 +20,8 @@ export default async function getProjectInfo({
     cwd,
   });
 
+  const packageJson = await getPackageJson(cwd, log);
+
   if (srcRootRequired && !srcRoot) {
     throw new Error(`Could not find app router directory at ${cwd}. Check Next.js docs for more info.`);
   }
@@ -37,6 +40,7 @@ export default async function getProjectInfo({
     apiDirAbsolutePath,
     srcRoot,
     config,
+    packageJson,
     log,
   };
 }
