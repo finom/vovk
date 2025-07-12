@@ -7,7 +7,6 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { generate } from './generate.mjs';
 import { locateSegments } from '../locateSegments.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
-import type { PackageJson } from 'type-fest';
 
 const THROTTLE_DELAY = 5000;
 
@@ -15,22 +14,18 @@ export class VovkGenerate {
   #cliGenerateOptions: GenerateOptions;
   #projectInfo: ProjectInfo;
   #forceNothingWrittenLog: boolean;
-  #vovkCliPackage: PackageJson;
   constructor({
     cliGenerateOptions,
     projectInfo,
     forceNothingWrittenLog,
-    vovkCliPackage,
   }: {
     cliGenerateOptions: GenerateOptions;
     projectInfo: ProjectInfo;
     forceNothingWrittenLog?: boolean;
-    vovkCliPackage: PackageJson;
   }) {
     this.#cliGenerateOptions = cliGenerateOptions;
     this.#projectInfo = projectInfo;
     this.#forceNothingWrittenLog = forceNothingWrittenLog ?? true;
-    this.#vovkCliPackage = vovkCliPackage;
   }
 
   start() {
@@ -53,7 +48,6 @@ export class VovkGenerate {
       forceNothingWrittenLog: this.#forceNothingWrittenLog,
       cliGenerateOptions: this.#cliGenerateOptions,
       locatedSegments,
-      vovkCliPackage: this.#vovkCliPackage,
     });
   }
 

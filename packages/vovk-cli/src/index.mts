@@ -121,7 +121,6 @@ program
       projectInfo,
       forceNothingWrittenLog: true,
       cliGenerateOptions,
-      vovkCliPackage,
     }).start();
   });
 
@@ -157,7 +156,6 @@ program
       projectInfo,
       fullSchema,
       cliBundleOptions,
-      vovkCliPackage,
     });
   });
 

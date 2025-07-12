@@ -1,6 +1,7 @@
 import path from 'node:path';
 import getConfig from './getConfig/index.mjs';
 import { getPackageJson } from '../utils/getPackageJson.mjs';
+import { readFile } from 'node:fs/promises';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
@@ -33,12 +34,17 @@ export default async function getProjectInfo({
     log.warn(`Multiple config files found. Using the first one: ${configAbsolutePaths[0]}`);
   }
 
+  const vovkCliPackage = JSON.parse(await readFile(path.join(import.meta.dirname, '../package.json'), 'utf-8')) as {
+    version: string;
+  };
+
   return {
     cwd,
     port,
     apiRoot,
     apiDirAbsolutePath,
     srcRoot,
+    vovkCliPackage,
     config,
     packageJson,
     log,

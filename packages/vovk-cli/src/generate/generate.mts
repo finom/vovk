@@ -152,7 +152,6 @@ export async function generate({
   cliGenerateOptions,
   package: argPackageJson,
   readme: argReadme,
-  vovkCliPackage,
 }: {
   isEnsuringClient?: boolean;
   projectInfo: ProjectInfo;
@@ -162,14 +161,13 @@ export async function generate({
   cliGenerateOptions?: GenerateOptions;
   package?: PackageJson;
   readme?: VovkStrictConfig['bundle']['readme'];
-  vovkCliPackage: PackageJson;
 }) {
   fullSchema = {
     ...fullSchema,
     // sort segments by name to avoid unnecessary rendering
     segments: Object.fromEntries(Object.entries(fullSchema.segments).sort(([a], [b]) => a.localeCompare(b))),
   };
-  const { config, cwd, log, srcRoot, packageJson: rootPackageJson } = projectInfo;
+  const { config, cwd, log, srcRoot, packageJson: rootPackageJson, vovkCliPackage } = projectInfo;
   const allOpenAPIMixins = {
     ...config.openApiMixins,
     ...cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {}),
