@@ -9,15 +9,18 @@ import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { BundleOptions } from '../types.mjs';
 import { locateSegments } from '../locateSegments.mjs';
+import type { PackageJson } from 'type-fest';
 
 export async function bundle({
   projectInfo,
   fullSchema,
   cliBundleOptions,
+  vovkCliPackage,
 }: {
   projectInfo: ProjectInfo;
   fullSchema: VovkSchema;
   cliBundleOptions: BundleOptions;
+  vovkCliPackage: PackageJson;
 }) {
   const { config, log, cwd, apiDirAbsolutePath } = projectInfo;
   const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
@@ -59,6 +62,7 @@ export async function bundle({
       composedExcludeSegments: cliBundleOptions.excludeSegments ?? bundleConfig.excludeSegments,
       forceTsStandalone: cliBundleOptions.forceTsStandalone,
     },
+    vovkCliPackage,
   });
 
   await build({
@@ -102,6 +106,7 @@ export async function bundle({
         composedOut: path.resolve(outDir, relativePath),
         composedOnly: true,
       },
+      vovkCliPackage,
     });
   }
 

@@ -18,11 +18,11 @@ export type { VovkEnv };
 
 const program = new Command();
 
-const packageJSON = JSON.parse(readFileSync(path.join(import.meta.dirname, '../package.json'), 'utf-8')) as {
+const vovkCliPackage = JSON.parse(readFileSync(path.join(import.meta.dirname, '../package.json'), 'utf-8')) as {
   version: string;
 };
 
-program.name('vovk').description('Vovk CLI').version(packageJSON.version);
+program.name('vovk').description('Vovk CLI').version(vovkCliPackage.version);
 
 initProgram(program.command('init'));
 
@@ -71,7 +71,7 @@ program
           },
         ],
         {
-          killOthers: ['failure', 'success'],
+          killOthersOn: ['failure', 'success'],
           prefix: 'none',
           successCondition: 'first',
         }
@@ -121,6 +121,7 @@ program
       projectInfo,
       forceNothingWrittenLog: true,
       cliGenerateOptions,
+      vovkCliPackage,
     }).start();
   });
 
@@ -156,6 +157,7 @@ program
       projectInfo,
       fullSchema,
       cliBundleOptions,
+      vovkCliPackage,
     });
   });
 

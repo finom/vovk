@@ -152,6 +152,7 @@ export async function generate({
   cliGenerateOptions,
   package: argPackageJson,
   readme: argReadme,
+  vovkCliPackage,
 }: {
   isEnsuringClient?: boolean;
   projectInfo: ProjectInfo;
@@ -161,6 +162,7 @@ export async function generate({
   cliGenerateOptions?: GenerateOptions;
   package?: PackageJson;
   readme?: VovkStrictConfig['bundle']['readme'];
+  vovkCliPackage: PackageJson;
 }) {
   fullSchema = {
     ...fullSchema,
@@ -268,6 +270,7 @@ export async function generate({
           isNodeNextResolution,
           hasMixins,
           isVovkProject,
+          vovkCliPackage,
         });
 
         const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
@@ -372,6 +375,7 @@ export async function generate({
               isNodeNextResolution,
               hasMixins,
               isVovkProject,
+              vovkCliPackage,
             });
 
             return {

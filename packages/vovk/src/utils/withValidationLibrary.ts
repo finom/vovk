@@ -57,7 +57,7 @@ export function withValidationLibrary<
   iteration?: ITERATION_MODEL;
   handle: T;
   toJSONSchema?: (
-    model: NonNullable<BODY_MODEL | QUERY_MODEL | PARAMS_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
+    model: KnownAny, // performance concern
     meta: { type: VovkValidationType }
   ) => KnownAny;
   validate: (

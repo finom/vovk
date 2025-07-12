@@ -1,3 +1,4 @@
+<%- t.getFirstLineBanner('py') %>
 <%
 const data = {
   "build-system": {
@@ -49,6 +50,8 @@ data.project.dependencies = [
   "rfc3987",
   "urllib3==1.26.15"
 ];
+
+data.project.readme = "README.md";
 
 // Optional dependencies
 data.project["optional-dependencies"] = {
