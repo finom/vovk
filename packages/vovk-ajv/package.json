@@ -33,6 +33,6 @@
     "ajv-i18n": "^4.2.0"
   },
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.319"
+    "vovk": "^3.0.0-draft.320"
   }
 }

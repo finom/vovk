@@ -34,7 +34,7 @@ export default async function getProjectInfo({
     log.warn(`Multiple config files found. Using the first one: ${configAbsolutePaths[0]}`);
   }
 
-  const vovkCliPackage = JSON.parse(await readFile(path.join(import.meta.dirname, '../package.json'), 'utf-8')) as {
+  const vovkCliPackage = JSON.parse(await readFile(path.join(import.meta.dirname, '../../package.json'), 'utf-8')) as {
     version: string;
   };
 
