@@ -3,8 +3,11 @@ const { fetcher } = require('<%= t.imports.fetcher %>');
 const { createRPC } = require('<%= t.imports.createRPC %>');
 const { schema } = require('./schema.cjs');
 const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { 
-  Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
+    <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhat, reExportFrom]) => { %>
+exports[<%= reExportWhat.split(/\s+as\s+/)[1] ?? reExportWhat %>] = require('<%= reExportFrom %>')[<%= reExportWhat.split(/\s+as\s+/)[0] %>];
+  <% }) %>
+  <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 exports.<%= rpcModuleName %> = createRPC(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', fetcher,
   { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }

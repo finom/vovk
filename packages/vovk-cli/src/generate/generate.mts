@@ -322,14 +322,13 @@ export async function generate({
               content: string;
             })
           : { data: { imports: [] }, content: templateContent };
+        const clientImports = await getTemplateClientImports({
+          config,
+          fullSchema,
+          outCwdRelativeDir,
+        });
         const results = await Promise.all(
           segmentNames.map(async (segmentName) => {
-            const clientImports = await getTemplateClientImports({
-              config,
-              fullSchema,
-              outCwdRelativeDir,
-            });
-
             const packageJson = await mergePackages({
               log,
               rootPackageJson,

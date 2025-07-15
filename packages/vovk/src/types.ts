@@ -408,7 +408,14 @@ type BundleConfig = {
     }
 );
 
-type SegmentConfig = Record<string, { origin?: string; rootEntry?: string; segmentNameOverride?: string }>;
+type SegmentConfigItem = {
+  origin?: string;
+  rootEntry?: string;
+  segmentNameOverride?: string;
+  reExports?: Record<string, string>; // { 'X as Y': 'path/to/module' }
+};
+
+type SegmentConfig = Record<string, SegmentConfigItem>;
 
 export type ClientTemplateDef = {
   extends?: string;

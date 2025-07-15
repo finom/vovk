@@ -11,8 +11,11 @@ import type { Controllers as MixinControllers, Mixins } from "./mixins";
 <% } %>
 
 type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { 
-  Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
+  <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhat, reExportFrom]) => { %>
+export { <%= reExportWhat %> } from '<%= reExportFrom %>';
+  <% }) %>
+  <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %>: ReturnType<typeof createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], Options>>;
   <% }) 
 }) %>
