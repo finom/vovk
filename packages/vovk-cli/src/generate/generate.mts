@@ -12,7 +12,7 @@ import pickSegmentFullSchema from '../utils/pickSegmentFullSchema.mjs';
 import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
 import getTemplateClientImports from './getTemplateClientImports.mjs';
 import mergePackages from './mergePackages.mjs';
-import writeOneClientFile from './writeOneClientFile.mjs';
+import writeOneClientFile, { normalizeOutTemplatePath } from './writeOneClientFile.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { getTsconfig } from 'get-tsconfig';
@@ -59,6 +59,7 @@ interface GenerationResult {
   written: boolean;
   templateName: string;
   outAbsoluteDir: string;
+  package: PackageJson;
 }
 
 function logClientGenerationResults({
@@ -87,7 +88,7 @@ function logClientGenerationResults({
     for (const [outAbsoluteDir, dirResults] of Object.entries(groupedByDir)) {
       const templateNames = _.uniq(dirResults.map(({ templateName }) => templateName));
       log.info(
-        `${clientType} client${isEnsuringClient ? ' placeholder' : ''} is generated to ${chalkHighlightThing(outAbsoluteDir)} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
+        `${clientType} client${isEnsuringClient ? ' placeholder' : ''} is generated to ${chalkHighlightThing(normalizeOutTemplatePath(outAbsoluteDir, dirResults[0].package))} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
           templateNames.map((s) => `"${s}"`).join(', ')
         )} in ${duration}ms`
       );
@@ -99,7 +100,7 @@ function logClientGenerationResults({
       for (const [outAbsoluteDir, dirResults] of Object.entries(groupedByDir)) {
         const templateNames = _.uniq(dirResults.map(({ templateName }) => templateName));
         logOrDebug(
-          `${clientType} client that was generated to ${chalkHighlightThing(outAbsoluteDir)} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
+          `${clientType} client that was generated to ${chalkHighlightThing(normalizeOutTemplatePath(outAbsoluteDir, dirResults[0].package))} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
             templateNames.map((s) => `"${s}"`).join(', ')
           )} is up to date and doesn't need to be regenerated (${duration}ms)`
         );
@@ -277,6 +278,7 @@ export async function generate({
           written,
           templateName,
           outAbsoluteDir,
+          package: packageJson,
         };
       })
     );
@@ -379,6 +381,7 @@ export async function generate({
             return {
               written,
               templateName,
+              package: packageJson,
             };
           })
         );
@@ -393,6 +396,7 @@ export async function generate({
           written: results.filter((result): result is GenerationResult => !!result).some(({ written }) => written),
           templateName,
           outAbsoluteDir,
+          package: results[0]?.package || {}, // TODO: Might be wrong in Python segmented client (unknown use case)
         };
       })
     );

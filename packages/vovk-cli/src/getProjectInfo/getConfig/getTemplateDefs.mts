@@ -72,7 +72,7 @@ export default function getTemplateDefs(
         outDir: 'dist_rust',
       },
       requires: {
-        [BuiltInTemplateName.schemaJson]: './data',
+        [BuiltInTemplateName.schemaJson]: './data/',
       },
     },
     [BuiltInTemplateName.py]: {
@@ -81,7 +81,7 @@ export default function getTemplateDefs(
         outDir: 'dist_python',
       },
       requires: {
-        [BuiltInTemplateName.schemaJson]: './data',
+        [BuiltInTemplateName.schemaJson]: './src/[package_name]/',
       },
     },
   };

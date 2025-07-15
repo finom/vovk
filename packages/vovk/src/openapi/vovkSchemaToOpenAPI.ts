@@ -1,29 +1,29 @@
 import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
 import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples';
 import { jsonSchemaSampler } from '../utils/jsonSchemaSampler';
-import { HttpStatus, type SimpleJsonSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types';
+import { HttpStatus, type SimpleJSONSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types';
 
 function extractComponents(
-  schema: SimpleJsonSchema | undefined
-): [SimpleJsonSchema | undefined, Record<string, SimpleJsonSchema>] {
+  schema: SimpleJSONSchema | undefined
+): [SimpleJSONSchema | undefined, Record<string, SimpleJSONSchema>] {
   if (!schema) return [undefined, {}];
 
-  const components: Record<string, SimpleJsonSchema> = {};
+  const components: Record<string, SimpleJSONSchema> = {};
 
   // Function to collect components and replace $refs recursively
-  const process = (obj: SimpleJsonSchema, path: string[] = []): SimpleJsonSchema | SimpleJsonSchema[] => {
+  const process = (obj: SimpleJSONSchema, path: string[] = []): SimpleJSONSchema | SimpleJSONSchema[] => {
     if (!obj || typeof obj !== 'object') return obj;
 
     // Handle arrays
     if (Array.isArray(obj)) {
-      return (obj as SimpleJsonSchema[]).map((item) => process(item, path) as SimpleJsonSchema);
+      return (obj as SimpleJSONSchema[]).map((item) => process(item, path) as SimpleJSONSchema);
     }
 
     // Create a copy to modify
     const result: Record<string, KnownAny> = {};
 
     Object.entries({ ...obj.definitions, ...obj.$defs }).forEach(([key, value]) => {
-      components[key] = process(value, [...path, key]) as SimpleJsonSchema;
+      components[key] = process(value, [...path, key]) as SimpleJSONSchema;
     });
 
     // Process all properties
@@ -39,14 +39,14 @@ function extractComponents(
         result[key] = `#/components/schemas/${refName}`;
       } else {
         // Recursively process other properties
-        result[key] = process(value as SimpleJsonSchema, [...path, key]);
+        result[key] = process(value as SimpleJSONSchema, [...path, key]);
       }
     }
 
-    return result as SimpleJsonSchema;
+    return result as SimpleJSONSchema;
   };
 
-  const processedSchema = process(schema) as SimpleJsonSchema;
+  const processedSchema = process(schema) as SimpleJSONSchema;
 
   return [processedSchema, components];
 }
@@ -65,7 +65,7 @@ export function vovkSchemaToOpenAPI({
   sampler?: (schema: KnownAny) => KnownAny; // e. g. @stoplight/json-schema-sampler
 }): OpenAPIObject {
   const paths: PathsObject = {};
-  const components: Record<string, SimpleJsonSchema> = {};
+  const components: Record<string, SimpleJSONSchema> = {};
 
   for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments ?? {})) {
     for (const c of Object.values(segmentSchema.controllers)) {
@@ -150,7 +150,7 @@ export function vovkSchemaToOpenAPI({
                   parameters: paths[path][httpMethod].parameters,
                 }
               : {}),
-            ...(outputValidation && 'type' in outputValidation && 'properties' in outputValidation
+            ...(outputValidation && 'type' in outputValidation
               ? {
                   responses: {
                     200: {
@@ -165,7 +165,7 @@ export function vovkSchemaToOpenAPI({
                   },
                 }
               : {}),
-            ...(iterationValidation && 'type' in iterationValidation && 'properties' in iterationValidation
+            ...(iterationValidation && 'type' in iterationValidation
               ? {
                   responses: {
                     200: {
@@ -195,7 +195,7 @@ export function vovkSchemaToOpenAPI({
                   responses: paths[path][httpMethod].responses,
                 }
               : {}),
-            ...(bodyValidation && 'type' in bodyValidation && 'properties' in bodyValidation
+            ...(bodyValidation && 'type' in bodyValidation
               ? {
                   requestBody: h.openapi?.requestBody ?? {
                     description: 'description' in bodyValidation ? bodyValidation.description : 'Request body',

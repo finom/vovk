@@ -1,4 +1,4 @@
-import type { SimpleJsonSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
+import type { SimpleJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
 import { jsonSchemaSampler } from './jsonSchemaSampler';
 
 const stringifyTsSample = (data: KnownAny, pad = 4) =>
@@ -43,11 +43,11 @@ export function createCodeExamples({
   package?: CodeSamplePackageJson;
   sampler?: (schema: KnownAny) => KnownAny; // e. g. @stoplight/json-schema-sampler
 }) {
-  const queryValidation = handlerSchema?.validation?.query as SimpleJsonSchema | undefined;
-  const bodyValidation = handlerSchema?.validation?.body as SimpleJsonSchema | undefined;
-  const paramsValidation = handlerSchema?.validation?.params as SimpleJsonSchema | undefined;
-  const outputValidation = handlerSchema?.validation?.output as SimpleJsonSchema | undefined;
-  const iterationValidation = handlerSchema?.validation?.iteration as SimpleJsonSchema | undefined;
+  const queryValidation = handlerSchema?.validation?.query as SimpleJSONSchema | undefined;
+  const bodyValidation = handlerSchema?.validation?.body as SimpleJSONSchema | undefined;
+  const paramsValidation = handlerSchema?.validation?.params as SimpleJSONSchema | undefined;
+  const outputValidation = handlerSchema?.validation?.output as SimpleJSONSchema | undefined;
+  const iterationValidation = handlerSchema?.validation?.iteration as SimpleJSONSchema | undefined;
   const queryFake = queryValidation && sampler(queryValidation);
   const bodyFake = bodyValidation && sampler(bodyValidation);
   const paramsFake = paramsValidation && sampler(paramsValidation);

@@ -1,4 +1,4 @@
-<%- t.getFirstLineBanner('py') %>
+<%- t.getFirstLineBanner('sh') %>
 <%
 const data = {
   "build-system": {
@@ -9,7 +9,7 @@ const data = {
     name: t.package.name.replace(/-/g, '_'),
     version: t.package.version,
     description: t.package.description,
-    "requires-python": ">=3.7",
+    "requires-python": ">=3.8",
     license: { text: t.package.license || 'UNLICENSED' }
   }
 };
@@ -84,3 +84,13 @@ if (t.package.repository || t.package.homepage || t.package.bugs) {
 %>
 <%- t.TOML.stringify(data) %>
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true

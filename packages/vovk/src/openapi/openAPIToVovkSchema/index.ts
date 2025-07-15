@@ -8,90 +8,16 @@ import type {
 import {
   GetOpenAPINameFn,
   HttpMethod,
-  KnownAny,
-  SimpleJsonSchema,
+  SimpleJSONSchema,
   VovkConfig,
   type VovkSchema,
   VovkSchemaIdEnum,
   VovkStrictConfig,
-} from '../types';
-import { generateFnName } from './generateFnName';
-import { camelCase } from '../utils/camelCase';
-import { upperFirst } from '../utils/upperFirst';
-
-// fast clone JSON object while ignoring Date, RegExp, and Function types
-function cloneJSON(obj: KnownAny): KnownAny {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (Array.isArray(obj)) return obj.map(cloneJSON);
-  const result: Record<string, KnownAny> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value instanceof Date || value instanceof RegExp || typeof value === 'function') continue;
-    result[key] = cloneJSON(value);
-  }
-  return result;
-}
-
-function applyComponents(
-  schema: SimpleJsonSchema,
-  components: ComponentsObject['schemas'],
-  mixinName: string
-): SimpleJsonSchema {
-  const key = 'components/schemas';
-  if (!components || !Object.keys(components).length) return schema;
-
-  // Create a deep copy of the schema
-  const result = cloneJSON(schema);
-
-  // Initialize $defs if it doesn't exist
-  result.$defs = result.$defs || {};
-
-  // Set to track components we've added to $defs
-  const addedComponents = new Set<string>();
-
-  // Process a schema object and replace $refs
-  function processSchema(obj: KnownAny): KnownAny {
-    if (!obj || typeof obj !== 'object') return obj;
-
-    // Create a new object/array to avoid modifying the input
-    const newObj = Array.isArray(obj) ? [...obj] : { ...obj };
-    const $ref = newObj.$ref;
-
-    if ($ref && typeof $ref === 'string' && $ref.startsWith(`#/${key}/`)) {
-      const componentName = $ref.replace(`#/${key}/`, '');
-      if (components![componentName]) {
-        newObj.$ref = `#/$defs/${componentName}`;
-        newObj['x-tsType'] ??= `Mixins.${upperFirst(camelCase(mixinName))}.${upperFirst(camelCase(componentName))}`;
-      } else {
-        delete newObj.$ref; // Remove $ref if component not found (Telegram API has Type $refs that is not defined in components)
-      }
-
-      // Add the component to $defs if not already added
-      if (!addedComponents.has(componentName) && components![componentName]) {
-        addedComponents.add(componentName);
-        // TODO: Optimize
-        result.$defs[componentName] = processSchema(cloneJSON(components![componentName]));
-      }
-    }
-
-    // Process properties/items recursively
-    if (Array.isArray(newObj)) {
-      for (let i = 0; i < newObj.length; i++) {
-        newObj[i] = processSchema(newObj[i]);
-      }
-    } else {
-      for (const key in newObj) {
-        if (Object.prototype.hasOwnProperty.call(newObj, key)) {
-          newObj[key] = processSchema(newObj[key]);
-        }
-      }
-    }
-
-    return newObj;
-  }
-
-  // Process the main schema
-  return processSchema(result);
-}
+} from '../../types';
+import { generateFnName } from '../generateFnName';
+import { camelCase } from '../../utils/camelCase';
+import { applyComponentsSchemas } from './applyComponentsSchemas';
+import { inlineRefs } from './inlineRefs';
 
 const getNamesNestJS = (operationObject: OperationObject): [string, string] => {
   const operationId = operationObject.operationId;
@@ -205,26 +131,26 @@ export function openAPIToVovkSchema({
           rpcModuleName,
           handlers: {},
         };
-        // TODO: how to utilize ReferenceObject?
-        const queryProperties = (operation.parameters as ParameterObject[])?.filter((p) => p.in === 'query') ?? null;
-        const pathProperties = (operation.parameters as ParameterObject[])?.filter((p) => p.in === 'path') ?? null;
-        const query = queryProperties?.length
+        const parameters = inlineRefs<ParameterObject[]>(operation.parameters ?? [], openAPIObject);
+        const queryProperties = parameters.filter((p) => p.in === 'query') ?? null;
+        const pathProperties = parameters.filter((p) => p.in === 'path') ?? null;
+        const query: SimpleJSONSchema | null = queryProperties?.length
           ? {
               type: 'object',
-              properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema])),
+              properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema as SimpleJSONSchema])),
               required: queryProperties.filter((p) => p.required).map((p) => p.name),
             }
           : null;
-        const params = pathProperties?.length
+        const params: SimpleJSONSchema | null = pathProperties?.length
           ? {
               type: 'object',
-              properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema])),
+              properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema as SimpleJSONSchema])),
               required: pathProperties.filter((p) => p.required).map((p) => p.name),
             }
           : null;
 
         // TODO: how to utilize ReferenceObject?
-        const requestBodyContent = (operation.requestBody as RequestBodyObject)?.content ?? {};
+        const requestBodyContent = inlineRefs<RequestBodyObject>(operation.requestBody, openAPIObject)?.content ?? {};
         const jsonBody = requestBodyContent['application/json']?.schema ?? null;
         const formDataBody = requestBodyContent['multipart/form-data']?.schema ?? null;
         let urlEncodedBody = requestBodyContent['application/x-www-form-urlencoded']?.schema ?? null;
@@ -244,13 +170,13 @@ export function openAPIToVovkSchema({
           });
         }
         const bodySchemas = [jsonBody, formDataBody, urlEncodedBody].filter(Boolean) as SchemaObject[];
-        const body = !bodySchemas.length
+        const body: SimpleJSONSchema | null = !bodySchemas.length
           ? null
           : bodySchemas.length === 1
-            ? bodySchemas[0]
-            : {
+            ? (bodySchemas[0] as SimpleJSONSchema)
+            : ({
                 anyOf: bodySchemas,
-              };
+              } as SimpleJSONSchema);
         const output =
           operation.responses?.['200']?.content?.['application/json']?.schema ??
           operation.responses?.['201']?.content?.['application/json']?.schema ??
@@ -266,7 +192,7 @@ export function openAPIToVovkSchema({
           operation['x-errorMessageKey'] = errorMessageKey;
         }
 
-        const components =
+        const componentsSchemas =
           openAPIObject.components?.schemas ??
           ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
 
@@ -276,19 +202,19 @@ export function openAPIToVovkSchema({
           openapi: operation,
           validation: {
             ...(query && {
-              query: applyComponents(query as SimpleJsonSchema, components, mixinName),
+              query: applyComponentsSchemas(query, componentsSchemas, mixinName),
             }),
             ...(params && {
-              params: applyComponents(params as SimpleJsonSchema, components, mixinName),
+              params: applyComponentsSchemas(params, componentsSchemas, mixinName),
             }),
             ...(body && {
-              body: applyComponents(body as SimpleJsonSchema, components, mixinName),
+              body: applyComponentsSchemas(body, componentsSchemas, mixinName),
             }),
             ...(output && {
-              output: applyComponents(output as SimpleJsonSchema, components, mixinName),
+              output: applyComponentsSchemas(output, componentsSchemas, mixinName),
             }),
             ...(iteration && {
-              iteration: applyComponents(iteration as SimpleJsonSchema, components, mixinName),
+              iteration: applyComponentsSchemas(iteration, componentsSchemas, mixinName),
             }),
           },
         };

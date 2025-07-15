@@ -34,7 +34,7 @@ export type VovkSegmentSchema<T = KnownAny> = {
   $schema: typeof VovkSchemaIdEnum.SEGMENT | (string & {});
   emitSchema: boolean;
   segmentName: string;
-  segmentType: 'segment' | 'mixin' | (string & {}); // string & {} is used since JSON import resolves to string
+  segmentType: 'segment' | 'mixin' | (string & {});
   forceApiRoot?: string;
   controllers: Record<string, VovkControllerSchema<T>>;
   meta?: {
@@ -334,16 +334,21 @@ export interface VovkLLMTool {
   type: 'function';
 }
 
-export type SimpleJsonSchema = {
+export type SimpleJSONSchema = {
   type: 'object';
   $ref?: string;
   description?: string;
-  properties: Record<string, KnownAny>;
+  properties: Record<string, SimpleJSONSchema>;
   required?: string[];
   examples?: KnownAny[];
-  // support both
-  $defs?: Record<string, SimpleJsonSchema>;
-  definitions?: Record<string, SimpleJsonSchema>;
+  // support both $defs and definitions
+  $defs?: Record<string, SimpleJSONSchema>;
+  definitions?: Record<string, SimpleJSONSchema>;
+  additionalProperties?: boolean;
+  anyOf?: SimpleJSONSchema[];
+  oneOf?: SimpleJSONSchema[];
+  allOf?: SimpleJSONSchema[];
+  [key: `x-${string}`]: KnownAny;
 };
 
 // -----
