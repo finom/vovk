@@ -9,7 +9,7 @@ var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __commonJS = (cb, mod) =>
   function () {
-    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    return (mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports);
   };
 var __copyProps = (to, from, except, desc) => {
   if ((from && typeof from === 'object') || typeof from === 'function')
@@ -2957,7 +2957,7 @@ var require_mjs = __commonJS({
         return createCodeExamples_1$2.createCodeExamples;
       },
     });
-    (_a$2 = (0, createVovkApp_1$1.createVovkApp)()),
+    ((_a$2 = (0, createVovkApp_1$1.createVovkApp)()),
       (exports.get = _a$2.get),
       (exports.post = _a$2.post),
       (exports.put = _a$2.put),
@@ -2966,7 +2966,7 @@ var require_mjs = __commonJS({
       (exports.head = _a$2.head),
       (exports.options = _a$2.options),
       (exports.prefix = _a$2.prefix),
-      (exports.initSegment = _a$2.initSegment);
+      (exports.initSegment = _a$2.initSegment));
   },
 });
 
@@ -26260,7 +26260,7 @@ var require_cjs = __commonJS({
         return createCodeExamples_1.createCodeExamples;
       },
     });
-    (_a = (0, createVovkApp_1.createVovkApp)()),
+    ((_a = (0, createVovkApp_1.createVovkApp)()),
       (exports.get = _a.get),
       (exports.post = _a.post),
       (exports.put = _a.put),
@@ -26269,7 +26269,7 @@ var require_cjs = __commonJS({
       (exports.head = _a.head),
       (exports.options = _a.options),
       (exports.prefix = _a.prefix),
-      (exports.initSegment = _a.initSegment);
+      (exports.initSegment = _a.initSegment));
   },
 });
 

@@ -39,6 +39,7 @@ export type VovkSegmentSchema<T = KnownAny> = {
   controllers: Record<string, VovkControllerSchema<T>>;
   meta?: {
     components?: OpenAPIObject['components'];
+    package?: PackageJson;
     [key: string]: KnownAny; // additional metadata can be added here
   };
 };
@@ -337,6 +338,7 @@ export interface VovkLLMTool {
 export type SimpleJSONSchema = {
   type: 'object';
   $ref?: string;
+  items?: SimpleJSONSchema;
   description?: string;
   properties: Record<string, SimpleJSONSchema>;
   required?: string[];

@@ -1,17 +1,5 @@
 import type { SimpleJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
-import { jsonSchemaSampler } from './jsonSchemaSampler';
-
-const stringifyTsSample = (data: KnownAny, pad = 4) =>
-  JSON.stringify(data, null, 2)
-    .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/g, '$1:')
-    .split('\n')
-    .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
-    .join('\n');
-const stringifyPySample = (data: KnownAny, pad = 4) =>
-  JSON.stringify(data, null, 2)
-    .split('\n')
-    .map((line, i, a) => (i === 0 ? line : i === a.length - 1 ? ' '.repeat(pad) + line : ' '.repeat(pad + 2) + line))
-    .join('\n');
+import { getJSONSchemaExample } from './getJSONSchemaExample';
 
 const toSnakeCase = (str: string) =>
   str
@@ -35,25 +23,24 @@ export function createCodeExamples({
   handlerSchema,
   controllerSchema,
   package: packageJson,
-  sampler = jsonSchemaSampler,
 }: {
   handlerName: string;
   handlerSchema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   package?: CodeSamplePackageJson;
-  sampler?: (schema: KnownAny) => KnownAny; // e. g. @stoplight/json-schema-sampler
 }) {
   const queryValidation = handlerSchema?.validation?.query as SimpleJSONSchema | undefined;
   const bodyValidation = handlerSchema?.validation?.body as SimpleJSONSchema | undefined;
   const paramsValidation = handlerSchema?.validation?.params as SimpleJSONSchema | undefined;
   const outputValidation = handlerSchema?.validation?.output as SimpleJSONSchema | undefined;
   const iterationValidation = handlerSchema?.validation?.iteration as SimpleJSONSchema | undefined;
-  const queryFake = queryValidation && sampler(queryValidation);
-  const bodyFake = bodyValidation && sampler(bodyValidation);
-  const paramsFake = paramsValidation && sampler(paramsValidation);
-  const outputFake = outputValidation && sampler(outputValidation);
-  const iterationFake = iterationValidation && sampler(iterationValidation);
-  const hasArg = !!queryFake || !!bodyFake || !!paramsFake;
+  const getTsSample = (schema: SimpleJSONSchema, indent?: number) =>
+    getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
+  const getPySample = (schema: SimpleJSONSchema, indent?: number) =>
+    getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4, comment: '#' });
+  const getRsSample = (schema: SimpleJSONSchema, indent?: number) =>
+    getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
+  const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation;
   const rpcName = controllerSchema.rpcModuleName;
   const handlerNameSnake = toSnakeCase(handlerName);
   const rpcNameSnake = toSnakeCase(rpcName);
@@ -62,26 +49,33 @@ export function createCodeExamples({
 
   const tsArgs = hasArg
     ? `{
-${paramsFake ? `    params: ${stringifyTsSample(paramsFake)},\n` : ''}${bodyFake ? `    body: ${stringifyTsSample(bodyFake)},\n` : ''}${queryFake ? `    query: ${stringifyTsSample(queryFake)},\n` : ''}}`
+${[
+  bodyValidation ? `    body: ${getTsSample(bodyValidation)},` : null,
+  queryValidation ? `    query: ${getTsSample(queryValidation)},` : null,
+  paramsValidation ? `    params: ${getTsSample(paramsValidation)},` : null,
+]
+  .filter(Boolean)
+  .join('\n')}
+}`
     : '';
   const TS_CODE = `import { ${rpcName} } from '${packageName}';
 
-${iterationFake ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
+${iterationValidation ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
 ${
-  outputFake
+  outputValidation
     ? `
 console.log(response); 
 /* 
-${stringifyTsSample(outputFake, 0)}
+${getTsSample(outputValidation, 0)}
 */`
     : ''
 }${
-    iterationFake
+    iterationValidation
       ? `
 for await (const item of response) {
     console.log(item); 
     /*
-    ${stringifyTsSample(iterationFake, 4)}
+    ${getTsSample(iterationValidation, 2)}
     */
 }`
       : ''
@@ -89,24 +83,24 @@ for await (const item of response) {
 
   const PY_CODE = `from ${packageJson?.py_name ?? packageNameSnake} import ${rpcName}
 
-response = ${rpcName}.${handlerNameSnake}(${hasArg ? `\n    params=${paramsFake ? stringifyPySample(paramsFake) : 'None'},\n` : ''}${bodyFake ? `    body=${stringifyPySample(bodyFake)},\n` : ''}${queryFake ? `    query=${stringifyPySample(queryFake)},\n` : ''})
+response = ${rpcName}.${handlerNameSnake}(${
+    hasArg
+      ? [
+          bodyValidation ? `    body=${getPySample(bodyValidation)},` : null,
+          queryValidation ? `    query=${getPySample(queryValidation)},` : null,
+          paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
+        ]
+          .filter(Boolean)
+          .join('\n')
+      : ''
+  })
 
-${
-  outputFake
-    ? `print(response)\n${JSON.stringify(outputFake, null, 2)
-        .split('\n')
-        .map((s) => `# ${s}`)
-        .join('\n')}`
-    : ''
-}${
-    iterationFake
+${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''}${
+    iterationValidation
       ? `for i, item in enumerate(response):
-    print(f"iteration #{i}:\\n {item}") 
-    # iteration #0: 
-${JSON.stringify(iterationFake, null, 2)
-  .split('\n')
-  .map((s) => `    # ${s}`)
-  .join('\n')}`
+    print(f"iteration #{i}:\\n {item}")
+    # iteration #0:
+${getPySample(iterationValidation, 2)}`
       : ''
   }`;
 
@@ -117,32 +111,32 @@ use serde_json::{ from_value, json };
 
 pub fn main() {
   let response = ${rpcNameSnake}::${handlerNameSnake}(
-    ${bodyFake ? serdeUnwrap(stringifyPySample(bodyFake)) : '()'}, /* body */ 
-    ${queryFake ? serdeUnwrap(stringifyPySample(queryFake)) : '()'}, /* query */ 
-    ${paramsFake ? serdeUnwrap(stringifyPySample(paramsFake)) : '()'}, /* params */ 
+    ${bodyValidation ? serdeUnwrap(getRsSample(bodyValidation)) : '()'}, /* body */ 
+    ${queryValidation ? serdeUnwrap(getRsSample(queryValidation)) : '()'}, /* query */ 
+    ${paramsValidation ? serdeUnwrap(getRsSample(paramsValidation)) : '()'}, /* params */ 
     None, /* headers (HashMap) */ 
     None, /* api_root */ 
     false, /* disable_client_validation */
   );
 
   ${
-    outputFake
+    outputValidation
       ? `match response {
     Ok(output) => println!("{:?}", output),
     /* 
-    output ${stringifyPySample(outputFake, 4)} 
+    output ${getTsSample(outputValidation, 2)} 
     */
     Err(e) => println!("error: {:?}", e),
   }`
       : ''
   }${
-    iterationFake
+    iterationValidation
       ? `match response {
       Ok(stream) => {
         for (i, item) in stream.enumerate() {
           println!("#{}: {:?}", i, item);
           /*
-          #0: iteration ${stringifyTsSample(iterationFake, 10)}
+          #0: iteration ${getTsSample(iterationValidation, 6)}
           */
         }
       },

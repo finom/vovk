@@ -79,6 +79,7 @@ export function openAPIToVovkSchema({
   getModuleName = 'api',
   getMethodName = 'auto',
   errorMessageKey,
+  package: packageJson,
   mixinName,
 }: VovkStrictConfig['openApiMixins'][string] & { mixinName: string }): VovkSchema {
   const forceApiRoot =
@@ -102,6 +103,7 @@ export function openAPIToVovkSchema({
         controllers: {},
         meta: {
           components: openAPIObject.components,
+          package: packageJson,
         },
       },
     },

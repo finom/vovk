@@ -22,6 +22,7 @@ export default async function getProjectInfo({
   });
 
   const packageJson = await getPackageJson(cwd, log);
+  const isNextInstalled = !!packageJson?.dependencies?.next || !!packageJson?.devDependencies?.next;
 
   if (srcRootRequired && !srcRoot) {
     throw new Error(`Could not find app router directory at ${cwd}. Check Next.js docs for more info.`);
@@ -47,6 +48,7 @@ export default async function getProjectInfo({
     vovkCliPackage,
     config,
     packageJson,
+    isNextInstalled,
     log,
   };
 }

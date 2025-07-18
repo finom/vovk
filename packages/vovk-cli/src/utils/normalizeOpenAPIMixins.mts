@@ -75,7 +75,10 @@ export async function normalizeOpenAPIMixins({
   if (mixinModules) {
     const modules = await Promise.all(
       Object.entries(mixinModules).map(
-        async ([mixinName, { source, apiRoot, getModuleName, getMethodName, errorMessageKey }]) => {
+        async ([
+          mixinName,
+          { source, apiRoot, getModuleName, getMethodName, errorMessageKey, package: packageJson },
+        ]) => {
           let openAPIObject: OpenAPIObject;
           if ('url' in source) {
             openAPIObject = await getOpenApiSpecRemote({ url: source.url, fallback: source.fallback, log, cwd });
@@ -93,6 +96,7 @@ export async function normalizeOpenAPIMixins({
             getModuleName,
             getMethodName,
             errorMessageKey,
+            package: packageJson,
             mixinName,
           };
         }

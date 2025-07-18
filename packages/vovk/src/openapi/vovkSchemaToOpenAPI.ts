@@ -1,7 +1,7 @@
 import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
 import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples';
-import { jsonSchemaSampler } from '../utils/jsonSchemaSampler';
 import { HttpStatus, type SimpleJSONSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types';
+import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
 
 function extractComponents(
   schema: SimpleJSONSchema | undefined
@@ -56,13 +56,11 @@ export function vovkSchemaToOpenAPI({
   schema: fullSchema,
   openAPIObject = {},
   package: packageJson = { name: 'my-rpc-client' },
-  sampler = jsonSchemaSampler,
 }: {
   rootEntry: string;
   schema: VovkSchema;
   openAPIObject?: Partial<OpenAPIObject>;
   package?: CodeSamplePackageJson;
-  sampler?: (schema: KnownAny) => KnownAny; // e. g. @stoplight/json-schema-sampler
 }): OpenAPIObject {
   const paths: PathsObject = {};
   const components: Record<string, SimpleJSONSchema> = {};
@@ -177,9 +175,9 @@ export function vovkSchemaToOpenAPI({
                             ...iterationValidation,
                             examples: iterationValidation.examples ?? [
                               [
-                                JSON.stringify(sampler(iterationValidation)),
-                                JSON.stringify(sampler(iterationValidation)),
-                                JSON.stringify(sampler(iterationValidation)),
+                                JSON.stringify(getJSONSchemaSample(iterationValidation)),
+                                JSON.stringify(getJSONSchemaSample(iterationValidation)),
+                                JSON.stringify(getJSONSchemaSample(iterationValidation)),
                               ].join('\n'),
                             ],
                           },

@@ -2,6 +2,38 @@
   "name": "vovk-apis",
   "version": "0.0.0",
   "description": "3rd party APIs",
+  "exports": {
+    "./petstore": {
+      "types": "./dist/petstore/index.d.mts",
+      "import": "./dist/petstore/index.mts",
+      "require": "./dist/petstore/index.cjs"
+    },
+    "./petstore/schema": {
+      "types": "./dist/petstore/schema.d.cts",
+      "import": "./dist/petstore/schema.cjs",
+      "require": "./dist/petstore/schema.cjs"
+    },
+    "./github": {
+      "types": "./dist/github/index.d.mts",
+      "import": "./dist/github/index.mts",
+      "require": "./dist/github/index.cjs"
+    },
+    "./github/schema": {
+      "types": "./dist/github/schema.d.cts",
+      "import": "./dist/github/schema.cjs",
+      "require": "./dist/github/schema.cjs"
+    },
+    "./telegram": {
+      "types": "./dist/telegram/index.d.mts",
+      "import": "./dist/telegram/index.mts",
+      "require": "./dist/telegram/index.cjs"
+    },
+    "./telegram/schema": {
+      "types": "./dist/telegram/schema.d.cts",
+      "import": "./dist/telegram/schema.cjs",
+      "require": "./dist/telegram/schema.cjs"
+    }
+  },
   "scripts": {
     "build": "node ../vovk-cli/dist/index.mjs generate",
     "npm-publish": "npm publish",
@@ -12,10 +44,10 @@
     "test": "echo 'Placeholder'"
   },
   "dependencies": {
-    "vovk": "^3.0.0-draft.321",
-    "vovk-ajv": "^0.0.0-draft.80"
+    "vovk": "^3.0.0-draft.323",
+    "vovk-ajv": "^0.0.0-draft.82"
   },
   "devDependencies": {
-    "vovk-cli": "^0.0.1-draft.293"
+    "vovk-cli": "^0.0.1-draft.298"
   }
 }

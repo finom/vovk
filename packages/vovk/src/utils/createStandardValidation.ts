@@ -6,10 +6,7 @@ import { HttpException } from '../HttpException';
 export function createStandardValidation({
   toJSONSchema,
 }: {
-  toJSONSchema: (
-    model: KnownAny,
-    meta: { type: VovkValidationType }
-  ) => KnownAny;
+  toJSONSchema: (model: KnownAny, meta: { type: VovkValidationType }) => KnownAny;
 }) {
   function withStandard<
     T extends (

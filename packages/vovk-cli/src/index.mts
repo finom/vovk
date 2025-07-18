@@ -146,11 +146,12 @@ program
   .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
   .action(async (cliBundleOptions: BundleOptions) => {
     const projectInfo = await getProjectInfo({ configPath: cliBundleOptions.config, srcRootRequired: false });
-    const { cwd, config, log } = projectInfo;
-    const fullSchema = await getProjectFullSchema(
-      path.resolve(cwd, cliBundleOptions?.schema ?? config.schemaOutDir),
-      log
-    );
+    const { cwd, config, log, isNextInstalled } = projectInfo;
+    const fullSchema = await getProjectFullSchema({
+      schemaOutAbsolutePath: path.resolve(cwd, cliBundleOptions?.schema ?? config.schemaOutDir),
+      log,
+      isNextInstalled,
+    });
 
     await bundle({
       projectInfo,

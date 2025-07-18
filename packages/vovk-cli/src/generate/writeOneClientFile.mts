@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
-import _, { mapValues } from 'lodash';
+import _ from 'lodash';
 import { createCodeExamples, VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
 import * as YAML from 'yaml';
 import TOML from '@iarna/toml';
@@ -158,10 +158,13 @@ export default async function writeOneClientFile({
             routeFilePath,
             segmentImportPath,
             segmentNameOverride,
-            reExports: mapValues(reExports ?? {}, (p) =>
+            reExports: _.mapValues(reExports ?? {}, (p) =>
               p.startsWith('.')
                 ? path.relative(
-                    path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME),
+                    path.join(
+                      outCwdRelativeDir,
+                      typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'
+                    ),
                     path.resolve(cwd, p)
                   )
                 : p

@@ -21,7 +21,8 @@ cargo install <%= t.package.name.replace(/-/g, '_') %>
 
 <%- handlerSchema.openapi?.description ? `${handlerSchema.openapi.description}` : '' %>
 
-`<%= handlerSchema.httpMethod %>  <%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
+<% const forceApiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? controllerSchema.forceApiRoot; %>
+`<%= handlerSchema.httpMethod %> <%= [...(forceApiRoot ? [forceApiRoot] : [t.apiRoot, segmentName]), controllerSchema.prefix, handlerSchema.path].map((part, i) => i > 0 ? t._.trim(part, '/') : part).filter(Boolean).join('/') %>`
 
 ```rust
 <%- t.createCodeExamples({

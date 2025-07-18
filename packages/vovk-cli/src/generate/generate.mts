@@ -333,6 +333,7 @@ export async function generate({
               log,
               rootPackageJson,
               packages: [
+                fullSchema.segments[segmentName]?.meta?.package,
                 config.segmentedClient.packages?.[segmentName],
                 templateDef.segmentedClient?.packages?.[segmentName],
                 argPackageJson,
@@ -341,6 +342,7 @@ export async function generate({
 
             const readme = Object.assign(
               {},
+              // TODO fullSchema.segments[segmentName]?.meta?.readme,
               config.segmentedClient.readmes?.[segmentName],
               templateDef.segmentedClient?.readmes?.[segmentName],
               argReadme

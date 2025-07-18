@@ -5,10 +5,15 @@ import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
-export async function getProjectFullSchema(
-  schemaOutAbsolutePath: string,
-  log: ProjectInfo['log']
-): Promise<VovkSchema> {
+export async function getProjectFullSchema({
+  schemaOutAbsolutePath,
+  isNextInstalled,
+  log,
+}: {
+  schemaOutAbsolutePath: string;
+  isNextInstalled: boolean;
+  log: ProjectInfo['log'];
+}): Promise<VovkSchema> {
   const result: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {},
@@ -20,13 +25,15 @@ export async function getProjectFullSchema(
     },
   };
 
+  const isEmptyLogOrWarn = isNextInstalled ? log.warn : log.debug;
+
   // Handle config.json
   const metaPath = path.join(schemaOutAbsolutePath, `${META_FILE_NAME}.json`);
   try {
     const metaContent = await readFile(metaPath, 'utf-8');
     result.meta = JSON.parse(metaContent);
   } catch {
-    log.warn(`${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
+    isEmptyLogOrWarn(`${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
   }
 
   // Handle segments directory
@@ -65,7 +72,7 @@ export async function getProjectFullSchema(
       }
     }
   } catch {
-    log.warn(`Segments directory not found at ${segmentsDir}. Using empty segments as fallback.`);
+    isEmptyLogOrWarn(`Segments directory not found at ${segmentsDir}. Using empty segments as fallback.`);
     result.segments = {};
   }
 

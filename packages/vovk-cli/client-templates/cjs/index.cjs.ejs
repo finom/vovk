@@ -5,7 +5,7 @@ const { schema } = require('./schema.cjs');
 const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
     <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhat, reExportFrom]) => { %>
-exports[<%= reExportWhat.split(/\s+as\s+/)[1] ?? reExportWhat %>] = require('<%= reExportFrom %>')[<%= reExportWhat.split(/\s+as\s+/)[0] %>];
+exports['<%= reExportWhat.split(/\s+as\s+/)[1] ?? reExportWhat %>'] = require('<%= reExportFrom %>')['<%= reExportWhat.split(/\s+as\s+/)[0] %>'];
   <% }) %>
   <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 exports.<%= rpcModuleName %> = createRPC(
