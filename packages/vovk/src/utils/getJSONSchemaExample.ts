@@ -102,7 +102,7 @@ function formatWithDescriptions(
   stripQuotes: boolean,
   indent: number
 ): string {
-  const indentStr = '  '.repeat(indent);
+  const indentStr = ' '.repeat(indent);
 
   // Handle null
   if (value === null) {
@@ -120,7 +120,7 @@ function formatWithDescriptions(
 
     const items = value.map((item) => {
       const itemSchema = schema.items || ({} as SimpleJSONSchema);
-      const formattedItem = formatWithDescriptions(item, itemSchema, rootSchema, comment, stripQuotes, indent + 1);
+      const formattedItem = formatWithDescriptions(item, itemSchema, rootSchema, comment, stripQuotes, indent + 2);
       return `${indentStr}  ${formattedItem}`;
     });
 
@@ -138,11 +138,11 @@ function formatWithDescriptions(
     // Add top-level description for objects
     if (isTopLevel && schema.type === 'object' && schema.description) {
       const descLines = schema.description.split('\n');
-      formattedEntries.push(`${indentStr}${comment} -----`);
+      formattedEntries.push(`${indentStr}  ${comment} -----`);
       descLines.forEach((line) => {
-        formattedEntries.push(`${indentStr}${comment} ${line.trim()}`);
+        formattedEntries.push(`${indentStr}  ${comment} ${line.trim()}`);
       });
-      formattedEntries.push(`${indentStr}${comment} -----`);
+      formattedEntries.push(`${indentStr}  ${comment} -----`);
     }
 
     entries.forEach(([key, val], index) => {
@@ -172,7 +172,7 @@ function formatWithDescriptions(
         rootSchema,
         comment,
         stripQuotes,
-        indent + 1
+        indent + 2
       );
 
       formattedEntries.push(`${indentStr}  ${formattedKey}: ${formattedValue}${index < entries.length - 1 ? ',' : ''}`);

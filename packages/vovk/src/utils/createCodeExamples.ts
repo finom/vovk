@@ -75,7 +75,7 @@ ${getTsSample(outputValidation, 0)}
 for await (const item of response) {
     console.log(item); 
     /*
-    ${getTsSample(iterationValidation, 2)}
+    ${getTsSample(iterationValidation)}
     */
 }`
       : ''
@@ -85,13 +85,15 @@ for await (const item of response) {
 
 response = ${rpcName}.${handlerNameSnake}(${
     hasArg
-      ? [
+      ? '\n' +
+        [
           bodyValidation ? `    body=${getPySample(bodyValidation)},` : null,
           queryValidation ? `    query=${getPySample(queryValidation)},` : null,
           paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
         ]
           .filter(Boolean)
-          .join('\n')
+          .join('\n') +
+        '\n'
       : ''
   })
 
@@ -100,7 +102,7 @@ ${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''
       ? `for i, item in enumerate(response):
     print(f"iteration #{i}:\\n {item}")
     # iteration #0:
-${getPySample(iterationValidation, 2)}`
+    ${getPySample(iterationValidation)}`
       : ''
   }`;
 
@@ -117,14 +119,12 @@ pub fn main() {
     None, /* headers (HashMap) */ 
     None, /* api_root */ 
     false, /* disable_client_validation */
-  );
-
-  ${
+  );${
     outputValidation
-      ? `match response {
+      ? `\n\nmatch response {
     Ok(output) => println!("{:?}", output),
     /* 
-    output ${getTsSample(outputValidation, 2)} 
+    output ${getTsSample(outputValidation)} 
     */
     Err(e) => println!("error: {:?}", e),
   }`
@@ -132,15 +132,15 @@ pub fn main() {
   }${
     iterationValidation
       ? `match response {
-      Ok(stream) => {
-        for (i, item) in stream.enumerate() {
-          println!("#{}: {:?}", i, item);
-          /*
-          #0: iteration ${getTsSample(iterationValidation, 6)}
-          */
-        }
-      },
-      Err(e) => println!("Error initiating stream: {:?}", e),
+    Ok(stream) => {
+      for (i, item) in stream.enumerate() {
+        println!("#{}: {:?}", i, item);
+        /*
+        #0: iteration ${getTsSample(iterationValidation, 8)}
+        */
+      }
+    },
+    Err(e) => println!("Error initiating stream: {:?}", e),
   }`
       : ''
   }
