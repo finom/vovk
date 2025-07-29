@@ -1,5 +1,5 @@
-import { KnownAny, VovkHandlerSchema } from '../types';
-import { HttpException } from '../HttpException';
+import { KnownAny, VovkHandlerSchema } from '../types.js';
+import { HttpException } from '../HttpException.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultHandler';
 

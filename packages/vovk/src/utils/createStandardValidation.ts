@@ -1,7 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { HttpStatus, KnownAny, VovkRequest, VovkTypedMethod, VovkValidationType } from '../types';
-import { withValidationLibrary } from './withValidationLibrary';
-import { HttpException } from '../HttpException';
+import { HttpStatus, KnownAny, VovkRequest, VovkTypedMethod, VovkValidationType } from '../types.js';
+import { withValidationLibrary } from './withValidationLibrary.js';
+import { HttpException } from '../HttpException.js';
 
 export function createStandardValidation({
   toJSONSchema,

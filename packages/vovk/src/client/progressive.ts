@@ -1,5 +1,5 @@
-import type { VovkStreamAsyncIterable } from './types';
-import type { KnownAny, VovkYieldType } from '../types';
+import type { VovkStreamAsyncIterable } from './types.js';
+import type { KnownAny, VovkYieldType } from '../types.js';
 
 type UnionToIntersection<U> = (U extends KnownAny ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
@@ -40,6 +40,12 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
           }
         }
       }
+
+      Object.keys(reg).forEach((key) => {
+        if (reg[key].isSettled) return;
+        reg[key].isSettled = true;
+        reg[key].reject(new Error(`The connection was closed without sending a value for "${key}"`));
+      });
 
       return result;
     })

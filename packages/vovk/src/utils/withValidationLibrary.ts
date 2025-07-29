@@ -1,4 +1,4 @@
-import { HttpException } from '../HttpException';
+import { HttpException } from '../HttpException.js';
 import {
   HttpStatus,
   VovkHandlerSchema,
@@ -6,9 +6,9 @@ import {
   VovkValidationType,
   type KnownAny,
   type VovkRequest,
-} from '../types';
-import reqMeta from './reqMeta';
-import { setHandlerSchema } from './setHandlerSchema';
+} from '../types.js';
+import reqMeta from './reqMeta.js';
+import { setHandlerSchema } from './setHandlerSchema.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 
@@ -81,7 +81,7 @@ export function withValidationLibrary<
     skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
   const outputHandler = async (req: VovkRequestAny, handlerParams: Parameters<T>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
-    const data = await handle(req, handlerParams);
+    let data = await handle(req, handlerParams);
     if (__disableClientValidation) {
       return data;
     }
@@ -99,7 +99,7 @@ export function withValidationLibrary<
           'Output is required. You probably forgot to return something from your handler.'
         );
       }
-      await validate(data, output, { type: 'output', req });
+      data = (await validate(data, output, { type: 'output', req })) ?? data;
     }
 
     if (iteration && !disableServerSideValidationKeys.includes('iteration')) {
@@ -114,9 +114,9 @@ export function withValidationLibrary<
       // Return a brand-new async generator that yields validated items
       return (async function* () {
         let i = 0;
-        for await (const item of data) {
+        for await (let item of data) {
           if (validateEachIteration || i === 0) {
-            await validate(item, iteration, { type: 'iteration', req, status: 200, i });
+            item = (await validate(item, iteration, { type: 'iteration', req, status: 200, i })) ?? item;
           }
           i++;
           yield item;
@@ -184,7 +184,7 @@ export function withValidationLibrary<
   ): IsInputOptional extends true ? RETURN_TYPE : never;
   function fn<RETURN_TYPE = ReturnType<T>>(input: FnInput): RETURN_TYPE;
   function fn<RETURN_TYPE = ReturnType<T>>(input?: FnInput): RETURN_TYPE {
-    const fakeReq: Pick<VovkRequest<typeof body, typeof query, typeof params>, 'vovk'> = {
+    const fakeReq: Pick<VovkRequest<T['__types']['body'], T['__types']['query'], T['__types']['params']>, 'vovk'> = {
       vovk: {
         body: () => Promise.resolve((input?.body ?? {}) as T['__types']['body']),
         query: () => (input?.query ?? {}) as T['__types']['query'],

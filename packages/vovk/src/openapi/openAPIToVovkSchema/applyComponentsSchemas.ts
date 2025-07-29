@@ -1,7 +1,7 @@
 import { ComponentsObject } from 'openapi3-ts/oas31';
-import { camelCase } from '../../utils/camelCase';
-import { upperFirst } from '../../utils/upperFirst';
-import { KnownAny, SimpleJSONSchema } from '../../types';
+import { camelCase } from '../../utils/camelCase.js';
+import { upperFirst } from '../../utils/upperFirst.js';
+import { KnownAny, SimpleJSONSchema } from '../../types.js';
 
 // fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: KnownAny): KnownAny {

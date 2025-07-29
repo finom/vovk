@@ -1,5 +1,5 @@
-import type { NextRequest } from 'next/server';
-import { VovkApp as VovkApp } from './VovkApp';
+import type { NextRequest } from 'next/server.js';
+import { VovkApp as VovkApp } from './VovkApp.js';
 import {
   HttpMethod,
   type KnownAny,
@@ -9,8 +9,8 @@ import {
   type VovkRequest,
   type StaticClass,
   type VovkHandlerSchema,
-} from './types';
-import getSchema from './utils/getSchema';
+} from './types.js';
+import getSchema from './utils/getSchema.js';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
@@ -54,6 +54,13 @@ const assignSchema = ({
   const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
   vovkApp.routes[httpMethod].set(controller, methods);
 
+  if (options?.cors) {
+    const optionsMethods = vovkApp.routes.OPTIONS.get(controller) ?? {};
+    optionsMethods[path] = (() => {}) as unknown as RouteHandler;
+    optionsMethods[path]._options = options;
+    vovkApp.routes.OPTIONS.set(controller, optionsMethods);
+  }
+
   const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
     _controller: VovkController;
     fn?: (req: KnownAny, params: KnownAny) => KnownAny;
@@ -71,6 +78,7 @@ const assignSchema = ({
   originalMethod._controller = controller;
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
   const schema = originalMethod._sourceMethod._getSchema?.(controller);
+  // TODO: Some of these assignments probably not needed anymore
   originalMethod.schema = schema;
   originalMethod.fn = originalMethod._sourceMethod?.fn;
   originalMethod.models = originalMethod._sourceMethod?.models;
@@ -100,8 +108,11 @@ const assignSchema = ({
 export function createVovkApp() {
   const vovkApp = new VovkApp();
 
-  const createHTTPDecorator = (httpMethod: HttpMethod) => {
-    function decoratorCreator(givenPath = '', options?: DecoratorOptions) {
+  function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
+    function decoratorCreator(
+      givenPath = '',
+      options?: T extends HttpMethod.GET ? DecoratorOptions : Omit<DecoratorOptions, 'staticParams'>
+    ) {
       const path = trimPath(givenPath);
 
       function decorator(givenTarget: KnownAny, propertyKey: string) {
@@ -144,7 +155,7 @@ export function createVovkApp() {
     enhancedDecoratorCreator.auto = auto;
 
     return enhancedDecoratorCreator;
-  };
+  }
 
   const prefix = (givenPath = '') => {
     const path = trimPath(givenPath);

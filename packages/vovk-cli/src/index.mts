@@ -135,11 +135,6 @@ program
   .option('--dont-delete-ts-client-out-dir-after', 'do not delete TypeScript client output directory after bundling')
   .option('--config <config>', 'path to config file')
   .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
-  .option('--sourcemap', 'generate sourcemaps')
-  .option(
-    '--force-ts-standalone',
-    'force TypeScript standalone mode (Next.js environment will be ignored, by default it\'s "true" for non-Next.js directories)'
-  )
   .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema instead of Vovk schema')
   .option('--openapi-get-module-name <names...>', 'module names corresponding to the index of --openapi option')
   .option('--openapi-get-method-name <names...>', 'method names corresponding to the index of --openapi option')

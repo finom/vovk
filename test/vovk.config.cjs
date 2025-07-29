@@ -2,7 +2,6 @@
 /** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
   modulesDir: './src/modules',
-  // createRPCImport: ['../packages/vovk-react-query/index.cjs', '../packages/vovk-react-query/index.mjs'],
   imports: {
     validateOnClient: '../packages/vovk-ajv/index.js',
   },
@@ -19,7 +18,10 @@ const vovkConfig = {
     controller: 'none',
   },
   bundle: {
-    outDir: './other-compiled-test-sources/bundle',
+    tsdownBuildOptions: {
+      outDir: './other-compiled-test-sources/bundle',
+      tsconfig: './tsconfig.tsdown-bundle.json',
+    },
   },
   clientTemplateDefs: {
     py: {

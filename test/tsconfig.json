@@ -31,18 +31,29 @@
       "vovk-cli/*": ["../packages/vovk-cli/*"],
       "vovk-validate-client-ajv/*": ["../packages/vovk-ajv/*"],
       "vovk-python/*": ["../packages/vovk-python/*"], */
-      "next/*": ["./node_modules/next/*"]
+      "next/*": [
+        "./node_modules/next/*"
+      ],
+      "react/*": ["../node_modules/react/*"],
+      "vovk/*": ["../node_modules/vovk/mjs/*"]
     },
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    // "allowJs": true,
     "skipLibCheck": true,
     "incremental": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "strictPropertyInitialization": false,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "allowJs": true
   },
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

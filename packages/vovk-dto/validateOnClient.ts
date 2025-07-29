@@ -2,9 +2,21 @@ import { validate } from 'class-validator';
 import type { ClassConstructor } from 'class-transformer';
 import { HttpException, HttpStatus, type VovkValidateOnClient } from 'vovk';
 
+const canValidate = (inputObject: unknown, validationSchema: unknown): inputObject is ClassConstructor<object> => {
+  return (
+    !!inputObject &&
+    typeof inputObject === 'object' &&
+    inputObject?.constructor !== Object &&
+    !(inputObject instanceof FormData) &&
+    !!validationSchema &&
+    typeof validationSchema === 'object' &&
+    'x-isDto' in validationSchema
+  );
+};
+
 export const validateOnClient: VovkValidateOnClient = async (input, validation) => {
-  if (validation.body && 'x-isDto' in (validation.body as object)) {
-    const bodyErrors = await validate(input.body as ClassConstructor<object>);
+  if (canValidate(input.body, validation.body)) {
+    const bodyErrors = await validate(input.body);
     if (bodyErrors.length > 0) {
       const err = bodyErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
       throw new HttpException(HttpStatus.NULL, `DTO validation failed. Invalid body on client: ${err}`, {
@@ -15,8 +27,8 @@ export const validateOnClient: VovkValidateOnClient = async (input, validation) 
     }
   }
 
-  if (validation.query && 'x-isDto' in (validation.query as object)) {
-    const queryErrors = await validate(input.query as ClassConstructor<object>);
+  if (canValidate(input.query, validation.query)) {
+    const queryErrors = await validate(input.query);
     if (queryErrors.length > 0) {
       const err = queryErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
       throw new HttpException(HttpStatus.NULL, `DTO validation failed. Invalid query on client: ${err}`, {
@@ -27,8 +39,8 @@ export const validateOnClient: VovkValidateOnClient = async (input, validation) 
     }
   }
 
-  if (validation.params && 'x-isDto' in (validation.params as object)) {
-    const paramsErrors = await validate(input.params as ClassConstructor<object>);
+  if (canValidate(input.params, validation.params)) {
+    const paramsErrors = await validate(input.params);
     if (paramsErrors.length > 0) {
       const err = paramsErrors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
       throw new HttpException(HttpStatus.NULL, `DTO validation failed. Invalid params on client: ${err}`, {

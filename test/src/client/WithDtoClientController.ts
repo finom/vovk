@@ -174,6 +174,17 @@ export default class WithDtoClientController {
   });
 
   @post.auto()
+  static handleFormDataClient = async (req: VovkRequest<unknown, HandleQueryQueryDto>) => {
+    // NOT USED IN TESTS YET
+    const formData = await req.formData();
+    const search = req.vovk.query().search;
+    return WithDtoClientControllerRPC.handleFormData({
+      body: formData,
+      query: plainToInstance(HandleQueryQueryDto, { search }),
+    });
+  };
+
+  @post.auto()
   static disableServerSideValidationBool = withDto({
     disableServerSideValidation: true,
     body: HandleBodyBodyDto,

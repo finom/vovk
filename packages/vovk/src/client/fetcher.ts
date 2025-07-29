@@ -1,6 +1,6 @@
-import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types';
-import { HttpStatus, KnownAny } from '../types';
-import { HttpException } from '../HttpException';
+import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types.js';
+import { HttpStatus, KnownAny } from '../types.js';
+import { HttpException } from '../HttpException.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
@@ -12,11 +12,17 @@ export function createFetcher<T>({
   prepareRequestInit?: (init: RequestInit, options: VovkDefaultFetcherOptions<T>) => RequestInit | Promise<RequestInit>;
   transformResponse?: (
     respData: KnownAny,
-    response: Response,
     options: VovkDefaultFetcherOptions<T>,
+    response: Response,
     init: RequestInit
   ) => unknown | Promise<unknown>;
-  onError?: (error: HttpException, response: Response | null) => void | Promise<void>;
+  onError?: (
+    error: HttpException,
+    options: VovkDefaultFetcherOptions<T>,
+    response: Response | null,
+    init: RequestInit | null,
+    respData: unknown | null
+  ) => void | Promise<void>;
 } = {}) {
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
@@ -25,6 +31,8 @@ export function createFetcher<T>({
     options
   ) => {
     let response: Response | null = null;
+    let respData: unknown | null = null;
+    let requestInit: RequestInit | null = null;
 
     try {
       const { params, query, body, meta, apiRoot, disableClientValidation, init, interpretAs } = options;
@@ -58,7 +66,7 @@ export function createFetcher<T>({
         }
       }
 
-      let requestInit: RequestInit = {
+      requestInit = {
         method: httpMethod,
         ...init,
         headers: {
@@ -97,25 +105,23 @@ export function createFetcher<T>({
 
       const contentType = interpretAs ?? response.headers.get('content-type');
 
-      let resp;
-
       if (contentType?.startsWith('application/jsonl')) {
-        resp = defaultStreamHandler({ response, controller, schema });
+        respData = defaultStreamHandler({ response, controller, schema });
       } else if (contentType?.startsWith('application/json')) {
-        resp = defaultHandler({ response, schema });
+        respData = defaultHandler({ response, schema });
       } else {
-        resp = response;
+        respData = response;
       }
 
-      resp = await resp;
+      respData = await respData;
 
-      resp = transformResponse
-        ? await transformResponse(resp, response, options as unknown as VovkDefaultFetcherOptions<T>, requestInit)
-        : resp;
+      respData = transformResponse
+        ? await transformResponse(respData, options as unknown as VovkDefaultFetcherOptions<T>, response, requestInit)
+        : respData;
 
-      return [resp, response];
+      return [respData, response];
     } catch (error) {
-      await onError?.(error as HttpException, response);
+      await onError?.(error as HttpException, options, response, requestInit, respData);
 
       throw error;
     }

@@ -32,14 +32,14 @@
   "author": "Andrey Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.331",
-    "zod": "^4.0.5"
+    "vovk": "^3.0.0-draft.339",
+    "zod": "^4.0.9"
   },
   "dependencies": {
     "vovk-validate-client-ajv": "^0.0.0-beta.3",
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
-    "zod": "^4.0.5"
+    "zod": "^4.0.10"
   }
 }

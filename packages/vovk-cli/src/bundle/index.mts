@@ -27,13 +27,12 @@ export async function bundle({
   const tsClientOutDir = cliBundleOptions?.tsClientOutDir ?? bundleConfig.tsClientOutDir;
   const dontDeleteTsClientOutDirAfter =
     cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? bundleConfig?.dontDeleteTsClientOutDirAfter ?? false;
-  const sourcemap = cliBundleOptions?.sourcemap ?? bundleConfig?.sourcemap;
 
   if (!tsClientOutDir) {
     throw new Error('No output directory specified for composed client');
   }
 
-  const outDir = cliBundleOptions?.outDir ?? bundleConfig.outDir;
+  const outDir = cliBundleOptions?.outDir ?? bundleConfig.tsdownBuildOptions.outDir;
 
   if (!outDir) {
     throw new Error('No output directory specified for bundling');
@@ -57,7 +56,6 @@ export async function bundle({
       composedOnly: true,
       composedIncludeSegments: cliBundleOptions.includeSegments ?? bundleConfig.includeSegments,
       composedExcludeSegments: cliBundleOptions.excludeSegments ?? bundleConfig.excludeSegments,
-      forceTsStandalone: cliBundleOptions.forceTsStandalone,
     },
   });
 
@@ -67,7 +65,7 @@ export async function bundle({
     format: ['cjs', 'esm'],
     fixedExtension: true,
     outDir,
-    sourcemap: bundleConfig.sourcemap,
+    ...bundleConfig.tsdownBuildOptions,
   });
 
   const outDirAbsolute = path.resolve(cwd, outDir);
@@ -81,7 +79,6 @@ export async function bundle({
     fixedExtension: true,
     outDir,
     clean: false,
-    sourcemap,
   });
 
   log.debug(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);

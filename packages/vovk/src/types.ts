@@ -1,8 +1,9 @@
-import type { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server.js';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponse } from './JSONLinesResponse';
-import { VovkStreamAsyncIterable } from './client/types';
+import type { JSONLinesResponse } from './JSONLinesResponse.js';
+import { VovkStreamAsyncIterable } from './client/types.js';
 import type { PackageJson } from 'type-fest';
+import { build } from 'tsdown';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -133,19 +134,6 @@ export type ControllerStaticMethod<
 > = ((req: REQ, params: PARAMS) => unknown) & {
   _controller?: VovkController;
 };
-
-/*
-((req: REQ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
-    __types?: {
-      body?: KnownAny;
-      query?: KnownAny;
-      params?: KnownAny;
-      output?: KnownAny;
-      iteration?: KnownAny;
-      // isForm?: boolean;
-    };
-  }
-    */
 
 export type VovkTypedMethod<
   T extends (...args: KnownAny[]) => KnownAny,
@@ -336,7 +324,8 @@ export interface VovkLLMTool {
 }
 
 export type SimpleJSONSchema = {
-  type: 'object';
+  type: string;
+  format?: string;
   $ref?: string;
   items?: SimpleJSONSchema;
   description?: string;
@@ -392,13 +381,12 @@ type ClientConfigSegmented = ClientConfigCommon & {
 };
 
 type BundleConfig = {
-  outDir?: string;
   requires?: Record<string, string>;
   tsClientOutDir?: string;
   dontDeleteTsClientOutDirAfter?: boolean;
-  sourcemap?: boolean;
   package?: PackageJson;
   readme?: ReadmeConfig;
+  tsdownBuildOptions?: Parameters<typeof build>[0];
 } & (
   | {
       excludeSegments?: never;
@@ -438,33 +426,33 @@ export type GetOpenAPINameFn = (config: {
 }) => string;
 
 type VovkUserConfig = {
-  $schema?: typeof VovkSchemaIdEnum.CONFIG | string;
-  emitConfig?: boolean | (keyof VovkStrictConfig | string)[];
+  $schema?: typeof VovkSchemaIdEnum.CONFIG | (string & {});
+  emitConfig?: boolean | (keyof VovkStrictConfig | (string & {}))[];
   schemaOutDir?: string;
+  modulesDir?: string;
+  rootEntry?: string;
+  origin?: string;
+  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn';
+  prettifyClient?: boolean;
+  libs?: {
+    ajv: KnownAny; // set by providing the typedoc comment in config
+    [key: string]: KnownAny;
+  };
+  devHttps?: boolean;
   composedClient?: ClientConfigComposed;
   segmentedClient?: ClientConfigSegmented;
   bundle?: BundleConfig;
+  clientTemplateDefs?: Record<string, ClientTemplateDef>;
   imports?: {
     fetcher?: string | [string, string] | [string];
     validateOnClient?: string | [string, string] | [string];
     createRPC?: string | [string, string] | [string];
   };
-  modulesDir?: string;
-  rootEntry?: string;
-  origin?: string;
   rootSegmentModulesDirName?: string;
-  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn';
-  prettifyClient?: boolean;
-  devHttps?: boolean;
-  clientTemplateDefs?: Record<string, ClientTemplateDef>;
   moduleTemplates?: {
     service?: string;
     controller?: string;
     [key: string]: string | undefined;
-  };
-  libs?: {
-    ajv: KnownAny; // set by providing the typedoc comment in config
-    [key: string]: KnownAny;
   };
   segmentConfig?: false | SegmentConfig;
   openApiMixins?: {
@@ -483,7 +471,7 @@ type VovkUserConfig = {
       package?: PackageJson;
       readme?: ReadmeConfig;
       apiRoot?: string;
-      getModuleName?: // if not provided, will use "api"
+      getModuleName?: // if not provided, will use 'api' by default
       | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
         | (string & {}) // literal module name, like MedusaRPC, GithubReposRPC, etc.
         | 'api' // declared for documentation purposes as default
@@ -522,7 +510,7 @@ export type VovkStrictConfig = Required<
         NonNullable<VovkConfig['openApiMixins']>[string]['source'],
         { file: string } | { url: string } // "object" only
       >;
-      apiRoot?: string; // if not set, uses openapi.servers[0].url or openapi.host + openapi.basePath
+      apiRoot?: string; // if not set, uses openapi.servers[0].url
       getModuleName: NonNullable<VovkConfig['openApiMixins']>[string]['getModuleName'];
       getMethodName: NonNullable<VovkConfig['openApiMixins']>[string]['getMethodName'];
     };
@@ -532,3 +520,15 @@ export type VovkStrictConfig = Required<
 // utils
 export type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 export type RequireAllExcept<T, K extends keyof T> = Required<Omit<T, K>> & Pick<T, K>;
+export type IsEmptyObject<T> = T extends object
+  ? keyof T extends never
+    ? true // Empty object
+    : T extends Partial<T>
+      ? Partial<T> extends T
+        ? true // All properties are optional
+        : false
+      : false
+  : false;
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};

@@ -1,7 +1,7 @@
-import { HttpStatus, VovkHandlerSchema, type VovkErrorResponse } from '../types';
-import type { VovkStreamAsyncIterable } from './types';
-import { HttpException } from '../HttpException';
-import '../utils/shim';
+import { HttpStatus, VovkHandlerSchema, type VovkErrorResponse } from '../types.js';
+import type { VovkStreamAsyncIterable } from './types.js';
+import { HttpException } from '../HttpException.js';
+import '../utils/shim.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
 
@@ -31,10 +31,11 @@ export const defaultStreamHandler = async ({
   // if streaming is too rapid, we need to make sure that the loop is stopped
   let canceled = false;
 
-  const subscribers = new Set<(data: unknown) => void>();
+  const subscribers = new Set<(data: unknown, i: number) => void>();
 
   async function* asyncIterator() {
     let prepend = '';
+    let i = 0;
 
     while (true) {
       let value: Uint8Array | undefined;
@@ -65,8 +66,10 @@ export const defaultStreamHandler = async ({
 
         if (data) {
           subscribers.forEach((cb) => {
-            if (!canceled) cb(data);
+            if (!canceled) cb(data, i);
           });
+
+          i++;
           if ('isError' in data && 'reason' in data) {
             const upcomingError = data.reason;
             await reader.cancel();

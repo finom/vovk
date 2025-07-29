@@ -34,7 +34,7 @@ const config = {
         fallback: './.openapi-cache/github.json',
       },
       getModuleName: ({ operationObject }) => {
-        const [operationNs] = operationObject.operationId?.split('/') ?? ['GithubRPC'];
+        const [operationNs] = operationObject.operationId?.split('/') ?? ['unknown'];
         return `Github${startCase(camelCase(operationNs)).replace(/ /g, '')}RPC`;
       },
       getMethodName: ({ operationObject }) => {

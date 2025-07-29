@@ -51,10 +51,8 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
       outDir: conf.segmentedClient?.outDir ?? path.join(srcRoot ?? '.', 'client'),
     },
     bundle: {
-      outDir: conf.bundle?.outDir ?? 'dist',
       tsClientOutDir: conf.bundle?.tsClientOutDir ?? 'tmp_ts_rpc',
       dontDeleteTsClientOutDirAfter: conf.bundle?.dontDeleteTsClientOutDirAfter ?? false,
-      sourcemap: conf.bundle?.sourcemap ?? false,
       requires: {
         [BuiltInTemplateName.readme]: '.',
         [BuiltInTemplateName.packageJson]: '.',
@@ -62,6 +60,10 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
       package: {},
       readme: {},
       ...conf.bundle,
+      tsdownBuildOptions: {
+        outDir: conf.bundle?.tsdownBuildOptions?.outDir ?? 'dist',
+        ...conf.bundle?.tsdownBuildOptions,
+      },
     },
     modulesDir: conf.modulesDir ?? path.join(srcRoot ?? '.', 'modules'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',

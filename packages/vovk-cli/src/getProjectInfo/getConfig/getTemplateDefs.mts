@@ -53,10 +53,6 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.schemaJson]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaJson}/`,
     },
-    [BuiltInTemplateName.standaloneTypesTs]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.standaloneTypesTs}/`,
-      requires: { [BuiltInTemplateName.schemaJson]: '.' },
-    },
     [BuiltInTemplateName.readme]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.readme}/`,
     },

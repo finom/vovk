@@ -1,8 +1,0 @@
-tsconfig.*
-.turbo
-index.cts
-index.mts
-!*.d.mts
-eslint.config.js
-test
-vovk.config.test.mjs

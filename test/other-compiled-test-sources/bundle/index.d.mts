@@ -1,18 +1,678 @@
-import * as vovk0 from 'vovk';
-import { VovkClientFetcher } from 'vovk';
-import * as openapi3_ts_oas31811 from 'openapi3-ts/oas31';
+import * as vovk0 from "vovk";
+import { JSONLinesResponse, VovkRequest } from "vovk";
+import { NextResponse } from "next/server.js";
+import { NextRequest, NextResponse as NextResponse$1 } from "next/server";
+import { UseMutationOptions, UseQueryOptions } from "@tanstack/react-query";
+import * as openapi3_ts_oas310 from "openapi3-ts/oas31";
+import { OpenAPIObject, OperationObject } from "openapi3-ts/oas31";
+import { PackageJson } from "type-fest";
+import { build } from "tsdown";
+import * as _standard_schema_spec0 from "@standard-schema/spec";
+import * as zod0 from "zod";
+import * as zod_v4_core0 from "zod/v4/core";
+import * as yup0 from "yup";
+import * as class_transformer0 from "class-transformer";
 
+//#region src/lib.d.ts
+declare const NESTED_QUERY_EXAMPLE: {
+  x: string;
+  y: string[];
+  z: {
+    f: string;
+    u: string[];
+    d: {
+      x: string;
+      arrOfObjects: ({
+        foo: string;
+        nestedArr: string[];
+        nestedObj?: undefined;
+      } | {
+        foo: string;
+        nestedObj: {
+          deepKey: string;
+        };
+        nestedArr?: undefined;
+      })[];
+    };
+  };
+};
+/**
+ * Returns an object that follows the ComplaiingModel schema but violates exactly
+ * one validation constraint specified by the key parameter.
+ */
+//#endregion
+//#region src/client/CommonController.d.ts
+declare class CommonController {
+  static getHelloWorldResponseObject(): NextResponse<{
+    hello: string;
+  }>;
+  static getHelloWorldObjectLiteral(): {
+    hello: string;
+  };
+  static getHelloWorldNextResponseObjectPromise(): Promise<NextResponse<{
+    hello: string;
+  }>>;
+  static getHelloWorldRawResponseObjectPromise(): Promise<Response>;
+  static getHelloWorldObjectLiteralPromise(): Promise<{
+    hello: string;
+  }>;
+  static getHelloWorldHeaders(): Promise<{
+    hello: string;
+  }>;
+  static getHelloWorldArray(): {
+    hello: string;
+  }[];
+  static getHelloWorldAndEmptyGeneric(_req: VovkRequest): {
+    hello: string;
+  };
+  static getWithParams(_req: VovkRequest, {
+    hello
+  }: {
+    hello: 'world';
+  }): {
+    hello: "world";
+  };
+  static postWithAll(req: VovkRequest<{
+    isBody: true;
+  }, {
+    simpleQueryParam: 'queryValue';
+  }, {
+    hello: 'world';
+  }>, params: {
+    hello: 'world';
+  }): Promise<{
+    params: {
+      hello: "world";
+    };
+    body: {
+      isBody: true;
+    };
+    query: {
+      simpleQueryParam: "queryValue";
+    };
+  }>;
+  static postWithBodyAndQueryUsingReqVovk(req: VovkRequest<{
+    isBody: true;
+  }, {
+    simpleQueryParam: 'queryValue';
+    array1: readonly ['foo'];
+    array2: readonly ['bar', 'baz'];
+  }>): Promise<{
+    body: {
+      isBody: true;
+    };
+    query: {
+      simpleQueryParam: "queryValue";
+      array1: readonly ["foo"];
+      array2: readonly ["bar", "baz"];
+    };
+    meta: {
+      isMeta1: true;
+      isMeta2: true;
+    };
+    metaNulled: Record<any, any>;
+  }>;
+  static getNestedQuery(req: VovkRequest<undefined, typeof NESTED_QUERY_EXAMPLE>): {
+    query: {
+      x: string;
+      y: string[];
+      z: {
+        f: string;
+        u: string[];
+        d: {
+          x: string;
+          arrOfObjects: ({
+            foo: string;
+            nestedArr: string[];
+            nestedObj?: undefined;
+          } | {
+            foo: string;
+            nestedObj: {
+              deepKey: string;
+            };
+            nestedArr?: undefined;
+          })[];
+        };
+      };
+    };
+    search: string;
+  };
+  static postWithFormDataUsingReqVovk(req: VovkRequest<FormData>): Promise<{
+    field: "value";
+  }>;
+  static getErrorResponse(): void;
+  static getJsonTextResponse(): Response;
+  static getJsonlResponse(): JSONLinesResponse<{
+    hello: string;
+  }>;
+  static getJsonlTextResponse(): JSONLinesResponse<{
+    hello: string;
+  }>;
+}
+//# sourceMappingURL=CommonController.d.ts.map
+//#endregion
+//#region ../packages/vovk/mjs/JSONLinesResponse.d.ts
+declare class JSONLinesResponse$1<T> extends Response {
+  isClosed: boolean;
+  controller?: ReadableStreamDefaultController | null;
+  readonly encoder: TextEncoder | null;
+  readonly readableStream: ReadableStream | null;
+  private iteratorQueue;
+  private iteratorResolvers;
+  constructor(request?: Request, init?: ResponseInit);
+  send: (data: T | StreamAbortMessage) => void;
+  close: () => void;
+  throw: (e: KnownAny) => void;
+  [Symbol.dispose]: () => void;
+  [Symbol.asyncDispose]: () => void;
+  [Symbol.asyncIterator]: () => {
+    next: () => Promise<IteratorResult<T | StreamAbortMessage>>;
+  };
+}
+//#endregion
+//#region ../packages/vovk/mjs/types.d.ts
+type KnownAny = any;
+type StaticClass = Function;
+type VovkHandlerSchema<T = KnownAny> = {
+  path: string;
+  httpMethod: string;
+  validation?: {
+    query?: T;
+    body?: T;
+    params?: T;
+    output?: T;
+    iteration?: T;
+  };
+  openapi?: OperationObject;
+  misc?: Record<string, KnownAny>;
+};
+type VovkControllerSchema<T = KnownAny> = {
+  rpcModuleName: string;
+  originalControllerName?: string;
+  prefix?: string;
+  forceApiRoot?: string;
+  handlers: Record<string, VovkHandlerSchema<T>>;
+};
+type VovkSegmentSchema<T = KnownAny> = {
+  $schema: typeof VovkSchemaIdEnum.SEGMENT | (string & {});
+  emitSchema: boolean;
+  segmentName: string;
+  segmentType: 'segment' | 'mixin' | (string & {});
+  forceApiRoot?: string;
+  controllers: Record<string, VovkControllerSchema<T>>;
+  meta?: {
+    components?: OpenAPIObject['components'];
+    package?: PackageJson;
+    [key: string]: KnownAny;
+  };
+};
+type VovkMetaSchema = {
+  $schema: typeof VovkSchemaIdEnum.META | (string & {});
+  config: RequireFields<Partial<VovkStrictConfig>, '$schema'>;
+  package?: PackageJson;
+  apiRoot?: string;
+  openapi?: OpenAPIObject;
+  [key: string]: KnownAny;
+};
+type VovkSchema<T = KnownAny> = {
+  $schema: typeof VovkSchemaIdEnum.SCHEMA | (string & {});
+  segments: Record<string, VovkSegmentSchema<T>>;
+  meta?: VovkMetaSchema;
+};
+type VovkControllerInternal = {
+  _rpcModuleName?: VovkControllerSchema['rpcModuleName'];
+  _prefix?: VovkControllerSchema['prefix'];
+  _handlers: VovkControllerSchema['handlers'];
+  _handlersMetadata?: Record<string, {
+    staticParams?: Record<string, string>[];
+  }>;
+  _onError?: (err: Error, req: VovkRequest$1) => void | Promise<void>;
+};
+type VovkController = StaticClass & VovkControllerInternal & {
+  [key: string]: unknown;
+};
+interface VovkRequest$1<BODY extends KnownAny = undefined, QUERY extends KnownAny = undefined, PARAMS extends KnownAny = undefined> extends Omit<NextRequest, 'json' | 'nextUrl'> {
+  json: () => Promise<BODY>;
+  nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
+    searchParams: Omit<NextRequest['nextUrl']['searchParams'], 'get' | 'getAll' | 'entries' | 'forEach' | 'keys' | 'values'> & {
+      get: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY] extends readonly (infer ITEM)[] ? ITEM : QUERY[KEY];
+      getAll: <KEY extends keyof QUERY>(key: KEY) => QUERY[KEY] extends KnownAny[] ? QUERY[KEY] : QUERY[KEY][];
+      entries: () => IterableIterator<[keyof QUERY, QUERY[keyof QUERY]]>;
+      forEach: (callbackfn: (value: QUERY[keyof QUERY], key: keyof QUERY, searchParams: NextRequest['nextUrl']['searchParams']) => void) => void;
+      keys: () => IterableIterator<keyof QUERY>;
+      values: () => IterableIterator<QUERY[keyof QUERY]>;
+    };
+  };
+  vovk: {
+    body: () => Promise<BODY>;
+    query: () => QUERY;
+    meta: <T = Record<KnownAny, KnownAny>>(meta?: T | null) => T;
+    form: <T = BODY>() => Promise<T>;
+    params: () => PARAMS;
+  };
+}
+type ControllerStaticMethod<REQ extends VovkRequest$1<KnownAny, KnownAny, KnownAny> = VovkRequest$1<unknown, unknown, unknown>, PARAMS extends {
+  [key: string]: string;
+} = KnownAny> = ((req: REQ, params: PARAMS) => unknown) & {
+  _controller?: VovkController;
+};
+type StreamAbortMessage = {
+  isError: true;
+  reason: KnownAny;
+};
+declare enum HttpMethod {
+  GET = "GET",
+  POST = "POST",
+  PUT = "PUT",
+  PATCH = "PATCH",
+  DELETE = "DELETE",
+  HEAD = "HEAD",
+  OPTIONS = "OPTIONS",
+}
+declare enum HttpStatus {
+  NULL = 0,
+  CONTINUE = 100,
+  SWITCHING_PROTOCOLS = 101,
+  PROCESSING = 102,
+  EARLYHINTS = 103,
+  OK = 200,
+  CREATED = 201,
+  ACCEPTED = 202,
+  NON_AUTHORITATIVE_INFORMATION = 203,
+  NO_CONTENT = 204,
+  RESET_CONTENT = 205,
+  PARTIAL_CONTENT = 206,
+  AMBIGUOUS = 300,
+  MOVED_PERMANENTLY = 301,
+  FOUND = 302,
+  SEE_OTHER = 303,
+  NOT_MODIFIED = 304,
+  TEMPORARY_REDIRECT = 307,
+  PERMANENT_REDIRECT = 308,
+  BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
+  PAYMENT_REQUIRED = 402,
+  FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  METHOD_NOT_ALLOWED = 405,
+  NOT_ACCEPTABLE = 406,
+  PROXY_AUTHENTICATION_REQUIRED = 407,
+  REQUEST_TIMEOUT = 408,
+  CONFLICT = 409,
+  GONE = 410,
+  LENGTH_REQUIRED = 411,
+  PRECONDITION_FAILED = 412,
+  PAYLOAD_TOO_LARGE = 413,
+  URI_TOO_LONG = 414,
+  UNSUPPORTED_MEDIA_TYPE = 415,
+  REQUESTED_RANGE_NOT_SATISFIABLE = 416,
+  EXPECTATION_FAILED = 417,
+  I_AM_A_TEAPOT = 418,
+  MISDIRECTED = 421,
+  UNPROCESSABLE_ENTITY = 422,
+  FAILED_DEPENDENCY = 424,
+  PRECONDITION_REQUIRED = 428,
+  TOO_MANY_REQUESTS = 429,
+  INTERNAL_SERVER_ERROR = 500,
+  NOT_IMPLEMENTED = 501,
+  BAD_GATEWAY = 502,
+  SERVICE_UNAVAILABLE = 503,
+  GATEWAY_TIMEOUT = 504,
+  HTTP_VERSION_NOT_SUPPORTED = 505,
+}
+declare enum VovkSchemaIdEnum {
+  META = "https://vovk.dev/api/spec/v3/meta.json",
+  CONFIG = "https://vovk.dev/api/spec/v3/config.json",
+  SEGMENT = "https://vovk.dev/api/spec/v3/segment.json",
+  SCHEMA = "https://vovk.dev/api/spec/v3/schema.json",
+}
+type ReadmeConfig = {
+  banner?: string;
+};
+type ClientConfigCommon = {
+  enabled?: boolean;
+  outDir?: string;
+  fromTemplates?: string[];
+} & ({
+  excludeSegments?: never;
+  includeSegments?: string[];
+} | {
+  excludeSegments?: string[];
+  includeSegments?: never;
+});
+type ClientConfigComposed = ClientConfigCommon & {
+  package?: PackageJson;
+  readme?: ReadmeConfig;
+};
+type ClientConfigSegmented = ClientConfigCommon & {
+  packages?: Record<string, PackageJson>;
+  readmes?: Record<string, ReadmeConfig>;
+};
+type BundleConfig = {
+  requires?: Record<string, string>;
+  tsClientOutDir?: string;
+  dontDeleteTsClientOutDirAfter?: boolean;
+  package?: PackageJson;
+  readme?: ReadmeConfig;
+  tsdownBuildOptions?: Parameters<typeof build>[0];
+} & ({
+  excludeSegments?: never;
+  includeSegments?: string[];
+} | {
+  excludeSegments?: string[];
+  includeSegments?: never;
+});
+type SegmentConfigItem = {
+  origin?: string;
+  rootEntry?: string;
+  segmentNameOverride?: string;
+  reExports?: Record<string, string>;
+};
+type SegmentConfig = Record<string, SegmentConfigItem>;
+type ClientTemplateDef = {
+  extends?: string;
+  templatePath?: string | null;
+  origin?: string | null;
+  composedClient?: Omit<ClientConfigComposed, 'fromTemplates' | 'enabled'>;
+  segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
+  segmentConfig?: false | SegmentConfig;
+  requires?: Record<string, string>;
+  isTsClient?: boolean;
+};
+type GetOpenAPINameFn = (config: {
+  operationObject: OperationObject;
+  method: HttpMethod;
+  path: string;
+  openAPIObject: OpenAPIObject;
+}) => string;
+type VovkUserConfig = {
+  $schema?: typeof VovkSchemaIdEnum.CONFIG | (string & {});
+  emitConfig?: boolean | (keyof VovkStrictConfig | (string & {}))[];
+  schemaOutDir?: string;
+  modulesDir?: string;
+  rootEntry?: string;
+  origin?: string;
+  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn';
+  prettifyClient?: boolean;
+  libs?: {
+    ajv: KnownAny;
+    [key: string]: KnownAny;
+  };
+  devHttps?: boolean;
+  composedClient?: ClientConfigComposed;
+  segmentedClient?: ClientConfigSegmented;
+  bundle?: BundleConfig;
+  clientTemplateDefs?: Record<string, ClientTemplateDef>;
+  imports?: {
+    fetcher?: string | [string, string] | [string];
+    validateOnClient?: string | [string, string] | [string];
+    createRPC?: string | [string, string] | [string];
+  };
+  rootSegmentModulesDirName?: string;
+  moduleTemplates?: {
+    service?: string;
+    controller?: string;
+    [key: string]: string | undefined;
+  };
+  segmentConfig?: false | SegmentConfig;
+  openApiMixins?: {
+    [mixinName: string]: {
+      source: {
+        file: string;
+      } | {
+        url: string;
+        fallback?: string;
+      } | {
+        object: OpenAPIObject;
+      };
+      package?: PackageJson;
+      readme?: ReadmeConfig;
+      apiRoot?: string;
+      getModuleName?: 'nestjs-operation-id' | (string & {}) | 'api' | GetOpenAPINameFn;
+      getMethodName?: 'nestjs-operation-id' | 'camel-case-operation-id' | 'auto' | GetOpenAPINameFn;
+      errorMessageKey?: string;
+    };
+  };
+};
+type VovkConfig = VovkUserConfig;
+type VovkStrictConfig = Required<Omit<VovkUserConfig, 'emitConfig' | 'libs' | 'imports' | 'composedClient' | 'segmentedClient' | 'bundle' | 'extendClientWithOpenAPI'>> & {
+  emitConfig: (keyof VovkStrictConfig | string)[];
+  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>;
+  imports: {
+    fetcher: [string, string] | [string];
+    validateOnClient: [string, string] | [string] | null;
+    createRPC: [string, string] | [string];
+  };
+  libs: Record<string, KnownAny>;
+  composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir'>;
+  segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
+  openApiMixins: {
+    [mixinName: string]: {
+      source: Exclude<NonNullable<VovkConfig['openApiMixins']>[string]['source'], {
+        file: string;
+      } | {
+        url: string;
+      }>;
+      apiRoot?: string;
+      getModuleName: NonNullable<VovkConfig['openApiMixins']>[string]['getModuleName'];
+      getMethodName: NonNullable<VovkConfig['openApiMixins']>[string]['getMethodName'];
+    };
+  };
+};
+type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+type RequireAllExcept<T, K extends keyof T> = Required<Omit<T, K>> & Pick<T, K>;
+type IsEmptyObject<T> = T extends object ? keyof T extends never ? true : T extends Partial<T> ? Partial<T> extends T ? true : false : false : false;
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
+//#endregion
+//#region ../packages/vovk/mjs/client/defaultStreamHandler.d.ts
+declare const defaultStreamHandler: ({
+  response,
+  controller
+}: {
+  response: Response;
+  controller: AbortController;
+  schema: VovkHandlerSchema;
+}) => Promise<VovkStreamAsyncIterable<unknown>>;
+//#endregion
+//#region ../packages/vovk/mjs/client/defaultHandler.d.ts
+declare const defaultHandler: ({
+  response,
+  schema
+}: {
+  response: Response;
+  schema: VovkHandlerSchema;
+}) => Promise<unknown>;
+//#endregion
+//#region ../packages/vovk/mjs/HttpException.d.ts
+declare class HttpException extends Error {
+  statusCode: HttpStatus;
+  message: string;
+  cause?: unknown;
+  constructor(statusCode: HttpStatus, message: string, cause?: unknown);
+}
+//#endregion
+//#region ../packages/vovk/mjs/client/types.d.ts
+type OmitNullable<T> = { [K in keyof T as T[K] extends null | undefined ? never : K]: T[K] };
+type Empty = {};
+type StaticMethodInput<T extends ((req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
+  __types?: {
+    isForm: boolean;
+  };
+}> = OmitNullable<(Parameters<T>[0] extends VovkRequest$1<infer BODY, infer QUERY, infer PARAMS> ? (BODY extends Record<KnownAny, KnownAny> ? {
+  body: T['__types'] extends {
+    isForm: true;
+  } ? FormData : BODY;
+} : Empty) & (QUERY extends Record<KnownAny, KnownAny> ? {
+  query: QUERY;
+} : Empty) & (PARAMS extends Record<KnownAny, KnownAny> ? {
+  params: PARAMS;
+} : Empty) & {
+  meta?: {
+    [key: string]: KnownAny;
+  };
+} : Empty) & (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? {
+  params: Parameters<T>[1];
+} : Empty)>;
+type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
+type VovkStreamAsyncIterable<T> = {
+  status: number;
+  [Symbol.dispose](): Promise<void> | void;
+  [Symbol.asyncDispose](): Promise<void> | void;
+  [Symbol.asyncIterator](): AsyncIterator<T>;
+  onIterate: (cb: (data: T, i: number) => void) => () => void;
+  abort: () => Promise<void> | void;
+};
+type StaticMethodReturn<T extends ControllerStaticMethod> = ReturnType<T> extends NextResponse$1<infer U> | Promise<NextResponse$1<infer U>> ? U : ReturnType<T> extends Response | Promise<Response> ? Awaited<ReturnType<T>> : ReturnType<T>;
+type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
+type StaticMethodOptions<T extends (req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<STREAM> | Promise<JSONLinesResponse$1<STREAM>>, OPTS extends Record<string, KnownAny>, STREAM, R, F extends VovkDefaultFetcherOptions<KnownAny>> = Partial<OPTS & {
+  transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>, resp: Response) => R;
+  fetcher: VovkClientFetcher<F>;
+}>;
+type ClientMethodReturn<T extends (req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<STREAM> | Promise<JSONLinesResponse$1<STREAM>>, STREAM, R> = ReturnType<T> extends Promise<JSONLinesResponse$1<infer U>> | JSONLinesResponse$1<infer U> | Iterator<infer U> | AsyncIterator<infer U> ? Promise<VovkStreamAsyncIterable<U>> : R extends object ? Promise<Awaited<R>> : StaticMethodReturnPromise<T>;
+type ClientMethod<T extends ((req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<STREAM> | Promise<JSONLinesResponse$1<STREAM>>) & {
+  __types?: {
+    body: KnownAny;
+    query: KnownAny;
+    params: KnownAny;
+    output: KnownAny;
+    iteration: KnownAny;
+    isForm: boolean;
+  };
+}, OPTS extends Record<string, KnownAny>, STREAM extends KnownAny = unknown> = (IsEmptyObject<StaticMethodInput<T>> extends true ? <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(options?: Prettify<StaticMethodOptions<T, OPTS, STREAM, R, F>>) => ClientMethodReturn<T, STREAM, R> : <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, F>>) => ClientMethodReturn<T, STREAM, R>) & {
+  isRPC: true;
+  schema: VovkHandlerSchema;
+  controllerSchema: VovkControllerSchema;
+  segmentSchema: VovkSegmentSchema;
+  fullSchema: VovkSchema;
+  path: string;
+  queryKey: () => string[];
+  mutationKey: () => string[];
+  queryOptions<R>(input?: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>, opts?: Partial<Omit<UseQueryOptions<Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException>, 'queryFn'>>): UseQueryOptions<Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U> ? U[] : Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException>;
+  mutationOptions<R>(opts?: Partial<Omit<UseMutationOptions<Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U> ? U[] : Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException, Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>>, 'mutationFn'>>): UseMutationOptions<Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U> ? U[] : Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException, Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>>;
+  __types: T['__types'];
+};
+type VovkClientFetcher<OPTS> = (options: {
+  name: string;
+  httpMethod: HttpMethod;
+  getEndpoint: (data: {
+    apiRoot: string | undefined;
+    params: {
+      [key: string]: string;
+    };
+    query: {
+      [key: string]: string;
+    };
+  }) => string;
+  validate: (input: {
+    body?: unknown;
+    query?: unknown;
+    params?: unknown;
+    endpoint: string;
+  }) => void | Promise<void>;
+  defaultStreamHandler: typeof defaultStreamHandler;
+  defaultHandler: typeof defaultHandler;
+  schema: VovkHandlerSchema;
+}, input: {
+  body: unknown;
+  query: {
+    [key: string]: string;
+  };
+  params: {
+    [key: string]: string;
+  };
+  meta?: {
+    [key: string]: KnownAny;
+  };
+} & OPTS) => Promise<[KnownAny, Response]>;
+type VovkDefaultFetcherOptions<T> = T & {
+  apiRoot?: string;
+  disableClientValidation?: boolean;
+  validateOnClient?: VovkValidateOnClient;
+  interpretAs?: string;
+  init?: RequestInit;
+};
+type VovkValidateOnClient = (input: {
+  body?: unknown;
+  query?: unknown;
+  params?: unknown;
+  endpoint: string;
+}, validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>, fullSchema: VovkSchema) => void | Promise<void>;
+//#endregion
 //#region src/client/StreamingController.d.ts
 type Token$1 = {
   token: string;
   query: 'queryValue';
 };
+declare class StreamingController {
+  static postWithStreaming(req: VovkRequest<Omit<Token$1, 'query'>[], {
+    query: 'queryValue';
+  }>): Promise<JSONLinesResponse<Token$1>>;
+  static postWithStreamingAndImmediateError(req: VovkRequest<Omit<Token$1, 'query'>[], {
+    query: 'queryValue';
+  }>): Promise<JSONLinesResponse<Token$1>>;
+  static postWithStreamingAndDelayedError(req: VovkRequest<Omit<Token$1, 'query'>[], {
+    query: 'queryValue';
+  }>): Promise<JSONLinesResponse<Token$1>>;
+  static postWithStreamingAndDelayedCustomError(req: VovkRequest<Omit<Token$1, 'query'>[], {
+    query: 'queryValue';
+  }>): Promise<JSONLinesResponse<Token$1>>;
+  static postWithStreamingAndDelayedUnhandledError(req: VovkRequest<Omit<Token$1, 'query'>[], {
+    query: 'queryValue';
+  }>): Promise<JSONLinesResponse<Token$1>>;
+}
+//# sourceMappingURL=StreamingController.d.ts.map
 //#endregion
 //#region src/client/StreamingGeneratorController.d.ts
 type Token = {
   token: string;
   query: 'queryValue';
 };
+declare class StreamingGeneratorController {
+  static getWithStreaming(req: VovkRequest<null, {
+    query: 'queryValue';
+  }>): AsyncGenerator<Token, void, unknown>;
+  static postWithAsyncStreaming(req: VovkRequest<Omit<Token, 'query'>[], {
+    query: 'queryValue';
+  }>): AsyncGenerator<{
+    query: "queryValue";
+    token: string;
+  }, void, unknown>;
+  static postWithStreaming(req: VovkRequest<Omit<Token, 'query'>[], {
+    query: 'queryValue';
+  }>): AsyncGenerator<{
+    query: "queryValue";
+    token: string;
+  }, void, unknown>;
+  static postWithStreamingAndImmediateError(req: VovkRequest<Omit<Token, 'query'>[], {
+    query: 'queryValue';
+  }>): AsyncGenerator<Token, void, unknown>;
+  static postWithStreamingAndDelayedError(req: VovkRequest<Omit<Token, 'query'>[], {
+    query: 'queryValue';
+  }>): AsyncGenerator<{
+    query: "queryValue";
+    token: string;
+  }, void, unknown>;
+  static postWithStreamingAndDelayedCustomError(req: VovkRequest<Omit<Token, 'query'>[], {
+    query: 'queryValue';
+  }>): AsyncGenerator<{
+    query: "queryValue";
+    token: string;
+  }, void, unknown>;
+  static postWithStreamingAndDelayedUnhandledError(req: VovkRequest<Omit<Token, 'query'>[], {
+    query: 'queryValue';
+  }>): AsyncGenerator<{
+    query: "queryValue";
+    token: string;
+  }, void, unknown>;
+}
+//# sourceMappingURL=StreamingGeneratorController.d.ts.map
+//#endregion
+//#region src/client/CustomSchemaController.d.ts
+declare class CustomSchemaController {
+  static getWithCustomSchema(): any;
+}
+//# sourceMappingURL=CustomSchemaController.d.ts.map
+
 //#endregion
 //#region src/client/WithDtoClientController.dto.d.ts
 /**
@@ -152,8 +812,14 @@ declare class ConstrainingDto {
   logical_allOf: AllOfDtoA & AllOfDtoB;
 }
 //#endregion
+//#region src/client/OpenApiController.d.ts
+declare class OpenApiController {
+  static getFromSchema(): openapi3_ts_oas310.OpenAPIObject;
+}
+//# sourceMappingURL=OpenApiController.d.ts.map
+//#endregion
 //#region tmp_ts_rpc/schema.d.ts
-declare const schema: {
+declare const schema$1: {
   $schema: string;
   segments: {
     'foo/client': {
@@ -415,32 +1081,29 @@ declare const schema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  '400': {
+                  "400": {
                     description: string;
                     content: {
-                      'application/json': {
+                      "application/json": {
                         schema: {
-                          allOf: (
-                            | {
-                                $ref: string;
-                                type?: undefined;
-                                properties?: undefined;
-                              }
-                            | {
+                          allOf: ({
+                            $ref: string;
+                            type?: undefined;
+                            properties?: undefined;
+                          } | {
+                            type: string;
+                            properties: {
+                              message: {
                                 type: string;
-                                properties: {
-                                  message: {
-                                    type: string;
-                                    enum: string[];
-                                  };
-                                  statusCode: {
-                                    type: string;
-                                    enum: number[];
-                                  };
-                                };
-                                $ref?: undefined;
-                              }
-                          )[];
+                                enum: string[];
+                              };
+                              statusCode: {
+                                type: string;
+                                enum: number[];
+                              };
+                            };
+                            $ref?: undefined;
+                          })[];
                         };
                       };
                     };
@@ -757,42 +1420,36 @@ declare const schema: {
                       additionalProperties: boolean;
                     };
                     logical_anyOf: {
-                      anyOf: (
-                        | {
-                            type: string;
-                            maxLength: number;
-                          }
-                        | {
-                            type: string;
-                            maxLength?: undefined;
-                          }
-                      )[];
+                      anyOf: ({
+                        type: string;
+                        maxLength: number;
+                      } | {
+                        type: string;
+                        maxLength?: undefined;
+                      })[];
                     };
                     logical_allOf: {
-                      allOf: (
-                        | {
+                      allOf: ({
+                        type: string;
+                        properties: {
+                          a: {
                             type: string;
-                            properties: {
-                              a: {
-                                type: string;
-                              };
-                              b?: undefined;
-                            };
-                            required: string[];
-                            additionalProperties: {};
-                          }
-                        | {
+                          };
+                          b?: undefined;
+                        };
+                        required: string[];
+                        additionalProperties: {};
+                      } | {
+                        type: string;
+                        properties: {
+                          b: {
                             type: string;
-                            properties: {
-                              b: {
-                                type: string;
-                              };
-                              a?: undefined;
-                            };
-                            required: string[];
-                            additionalProperties: {};
-                          }
-                      )[];
+                          };
+                          a?: undefined;
+                        };
+                        required: string[];
+                        additionalProperties: {};
+                      })[];
                     };
                   };
                   required: string[];
@@ -820,7 +1477,7 @@ declare const schema: {
                   };
                   required: string[];
                   additionalProperties: boolean;
-                  'x-formData': boolean;
+                  "x-formData": boolean;
                 };
                 query: {
                   $schema: string;
@@ -855,7 +1512,7 @@ declare const schema: {
                   };
                   required: string[];
                   additionalProperties: boolean;
-                  'x-formData': boolean;
+                  "x-formData": boolean;
                 };
                 query: {
                   $schema: string;
@@ -1177,6 +1834,56 @@ declare const schema: {
               path: string;
               httpMethod: string;
             };
+            handlePagination: {
+              validation: {
+                query: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    page: {
+                      type: string;
+                    };
+                    limit: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+                output: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    items: {
+                      type: string;
+                      items: {
+                        type: string;
+                        properties: {
+                          id: {
+                            type: string;
+                          };
+                          name: {
+                            type: string;
+                          };
+                        };
+                        required: string[];
+                        additionalProperties: boolean;
+                      };
+                    };
+                    hasNextPage: {
+                      type: string;
+                    };
+                    nextPage: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+              };
+              httpMethod: string;
+              path: string;
+            };
           };
         };
         WithYupClientControllerRPC: {
@@ -1279,32 +1986,29 @@ declare const schema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  '400': {
+                  "400": {
                     description: string;
                     content: {
-                      'application/json': {
+                      "application/json": {
                         schema: {
-                          allOf: (
-                            | {
-                                $ref: string;
-                                type?: undefined;
-                                properties?: undefined;
-                              }
-                            | {
+                          allOf: ({
+                            $ref: string;
+                            type?: undefined;
+                            properties?: undefined;
+                          } | {
+                            type: string;
+                            properties: {
+                              message: {
                                 type: string;
-                                properties: {
-                                  message: {
-                                    type: string;
-                                    enum: string[];
-                                  };
-                                  statusCode: {
-                                    type: string;
-                                    enum: number[];
-                                  };
-                                };
-                                $ref?: undefined;
-                              }
-                          )[];
+                                enum: string[];
+                              };
+                              statusCode: {
+                                type: string;
+                                enum: number[];
+                              };
+                            };
+                            $ref?: undefined;
+                          })[];
                         };
                       };
                     };
@@ -1637,7 +2341,7 @@ declare const schema: {
                     };
                   };
                   required: string[];
-                  'x-formData': boolean;
+                  "x-formData": boolean;
                 };
                 query: {
                   type: string;
@@ -1764,7 +2468,7 @@ declare const schema: {
             handleAll: {
               validation: {
                 body: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1776,7 +2480,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -1788,7 +2492,7 @@ declare const schema: {
                   required: string[];
                 };
                 params: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -1804,7 +2508,7 @@ declare const schema: {
                   required: string[];
                 };
                 output: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {
                     HandleAllBodyDto: {
                       properties: {
@@ -1863,32 +2567,29 @@ declare const schema: {
               httpMethod: string;
               openapi: {
                 responses: {
-                  '400': {
+                  "400": {
                     description: string;
                     content: {
-                      'application/json': {
+                      "application/json": {
                         schema: {
-                          allOf: (
-                            | {
-                                $ref: string;
-                                type?: undefined;
-                                properties?: undefined;
-                              }
-                            | {
+                          allOf: ({
+                            $ref: string;
+                            type?: undefined;
+                            properties?: undefined;
+                          } | {
+                            type: string;
+                            properties: {
+                              message: {
                                 type: string;
-                                properties: {
-                                  message: {
-                                    type: string;
-                                    enum: string[];
-                                  };
-                                  statusCode: {
-                                    type: string;
-                                    enum: number[];
-                                  };
-                                };
-                                $ref?: undefined;
-                              }
-                          )[];
+                                enum: string[];
+                              };
+                              statusCode: {
+                                type: string;
+                                enum: number[];
+                              };
+                            };
+                            $ref?: undefined;
+                          })[];
                         };
                       };
                     };
@@ -1901,7 +2602,7 @@ declare const schema: {
             handleNestedQuery: {
               validation: {
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {
                     ZDto: {
                       properties: {
@@ -1960,7 +2661,7 @@ declare const schema: {
             handleOutput: {
               validation: {
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     helloOutput: {
@@ -1971,7 +2672,7 @@ declare const schema: {
                   required: string[];
                 };
                 output: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -1993,7 +2694,7 @@ declare const schema: {
             handleStream: {
               validation: {
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     values: {
@@ -2007,7 +2708,7 @@ declare const schema: {
                   required: string[];
                 };
                 iteration: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     value: {
@@ -2025,7 +2726,7 @@ declare const schema: {
             handleSchemaConstraints: {
               validation: {
                 body: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {
                     RequiredObject: {
                       properties: {
@@ -2153,7 +2854,7 @@ declare const schema: {
             handleFormData: {
               validation: {
                 body: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -2163,10 +2864,10 @@ declare const schema: {
                   };
                   type: string;
                   required: string[];
-                  'x-formData': boolean;
+                  "x-formData": boolean;
                 };
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2181,10 +2882,14 @@ declare const schema: {
               httpMethod: string;
               path: string;
             };
+            handleFormDataClient: {
+              httpMethod: string;
+              path: string;
+            };
             disableServerSideValidationBool: {
               validation: {
                 body: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -2196,7 +2901,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2214,7 +2919,7 @@ declare const schema: {
             disableServerSideValidationStrings: {
               validation: {
                 body: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -2226,7 +2931,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2249,7 +2954,7 @@ declare const schema: {
             skipSchemaEmissionStrings: {
               validation: {
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2267,7 +2972,7 @@ declare const schema: {
             validateEachIteration: {
               validation: {
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     values: {
@@ -2279,7 +2984,7 @@ declare const schema: {
                   required: string[];
                 };
                 iteration: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     value: {
@@ -2301,7 +3006,7 @@ declare const schema: {
             handleQuery: {
               validation: {
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2323,7 +3028,7 @@ declare const schema: {
             handleBody: {
               validation: {
                 body: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     hello: {
@@ -2345,7 +3050,7 @@ declare const schema: {
             handleParams: {
               validation: {
                 params: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -2378,32 +3083,29 @@ declare const schema: {
             getFromSchema: {
               openapi: {
                 responses: {
-                  '418': {
+                  "418": {
                     description: string;
                     content: {
-                      'application/json': {
+                      "application/json": {
                         schema: {
-                          allOf: (
-                            | {
-                                $ref: string;
-                                type?: undefined;
-                                properties?: undefined;
-                              }
-                            | {
+                          allOf: ({
+                            $ref: string;
+                            type?: undefined;
+                            properties?: undefined;
+                          } | {
+                            type: string;
+                            properties: {
+                              message: {
                                 type: string;
-                                properties: {
-                                  message: {
-                                    type: string;
-                                    enum: string[];
-                                  };
-                                  statusCode: {
-                                    type: string;
-                                    enum: number[];
-                                  };
-                                };
-                                $ref?: undefined;
-                              }
-                          )[];
+                                enum: string[];
+                              };
+                              statusCode: {
+                                type: string;
+                                enum: number[];
+                              };
+                            };
+                            $ref?: undefined;
+                          })[];
                         };
                       };
                     };
@@ -2772,7 +3474,7 @@ declare const schema: {
             getDtoControllerOnlyEntities: {
               validation: {
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2792,7 +3494,7 @@ declare const schema: {
             updateDtoControllerOnlyEntity: {
               validation: {
                 body: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -2804,7 +3506,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     q: {
@@ -2839,7 +3541,7 @@ declare const schema: {
             getDtoControllerAndServiceEntities: {
               validation: {
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     search: {
@@ -2859,7 +3561,7 @@ declare const schema: {
             updateDtoControllerAndServiceEntity: {
               validation: {
                 body: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     foo: {
@@ -2871,7 +3573,7 @@ declare const schema: {
                   required: string[];
                 };
                 query: {
-                  'x-isDto': boolean;
+                  "x-isDto": boolean;
                   definitions: {};
                   properties: {
                     q: {
@@ -2910,1346 +3612,244 @@ declare const schema: {
     apiRoot: string;
   };
 };
+//# sourceMappingURL=schema.d.ts.map
 //#endregion
 //#region tmp_ts_rpc/index.d.ts
 declare const CommonControllerRPC: {
-  getHelloWorldResponseObject: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getHelloWorldObjectLiteral: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getHelloWorldNextResponseObjectPromise: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getHelloWorldRawResponseObjectPromise: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: Response, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object ? Promise<Awaited<R>> : Promise<Response>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getHelloWorldObjectLiteralPromise: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getHelloWorldHeaders: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string | null;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: string | null;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getHelloWorldArray: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                }[],
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<
-        {
-          hello: string;
-        }[]
-      >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getHelloWorldAndEmptyGeneric: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            hello: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getWithParams: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    params: {
-      hello: 'world';
-    };
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            hello: 'world';
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: 'world';
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithAll: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: {
-      isBody: true;
-    };
-    query: {
-      simpleQueryParam: 'queryValue';
-    };
-    params: {
-      hello: 'world';
-    } & {
-      hello: 'world';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            params: {
-              hello: 'world';
-            };
-            body: {
-              isBody: true;
-            };
-            query: {
-              simpleQueryParam: 'queryValue';
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        params: {
-          hello: 'world';
-        };
-        body: {
-          isBody: true;
-        };
-        query: {
-          simpleQueryParam: 'queryValue';
-        };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithBodyAndQueryUsingReqVovk: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: {
-      isBody: true;
-    };
-    query: {
-      simpleQueryParam: 'queryValue';
-      array1: readonly ['foo'];
-      array2: readonly ['bar', 'baz'];
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              isBody: true;
-            };
-            query: {
-              simpleQueryParam: 'queryValue';
-              array1: readonly ['foo'];
-              array2: readonly ['bar', 'baz'];
-            };
-            meta: {
-              isMeta1: true;
-              isMeta2: true;
-            };
-            metaNulled: Record<any, any>;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        body: {
-          isBody: true;
-        };
-        query: {
-          simpleQueryParam: 'queryValue';
-          array1: readonly ['foo'];
-          array2: readonly ['bar', 'baz'];
-        };
-        meta: {
-          isMeta1: true;
-          isMeta2: true;
-        };
-        metaNulled: Record<any, any>;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getNestedQuery: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      x: string;
-      y: string[];
-      z: {
-        f: string;
-        u: string[];
-        d: {
-          x: string;
-          arrOfObjects: (
-            | {
-                foo: string;
-                nestedArr: string[];
-                nestedObj?: undefined;
-              }
-            | {
-                foo: string;
-                nestedObj: {
-                  deepKey: string;
-                };
-                nestedArr?: undefined;
-              }
-          )[];
-        };
-      };
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            query: {
-              x: string;
-              y: string[];
-              z: {
-                f: string;
-                u: string[];
-                d: {
-                  x: string;
-                  arrOfObjects: (
-                    | {
-                        foo: string;
-                        nestedArr: string[];
-                        nestedObj?: undefined;
-                      }
-                    | {
-                        foo: string;
-                        nestedObj: {
-                          deepKey: string;
-                        };
-                        nestedArr?: undefined;
-                      }
-                  )[];
-                };
-              };
-            };
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        query: {
-          x: string;
-          y: string[];
-          z: {
-            f: string;
-            u: string[];
-            d: {
-              x: string;
-              arrOfObjects: (
-                | {
-                    foo: string;
-                    nestedArr: string[];
-                    nestedObj?: undefined;
-                  }
-                | {
-                    foo: string;
-                    nestedObj: {
-                      deepKey: string;
-                    };
-                    nestedArr?: undefined;
-                  }
-              )[];
-            };
-          };
-        };
-        search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithFormDataUsingReqVovk: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: FormData;
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            field: 'value';
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        field: 'value';
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getErrorResponse: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: void, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object ? Promise<Awaited<R>> : Promise<void>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getJsonTextResponse: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: Response, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object ? Promise<Awaited<R>> : Promise<Response>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getJsonlResponse: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: vovk0.JSONLinesResponse<{
-                  hello: string;
-                }>,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      hello: string;
-    }>
-  >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  getJsonlTextResponse: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: vovk0.JSONLinesResponse<{
-                  hello: string;
-                }>,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      hello: string;
-    }>
-  >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
+  getHelloWorldResponseObject: ClientMethod<typeof CommonController.getHelloWorldResponseObject, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getHelloWorldObjectLiteral: ClientMethod<typeof CommonController.getHelloWorldObjectLiteral, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getHelloWorldNextResponseObjectPromise: ClientMethod<typeof CommonController.getHelloWorldNextResponseObjectPromise, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getHelloWorldRawResponseObjectPromise: ClientMethod<typeof CommonController.getHelloWorldRawResponseObjectPromise, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getHelloWorldObjectLiteralPromise: ClientMethod<typeof CommonController.getHelloWorldObjectLiteralPromise, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getHelloWorldHeaders: ClientMethod<typeof CommonController.getHelloWorldHeaders, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getHelloWorldArray: ClientMethod<typeof CommonController.getHelloWorldArray, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getHelloWorldAndEmptyGeneric: ClientMethod<typeof CommonController.getHelloWorldAndEmptyGeneric, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getWithParams: ClientMethod<typeof CommonController.getWithParams, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithAll: ClientMethod<typeof CommonController.postWithAll, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithBodyAndQueryUsingReqVovk: ClientMethod<typeof CommonController.postWithBodyAndQueryUsingReqVovk, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getNestedQuery: ClientMethod<typeof CommonController.getNestedQuery, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithFormDataUsingReqVovk: ClientMethod<typeof CommonController.postWithFormDataUsingReqVovk, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getErrorResponse: ClientMethod<typeof CommonController.getErrorResponse, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getJsonTextResponse: ClientMethod<typeof CommonController.getJsonTextResponse, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getJsonlResponse: ClientMethod<typeof CommonController.getJsonlResponse, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  getJsonlTextResponse: ClientMethod<typeof CommonController.getJsonlTextResponse, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
 };
 declare const StreamingControllerRPC: {
-  postWithStreaming: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token$1, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?: ((staticMethodReturn: vovk0.JSONLinesResponse<Token$1>, resp: Response) => R) | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreamingAndImmediateError: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token$1, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?: ((staticMethodReturn: vovk0.JSONLinesResponse<Token$1>, resp: Response) => R) | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreamingAndDelayedError: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token$1, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?: ((staticMethodReturn: vovk0.JSONLinesResponse<Token$1>, resp: Response) => R) | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreamingAndDelayedCustomError: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token$1, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?: ((staticMethodReturn: vovk0.JSONLinesResponse<Token$1>, resp: Response) => R) | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreamingAndDelayedUnhandledError: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token$1, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?: ((staticMethodReturn: vovk0.JSONLinesResponse<Token$1>, resp: Response) => R) | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<vovk0.VovkStreamAsyncIterable<Token$1>>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
+  postWithStreaming: ClientMethod<typeof StreamingController.postWithStreaming, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreamingAndImmediateError: ClientMethod<typeof StreamingController.postWithStreamingAndImmediateError, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreamingAndDelayedError: ClientMethod<typeof StreamingController.postWithStreamingAndDelayedError, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreamingAndDelayedCustomError: ClientMethod<typeof StreamingController.postWithStreamingAndDelayedCustomError, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreamingAndDelayedUnhandledError: ClientMethod<typeof StreamingController.postWithStreamingAndDelayedUnhandledError, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
 };
 declare const StreamingGeneratorControllerRPC: {
-  getWithStreaming: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?: ((staticMethodReturn: AsyncGenerator<Token, void, unknown>, resp: Response) => R) | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<vovk0.VovkStreamAsyncIterable<Token>>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithAsyncStreaming: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: AsyncGenerator<
-            {
-              query: 'queryValue';
-              token: string;
-            },
-            void,
-            unknown
-          >,
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      query: 'queryValue';
-      token: string;
-    }>
-  >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreaming: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: AsyncGenerator<
-            {
-              query: 'queryValue';
-              token: string;
-            },
-            void,
-            unknown
-          >,
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      query: 'queryValue';
-      token: string;
-    }>
-  >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreamingAndImmediateError: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?: ((staticMethodReturn: AsyncGenerator<Token, void, unknown>, resp: Response) => R) | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<vovk0.VovkStreamAsyncIterable<Token>>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreamingAndDelayedError: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: AsyncGenerator<
-            {
-              query: 'queryValue';
-              token: string;
-            },
-            void,
-            unknown
-          >,
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      query: 'queryValue';
-      token: string;
-    }>
-  >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreamingAndDelayedCustomError: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: AsyncGenerator<
-            {
-              query: 'queryValue';
-              token: string;
-            },
-            void,
-            unknown
-          >,
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      query: 'queryValue';
-      token: string;
-    }>
-  >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
-  postWithStreamingAndDelayedUnhandledError: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: Omit<Token, 'query'>[];
-    query: {
-      query: 'queryValue';
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: AsyncGenerator<
-            {
-              query: 'queryValue';
-              token: string;
-            },
-            void,
-            unknown
-          >,
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      query: 'queryValue';
-      token: string;
-    }>
-  >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
+  getWithStreaming: ClientMethod<typeof StreamingGeneratorController.getWithStreaming, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithAsyncStreaming: ClientMethod<typeof StreamingGeneratorController.postWithAsyncStreaming, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreaming: ClientMethod<typeof StreamingGeneratorController.postWithStreaming, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreamingAndImmediateError: ClientMethod<typeof StreamingGeneratorController.postWithStreamingAndImmediateError, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreamingAndDelayedError: ClientMethod<typeof StreamingGeneratorController.postWithStreamingAndDelayedError, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreamingAndDelayedCustomError: ClientMethod<typeof StreamingGeneratorController.postWithStreamingAndDelayedCustomError, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  postWithStreamingAndDelayedUnhandledError: ClientMethod<typeof StreamingGeneratorController.postWithStreamingAndDelayedUnhandledError, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
 };
 declare const CustomSchemaControllerRPC: {
-  getWithCustomSchema: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: null, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object ? Promise<Awaited<R>> : Promise<null>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
+  getWithCustomSchema: ClientMethod<typeof CustomSchemaController.getWithCustomSchema, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
 };
 declare const WithZodClientControllerRPC: {
-  handleAll: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
+  handleAll: ClientMethod<(({
+    vovk
+  }: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, {
+    foo: string;
+    bar: string;
+  }>, params: {
+    foo: string;
+    bar: string;
+  }) => Promise<{
+    body: {
+      hello: string;
+    };
     query: {
       search: string;
     };
@@ -4257,61 +3857,11 @@ declare const WithZodClientControllerRPC: {
       foo: string;
       bar: string;
     };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            query: {
-              search: string;
-            };
-            params: {
-              foo: string;
-              bar: string;
-            };
-            vovkParams: {
-              foo: string;
-              bar: string;
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        body: {
-          hello: string;
-        };
-        query: {
-          search: string;
-        };
-        params: {
-          foo: string;
-          bar: string;
-        };
-        vovkParams: {
-          foo: string;
-          bar: string;
-        };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    vovkParams: {
+      foo: string;
+      bar: string;
+    };
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -4340,51 +3890,146 @@ declare const WithZodClientControllerRPC: {
         };
       };
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleQuery: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        search: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      foo: string;
+      bar: string;
+    }) => Promise<{
+      body: {
+        hello: string;
+      };
+      query: {
+        search: string;
+      };
+      params: {
+        foo: string;
+        bar: string;
+      };
+      vovkParams: {
+        foo: string;
+        bar: string;
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        query: {
+          search: string;
+        };
+        params: {
+          foo: string;
+          bar: string;
+        };
+        vovkParams: {
+          foo: string;
+          bar: string;
+        };
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        query: {
+          search: string;
+        };
+        params: {
+          foo: string;
+          bar: string;
+        };
+        vovkParams: {
+          foo: string;
+          bar: string;
+        };
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: zod0.ZodObject<{
+        body: zod0.ZodObject<{
+          hello: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        query: zod0.ZodObject<{
+          search: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        params: zod0.ZodObject<{
+          foo: zod0.ZodString;
+          bar: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        vovkParams: zod0.ZodObject<{
+          foo: zod0.ZodString;
+          bar: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+      }, zod_v4_core0.$strip>;
+      params?: zod0.ZodObject<{
+        foo: zod0.ZodString;
+        bar: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleQuery: ClientMethod<((req: vovk0.VovkRequest<unknown, {
+    search: string;
+  }, unknown>) => {
+    search: string;
+  }) & {
     __types: {
       body: unknown;
       query: {
@@ -4393,53 +4038,74 @@ declare const WithZodClientControllerRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleBody: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            hello: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      search: string;
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        search: string;
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        search: string;
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleBody: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+  }, unknown, unknown>) => Promise<{
+    hello: string;
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -4448,54 +4114,76 @@ declare const WithZodClientControllerRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleParams: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    params: {
-      foo: string;
-      bar: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            foo: string;
-            bar: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        foo: string;
-        bar: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      hello: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        hello: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: unknown;
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        hello: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: unknown;
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleParams: ClientMethod<((req: vovk0.VovkRequest<unknown, unknown, {
+    foo: string;
+    bar: string;
+  }>) => Promise<{
+    foo: string;
+    bar: string;
+  }>) & {
     __types: {
       body: unknown;
       query: unknown;
@@ -4505,102 +4193,110 @@ declare const WithZodClientControllerRPC: {
       };
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleNestedQuery: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      x: string;
-      y: string[];
-      z: {
-        f: string;
-        u: string[];
-        d: {
-          x: string;
-          arrOfObjects: {
-            foo: string;
-            nestedArr?: string[] | undefined;
-            nestedObj?:
-              | {
-                  deepKey: string;
-                }
-              | undefined;
-          }[];
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      foo: string;
+      bar: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        foo: string;
+        bar: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: unknown;
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
         };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        foo: string;
+        bar: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: unknown;
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: zod0.ZodObject<{
+        foo: zod0.ZodString;
+        bar: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      query?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleNestedQuery: ClientMethod<((req: vovk0.VovkRequest<unknown, {
+    x: string;
+    y: string[];
+    z: {
+      f: string;
+      u: string[];
+      d: {
+        x: string;
+        arrOfObjects: {
+          foo: string;
+          nestedArr?: string[];
+          nestedObj?: {
+            deepKey: string;
+          };
+        }[];
       };
     };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            x: string;
-            y: string[];
-            z: {
-              f: string;
-              u: string[];
-              d: {
-                x: string;
-                arrOfObjects: {
-                  foo: string;
-                  nestedArr?: string[] | undefined;
-                  nestedObj?:
-                    | {
-                        deepKey: string;
-                      }
-                    | undefined;
-                }[];
-              };
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+  }, unknown>) => {
+    x: string;
+    y: string[];
+    z: {
+      f: string;
+      u: string[];
+      d: {
         x: string;
-        y: string[];
-        z: {
-          f: string;
-          u: string[];
-          d: {
-            x: string;
-            arrOfObjects: {
-              foo: string;
-              nestedArr?: string[] | undefined;
-              nestedObj?:
-                | {
-                    deepKey: string;
-                  }
-                | undefined;
-            }[];
+        arrOfObjects: {
+          foo: string;
+          nestedArr?: string[];
+          nestedObj?: {
+            deepKey: string;
           };
-        };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+        }[];
+      };
+    };
+  }) & {
     __types: {
       body: unknown;
       query: {
@@ -4613,12 +4309,10 @@ declare const WithZodClientControllerRPC: {
             x: string;
             arrOfObjects: {
               foo: string;
-              nestedArr?: string[] | undefined;
-              nestedObj?:
-                | {
-                    deepKey: string;
-                  }
-                | undefined;
+              nestedArr?: string[];
+              nestedObj?: {
+                deepKey: string;
+              };
             }[];
           };
         };
@@ -4626,51 +4320,164 @@ declare const WithZodClientControllerRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleOutput: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      helloOutput: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            hello: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      x: string;
+      y: string[];
+      z: {
+        f: string;
+        u: string[];
+        d: {
+          x: string;
+          arrOfObjects: {
+            foo: string;
+            nestedArr?: string[];
+            nestedObj?: {
+              deepKey: string;
+            };
+          }[];
+        };
+      };
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        x: string;
+        y: string[];
+        z: {
+          f: string;
+          u: string[];
+          d: {
+            x: string;
+            arrOfObjects: {
+              foo: string;
+              nestedArr?: string[];
+              nestedObj?: {
+                deepKey: string;
+              };
+            }[];
+          };
+        };
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          x: string;
+          y: string[];
+          z: {
+            f: string;
+            u: string[];
+            d: {
+              x: string;
+              arrOfObjects: {
+                foo: string;
+                nestedArr?: string[];
+                nestedObj?: {
+                  deepKey: string;
+                };
+              }[];
+            };
+          };
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        x: string;
+        y: string[];
+        z: {
+          f: string;
+          u: string[];
+          d: {
+            x: string;
+            arrOfObjects: {
+              foo: string;
+              nestedArr?: string[];
+              nestedObj?: {
+                deepKey: string;
+              };
+            }[];
+          };
+        };
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          x: string;
+          y: string[];
+          z: {
+            f: string;
+            u: string[];
+            d: {
+              x: string;
+              arrOfObjects: {
+                foo: string;
+                nestedArr?: string[];
+                nestedObj?: {
+                  deepKey: string;
+                };
+              }[];
+            };
+          };
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        x: zod0.ZodString;
+        y: zod0.ZodArray<zod0.ZodString>;
+        z: zod0.ZodObject<{
+          f: zod0.ZodString;
+          u: zod0.ZodArray<zod0.ZodString>;
+          d: zod0.ZodObject<{
+            x: zod0.ZodString;
+            arrOfObjects: zod0.ZodArray<zod0.ZodObject<{
+              foo: zod0.ZodString;
+              nestedArr: zod0.ZodOptional<zod0.ZodArray<zod0.ZodString>>;
+              nestedObj: zod0.ZodOptional<zod0.ZodObject<{
+                deepKey: zod0.ZodString;
+              }, zod_v4_core0.$strip>>;
+            }, zod_v4_core0.$strip>>;
+          }, zod_v4_core0.$strip>;
+        }, zod_v4_core0.$strip>;
+      }, zod_v4_core0.$strip>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleOutput: ClientMethod<((req: vovk0.VovkRequest<unknown, {
+    helloOutput: string;
+  }, unknown>) => Promise<{
+    hello: string;
+  }>) & {
     __types: {
       body: unknown;
       query: {
@@ -4681,55 +4488,76 @@ declare const WithZodClientControllerRPC: {
         hello: string;
       };
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleStream: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      values: string[];
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: AsyncGenerator<
-            {
-              value: string;
-            },
-            void,
-            unknown
-          >,
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      value: string;
-    }>
-  >) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      hello: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        hello: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          helloOutput: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        hello: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          helloOutput: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        helloOutput: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleStream: ClientMethod<((req: vovk0.VovkRequest<unknown, {
+    values: string[];
+  }, unknown>) => AsyncGenerator<{
+    value: string;
+  }, void, unknown>) & {
     __types: {
       body: unknown;
       query: {
@@ -4740,23 +4568,256 @@ declare const WithZodClientControllerRPC: {
       iteration: {
         value: string;
       };
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleSchemaConstraints: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          enum_value: 'a' | 'b' | 'c';
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => AsyncGenerator<{
+      value: string;
+    }, void, unknown>;
+  } & {
+    fn: {
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          values: string[];
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          values: string[];
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: zod0.ZodObject<{
+        value: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        values: zod0.ZodArray<zod0.ZodString>;
+      }, zod_v4_core0.$strip>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleSchemaConstraints: ClientMethod<((req: vovk0.VovkRequest<{
+    enum_value: "a" | "b" | "c";
+    num_minimum: number;
+    num_maximum: number;
+    num_exclusiveMinimum: number;
+    num_exclusiveMaximum: number;
+    num_multipleOf: number;
+    num_int: number;
+    num_int32: number;
+    str_minLength: string;
+    str_maxLength: string;
+    str_pattern: string;
+    str_email: string;
+    str_url: string;
+    str_uuid: string;
+    str_datetime: string;
+    arr_minItems: string[];
+    arr_maxItems: string[];
+    obj_required: {
+      requiredField: string;
+      optionalField?: number;
+    };
+    obj_strict: {
+      knownField: string;
+    };
+    logical_anyOf?: string | number | boolean;
+    logical_allOf?: {
+      [x: string]: unknown;
+      a: string;
+    } & {
+      [x: string]: unknown;
+      b: number;
+    };
+  }, unknown, unknown>) => Promise<{
+    enum_value: "a" | "b" | "c";
+    num_minimum: number;
+    num_maximum: number;
+    num_exclusiveMinimum: number;
+    num_exclusiveMaximum: number;
+    num_multipleOf: number;
+    num_int: number;
+    num_int32: number;
+    str_minLength: string;
+    str_maxLength: string;
+    str_pattern: string;
+    str_email: string;
+    str_url: string;
+    str_uuid: string;
+    str_datetime: string;
+    arr_minItems: string[];
+    arr_maxItems: string[];
+    obj_required: {
+      requiredField: string;
+      optionalField?: number;
+    };
+    obj_strict: {
+      knownField: string;
+    };
+    logical_anyOf?: string | number | boolean;
+    logical_allOf?: {
+      [x: string]: unknown;
+      a: string;
+    } & {
+      [x: string]: unknown;
+      b: number;
+    };
+  }>) & {
+    __types: {
+      body: {
+        enum_value: "a" | "b" | "c";
+        num_minimum: number;
+        num_maximum: number;
+        num_exclusiveMinimum: number;
+        num_exclusiveMaximum: number;
+        num_multipleOf: number;
+        num_int: number;
+        num_int32: number;
+        str_minLength: string;
+        str_maxLength: string;
+        str_pattern: string;
+        str_email: string;
+        str_url: string;
+        str_uuid: string;
+        str_datetime: string;
+        arr_minItems: string[];
+        arr_maxItems: string[];
+        obj_required: {
+          requiredField: string;
+          optionalField?: number;
+        };
+        obj_strict: {
+          knownField: string;
+        };
+        logical_anyOf?: string | number | boolean;
+        logical_allOf?: {
+          [x: string]: unknown;
+          a: string;
+        } & {
+          [x: string]: unknown;
+          b: number;
+        };
+      };
+      query: unknown;
+      params: unknown;
+      output: unknown;
+      iteration: unknown;
+      isForm: false;
+    };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      enum_value: "a" | "b" | "c";
+      num_minimum: number;
+      num_maximum: number;
+      num_exclusiveMinimum: number;
+      num_exclusiveMaximum: number;
+      num_multipleOf: number;
+      num_int: number;
+      num_int32: number;
+      str_minLength: string;
+      str_maxLength: string;
+      str_pattern: string;
+      str_email: string;
+      str_url: string;
+      str_uuid: string;
+      str_datetime: string;
+      arr_minItems: string[];
+      arr_maxItems: string[];
+      obj_required: {
+        requiredField: string;
+        optionalField?: number;
+      };
+      obj_strict: {
+        knownField: string;
+      };
+      logical_anyOf?: string | number | boolean;
+      logical_allOf?: {
+        [x: string]: unknown;
+        a: string;
+      } & {
+        [x: string]: unknown;
+        b: number;
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        enum_value: "a" | "b" | "c";
+        num_minimum: number;
+        num_maximum: number;
+        num_exclusiveMinimum: number;
+        num_exclusiveMaximum: number;
+        num_multipleOf: number;
+        num_int: number;
+        num_int32: number;
+        str_minLength: string;
+        str_maxLength: string;
+        str_pattern: string;
+        str_email: string;
+        str_url: string;
+        str_uuid: string;
+        str_datetime: string;
+        arr_minItems: string[];
+        arr_maxItems: string[];
+        obj_required: {
+          requiredField: string;
+          optionalField?: number;
+        };
+        obj_strict: {
+          knownField: string;
+        };
+        logical_anyOf?: string | number | boolean;
+        logical_allOf?: {
+          [x: string]: unknown;
+          a: string;
+        } & {
+          [x: string]: unknown;
+          b: number;
+        };
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          enum_value: "a" | "b" | "c";
           num_minimum: number;
           num_maximum: number;
           num_exclusiveMinimum: number;
@@ -4775,13 +4836,13 @@ declare const WithZodClientControllerRPC: {
           arr_maxItems: string[];
           obj_required: {
             requiredField: string;
-            optionalField?: number | undefined;
+            optionalField?: number;
           };
           obj_strict: {
             knownField: string;
           };
-          logical_anyOf: string | number | boolean;
-          logical_allOf: {
+          logical_anyOf?: string | number | boolean;
+          logical_allOf?: {
             [x: string]: unknown;
             a: string;
           } & {
@@ -4789,60 +4850,18 @@ declare const WithZodClientControllerRPC: {
             b: number;
           };
         };
-    meta?:
-      | {
+      } & {
+        query?: unknown;
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
           [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            enum_value: 'a' | 'b' | 'c';
-            num_minimum: number;
-            num_maximum: number;
-            num_exclusiveMinimum: number;
-            num_exclusiveMaximum: number;
-            num_multipleOf: number;
-            num_int: number;
-            num_int32: number;
-            str_minLength: string;
-            str_maxLength: string;
-            str_pattern: string;
-            str_email: string;
-            str_url: string;
-            str_uuid: string;
-            str_datetime: string;
-            arr_minItems: string[];
-            arr_maxItems: string[];
-            obj_required: {
-              requiredField: string;
-              optionalField?: number | undefined;
-            };
-            obj_strict: {
-              knownField: string;
-            };
-            logical_anyOf: string | number | boolean;
-            logical_allOf: {
-              [x: string]: unknown;
-              a: string;
-            } & {
-              [x: string]: unknown;
-              b: number;
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        enum_value: 'a' | 'b' | 'c';
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        enum_value: "a" | "b" | "c";
         num_minimum: number;
         num_maximum: number;
         num_exclusiveMinimum: number;
@@ -4861,163 +4880,192 @@ declare const WithZodClientControllerRPC: {
         arr_maxItems: string[];
         obj_required: {
           requiredField: string;
-          optionalField?: number | undefined;
+          optionalField?: number;
         };
         obj_strict: {
           knownField: string;
         };
-        logical_anyOf: string | number | boolean;
-        logical_allOf: {
+        logical_anyOf?: string | number | boolean;
+        logical_allOf?: {
           [x: string]: unknown;
           a: string;
         } & {
           [x: string]: unknown;
           b: number;
         };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: {
-      body: {
-        enum_value: 'a' | 'b' | 'c';
-        num_minimum: number;
-        num_maximum: number;
-        num_exclusiveMinimum: number;
-        num_exclusiveMaximum: number;
-        num_multipleOf: number;
-        num_int: number;
-        num_int32: number;
-        str_minLength: string;
-        str_maxLength: string;
-        str_pattern: string;
-        str_email: string;
-        str_url: string;
-        str_uuid: string;
-        str_datetime: string;
-        arr_minItems: string[];
-        arr_maxItems: string[];
-        obj_required: {
-          requiredField: string;
-          optionalField?: number | undefined;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          enum_value: "a" | "b" | "c";
+          num_minimum: number;
+          num_maximum: number;
+          num_exclusiveMinimum: number;
+          num_exclusiveMaximum: number;
+          num_multipleOf: number;
+          num_int: number;
+          num_int32: number;
+          str_minLength: string;
+          str_maxLength: string;
+          str_pattern: string;
+          str_email: string;
+          str_url: string;
+          str_uuid: string;
+          str_datetime: string;
+          arr_minItems: string[];
+          arr_maxItems: string[];
+          obj_required: {
+            requiredField: string;
+            optionalField?: number;
+          };
+          obj_strict: {
+            knownField: string;
+          };
+          logical_anyOf?: string | number | boolean;
+          logical_allOf?: {
+            [x: string]: unknown;
+            a: string;
+          } & {
+            [x: string]: unknown;
+            b: number;
+          };
         };
-        obj_strict: {
-          knownField: string;
+      } & {
+        query?: unknown;
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
         };
-        logical_anyOf: string | number | boolean;
-        logical_allOf: {
-          [x: string]: unknown;
-          a: string;
-        } & {
-          [x: string]: unknown;
-          b: number;
-        };
-      };
-      query: unknown;
-      params: unknown;
-      output: unknown;
-      iteration: unknown;
-      isForm: any;
+      }): RETURN_TYPE;
     };
-  };
-  handleNothitng: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  readonly nothing: 'here';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        readonly nothing: 'here';
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      body?: zod0.ZodObject<{
+        enum_value: zod0.ZodEnum<{
+          a: "a";
+          b: "b";
+          c: "c";
+        }>;
+        num_minimum: zod0.ZodNumber;
+        num_maximum: zod0.ZodNumber;
+        num_exclusiveMinimum: zod0.ZodNumber;
+        num_exclusiveMaximum: zod0.ZodNumber;
+        num_multipleOf: zod0.ZodNumber;
+        num_int: zod0.ZodInt;
+        num_int32: zod0.ZodInt32;
+        str_minLength: zod0.ZodString;
+        str_maxLength: zod0.ZodString;
+        str_pattern: zod0.ZodString;
+        str_email: zod0.ZodEmail;
+        str_url: zod0.ZodURL;
+        str_uuid: zod0.ZodUUID;
+        str_datetime: zod0.ZodISODateTime;
+        arr_minItems: zod0.ZodArray<zod0.ZodString>;
+        arr_maxItems: zod0.ZodArray<zod0.ZodString>;
+        obj_required: zod0.ZodObject<{
+          requiredField: zod0.ZodString;
+          optionalField: zod0.ZodOptional<zod0.ZodNumber>;
+        }, zod_v4_core0.$strip>;
+        obj_strict: zod0.ZodObject<{
+          knownField: zod0.ZodString;
+        }, zod_v4_core0.$strict>;
+        logical_anyOf: zod0.ZodUnion<readonly [zod0.ZodString, zod0.ZodNumber, zod0.ZodBoolean]>;
+        logical_allOf: zod0.ZodIntersection<zod0.ZodObject<{
+          a: zod0.ZodString;
+        }, zod_v4_core0.$loose>, zod0.ZodObject<{
+          b: zod0.ZodNumber;
+        }, zod_v4_core0.$loose>>;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleNothitng: ClientMethod<(() => Promise<{
+    readonly nothing: "here";
+  }>) & {
     __types: {
       body: unknown;
       query: unknown;
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleFormData: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: FormData;
-    query: {
-      search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            formData: {
-              hello: string;
-            };
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        formData: {
-          hello: string;
-        };
-        search: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      readonly nothing: "here";
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        readonly nothing: "here";
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: unknown;
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        readonly nothing: "here";
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: unknown;
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleFormData: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, unknown>) => Promise<{
+    formData: {
+      hello: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -5030,62 +5078,98 @@ declare const WithZodClientControllerRPC: {
       iteration: unknown;
       isForm: true;
     };
-  };
-  handleFormDataWithFile: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: FormData;
-    query: {
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      formData: {
+        hello: string;
+      };
       search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            formData: {
-              hello: string;
-              file: File;
-            };
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         formData: {
           hello: string;
-          file: File;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        formData: {
+          hello: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleFormDataWithFile: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+    file: zod_v4_core0.File;
+  }, {
+    search: string;
+  }, unknown>) => Promise<{
+    formData: {
+      hello: string;
+      file: zod_v4_core0.File;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
         hello: string;
-        file: File;
+        file: zod_v4_core0.File;
       };
       query: {
         search: string;
@@ -5095,60 +5179,98 @@ declare const WithZodClientControllerRPC: {
       iteration: unknown;
       isForm: true;
     };
-  };
-  disableServerSideValidationBool: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
-    query: {
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      formData: {
+        hello: string;
+        file: zod_v4_core0.File;
+      };
       search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        body: {
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        formData: {
           hello: string;
+          file: zod_v4_core0.File;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+          file: zod_v4_core0.File;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        formData: {
+          hello: string;
+          file: zod_v4_core0.File;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+          file: zod_v4_core0.File;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+        file: zod0.ZodFile;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  disableServerSideValidationBool: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, unknown>) => Promise<{
+    body: {
+      hello: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -5159,62 +5281,94 @@ declare const WithZodClientControllerRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  disableServerSideValidationStrings: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
-    query: {
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: {
+        hello: string;
+      };
       search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: {
           hello: string;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  disableServerSideValidationStrings: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, unknown>) => Promise<{
+    body: {
+      hello: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -5225,62 +5379,94 @@ declare const WithZodClientControllerRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  skipSchemaEmissionBool: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
-    query: {
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: {
+        hello: string;
+      };
       search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: {
           hello: string;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  skipSchemaEmissionBool: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, unknown>) => Promise<{
+    body: {
+      hello: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -5291,62 +5477,94 @@ declare const WithZodClientControllerRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  skipSchemaEmissionStrings: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
-    query: {
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: {
+        hello: string;
+      };
       search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: {
           hello: string;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  skipSchemaEmissionStrings: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, unknown>) => Promise<{
+    body: {
+      hello: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -5357,55 +5575,89 @@ declare const WithZodClientControllerRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  validateEachIteration: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      values: string[];
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: AsyncGenerator<
-            {
-              value: string;
-            },
-            void,
-            unknown
-          >,
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      value: string;
-    }>
-  >) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: {
+        hello: string;
+      };
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  validateEachIteration: ClientMethod<((req: vovk0.VovkRequest<unknown, {
+    values: string[];
+  }, unknown>) => AsyncGenerator<{
+    value: string;
+  }, void, unknown>) & {
     __types: {
       body: unknown;
       query: {
@@ -5416,24 +5668,87 @@ declare const WithZodClientControllerRPC: {
       iteration: {
         value: string;
       };
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleAllNoHTTP: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => AsyncGenerator<{
+      value: string;
+    }, void, unknown>;
+  } & {
+    fn: {
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          values: string[];
         };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          values: string[];
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: zod0.ZodObject<{
+        value: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        values: zod0.ZodArray<zod0.ZodString>;
+      }, zod_v4_core0.$strip>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleAllNoHTTP: ClientMethod<(({
+    vovk
+  }: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, {
+    foo: string;
+    bar: string;
+  }>, params: {
+    foo: string;
+    bar: string;
+  }) => Promise<{
+    body: {
+      hello: string;
+    };
     query: {
       search: string;
     };
@@ -5441,61 +5756,11 @@ declare const WithZodClientControllerRPC: {
       foo: string;
       bar: string;
     };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            query: {
-              search: string;
-            };
-            params: {
-              foo: string;
-              bar: string;
-            };
-            vovkParams: {
-              foo: string;
-              bar: string;
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        body: {
-          hello: string;
-        };
-        query: {
-          search: string;
-        };
-        params: {
-          foo: string;
-          bar: string;
-        };
-        vovkParams: {
-          foo: string;
-          bar: string;
-        };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    vovkParams: {
+      foo: string;
+      bar: string;
+    };
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -5524,66 +5789,33 @@ declare const WithZodClientControllerRPC: {
         };
       };
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleAllAsFunction: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
-    query: {
-      search: string;
-    };
-    params: {
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
       foo: string;
       bar: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            query: {
-              search: string;
-            };
-            params: {
-              foo: string;
-              bar: string;
-            };
-            vovkParams: {
-              foo: string;
-              bar: string;
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    }) => Promise<{
+      body: {
+        hello: string;
+      };
+      query: {
+        search: string;
+      };
+      params: {
+        foo: string;
+        bar: string;
+      };
+      vovkParams: {
+        foo: string;
+        bar: string;
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: {
           hello: string;
         };
@@ -5598,12 +5830,126 @@ declare const WithZodClientControllerRPC: {
           foo: string;
           bar: string;
         };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        query: {
+          search: string;
+        };
+        params: {
+          foo: string;
+          bar: string;
+        };
+        vovkParams: {
+          foo: string;
+          bar: string;
+        };
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: zod0.ZodObject<{
+        body: zod0.ZodObject<{
+          hello: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        query: zod0.ZodObject<{
+          search: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        params: zod0.ZodObject<{
+          foo: zod0.ZodString;
+          bar: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        vovkParams: zod0.ZodObject<{
+          foo: zod0.ZodString;
+          bar: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+      }, zod_v4_core0.$strip>;
+      params?: zod0.ZodObject<{
+        foo: zod0.ZodString;
+        bar: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleAllAsFunction: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, {
+    foo: string;
+    bar: string;
+  }>, params: {
+    foo: string;
+    bar: string;
+  }) => Promise<{
+    body: {
+      hello: string;
+    };
+    query: {
+      search: string;
+    };
+    params: {
+      foo: string;
+      bar: string;
+    };
+    vovkParams: {
+      foo: string;
+      bar: string;
+    };
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -5632,66 +5978,33 @@ declare const WithZodClientControllerRPC: {
         };
       };
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleAllNoHttpAsFunction: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
-    query: {
-      search: string;
-    };
-    params: {
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
       foo: string;
       bar: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            query: {
-              search: string;
-            };
-            params: {
-              foo: string;
-              bar: string;
-            };
-            vovkParams: {
-              foo: string;
-              bar: string;
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    }) => Promise<{
+      body: {
+        hello: string;
+      };
+      query: {
+        search: string;
+      };
+      params: {
+        foo: string;
+        bar: string;
+      };
+      vovkParams: {
+        foo: string;
+        bar: string;
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: {
           hello: string;
         };
@@ -5706,12 +6019,126 @@ declare const WithZodClientControllerRPC: {
           foo: string;
           bar: string;
         };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        query: {
+          search: string;
+        };
+        params: {
+          foo: string;
+          bar: string;
+        };
+        vovkParams: {
+          foo: string;
+          bar: string;
+        };
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: zod0.ZodObject<{
+        body: zod0.ZodObject<{
+          hello: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        query: zod0.ZodObject<{
+          search: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        params: zod0.ZodObject<{
+          foo: zod0.ZodString;
+          bar: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        vovkParams: zod0.ZodObject<{
+          foo: zod0.ZodString;
+          bar: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+      }, zod_v4_core0.$strip>;
+      params?: zod0.ZodObject<{
+        foo: zod0.ZodString;
+        bar: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleAllNoHttpAsFunction: ClientMethod<((req: vovk0.VovkRequest<{
+    hello: string;
+  }, {
+    search: string;
+  }, {
+    foo: string;
+    bar: string;
+  }>, params: {
+    foo: string;
+    bar: string;
+  }) => Promise<{
+    body: {
+      hello: string;
+    };
+    query: {
+      search: string;
+    };
+    params: {
+      foo: string;
+      bar: string;
+    };
+    vovkParams: {
+      foo: string;
+      bar: string;
+    };
+  }>) & {
     __types: {
       body: {
         hello: string;
@@ -5740,2859 +6167,2523 @@ declare const WithZodClientControllerRPC: {
         };
       };
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      foo: string;
+      bar: string;
+    }) => Promise<{
+      body: {
+        hello: string;
+      };
+      query: {
+        search: string;
+      };
+      params: {
+        foo: string;
+        bar: string;
+      };
+      vovkParams: {
+        foo: string;
+        bar: string;
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        query: {
+          search: string;
+        };
+        params: {
+          foo: string;
+          bar: string;
+        };
+        vovkParams: {
+          foo: string;
+          bar: string;
+        };
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello: string;
+        };
+        query: {
+          search: string;
+        };
+        params: {
+          foo: string;
+          bar: string;
+        };
+        vovkParams: {
+          foo: string;
+          bar: string;
+        };
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello: string;
+        };
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: {
+          foo: string;
+          bar: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: zod0.ZodObject<{
+        body: zod0.ZodObject<{
+          hello: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        query: zod0.ZodObject<{
+          search: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        params: zod0.ZodObject<{
+          foo: zod0.ZodString;
+          bar: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+        vovkParams: zod0.ZodObject<{
+          foo: zod0.ZodString;
+          bar: zod0.ZodString;
+        }, zod_v4_core0.$strip>;
+      }, zod_v4_core0.$strip>;
+      params?: zod0.ZodObject<{
+        foo: zod0.ZodString;
+        bar: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        hello: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handlePagination: ClientMethod<((req: vovk0.VovkRequest<unknown, {
+    page: string;
+    limit: string;
+  }, unknown>) => Promise<{
+    items: {
+      id: number;
+      name: string;
+    }[];
+    hasNextPage: boolean;
+    nextPage: number;
+  }>) & {
+    __types: {
+      body: unknown;
+      query: {
+        page: string;
+        limit: string;
+      };
+      params: unknown;
+      output: {
+        items: {
+          id: number;
+          name: string;
+        }[];
+        hasNextPage: boolean;
+        nextPage?: number;
+      };
+      iteration: unknown;
+      isForm: false;
+    };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      items: {
+        id: number;
+        name: string;
+      }[];
+      hasNextPage: boolean;
+      nextPage: number;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        items: {
+          id: number;
+          name: string;
+        }[];
+        hasNextPage: boolean;
+        nextPage: number;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          page: string;
+          limit: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        items: {
+          id: number;
+          name: string;
+        }[];
+        hasNextPage: boolean;
+        nextPage: number;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          page: string;
+          limit: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: zod0.ZodObject<{
+        items: zod0.ZodArray<zod0.ZodObject<{
+          id: zod0.ZodNumber;
+          name: zod0.ZodString;
+        }, zod_v4_core0.$strip>>;
+        hasNextPage: zod0.ZodBoolean;
+        nextPage: zod0.ZodOptional<zod0.ZodNumber>;
+      }, zod_v4_core0.$strip>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        page: zod0.ZodString;
+        limit: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
 };
 declare const WithYupClientControllerRPC: {
-  handleAll: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          hello: string;
-        };
+  handleAll: ClientMethod<((req: vovk0.VovkRequest<{
+    hello?: string;
+  }, {
+    search?: string;
+  }, {
+    foo?: string;
+    bar?: string;
+  }>, params: {
+    foo?: string;
+    bar?: string;
+  }) => Promise<{
+    body: {
+      hello?: string;
+    };
     query: {
-      search: string;
+      search?: string;
     };
     params: {
-      foo: string;
-      bar: string;
+      foo?: string;
+      bar?: string;
     };
-    meta?:
-      | {
+    vovkParams: {
+      foo?: string;
+      bar?: string;
+    };
+  }>) & {
+    __types: {
+      body: {
+        hello?: string;
+      };
+      query: {
+        search?: string;
+      };
+      params: {
+        foo?: string;
+        bar?: string;
+      };
+      output: {
+        body?: {
+          hello?: string;
+        };
+        query?: {
+          search?: string;
+        };
+        params?: {
+          foo?: string;
+          bar?: string;
+        };
+        vovkParams?: {
+          foo?: string;
+          bar?: string;
+        };
+      };
+      iteration: any;
+      isForm: false;
+    };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      foo?: string;
+      bar?: string;
+    }) => Promise<{
+      body: {
+        hello?: string;
+      };
+      query: {
+        search?: string;
+      };
+      params: {
+        foo?: string;
+        bar?: string;
+      };
+      vovkParams: {
+        foo?: string;
+        bar?: string;
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello?: string;
+        };
+        query: {
+          search?: string;
+        };
+        params: {
+          foo?: string;
+          bar?: string;
+        };
+        vovkParams: {
+          foo?: string;
+          bar?: string;
+        };
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: {
+          foo?: string;
+          bar?: string;
+        };
+      } & {
+        meta?: {
           [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: {
-              hello: string;
-            };
-            query: {
-              search: string;
-            };
-            params: {
-              foo: string;
-              bar: string;
-            };
-            vovkParams: {
-              foo: string;
-              bar: string;
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
         body: {
-          hello: string;
+          hello?: string;
         };
         query: {
-          search: string;
+          search?: string;
         };
         params: {
-          foo: string;
-          bar: string;
+          foo?: string;
+          bar?: string;
         };
         vovkParams: {
-          foo: string;
-          bar: string;
+          foo?: string;
+          bar?: string;
         };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: {
-      body: {
-        hello: string;
-      };
-      query: {
-        search: string;
-      };
-      params: {
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: {
+          foo?: string;
+          bar?: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.ObjectSchema<{
+        body: {
+          hello?: string;
+        };
+        query: {
+          search?: string;
+        };
+        params: {
+          foo?: string;
+          bar?: string;
+        };
+        vovkParams: {
+          foo?: string;
+          bar?: string;
+        };
+      }, yup0.AnyObject, {
+        body: {
+          hello: undefined;
+        };
+        query: {
+          search: undefined;
+        };
+        params: {
+          foo: undefined;
+          bar: undefined;
+        };
+        vovkParams: {
+          foo: undefined;
+          bar: undefined;
+        };
+      }, "">;
+      params?: yup0.ObjectSchema<{
         foo: string;
         bar: string;
+      }, yup0.AnyObject, {
+        foo: undefined;
+        bar: undefined;
+      }, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.ObjectSchema<{
+        hello: string;
+      }, yup0.AnyObject, {
+        hello: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleQuery: ClientMethod<((req: vovk0.VovkRequest<any, {
+    search?: string;
+  }, any>) => {
+    search?: string;
+  }) & {
+    __types: {
+      body: any;
+      query: {
+        search?: string;
       };
+      params: any;
+      output: any;
+      iteration: any;
+      isForm: false;
+    };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      search?: string;
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        search?: string;
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        search?: string;
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.Schema<any, any, any, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleBody: ClientMethod<((req: vovk0.VovkRequest<{
+    hello?: string;
+  }, any, any>) => Promise<{
+    hello?: string;
+  }>) & {
+    __types: {
+      body: {
+        hello?: string;
+      };
+      query: any;
+      params: any;
+      output: any;
+      iteration: any;
+      isForm: false;
+    };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      hello?: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        hello?: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        hello?: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.Schema<any, any, any, "">;
+      body?: yup0.ObjectSchema<{
+        hello: string;
+      }, yup0.AnyObject, {
+        hello: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleParams: ClientMethod<((req: vovk0.VovkRequest<any, any, {
+    foo?: string;
+    bar?: string;
+  }>) => Promise<{
+    foo?: string;
+    bar?: string;
+  }>) & {
+    __types: {
+      body: any;
+      query: any;
+      params: {
+        foo?: string;
+        bar?: string;
+      };
+      output: any;
+      iteration: any;
+      isForm: false;
+    };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      foo?: string;
+      bar?: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        foo?: string;
+        bar?: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: any;
+      } & {
+        params?: {
+          foo?: string;
+          bar?: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        foo?: string;
+        bar?: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: any;
+      } & {
+        params?: {
+          foo?: string;
+          bar?: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.ObjectSchema<{
+        foo: string;
+        bar: string;
+      }, yup0.AnyObject, {
+        foo: undefined;
+        bar: undefined;
+      }, "">;
+      query?: yup0.Schema<any, any, any, "">;
+      body?: yup0.Schema<any, any, any, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleNestedQuery: ClientMethod<((req: vovk0.VovkRequest<any, {
+    x?: string;
+    y?: string[];
+    z?: {
+      f?: string;
+      u?: string[];
+      d?: {
+        x?: string;
+        arrOfObjects?: {
+          foo?: string;
+          nestedObj?: {
+            deepKey?: string;
+          };
+          nestedArr?: string[];
+        }[];
+      };
+    };
+  }, any>) => {
+    x?: string;
+    y?: string[];
+    z?: {
+      f?: string;
+      u?: string[];
+      d?: {
+        x?: string;
+        arrOfObjects?: {
+          foo?: string;
+          nestedObj?: {
+            deepKey?: string;
+          };
+          nestedArr?: string[];
+        }[];
+      };
+    };
+  }) & {
+    __types: {
+      body: any;
+      query: {
+        x?: string;
+        y?: string[];
+        z?: {
+          f?: string;
+          u?: string[];
+          d?: {
+            x?: string;
+            arrOfObjects?: {
+              foo?: string;
+              nestedObj?: {
+                deepKey?: string;
+              };
+              nestedArr?: string[];
+            }[];
+          };
+        };
+      };
+      params: any;
+      output: any;
+      iteration: any;
+      isForm: false;
+    };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      x?: string;
+      y?: string[];
+      z?: {
+        f?: string;
+        u?: string[];
+        d?: {
+          x?: string;
+          arrOfObjects?: {
+            foo?: string;
+            nestedObj?: {
+              deepKey?: string;
+            };
+            nestedArr?: string[];
+          }[];
+        };
+      };
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        x?: string;
+        y?: string[];
+        z?: {
+          f?: string;
+          u?: string[];
+          d?: {
+            x?: string;
+            arrOfObjects?: {
+              foo?: string;
+              nestedObj?: {
+                deepKey?: string;
+              };
+              nestedArr?: string[];
+            }[];
+          };
+        };
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          x?: string;
+          y?: string[];
+          z?: {
+            f?: string;
+            u?: string[];
+            d?: {
+              x?: string;
+              arrOfObjects?: {
+                foo?: string;
+                nestedObj?: {
+                  deepKey?: string;
+                };
+                nestedArr?: string[];
+              }[];
+            };
+          };
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        x?: string;
+        y?: string[];
+        z?: {
+          f?: string;
+          u?: string[];
+          d?: {
+            x?: string;
+            arrOfObjects?: {
+              foo?: string;
+              nestedObj?: {
+                deepKey?: string;
+              };
+              nestedArr?: string[];
+            }[];
+          };
+        };
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          x?: string;
+          y?: string[];
+          z?: {
+            f?: string;
+            u?: string[];
+            d?: {
+              x?: string;
+              arrOfObjects?: {
+                foo?: string;
+                nestedObj?: {
+                  deepKey?: string;
+                };
+                nestedArr?: string[];
+              }[];
+            };
+          };
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        x: string;
+        y: string[];
+        z: {
+          f?: string;
+          u?: string[];
+          d?: {
+            x?: string;
+            arrOfObjects?: {
+              foo?: string;
+              nestedObj?: {
+                deepKey?: string;
+              };
+              nestedArr?: string[];
+            }[];
+          };
+        };
+      }, yup0.AnyObject, {
+        x: undefined;
+        y: "";
+        z: {
+          f: undefined;
+          u: "";
+          d: {
+            x: undefined;
+            arrOfObjects: "";
+          };
+        };
+      }, "">;
+      body?: yup0.Schema<any, any, any, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleOutput: ClientMethod<((req: vovk0.VovkRequest<any, {
+    helloOutput?: string;
+  }, any>) => Promise<{
+    hello: "world";
+  }>) & {
+    __types: {
+      body: any;
+      query: {
+        helloOutput?: string;
+      };
+      params: any;
       output: {
-        body: {
-          hello: string;
-        };
-        query: {
-          search: string;
-        };
-        params: {
-          foo: string;
-          bar: string;
-        };
-        vovkParams: {
-          foo: string;
-          bar: string;
-        };
+        hello?: string;
       };
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleQuery: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        search: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: {
-      body: any;
-      query: {
-        search: string;
-      };
-      params: any;
-      output: any;
-      iteration: any;
-      isForm: any;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      hello: "world";
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        hello: "world";
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          helloOutput?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        hello: "world";
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          helloOutput?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
     };
-  };
-  handleBody: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: any;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.ObjectSchema<{
         hello: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: {
-      body: {
-        hello: string;
-      };
-      query: any;
-      params: any;
-      output: any;
-      iteration: any;
-      isForm: any;
-    };
-  };
-  handleParams: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          params: {
-            foo: string;
-            bar: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  foo: string;
-                  bar: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          params: {
-            foo: string;
-            bar: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  foo: string;
-                  bar: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: any;
-          params: {
-            foo: string;
-            bar: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  foo: string;
-                  bar: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: any;
-          params: {
-            foo: string;
-            bar: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  foo: string;
-                  bar: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        foo: string;
-        bar: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: {
-      body: any;
-      query: any;
-      params: {
-        foo: string;
-        bar: string;
-      };
-      output: any;
-      iteration: any;
-      isForm: any;
-    };
-  };
-  handleNestedQuery: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            x: string;
-            y: string[];
-            z: {
-              f: string;
-              u: string[];
-              d: {
-                x: string;
-                arrOfObjects: {
-                  nestedObj?:
-                    | {
-                        deepKey?: string | undefined;
-                      }
-                    | undefined;
-                  nestedArr?: (string | undefined)[] | undefined;
-                  foo: string;
-                }[];
-              };
-            };
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  x: string;
-                  y: string[];
-                  z: {
-                    f: string;
-                    u: string[];
-                    d: {
-                      x: string;
-                      arrOfObjects: {
-                        nestedObj?:
-                          | {
-                              deepKey?: string | undefined;
-                            }
-                          | undefined;
-                        nestedArr?: (string | undefined)[] | undefined;
-                        foo: string;
-                      }[];
-                    };
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            x: string;
-            y: string[];
-            z: {
-              f: string;
-              u: string[];
-              d: {
-                x: string;
-                arrOfObjects: {
-                  nestedObj?:
-                    | {
-                        deepKey?: string | undefined;
-                      }
-                    | undefined;
-                  nestedArr?: (string | undefined)[] | undefined;
-                  foo: string;
-                }[];
-              };
-            };
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  x: string;
-                  y: string[];
-                  z: {
-                    f: string;
-                    u: string[];
-                    d: {
-                      x: string;
-                      arrOfObjects: {
-                        nestedObj?:
-                          | {
-                              deepKey?: string | undefined;
-                            }
-                          | undefined;
-                        nestedArr?: (string | undefined)[] | undefined;
-                        foo: string;
-                      }[];
-                    };
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            x: string;
-            y: string[];
-            z: {
-              f: string;
-              u: string[];
-              d: {
-                x: string;
-                arrOfObjects: {
-                  nestedObj?:
-                    | {
-                        deepKey?: string | undefined;
-                      }
-                    | undefined;
-                  nestedArr?: (string | undefined)[] | undefined;
-                  foo: string;
-                }[];
-              };
-            };
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  x: string;
-                  y: string[];
-                  z: {
-                    f: string;
-                    u: string[];
-                    d: {
-                      x: string;
-                      arrOfObjects: {
-                        nestedObj?:
-                          | {
-                              deepKey?: string | undefined;
-                            }
-                          | undefined;
-                        nestedArr?: (string | undefined)[] | undefined;
-                        foo: string;
-                      }[];
-                    };
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            x: string;
-            y: string[];
-            z: {
-              f: string;
-              u: string[];
-              d: {
-                x: string;
-                arrOfObjects: {
-                  nestedObj?:
-                    | {
-                        deepKey?: string | undefined;
-                      }
-                    | undefined;
-                  nestedArr?: (string | undefined)[] | undefined;
-                  foo: string;
-                }[];
-              };
-            };
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  x: string;
-                  y: string[];
-                  z: {
-                    f: string;
-                    u: string[];
-                    d: {
-                      x: string;
-                      arrOfObjects: {
-                        nestedObj?:
-                          | {
-                              deepKey?: string | undefined;
-                            }
-                          | undefined;
-                        nestedArr?: (string | undefined)[] | undefined;
-                        foo: string;
-                      }[];
-                    };
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        x: string;
-        y: string[];
-        z: {
-          f: string;
-          u: string[];
-          d: {
-            x: string;
-            arrOfObjects: {
-              nestedObj?:
-                | {
-                    deepKey?: string | undefined;
-                  }
-                | undefined;
-              nestedArr?: (string | undefined)[] | undefined;
-              foo: string;
-            }[];
-          };
-        };
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: {
-      body: any;
-      query: {
-        x: string;
-        y: string[];
-        z: {
-          f: string;
-          u: string[];
-          d: {
-            x: string;
-            arrOfObjects: {
-              nestedObj?:
-                | {
-                    deepKey?: string | undefined;
-                  }
-                | undefined;
-              nestedArr?: (string | undefined)[] | undefined;
-              foo: string;
-            }[];
-          };
-        };
-      };
-      params: any;
-      output: any;
-      iteration: any;
-      isForm: any;
-    };
-  };
-  handleOutput: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            helloOutput: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: 'world';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            helloOutput: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: 'world';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            helloOutput: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: 'world';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            helloOutput: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: 'world';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: 'world';
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: {
-      body: any;
-      query: {
+      }, yup0.AnyObject, {
+        hello: undefined;
+      }, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
         helloOutput: string;
-      };
-      params: any;
-      output: {
-        hello: string;
-      };
-      iteration: any;
-      isForm: any;
+      }, yup0.AnyObject, {
+        helloOutput: undefined;
+      }, "">;
+      body?: yup0.Schema<any, any, any, "">;
     };
-  };
-  handleStream: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            values: string[];
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            values: string[];
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            values: string[];
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            values: string[];
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      value: string;
-    }>
-  >) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleStream: ClientMethod<((req: vovk0.VovkRequest<any, {
+    values?: string[];
+  }, any>) => AsyncGenerator<{
+    value: string;
+  }, void, unknown>) & {
     __types: {
       body: any;
       query: {
-        values: string[];
+        values?: string[];
       };
       params: any;
       output: any;
       iteration: {
-        value: string;
+        value?: string;
       };
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleSchemaConstraints: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                enum_value?: string | undefined;
-                num_minimum?: number | undefined;
-                num_maximum?: number | undefined;
-                num_exclusiveMinimum?: number | undefined;
-                num_exclusiveMaximum?: number | undefined;
-                num_multipleOf?: number | undefined;
-                num_int?: number | undefined;
-                num_int32?: number | undefined;
-                str_minLength?: string | undefined;
-                str_maxLength?: string | undefined;
-                str_pattern?: string | undefined;
-                str_email?: string | undefined;
-                str_url?: string | undefined;
-                str_uuid?: string | undefined;
-                str_datetime?: string | undefined;
-                arr_minItems?: (string | undefined)[] | undefined;
-                arr_maxItems?: (string | undefined)[] | undefined;
-                obj_required: {
-                  optionalField?: number | undefined;
-                  requiredField: string;
-                };
-                obj_strict: {
-                  knownField?: string | undefined;
-                };
-                logical_anyOf: string | number | boolean;
-                logical_allOf: {
-                  a: string;
-                  b: number;
-                };
-              };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  enum_value?: string | undefined;
-                  num_minimum?: number | undefined;
-                  num_maximum?: number | undefined;
-                  num_exclusiveMinimum?: number | undefined;
-                  num_exclusiveMaximum?: number | undefined;
-                  num_multipleOf?: number | undefined;
-                  num_int?: number | undefined;
-                  num_int32?: number | undefined;
-                  str_minLength?: string | undefined;
-                  str_maxLength?: string | undefined;
-                  str_pattern?: string | undefined;
-                  str_email?: string | undefined;
-                  str_url?: string | undefined;
-                  str_uuid?: string | undefined;
-                  str_datetime?: string | undefined;
-                  arr_minItems?: (string | undefined)[] | undefined;
-                  arr_maxItems?: (string | undefined)[] | undefined;
-                  obj_required: {
-                    optionalField?: number | undefined;
-                    requiredField: string;
-                  };
-                  obj_strict: {
-                    knownField?: string | undefined;
-                  };
-                  logical_anyOf: string | number | boolean;
-                  logical_allOf: {
-                    a: string;
-                    b: number;
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                enum_value?: string | undefined;
-                num_minimum?: number | undefined;
-                num_maximum?: number | undefined;
-                num_exclusiveMinimum?: number | undefined;
-                num_exclusiveMaximum?: number | undefined;
-                num_multipleOf?: number | undefined;
-                num_int?: number | undefined;
-                num_int32?: number | undefined;
-                str_minLength?: string | undefined;
-                str_maxLength?: string | undefined;
-                str_pattern?: string | undefined;
-                str_email?: string | undefined;
-                str_url?: string | undefined;
-                str_uuid?: string | undefined;
-                str_datetime?: string | undefined;
-                arr_minItems?: (string | undefined)[] | undefined;
-                arr_maxItems?: (string | undefined)[] | undefined;
-                obj_required: {
-                  optionalField?: number | undefined;
-                  requiredField: string;
-                };
-                obj_strict: {
-                  knownField?: string | undefined;
-                };
-                logical_anyOf: string | number | boolean;
-                logical_allOf: {
-                  a: string;
-                  b: number;
-                };
-              };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  enum_value?: string | undefined;
-                  num_minimum?: number | undefined;
-                  num_maximum?: number | undefined;
-                  num_exclusiveMinimum?: number | undefined;
-                  num_exclusiveMaximum?: number | undefined;
-                  num_multipleOf?: number | undefined;
-                  num_int?: number | undefined;
-                  num_int32?: number | undefined;
-                  str_minLength?: string | undefined;
-                  str_maxLength?: string | undefined;
-                  str_pattern?: string | undefined;
-                  str_email?: string | undefined;
-                  str_url?: string | undefined;
-                  str_uuid?: string | undefined;
-                  str_datetime?: string | undefined;
-                  arr_minItems?: (string | undefined)[] | undefined;
-                  arr_maxItems?: (string | undefined)[] | undefined;
-                  obj_required: {
-                    optionalField?: number | undefined;
-                    requiredField: string;
-                  };
-                  obj_strict: {
-                    knownField?: string | undefined;
-                  };
-                  logical_anyOf: string | number | boolean;
-                  logical_allOf: {
-                    a: string;
-                    b: number;
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                enum_value?: string | undefined;
-                num_minimum?: number | undefined;
-                num_maximum?: number | undefined;
-                num_exclusiveMinimum?: number | undefined;
-                num_exclusiveMaximum?: number | undefined;
-                num_multipleOf?: number | undefined;
-                num_int?: number | undefined;
-                num_int32?: number | undefined;
-                str_minLength?: string | undefined;
-                str_maxLength?: string | undefined;
-                str_pattern?: string | undefined;
-                str_email?: string | undefined;
-                str_url?: string | undefined;
-                str_uuid?: string | undefined;
-                str_datetime?: string | undefined;
-                arr_minItems?: (string | undefined)[] | undefined;
-                arr_maxItems?: (string | undefined)[] | undefined;
-                obj_required: {
-                  optionalField?: number | undefined;
-                  requiredField: string;
-                };
-                obj_strict: {
-                  knownField?: string | undefined;
-                };
-                logical_anyOf: string | number | boolean;
-                logical_allOf: {
-                  a: string;
-                  b: number;
-                };
-              };
-          query: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  enum_value?: string | undefined;
-                  num_minimum?: number | undefined;
-                  num_maximum?: number | undefined;
-                  num_exclusiveMinimum?: number | undefined;
-                  num_exclusiveMaximum?: number | undefined;
-                  num_multipleOf?: number | undefined;
-                  num_int?: number | undefined;
-                  num_int32?: number | undefined;
-                  str_minLength?: string | undefined;
-                  str_maxLength?: string | undefined;
-                  str_pattern?: string | undefined;
-                  str_email?: string | undefined;
-                  str_url?: string | undefined;
-                  str_uuid?: string | undefined;
-                  str_datetime?: string | undefined;
-                  arr_minItems?: (string | undefined)[] | undefined;
-                  arr_maxItems?: (string | undefined)[] | undefined;
-                  obj_required: {
-                    optionalField?: number | undefined;
-                    requiredField: string;
-                  };
-                  obj_strict: {
-                    knownField?: string | undefined;
-                  };
-                  logical_anyOf: string | number | boolean;
-                  logical_allOf: {
-                    a: string;
-                    b: number;
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                enum_value?: string | undefined;
-                num_minimum?: number | undefined;
-                num_maximum?: number | undefined;
-                num_exclusiveMinimum?: number | undefined;
-                num_exclusiveMaximum?: number | undefined;
-                num_multipleOf?: number | undefined;
-                num_int?: number | undefined;
-                num_int32?: number | undefined;
-                str_minLength?: string | undefined;
-                str_maxLength?: string | undefined;
-                str_pattern?: string | undefined;
-                str_email?: string | undefined;
-                str_url?: string | undefined;
-                str_uuid?: string | undefined;
-                str_datetime?: string | undefined;
-                arr_minItems?: (string | undefined)[] | undefined;
-                arr_maxItems?: (string | undefined)[] | undefined;
-                obj_required: {
-                  optionalField?: number | undefined;
-                  requiredField: string;
-                };
-                obj_strict: {
-                  knownField?: string | undefined;
-                };
-                logical_anyOf: string | number | boolean;
-                logical_allOf: {
-                  a: string;
-                  b: number;
-                };
-              };
-          query: any;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  enum_value?: string | undefined;
-                  num_minimum?: number | undefined;
-                  num_maximum?: number | undefined;
-                  num_exclusiveMinimum?: number | undefined;
-                  num_exclusiveMaximum?: number | undefined;
-                  num_multipleOf?: number | undefined;
-                  num_int?: number | undefined;
-                  num_int32?: number | undefined;
-                  str_minLength?: string | undefined;
-                  str_maxLength?: string | undefined;
-                  str_pattern?: string | undefined;
-                  str_email?: string | undefined;
-                  str_url?: string | undefined;
-                  str_uuid?: string | undefined;
-                  str_datetime?: string | undefined;
-                  arr_minItems?: (string | undefined)[] | undefined;
-                  arr_maxItems?: (string | undefined)[] | undefined;
-                  obj_required: {
-                    optionalField?: number | undefined;
-                    requiredField: string;
-                  };
-                  obj_strict: {
-                    knownField?: string | undefined;
-                  };
-                  logical_anyOf: string | number | boolean;
-                  logical_allOf: {
-                    a: string;
-                    b: number;
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        enum_value?: string | undefined;
-        num_minimum?: number | undefined;
-        num_maximum?: number | undefined;
-        num_exclusiveMinimum?: number | undefined;
-        num_exclusiveMaximum?: number | undefined;
-        num_multipleOf?: number | undefined;
-        num_int?: number | undefined;
-        num_int32?: number | undefined;
-        str_minLength?: string | undefined;
-        str_maxLength?: string | undefined;
-        str_pattern?: string | undefined;
-        str_email?: string | undefined;
-        str_url?: string | undefined;
-        str_uuid?: string | undefined;
-        str_datetime?: string | undefined;
-        arr_minItems?: (string | undefined)[] | undefined;
-        arr_maxItems?: (string | undefined)[] | undefined;
-        obj_required: {
-          optionalField?: number | undefined;
-          requiredField: string;
-        };
-        obj_strict: {
-          knownField?: string | undefined;
-        };
-        logical_anyOf: string | number | boolean;
-        logical_allOf: {
-          a: string;
-          b: number;
-        };
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => AsyncGenerator<{
+      value: string;
+    }, void, unknown>;
+  } & {
+    fn: {
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          values?: string[];
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          values?: string[];
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.ObjectSchema<{
+        value: string;
+      }, yup0.AnyObject, {
+        value: undefined;
+      }, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        values: string[];
+      }, yup0.AnyObject, {
+        values: "";
+      }, "">;
+      body?: yup0.Schema<any, any, any, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleSchemaConstraints: ClientMethod<((req: vovk0.VovkRequest<{
+    enum_value?: string;
+    num_minimum?: number;
+    num_maximum?: number;
+    num_exclusiveMinimum?: number;
+    num_exclusiveMaximum?: number;
+    num_multipleOf?: number;
+    num_int?: number;
+    num_int32?: number;
+    str_minLength?: string;
+    str_maxLength?: string;
+    str_pattern?: string;
+    str_email?: string;
+    str_url?: string;
+    str_uuid?: string;
+    str_datetime?: string;
+    arr_minItems?: string[];
+    arr_maxItems?: string[];
+    obj_required?: {
+      requiredField?: string;
+      optionalField?: number;
+    };
+    obj_strict?: {
+      knownField?: string;
+    };
+    logical_anyOf?: string | number | boolean;
+    logical_allOf?: {
+      a?: string;
+      b?: number;
+    };
+  }, any, any>) => Promise<{
+    enum_value?: string;
+    num_minimum?: number;
+    num_maximum?: number;
+    num_exclusiveMinimum?: number;
+    num_exclusiveMaximum?: number;
+    num_multipleOf?: number;
+    num_int?: number;
+    num_int32?: number;
+    str_minLength?: string;
+    str_maxLength?: string;
+    str_pattern?: string;
+    str_email?: string;
+    str_url?: string;
+    str_uuid?: string;
+    str_datetime?: string;
+    arr_minItems?: string[];
+    arr_maxItems?: string[];
+    obj_required?: {
+      requiredField?: string;
+      optionalField?: number;
+    };
+    obj_strict?: {
+      knownField?: string;
+    };
+    logical_anyOf?: string | number | boolean;
+    logical_allOf?: {
+      a?: string;
+      b?: number;
+    };
+  }>) & {
     __types: {
       body: {
-        enum_value?: string | undefined;
-        num_minimum?: number | undefined;
-        num_maximum?: number | undefined;
-        num_exclusiveMinimum?: number | undefined;
-        num_exclusiveMaximum?: number | undefined;
-        num_multipleOf?: number | undefined;
-        num_int?: number | undefined;
-        num_int32?: number | undefined;
-        str_minLength?: string | undefined;
-        str_maxLength?: string | undefined;
-        str_pattern?: string | undefined;
-        str_email?: string | undefined;
-        str_url?: string | undefined;
-        str_uuid?: string | undefined;
-        str_datetime?: string | undefined;
-        arr_minItems?: (string | undefined)[] | undefined;
-        arr_maxItems?: (string | undefined)[] | undefined;
-        obj_required: {
-          optionalField?: number | undefined;
-          requiredField: string;
+        enum_value?: string;
+        num_minimum?: number;
+        num_maximum?: number;
+        num_exclusiveMinimum?: number;
+        num_exclusiveMaximum?: number;
+        num_multipleOf?: number;
+        num_int?: number;
+        num_int32?: number;
+        str_minLength?: string;
+        str_maxLength?: string;
+        str_pattern?: string;
+        str_email?: string;
+        str_url?: string;
+        str_uuid?: string;
+        str_datetime?: string;
+        arr_minItems?: string[];
+        arr_maxItems?: string[];
+        obj_required?: {
+          requiredField?: string;
+          optionalField?: number;
         };
-        obj_strict: {
-          knownField?: string | undefined;
+        obj_strict?: {
+          knownField?: string;
         };
-        logical_anyOf: string | number | boolean;
-        logical_allOf: {
-          a: string;
-          b: number;
+        logical_anyOf?: string | number | boolean;
+        logical_allOf?: {
+          a?: string;
+          b?: number;
         };
       };
       query: any;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleNothitng: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  readonly nothing: 'here';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        readonly nothing: 'here';
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      enum_value?: string;
+      num_minimum?: number;
+      num_maximum?: number;
+      num_exclusiveMinimum?: number;
+      num_exclusiveMaximum?: number;
+      num_multipleOf?: number;
+      num_int?: number;
+      num_int32?: number;
+      str_minLength?: string;
+      str_maxLength?: string;
+      str_pattern?: string;
+      str_email?: string;
+      str_url?: string;
+      str_uuid?: string;
+      str_datetime?: string;
+      arr_minItems?: string[];
+      arr_maxItems?: string[];
+      obj_required?: {
+        requiredField?: string;
+        optionalField?: number;
+      };
+      obj_strict?: {
+        knownField?: string;
+      };
+      logical_anyOf?: string | number | boolean;
+      logical_allOf?: {
+        a?: string;
+        b?: number;
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        enum_value?: string;
+        num_minimum?: number;
+        num_maximum?: number;
+        num_exclusiveMinimum?: number;
+        num_exclusiveMaximum?: number;
+        num_multipleOf?: number;
+        num_int?: number;
+        num_int32?: number;
+        str_minLength?: string;
+        str_maxLength?: string;
+        str_pattern?: string;
+        str_email?: string;
+        str_url?: string;
+        str_uuid?: string;
+        str_datetime?: string;
+        arr_minItems?: string[];
+        arr_maxItems?: string[];
+        obj_required?: {
+          requiredField?: string;
+          optionalField?: number;
+        };
+        obj_strict?: {
+          knownField?: string;
+        };
+        logical_anyOf?: string | number | boolean;
+        logical_allOf?: {
+          a?: string;
+          b?: number;
+        };
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          enum_value?: string;
+          num_minimum?: number;
+          num_maximum?: number;
+          num_exclusiveMinimum?: number;
+          num_exclusiveMaximum?: number;
+          num_multipleOf?: number;
+          num_int?: number;
+          num_int32?: number;
+          str_minLength?: string;
+          str_maxLength?: string;
+          str_pattern?: string;
+          str_email?: string;
+          str_url?: string;
+          str_uuid?: string;
+          str_datetime?: string;
+          arr_minItems?: string[];
+          arr_maxItems?: string[];
+          obj_required?: {
+            requiredField?: string;
+            optionalField?: number;
+          };
+          obj_strict?: {
+            knownField?: string;
+          };
+          logical_anyOf?: string | number | boolean;
+          logical_allOf?: {
+            a?: string;
+            b?: number;
+          };
+        };
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        enum_value?: string;
+        num_minimum?: number;
+        num_maximum?: number;
+        num_exclusiveMinimum?: number;
+        num_exclusiveMaximum?: number;
+        num_multipleOf?: number;
+        num_int?: number;
+        num_int32?: number;
+        str_minLength?: string;
+        str_maxLength?: string;
+        str_pattern?: string;
+        str_email?: string;
+        str_url?: string;
+        str_uuid?: string;
+        str_datetime?: string;
+        arr_minItems?: string[];
+        arr_maxItems?: string[];
+        obj_required?: {
+          requiredField?: string;
+          optionalField?: number;
+        };
+        obj_strict?: {
+          knownField?: string;
+        };
+        logical_anyOf?: string | number | boolean;
+        logical_allOf?: {
+          a?: string;
+          b?: number;
+        };
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          enum_value?: string;
+          num_minimum?: number;
+          num_maximum?: number;
+          num_exclusiveMinimum?: number;
+          num_exclusiveMaximum?: number;
+          num_multipleOf?: number;
+          num_int?: number;
+          num_int32?: number;
+          str_minLength?: string;
+          str_maxLength?: string;
+          str_pattern?: string;
+          str_email?: string;
+          str_url?: string;
+          str_uuid?: string;
+          str_datetime?: string;
+          arr_minItems?: string[];
+          arr_maxItems?: string[];
+          obj_required?: {
+            requiredField?: string;
+            optionalField?: number;
+          };
+          obj_strict?: {
+            knownField?: string;
+          };
+          logical_anyOf?: string | number | boolean;
+          logical_allOf?: {
+            a?: string;
+            b?: number;
+          };
+        };
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.Schema<any, any, any, "">;
+      body?: yup0.ObjectSchema<{
+        enum_value: string;
+        num_minimum: number;
+        num_maximum: number;
+        num_exclusiveMinimum: number;
+        num_exclusiveMaximum: number;
+        num_multipleOf: number;
+        num_int: number;
+        num_int32: number;
+        str_minLength: string;
+        str_maxLength: string;
+        str_pattern: string;
+        str_email: string;
+        str_url: string;
+        str_uuid: string;
+        str_datetime: string;
+        arr_minItems: string[];
+        arr_maxItems: string[];
+        obj_required: {
+          requiredField?: string;
+          optionalField?: number;
+        };
+        obj_strict: {
+          knownField?: string;
+        };
+        logical_anyOf: string | number | boolean;
+        logical_allOf: {
+          a?: string;
+          b?: number;
+        };
+      }, yup0.AnyObject, {
+        enum_value: undefined;
+        num_minimum: undefined;
+        num_maximum: undefined;
+        num_exclusiveMinimum: undefined;
+        num_exclusiveMaximum: undefined;
+        num_multipleOf: undefined;
+        num_int: undefined;
+        num_int32: undefined;
+        str_minLength: undefined;
+        str_maxLength: undefined;
+        str_pattern: undefined;
+        str_email: undefined;
+        str_url: undefined;
+        str_uuid: undefined;
+        str_datetime: undefined;
+        arr_minItems: "";
+        arr_maxItems: "";
+        obj_required: {
+          requiredField: undefined;
+          optionalField: undefined;
+        };
+        obj_strict: {
+          knownField: undefined;
+        };
+        logical_anyOf: any;
+        logical_allOf: {
+          a: undefined;
+          b: undefined;
+        };
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleNothitng: ClientMethod<(() => Promise<{
+    readonly nothing: "here";
+  }>) & {
     __types: {
       body: any;
       query: any;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleFormData: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body: FormData;
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  formData: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData;
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  formData: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        formData: {
-          hello: string;
-        };
-        search: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      readonly nothing: "here";
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        readonly nothing: "here";
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        readonly nothing: "here";
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.Schema<any, any, any, "">;
+      body?: yup0.Schema<any, any, any, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleFormData: ClientMethod<((req: vovk0.VovkRequest<{
+    hello?: string;
+  }, {
+    search?: string;
+  }, any>) => Promise<{
+    formData: {
+      hello?: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
-        hello: string;
+        hello?: string;
       };
       query: {
-        search: string;
+        search?: string;
       };
       params: any;
       output: any;
       iteration: any;
       isForm: true;
     };
-  };
-  disableServerSideValidationBool: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        body: {
-          hello: string;
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      formData: {
+        hello?: string;
+      };
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        formData: {
+          hello?: string;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        formData: {
+          hello?: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.ObjectSchema<{
+        hello: string;
+      }, yup0.AnyObject, {
+        hello: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  disableServerSideValidationBool: ClientMethod<((req: vovk0.VovkRequest<{
+    hello?: string;
+  }, {
+    search?: string;
+  }, any>) => Promise<{
+    body: {
+      hello?: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
-        hello: string;
+        hello?: string;
       };
       query: {
-        search: string;
+        search?: string;
       };
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  disableServerSideValidationStrings: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: {
+        hello?: string;
+      };
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: {
-          hello: string;
+          hello?: string;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello?: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.ObjectSchema<{
+        hello: string;
+      }, yup0.AnyObject, {
+        hello: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  disableServerSideValidationStrings: ClientMethod<((req: vovk0.VovkRequest<{
+    hello?: string;
+  }, {
+    search?: string;
+  }, any>) => Promise<{
+    body: {
+      hello?: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
-        hello: string;
+        hello?: string;
       };
       query: {
-        search: string;
+        search?: string;
       };
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  skipSchemaEmissionBool: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: {
+        hello?: string;
+      };
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: {
-          hello: string;
+          hello?: string;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello?: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.ObjectSchema<{
+        hello: string;
+      }, yup0.AnyObject, {
+        hello: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  skipSchemaEmissionBool: ClientMethod<((req: vovk0.VovkRequest<{
+    hello?: string;
+  }, {
+    search?: string;
+  }, any>) => Promise<{
+    body: {
+      hello?: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
-        hello: string;
+        hello?: string;
       };
       query: {
-        search: string;
+        search?: string;
       };
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  skipSchemaEmissionStrings: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                hello: string;
-              };
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: {
-                    hello: string;
-                  };
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: {
+        hello?: string;
+      };
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: {
-          hello: string;
+          hello?: string;
         };
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello?: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.ObjectSchema<{
+        hello: string;
+      }, yup0.AnyObject, {
+        hello: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  skipSchemaEmissionStrings: ClientMethod<((req: vovk0.VovkRequest<{
+    hello?: string;
+  }, {
+    search?: string;
+  }, any>) => Promise<{
+    body: {
+      hello?: string;
+    };
+    search: string;
+  }>) & {
     __types: {
       body: {
-        hello: string;
+        hello?: string;
       };
       query: {
-        search: string;
+        search?: string;
       };
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  validateEachIteration: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            values: string[];
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            values: string[];
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            values: string[];
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            values: string[];
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      value: string;
-    }>
-  >) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: {
+        hello?: string;
+      };
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello?: string;
+        };
+        search: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: {
+          hello?: string;
+        };
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.ObjectSchema<{
+        hello: string;
+      }, yup0.AnyObject, {
+        hello: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  validateEachIteration: ClientMethod<((req: vovk0.VovkRequest<any, {
+    values?: string[];
+  }, any>) => AsyncGenerator<{
+    value: string;
+  }, void, unknown>) & {
     __types: {
       body: any;
       query: {
-        values: string[];
+        values?: string[];
       };
       params: any;
       output: any;
       iteration: {
-        value: string;
+        value?: string;
       };
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => AsyncGenerator<{
+      value: string;
+    }, void, unknown>;
+  } & {
+    fn: {
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          values?: string[];
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          values?: string[];
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.ObjectSchema<{
+        value: string;
+      }, yup0.AnyObject, {
+        value: undefined;
+      }, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        values: string[];
+      }, yup0.AnyObject, {
+        values: "";
+      }, "">;
+      body?: yup0.Schema<any, any, any, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
 };
 declare const WithDtoClientControllerRPC: {
-  handleAll: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body: FormData | HandleAllBodyDto;
+  handleAll: ClientMethod<((req: vovk0.VovkRequest<HandleAllBodyDto, HandleAllQueryDto, HandleAllParamsDto>, params: HandleAllParamsDto) => Promise<{
+    body: HandleAllBodyDto;
     query: HandleAllQueryDto;
     params: HandleAllParamsDto;
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            body: HandleAllBodyDto;
-            query: HandleAllQueryDto;
-            params: HandleAllParamsDto;
-            vovkParams: HandleAllParamsDto;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        body: HandleAllBodyDto;
-        query: HandleAllQueryDto;
-        params: HandleAllParamsDto;
-        vovkParams: HandleAllParamsDto;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    vovkParams: HandleAllParamsDto;
+  }>) & {
     __types: {
       body: HandleAllBodyDto;
       query: HandleAllQueryDto;
       params: HandleAllParamsDto;
       output: HandleAllOutputDto;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleNestedQuery: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: HandleNestedQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleNestedQueryDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: HandleNestedQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleNestedQueryDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: HandleNestedQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleNestedQueryDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: HandleNestedQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleNestedQueryDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object ? Promise<Awaited<R>> : Promise<HandleNestedQueryDto>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: HandleAllParamsDto) => Promise<{
+      body: HandleAllBodyDto;
+      query: HandleAllQueryDto;
+      params: HandleAllParamsDto;
+      vovkParams: HandleAllParamsDto;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        body: HandleAllBodyDto;
+        query: HandleAllQueryDto;
+        params: HandleAllParamsDto;
+        vovkParams: HandleAllParamsDto;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleAllBodyDto;
+      } & {
+        query?: HandleAllQueryDto;
+      } & {
+        params?: HandleAllParamsDto;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: HandleAllBodyDto;
+        query: HandleAllQueryDto;
+        params: HandleAllParamsDto;
+        vovkParams: HandleAllParamsDto;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleAllBodyDto;
+      } & {
+        query?: HandleAllQueryDto;
+      } & {
+        params?: HandleAllParamsDto;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: typeof HandleAllOutputDto;
+      params?: typeof HandleAllParamsDto;
+      query?: typeof HandleAllQueryDto;
+      body?: typeof HandleAllBodyDto;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleNestedQuery: ClientMethod<((req: vovk0.VovkRequest<any, HandleNestedQueryDto, any>) => HandleNestedQueryDto) & {
     __types: {
       body: any;
       query: HandleNestedQueryDto;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleNestedQueryClient: (req: vovk0.VovkRequest<unknown, HandleNestedQueryDto>) => Promise<HandleNestedQueryDto>;
-  handleOutput: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: HandleOutputQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: 'world';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: HandleOutputQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: 'world';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: HandleOutputQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: 'world';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: HandleOutputQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  hello: 'world';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        hello: 'world';
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => HandleNestedQueryDto;
+  } & {
+    fn: {
+      <RETURN_TYPE = HandleNestedQueryDto>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: HandleNestedQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = HandleNestedQueryDto>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: HandleNestedQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleNestedQueryDto;
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleNestedQueryClient: (req: vovk0.VovkRequest<unknown, HandleNestedQueryDto>) => Promise<HandleNestedQueryDto>;
+  handleOutput: ClientMethod<((req: vovk0.VovkRequest<any, HandleOutputQueryDto, any>) => Promise<{
+    hello: "world";
+  }>) & {
     __types: {
       body: any;
       query: HandleOutputQueryDto;
       params: any;
       output: HandleOutputOutputDto;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleOutputClient: (req: vovk0.VovkRequest<never, HandleOutputQueryDto>) => Promise<{
-    hello: 'world';
-  }>;
-  handleStream: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: HandleStreamQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: HandleStreamQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: HandleStreamQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: HandleStreamQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      value: string;
-    }>
-  >) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      hello: "world";
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        hello: "world";
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: HandleOutputQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        hello: "world";
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: HandleOutputQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: typeof HandleOutputOutputDto;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleOutputQueryDto;
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleOutputClient: (req: vovk0.VovkRequest<never, HandleOutputQueryDto>) => Promise<{
+    hello: "world";
+  }>;
+  handleStream: ClientMethod<((req: vovk0.VovkRequest<any, HandleStreamQueryDto, any>) => AsyncGenerator<{
+    value: string;
+  }, void, unknown>) & {
     __types: {
       body: any;
       query: HandleStreamQueryDto;
       params: any;
       output: any;
       iteration: IterationDto;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleSchemaConstraints: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body: FormData | ConstrainingDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: ConstrainingDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | ConstrainingDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: ConstrainingDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | ConstrainingDto;
-          query: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: ConstrainingDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | ConstrainingDto;
-          query: any;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: ConstrainingDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object ? Promise<Awaited<R>> : Promise<ConstrainingDto>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => AsyncGenerator<{
+      value: string;
+    }, void, unknown>;
+  } & {
+    fn: {
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: HandleStreamQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: HandleStreamQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: typeof IterationDto;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleStreamQueryDto;
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleSchemaConstraints: ClientMethod<((req: vovk0.VovkRequest<ConstrainingDto, any, any>) => Promise<ConstrainingDto>) & {
     __types: {
       body: ConstrainingDto;
       query: any;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleNothitng: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  readonly nothing: 'here';
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        readonly nothing: 'here';
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<ConstrainingDto>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<ConstrainingDto>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: ConstrainingDto;
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<ConstrainingDto>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: ConstrainingDto;
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: class_transformer0.ClassConstructor<any>;
+      body?: typeof ConstrainingDto;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleNothitng: ClientMethod<(() => Promise<{
+    readonly nothing: "here";
+  }>) & {
     __types: {
       body: any;
       query: any;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleFormData: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body: FormData;
-          query: HandleQueryQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  formData: HandleAllBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData;
-          query: HandleQueryQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  formData: HandleAllBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        formData: HandleAllBodyDto;
-        search: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      readonly nothing: "here";
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        readonly nothing: "here";
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        readonly nothing: "here";
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: class_transformer0.ClassConstructor<any>;
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleFormData: ClientMethod<((req: vovk0.VovkRequest<HandleAllBodyDto, HandleQueryQueryDto, any>) => Promise<{
+    formData: HandleAllBodyDto;
+    search: string;
+  }>) & {
     __types: {
       body: HandleAllBodyDto;
       query: HandleQueryQueryDto;
@@ -8601,802 +8692,619 @@ declare const WithDtoClientControllerRPC: {
       iteration: any;
       isForm: true;
     };
-  };
-  disableServerSideValidationBool: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: HandleQueryQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: HandleBodyBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: HandleQueryQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: HandleBodyBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        body: HandleBodyBodyDto;
-        search: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      formData: HandleAllBodyDto;
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        formData: HandleAllBodyDto;
+        search: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleAllBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        formData: HandleAllBodyDto;
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleAllBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleQueryQueryDto;
+      body?: typeof HandleAllBodyDto;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleFormDataClient: (req: vovk0.VovkRequest<unknown, HandleQueryQueryDto>) => Promise<{
+    formData: HandleAllBodyDto;
+    search: string;
+  }>;
+  disableServerSideValidationBool: ClientMethod<((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
+    body: HandleBodyBodyDto;
+    search: string;
+  }>) & {
     __types: {
       body: HandleBodyBodyDto;
       query: HandleQueryQueryDto;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  disableServerSideValidationStrings: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: HandleQueryQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: HandleBodyBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: HandleQueryQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: HandleBodyBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: HandleBodyBodyDto;
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: HandleBodyBodyDto;
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleQueryQueryDto;
+      body?: typeof HandleBodyBodyDto;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  disableServerSideValidationStrings: ClientMethod<((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
+    body: HandleBodyBodyDto;
+    search: string;
+  }>) & {
     __types: {
       body: HandleBodyBodyDto;
       query: HandleQueryQueryDto;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  skipSchemaEmissionBool: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: HandleQueryQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: HandleBodyBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: HandleQueryQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: HandleBodyBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: HandleBodyBodyDto;
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: HandleBodyBodyDto;
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleQueryQueryDto;
+      body?: typeof HandleBodyBodyDto;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  skipSchemaEmissionBool: ClientMethod<((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
+    body: HandleBodyBodyDto;
+    search: string;
+  }>) & {
     __types: {
       body: HandleBodyBodyDto;
       query: HandleQueryQueryDto;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  skipSchemaEmissionStrings: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: HandleQueryQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: HandleBodyBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: HandleQueryQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  body: HandleBodyBodyDto;
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: HandleBodyBodyDto;
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
         body: HandleBodyBodyDto;
         search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleQueryQueryDto;
+      body?: typeof HandleBodyBodyDto;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  skipSchemaEmissionStrings: ClientMethod<((req: vovk0.VovkRequest<HandleBodyBodyDto, HandleQueryQueryDto, any>) => Promise<{
+    body: HandleBodyBodyDto;
+    search: string;
+  }>) & {
     __types: {
       body: HandleBodyBodyDto;
       query: HandleQueryQueryDto;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  validateEachIteration: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: QueryValuesDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: QueryValuesDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: QueryValuesDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: QueryValuesDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: AsyncGenerator<
-                  {
-                    value: string;
-                  },
-                  void,
-                  unknown
-                >,
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => Promise<
-    vovk0.VovkStreamAsyncIterable<{
-      value: string;
-    }>
-  >) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      body: HandleBodyBodyDto;
+      search: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        body: HandleBodyBodyDto;
+        search: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleQueryQueryDto;
+      body?: typeof HandleBodyBodyDto;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  validateEachIteration: ClientMethod<((req: vovk0.VovkRequest<any, QueryValuesDto, any>) => AsyncGenerator<{
+    value: string;
+  }, void, unknown>) & {
     __types: {
       body: any;
       query: QueryValuesDto;
       params: any;
       output: any;
       iteration: IterationDto;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleAllClient: (
-    req: vovk0.VovkRequest<HandleAllBodyDto, HandleAllQueryDto>,
-    params: HandleAllParamsDto
-  ) => Promise<HandleAllOutputDto>;
-  handleQuery: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: HandleQueryQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleQueryQueryDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: HandleQueryQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleQueryQueryDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: HandleQueryQueryDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleQueryQueryDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: HandleQueryQueryDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleQueryQueryDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object ? Promise<Awaited<R>> : Promise<HandleQueryQueryDto>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => AsyncGenerator<{
+      value: string;
+    }, void, unknown>;
+  } & {
+    fn: {
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: QueryValuesDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = AsyncGenerator<{
+        value: string;
+      }, void, unknown>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: QueryValuesDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: typeof IterationDto;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof QueryValuesDto;
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleAllClient: (req: vovk0.VovkRequest<HandleAllBodyDto, HandleAllQueryDto>, params: HandleAllParamsDto) => Promise<HandleAllOutputDto>;
+  handleQuery: ClientMethod<((req: vovk0.VovkRequest<any, HandleQueryQueryDto, any>) => HandleQueryQueryDto) & {
     __types: {
       body: any;
       query: HandleQueryQueryDto;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleQueryClient: (req: vovk0.VovkRequest<unknown, HandleQueryQueryDto>) => Promise<HandleQueryQueryDto>;
-  handleBody: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body: FormData | HandleBodyBodyDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleBodyBodyDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | HandleBodyBodyDto;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleBodyBodyDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleBodyBodyDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: FormData | HandleBodyBodyDto;
-          query: any;
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleBodyBodyDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object ? Promise<Awaited<R>> : Promise<HandleBodyBodyDto>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => HandleQueryQueryDto;
+  } & {
+    fn: {
+      <RETURN_TYPE = HandleQueryQueryDto>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = HandleQueryQueryDto>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: HandleQueryQueryDto;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: typeof HandleQueryQueryDto;
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleQueryClient: (req: vovk0.VovkRequest<unknown, HandleQueryQueryDto>) => Promise<HandleQueryQueryDto>;
+  handleBody: ClientMethod<((req: vovk0.VovkRequest<HandleBodyBodyDto, any, any>) => Promise<HandleBodyBodyDto>) & {
     __types: {
       body: HandleBodyBodyDto;
       query: any;
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  handleBodyClient: (req: vovk0.VovkRequest<HandleBodyBodyDto>) => Promise<HandleBodyBodyDto>;
-  handleParams: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          params: HandleParamsDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleParamsDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          params: HandleParamsDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleParamsDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: any;
-          params: HandleParamsDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleParamsDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: any;
-          params: HandleParamsDto;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: HandleParamsDto, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object ? Promise<Awaited<R>> : Promise<HandleParamsDto>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<HandleBodyBodyDto>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<HandleBodyBodyDto>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<HandleBodyBodyDto>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: HandleBodyBodyDto;
+      } & {
+        query?: any;
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: class_transformer0.ClassConstructor<any>;
+      body?: typeof HandleBodyBodyDto;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleBodyClient: (req: vovk0.VovkRequest<HandleBodyBodyDto>) => Promise<HandleBodyBodyDto>;
+  handleParams: ClientMethod<((req: vovk0.VovkRequest<any, any, HandleParamsDto>) => Promise<HandleParamsDto>) & {
     __types: {
       body: any;
       query: any;
       params: HandleParamsDto;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<HandleParamsDto>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<HandleParamsDto>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: any;
+      } & {
+        params?: HandleParamsDto;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<HandleParamsDto>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: any;
+      } & {
+        params?: HandleParamsDto;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: typeof HandleParamsDto;
+      query?: class_transformer0.ClassConstructor<any>;
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
   handleParamsClient: (_req: vovk0.VovkRequest, params: HandleParamsDto) => Promise<HandleParamsDto>;
 };
 declare const OpenApiControllerRPC: {
-  getFromSchema: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options?:
-      | {
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?: ((staticMethodReturn: openapi3_ts_oas31811.OpenAPIObject, resp: Response) => R) | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | undefined
-  ) => R extends object ? Promise<Awaited<R>> : Promise<openapi3_ts_oas31811.OpenAPIObject>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
-    __types: unknown;
-  };
+  getFromSchema: ClientMethod<typeof OpenApiController.getFromSchema, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
 };
 declare const NoValidationControllerOnlyEntityRPC: {
-  getNoValidationControllerOnlyEntities: (
-    req: vovk0.VovkRequest<
-      null,
-      {
-        search: string;
-      }
-    >
-  ) => Promise<{
-    results: never[];
+  getNoValidationControllerOnlyEntities: (req: vovk0.VovkRequest<null, {
+    search: string;
+  }>) => Promise<{
+    results: any[];
     search: string;
   }>;
-  updateNoValidationControllerOnlyEntity: (
-    req: vovk0.VovkRequest<
-      {
-        foo: 'bar' | 'baz';
-      },
-      {
-        q: string;
-      }
-    >,
-    params: {
-      id: string;
-    }
-  ) => Promise<{
+  updateNoValidationControllerOnlyEntity: (req: vovk0.VovkRequest<{
+    foo: "bar" | "baz";
+  }, {
+    q: string;
+  }>, params: {
+    id: string;
+  }) => Promise<{
     id: string;
     body: {
-      foo: 'bar' | 'baz';
+      foo: "bar" | "baz";
     };
     q: string;
   }>;
@@ -9404,84 +9312,35 @@ declare const NoValidationControllerOnlyEntityRPC: {
   deleteNoValidationControllerOnlyEntity: () => void;
 };
 declare const NoValidationControllerAndServiceEntityRPC: {
-  getNoValidationControllerAndServiceEntities: (
-    req: vovk0.VovkRequest<
-      null,
-      {
-        search: string;
-      }
-    >
-  ) => Promise<{
-    results: never[];
+  getNoValidationControllerAndServiceEntities: (req: vovk0.VovkRequest<null, {
+    search: string;
+  }>) => Promise<{
+    results: any[];
     search: string;
   }>;
-  updateNoValidationControllerAndServiceEntity: (
-    req: vovk0.VovkRequest<
-      {
-        foo: 'bar' | 'baz';
-      },
-      {
-        q: string;
-      }
-    >,
-    params: {
-      id: string;
-    }
-  ) => Promise<{
+  updateNoValidationControllerAndServiceEntity: (req: vovk0.VovkRequest<{
+    foo: "bar" | "baz";
+  }, {
+    q: string;
+  }>, params: {
+    id: string;
+  }) => Promise<{
     id: string;
     q: string;
     body: {
-      foo: 'bar' | 'baz';
+      foo: "bar" | "baz";
     };
   }>;
   createNoValidationControllerAndServiceEntity: () => void;
   deleteNoValidationControllerAndServiceEntity: () => void;
 };
 declare const ZodControllerOnlyEntityRPC: {
-  getZodControllerOnlyEntities: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            results: never[];
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        results: never[];
-        search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+  getZodControllerOnlyEntities: ClientMethod<((req: vovk0.VovkRequest<unknown, {
+    search: string;
+  }, unknown>) => {
+    results: any[];
+    search: string;
+  }) & {
     __types: {
       body: unknown;
       query: {
@@ -9490,70 +9349,90 @@ declare const ZodControllerOnlyEntityRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  updateZodControllerOnlyEntity: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          foo: 'bar' | 'baz';
-        };
-    query: {
-      q: string;
-    };
-    params: {
-      id: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            id: string;
-            body: {
-              foo: 'bar' | 'baz';
-            };
-            q: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        id: string;
-        body: {
-          foo: 'bar' | 'baz';
-        };
-        q: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      results: any[];
+      search: string;
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  updateZodControllerOnlyEntity: ClientMethod<((req: vovk0.VovkRequest<{
+    foo?: "bar" | "baz";
+  }, {
+    q: string;
+  }, {
+    id: string;
+  }>, params: {
+    id: string;
+  }) => Promise<{
+    id: string;
+    body: {
+      foo?: "bar" | "baz";
+    };
+    q: string;
+  }>) & {
     __types: {
       body: {
-        foo: 'bar' | 'baz';
+        foo?: "bar" | "baz";
       };
       query: {
         q: string;
@@ -9563,57 +9442,105 @@ declare const ZodControllerOnlyEntityRPC: {
       };
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      id: string;
+    }) => Promise<{
+      id: string;
+      body: {
+        foo?: "bar" | "baz";
+      };
+      q: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        id: string;
+        body: {
+          foo?: "bar" | "baz";
+        };
+        q: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo?: "bar" | "baz";
+        };
+      } & {
+        query?: {
+          q: string;
+        };
+      } & {
+        params?: {
+          id: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        id: string;
+        body: {
+          foo?: "bar" | "baz";
+        };
+        q: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo?: "bar" | "baz";
+        };
+      } & {
+        query?: {
+          q: string;
+        };
+      } & {
+        params?: {
+          id: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: zod0.ZodObject<{
+        id: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      query?: zod0.ZodObject<{
+        q: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        foo: zod0.ZodUnion<readonly [zod0.ZodLiteral<"bar">, zod0.ZodLiteral<"baz">]>;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
   createZodControllerOnlyEntity: () => void;
   deleteZodControllerOnlyEntity: () => void;
 };
 declare const ZodControllerAndServiceEntityRPC: {
-  getZodControllerAndServiceEntities: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    query: {
-      search: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            results: never[];
-            search: string;
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        results: never[];
-        search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+  getZodControllerAndServiceEntities: ClientMethod<((req: vovk0.VovkRequest<unknown, {
+    search: string;
+  }, unknown>) => {
+    results: any[];
+    search: string;
+  }) & {
     __types: {
       body: unknown;
       query: {
@@ -9622,70 +9549,90 @@ declare const ZodControllerAndServiceEntityRPC: {
       params: unknown;
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
-  updateZodControllerAndServiceEntity: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(options: {
-    body:
-      | FormData
-      | {
-          foo: 'bar' | 'baz';
-        };
-    query: {
-      q: string;
-    };
-    params: {
-      id: string;
-    };
-    meta?:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-    apiRoot?: string | undefined;
-    disableClientValidation?: boolean | undefined;
-    validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-    interpretAs?: string | undefined;
-    init?: RequestInit | undefined;
-    transform?:
-      | ((
-          staticMethodReturn: {
-            id: string;
-            q: string;
-            body: {
-              foo: 'bar' | 'baz';
-            };
-          },
-          resp: Response
-        ) => R)
-      | undefined;
-    fetcher?: VovkClientFetcher<F> | undefined;
-  }) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        id: string;
-        q: string;
-        body: {
-          foo: 'bar' | 'baz';
-        };
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      results: any[];
+      search: string;
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: unknown;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      query?: zod0.ZodObject<{
+        search: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  updateZodControllerAndServiceEntity: ClientMethod<((req: vovk0.VovkRequest<{
+    foo?: "bar" | "baz";
+  }, {
+    q: string;
+  }, {
+    id: string;
+  }>, params: {
+    id: string;
+  }) => Promise<{
+    id: string;
+    q: string;
+    body: {
+      foo?: "bar" | "baz";
+    };
+  }>) & {
     __types: {
       body: {
-        foo: 'bar' | 'baz';
+        foo?: "bar" | "baz";
       };
       query: {
         q: string;
@@ -9695,637 +9642,497 @@ declare const ZodControllerAndServiceEntityRPC: {
       };
       output: unknown;
       iteration: unknown;
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      id: string;
+    }) => Promise<{
+      id: string;
+      q: string;
+      body: {
+        foo?: "bar" | "baz";
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        id: string;
+        q: string;
+        body: {
+          foo?: "bar" | "baz";
+        };
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo?: "bar" | "baz";
+        };
+      } & {
+        query?: {
+          q: string;
+        };
+      } & {
+        params?: {
+          id: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        id: string;
+        q: string;
+        body: {
+          foo?: "bar" | "baz";
+        };
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo?: "bar" | "baz";
+        };
+      } & {
+        query?: {
+          q: string;
+        };
+      } & {
+        params?: {
+          id: string;
+        };
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+      params?: zod0.ZodObject<{
+        id: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      query?: zod0.ZodObject<{
+        q: zod0.ZodString;
+      }, zod_v4_core0.$strip>;
+      body?: zod0.ZodObject<{
+        foo: zod0.ZodUnion<readonly [zod0.ZodLiteral<"bar">, zod0.ZodLiteral<"baz">]>;
+      }, zod_v4_core0.$strip>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
   createZodControllerAndServiceEntity: () => void;
   deleteZodControllerAndServiceEntity: () => void;
 };
 declare const YupControllerOnlyEntityRPC: {
-  getYupControllerOnlyEntities: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            search?: string | undefined;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            search?: string | undefined;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search?: string | undefined;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search?: string | undefined;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        results: never[];
-        search: string | undefined;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+  getYupControllerOnlyEntities: ClientMethod<((req: vovk0.VovkRequest<any, {
+    search?: string;
+  }, any>) => {
+    results: any[];
+    search: string;
+  }) & {
     __types: {
       body: any;
       query: {
-        search?: string | undefined;
+        search?: string;
       };
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  updateYupControllerOnlyEntity: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                foo: {};
-              };
-          query: {
-            q?: string | undefined;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          params: {
-            id: string;
-          };
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  id: string;
-                  body: {
-                    foo: {};
-                  };
-                  q: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                foo: {};
-              };
-          query: {
-            q?: string | undefined;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  id: string;
-                  body: {
-                    foo: {};
-                  };
-                  q: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        id: string;
-        body: {
-          foo: {};
-        };
-        q: string | undefined;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      results: any[];
+      search: string;
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.Schema<any, any, any, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  updateYupControllerOnlyEntity: ClientMethod<((req: vovk0.VovkRequest<{
+    foo?: {};
+  }, {
+    q?: string;
+  }, any>, params: {
+    id: string;
+  }) => Promise<{
+    id: string;
+    body: {
+      foo?: {};
+    };
+    q: string;
+  }>) & {
     __types: {
       body: {
-        foo: {};
+        foo?: {};
       };
       query: {
-        q?: string | undefined;
+        q?: string;
       };
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      id: string;
+    }) => Promise<{
+      id: string;
+      body: {
+        foo?: {};
+      };
+      q: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        id: string;
+        body: {
+          foo?: {};
+        };
+        q: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo?: {};
+        };
+      } & {
+        query?: {
+          q?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        id: string;
+        body: {
+          foo?: {};
+        };
+        q: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo?: {};
+        };
+      } & {
+        query?: {
+          q?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        q: string;
+      }, yup0.AnyObject, {
+        q: undefined;
+      }, "">;
+      body?: yup0.ObjectSchema<{
+        foo: {};
+      }, yup0.AnyObject, {
+        foo: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
   createYupControllerOnlyEntity: () => void;
   deleteYupControllerOnlyEntity: () => void;
 };
 declare const YupControllerAndServiceEntityRPC: {
-  getYupControllerAndServiceEntities: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            search?: string | undefined;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            search?: string | undefined;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search?: string | undefined;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search?: string | undefined;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string | undefined;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        results: never[];
-        search: string | undefined;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+  getYupControllerAndServiceEntities: ClientMethod<((req: vovk0.VovkRequest<any, {
+    search?: string;
+  }, any>) => {
+    results: any[];
+    search: string;
+  }) & {
     __types: {
       body: any;
       query: {
-        search?: string | undefined;
+        search?: string;
       };
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  updateYupControllerAndServiceEntity: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                foo: {};
-              };
-          query: {
-            q?: string | undefined;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          params: {
-            id: string;
-          };
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  id: string;
-                  q: string | undefined;
-                  body: {
-                    foo: {};
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                foo: {};
-              };
-          query: {
-            q?: string | undefined;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  id: string;
-                  q: string | undefined;
-                  body: {
-                    foo: {};
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        id: string;
-        q: string | undefined;
-        body: {
-          foo: {};
-        };
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      results: any[];
+      search: string;
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        search: string;
+      }, yup0.AnyObject, {
+        search: undefined;
+      }, "">;
+      body?: yup0.Schema<any, any, any, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  updateYupControllerAndServiceEntity: ClientMethod<((req: vovk0.VovkRequest<{
+    foo?: {};
+  }, {
+    q?: string;
+  }, any>, params: {
+    id: string;
+  }) => Promise<{
+    id: string;
+    q: string;
+    body: {
+      foo?: {};
+    };
+  }>) & {
     __types: {
       body: {
-        foo: {};
+        foo?: {};
       };
       query: {
-        q?: string | undefined;
+        q?: string;
       };
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      id: string;
+    }) => Promise<{
+      id: string;
+      q: string;
+      body: {
+        foo?: {};
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        id: string;
+        q: string;
+        body: {
+          foo?: {};
+        };
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo?: {};
+        };
+      } & {
+        query?: {
+          q?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        id: string;
+        q: string;
+        body: {
+          foo?: {};
+        };
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo?: {};
+        };
+      } & {
+        query?: {
+          q?: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: yup0.Schema<any, any, any, "">;
+      output?: yup0.Schema<any, any, any, "">;
+      params?: yup0.Schema<any, any, any, "">;
+      query?: yup0.ObjectSchema<{
+        q: string;
+      }, yup0.AnyObject, {
+        q: undefined;
+      }, "">;
+      body?: yup0.ObjectSchema<{
+        foo: {};
+      }, yup0.AnyObject, {
+        foo: undefined;
+      }, "">;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
   createYupControllerAndServiceEntity: () => void;
   deleteYupControllerAndServiceEntity: () => void;
 };
 declare const DtoControllerOnlyEntityRPC: {
-  getDtoControllerOnlyEntities: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        results: never[];
-        search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+  getDtoControllerOnlyEntities: ClientMethod<((req: vovk0.VovkRequest<any, {
+    search: string;
+  }, any>) => {
+    results: any[];
+    search: string;
+  }) & {
     __types: {
       body: any;
       query: {
@@ -10334,107 +10141,90 @@ declare const DtoControllerOnlyEntityRPC: {
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  updateDtoControllerOnlyEntity: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                foo: 'bar' | 'baz';
-              };
-          query: {
-            q: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          params: {
-            id: string;
-          };
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  id: string;
-                  body: {
-                    foo: 'bar' | 'baz';
-                  };
-                  q: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                foo: 'bar' | 'baz';
-              };
-          query: {
-            q: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  id: string;
-                  body: {
-                    foo: 'bar' | 'baz';
-                  };
-                  q: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        id: string;
-        body: {
-          foo: 'bar' | 'baz';
-        };
-        q: string;
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      results: any[];
+      search: string;
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: {
+        new (): {
+          search: string;
+        };
+      };
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  updateDtoControllerOnlyEntity: ClientMethod<((req: vovk0.VovkRequest<{
+    foo: "bar" | "baz";
+  }, {
+    q: string;
+  }, any>, params: {
+    id: string;
+  }) => Promise<{
+    id: string;
+    body: {
+      foo: "bar" | "baz";
+    };
+    q: string;
+  }>) & {
     __types: {
       body: {
-        foo: 'bar' | 'baz';
+        foo: "bar" | "baz";
       };
       query: {
         q: string;
@@ -10442,139 +10232,103 @@ declare const DtoControllerOnlyEntityRPC: {
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      id: string;
+    }) => Promise<{
+      id: string;
+      body: {
+        foo: "bar" | "baz";
+      };
+      q: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        id: string;
+        body: {
+          foo: "bar" | "baz";
+        };
+        q: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo: "bar" | "baz";
+        };
+      } & {
+        query?: {
+          q: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        id: string;
+        body: {
+          foo: "bar" | "baz";
+        };
+        q: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo: "bar" | "baz";
+        };
+      } & {
+        query?: {
+          q: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: {
+        new (): {
+          q: string;
+        };
+      };
+      body?: {
+        new (): {
+          foo: "bar" | "baz";
+        };
+      };
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
   createDtoControllerOnlyEntity: () => void;
   deleteDtoControllerOnlyEntity: () => void;
 };
 declare const DtoControllerAndServiceEntityRPC: {
-  getDtoControllerAndServiceEntities: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body: any;
-          query: {
-            search: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  results: never[];
-                  search: string;
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        results: never[];
-        search: string;
-      }>) & {
-    isRPC: true;
-    schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+  getDtoControllerAndServiceEntities: ClientMethod<((req: vovk0.VovkRequest<any, {
+    search: string;
+  }, any>) => {
+    results: any[];
+    search: string;
+  }) & {
     __types: {
       body: any;
       query: {
@@ -10583,107 +10337,90 @@ declare const DtoControllerAndServiceEntityRPC: {
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
-  updateDtoControllerAndServiceEntity: (<
-    R,
-    F extends unknown = vovk0.VovkDefaultFetcherOptions<{
-      apiRoot?: string;
-      disableClientValidation?: boolean;
-      validateOnClient?: vovk0.VovkValidateOnClient;
-      interpretAs?: string;
-      init?: RequestInit;
-    }>,
-  >(
-    options:
-      | {
-          body:
-            | FormData
-            | {
-                foo: 'bar' | 'baz';
-              };
-          query: {
-            q: string;
-          };
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          params: {
-            id: string;
-          };
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  id: string;
-                  q: string;
-                  body: {
-                    foo: 'bar' | 'baz';
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-      | {
-          body:
-            | FormData
-            | {
-                foo: 'bar' | 'baz';
-              };
-          query: {
-            q: string;
-          };
-          params: any;
-          meta?:
-            | {
-                [key: string]: any;
-              }
-            | undefined;
-          apiRoot?: string | undefined;
-          disableClientValidation?: boolean | undefined;
-          validateOnClient?: vovk0.VovkValidateOnClient | undefined;
-          interpretAs?: string | undefined;
-          init?: RequestInit | undefined;
-          transform?:
-            | ((
-                staticMethodReturn: {
-                  id: string;
-                  q: string;
-                  body: {
-                    foo: 'bar' | 'baz';
-                  };
-                },
-                resp: Response
-              ) => R)
-            | undefined;
-          fetcher?: VovkClientFetcher<F> | undefined;
-        }
-  ) => R extends object
-    ? Promise<Awaited<R>>
-    : Promise<{
-        id: string;
-        q: string;
-        body: {
-          foo: 'bar' | 'baz';
-        };
-      }>) & {
-    isRPC: true;
+    isRPC?: boolean;
+  } & {
     schema: vovk0.VovkHandlerSchema;
-    controllerSchema: vovk0.VovkControllerSchema;
-    segmentSchema: vovk0.VovkSegmentSchema;
-    fullSchema: vovk0.VovkSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => {
+      results: any[];
+      search: string;
+    };
+  } & {
+    fn: {
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = {
+        results: any[];
+        search: string;
+      }>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: any;
+      } & {
+        query?: {
+          search: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: {
+        new (): {
+          search: string;
+        };
+      };
+      body?: class_transformer0.ClassConstructor<any>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  updateDtoControllerAndServiceEntity: ClientMethod<((req: vovk0.VovkRequest<{
+    foo: "bar" | "baz";
+  }, {
+    q: string;
+  }, any>, params: {
+    id: string;
+  }) => Promise<{
+    id: string;
+    q: string;
+    body: {
+      foo: "bar" | "baz";
+    };
+  }>) & {
     __types: {
       body: {
-        foo: 'bar' | 'baz';
+        foo: "bar" | "baz";
       };
       query: {
         q: string;
@@ -10691,29 +10428,96 @@ declare const DtoControllerAndServiceEntityRPC: {
       params: any;
       output: any;
       iteration: any;
-      isForm: any;
+      isForm: false;
     };
-  };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: {
+      id: string;
+    }) => Promise<{
+      id: string;
+      q: string;
+      body: {
+        foo: "bar" | "baz";
+      };
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        id: string;
+        q: string;
+        body: {
+          foo: "bar" | "baz";
+        };
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo: "bar" | "baz";
+        };
+      } & {
+        query?: {
+          q: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        id: string;
+        q: string;
+        body: {
+          foo: "bar" | "baz";
+        };
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          foo: "bar" | "baz";
+        };
+      } & {
+        query?: {
+          q: string;
+        };
+      } & {
+        params?: any;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: class_transformer0.ClassConstructor<any>;
+      output?: class_transformer0.ClassConstructor<any>;
+      params?: class_transformer0.ClassConstructor<any>;
+      query?: {
+        new (): {
+          q: string;
+        };
+      };
+      body?: {
+        new (): {
+          foo: "bar" | "baz";
+        };
+      };
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
   createDtoControllerAndServiceEntity: () => void;
   deleteDtoControllerAndServiceEntity: () => void;
 };
 //#endregion
-export {
-  CommonControllerRPC,
-  CustomSchemaControllerRPC,
-  DtoControllerAndServiceEntityRPC,
-  DtoControllerOnlyEntityRPC,
-  NoValidationControllerAndServiceEntityRPC,
-  NoValidationControllerOnlyEntityRPC,
-  OpenApiControllerRPC,
-  StreamingControllerRPC,
-  StreamingGeneratorControllerRPC,
-  WithDtoClientControllerRPC,
-  WithYupClientControllerRPC,
-  WithZodClientControllerRPC,
-  YupControllerAndServiceEntityRPC,
-  YupControllerOnlyEntityRPC,
-  ZodControllerAndServiceEntityRPC,
-  ZodControllerOnlyEntityRPC,
-  schema,
-};
+export { CommonControllerRPC, CustomSchemaControllerRPC, DtoControllerAndServiceEntityRPC, DtoControllerOnlyEntityRPC, NoValidationControllerAndServiceEntityRPC, NoValidationControllerOnlyEntityRPC, OpenApiControllerRPC, StreamingControllerRPC, StreamingGeneratorControllerRPC, WithDtoClientControllerRPC, WithYupClientControllerRPC, WithZodClientControllerRPC, YupControllerAndServiceEntityRPC, YupControllerOnlyEntityRPC, ZodControllerAndServiceEntityRPC, ZodControllerOnlyEntityRPC, schema$1 as schema };
+//# sourceMappingURL=index.d.mts.map

@@ -1,7 +1,7 @@
-import type { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts/oas31';
-import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples';
-import { HttpStatus, type SimpleJSONSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types';
-import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
+import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
+import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples.js';
+import { HttpStatus, type SimpleJSONSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types.js';
+import { getJSONSchemaSample } from '../utils/getJSONSchemaSample.js';
 
 function extractComponents(
   schema: SimpleJSONSchema | undefined
@@ -200,7 +200,7 @@ export function vovkSchemaToOpenAPI({
                     required: true,
                     content: {
                       'application/json': {
-                        schema: bodyValidation,
+                        schema: bodyValidation as SchemaObject,
                       },
                     },
                   },

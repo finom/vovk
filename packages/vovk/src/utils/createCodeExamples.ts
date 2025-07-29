@@ -1,5 +1,5 @@
-import type { SimpleJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
-import { getJSONSchemaExample } from './getJSONSchemaExample';
+import type { SimpleJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types.js';
+import { getJSONSchemaExample } from './getJSONSchemaExample.js';
 
 const toSnakeCase = (str: string) =>
   str

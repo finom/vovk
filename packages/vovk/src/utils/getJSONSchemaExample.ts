@@ -1,4 +1,4 @@
-import { KnownAny, SimpleJSONSchema } from '../types';
+import { KnownAny, SimpleJSONSchema } from '../types.js';
 
 interface SamplerOptions {
   comment?: '//' | '#';

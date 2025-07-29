@@ -1,3 +1,5 @@
+import type { NextResponse } from 'next/server.js';
+import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 import type {
   KnownAny,
   HttpMethod,
@@ -7,11 +9,13 @@ import type {
   VovkSegmentSchema,
   VovkSchema,
   VovkRequest,
-} from '../types';
-import type { JSONLinesResponse } from '../JSONLinesResponse';
-import type { NextResponse } from 'next/server';
-import type { defaultStreamHandler } from './defaultStreamHandler';
-import type { defaultHandler } from './defaultHandler';
+  Prettify,
+  IsEmptyObject,
+} from '../types.js';
+import type { JSONLinesResponse } from '../JSONLinesResponse.js';
+import type { defaultStreamHandler } from './defaultStreamHandler.js';
+import type { defaultHandler } from './defaultHandler.js';
+import { HttpException } from '../HttpException.js';
 
 type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
@@ -54,7 +58,7 @@ export type VovkStreamAsyncIterable<T> = {
   [Symbol.dispose](): Promise<void> | void;
   [Symbol.asyncDispose](): Promise<void> | void;
   [Symbol.asyncIterator](): AsyncIterator<T>;
-  onIterate: (cb: (data: T) => void) => () => void;
+  onIterate: (cb: (data: T, i: number) => void) => () => void;
   abort: () => Promise<void> | void;
 };
 
@@ -83,7 +87,7 @@ type StaticMethodOptions<
   }
 >;
 
-type ClientMethodReturn<
+export type ClientMethodReturn<
   T extends (
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
@@ -101,7 +105,7 @@ type ClientMethodReturn<
       ? Promise<Awaited<R>>
       : StaticMethodReturnPromise<T>;
 
-type ClientMethod<
+export type ClientMethod<
   T extends ((
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
@@ -129,6 +133,38 @@ type ClientMethod<
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkSchema;
+  path: string;
+  queryKey: () => string[];
+  mutationKey: () => string[];
+  queryOptions<R>(
+    input?: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>,
+    opts?: Partial<Omit<UseQueryOptions<Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException>, 'queryFn'>>
+  ): UseQueryOptions<
+    Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U>
+      ? U[]
+      : Awaited<ClientMethodReturn<T, STREAM, R>>,
+    HttpException
+  >;
+  mutationOptions<R>(
+    opts?: Partial<
+      Omit<
+        UseMutationOptions<
+          Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U>
+            ? U[]
+            : Awaited<ClientMethodReturn<T, STREAM, R>>,
+          HttpException,
+          Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>
+        >,
+        'mutationFn'
+      >
+    >
+  ): UseMutationOptions<
+    Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U>
+      ? U[]
+      : Awaited<ClientMethodReturn<T, STREAM, R>>,
+    HttpException,
+    Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>
+  >;
   __types: T['__types'];
 };
 
@@ -177,18 +213,3 @@ export type VovkValidateOnClient = (
   validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>,
   fullSchema: VovkSchema
 ) => void | Promise<void>;
-
-// utils
-
-type IsEmptyObject<T> = T extends object
-  ? keyof T extends never
-    ? true // Empty object
-    : T extends Partial<T>
-      ? Partial<T> extends T
-        ? true // All properties are optional
-        : false
-      : false
-  : false;
-type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};

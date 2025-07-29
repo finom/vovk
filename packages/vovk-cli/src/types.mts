@@ -26,7 +26,6 @@ export interface GenerateOptions {
   openapiRootUrl?: string[];
   openapiMixinName?: string[];
   watch?: boolean | string;
-  forceTsStandalone?: boolean;
   composedFrom?: string[];
   composedOut?: string;
   composedOnly?: boolean;
@@ -39,15 +38,21 @@ export interface GenerateOptions {
   segmentedExcludeSegments?: string[];
 }
 
-export interface BundleOptions extends Partial<Omit<VovkStrictConfig['bundle'], 'requires'>> {
+export interface BundleOptions
+  extends Partial<
+    Pick<
+      VovkStrictConfig['bundle'],
+      'tsClientOutDir' | 'dontDeleteTsClientOutDirAfter' | 'includeSegments' | 'excludeSegments'
+    >
+  > {
   config?: string;
   schema?: string;
+  outDir?: string;
   openapiSpec?: string[];
   openapiGetModuleName?: string[];
   openapiGetMethodName?: string[];
   openapiRootUrl?: string[];
   openapiMixinName?: string[];
-  forceTsStandalone?: boolean;
 }
 
 export interface InitOptions {

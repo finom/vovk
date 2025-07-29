@@ -155,6 +155,7 @@ function withDto<
       return addDefinitions(applySchemaFixes(schema), schemas);
     },
     validate: async (data, dto, { type, status, i }) => {
+      data = data instanceof FormData ? Object.fromEntries(data.entries()) : data;
       const instance = plainToInstance(dto, data, options?.classTransformOptions);
       const errors: ValidationError[] = await validate(instance as object, options?.validatorOptions);
 

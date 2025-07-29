@@ -11,7 +11,7 @@ import {
 } from 'vovk';
 import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const HandleAllInput = {
   body: z.object({ hello: z.string() }),
@@ -319,6 +319,45 @@ export default class WithZodClientController {
       });
 
       return result;
+    },
+  });
+
+  @get.auto()
+  static handlePagination = withZod({
+    query: z.object({
+      page: z.string(),
+      limit: z.string(),
+    }),
+    output: z.object({
+      items: z.array(
+        z.object({
+          id: z.number(),
+          name: z.string(),
+        })
+      ),
+      hasNextPage: z.boolean(),
+      nextPage: z.number().optional(),
+    }),
+    handle: async (req) => {
+      const query = req.vovk.query();
+      const page = parseInt(query.page, 10) || 1;
+      const limit = parseInt(query.limit, 10) || 10;
+
+      // Generate dummy data
+      const items = Array.from({ length: limit }, (_, i) => ({
+        id: (page - 1) * limit + i + 1,
+        name: `Item ${(page - 1) * limit + i + 1}`,
+      }));
+
+      // For example purposes, let's say we have 50 items total
+      const totalItems = 50;
+      const hasNextPage = page * limit < totalItems;
+
+      return {
+        items,
+        hasNextPage,
+        nextPage: hasNextPage ? page + 1 : undefined,
+      };
     },
   });
 }

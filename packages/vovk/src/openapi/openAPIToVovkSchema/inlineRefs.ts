@@ -1,5 +1,5 @@
 import { OpenAPIObject } from 'openapi3-ts/oas31';
-import { KnownAny } from '../../types';
+import { KnownAny } from '../../types.js';
 
 /**
  * Resolves $ref references at the first level only (except for components/schemas references)

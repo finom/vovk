@@ -5,13 +5,19 @@ import type {
   KnownAny,
   HttpMethod,
   VovkSchema,
-} from '../types';
-import type { VovkClient, VovkClientFetcher, VovkDefaultFetcherOptions, VovkValidateOnClient } from './types';
+} from '../types.js';
+import type {
+  ClientMethod,
+  VovkClient,
+  VovkClientFetcher,
+  VovkDefaultFetcherOptions,
+  VovkValidateOnClient,
+} from './types.js';
 
-import { fetcher as defaultFetcher } from './fetcher';
-import { defaultHandler } from './defaultHandler';
-import { defaultStreamHandler } from './defaultStreamHandler';
-import serializeQuery from '../utils/serializeQuery';
+import { fetcher as defaultFetcher } from './fetcher.js';
+import { defaultHandler } from './defaultHandler.js';
+import { defaultStreamHandler } from './defaultStreamHandler.js';
+import serializeQuery from '../utils/serializeQuery.js';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -73,7 +79,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       return endpoint;
     };
 
-    const handler = async (
+    const handler = (async (
       input: {
         body?: unknown;
         query?: { [key: string]: string };
@@ -126,7 +132,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       const [respData, resp] = await fetcher(internalOptions, internalInput);
 
       return input.transform ? input.transform(respData, resp) : respData;
-    };
+    }) as ClientMethod<KnownAny, KnownAny, KnownAny>;
 
     handler.schema = handlerSchema;
     handler.controllerSchema = controllerSchema;
@@ -134,6 +140,58 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
     handler.fullSchema = schema;
     handler.isRPC = true;
     handler.path = [segmentNamePath, controllerPrefix, path].filter(Boolean).join('/');
+
+    // React Query integration
+    handler.queryKey = () => [
+      handler.segmentSchema.segmentName,
+      handler.controllerSchema.prefix ?? '',
+      handler.controllerSchema.rpcModuleName,
+      handler.schema.path,
+      handler.schema.httpMethod,
+    ];
+    handler.mutationKey = handler.queryKey;
+
+    handler.queryOptions = ((input, opts) => {
+      const queryKey = handler.queryKey();
+      return {
+        queryFn: async ({ client }) => {
+          const result = await handler(input);
+          if (Symbol.asyncIterator in result) {
+            void (async () => {
+              for await (const chunk of result) {
+                client.setQueryData(queryKey, (data: unknown[]) => [...data, chunk]);
+              }
+            })();
+
+            return [];
+          }
+
+          return result;
+        },
+        queryKey,
+        ...opts,
+      };
+    }) as ClientMethod<KnownAny, KnownAny, KnownAny>['queryOptions'];
+
+    handler.mutationOptions = ((opts) => {
+      return {
+        mutationFn: async (input) => {
+          const result = await handler(input);
+          if (Symbol.asyncIterator in result) {
+            const chunks: unknown[] = [];
+            void (async () => {
+              for await (const chunk of result) {
+                chunks.push(chunk);
+              }
+            })();
+          }
+
+          return result;
+        },
+        mutationKey: handler.mutationKey(),
+        ...opts,
+      };
+    }) as ClientMethod<KnownAny, KnownAny, KnownAny>['mutationOptions'];
 
     // @ts-expect-error TODO
     client[staticMethodName] = handler;

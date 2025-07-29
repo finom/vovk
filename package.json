@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "type": "module",
-  "packageManager": "npm@11.4.2",
+  "packageManager": "npm@11.5.1",
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "scripts": {
     "ncu": "turbo run ncu --dangerously-disable-package-manager-check && npm run --prefix test ncu && npm-check-updates -u && npm i --legacy-peer-deps",
@@ -40,7 +40,7 @@
     "BREAKING-beta-major": "NPM_TAG=beta VERSION_TYPE=\"premajor --preid=beta\" npm run vpub",
     "draft": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub",
     "draft-notest": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub-notest",
-    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-init vovk-client vovk-react-query vovk-ajv vovk-zod vovk-yup vovk-dto vovk-python vovk-rust; do PACKAGE=$PACKAGE npm run draft-notest; done",
+    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-init vovk-client vovk-ajv vovk-zod vovk-yup vovk-dto vovk-python vovk-rust; do PACKAGE=$PACKAGE npm run draft-notest; done",
     "draft-patch": "NPM_TAG=draft VERSION_TYPE=\"prepatch --preid=draft\" npm run vpub",
     "draft-minor": "NPM_TAG=draft VERSION_TYPE=\"preminor --preid=draft\" npm run vpub"
   },
@@ -70,26 +70,26 @@
   "homepage": "https://github.com/finom/vovk#readme",
   "devDependencies": {
     "@eslint/compat": "^1.3.1",
-    "@testing-library/dom": "^10.4.0",
+    "@testing-library/dom": "^10.4.1",
     "@types/lodash": "^4.17.20",
-    "@types/node": "^24.0.13",
+    "@types/node": "^24.1.0",
     "@types/supertest": "^6.0.3",
     "concurrently": "^9.2.0",
-    "cross-env": "^7.0.3",
-    "eslint": "^9.30.1",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.5.1",
+    "cross-env": "^10.0.0",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
     "glob": "^11.0.3",
     "lodash": "^4.17.21",
-    "npm-check-updates": "^18.0.1",
+    "npm-check-updates": "^18.0.2",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.6.2",
-    "puppeteer": "^24.12.1",
+    "puppeteer": "^24.15.0",
     "shx": "^0.4.0",
-    "supertest": "^7.1.3",
+    "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
-    "turbo": "^2.5.4",
+    "turbo": "^2.5.5",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.38.0"
   }
 }

@@ -1,4 +1,4 @@
-import type { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server.js';
 import {
   HttpMethod,
   HttpStatus,
@@ -8,13 +8,12 @@ import {
   type DecoratorOptions,
   type KnownAny,
   type VovkRequest,
-} from './types';
-import { HttpException } from './HttpException';
-import { JSONLinesResponse } from './JSONLinesResponse';
-import reqQuery from './utils/reqQuery';
-import reqMeta from './utils/reqMeta';
-import reqForm from './utils/reqForm';
-import { headers } from 'next/headers';
+} from './types.js';
+import { HttpException } from './HttpException.js';
+import { JSONLinesResponse } from './JSONLinesResponse.js';
+import reqQuery from './utils/reqQuery.js';
+import reqMeta from './utils/reqMeta.js';
+import reqForm from './utils/reqForm.js';
 
 export class VovkApp {
   private static getHeadersFromOptions(options?: DecoratorOptions) {
@@ -172,11 +171,10 @@ export class VovkApp {
     const controllers = this.routes[httpMethod];
     const path = params[Object.keys(params)[0]];
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
-    const headersList = await headers();
-    const xMeta = headersList.get('x-meta');
-    const meta: Record<string, KnownAny> = xMeta && JSON.parse(xMeta);
+    const xMeta = nextReq.headers.get('x-meta');
+    const xMetaHeader: Record<string, KnownAny> = xMeta && JSON.parse(xMeta);
 
-    if (meta) reqMeta(req, { clientMetaHeader: meta });
+    if (xMetaHeader) reqMeta(req, { xMetaHeader });
     controllers.forEach((staticMethods, controller) => {
       const prefix = controller._prefix ?? '';
 

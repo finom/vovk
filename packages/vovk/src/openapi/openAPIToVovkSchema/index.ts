@@ -13,11 +13,11 @@ import {
   type VovkSchema,
   VovkSchemaIdEnum,
   VovkStrictConfig,
-} from '../../types';
-import { generateFnName } from '../generateFnName';
-import { camelCase } from '../../utils/camelCase';
-import { applyComponentsSchemas } from './applyComponentsSchemas';
-import { inlineRefs } from './inlineRefs';
+} from '../../types.js';
+import { generateFnName } from '../generateFnName.js';
+import { camelCase } from '../../utils/camelCase.js';
+import { applyComponentsSchemas } from './applyComponentsSchemas.js';
+import { inlineRefs } from './inlineRefs.js';
 
 const getNamesNestJS = (operationObject: OperationObject): [string, string] => {
   const operationId = operationObject.operationId;
@@ -103,7 +103,17 @@ export function openAPIToVovkSchema({
         controllers: {},
         meta: {
           components: openAPIObject.components,
-          package: packageJson,
+          package: Object.assign(
+            {},
+            packageJson,
+            openAPIObject.info
+              ? {
+                  description:
+                    packageJson?.description ??
+                    `**${openAPIObject.info.title}**\n${openAPIObject.info.description ?? ''}`,
+                }
+              : {}
+          ),
         },
       },
     },
