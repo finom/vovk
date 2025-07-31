@@ -118,13 +118,17 @@ const cliOptionsToOpenAPIMixins = ({
   openapiGetModuleName,
   openapiRootUrl,
   openapiSpec,
+  openapiFallback,
   openapiMixinName,
 }: GenerateOptions): NonNullable<VovkConfig['openApiMixins']> => {
   return Object.fromEntries(
     (
       openapiSpec?.map((spec, i) => {
         return {
-          source: spec.startsWith('http://') || spec.startsWith('https://') ? { url: spec } : { file: spec },
+          source:
+            spec.startsWith('http://') || spec.startsWith('https://')
+              ? { url: spec, fallback: openapiFallback?.[i] }
+              : { file: spec },
           apiRoot: openapiRootUrl?.[i] ?? '/',
           getModuleName: openapiGetModuleName?.[i] ?? undefined,
           getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',

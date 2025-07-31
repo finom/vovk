@@ -8,16 +8,16 @@ import type {
 import {
   GetOpenAPINameFn,
   HttpMethod,
-  SimpleJSONSchema,
+  VovkSimpleJSONSchema,
   VovkConfig,
   type VovkSchema,
   VovkSchemaIdEnum,
   VovkStrictConfig,
-} from '../../types.js';
-import { generateFnName } from '../generateFnName.js';
-import { camelCase } from '../../utils/camelCase.js';
-import { applyComponentsSchemas } from './applyComponentsSchemas.js';
-import { inlineRefs } from './inlineRefs.js';
+} from '../../types';
+import { generateFnName } from '../generateFnName';
+import { camelCase } from '../../utils/camelCase';
+import { applyComponentsSchemas } from './applyComponentsSchemas';
+import { inlineRefs } from './inlineRefs';
 
 const getNamesNestJS = (operationObject: OperationObject): [string, string] => {
   const operationId = operationObject.operationId;
@@ -146,17 +146,17 @@ export function openAPIToVovkSchema({
         const parameters = inlineRefs<ParameterObject[]>(operation.parameters ?? [], openAPIObject);
         const queryProperties = parameters.filter((p) => p.in === 'query') ?? null;
         const pathProperties = parameters.filter((p) => p.in === 'path') ?? null;
-        const query: SimpleJSONSchema | null = queryProperties?.length
+        const query: VovkSimpleJSONSchema | null = queryProperties?.length
           ? {
               type: 'object',
-              properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema as SimpleJSONSchema])),
+              properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema as VovkSimpleJSONSchema])),
               required: queryProperties.filter((p) => p.required).map((p) => p.name),
             }
           : null;
-        const params: SimpleJSONSchema | null = pathProperties?.length
+        const params: VovkSimpleJSONSchema | null = pathProperties?.length
           ? {
               type: 'object',
-              properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema as SimpleJSONSchema])),
+              properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema as VovkSimpleJSONSchema])),
               required: pathProperties.filter((p) => p.required).map((p) => p.name),
             }
           : null;
@@ -182,13 +182,13 @@ export function openAPIToVovkSchema({
           });
         }
         const bodySchemas = [jsonBody, formDataBody, urlEncodedBody].filter(Boolean) as SchemaObject[];
-        const body: SimpleJSONSchema | null = !bodySchemas.length
+        const body: VovkSimpleJSONSchema | null = !bodySchemas.length
           ? null
           : bodySchemas.length === 1
-            ? (bodySchemas[0] as SimpleJSONSchema)
+            ? (bodySchemas[0] as VovkSimpleJSONSchema)
             : ({
                 anyOf: bodySchemas,
-              } as SimpleJSONSchema);
+              } as VovkSimpleJSONSchema);
         const output =
           operation.responses?.['200']?.content?.['application/json']?.schema ??
           operation.responses?.['201']?.content?.['application/json']?.schema ??

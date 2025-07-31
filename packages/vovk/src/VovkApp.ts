@@ -1,4 +1,4 @@
-import type { NextRequest } from 'next/server.js';
+import type { NextRequest } from 'next/server';
 import {
   HttpMethod,
   HttpStatus,
@@ -8,12 +8,12 @@ import {
   type DecoratorOptions,
   type KnownAny,
   type VovkRequest,
-} from './types.js';
-import { HttpException } from './HttpException.js';
-import { JSONLinesResponse } from './JSONLinesResponse.js';
-import reqQuery from './utils/reqQuery.js';
-import reqMeta from './utils/reqMeta.js';
-import reqForm from './utils/reqForm.js';
+} from './types';
+import { HttpException } from './HttpException';
+import { JSONLinesResponse } from './JSONLinesResponse';
+import reqQuery from './utils/reqQuery';
+import reqMeta from './utils/reqMeta';
+import reqForm from './utils/reqForm';
 
 export class VovkApp {
   private static getHeadersFromOptions(options?: DecoratorOptions) {

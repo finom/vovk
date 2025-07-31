@@ -1,4 +1,4 @@
-import { KnownAny, SimpleJSONSchema } from '../types.js';
+import { KnownAny, VovkSimpleJSONSchema } from '../types';
 
 interface SamplerOptions {
   comment?: '//' | '#';
@@ -96,7 +96,7 @@ function getSampleValue(schema: KnownAny, rootSchema: KnownAny): KnownAny {
 
 function formatWithDescriptions(
   value: KnownAny,
-  schema: SimpleJSONSchema,
+  schema: VovkSimpleJSONSchema,
   rootSchema: KnownAny,
   comment: string,
   stripQuotes: boolean,
@@ -119,7 +119,7 @@ function formatWithDescriptions(
     if (value.length === 0) return '[]';
 
     const items = value.map((item) => {
-      const itemSchema = schema.items || ({} as SimpleJSONSchema);
+      const itemSchema = schema.items || ({} as VovkSimpleJSONSchema);
       const formattedItem = formatWithDescriptions(item, itemSchema, rootSchema, comment, stripQuotes, indent + 2);
       return `${indentStr}  ${formattedItem}`;
     });
@@ -146,7 +146,7 @@ function formatWithDescriptions(
     }
 
     entries.forEach(([key, val], index) => {
-      const propSchema = schema.properties?.[key] || {};
+      const propSchema = schema.properties?.[key] ?? ({} as VovkSimpleJSONSchema);
 
       // Handle $ref in property schema
       let resolvedPropSchema = propSchema;

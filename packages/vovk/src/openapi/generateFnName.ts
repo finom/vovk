@@ -1,4 +1,4 @@
-import { HttpMethod } from '../types.js';
+import { HttpMethod } from '../types';
 
 export interface VerbMapEntry {
   noParams?: string;

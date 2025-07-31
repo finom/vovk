@@ -1,5 +1,4 @@
-import type { NextResponse } from 'next/server.js';
-import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
+import type { NextResponse } from 'next/server';
 import type {
   KnownAny,
   HttpMethod,
@@ -11,11 +10,10 @@ import type {
   VovkRequest,
   Prettify,
   IsEmptyObject,
-} from '../types.js';
-import type { JSONLinesResponse } from '../JSONLinesResponse.js';
-import type { defaultStreamHandler } from './defaultStreamHandler.js';
-import type { defaultHandler } from './defaultHandler.js';
-import { HttpException } from '../HttpException.js';
+} from '../types';
+import type { JSONLinesResponse } from '../JSONLinesResponse';
+import type { defaultStreamHandler } from './defaultStreamHandler';
+import type { defaultHandler } from './defaultHandler';
 
 type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
@@ -75,13 +73,13 @@ type StaticMethodOptions<
   T extends (
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>,
-  OPTS extends Record<string, KnownAny>,
-  STREAM,
+  ) => void | object | JSONLinesResponse<TStreamIteration> | Promise<JSONLinesResponse<TStreamIteration>>,
+  TFetcherOptions extends Record<string, KnownAny>,
+  TStreamIteration,
   R,
   F extends VovkDefaultFetcherOptions<KnownAny>,
 > = Partial<
-  OPTS & {
+  TFetcherOptions & {
     transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>, resp: Response) => R;
     fetcher: VovkClientFetcher<F>;
   }
@@ -91,8 +89,8 @@ export type ClientMethodReturn<
   T extends (
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>,
-  STREAM,
+  ) => void | object | JSONLinesResponse<TStreamIteration> | Promise<JSONLinesResponse<TStreamIteration>>,
+  TStreamIteration,
   R,
 > =
   ReturnType<T> extends
@@ -109,7 +107,7 @@ export type ClientMethod<
   T extends ((
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponse<STREAM> | Promise<JSONLinesResponse<STREAM>>) & {
+  ) => void | object | JSONLinesResponse<TStreamIteration> | Promise<JSONLinesResponse<TStreamIteration>>) & {
     __types?: {
       body: KnownAny;
       query: KnownAny;
@@ -119,52 +117,22 @@ export type ClientMethod<
       isForm: boolean;
     };
   },
-  OPTS extends Record<string, KnownAny>,
-  STREAM extends KnownAny = unknown,
+  TFetcherOptions extends Record<string, KnownAny>,
+  TStreamIteration extends KnownAny = unknown,
 > = (IsEmptyObject<StaticMethodInput<T>> extends true
-  ? <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(
-      options?: Prettify<StaticMethodOptions<T, OPTS, STREAM, R, F>>
-    ) => ClientMethodReturn<T, STREAM, R>
-  : <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(
-      options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, F>>
-    ) => ClientMethodReturn<T, STREAM, R>) & {
+  ? <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<TFetcherOptions>>(
+      options?: Prettify<StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
+    ) => ClientMethodReturn<T, TStreamIteration, R>
+  : <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<TFetcherOptions>>(
+      options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
+    ) => ClientMethodReturn<T, TStreamIteration, R>) & {
   isRPC: true;
   schema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkSchema;
   path: string;
-  queryKey: () => string[];
-  mutationKey: () => string[];
-  queryOptions<R>(
-    input?: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>,
-    opts?: Partial<Omit<UseQueryOptions<Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException>, 'queryFn'>>
-  ): UseQueryOptions<
-    Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U>
-      ? U[]
-      : Awaited<ClientMethodReturn<T, STREAM, R>>,
-    HttpException
-  >;
-  mutationOptions<R>(
-    opts?: Partial<
-      Omit<
-        UseMutationOptions<
-          Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U>
-            ? U[]
-            : Awaited<ClientMethodReturn<T, STREAM, R>>,
-          HttpException,
-          Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>
-        >,
-        'mutationFn'
-      >
-    >
-  ): UseMutationOptions<
-    Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U>
-      ? U[]
-      : Awaited<ClientMethodReturn<T, STREAM, R>>,
-    HttpException,
-    Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>
-  >;
+  queryKey: (key?: unknown[]) => unknown[];
   __types: T['__types'];
 };
 
@@ -172,44 +140,50 @@ type OmitNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];
 };
 
-type VovkClientWithNever<T, OPTS extends { [key: string]: KnownAny }> = {
-  [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], OPTS> : never;
+type VovkClientWithNever<T, TFetcherOptions extends { [key: string]: KnownAny }> = {
+  [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], TFetcherOptions> : never;
 };
 
-export type VovkClient<T, OPTS extends { [key: string]: KnownAny }> = OmitNever<VovkClientWithNever<T, OPTS>>;
+export type VovkClient<T, TFetcherOptions extends { [key: string]: KnownAny }> = OmitNever<
+  VovkClientWithNever<T, TFetcherOptions>
+>;
 
-export type VovkClientFetcher<OPTS> = (
+export type VovkClientFetcher<TFetcherOptions> = (
   options: {
     name: string;
     httpMethod: HttpMethod;
-    getEndpoint: (data: {
-      apiRoot: string | undefined;
-      params: { [key: string]: string };
-      query: { [key: string]: string };
-    }) => string;
-    validate: (input: { body?: unknown; query?: unknown; params?: unknown; endpoint: string }) => void | Promise<void>;
+    getEndpoint: (data: { apiRoot: string | undefined; params: unknown; query: unknown }) => string;
+    validate: (
+      inputOptions: {
+        body?: unknown;
+        query?: unknown;
+        params?: unknown;
+        meta?: unknown;
+      } & TFetcherOptions,
+      meta: { endpoint: string }
+    ) => void | Promise<void>;
     defaultStreamHandler: typeof defaultStreamHandler;
     defaultHandler: typeof defaultHandler;
     schema: VovkHandlerSchema;
   },
   input: {
-    body: unknown;
-    query: { [key: string]: string };
-    params: { [key: string]: string };
-    meta?: { [key: string]: KnownAny };
-  } & OPTS
+    body?: unknown;
+    query?: unknown;
+    params?: unknown;
+    meta?: unknown;
+  } & TFetcherOptions
 ) => Promise<[KnownAny, Response]>;
 
 export type VovkDefaultFetcherOptions<T> = T & {
   apiRoot?: string;
   disableClientValidation?: boolean;
-  validateOnClient?: VovkValidateOnClient;
+  validateOnClient?: VovkValidateOnClient<T>;
   interpretAs?: string;
   init?: RequestInit;
 };
 
-export type VovkValidateOnClient = (
-  input: { body?: unknown; query?: unknown; params?: unknown; endpoint: string },
+export type VovkValidateOnClient<TFetcherOptions> = (
+  input: { body?: unknown; query?: unknown; params?: unknown; meta?: unknown } & TFetcherOptions,
   validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>,
-  fullSchema: VovkSchema
-) => void | Promise<void>;
+  meta: { fullSchema: VovkSchema; endpoint: string }
+) => KnownAny | Promise<KnownAny>;

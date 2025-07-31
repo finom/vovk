@@ -90,11 +90,11 @@ program
   .command('generate')
   .alias('g')
   .description('generate RPC client from schema')
+  .option('--composed-only', 'generate only composed client even if segmented client is enabled')
   .option('--out, --composed-out <path>', 'path to output directory for composed client')
   .option('--from, --composed-from <templates...>', 'client template names for composed client')
   .option('--include, --composed-include-segments <segments...>', 'include segments in composed client')
   .option('--exclude, --composed-exclude-segments <segments...>', 'exclude segments in composed client')
-  .option('--composed-only', 'generate only composed client even if segmented client is enabled')
   .option('--segmented-only', 'generate only segmented client even if composed client is enabled')
   .option('--segmented-out <path>', 'path to output directory for segmented client')
   .option('--segmented-from <templates...>', 'client template names for segmented client')
@@ -111,10 +111,12 @@ program
     '--watch <s>',
     'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URL'
   )
-  .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema instead of Vovk schema')
+  .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema for client generation')
   .option('--openapi-get-module-name <names...>', 'module names corresponding to the index of --openapi option')
   .option('--openapi-get-method-name <names...>', 'method names corresponding to the index of --openapi option')
   .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
+  .option('--openapi-mixin-name <names...>', 'mixin names corresponding to the index of --openapi option')
+  .option('--openapi-fallback <paths...>', 'save OpenAPI spec and use it as a fallback if URL is not available')
   .action(async (cliGenerateOptions: GenerateOptions) => {
     const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.configPath, srcRootRequired: false });
     await new VovkGenerate({

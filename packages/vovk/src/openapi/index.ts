@@ -1,9 +1,9 @@
 import type { OperationObject } from 'openapi3-ts/oas31';
-import { vovkSchemaToOpenAPI } from './vovkSchemaToOpenAPI.js';
-import { openAPIToVovkSchema } from './openAPIToVovkSchema/index.js';
-import { error } from './error.js';
-import { createDecorator } from '../utils/createDecorator.js';
-import type { KnownAny } from '../types.js';
+import { vovkSchemaToOpenAPI } from './vovkSchemaToOpenAPI';
+import { openAPIToVovkSchema } from './openAPIToVovkSchema/index';
+import { error } from './error';
+import { createDecorator } from '../utils/createDecorator';
+import type { KnownAny } from '../types';
 
 type OperationObjectWithCustomProperties = OperationObject & {
   [key in `${'x' | 'X'}-${string}`]: KnownAny;

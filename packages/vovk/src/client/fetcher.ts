@@ -1,12 +1,13 @@
-import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types.js';
-import { HttpStatus, KnownAny } from '../types.js';
-import { HttpException } from '../HttpException.js';
+import type { VovkDefaultFetcherOptions, VovkClientFetcher } from './types';
+import { HttpStatus, KnownAny } from '../types';
+import { HttpException } from '../HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
+  onSuccess,
   onError,
 }: {
   prepareRequestInit?: (init: RequestInit, options: VovkDefaultFetcherOptions<T>) => RequestInit | Promise<RequestInit>;
@@ -16,6 +17,12 @@ export function createFetcher<T>({
     response: Response,
     init: RequestInit
   ) => unknown | Promise<unknown>;
+  onSuccess?: (
+    respData: KnownAny,
+    options: VovkDefaultFetcherOptions<T>,
+    response: Response,
+    init: RequestInit
+  ) => void | Promise<void>;
   onError?: (
     error: HttpException,
     options: VovkDefaultFetcherOptions<T>,
@@ -28,14 +35,14 @@ export function createFetcher<T>({
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
   const newFetcher: VovkClientFetcher<VovkDefaultFetcherOptions<T>> = async (
     { httpMethod, getEndpoint, validate, defaultHandler, defaultStreamHandler, schema },
-    options
+    inputOptions
   ) => {
     let response: Response | null = null;
     let respData: unknown | null = null;
     let requestInit: RequestInit | null = null;
 
     try {
-      const { params, query, body, meta, apiRoot, disableClientValidation, init, interpretAs } = options;
+      const { params, query, body, meta, apiRoot, disableClientValidation, init, interpretAs } = inputOptions;
       const endpoint = getEndpoint({ apiRoot, params, query });
       const unusedParams = Array.from(
         new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname.matchAll(/\{([^}]+)\}/g)
@@ -52,7 +59,7 @@ export function createFetcher<T>({
 
       if (!disableClientValidation) {
         try {
-          await validate({ body, query, params, endpoint });
+          await validate(inputOptions, { endpoint });
         } catch (e) {
           // if HttpException is thrown, rethrow it
           if (e instanceof HttpException) throw e;
@@ -83,9 +90,7 @@ export function createFetcher<T>({
         requestInit.body = JSON.stringify(body);
       }
 
-      requestInit = prepareRequestInit
-        ? await prepareRequestInit(requestInit, options as unknown as VovkDefaultFetcherOptions<T>)
-        : requestInit;
+      requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
 
       const controller = new AbortController();
 
@@ -115,13 +120,13 @@ export function createFetcher<T>({
 
       respData = await respData;
 
-      respData = transformResponse
-        ? await transformResponse(respData, options as unknown as VovkDefaultFetcherOptions<T>, response, requestInit)
-        : respData;
+      respData = transformResponse ? await transformResponse(respData, inputOptions, response, requestInit) : respData;
+
+      await onSuccess?.(respData, inputOptions, response, requestInit);
 
       return [respData, response];
     } catch (error) {
-      await onError?.(error as HttpException, options, response, requestInit, respData);
+      await onError?.(error as HttpException, inputOptions, response, requestInit, respData);
 
       throw error;
     }

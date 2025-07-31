@@ -1,7 +1,6 @@
 {
   "name": "vovk",
-  "type": "module",
-  "version": "3.0.0-draft.339",
+  "version": "3.0.0-draft.346",
   "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "types": "./mjs/index.d.ts",
@@ -43,8 +42,7 @@
   "homepage": "https://vovk.dev",
   "peerDependencies": {
     "next": "*",
-    "openapi3-ts": "^4.4.0",
-    "@tanstack/react-query": "^5.83.0"
+    "openapi3-ts": "^4.4.0"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",

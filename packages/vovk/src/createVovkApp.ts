@@ -1,5 +1,5 @@
-import type { NextRequest } from 'next/server.js';
-import { VovkApp as VovkApp } from './VovkApp.js';
+import type { NextRequest } from 'next/server';
+import { VovkApp as VovkApp } from './VovkApp';
 import {
   HttpMethod,
   type KnownAny,
@@ -9,8 +9,8 @@ import {
   type VovkRequest,
   type StaticClass,
   type VovkHandlerSchema,
-} from './types.js';
-import getSchema from './utils/getSchema.js';
+} from './types';
+import getSchema from './utils/getSchema';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());

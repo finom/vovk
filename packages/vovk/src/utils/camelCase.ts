@@ -1,4 +1,4 @@
-import type { KnownAny } from '../types.js';
+import type { KnownAny } from '../types';
 
 // Convert any value to string
 function toString(value: KnownAny) {

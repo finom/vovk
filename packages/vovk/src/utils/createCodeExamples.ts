@@ -1,5 +1,5 @@
-import type { SimpleJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types.js';
-import { getJSONSchemaExample } from './getJSONSchemaExample.js';
+import type { VovkSimpleJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
+import { getJSONSchemaExample } from './getJSONSchemaExample';
 
 const toSnakeCase = (str: string) =>
   str
@@ -29,16 +29,16 @@ export function createCodeExamples({
   controllerSchema: VovkControllerSchema;
   package?: CodeSamplePackageJson;
 }) {
-  const queryValidation = handlerSchema?.validation?.query as SimpleJSONSchema | undefined;
-  const bodyValidation = handlerSchema?.validation?.body as SimpleJSONSchema | undefined;
-  const paramsValidation = handlerSchema?.validation?.params as SimpleJSONSchema | undefined;
-  const outputValidation = handlerSchema?.validation?.output as SimpleJSONSchema | undefined;
-  const iterationValidation = handlerSchema?.validation?.iteration as SimpleJSONSchema | undefined;
-  const getTsSample = (schema: SimpleJSONSchema, indent?: number) =>
+  const queryValidation = handlerSchema?.validation?.query as VovkSimpleJSONSchema | undefined;
+  const bodyValidation = handlerSchema?.validation?.body as VovkSimpleJSONSchema | undefined;
+  const paramsValidation = handlerSchema?.validation?.params as VovkSimpleJSONSchema | undefined;
+  const outputValidation = handlerSchema?.validation?.output as VovkSimpleJSONSchema | undefined;
+  const iterationValidation = handlerSchema?.validation?.iteration as VovkSimpleJSONSchema | undefined;
+  const getTsSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
-  const getPySample = (schema: SimpleJSONSchema, indent?: number) =>
+  const getPySample = (schema: VovkSimpleJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4, comment: '#' });
-  const getRsSample = (schema: SimpleJSONSchema, indent?: number) =>
+  const getRsSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation;
   const rpcName = controllerSchema.rpcModuleName;

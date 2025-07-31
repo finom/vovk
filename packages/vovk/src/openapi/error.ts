@@ -1,5 +1,5 @@
-import { HttpStatus, type VovkHandlerSchema } from '../types.js';
-import { createDecorator } from '../utils/createDecorator.js';
+import { HttpStatus, type VovkHandlerSchema } from '../types';
+import { createDecorator } from '../utils/createDecorator';
 
 const statusDisplayText = {
   [HttpStatus.NULL]: 'Error',

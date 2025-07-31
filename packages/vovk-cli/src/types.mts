@@ -25,6 +25,7 @@ export interface GenerateOptions {
   openapiGetMethodName?: string[];
   openapiRootUrl?: string[];
   openapiMixinName?: string[];
+  openapiFallback?: string[];
   watch?: boolean | string;
   composedFrom?: string[];
   composedOut?: string;

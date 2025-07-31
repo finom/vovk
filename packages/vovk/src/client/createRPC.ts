@@ -5,19 +5,19 @@ import type {
   KnownAny,
   HttpMethod,
   VovkSchema,
-} from '../types.js';
+} from '../types';
 import type {
   ClientMethod,
   VovkClient,
   VovkClientFetcher,
   VovkDefaultFetcherOptions,
   VovkValidateOnClient,
-} from './types.js';
+} from './types';
 
-import { fetcher as defaultFetcher } from './fetcher.js';
-import { defaultHandler } from './defaultHandler.js';
-import { defaultStreamHandler } from './defaultStreamHandler.js';
-import serializeQuery from '../utils/serializeQuery.js';
+import { fetcher as defaultFetcher } from './fetcher';
+import { defaultHandler } from './defaultHandler';
+import { defaultStreamHandler } from './defaultStreamHandler';
+import serializeQuery from '../utils/serializeQuery';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -38,9 +38,10 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   schema: VovkSchema,
   segmentName: string,
   rpcModuleName: string,
-  fetcher: VovkClientFetcher<OPTS> = defaultFetcher,
+  fetcher?: VovkClientFetcher<OPTS>,
   options?: VovkDefaultFetcherOptions<OPTS>
 ): VovkClient<T, OPTS> => {
+  fetcher ??= defaultFetcher as NonNullable<typeof fetcher>;
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];
   if (!segmentSchema)
@@ -56,15 +57,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
-    const getEndpoint = ({
-      apiRoot,
-      params,
-      query,
-    }: {
-      apiRoot?: string;
-      params: { [key: string]: string };
-      query: { [key: string]: string };
-    }) => {
+    const getEndpoint = ({ apiRoot, params, query }: { apiRoot?: string; params: unknown; query: unknown }) => {
       const forceApiRoot = controllerSchema.forceApiRoot ?? segmentSchema.forceApiRoot;
       apiRoot = apiRoot ?? forceApiRoot ?? options?.apiRoot ?? '/api';
       const endpoint = [
@@ -82,30 +75,27 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
     const handler = (async (
       input: {
         body?: unknown;
-        query?: { [key: string]: string };
-        params?: { [key: string]: string };
-        meta?: { [key: string]: KnownAny };
-        validateOnClient?: VovkValidateOnClient;
+        query?: unknown;
+        params?: unknown;
+        meta?: unknown;
+        validateOnClient?: VovkValidateOnClient<OPTS>;
         transform?: (respData: unknown, resp: Response) => unknown;
       } & OPTS = {} as OPTS
     ) => {
-      const validate = async ({
-        body,
-        query,
-        params,
-        endpoint,
-      }: {
-        body?: unknown;
-        query?: unknown;
-        params?: unknown;
-        endpoint: string;
-      }) => {
+      const validate: Parameters<typeof fetcher>[0]['validate'] = async (
+        validationInput,
+        {
+          endpoint,
+        }: {
+          endpoint: string;
+        }
+      ) => {
         const validateOnClient = input.validateOnClient ?? options?.validateOnClient;
         if (validateOnClient && validation) {
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');
           }
-          await validateOnClient({ body, query, params, endpoint }, validation, schema);
+          await validateOnClient({ ...validationInput }, validation, { fullSchema: schema, endpoint });
         }
       };
 
@@ -124,7 +114,6 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         body: input.body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
-        meta: input.meta,
       };
 
       if (!fetcher) throw new Error('Fetcher is not provided');
@@ -134,64 +123,21 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       return input.transform ? input.transform(respData, resp) : respData;
     }) as ClientMethod<KnownAny, KnownAny, KnownAny>;
 
+    // TODO use Object.freeze, Object.seal or Object.defineProperty to avoid mutation
     handler.schema = handlerSchema;
     handler.controllerSchema = controllerSchema;
     handler.segmentSchema = segmentSchema;
     handler.fullSchema = schema;
     handler.isRPC = true;
     handler.path = [segmentNamePath, controllerPrefix, path].filter(Boolean).join('/');
-
-    // React Query integration
-    handler.queryKey = () => [
+    handler.queryKey = (key?: unknown[]) => [
       handler.segmentSchema.segmentName,
       handler.controllerSchema.prefix ?? '',
       handler.controllerSchema.rpcModuleName,
       handler.schema.path,
       handler.schema.httpMethod,
+      ...(key ?? []),
     ];
-    handler.mutationKey = handler.queryKey;
-
-    handler.queryOptions = ((input, opts) => {
-      const queryKey = handler.queryKey();
-      return {
-        queryFn: async ({ client }) => {
-          const result = await handler(input);
-          if (Symbol.asyncIterator in result) {
-            void (async () => {
-              for await (const chunk of result) {
-                client.setQueryData(queryKey, (data: unknown[]) => [...data, chunk]);
-              }
-            })();
-
-            return [];
-          }
-
-          return result;
-        },
-        queryKey,
-        ...opts,
-      };
-    }) as ClientMethod<KnownAny, KnownAny, KnownAny>['queryOptions'];
-
-    handler.mutationOptions = ((opts) => {
-      return {
-        mutationFn: async (input) => {
-          const result = await handler(input);
-          if (Symbol.asyncIterator in result) {
-            const chunks: unknown[] = [];
-            void (async () => {
-              for await (const chunk of result) {
-                chunks.push(chunk);
-              }
-            })();
-          }
-
-          return result;
-        },
-        mutationKey: handler.mutationKey(),
-        ...opts,
-      };
-    }) as ClientMethod<KnownAny, KnownAny, KnownAny>['mutationOptions'];
 
     // @ts-expect-error TODO
     client[staticMethodName] = handler;

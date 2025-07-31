@@ -1,5 +1,5 @@
-import type { KnownAny, StreamAbortMessage } from './types.js';
-import './utils/shim.js';
+import type { KnownAny, StreamAbortMessage } from './types';
+import './utils/shim';
 
 export class JSONLinesResponse<T> extends Response {
   public isClosed = false;

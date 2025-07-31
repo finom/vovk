@@ -1,29 +1,29 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
-import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples.js';
-import { HttpStatus, type SimpleJSONSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types.js';
-import { getJSONSchemaSample } from '../utils/getJSONSchemaSample.js';
+import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples';
+import { HttpStatus, type VovkSimpleJSONSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types';
+import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
 
 function extractComponents(
-  schema: SimpleJSONSchema | undefined
-): [SimpleJSONSchema | undefined, Record<string, SimpleJSONSchema>] {
+  schema: VovkSimpleJSONSchema | undefined
+): [VovkSimpleJSONSchema | undefined, Record<string, VovkSimpleJSONSchema>] {
   if (!schema) return [undefined, {}];
 
-  const components: Record<string, SimpleJSONSchema> = {};
+  const components: Record<string, VovkSimpleJSONSchema> = {};
 
   // Function to collect components and replace $refs recursively
-  const process = (obj: SimpleJSONSchema, path: string[] = []): SimpleJSONSchema | SimpleJSONSchema[] => {
+  const process = (obj: VovkSimpleJSONSchema, path: string[] = []): VovkSimpleJSONSchema | VovkSimpleJSONSchema[] => {
     if (!obj || typeof obj !== 'object') return obj;
 
     // Handle arrays
     if (Array.isArray(obj)) {
-      return (obj as SimpleJSONSchema[]).map((item) => process(item, path) as SimpleJSONSchema);
+      return (obj as VovkSimpleJSONSchema[]).map((item) => process(item, path) as VovkSimpleJSONSchema);
     }
 
     // Create a copy to modify
     const result: Record<string, KnownAny> = {};
 
     Object.entries({ ...obj.definitions, ...obj.$defs }).forEach(([key, value]) => {
-      components[key] = process(value, [...path, key]) as SimpleJSONSchema;
+      components[key] = process(value, [...path, key]) as VovkSimpleJSONSchema;
     });
 
     // Process all properties
@@ -39,14 +39,14 @@ function extractComponents(
         result[key] = `#/components/schemas/${refName}`;
       } else {
         // Recursively process other properties
-        result[key] = process(value as SimpleJSONSchema, [...path, key]);
+        result[key] = process(value as VovkSimpleJSONSchema, [...path, key]);
       }
     }
 
-    return result as SimpleJSONSchema;
+    return result as VovkSimpleJSONSchema;
   };
 
-  const processedSchema = process(schema) as SimpleJSONSchema;
+  const processedSchema = process(schema) as VovkSimpleJSONSchema;
 
   return [processedSchema, components];
 }
@@ -63,7 +63,7 @@ export function vovkSchemaToOpenAPI({
   package?: CodeSamplePackageJson;
 }): OpenAPIObject {
   const paths: PathsObject = {};
-  const components: Record<string, SimpleJSONSchema> = {};
+  const components: Record<string, VovkSimpleJSONSchema> = {};
 
   for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments ?? {})) {
     for (const c of Object.values(segmentSchema.controllers)) {

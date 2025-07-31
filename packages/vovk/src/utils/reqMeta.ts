@@ -1,4 +1,4 @@
-import type { KnownAny, VovkRequest } from '../types.js';
+import type { KnownAny, VovkRequest } from '../types';
 
 const metaMap = new WeakMap();
 

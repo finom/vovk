@@ -1,4 +1,4 @@
-import { KnownAny } from '../types.js';
+import { KnownAny } from '../types';
 
 export function getJSONSchemaSample(schema: KnownAny, rootSchema?: KnownAny): KnownAny {
   if (!schema || typeof schema !== 'object') return null;

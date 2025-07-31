@@ -1,4 +1,4 @@
-import { createVovkApp } from './createVovkApp.js';
+import { createVovkApp } from './createVovkApp';
 import {
   HttpStatus,
   HttpMethod,
@@ -23,7 +23,8 @@ import {
   type VovkValidationType,
   type VovkLLMTool,
   type VovkTypedMethod,
-} from './types.js';
+  type VovkSimpleJSONSchema,
+} from './types';
 import {
   type VovkClient,
   type VovkClientFetcher,
@@ -34,17 +35,18 @@ import {
   fetcher,
   createFetcher,
   progressive,
-} from './client/index.js';
-import { openapi, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi/index.js';
-import { HttpException } from './HttpException.js';
-import { createDecorator } from './utils/createDecorator.js';
-import { JSONLinesResponse } from './JSONLinesResponse.js';
-import { generateStaticAPI } from './utils/generateStaticAPI.js';
-import { withValidationLibrary } from './utils/withValidationLibrary.js';
-import { createStandardValidation } from './utils/createStandardValidation.js';
-import { multitenant } from './utils/multitenant.js';
-import { createLLMTools } from './utils/createLLMTools.js';
-import { createCodeExamples } from './utils/createCodeExamples.js';
+} from './client/index';
+import { openapi, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi/index';
+import { HttpException } from './HttpException';
+import { createDecorator } from './utils/createDecorator';
+import { JSONLinesResponse } from './JSONLinesResponse';
+import { generateStaticAPI } from './utils/generateStaticAPI';
+import { withValidationLibrary } from './utils/withValidationLibrary';
+import { createStandardValidation } from './utils/createStandardValidation';
+import { multitenant } from './utils/multitenant';
+import { createLLMTools } from './utils/createLLMTools';
+import { createCodeExamples } from './utils/createCodeExamples';
+import { createClientValidation } from './utils/createClientValidation';
 
 export {
   type KnownAny,
@@ -72,6 +74,7 @@ export {
   type VovkValidationType,
   type VovkLLMTool,
   type VovkTypedMethod,
+  type VovkSimpleJSONSchema,
   VovkSchemaIdEnum,
   JSONLinesResponse,
   HttpException,
@@ -88,6 +91,7 @@ export {
   multitenant,
   createLLMTools,
   createCodeExamples,
+  createClientValidation,
   progressive,
   openapi,
   openAPIToVovkSchema,

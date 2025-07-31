@@ -1,7 +1,7 @@
-import type { NextRequest } from 'next/server.js';
+import type { NextRequest } from 'next/server';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponse } from './JSONLinesResponse.js';
-import { VovkStreamAsyncIterable } from './client/types.js';
+import type { JSONLinesResponse } from './JSONLinesResponse';
+import { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
 import { build } from 'tsdown';
 
@@ -323,22 +323,23 @@ export interface VovkLLMTool {
   type: 'function';
 }
 
-export type SimpleJSONSchema = {
+export type VovkSimpleJSONSchema = {
+  $schema?: string;
   type: string;
   format?: string;
   $ref?: string;
-  items?: SimpleJSONSchema;
+  items?: VovkSimpleJSONSchema;
   description?: string;
-  properties: Record<string, SimpleJSONSchema>;
+  properties?: Record<string, VovkSimpleJSONSchema>;
   required?: string[];
   examples?: KnownAny[];
   // support both $defs and definitions
-  $defs?: Record<string, SimpleJSONSchema>;
-  definitions?: Record<string, SimpleJSONSchema>;
+  $defs?: Record<string, VovkSimpleJSONSchema>;
+  definitions?: Record<string, VovkSimpleJSONSchema>;
   additionalProperties?: boolean;
-  anyOf?: SimpleJSONSchema[];
-  oneOf?: SimpleJSONSchema[];
-  allOf?: SimpleJSONSchema[];
+  anyOf?: VovkSimpleJSONSchema[];
+  oneOf?: VovkSimpleJSONSchema[];
+  allOf?: VovkSimpleJSONSchema[];
   [key: `x-${string}`]: KnownAny;
 };
 

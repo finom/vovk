@@ -1,10 +1,10 @@
-export { createRPC } from './createRPC.js';
-export { fetcher, createFetcher } from './fetcher.js';
-export { progressive } from './progressive.js';
+export { createRPC } from './createRPC';
+export { fetcher, createFetcher } from './fetcher';
+export { progressive } from './progressive';
 export type {
   VovkClient,
   VovkClientFetcher,
   VovkDefaultFetcherOptions,
   VovkValidateOnClient,
   VovkStreamAsyncIterable,
-} from './types.js';
+} from './types';

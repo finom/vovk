@@ -1,4 +1,4 @@
-import type { KnownAny, VovkHandlerSchema, VovkLLMTool } from '../types.js';
+import type { KnownAny, VovkHandlerSchema, VovkLLMTool } from '../types';
 
 type Handler = ((...args: KnownAny[]) => KnownAny) & {
   fn?: (input: KnownAny) => KnownAny;
