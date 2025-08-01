@@ -161,7 +161,7 @@ export type VovkClientFetcher<TFetcherOptions> = (
         meta?: unknown;
       } & TFetcherOptions,
       meta: { endpoint: string }
-    ) => void | Promise<void>;
+    ) => KnownAny | Promise<KnownAny>;
     defaultStreamHandler: typeof defaultStreamHandler;
     defaultHandler: typeof defaultHandler;
     schema: VovkHandlerSchema;

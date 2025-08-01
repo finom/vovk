@@ -42,7 +42,8 @@ export function createFetcher<T>({
     let requestInit: RequestInit | null = null;
 
     try {
-      const { params, query, body, meta, apiRoot, disableClientValidation, init, interpretAs } = inputOptions;
+      const { meta, apiRoot, disableClientValidation, init, interpretAs } = inputOptions;
+      let { body, query, params } = inputOptions;
       const endpoint = getEndpoint({ apiRoot, params, query });
       const unusedParams = Array.from(
         new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname.matchAll(/\{([^}]+)\}/g)
@@ -59,7 +60,7 @@ export function createFetcher<T>({
 
       if (!disableClientValidation) {
         try {
-          await validate(inputOptions, { endpoint });
+          ({ body, query, params } = (await validate(inputOptions, { endpoint })) ?? { body, query, params });
         } catch (e) {
           // if HttpException is thrown, rethrow it
           if (e instanceof HttpException) throw e;

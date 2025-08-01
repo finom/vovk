@@ -20,7 +20,11 @@ export enum BuiltInTemplateName {
   mixins = 'mixins',
 
   // other languages (packages installed separately)
+  rsSrc = 'rsSrc',
+  rsPkg = 'rsPkg',
   rs = 'rs',
+  pySrc = 'pySrc',
+  pyPkg = 'pyPkg',
   py = 'py',
 }
 
@@ -62,22 +66,40 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.mixins]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.mixins}/`,
     },
+    [BuiltInTemplateName.rsSrc]: {
+      templatePath: `vovk-rust/client-templates/${BuiltInTemplateName.rsSrc}/`,
+      requires: {
+        [BuiltInTemplateName.schemaJson]: './',
+      },
+    },
+    [BuiltInTemplateName.rsPkg]: {
+      templatePath: `vovk-rust/client-templates/${BuiltInTemplateName.rsPkg}/`,
+    },
     [BuiltInTemplateName.rs]: {
-      templatePath: 'vovk-rust/template/',
       composedClient: {
         outDir: 'dist_rust',
       },
       requires: {
-        [BuiltInTemplateName.schemaJson]: './data/',
+        [BuiltInTemplateName.rsSrc]: './src/',
+        [BuiltInTemplateName.rsPkg]: './',
       },
     },
+    [BuiltInTemplateName.pySrc]: {
+      templatePath: `vovk-python/client-templates/${BuiltInTemplateName.pySrc}/`,
+      requires: {
+        [BuiltInTemplateName.schemaJson]: '.',
+      },
+    },
+    [BuiltInTemplateName.pyPkg]: {
+      templatePath: `vovk-python/client-templates/${BuiltInTemplateName.pyPkg}/`,
+    },
     [BuiltInTemplateName.py]: {
-      templatePath: 'vovk-python/template/',
       composedClient: {
         outDir: 'dist_python',
       },
       requires: {
-        [BuiltInTemplateName.schemaJson]: './src/[package_name]/',
+        [BuiltInTemplateName.pySrc]: './src/[package_name]/',
+        [BuiltInTemplateName.pyPkg]: './',
       },
     },
   };

@@ -46,7 +46,7 @@ import { createStandardValidation } from './utils/createStandardValidation';
 import { multitenant } from './utils/multitenant';
 import { createLLMTools } from './utils/createLLMTools';
 import { createCodeExamples } from './utils/createCodeExamples';
-import { createClientValidation } from './utils/createClientValidation';
+import { createValidateOnClient } from './utils/createValidateOnClient';
 
 export {
   type KnownAny,
@@ -91,7 +91,7 @@ export {
   multitenant,
   createLLMTools,
   createCodeExamples,
-  createClientValidation,
+  createValidateOnClient,
   progressive,
   openapi,
   openAPIToVovkSchema,

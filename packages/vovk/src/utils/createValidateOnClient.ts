@@ -1,7 +1,7 @@
 import type { VovkValidateOnClient } from '../client';
 import type { KnownAny, VovkSimpleJSONSchema } from '../types';
 
-export function createClientValidation<TFetcherOptions>({
+export function createValidateOnClient<TFetcherOptions>({
   validate,
 }: {
   validate: (

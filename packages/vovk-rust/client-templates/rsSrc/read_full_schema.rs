@@ -75,7 +75,7 @@ pub fn read_full_schema() -> Result<VovkSchema, Box<dyn std::error::Error>> {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
     
     // Build the full path to the data file
-    let json_path = Path::new(manifest_dir).join("data/schema.json");
+    let json_path = Path::new(manifest_dir).join("src/schema.json");
 
     // Open the file
     let file = File::open(&json_path)?;

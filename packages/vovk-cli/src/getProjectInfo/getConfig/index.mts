@@ -51,7 +51,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
       outDir: conf.segmentedClient?.outDir ?? path.join(srcRoot ?? '.', 'client'),
     },
     bundle: {
-      tsClientOutDir: conf.bundle?.tsClientOutDir ?? 'tmp_ts_rpc',
+      tsClientOutDir: conf.bundle?.tsClientOutDir ?? 'tmp_prebundle',
       dontDeleteTsClientOutDirAfter: conf.bundle?.dontDeleteTsClientOutDirAfter ?? false,
       requires: {
         [BuiltInTemplateName.readme]: '.',

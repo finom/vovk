@@ -95,8 +95,13 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');
           }
-          await validateOnClient({ ...validationInput }, validation, { fullSchema: schema, endpoint });
+          return (
+            (await validateOnClient({ ...validationInput }, validation, { fullSchema: schema, endpoint })) ??
+            validationInput
+          );
         }
+
+        return validationInput;
       };
 
       const internalOptions: Parameters<typeof fetcher>[0] = {
