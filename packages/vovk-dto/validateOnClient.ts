@@ -1,6 +1,6 @@
 import { validate } from 'class-validator';
 import type { ClassConstructor } from 'class-transformer';
-import { createClientValidation, HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
 
 const canValidate = (inputObject: unknown, validationSchema: unknown): inputObject is ClassConstructor<object> => {
   return (
@@ -14,7 +14,7 @@ const canValidate = (inputObject: unknown, validationSchema: unknown): inputObje
   );
 };
 
-export const validateOnClient = createClientValidation({
+export const validateOnClient = createValidateOnClient({
   validate: async (input, schema, meta) => {
     if (canValidate(input, schema)) {
       const errors = await validate(input, {

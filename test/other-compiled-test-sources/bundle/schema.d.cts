@@ -1,4 +1,4 @@
-//#region tmp_ts_rpc/schema.d.ts
+//#region tmp_prebundle/schema.d.ts
 declare const schema: {
   $schema: string;
   segments: {
@@ -324,6 +324,15 @@ declare const schema: {
                   };
                   required: string[];
                   additionalProperties: boolean;
+                };
+              };
+              httpMethod: string;
+              path: string;
+            };
+            handleBodyZod3: {
+              validation: {
+                body: {
+                  $schema: string;
                 };
               };
               httpMethod: string;
