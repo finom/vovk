@@ -1,25 +1,20 @@
-import { initVovk } from '../../../../../src';
-import trimControllers from '../../../controllers/TrimControllers';
-import InputController from '../../../controllers/InputController';
-import CustomDecoratorController from '../../../controllers/CustomDecoratorController';
-import AllDecoratorsController from '../../../controllers/AllDecoratorsController';
-import DuplicatedParameterController from '../../../controllers/DuplicatedParameterController';
-import ConflictingRoutesController from '../../../controllers/ConflictingRoutesController';
-import DesNotExistController from '../../../controllers/DesNotExistController';
-import ErrorController from '../../../controllers/ErrorController';
-import NextResponseController from '../../../controllers/NextResponseController';
-import HeadersController from '../../../controllers/HeadersController';
-import RedirectController from '../../../controllers/RedirectController';
-import MiscController from '../../../controllers/MiscController';
-import AutoDecoratorsController from '../../../controllers/AutoDecoratorsController';
-import ClientController from '../../../client/ClientController';
-import StreamingController from '../../../client/StreamingController';
-import MyWorker from '../../../worker/MyWorker';
-import MyInnerWorker from '../../../worker/MyInnerWorker';
-import StreamingGeneratorController from '../../../client/StreamingGeneratorController';
+import { initSegment } from 'vovk';
+import trimControllers from '../../../core/TrimControllers.ts';
+import InputController from '../../../core/InputController.ts';
+import CustomDecoratorController from '../../../core/CustomDecoratorController.ts';
+import AllDecoratorsController from '../../../core/AllDecoratorsController.ts';
+import DuplicatedParameterController from '../../../core/DuplicatedParameterController.ts';
+import ConflictingRoutesController from '../../../core/ConflictingRoutesController.ts';
+import DesNotExistController from '../../../core/DesNotExistController.ts';
+import ErrorController from '../../../core/ErrorController.ts';
+import NextResponseController from '../../../core/NextResponseController.ts';
+import HeadersController from '../../../core/HeadersController.ts';
+import RedirectController from '../../../core/RedirectController.ts';
+import AutoDecoratorsController from '../../../core/AutoDecoratorsController.ts';
+import StaticApiController from '../../../core/StaticApiController.ts';
 
-export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
-  emitMetadata: false,
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
+  emitSchema: false,
   controllers: {
     ...trimControllers,
     InputController,
@@ -32,26 +27,11 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initVovk({
     NextResponseController,
     HeadersController,
     RedirectController,
-    MiscController,
     AutoDecoratorsController,
-    ClientController,
-    StreamingController,
-    StreamingGeneratorController,
+    StaticApiController,
   },
   onError: (err, req) => {
     // eslint-disable-next-line no-console
-    console.log('onError', err.message, req.url);
+    console.log('\x1b[42m onError \x1b[0m', err.message, req.url);
   },
-});
-
-const controllers = { ClientController, StreamingController, StreamingGeneratorController };
-const workers = { MyWorker, MyInnerWorker };
-
-export type Controllers = typeof controllers;
-export type Workers = typeof workers;
-
-// generate metadata for client controller only
-initVovk({
-  controllers,
-  workers,
 });

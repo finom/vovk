@@ -1,0 +1,9 @@
+*.d.mts
+*.js
+*.d.cts
+*.d.ts
+*.cjs
+*.cts
+*.mjs
+
+!eslint.config.js

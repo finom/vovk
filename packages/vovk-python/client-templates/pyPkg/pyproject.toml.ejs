@@ -1,0 +1,96 @@
+<%- t.getFirstLineBanner('sh') %>
+<%
+const data = {
+  "build-system": {
+    requires: ["hatchling"],
+    "build-backend": "hatchling.build"
+  },
+  project: {
+    name: t.package.name.replace(/-/g, '_'),
+    version: t.package.version,
+    description: t.package.description,
+    "requires-python": ">=3.8",
+    license: { text: t.package.license || 'UNLICENSED' }
+  }
+};
+
+// Add keywords if they exist
+if (t.package.keywords && t.package.keywords.length) {
+  data.project.keywords = t.package.keywords;
+}
+
+// Build authors array
+data.project.authors = [];
+if (t.package.author) {
+  if (typeof t.package.author === 'string') {
+    data.project.authors.push({ name: t.package.author });
+  } else {
+    const author = { name: t.package.author.name };
+    if (t.package.author.email) author.email = t.package.author.email;
+    data.project.authors.push(author);
+  }
+}
+
+if (t.package.contributors && t.package.contributors.length) {
+  t.package.contributors.forEach(contributor => {
+    if (typeof contributor === 'string') {
+      data.project.authors.push({ name: contributor });
+    } else {
+      const contrib = { name: contributor.name };
+      if (contributor.email) contrib.email = contributor.email;
+      data.project.authors.push(contrib);
+    }
+  });
+}
+
+// Dependencies
+data.project.dependencies = [
+  "requests",
+  "jsonschema",
+  "rfc3987",
+  "urllib3==1.26.15"
+];
+
+data.project.readme = "README.md";
+
+// Optional dependencies
+data.project["optional-dependencies"] = {
+  dev: [
+    "types-requests",
+    "types-jsonschema",
+  ]
+};
+
+// URLs
+if (t.package.repository || t.package.homepage || t.package.bugs) {
+  data.project.urls = {};
+  
+  if (t.package.homepage) {
+    data.project.urls.Homepage = t.package.homepage;
+  }
+  
+  if (t.package.repository) {
+    data.project.urls.Source = typeof t.package.repository === 'string' 
+      ? t.package.repository 
+      : t.package.repository.url;
+  }
+  
+  if (t.package.bugs) {
+    data.project.urls.Issues = typeof t.package.bugs === 'string' 
+      ? t.package.bugs 
+      : t.package.bugs.url;
+  }
+}
+%>
+<%- t.TOML.stringify(data) %>
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true

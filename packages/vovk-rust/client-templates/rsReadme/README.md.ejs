@@ -1,0 +1,37 @@
+<%- t.getFirstLineBanner('html') %>
+# <%= t.package.name.replace(/-/g, '_') %> v<%= t.package.version %> ![Rust](https://img.shields.io/badge/Rust-lang-000000.svg?style=flat&logo=rust) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
+
+<%- t.package.description ? `> ${t.package.description}` : '' %>
+
+<%- t.package.license ? `License: **${t.package.license}**` : '' %>
+
+
+```bash
+# Install the package
+cargo install <%= t.package.name.replace(/-/g, '_') %>
+```
+
+<% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
+    Object.values(segment.controllers).forEach((controllerSchema) => { %>
+
+## mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %>
+        <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => { %>
+### <%= t._.snakeCase(controllerSchema.rpcModuleName) %>::<%= t._.snakeCase(handlerName) %>
+<%- handlerSchema.openapi?.summary ? `> ${handlerSchema.openapi.summary}` : '' %>
+
+<%- handlerSchema.openapi?.description ? `${handlerSchema.openapi.description}` : '' %>
+
+<% const forceApiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? controllerSchema.forceApiRoot; %>
+`<%= handlerSchema.httpMethod %> <%= [...(forceApiRoot ? [forceApiRoot] : [t.apiRoot, segmentName]), controllerSchema.prefix, handlerSchema.path].map((part, i) => i > 0 ? t._.trim(part, '/') : part).filter(Boolean).join('/') %>`
+
+```rust
+<%- t.createCodeExamples({
+    handlerSchema,
+    handlerName,
+    controllerSchema,
+    package: t.package,
+}).rs %>
+```
+        <% }) %>
+    <% }) %>
+<% }) %>

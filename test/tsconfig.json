@@ -1,23 +1,59 @@
 {
-  "extends": "../tsconfig.json",
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "webpack.config.mjs",
     ".next/types/**/*.ts",
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
+    "src/**/*.ts",
+    "other-compiled-test-sources/**/*.ts",
+    "packages/**/*.ts",
+    "vovk.config.cjs",
+    "next.config.mjs",
+    "postcss.config.cjs"
   ],
   "compilerOptions": {
     "noEmit": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
     "plugins": [
       {
         "name": "next"
       }
-    ]
-  }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      /* "vovk/*": ["../packages/vovk/*"],
+      "vovk-cli/*": ["../packages/vovk-cli/*"],
+      "vovk-validate-client-ajv/*": ["../packages/vovk-ajv/*"],
+      "vovk-python/*": ["../packages/vovk-python/*"], */
+      "next/*": [
+        "./node_modules/next/*"
+      ],
+      "react/*": ["../node_modules/react/*"],
+      "vovk/*": ["../node_modules/vovk/mjs/*"]
+    },
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    // "allowJs": true,
+    "skipLibCheck": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "strictPropertyInitialization": false,
+    "jsx": "preserve",
+    "allowJs": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

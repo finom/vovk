@@ -1,0 +1,67 @@
+---
+imports: ['vovk-python']
+---
+<% const vars = {
+    convertJSONSchemaToPythonType: t.imports['vovk-python'].convertJSONSchemaToPythonType,
+}; %>
+<%- t.getFirstLineBanner('sh') %>
+from __future__ import annotations
+from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator # type: ignore
+from .api_client import ApiClient, HttpException
+
+HttpException = HttpException
+
+client = ApiClient('<%= t.apiRoot %>')
+<% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
+    Object.values(segment.controllers).forEach((controllerSchema) => { 
+const { rpcModuleName } = controllerSchema; %> 
+class <%= rpcModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
+    const { validation, openapi, path, httpMethod } = handlerSchema;
+    const handlerNameOriginalCapitalized = handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1);
+    const handlerName = t._.snakeCase(handlerNameOriginal); %>
+    # <%= rpcModuleName %>.<%= handlerName %> <%= httpMethod %> `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
+<%- ([
+        vars.convertJSONSchemaToPythonType({ schema: validation?.body, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.query, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Query`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.params, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Params`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.output, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Output`, pad: 4 }),
+        vars.convertJSONSchemaToPythonType({ schema: validation?.iteration, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Iteration`, pad: 4 })
+    ]).filter(Boolean).join('\n') %>
+    @staticmethod
+    def <%= handlerName %>(
+<%= [
+            validation?.body ? `body: ${handlerNameOriginalCapitalized}Body,` : '', 
+            validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '', 
+            validation?.params ? `params: ${handlerNameOriginalCapitalized}Params,` : ''
+        ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
+        headers: Optional[Dict[str, str]] = None,
+        files: Optional[Dict[str, Any]] = None,
+        api_root: Optional[str] = None,
+        disable_client_validation: bool = False
+    ) -> <%= validation?.output ? `${handlerNameOriginalCapitalized}Output` : validation?.iteration ? `Generator[${handlerNameOriginalCapitalized}Iteration, None, None]` : 'Any' %>:
+        """ 
+<%- ([
+                openapi?.summary ?? 'No summary',
+                openapi?.description ? `Description: ${openapi.description}` : '',
+                validation?.body?.description ? `Body: ${validation?.body?.description}`: '',
+                validation?.query?.description ? `Query: ${validation?.query?.description}`: '',
+                validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
+            ]).filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
+        """
+        return client.request( # type: ignore
+            segment_name='<%= segmentName %>',
+            rpc_name='<%= rpcModuleName %>',
+            handler_name='<%= handlerNameOriginal %>',
+<%= [
+                validation?.body ? 'body=body,' : '', 
+                validation?.query ? 'query=query,' : '',
+                validation?.params ? 'params=params,' : ''
+            ].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n') %>
+            headers=headers,
+            files=files,
+            api_root=api_root,
+            disable_client_validation=disable_client_validation
+        )
+        <% }) %>
+    <% }) %>
+<% }) %>

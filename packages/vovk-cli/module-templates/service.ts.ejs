@@ -1,0 +1,28 @@
+<% const vars = {
+  rpcModuleName: t.TheThing + 'Controller',
+  ServiceName: t.TheThing + 'Service',
+}; %>
+---
+dir: <%= t.defaultDir %>
+fileName: <%= vars.ServiceName + '.ts' %>
+sourceName: <%= vars.ServiceName %>
+---
+
+import type { VovkBody, VovkQuery } from 'vovk';
+import type <%= vars.rpcModuleName %> from './<%= vars.rpcModuleName %><%= t.nodeNextResolutionExt.ts %>';
+
+export default class <%= vars.ServiceName %> {
+  static get<%= t.TheThings %> = (search: VovkQuery<typeof <%= vars.rpcModuleName %>.get<%= t.TheThings %>>['search']) => {
+    return { results: [], search };
+  };
+
+  static update<%= t.TheThing %> = (
+    id: string,
+    q: VovkQuery<typeof <%= vars.rpcModuleName %>.update<%= t.TheThing %>>['q'],
+    body: VovkBody<typeof <%= vars.rpcModuleName %>.update<%= t.TheThing %>>
+  ) => {
+    return { id, q, body };
+  };
+
+  // ...
+}

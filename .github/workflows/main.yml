@@ -1,35 +1,47 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - v3
   pull_request:
-    branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches:
+      - main
+      - v3
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   test:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'v')" # Skip if commit message starts with 'v'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node-version: [22, 23, 24]
+    runs-on: ${{ matrix.os }}
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          package_json_file: ./test/package.json # read "packageManager" configuration and find it empty
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip' # caching pip dependencies
+      - run: pip install -r ./packages/vovk-python/requirements.txt
+
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
+        with:
+          node-version: ${{ matrix.node-version }}
 
-      - name: Install deps
-        run: npm ci && npm --prefix test ci
-      
-      - name: Test
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm --prefix test ci
+
+      - name: Run tests
         run: npm t

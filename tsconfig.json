@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "strictPropertyInitialization": false, // for DTOs
     "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -12,9 +13,25 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "outDir": "dist",
-    "declaration": true
+    "noEmit": true,
+    "declaration": true,
+    "paths": {
+      "next/*": ["./test/node_modules/next/*"],
+    }
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/dist/**"],
+  "include": [
+    "packages/**/*.ts",
+    "packages/**/*.mts",
+    "scripts/*.ts",
+    "*.js",
+    "*.mjs",
+    "test/*.js",
+    "jest.config.mjs",
+    "test/vovk.config.cjs",
+    "test/next.config.mjs",
+    "test/postcss.config.cjs",
+    "packages/vovk-dto/index.cts",
+    "test/webpack.config.mjs"
+, "test/src/etc/useQuery.test.mts", "test/src/etc/useMutation.test.mts"  ]
 }

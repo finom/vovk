@@ -1,0 +1,52 @@
+{
+  "name": "vovk",
+  "version": "3.0.0-draft.350",
+  "main": "./cjs/index.js",
+  "module": "./mjs/index.js",
+  "types": "./mjs/index.d.ts",
+  "bin": {
+    "vovk-cli-npx": "./bin/index.mjs"
+  },
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js",
+      "types": "./mjs/index.d.ts"
+    }
+  },
+  "description": "RESTful RPC for Next.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finom/vovk.git"
+  },
+  "scripts": {
+    "postbuild": "shx chmod +x ./bin/index.mjs",
+    "build": "shx rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
+    "build:esm": "tsc --module NodeNext --outDir mjs --moduleResolution nodenext",
+    "build:cjs": "tsc --module commonjs --outDir cjs",
+    "rm-dist": "shx rm -rf mjs cjs",
+    "lint": "eslint . --fix",
+    "tsc": "tsc --noEmit",
+    "npm-publish": "if [ -z \"$NPM_TAG\" ]; then echo 'Error: NPM_TAG is not set'; exit 1; fi; npm publish --tag=$NPM_TAG",
+    "ncu": "npm-check-updates -u"
+  },
+  "keywords": [
+    "nextjs",
+    "router"
+  ],
+  "author": "Andrey Gubanov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/finom/vovk/issues"
+  },
+  "homepage": "https://vovk.dev",
+  "peerDependencies": {
+    "next": "*",
+    "openapi3-ts": "^4.4.0"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "^1.0.0",
+    "tsdown": "^0.13.0",
+    "type-fest": "*"
+  }
+}

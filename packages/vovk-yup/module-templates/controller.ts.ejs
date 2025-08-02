@@ -1,0 +1,67 @@
+<% const vars = { 
+  RpcModuleName: t.TheThing + 'Controller',
+  ServiceName: t.TheThing + 'Service',
+}; %>
+---
+dir: <%= t.defaultDir %>
+fileName: <%= vars.RpcModuleName + '.ts' %>
+sourceName: <%= vars.RpcModuleName %>
+compiledName: <%= t.TheThing + 'RPC' %>
+---
+
+import { prefix, get, put, post, del, openapi } from 'vovk';
+import { withYup } from 'vovk-yup';
+import * as yup from 'yup';
+<% if(t.withService) { %>
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
+<% } %>
+
+@prefix('<%= t['the-things'] %>')
+export default class <%= vars.RpcModuleName %> {
+    @openapi({
+      summary: 'Get <%= t.TheThings %>',
+    })
+    @get()
+    static get<%= t.TheThings %> = withYup({
+       query: yup.object({ search: yup.string() }), 
+       handle(req) {
+        const search = req.nextUrl.searchParams.get('search');
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
+        <% } else { %>
+        return { results: [], search };
+        <% } %>
+       }
+    });
+
+    @openapi({
+        summary: 'Update <%= t.TheThing %>',
+    })
+    @put('{id}')
+    static update<%= t.TheThing %> = withYup({
+        body: yup.object({
+            foo: yup.mixed().oneOf(['bar', 'baz']).required(),
+        }),
+        query: yup.object({ q: yup.string() }),
+        async handle(req, params: { id: string }) {
+            const { id } = params;
+            const body = await req.json();
+            const q = req.nextUrl.searchParams.get('q');
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
+            <% } else { %>
+            return { id, body, q };
+            <% } %>
+        }
+    });
+
+    @post()
+    static create<%= t.TheThing %> = () => {
+        // ...
+    };
+
+    @del(':id')
+    static delete<%= t.TheThing %> = () => {
+        // ...
+    };
+}

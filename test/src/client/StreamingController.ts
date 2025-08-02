@@ -1,5 +1,5 @@
-import { VovkRequest, post, prefix } from '../../../src';
-import { _StreamResponse as StreamResponse } from '../../../src/StreamResponse';
+import { type VovkRequest, post, prefix } from 'vovk';
+import { JSONLinesResponse } from 'vovk';
 
 export type Token = { token: string; query: 'queryValue' };
 
@@ -10,27 +10,27 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new StreamResponse<Token>();
+    const response = new JSONLinesResponse<Token>(req);
 
     void (async () => {
       for (const token of body) {
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await response.send({ ...token, query });
+        response.send({ ...token, query });
       }
 
-      await response.close();
+      response.close();
     })();
 
     return response;
   }
 
   @post.auto()
-  static postWithStreamingAndImmediateError(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
+  static async postWithStreamingAndImmediateError(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
     if (req) {
       throw new Error('Immediate error');
     }
 
-    const response = new StreamResponse<Token>();
+    const response = new JSONLinesResponse<Token>(req);
 
     return response;
   }
@@ -40,16 +40,16 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new StreamResponse<Token>();
+    const response = new JSONLinesResponse<Token>(req);
 
     let count = 0;
     void (async () => {
       for (const token of body) {
         if (++count === 3) {
-          return response.throw('velyka dupa');
+          return response.throw('oh no');
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await response.send({ ...token, query });
+        response.send({ ...token, query });
       }
     })();
 
@@ -63,7 +63,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new StreamResponse<Token>();
+    const response = new JSONLinesResponse<Token>(req);
 
     let count = 0;
     void (async () => {
@@ -72,7 +72,7 @@ export default class StreamingController {
           return response.throw({ customError: 'custom error' });
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await response.send({ ...token, query });
+        response.send({ ...token, query });
       }
     })();
 
@@ -86,7 +86,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new StreamResponse<Token>();
+    const response = new JSONLinesResponse<Token>(req);
 
     let count = 0;
     void (async () => {
@@ -95,7 +95,7 @@ export default class StreamingController {
           throw new Error('Unhandled error');
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await response.send({ ...token, query });
+        response.send({ ...token, query });
       }
     })();
 

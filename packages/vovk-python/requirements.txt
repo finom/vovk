@@ -1,0 +1,6 @@
+requests
+jsonschema
+rfc3987
+types-requests
+types-jsonschema
+urllib3==1.26.15

@@ -1,0 +1,2482 @@
+openapi: 3.0.0
+info:
+    title: 'Telegram Bot API'
+    description: 'Auto-generated OpenAPI schema by TGScraper.'
+    version: 1.8.3
+servers:
+    -
+        url: 'https://api.telegram.org/bot{token}'
+        variables:
+            token:
+                default: '1234:AAbbcc'
+                description: "Bot's unique authentication token, given by @BotFather."
+externalDocs:
+    description: 'Official Telegram Bot API documentation.'
+    url: 'https://core.telegram.org/bots/api'
+components:
+    responses:
+        BadRequest:
+            description: 'Bad request, you have provided malformed data.'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+        Unauthorized:
+            description: 'The authorization token is invalid or it has been revoked.'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+        Forbidden:
+            description: 'This action is forbidden.'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+        NotFound:
+            description: 'The specified resource was not found.'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+        Conflict:
+            description: 'There is a conflict with another instance using webhook or polling.'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+        TooManyRequests:
+            description: "You're doing too many requests, retry after a while."
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+        ServerError:
+            description: 'The bot API is experiencing some issues, try again later.'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+        UnknownError:
+            description: 'An unknown error occurred.'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+    schemas:
+        Response:
+            type: object
+            description: 'Represents the default response object.'
+            required:
+                - ok
+            properties:
+                ok:
+                    type: boolean
+        Success:
+            description: 'Request was successful, the result is returned.'
+            allOf:
+                -
+                    $ref: '#/components/schemas/Response'
+                -
+                    type: object
+                    required:
+                        - result
+                    properties:
+                        result:
+                            type: object
+        Error:
+            description: 'Request was unsuccessful, so an error occurred.'
+            allOf:
+                -
+                    $ref: '#/components/schemas/Response'
+                -
+                    type: object
+                    required:
+                        - error_code
+                        - description
+                    properties:
+                        error_code:
+                            type: integer
+                        description:
+                            type: string
+                        parameters:
+                            $ref: '#/components/schemas/ResponseParameters'
+        Update:
+            description: 'This object represents an incoming update.Only one of the optional parameters can be present in any given update.'
+            required:
+                - Field
+                - update_id
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                update_id:
+                    type: integer
+                message:
+                    $ref: '#/components/schemas/Message'
+                inline_query:
+                    $ref: '#/components/schemas/InlineQuery'
+                chosen_inline_result:
+                    $ref: '#/components/schemas/ChosenInlineResult'
+            type: object
+        User:
+            description: 'This object represents a Telegram user or bot.'
+            required:
+                - Field
+                - id
+                - first_name
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                id:
+                    type: integer
+                first_name:
+                    type: string
+                last_name:
+                    type: string
+                username:
+                    type: string
+            type: object
+        Chat:
+            description: 'This object represents a chat.'
+            required:
+                - Field
+                - id
+                - type
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                id:
+                    type: integer
+                type:
+                    type: string
+                title:
+                    type: string
+                username:
+                    type: string
+                first_name:
+                    type: string
+                last_name:
+                    type: string
+            type: object
+        Message:
+            description: 'This object represents a message.'
+            required:
+                - Field
+                - message_id
+                - date
+                - chat
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                message_id:
+                    type: integer
+                from:
+                    $ref: '#/components/schemas/User'
+                date:
+                    type: integer
+                chat:
+                    $ref: '#/components/schemas/Chat'
+                forward_from:
+                    $ref: '#/components/schemas/User'
+                forward_date:
+                    type: integer
+                reply_to_message:
+                    $ref: '#/components/schemas/Message'
+                text:
+                    type: string
+                audio:
+                    $ref: '#/components/schemas/Audio'
+                document:
+                    $ref: '#/components/schemas/Document'
+                photo:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PhotoSize'
+                sticker:
+                    $ref: '#/components/schemas/Sticker'
+                video:
+                    $ref: '#/components/schemas/Video'
+                voice:
+                    $ref: '#/components/schemas/Voice'
+                caption:
+                    type: string
+                contact:
+                    $ref: '#/components/schemas/Contact'
+                location:
+                    $ref: '#/components/schemas/Location'
+                new_chat_participant:
+                    $ref: '#/components/schemas/User'
+                left_chat_participant:
+                    $ref: '#/components/schemas/User'
+                new_chat_title:
+                    type: string
+                new_chat_photo:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PhotoSize'
+                delete_chat_photo:
+                    type: boolean
+                    default: true
+                group_chat_created:
+                    type: boolean
+                    default: true
+                supergroup_chat_created:
+                    type: boolean
+                    default: true
+                channel_chat_created:
+                    type: boolean
+                    default: true
+                migrate_to_chat_id:
+                    type: integer
+                migrate_from_chat_id:
+                    type: integer
+            type: object
+        PhotoSize:
+            description: 'This object represents one size of a photo or a file / sticker thumbnail.'
+            required:
+                - Field
+                - file_id
+                - width
+                - height
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                file_id:
+                    type: string
+                width:
+                    type: integer
+                height:
+                    type: integer
+                file_size:
+                    type: integer
+            type: object
+        Audio:
+            description: 'This object represents an audio file to be treated as music by the Telegram clients.'
+            required:
+                - Field
+                - file_id
+                - duration
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                file_id:
+                    type: string
+                duration:
+                    type: integer
+                performer:
+                    type: string
+                title:
+                    type: string
+                mime_type:
+                    type: string
+                file_size:
+                    type: integer
+            type: object
+        Document:
+            description: 'This object represents a general file (as opposed to photos, voice messages and audio files).'
+            required:
+                - Field
+                - file_id
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                file_id:
+                    type: string
+                thumb:
+                    $ref: '#/components/schemas/PhotoSize'
+                file_name:
+                    type: string
+                mime_type:
+                    type: string
+                file_size:
+                    type: integer
+            type: object
+        Sticker:
+            description: 'This object represents a sticker.'
+            required:
+                - Field
+                - file_id
+                - width
+                - height
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                file_id:
+                    type: string
+                width:
+                    type: integer
+                height:
+                    type: integer
+                thumb:
+                    $ref: '#/components/schemas/PhotoSize'
+                file_size:
+                    type: integer
+            type: object
+        Video:
+            description: 'This object represents a video file.'
+            required:
+                - Field
+                - file_id
+                - width
+                - height
+                - duration
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                file_id:
+                    type: string
+                width:
+                    type: integer
+                height:
+                    type: integer
+                duration:
+                    type: integer
+                thumb:
+                    $ref: '#/components/schemas/PhotoSize'
+                mime_type:
+                    type: string
+                file_size:
+                    type: integer
+            type: object
+        Voice:
+            description: 'This object represents a voice note.'
+            required:
+                - Field
+                - file_id
+                - duration
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                file_id:
+                    type: string
+                duration:
+                    type: integer
+                mime_type:
+                    type: string
+                file_size:
+                    type: integer
+            type: object
+        Contact:
+            description: 'This object represents a phone contact.'
+            required:
+                - Field
+                - phone_number
+                - first_name
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                phone_number:
+                    type: string
+                first_name:
+                    type: string
+                last_name:
+                    type: string
+                user_id:
+                    type: integer
+            type: object
+        Location:
+            description: 'This object represents a point on the map.'
+            required:
+                - Field
+                - longitude
+                - latitude
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                longitude:
+                    type: number
+                latitude:
+                    type: number
+            type: object
+        UserProfilePhotos:
+            description: "This object represent a user's profile pictures."
+            required:
+                - Field
+                - total_count
+                - photos
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                total_count:
+                    type: integer
+                photos:
+                    type: array
+                    items:
+                        type: array
+                        items:
+                            $ref: '#/components/schemas/PhotoSize'
+            type: object
+        File:
+            description: 'This object represents a file ready to be downloaded. The file can be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile.'
+            required:
+                - Field
+                - file_id
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                file_id:
+                    type: string
+                file_size:
+                    type: integer
+                file_path:
+                    type: string
+            type: object
+        ReplyKeyboardMarkup:
+            description: 'This object represents a custom keyboard with reply options (see Introduction to bots for details and examples).'
+            required:
+                - Field
+                - keyboard
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                keyboard:
+                    type: array
+                    items:
+                        type: array
+                        items:
+                            type: string
+                resize_keyboard:
+                    type: boolean
+                one_time_keyboard:
+                    type: boolean
+                selective:
+                    type: boolean
+            type: object
+        ReplyKeyboardHide:
+            description: 'Upon receiving a message with this object, Telegram clients will hide the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button (see ReplyKeyboardMarkup).'
+            required:
+                - Field
+                - hide_keyboard
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                hide_keyboard:
+                    type: boolean
+                    default: true
+                selective:
+                    type: boolean
+            type: object
+        ForceReply:
+            description: "Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot‘s message and tapped ’Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode."
+            required:
+                - Field
+                - force_reply
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                force_reply:
+                    type: boolean
+                    default: true
+                selective:
+                    type: boolean
+            type: object
+        InputFile:
+            description: 'This object represents the contents of a file to be uploaded. Must be posted using multipart/form-data in the usual way that files are uploaded via the browser.'
+            type: object
+        InlineQuery:
+            description: 'This object represents an incoming inline query. When the user sends an empty query, your bot could return some default or trending results.'
+            required:
+                - Field
+                - id
+                - from
+                - query
+                - offset
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                id:
+                    type: string
+                from:
+                    $ref: '#/components/schemas/User'
+                query:
+                    type: string
+                offset:
+                    type: string
+            type: object
+        InlineQueryResult:
+            description: 'This object represents one result of an inline query. Telegram clients currently support results of the following 5 types:'
+            anyOf:
+                -
+                    $ref: '#/components/schemas/InlineQueryResultArticle'
+                -
+                    $ref: '#/components/schemas/InlineQueryResultPhoto'
+                -
+                    $ref: '#/components/schemas/InlineQueryResultGif'
+                -
+                    $ref: '#/components/schemas/InlineQueryResultMpeg4Gif'
+                -
+                    $ref: '#/components/schemas/InlineQueryResultVideo'
+        InlineQueryResultArticle:
+            description: 'Represents a link to an article or web page.'
+            required:
+                - Field
+                - type
+                - id
+                - title
+                - message_text
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                type:
+                    type: string
+                    default: article
+                id:
+                    type: string
+                title:
+                    type: string
+                message_text:
+                    type: string
+                parse_mode:
+                    type: string
+                disable_web_page_preview:
+                    type: boolean
+                url:
+                    type: string
+                hide_url:
+                    type: boolean
+                description:
+                    type: string
+                thumb_url:
+                    type: string
+                thumb_width:
+                    type: integer
+                thumb_height:
+                    type: integer
+            type: object
+        InlineQueryResultPhoto:
+            description: 'Represents a link to a photo. By default, this photo will be sent by the user with optional caption. Alternatively, you can provide message_text to send it instead of photo.'
+            required:
+                - Field
+                - type
+                - id
+                - photo_url
+                - thumb_url
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                type:
+                    type: string
+                    default: photo
+                id:
+                    type: string
+                photo_url:
+                    type: string
+                photo_width:
+                    type: integer
+                photo_height:
+                    type: integer
+                thumb_url:
+                    type: string
+                title:
+                    type: string
+                description:
+                    type: string
+                caption:
+                    type: string
+                message_text:
+                    type: string
+                parse_mode:
+                    type: string
+                disable_web_page_preview:
+                    type: boolean
+            type: object
+        InlineQueryResultGif:
+            description: 'Represents a link to an animated GIF file. By default, this animated GIF file will be sent by the user with optional caption. Alternatively, you can provide message_text to send it instead of the animation.'
+            required:
+                - Field
+                - type
+                - id
+                - gif_url
+                - thumb_url
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                type:
+                    type: string
+                    default: gif
+                id:
+                    type: string
+                gif_url:
+                    type: string
+                gif_width:
+                    type: integer
+                gif_height:
+                    type: integer
+                thumb_url:
+                    type: string
+                title:
+                    type: string
+                caption:
+                    type: string
+                message_text:
+                    type: string
+                parse_mode:
+                    type: string
+                disable_web_page_preview:
+                    type: boolean
+            type: object
+        InlineQueryResultMpeg4Gif:
+            description: 'Represents a link to a video animation (H.264/MPEG-4 AVC video without sound). By default, this animated MPEG-4 file will be sent by the user with optional caption. Alternatively, you can provide message_text to send it instead of the animation.'
+            required:
+                - Field
+                - type
+                - id
+                - mpeg4_url
+                - thumb_url
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                type:
+                    type: string
+                    default: mpeg4_gif
+                id:
+                    type: string
+                mpeg4_url:
+                    type: string
+                mpeg4_width:
+                    type: integer
+                mpeg4_height:
+                    type: integer
+                thumb_url:
+                    type: string
+                title:
+                    type: string
+                caption:
+                    type: string
+                message_text:
+                    type: string
+                parse_mode:
+                    type: string
+                disable_web_page_preview:
+                    type: boolean
+            type: object
+        InlineQueryResultVideo:
+            description: 'Represents link to a page containing an embedded video player or a video file.'
+            required:
+                - Field
+                - type
+                - id
+                - video_url
+                - mime_type
+                - message_text
+                - thumb_url
+                - title
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                type:
+                    type: string
+                    default: video
+                id:
+                    type: string
+                video_url:
+                    type: string
+                mime_type:
+                    type: string
+                message_text:
+                    type: string
+                parse_mode:
+                    type: string
+                disable_web_page_preview:
+                    type: boolean
+                video_width:
+                    type: integer
+                video_height:
+                    type: integer
+                video_duration:
+                    type: integer
+                thumb_url:
+                    type: string
+                title:
+                    type: string
+                description:
+                    type: string
+            type: object
+        ChosenInlineResult:
+            description: 'This object represents a result of an inline query that was chosen by the user and sent to their chat partner.'
+            required:
+                - Field
+                - result_id
+                - from
+                - query
+            properties:
+                Field:
+                    $ref: '#/components/schemas/Type'
+                result_id:
+                    type: string
+                from:
+                    $ref: '#/components/schemas/User'
+                query:
+                    type: string
+            type: object
+paths:
+    /getUpdates:
+        description: 'Use this method to receive incoming updates using long polling (wiki). An Array of Update objects is returned.'
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                offset:
+                                    type: integer
+                                limit:
+                                    type: integer
+                                    default: 100
+                                timeout:
+                                    type: integer
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                offset:
+                                    type: integer
+                                limit:
+                                    type: integer
+                                    default: 100
+                                timeout:
+                                    type: integer
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                offset:
+                                    type: integer
+                                limit:
+                                    type: integer
+                                    default: 100
+                                timeout:
+                                    type: integer
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                type: array
+                                                items:
+                                                    $ref: '#/components/schemas/Update'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /setWebhook:
+        description: "Use this method to specify a url and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified url, containing a JSON-serialized Update. In case of an unsuccessful request, we will give up after a reasonable amount of attempts.\nIf you'd like to make sure that the Webhook request comes from Telegram, we recommend using a secret path in the URL, e.g. https://www.example.com/<token>. Since nobody else knows your bot‘s token, you can be pretty sure it’s us."
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                url:
+                                    type: string
+                                certificate:
+                                    $ref: '#/components/schemas/InputFile'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                url:
+                                    type: string
+                                certificate:
+                                    $ref: '#/components/schemas/InputFile'
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                url:
+                                    type: string
+                                certificate:
+                                    $ref: '#/components/schemas/InputFile'
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result: {  }
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /getMe:
+        description: "A simple method for testing your bot's auth token. Requires no parameters. Returns basic information about the bot in form of a User object."
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                    multipart/form-data:
+                        schema:
+                            type: object
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/User'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendMessage:
+        description: 'Use this method to send text messages. On success, the sent Message is returned.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                text:
+                                    type: string
+                                parse_mode:
+                                    type: string
+                                disable_web_page_preview:
+                                    type: boolean
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - text
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                text:
+                                    type: string
+                                parse_mode:
+                                    type: string
+                                disable_web_page_preview:
+                                    type: boolean
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - text
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                text:
+                                    type: string
+                                parse_mode:
+                                    type: string
+                                disable_web_page_preview:
+                                    type: boolean
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - text
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /forwardMessage:
+        description: 'Use this method to forward messages of any kind. On success, the sent Message is returned.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                from_chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                disable_notification:
+                                    type: boolean
+                                message_id:
+                                    type: integer
+                            required:
+                                - chat_id
+                                - from_chat_id
+                                - message_id
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                from_chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                disable_notification:
+                                    type: boolean
+                                message_id:
+                                    type: integer
+                            required:
+                                - chat_id
+                                - from_chat_id
+                                - message_id
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                from_chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                disable_notification:
+                                    type: boolean
+                                message_id:
+                                    type: integer
+                            required:
+                                - chat_id
+                                - from_chat_id
+                                - message_id
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendPhoto:
+        description: 'Use this method to send photos. On success, the sent Message is returned.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                photo:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - photo
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                photo:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - photo
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                photo:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - photo
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendAudio:
+        description: "Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .mp3 format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.\nFor sending voice messages, use the sendVoice method instead."
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                audio:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                performer:
+                                    type: string
+                                title:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - audio
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                audio:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                performer:
+                                    type: string
+                                title:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - audio
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                audio:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                performer:
+                                    type: string
+                                title:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - audio
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendDocument:
+        description: 'Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                document:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - document
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                document:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - document
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                document:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - document
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendSticker:
+        description: 'Use this method to send .webp stickers. On success, the sent Message is returned.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                sticker:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - sticker
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                sticker:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - sticker
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                sticker:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - sticker
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendVideo:
+        description: 'Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                video:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                width:
+                                    type: integer
+                                height:
+                                    type: integer
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - video
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                video:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                width:
+                                    type: integer
+                                height:
+                                    type: integer
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - video
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                video:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                width:
+                                    type: integer
+                                height:
+                                    type: integer
+                                caption:
+                                    type: string
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - video
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendVoice:
+        description: 'Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .ogg file encoded with OPUS (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                voice:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - voice
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                voice:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - voice
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                voice:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/InputFile'
+                                        -
+                                            type: string
+                                duration:
+                                    type: integer
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - voice
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendLocation:
+        description: 'Use this method to send point on the map. On success, the sent Message is returned.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                latitude:
+                                    type: number
+                                longitude:
+                                    type: number
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - latitude
+                                - longitude
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                latitude:
+                                    type: number
+                                longitude:
+                                    type: number
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - latitude
+                                - longitude
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                latitude:
+                                    type: number
+                                longitude:
+                                    type: number
+                                disable_notification:
+                                    type: boolean
+                                reply_to_message_id:
+                                    type: integer
+                                reply_markup:
+                                    anyOf:
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardMarkup'
+                                        -
+                                            $ref: '#/components/schemas/ReplyKeyboardHide'
+                                        -
+                                            $ref: '#/components/schemas/ForceReply'
+                            required:
+                                - chat_id
+                                - latitude
+                                - longitude
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/Message'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /sendChatAction:
+        description: "Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status).\nWe only recommend using this method when a response from the bot will take a noticeable amount of time to arrive."
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                action:
+                                    type: string
+                            required:
+                                - chat_id
+                                - action
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                action:
+                                    type: string
+                            required:
+                                - chat_id
+                                - action
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                chat_id:
+                                    anyOf:
+                                        -
+                                            type: integer
+                                        -
+                                            type: string
+                                action:
+                                    type: string
+                            required:
+                                - chat_id
+                                - action
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result: {  }
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /getUserProfilePhotos:
+        description: 'Use this method to get a list of profile pictures for a user. Returns a UserProfilePhotos object.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                user_id:
+                                    type: integer
+                                offset:
+                                    type: integer
+                                limit:
+                                    type: integer
+                                    default: 100
+                            required:
+                                - user_id
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                user_id:
+                                    type: integer
+                                offset:
+                                    type: integer
+                                limit:
+                                    type: integer
+                                    default: 100
+                            required:
+                                - user_id
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                user_id:
+                                    type: integer
+                                offset:
+                                    type: integer
+                                limit:
+                                    type: integer
+                                    default: 100
+                            required:
+                                - user_id
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/UserProfilePhotos'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /getFile:
+        description: 'Use this method to get basic info about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size. On success, a File object is returned. The file can then be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>, where <file_path> is taken from the response. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile again.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                file_id:
+                                    type: string
+                            required:
+                                - file_id
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                file_id:
+                                    type: string
+                            required:
+                                - file_id
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                file_id:
+                                    type: string
+                            required:
+                                - file_id
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                $ref: '#/components/schemas/File'
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'
+    /answerInlineQuery:
+        description: 'Use this method to send answers to an inline query. On success, True is returned.No more than 50 results per query are allowed.'
+        post:
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                inline_query_id:
+                                    type: string
+                                results:
+                                    type: array
+                                    items:
+                                        $ref: '#/components/schemas/InlineQueryResult'
+                                cache_time:
+                                    type: integer
+                                    default: 300
+                                is_personal:
+                                    type: boolean
+                                next_offset:
+                                    type: string
+                            required:
+                                - inline_query_id
+                                - results
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                inline_query_id:
+                                    type: string
+                                results:
+                                    type: array
+                                    items:
+                                        $ref: '#/components/schemas/InlineQueryResult'
+                                cache_time:
+                                    type: integer
+                                    default: 300
+                                is_personal:
+                                    type: boolean
+                                next_offset:
+                                    type: string
+                            required:
+                                - inline_query_id
+                                - results
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                Parameters:
+                                    $ref: '#/components/schemas/Type'
+                                inline_query_id:
+                                    type: string
+                                results:
+                                    type: array
+                                    items:
+                                        $ref: '#/components/schemas/InlineQueryResult'
+                                cache_time:
+                                    type: integer
+                                    default: 300
+                                is_personal:
+                                    type: boolean
+                                next_offset:
+                                    type: string
+                            required:
+                                - inline_query_id
+                                - results
+            responses:
+                200:
+                    description: 'Request was successful, the result is returned.'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    -
+                                        $ref: '#/components/schemas/Success'
+                                    -
+                                        type: object
+                                        properties:
+                                            result:
+                                                type: boolean
+                400:
+                    $ref: '#/components/responses/BadRequest'
+                401:
+                    $ref: '#/components/responses/Unauthorized'
+                403:
+                    $ref: '#/components/responses/Forbidden'
+                404:
+                    $ref: '#/components/responses/NotFound'
+                409:
+                    $ref: '#/components/responses/Conflict'
+                429:
+                    $ref: '#/components/responses/TooManyRequests'
+                5XX:
+                    $ref: '#/components/responses/ServerError'
+                default:
+                    $ref: '#/components/responses/UnknownError'

@@ -1,0 +1,10 @@
+<%- t.getFirstLineBanner() %>
+import type { VovkMetaSchema, VovkSegmentSchema } from 'vovk';
+
+export const schema: {
+    $schema: '<%- t.VovkSchemaIdEnum.SCHEMA %>';
+    meta: VovkMetaSchema;
+    segments: {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
+      '<%= segment.segmentName %>': VovkSegmentSchema;<% }) %>
+    };
+};

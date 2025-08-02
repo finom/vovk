@@ -1,0 +1,2675 @@
+{
+  "$schema": "https://vovk.dev/api/spec/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "foo/client",
+  "segmentType": "segment",
+  "controllers": {
+    "CommonControllerRPC": {
+      "rpcModuleName": "CommonControllerRPC",
+      "originalControllerName": "CommonController",
+      "prefix": "common",
+      "handlers": {
+        "getHelloWorldResponseObject": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-response-object"
+        },
+        "getHelloWorldObjectLiteral": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-object-literal"
+        },
+        "getHelloWorldNextResponseObjectPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-next-response-object-promise"
+        },
+        "getHelloWorldRawResponseObjectPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-raw-response-object-promise"
+        },
+        "getHelloWorldObjectLiteralPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-object-literal-promise"
+        },
+        "getHelloWorldHeaders": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-headers"
+        },
+        "getHelloWorldArray": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-array"
+        },
+        "getHelloWorldAndEmptyGeneric": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-and-empty-generic"
+        },
+        "getWithParams": {
+          "path": "with-params/{hello}",
+          "httpMethod": "GET"
+        },
+        "postWithAll": {
+          "path": "with-all/{hello}",
+          "httpMethod": "POST"
+        },
+        "postWithBodyAndQueryUsingReqVovk": {
+          "path": "with-all-using-req-vovk",
+          "httpMethod": "POST"
+        },
+        "getNestedQuery": {
+          "path": "nested-query",
+          "httpMethod": "GET"
+        },
+        "postWithFormDataUsingReqVovk": {
+          "path": "form-data",
+          "httpMethod": "POST"
+        },
+        "getErrorResponse": {
+          "path": "error",
+          "httpMethod": "GET"
+        },
+        "getJsonTextResponse": {
+          "path": "json-text",
+          "httpMethod": "GET"
+        },
+        "getJsonlResponse": {
+          "path": "jsonl",
+          "httpMethod": "GET"
+        },
+        "getJsonlTextResponse": {
+          "path": "jsonl-text",
+          "httpMethod": "GET"
+        }
+      }
+    },
+    "StreamingControllerRPC": {
+      "rpcModuleName": "StreamingControllerRPC",
+      "originalControllerName": "StreamingController",
+      "prefix": "streaming",
+      "handlers": {
+        "postWithStreaming": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming"
+        },
+        "postWithStreamingAndImmediateError": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming-and-immediate-error"
+        },
+        "postWithStreamingAndDelayedError": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming-and-delayed-error"
+        },
+        "postWithStreamingAndDelayedCustomError": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming-and-delayed-custom-error"
+        },
+        "postWithStreamingAndDelayedUnhandledError": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming-and-delayed-unhandled-error"
+        }
+      }
+    },
+    "StreamingGeneratorControllerRPC": {
+      "rpcModuleName": "StreamingGeneratorControllerRPC",
+      "originalControllerName": "StreamingGeneratorController",
+      "prefix": "streaming-generator",
+      "handlers": {
+        "getWithStreaming": {
+          "httpMethod": "GET",
+          "path": "get-with-streaming"
+        },
+        "postWithAsyncStreaming": {
+          "httpMethod": "POST",
+          "path": "post-with-async-streaming"
+        },
+        "postWithStreaming": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming"
+        },
+        "postWithStreamingAndImmediateError": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming-and-immediate-error"
+        },
+        "postWithStreamingAndDelayedError": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming-and-delayed-error"
+        },
+        "postWithStreamingAndDelayedCustomError": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming-and-delayed-custom-error"
+        },
+        "postWithStreamingAndDelayedUnhandledError": {
+          "httpMethod": "POST",
+          "path": "post-with-streaming-and-delayed-unhandled-error"
+        }
+      }
+    },
+    "CustomSchemaControllerRPC": {
+      "rpcModuleName": "CustomSchemaControllerRPC",
+      "originalControllerName": "CustomSchemaController",
+      "prefix": "",
+      "handlers": {
+        "getWithCustomSchema": {
+          "misc": {
+            "hello": "world"
+          },
+          "httpMethod": "GET",
+          "path": "get-with-custom-schema"
+        }
+      }
+    },
+    "WithZodClientControllerRPC": {
+      "rpcModuleName": "WithZodClientControllerRPC",
+      "originalControllerName": "WithZodClientController",
+      "prefix": "with-zod",
+      "handlers": {
+        "handleAll": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string"
+                },
+                "bar": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "foo",
+                "bar"
+              ],
+              "additionalProperties": false
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ],
+                  "additionalProperties": false
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false
+                },
+                "vovkParams": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "all/{foo}/{bar}",
+          "httpMethod": "POST",
+          "openapi": {
+            "responses": {
+              "400": {
+                "description": "400 Bad Request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/VovkErrorResponse"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "enum": [
+                                "This is a bad request"
+                              ]
+                            },
+                            "statusCode": {
+                              "type": "integer",
+                              "enum": [
+                                400
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "summary": "This is a summary",
+            "description": "This is a description"
+          }
+        },
+        "handleQuery": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-query"
+        },
+        "handleBody": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-body"
+        },
+        "handleBodyZod3": {
+          "validation": {
+            "body": {
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-body-zod3"
+        },
+        "handleParams": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "bar": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "foo",
+                "bar"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "x/{foo}/{bar}/y",
+          "httpMethod": "PUT"
+        },
+        "handleNestedQuery": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "y": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "z": {
+                  "type": "object",
+                  "properties": {
+                    "f": {
+                      "type": "string"
+                    },
+                    "u": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "d": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "string"
+                        },
+                        "arrOfObjects": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "foo": {
+                                "type": "string"
+                              },
+                              "nestedArr": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "nestedObj": {
+                                "type": "object",
+                                "properties": {
+                                  "deepKey": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "deepKey"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "foo"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "arrOfObjects"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "f",
+                    "u",
+                    "d"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "x",
+                "y",
+                "z"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-nested-query"
+        },
+        "handleOutput": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "helloOutput": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "helloOutput"
+              ],
+              "additionalProperties": false
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-output"
+        },
+        "handleStream": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ],
+              "additionalProperties": false
+            },
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-stream"
+        },
+        "handleSchemaConstraints": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "enum_value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c"
+                  ]
+                },
+                "num_minimum": {
+                  "type": "number",
+                  "minimum": 1
+                },
+                "num_maximum": {
+                  "type": "number",
+                  "maximum": 100
+                },
+                "num_exclusiveMinimum": {
+                  "type": "number",
+                  "exclusiveMinimum": 1
+                },
+                "num_exclusiveMaximum": {
+                  "type": "number",
+                  "exclusiveMaximum": 100
+                },
+                "num_multipleOf": {
+                  "type": "number",
+                  "multipleOf": 5
+                },
+                "num_int": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "num_int32": {
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "str_minLength": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "str_maxLength": {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                "str_pattern": {
+                  "type": "string",
+                  "pattern": "^[A-Z][a-z]*$"
+                },
+                "str_email": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                },
+                "str_url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "str_uuid": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000)$"
+                },
+                "str_datetime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                },
+                "arr_minItems": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "arr_maxItems": {
+                  "maxItems": 10,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "obj_required": {
+                  "type": "object",
+                  "properties": {
+                    "requiredField": {
+                      "type": "string"
+                    },
+                    "optionalField": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "requiredField"
+                  ],
+                  "additionalProperties": false
+                },
+                "obj_strict": {
+                  "type": "object",
+                  "properties": {
+                    "knownField": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "knownField"
+                  ],
+                  "additionalProperties": false
+                },
+                "logical_anyOf": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 5
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                "logical_allOf": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "a": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "a"
+                      ],
+                      "additionalProperties": {}
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "b": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "b"
+                      ],
+                      "additionalProperties": {}
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "enum_value",
+                "num_minimum",
+                "num_maximum",
+                "num_exclusiveMinimum",
+                "num_exclusiveMaximum",
+                "num_multipleOf",
+                "num_int",
+                "num_int32",
+                "str_minLength",
+                "str_maxLength",
+                "str_pattern",
+                "str_email",
+                "str_url",
+                "str_uuid",
+                "str_datetime",
+                "arr_minItems",
+                "arr_maxItems",
+                "obj_required",
+                "obj_strict",
+                "logical_anyOf",
+                "logical_allOf"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-schema-constraints"
+        },
+        "handleNothitng": {
+          "validation": {},
+          "httpMethod": "POST",
+          "path": "handle-nothitng"
+        },
+        "handleFormData": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false,
+              "x-formData": true
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-form-data"
+        },
+        "handleFormDataWithFile": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "file": {
+                  "type": "string",
+                  "format": "binary",
+                  "contentEncoding": "binary"
+                }
+              },
+              "required": [
+                "hello",
+                "file"
+              ],
+              "additionalProperties": false,
+              "x-formData": true
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-form-data-with-file"
+        },
+        "disableServerSideValidationBool": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-bool"
+        },
+        "disableServerSideValidationStrings": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-strings"
+        },
+        "skipSchemaEmissionBool": {
+          "validation": {},
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-bool"
+        },
+        "skipSchemaEmissionStrings": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-strings"
+        },
+        "validateEachIteration": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ],
+              "additionalProperties": false
+            },
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "validate-each-iteration"
+        },
+        "handleAllAsFunction": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string"
+                },
+                "bar": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "foo",
+                "bar"
+              ],
+              "additionalProperties": false
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ],
+                  "additionalProperties": false
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false
+                },
+                "vovkParams": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "all-as-func/{foo}/{bar}",
+          "httpMethod": "POST"
+        },
+        "handleAllNoHttpAsFunction": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "additionalProperties": false
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string"
+                },
+                "bar": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "foo",
+                "bar"
+              ],
+              "additionalProperties": false
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ],
+                  "additionalProperties": false
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ],
+                  "additionalProperties": false
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false
+                },
+                "vovkParams": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "all-no-http-as-func/{foo}/{bar}",
+          "httpMethod": "POST"
+        },
+        "handlePagination": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "string"
+                },
+                "limit": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "page",
+                "limit"
+              ],
+              "additionalProperties": false
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "hasNextPage": {
+                  "type": "boolean"
+                },
+                "nextPage": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "items",
+                "hasNextPage"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-pagination"
+        }
+      }
+    },
+    "WithYupClientControllerRPC": {
+      "rpcModuleName": "WithYupClientControllerRPC",
+      "originalControllerName": "WithYupClientController",
+      "prefix": "with-yup",
+      "handlers": {
+        "handleAll": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "bar": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "foo",
+                "bar"
+              ]
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "maxLength": 5
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string",
+                      "maxLength": 5
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ]
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "maxLength": 5
+                    },
+                    "bar": {
+                      "type": "string",
+                      "maxLength": 5
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                },
+                "vovkParams": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "maxLength": 5
+                    },
+                    "bar": {
+                      "type": "string",
+                      "maxLength": 5
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                }
+              },
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ]
+            }
+          },
+          "path": "all/{foo}/{bar}",
+          "httpMethod": "POST",
+          "openapi": {
+            "responses": {
+              "400": {
+                "description": "400 Bad Request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/VovkErrorResponse"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "enum": [
+                                "This is a bad request"
+                              ]
+                            },
+                            "statusCode": {
+                              "type": "integer",
+                              "enum": [
+                                400
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "summary": "This is a summary",
+            "description": "This is a description"
+          }
+        },
+        "handleQuery": {
+          "validation": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-query"
+        },
+        "handleBody": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-body"
+        },
+        "handleParams": {
+          "validation": {
+            "params": {
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "bar": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "foo",
+                "bar"
+              ]
+            }
+          },
+          "path": "x/{foo}/{bar}/y",
+          "httpMethod": "PUT"
+        },
+        "handleNestedQuery": {
+          "validation": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "y": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "z": {
+                  "type": "object",
+                  "properties": {
+                    "f": {
+                      "type": "string"
+                    },
+                    "u": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "d": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "string"
+                        },
+                        "arrOfObjects": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "default": {
+                              "nestedObj": {}
+                            },
+                            "properties": {
+                              "foo": {
+                                "type": "string"
+                              },
+                              "nestedArr": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "nestedObj": {
+                                "type": "object",
+                                "default": {},
+                                "properties": {
+                                  "deepKey": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            },
+                            "required": [
+                              "foo"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "arrOfObjects"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "f",
+                    "u",
+                    "d"
+                  ]
+                }
+              },
+              "required": [
+                "x",
+                "y",
+                "z"
+              ]
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-nested-query"
+        },
+        "handleOutput": {
+          "validation": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "helloOutput": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "helloOutput"
+              ]
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-output"
+        },
+        "handleStream": {
+          "validation": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ]
+            },
+            "iteration": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-stream"
+        },
+        "handleSchemaConstraints": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "default": {
+                "logical_allOf": {},
+                "obj_strict": {},
+                "obj_required": {}
+              },
+              "properties": {
+                "enum_value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c"
+                  ]
+                },
+                "num_minimum": {
+                  "type": "number",
+                  "minimum": 1
+                },
+                "num_maximum": {
+                  "type": "number",
+                  "maximum": 100
+                },
+                "num_exclusiveMinimum": {
+                  "type": "number",
+                  "exclusiveMinimum": 1
+                },
+                "num_exclusiveMaximum": {
+                  "type": "number",
+                  "exclusiveMaximum": 100
+                },
+                "num_multipleOf": {
+                  "type": "number"
+                },
+                "num_int": {
+                  "type": "integer"
+                },
+                "num_int32": {
+                  "type": "integer",
+                  "maximum": 2147483647,
+                  "minimum": -2147483648
+                },
+                "str_minLength": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "str_maxLength": {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                "str_pattern": {
+                  "type": "string",
+                  "pattern": "^[A-Z][a-z]*$"
+                },
+                "str_email": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "str_url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "str_uuid": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+                },
+                "str_datetime": {
+                  "type": "string"
+                },
+                "arr_minItems": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                "arr_maxItems": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 10
+                },
+                "obj_required": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "requiredField": {
+                      "type": "string"
+                    },
+                    "optionalField": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "requiredField"
+                  ]
+                },
+                "obj_strict": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "knownField": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "logical_anyOf": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "logical_allOf": {
+                  "type": "object",
+                  "properties": {
+                    "a": {
+                      "type": "string"
+                    },
+                    "b": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "a",
+                    "b"
+                  ]
+                }
+              }
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-schema-constraints"
+        },
+        "handleNothitng": {
+          "validation": {},
+          "httpMethod": "POST",
+          "path": "handle-nothitng"
+        },
+        "handleFormData": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "x-formData": true
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-form-data"
+        },
+        "disableServerSideValidationBool": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-bool"
+        },
+        "disableServerSideValidationStrings": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-strings"
+        },
+        "skipSchemaEmissionBool": {
+          "validation": {},
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-bool"
+        },
+        "skipSchemaEmissionStrings": {
+          "validation": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-strings"
+        },
+        "validateEachIteration": {
+          "validation": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ]
+            },
+            "iteration": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "validate-each-iteration"
+        }
+      }
+    },
+    "WithDtoClientControllerRPC": {
+      "rpcModuleName": "WithDtoClientControllerRPC",
+      "originalControllerName": "WithDtoClientController",
+      "prefix": "with-dto",
+      "handlers": {
+        "handleAll": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "hello": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            },
+            "params": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "foo": {
+                  "maxLength": 5,
+                  "type": "string"
+                },
+                "bar": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "foo",
+                "bar"
+              ]
+            },
+            "output": {
+              "x-isDto": true,
+              "definitions": {
+                "HandleAllBodyDto": {
+                  "properties": {
+                    "hello": {
+                      "maxLength": 5,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "HandleAllQueryDto": {
+                  "properties": {
+                    "search": {
+                      "maxLength": 5,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "search"
+                  ]
+                },
+                "HandleAllParamsDto": {
+                  "properties": {
+                    "foo": {
+                      "maxLength": 5,
+                      "type": "string"
+                    },
+                    "bar": {
+                      "maxLength": 5,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                }
+              },
+              "properties": {
+                "body": {
+                  "$ref": "#/definitions/HandleAllBodyDto"
+                },
+                "query": {
+                  "$ref": "#/definitions/HandleAllQueryDto"
+                },
+                "params": {
+                  "$ref": "#/definitions/HandleAllParamsDto"
+                },
+                "vovkParams": {
+                  "$ref": "#/definitions/HandleAllParamsDto"
+                }
+              },
+              "type": "object",
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ]
+            }
+          },
+          "path": "all/{foo}/{bar}",
+          "httpMethod": "POST",
+          "openapi": {
+            "responses": {
+              "400": {
+                "description": "400 Bad Request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/VovkErrorResponse"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "enum": [
+                                "This is a bad request"
+                              ]
+                            },
+                            "statusCode": {
+                              "type": "integer",
+                              "enum": [
+                                400
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "summary": "This is a summary",
+            "description": "This is a description"
+          }
+        },
+        "handleNestedQuery": {
+          "validation": {
+            "query": {
+              "x-isDto": true,
+              "definitions": {
+                "ZDto": {
+                  "properties": {
+                    "f": {
+                      "type": "string"
+                    },
+                    "u": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "d": {
+                      "$ref": "#/definitions/DDto"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "f",
+                    "u",
+                    "d"
+                  ]
+                },
+                "DDto": {
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "x"
+                  ]
+                }
+              },
+              "properties": {
+                "x": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "y": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "z": {
+                  "$ref": "#/definitions/ZDto"
+                }
+              },
+              "type": "object",
+              "required": [
+                "x",
+                "y",
+                "z"
+              ]
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-nested-query"
+        },
+        "handleNestedQueryClient": {
+          "httpMethod": "GET",
+          "path": "handle-nested-query-client"
+        },
+        "handleOutput": {
+          "validation": {
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "helloOutput": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "helloOutput"
+              ]
+            },
+            "output": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "hello": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-output"
+        },
+        "handleOutputClient": {
+          "httpMethod": "GET",
+          "path": "handle-output-client"
+        },
+        "handleStream": {
+          "validation": {
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "values": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object",
+              "required": [
+                "values"
+              ]
+            },
+            "iteration": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-stream"
+        },
+        "handleSchemaConstraints": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {
+                "RequiredObject": {
+                  "properties": {
+                    "requiredField": {
+                      "type": "string",
+                      "not": {
+                        "type": "null"
+                      }
+                    },
+                    "optionalField": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "requiredField"
+                  ]
+                },
+                "StrictObject": {
+                  "properties": {
+                    "knownField": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "knownField"
+                  ]
+                }
+              },
+              "properties": {
+                "enum_value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c"
+                  ]
+                },
+                "num_minimum": {
+                  "minimum": 1,
+                  "type": "number"
+                },
+                "num_maximum": {
+                  "maximum": 100,
+                  "type": "number"
+                },
+                "num_exclusiveMinimum": {
+                  "type": "number"
+                },
+                "num_exclusiveMaximum": {
+                  "type": "number"
+                },
+                "num_multipleOf": {
+                  "type": "number"
+                },
+                "num_int": {
+                  "type": "integer"
+                },
+                "num_int32": {
+                  "minimum": -2147483648,
+                  "type": "integer",
+                  "maximum": 2147483647
+                },
+                "str_minLength": {
+                  "minLength": 3,
+                  "type": "string"
+                },
+                "str_maxLength": {
+                  "maxLength": 50,
+                  "type": "string"
+                },
+                "str_pattern": {
+                  "pattern": "^[A-Z][a-z]*$",
+                  "type": "string"
+                },
+                "str_email": {
+                  "format": "email",
+                  "type": "string"
+                },
+                "str_url": {
+                  "format": "uri",
+                  "type": "string"
+                },
+                "str_uuid": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "str_datetime": {
+                  "oneOf": [
+                    {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    {
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "arr_minItems": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "maxItems": 10,
+                  "minItems": 1
+                },
+                "arr_maxItems": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "maxItems": 10,
+                  "minItems": 1
+                },
+                "obj_required": {
+                  "$ref": "#/definitions/RequiredObject"
+                },
+                "obj_strict": {
+                  "$ref": "#/definitions/StrictObject"
+                },
+                "logical_allOf": {
+                  "type": "object"
+                }
+              },
+              "type": "object",
+              "required": [
+                "enum_value",
+                "num_minimum",
+                "num_maximum",
+                "num_exclusiveMinimum",
+                "num_exclusiveMaximum",
+                "num_multipleOf",
+                "num_int",
+                "num_int32",
+                "str_minLength",
+                "str_maxLength",
+                "str_pattern",
+                "str_email",
+                "str_url",
+                "str_uuid",
+                "str_datetime",
+                "arr_minItems",
+                "arr_maxItems",
+                "obj_required",
+                "obj_strict",
+                "logical_allOf"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-schema-constraints"
+        },
+        "handleNothitng": {
+          "validation": {},
+          "httpMethod": "POST",
+          "path": "handle-nothitng"
+        },
+        "handleFormData": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "hello": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ],
+              "x-formData": true
+            },
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-form-data"
+        },
+        "handleFormDataClient": {
+          "httpMethod": "POST",
+          "path": "handle-form-data-client"
+        },
+        "disableServerSideValidationBool": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "hello": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-bool"
+        },
+        "disableServerSideValidationStrings": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "hello": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "disable-server-side-validation-strings"
+        },
+        "skipSchemaEmissionBool": {
+          "validation": {},
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-bool"
+        },
+        "skipSchemaEmissionStrings": {
+          "validation": {
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "skip-schema-emission-strings"
+        },
+        "validateEachIteration": {
+          "validation": {
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "values": {
+                  "items": {},
+                  "type": "array"
+                }
+              },
+              "type": "object",
+              "required": [
+                "values"
+              ]
+            },
+            "iteration": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "validate-each-iteration"
+        },
+        "handleAllClient": {
+          "path": "all/{foo}/{bar}/client",
+          "httpMethod": "POST"
+        },
+        "handleQuery": {
+          "validation": {
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "httpMethod": "GET",
+          "path": "handle-query"
+        },
+        "handleQueryClient": {
+          "httpMethod": "GET",
+          "path": "handle-query-client"
+        },
+        "handleBody": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "hello": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-body"
+        },
+        "handleBodyClient": {
+          "httpMethod": "POST",
+          "path": "handle-body-client"
+        },
+        "handleParams": {
+          "validation": {
+            "params": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "foo": {
+                  "maxLength": 5,
+                  "type": "string"
+                },
+                "bar": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "foo",
+                "bar"
+              ]
+            }
+          },
+          "path": "x/{foo}/{bar}/y",
+          "httpMethod": "PUT"
+        },
+        "handleParamsClient": {
+          "path": "x/{foo}/{bar}/y/client",
+          "httpMethod": "PUT"
+        }
+      }
+    },
+    "OpenApiControllerRPC": {
+      "rpcModuleName": "OpenApiControllerRPC",
+      "originalControllerName": "OpenApiController",
+      "prefix": "openapi",
+      "handlers": {
+        "getFromSchema": {
+          "openapi": {
+            "responses": {
+              "418": {
+                "description": "418 I am a teapot",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/VovkErrorResponse"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "enum": [
+                                "I am a teapot error"
+                              ]
+                            },
+                            "statusCode": {
+                              "type": "integer",
+                              "enum": [
+                                418
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "summary": "Hello, World!"
+          },
+          "path": "",
+          "httpMethod": "GET"
+        }
+      }
+    }
+  }
+}

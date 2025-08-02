@@ -1,0 +1,35 @@
+<%- t.getFirstLineBanner() %>
+<% if(t.isVovkProject) { %>
+import meta from './<%= t.schemaOutDir %>/_meta.json' with { type: "json" };
+<% } %>
+<% if(t.hasMixins) { %>
+import mixins from './mixins.json' with { type: "json" };
+import type { Mixins } from './mixins.d.ts';
+<% } %>
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
+import segment<%= i %> from './<%= t.schemaOutDir %>/<%= segment.segmentName || t.ROOT_SEGMENT_FILE_NAME %>.json' with { type: "json" };
+<% } else { %>
+import segment<%= i %> from './<%= segment.segmentName %>.json' with { type: "json" };
+<% }}) %>
+const segments = {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
+  '<%= segment.segmentName %>': segment<%= i %>,<% }) %>
+  <% if(t.hasMixins) { %>
+  ...mixins,
+  <% } %>
+};
+
+export const schema = {
+  $schema: '<%- t.VovkSchemaIdEnum.SCHEMA %>',
+  segments,
+  meta: {
+    $schema: '<%- t.VovkSchemaIdEnum.META %>',
+    apiRoot: '<%= t.apiRoot %>', // for debugging purposes
+    <% if(t.isVovkProject) { %>
+    ...meta,
+    <% } %>
+  }
+};
+
+<% if (t.hasMixins) { %>
+export { Mixins };
+<% } %>

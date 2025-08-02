@@ -1,0 +1,79 @@
+<% const vars = { 
+  RpcModuleName: t.TheThing + 'Controller',
+  ServiceName: t.TheThing + 'Service',
+}; %>
+---
+dir: <%= t.defaultDir %>
+fileName: <%= vars.RpcModuleName + '.ts' %>
+sourceName: <%= vars.RpcModuleName %>
+compiledName: <%= t.TheThing + 'RPC' %>
+---
+import { prefix, get, put, post, del, openapi } from 'vovk';
+import { withDto } from 'vovk-dto';
+import { IsString, IsIn } from 'class-validator';
+<% if(t.withService) { %>
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
+<% } %>
+
+class Get<%= t.TheThings %>QueryDto {
+  @IsString()
+  search: string;
+}
+
+class Update<%= t.TheThing %>BodyDto {
+  @IsIn(['bar', 'baz'])
+  foo: 'bar' | 'baz';
+}
+
+class Update<%= t.TheThing %>QueryDto {
+  @IsString()
+  q: string;
+}
+
+@prefix('<%= t['the-things'] %>')
+export default class <%= vars.RpcModuleName %> {
+    @openapi({
+      summary: 'Get <%= t.TheThings %>',
+    })
+    @get()
+    static get<%= t.TheThings %> = withDto({
+      query: Get<%= t.TheThings %>QueryDto, 
+      handle(req) {
+        const { search } = req.vovk.query();
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
+        <% } else { %>
+        return { results: [], search };
+        <% } %>
+      }
+    });
+
+    @openapi({
+      summary: 'Update <%= t.TheThing %>',
+    })
+    @put('{id}')
+    static update<%= t.TheThing %> = withDto({
+        body: Update<%= t.TheThing %>BodyDto,
+        query: Update<%= t.TheThing %>QueryDto,
+        async handle(req, params: { id: string }) {
+            const { id } = params;
+            const body = await req.vovk.body();
+            const { q } = req.vovk.query();
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
+            <% } else { %>
+            return { id, body, q };
+            <% } %>
+        }
+    });
+
+    @post()
+    static create<%= t.TheThing %> = () => {
+        // ...
+    };
+
+    @del(':id')
+    static delete<%= t.TheThing %> = () => {
+        // ...
+    };
+}

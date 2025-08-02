@@ -1,0 +1,26 @@
+<%- t.getFirstLineBanner() %>
+<% if(t.isVovkProject) { %>
+const meta = require('./<%= t.schemaOutDir %>/_meta.json');
+<% } %>
+<% if(t.hasMixins) { %>
+const mixins = require('./mixins.json');
+<% } %>
+const segments = {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { if(segment.segmentType !== 'mixin') { %>
+    '<%= segment.segmentName %>': require('./<%= t.schemaOutDir %>/<%= segment.segmentName || t.ROOT_SEGMENT_FILE_NAME %>.json'),
+<% }}) %>
+  <% if(t.hasMixins) { %>
+  ...mixins,
+  <% } %>
+};
+const schema = {
+  $schema: '<%- t.VovkSchemaIdEnum.SCHEMA %>',
+  segments,
+  meta: {
+    apiRoot: '<%= t.apiRoot %>', // for debugging purposes
+    <% if(t.isVovkProject) { %>
+    ...meta
+    <% } %>
+  }
+};
+
+module.exports.schema = schema;

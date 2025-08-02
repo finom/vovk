@@ -1,0 +1,13 @@
+<% const vars = { 
+    StateName: t.TheThing + 'State',
+}; %>
+---
+dir: <%= t.defaultDir %>
+fileName: <%= vars.StateName + '.ts' %>
+sourceName: <%= vars.StateName %>
+---
+  
+export default class <%= vars.StateName %> {
+  // hello <%= t.theThing %>
+  // this is the custom "<%= t.TheThing %>" state
+}

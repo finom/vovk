@@ -1,0 +1,64 @@
+<%- t.getFirstLineBanner() %>
+import type { VovkRequest, VovkStreamAsyncIterable, KnownAny } from 'vovk';
+
+<% const mixins = Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType === 'mixin'); %>
+
+export namespace Mixins {
+  <% for (const segment of mixins) { %>
+    <% if(segment.meta?.components?.schemas) { %>
+      export namespace <%= t._.upperFirst(t._.camelCase(segment.segmentName)) %> {
+        <% for (const [componentName, componentSchema] of Object.entries(segment.meta.components.schemas)) { %>
+          <%- t.compileJSONSchemaToTypeScriptType(componentSchema, componentName, segment.meta.components, { dontCreateRefTypes: true }) %>
+        <% } %>
+      }
+    <% } %>
+  <% } %>
+}
+
+export namespace Types {
+  <% for (const segment of mixins) { %>
+    export namespace <%= t._.upperFirst(t._.camelCase(segment.segmentName)) %> {
+      <% for (const [controllerName, controllerSchema] of Object.entries(segment.controllers)) { %>
+        export namespace <%= controllerSchema.rpcModuleName %> {
+          <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
+            export namespace <%= t._.upperFirst(handlerName) %> {
+            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.body, 'Body') %>
+            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.query, 'Query') %>
+            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.params, 'Params') %>
+            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.output, 'Output') %>
+            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.iteration,  'Iteration') %>
+            }
+          <% } %>
+        }
+      <% } %>
+    }
+  <% } %>
+}
+
+<% const getType = (segment, controllerSchema, handlerName, validationType) => {
+  const segmentNs = t._.upperFirst(t._.camelCase(segment.segmentName));
+  const controllerNs = controllerSchema.rpcModuleName;
+  const handlerNs = t._.upperFirst(handlerName);
+  const typeName = t._.upperFirst(validationType);
+  const handlerSchema = controllerSchema.handlers[handlerName];
+  if(handlerSchema.validation?.[validationType] ) {
+    return 'Types.' + segmentNs + '.' + controllerNs + '.' + handlerNs + '.' + typeName;
+  }
+  return 'null';
+} %>
+
+export type Controllers = {
+    <% for (const segment of Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType === 'mixin')) { %>
+      <% for (const controllerSchema of Object.values(segment.controllers)) { %>
+      <%= controllerSchema.rpcModuleName %>: {
+        <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
+          <%= handlerName %>: (req: VovkRequest<
+          <%- getType(segment, controllerSchema, handlerName, 'body') %>, 
+          <%- getType(segment, controllerSchema, handlerName, 'query') %>, 
+          <%- getType(segment, controllerSchema, handlerName, 'params')  %>
+          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>` : 'Promise<KnownAny>' %>,
+        <% } %>
+      };
+     <% } %>
+    <% } %>
+};

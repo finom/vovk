@@ -1,0 +1,542 @@
+{
+  "$schema": "https://vovk.dev/api/spec/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "generated",
+  "segmentType": "segment",
+  "controllers": {
+    "NoValidationControllerOnlyEntityRPC": {
+      "rpcModuleName": "NoValidationControllerOnlyEntityRPC",
+      "originalControllerName": "NoValidationControllerOnlyEntityController",
+      "prefix": "no-validation-controller-only-entities",
+      "handlers": {
+        "getNoValidationControllerOnlyEntities": {
+          "path": "",
+          "httpMethod": "GET",
+          "openapi": {
+            "summary": "Get NoValidationControllerOnlyEntities"
+          }
+        },
+        "updateNoValidationControllerOnlyEntity": {
+          "path": "{id}",
+          "httpMethod": "PUT",
+          "openapi": {
+            "summary": "Update NoValidationControllerOnlyEntity"
+          }
+        },
+        "createNoValidationControllerOnlyEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteNoValidationControllerOnlyEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
+    },
+    "NoValidationControllerAndServiceEntityRPC": {
+      "rpcModuleName": "NoValidationControllerAndServiceEntityRPC",
+      "originalControllerName": "NoValidationControllerAndServiceEntityController",
+      "prefix": "no-validation-controller-and-service-entities",
+      "handlers": {
+        "getNoValidationControllerAndServiceEntities": {
+          "path": "",
+          "httpMethod": "GET",
+          "openapi": {
+            "summary": "Get NoValidationControllerAndServiceEntities"
+          }
+        },
+        "updateNoValidationControllerAndServiceEntity": {
+          "path": "{id}",
+          "httpMethod": "PUT",
+          "openapi": {
+            "summary": "Update NoValidationControllerAndServiceEntity"
+          }
+        },
+        "createNoValidationControllerAndServiceEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteNoValidationControllerAndServiceEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
+    },
+    "ZodControllerOnlyEntityRPC": {
+      "rpcModuleName": "ZodControllerOnlyEntityRPC",
+      "originalControllerName": "ZodControllerOnlyEntityController",
+      "prefix": "zod-controller-only-entities",
+      "handlers": {
+        "getZodControllerOnlyEntities": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "",
+          "httpMethod": "GET",
+          "openapi": {
+            "summary": "Get ZodControllerOnlyEntities"
+          }
+        },
+        "updateZodControllerOnlyEntity": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "const": "bar"
+                    },
+                    {
+                      "type": "string",
+                      "const": "baz"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "foo"
+              ],
+              "additionalProperties": false
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "q": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "q"
+              ],
+              "additionalProperties": false
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT",
+          "openapi": {
+            "summary": "Update ZodControllerOnlyEntity"
+          }
+        },
+        "createZodControllerOnlyEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteZodControllerOnlyEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
+    },
+    "ZodControllerAndServiceEntityRPC": {
+      "rpcModuleName": "ZodControllerAndServiceEntityRPC",
+      "originalControllerName": "ZodControllerAndServiceEntityController",
+      "prefix": "zod-controller-and-service-entities",
+      "handlers": {
+        "getZodControllerAndServiceEntities": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "",
+          "httpMethod": "GET",
+          "openapi": {
+            "summary": "Get ZodControllerAndServiceEntities"
+          }
+        },
+        "updateZodControllerAndServiceEntity": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "const": "bar"
+                    },
+                    {
+                      "type": "string",
+                      "const": "baz"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "foo"
+              ],
+              "additionalProperties": false
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "q": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "q"
+              ],
+              "additionalProperties": false
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT",
+          "openapi": {
+            "summary": "Update ZodControllerAndServiceEntity"
+          }
+        },
+        "createZodControllerAndServiceEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteZodControllerAndServiceEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
+    },
+    "YupControllerOnlyEntityRPC": {
+      "rpcModuleName": "YupControllerOnlyEntityRPC",
+      "originalControllerName": "YupControllerOnlyEntityController",
+      "prefix": "yup-controller-only-entities",
+      "handlers": {
+        "getYupControllerOnlyEntities": {
+          "validation": {
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "path": "",
+          "httpMethod": "GET",
+          "openapi": {
+            "summary": "Get YupControllerOnlyEntities"
+          }
+        },
+        "updateYupControllerOnlyEntity": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
+                }
+              },
+              "required": [
+                "foo"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "q": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT",
+          "openapi": {
+            "summary": "Update YupControllerOnlyEntity"
+          }
+        },
+        "createYupControllerOnlyEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteYupControllerOnlyEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
+    },
+    "YupControllerAndServiceEntityRPC": {
+      "rpcModuleName": "YupControllerAndServiceEntityRPC",
+      "originalControllerName": "YupControllerAndServiceEntityController",
+      "prefix": "yup-controller-and-service-entities",
+      "handlers": {
+        "getYupControllerAndServiceEntities": {
+          "validation": {
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "path": "",
+          "httpMethod": "GET",
+          "openapi": {
+            "summary": "Get YupControllerAndServiceEntities"
+          }
+        },
+        "updateYupControllerAndServiceEntity": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
+                }
+              },
+              "required": [
+                "foo"
+              ]
+            },
+            "query": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "q": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT",
+          "openapi": {
+            "summary": "Update YupControllerAndServiceEntity"
+          }
+        },
+        "createYupControllerAndServiceEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteYupControllerAndServiceEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
+    },
+    "DtoControllerOnlyEntityRPC": {
+      "rpcModuleName": "DtoControllerOnlyEntityRPC",
+      "originalControllerName": "DtoControllerOnlyEntityController",
+      "prefix": "dto-controller-only-entities",
+      "handlers": {
+        "getDtoControllerOnlyEntities": {
+          "validation": {
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "path": "",
+          "httpMethod": "GET",
+          "openapi": {
+            "summary": "Get DtoControllerOnlyEntities"
+          }
+        },
+        "updateDtoControllerOnlyEntity": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "foo": {
+                  "type": "string",
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "foo"
+              ]
+            },
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "q": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "q"
+              ]
+            }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT",
+          "openapi": {
+            "summary": "Update DtoControllerOnlyEntity"
+          }
+        },
+        "createDtoControllerOnlyEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteDtoControllerOnlyEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
+    },
+    "DtoControllerAndServiceEntityRPC": {
+      "rpcModuleName": "DtoControllerAndServiceEntityRPC",
+      "originalControllerName": "DtoControllerAndServiceEntityController",
+      "prefix": "dto-controller-and-service-entities",
+      "handlers": {
+        "getDtoControllerAndServiceEntities": {
+          "validation": {
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "path": "",
+          "httpMethod": "GET",
+          "openapi": {
+            "summary": "Get DtoControllerAndServiceEntities"
+          }
+        },
+        "updateDtoControllerAndServiceEntity": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "foo": {
+                  "type": "string",
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "foo"
+              ]
+            },
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "q": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "q"
+              ]
+            }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT",
+          "openapi": {
+            "summary": "Update DtoControllerAndServiceEntity"
+          }
+        },
+        "createDtoControllerAndServiceEntity": {
+          "path": "",
+          "httpMethod": "POST"
+        },
+        "deleteDtoControllerAndServiceEntity": {
+          "path": ":id",
+          "httpMethod": "DELETE"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+---
+imports: ['vovk-rust']
+---
+<% const vars = {
+    convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
+}; %>
+<%- t.getFirstLineBanner() %>
+mod http_request;
+mod read_full_schema;
+
+pub use crate::http_request::HttpException;
+
+<% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
+    Object.values(segment.controllers).forEach((controllerSchema) => { %>
+pub mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %> {
+    #[allow(unused_imports)]
+    use crate::http_request::{HttpException, http_request, http_request_stream};
+    use std::collections::HashMap;
+<% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => { 
+    const { validation, openapi, path, httpMethod } = handlerSchema;
+    const handlerName = t._.snakeCase(handlerNameOriginal);
+    %>
+    // <%= controllerSchema.rpcModuleName %>.<%= handlerName %> <%= httpMethod %> `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
+<%- 
+vars.convertJSONSchemasToRustTypes({ 
+    schemas: {
+        body: validation?.body,
+        query: validation?.query,
+        params: validation?.params,
+        output: validation?.output,
+        iteration: validation?.iteration
+    }, 
+    rootName: handlerName,
+    pad: 4 
+})
+%>
+<%= ([
+    openapi?.summary ? `Summary: ${openapi.summary}` : '',
+    openapi?.description ? `Description: ${openapi.description}` : '',
+    validation?.params?.description ? `Params: ${validation?.params?.description}` : '',
+    validation?.body?.description ? `Body: ${validation?.body?.description}`: '',
+    validation?.query?.description ? `Query: ${validation?.query?.description}`: '',
+    validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
+]).filter(Boolean).map((s) => s.split('\n')).flat().map((s) => ' '.repeat(4) + '/// ' + s).join('\n') %>
+    pub fn <%= handlerName %>( 
+        body: <%- validation?.body ? (validation?.body?.['x-formData'] ?'reqwest::blocking::multipart::Form' : `${handlerName}_::body`): '()' %>,
+        query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
+        params: <%- validation?.params ? `${handlerName}_::params` : '()' %>,
+        headers: Option<&HashMap<String, String>>,
+        api_root: Option<&str>,
+        disable_client_validation: bool,
+    ) -> <%- validation?.output ? `Result<${handlerName}_::output, HttpException>` : validation?.iteration ? `Result<Box<dyn Iterator<Item = ${handlerName}_::iteration>>, HttpException>` : 'Result<serde_json::Value, HttpException>' %>{
+        let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
+<%- [
+                validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
+                validation?.body && !validation?.body?.['x-formData'] ? `${handlerName}_::body` : '()',
+                validation?.query ? `${handlerName}_::query` : '()',
+                validation?.params ? `${handlerName}_::params` : '()'
+            ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
+        >(
+            "<%= t.apiRoot %>",
+            "<%= segmentName %>",
+            "<%= controllerSchema.rpcModuleName %>",
+            "<%= handlerNameOriginal %>",
+            <%- !validation?.body || !validation?.body?.['x-formData'] ? `Some(&body)` : 'None' %>,
+            <%- validation?.body && validation?.body?.['x-formData'] ? `Some(body)` : 'None' %>,
+            Some(&query),
+            Some(&params),
+            headers,
+            api_root,
+            disable_client_validation,
+        );
+
+        result
+    }
+        <% }) %>
+}
+    <% }) %>
+
+<% }) %>
+

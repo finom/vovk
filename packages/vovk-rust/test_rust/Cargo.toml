@@ -1,0 +1,11 @@
+[package]
+name = "test_project"
+version = "0.1.0"
+edition = "2021"
+
+# No dependencies needed for basic testing
+[dependencies]
+generated_rust_client = { path = "../generated_rust_client" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.11", features = ["blocking", "json"] }

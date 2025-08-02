@@ -1,0 +1,6 @@
+*.d.ts
+*.js
+!eslint.config.js
+target
+Cargo.lock
+generated_rust_client

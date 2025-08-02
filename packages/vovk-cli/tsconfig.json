@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "declaration": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src/**/*", "templates/**/*", "test/**/*", "tmp/**/*", "eslint.config.js", "tsconfig.tsdown-bundle.json"],
+  "exclude": ["node_modules", "dist", "test/test_data"]
+}
