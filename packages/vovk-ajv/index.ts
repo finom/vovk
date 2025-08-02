@@ -4,7 +4,7 @@ import ajvFormats from 'ajv-formats';
 import ajvLocalize from 'ajv-i18n';
 import ajvErrors from 'ajv-errors';
 import {
-  createClientValidation,
+  createValidateOnClient,
   HttpException,
   HttpStatus,
   KnownAny,
@@ -81,7 +81,7 @@ const getConfig = (schema: VovkSchema) => {
   return { options, localize, target };
 };
 
-const validateOnClientAjv = createClientValidation({
+const validateOnClientAjv = createValidateOnClient({
   validate: (input, schema, { endpoint, type, fullSchema }) => {
     const { options, localize, target } = getConfig(fullSchema);
 
@@ -102,7 +102,7 @@ const configure = ({
   localize: givenLocalize,
   target: givenTarget,
 }: VovkAjvConfig): VovkValidateOnClient<unknown> =>
-  createClientValidation({
+  createValidateOnClient({
     validate: (input, schema, { endpoint, type, fullSchema }) => {
       const { options, localize, target } = getConfig(fullSchema);
 

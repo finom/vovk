@@ -16,7 +16,7 @@
     "noEmit": true,
     "declaration": true,
     "paths": {
-      "next/*": ["./test/node_modules/next/*"]
+      "next/*": ["./test/node_modules/next/*"],
     }
   },
   "exclude": ["node_modules", "**/dist/**"],

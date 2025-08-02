@@ -171,7 +171,14 @@ export class VovkApp {
     const controllers = this.routes[httpMethod];
     const path = params[Object.keys(params)[0]];
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
-    const xMeta = nextReq.headers.get('x-meta');
+    let headerList: typeof nextReq.headers | null;
+    try {
+      headerList = nextReq.headers;
+    } catch {
+      // this is static rendering environment, headers are not available
+      headerList = null;
+    }
+    const xMeta = headerList?.get('x-meta');
     const xMetaHeader: Record<string, KnownAny> = xMeta && JSON.parse(xMeta);
 
     if (xMetaHeader) reqMeta(req, { xMetaHeader });

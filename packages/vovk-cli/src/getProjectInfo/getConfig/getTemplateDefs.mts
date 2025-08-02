@@ -22,9 +22,11 @@ export enum BuiltInTemplateName {
   // other languages (packages installed separately)
   rsSrc = 'rsSrc',
   rsPkg = 'rsPkg',
+  rsReadme = 'rsReadme',
   rs = 'rs',
   pySrc = 'pySrc',
   pyPkg = 'pyPkg',
+  pyReadme = 'pyReadme',
   py = 'py',
 }
 
@@ -35,18 +37,24 @@ export default function getTemplateDefs(
   const builtInDefs: VovkStrictConfig['clientTemplateDefs'] = {
     [BuiltInTemplateName.ts]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.ts}/`,
-      requires: { [BuiltInTemplateName.schemaTs]: '.' },
-      isTsClient: true,
+      requires: {
+        [BuiltInTemplateName.schemaTs]: '.',
+        [BuiltInTemplateName.mixins]: '.', // used conditionally if OpenAPI mixins are used
+      },
     },
     [BuiltInTemplateName.cjs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.cjs}/`,
-      requires: { [BuiltInTemplateName.schemaCjs]: '.' },
-      isTsClient: true,
+      requires: {
+        [BuiltInTemplateName.schemaCjs]: '.',
+        [BuiltInTemplateName.mixins]: '.', // used conditionally if OpenAPI mixins are used
+      },
     },
     [BuiltInTemplateName.mjs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.mjs}/`,
-      requires: { [BuiltInTemplateName.schemaCjs]: '.' },
-      isTsClient: true,
+      requires: {
+        [BuiltInTemplateName.schemaCjs]: '.',
+        [BuiltInTemplateName.mixins]: '.', // used conditionally if OpenAPI mixins are used
+      },
     },
     [BuiltInTemplateName.schemaTs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaTs}/`,
@@ -74,6 +82,12 @@ export default function getTemplateDefs(
     },
     [BuiltInTemplateName.rsPkg]: {
       templatePath: `vovk-rust/client-templates/${BuiltInTemplateName.rsPkg}/`,
+      requires: {
+        [BuiltInTemplateName.rsReadme]: './',
+      },
+    },
+    [BuiltInTemplateName.rsReadme]: {
+      templatePath: `vovk-rust/client-templates/${BuiltInTemplateName.rsReadme}/`,
     },
     [BuiltInTemplateName.rs]: {
       composedClient: {
@@ -92,6 +106,12 @@ export default function getTemplateDefs(
     },
     [BuiltInTemplateName.pyPkg]: {
       templatePath: `vovk-python/client-templates/${BuiltInTemplateName.pyPkg}/`,
+      requires: {
+        [BuiltInTemplateName.pyReadme]: './',
+      },
+    },
+    [BuiltInTemplateName.pyReadme]: {
+      templatePath: `vovk-python/client-templates/${BuiltInTemplateName.pyReadme}/`,
     },
     [BuiltInTemplateName.py]: {
       composedClient: {

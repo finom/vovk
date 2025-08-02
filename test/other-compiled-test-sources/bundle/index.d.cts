@@ -2,7 +2,6 @@ import * as vovk0 from "vovk";
 import { JSONLinesResponse, VovkRequest } from "vovk";
 import { NextResponse } from "next/server.js";
 import { NextRequest, NextResponse as NextResponse$1 } from "next/server";
-import { UseMutationOptions, UseQueryOptions } from "@tanstack/react-query";
 import * as openapi3_ts_oas310 from "openapi3-ts/oas31";
 import { OpenAPIObject, OperationObject } from "openapi3-ts/oas31";
 import { PackageJson } from "type-fest";
@@ -10,6 +9,7 @@ import { build } from "tsdown";
 import * as _standard_schema_spec0 from "@standard-schema/spec";
 import * as zod0 from "zod";
 import * as zod_v4_core0 from "zod/v4/core";
+import * as zod_v30 from "zod/v3";
 import * as yup0 from "yup";
 import * as class_transformer0 from "class-transformer";
 
@@ -269,57 +269,6 @@ declare enum HttpMethod {
   HEAD = "HEAD",
   OPTIONS = "OPTIONS",
 }
-declare enum HttpStatus {
-  NULL = 0,
-  CONTINUE = 100,
-  SWITCHING_PROTOCOLS = 101,
-  PROCESSING = 102,
-  EARLYHINTS = 103,
-  OK = 200,
-  CREATED = 201,
-  ACCEPTED = 202,
-  NON_AUTHORITATIVE_INFORMATION = 203,
-  NO_CONTENT = 204,
-  RESET_CONTENT = 205,
-  PARTIAL_CONTENT = 206,
-  AMBIGUOUS = 300,
-  MOVED_PERMANENTLY = 301,
-  FOUND = 302,
-  SEE_OTHER = 303,
-  NOT_MODIFIED = 304,
-  TEMPORARY_REDIRECT = 307,
-  PERMANENT_REDIRECT = 308,
-  BAD_REQUEST = 400,
-  UNAUTHORIZED = 401,
-  PAYMENT_REQUIRED = 402,
-  FORBIDDEN = 403,
-  NOT_FOUND = 404,
-  METHOD_NOT_ALLOWED = 405,
-  NOT_ACCEPTABLE = 406,
-  PROXY_AUTHENTICATION_REQUIRED = 407,
-  REQUEST_TIMEOUT = 408,
-  CONFLICT = 409,
-  GONE = 410,
-  LENGTH_REQUIRED = 411,
-  PRECONDITION_FAILED = 412,
-  PAYLOAD_TOO_LARGE = 413,
-  URI_TOO_LONG = 414,
-  UNSUPPORTED_MEDIA_TYPE = 415,
-  REQUESTED_RANGE_NOT_SATISFIABLE = 416,
-  EXPECTATION_FAILED = 417,
-  I_AM_A_TEAPOT = 418,
-  MISDIRECTED = 421,
-  UNPROCESSABLE_ENTITY = 422,
-  FAILED_DEPENDENCY = 424,
-  PRECONDITION_REQUIRED = 428,
-  TOO_MANY_REQUESTS = 429,
-  INTERNAL_SERVER_ERROR = 500,
-  NOT_IMPLEMENTED = 501,
-  BAD_GATEWAY = 502,
-  SERVICE_UNAVAILABLE = 503,
-  GATEWAY_TIMEOUT = 504,
-  HTTP_VERSION_NOT_SUPPORTED = 505,
-}
 declare enum VovkSchemaIdEnum {
   META = "https://vovk.dev/api/spec/v3/meta.json",
   CONFIG = "https://vovk.dev/api/spec/v3/config.json",
@@ -483,14 +432,6 @@ declare const defaultHandler: ({
   schema: VovkHandlerSchema;
 }) => Promise<unknown>;
 //#endregion
-//#region ../packages/vovk/mjs/HttpException.d.ts
-declare class HttpException extends Error {
-  statusCode: HttpStatus;
-  message: string;
-  cause?: unknown;
-  constructor(statusCode: HttpStatus, message: string, cause?: unknown);
-}
-//#endregion
 //#region ../packages/vovk/mjs/client/types.d.ts
 type OmitNullable<T> = { [K in keyof T as T[K] extends null | undefined ? never : K]: T[K] };
 type Empty = {};
@@ -524,12 +465,12 @@ type VovkStreamAsyncIterable<T> = {
 };
 type StaticMethodReturn<T extends ControllerStaticMethod> = ReturnType<T> extends NextResponse$1<infer U> | Promise<NextResponse$1<infer U>> ? U : ReturnType<T> extends Response | Promise<Response> ? Awaited<ReturnType<T>> : ReturnType<T>;
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
-type StaticMethodOptions<T extends (req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<STREAM> | Promise<JSONLinesResponse$1<STREAM>>, OPTS extends Record<string, KnownAny>, STREAM, R, F extends VovkDefaultFetcherOptions<KnownAny>> = Partial<OPTS & {
+type StaticMethodOptions<T extends (req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<TStreamIteration> | Promise<JSONLinesResponse$1<TStreamIteration>>, TFetcherOptions extends Record<string, KnownAny>, TStreamIteration, R, F extends VovkDefaultFetcherOptions<KnownAny>> = Partial<TFetcherOptions & {
   transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>, resp: Response) => R;
   fetcher: VovkClientFetcher<F>;
 }>;
-type ClientMethodReturn<T extends (req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<STREAM> | Promise<JSONLinesResponse$1<STREAM>>, STREAM, R> = ReturnType<T> extends Promise<JSONLinesResponse$1<infer U>> | JSONLinesResponse$1<infer U> | Iterator<infer U> | AsyncIterator<infer U> ? Promise<VovkStreamAsyncIterable<U>> : R extends object ? Promise<Awaited<R>> : StaticMethodReturnPromise<T>;
-type ClientMethod<T extends ((req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<STREAM> | Promise<JSONLinesResponse$1<STREAM>>) & {
+type ClientMethodReturn<T extends (req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<TStreamIteration> | Promise<JSONLinesResponse$1<TStreamIteration>>, TStreamIteration, R> = ReturnType<T> extends Promise<JSONLinesResponse$1<infer U>> | JSONLinesResponse$1<infer U> | Iterator<infer U> | AsyncIterator<infer U> ? Promise<VovkStreamAsyncIterable<U>> : R extends object ? Promise<Awaited<R>> : StaticMethodReturnPromise<T>;
+type ClientMethod<T extends ((req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, params: KnownAny) => void | object | JSONLinesResponse$1<TStreamIteration> | Promise<JSONLinesResponse$1<TStreamIteration>>) & {
   __types?: {
     body: KnownAny;
     query: KnownAny;
@@ -538,65 +479,57 @@ type ClientMethod<T extends ((req: VovkRequest$1<KnownAny, KnownAny, KnownAny>, 
     iteration: KnownAny;
     isForm: boolean;
   };
-}, OPTS extends Record<string, KnownAny>, STREAM extends KnownAny = unknown> = (IsEmptyObject<StaticMethodInput<T>> extends true ? <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(options?: Prettify<StaticMethodOptions<T, OPTS, STREAM, R, F>>) => ClientMethodReturn<T, STREAM, R> : <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<OPTS>>(options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, F>>) => ClientMethodReturn<T, STREAM, R>) & {
+}, TFetcherOptions extends Record<string, KnownAny>, TStreamIteration extends KnownAny = unknown> = (IsEmptyObject<StaticMethodInput<T>> extends true ? <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<TFetcherOptions>>(options?: Prettify<StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>) => ClientMethodReturn<T, TStreamIteration, R> : <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<TFetcherOptions>>(options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>) => ClientMethodReturn<T, TStreamIteration, R>) & {
   isRPC: true;
   schema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkSchema;
   path: string;
-  queryKey: () => string[];
-  mutationKey: () => string[];
-  queryOptions<R>(input?: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>, opts?: Partial<Omit<UseQueryOptions<Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException>, 'queryFn'>>): UseQueryOptions<Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U> ? U[] : Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException>;
-  mutationOptions<R>(opts?: Partial<Omit<UseMutationOptions<Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U> ? U[] : Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException, Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>>, 'mutationFn'>>): UseMutationOptions<Awaited<ClientMethodReturn<T, STREAM, R>> extends VovkStreamAsyncIterable<infer U> ? U[] : Awaited<ClientMethodReturn<T, STREAM, R>>, HttpException, Prettify<StaticMethodInput<T> & StaticMethodOptions<T, OPTS, STREAM, R, VovkDefaultFetcherOptions<OPTS>>>>;
+  queryKey: (key?: unknown[]) => unknown[];
   __types: T['__types'];
 };
-type VovkClientFetcher<OPTS> = (options: {
+type VovkClientFetcher<TFetcherOptions> = (options: {
   name: string;
   httpMethod: HttpMethod;
   getEndpoint: (data: {
     apiRoot: string | undefined;
-    params: {
-      [key: string]: string;
-    };
-    query: {
-      [key: string]: string;
-    };
+    params: unknown;
+    query: unknown;
   }) => string;
-  validate: (input: {
+  validate: (inputOptions: {
     body?: unknown;
     query?: unknown;
     params?: unknown;
+    meta?: unknown;
+  } & TFetcherOptions, meta: {
     endpoint: string;
-  }) => void | Promise<void>;
+  }) => KnownAny | Promise<KnownAny>;
   defaultStreamHandler: typeof defaultStreamHandler;
   defaultHandler: typeof defaultHandler;
   schema: VovkHandlerSchema;
 }, input: {
-  body: unknown;
-  query: {
-    [key: string]: string;
-  };
-  params: {
-    [key: string]: string;
-  };
-  meta?: {
-    [key: string]: KnownAny;
-  };
-} & OPTS) => Promise<[KnownAny, Response]>;
-type VovkDefaultFetcherOptions<T> = T & {
-  apiRoot?: string;
-  disableClientValidation?: boolean;
-  validateOnClient?: VovkValidateOnClient;
-  interpretAs?: string;
-  init?: RequestInit;
-};
-type VovkValidateOnClient = (input: {
   body?: unknown;
   query?: unknown;
   params?: unknown;
+  meta?: unknown;
+} & TFetcherOptions) => Promise<[KnownAny, Response]>;
+type VovkDefaultFetcherOptions<T> = T & {
+  apiRoot?: string;
+  disableClientValidation?: boolean;
+  validateOnClient?: VovkValidateOnClient<T>;
+  interpretAs?: string;
+  init?: RequestInit;
+};
+type VovkValidateOnClient<TFetcherOptions> = (input: {
+  body?: unknown;
+  query?: unknown;
+  params?: unknown;
+  meta?: unknown;
+} & TFetcherOptions, validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>, meta: {
+  fullSchema: VovkSchema;
   endpoint: string;
-}, validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>, fullSchema: VovkSchema) => void | Promise<void>;
+}) => KnownAny | Promise<KnownAny>;
 //#endregion
 //#region src/client/StreamingController.d.ts
 type Token$1 = {
@@ -818,7 +751,7 @@ declare class OpenApiController {
 }
 //# sourceMappingURL=OpenApiController.d.ts.map
 //#endregion
-//#region tmp_ts_rpc/schema.d.ts
+//#region tmp_prebundle/schema.d.ts
 declare const schema$1: {
   $schema: string;
   segments: {
@@ -1144,6 +1077,15 @@ declare const schema$1: {
                   };
                   required: string[];
                   additionalProperties: boolean;
+                };
+              };
+              httpMethod: string;
+              path: string;
+            };
+            handleBodyZod3: {
+              validation: {
+                body: {
+                  $schema: string;
                 };
               };
               httpMethod: string;
@@ -3614,124 +3556,124 @@ declare const schema$1: {
 };
 //# sourceMappingURL=schema.d.ts.map
 //#endregion
-//#region tmp_ts_rpc/index.d.ts
+//#region tmp_prebundle/index.d.ts
 declare const CommonControllerRPC: {
   getHelloWorldResponseObject: ClientMethod<typeof CommonController.getHelloWorldResponseObject, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getHelloWorldObjectLiteral: ClientMethod<typeof CommonController.getHelloWorldObjectLiteral, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getHelloWorldNextResponseObjectPromise: ClientMethod<typeof CommonController.getHelloWorldNextResponseObjectPromise, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getHelloWorldRawResponseObjectPromise: ClientMethod<typeof CommonController.getHelloWorldRawResponseObjectPromise, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getHelloWorldObjectLiteralPromise: ClientMethod<typeof CommonController.getHelloWorldObjectLiteralPromise, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getHelloWorldHeaders: ClientMethod<typeof CommonController.getHelloWorldHeaders, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getHelloWorldArray: ClientMethod<typeof CommonController.getHelloWorldArray, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getHelloWorldAndEmptyGeneric: ClientMethod<typeof CommonController.getHelloWorldAndEmptyGeneric, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getWithParams: ClientMethod<typeof CommonController.getWithParams, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithAll: ClientMethod<typeof CommonController.postWithAll, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithBodyAndQueryUsingReqVovk: ClientMethod<typeof CommonController.postWithBodyAndQueryUsingReqVovk, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getNestedQuery: ClientMethod<typeof CommonController.getNestedQuery, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithFormDataUsingReqVovk: ClientMethod<typeof CommonController.postWithFormDataUsingReqVovk, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getErrorResponse: ClientMethod<typeof CommonController.getErrorResponse, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getJsonTextResponse: ClientMethod<typeof CommonController.getJsonTextResponse, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getJsonlResponse: ClientMethod<typeof CommonController.getJsonlResponse, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   getJsonlTextResponse: ClientMethod<typeof CommonController.getJsonlTextResponse, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -3740,35 +3682,35 @@ declare const StreamingControllerRPC: {
   postWithStreaming: ClientMethod<typeof StreamingController.postWithStreaming, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreamingAndImmediateError: ClientMethod<typeof StreamingController.postWithStreamingAndImmediateError, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreamingAndDelayedError: ClientMethod<typeof StreamingController.postWithStreamingAndDelayedError, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreamingAndDelayedCustomError: ClientMethod<typeof StreamingController.postWithStreamingAndDelayedCustomError, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreamingAndDelayedUnhandledError: ClientMethod<typeof StreamingController.postWithStreamingAndDelayedUnhandledError, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -3777,49 +3719,49 @@ declare const StreamingGeneratorControllerRPC: {
   getWithStreaming: ClientMethod<typeof StreamingGeneratorController.getWithStreaming, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithAsyncStreaming: ClientMethod<typeof StreamingGeneratorController.postWithAsyncStreaming, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreaming: ClientMethod<typeof StreamingGeneratorController.postWithStreaming, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreamingAndImmediateError: ClientMethod<typeof StreamingGeneratorController.postWithStreamingAndImmediateError, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreamingAndDelayedError: ClientMethod<typeof StreamingGeneratorController.postWithStreamingAndDelayedError, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreamingAndDelayedCustomError: ClientMethod<typeof StreamingGeneratorController.postWithStreamingAndDelayedCustomError, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
   postWithStreamingAndDelayedUnhandledError: ClientMethod<typeof StreamingGeneratorController.postWithStreamingAndDelayedUnhandledError, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -3828,7 +3770,7 @@ declare const CustomSchemaControllerRPC: {
   getWithCustomSchema: ClientMethod<typeof CustomSchemaController.getWithCustomSchema, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -4021,7 +3963,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -4097,7 +4039,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -4173,7 +4115,87 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
+    interpretAs?: string;
+    init?: RequestInit;
+  }, unknown>;
+  handleBodyZod3: ClientMethod<((req: vovk0.VovkRequest<{
+    hello?: string;
+  }, unknown, unknown>) => Promise<{
+    hello?: string;
+  }>) & {
+    __types: {
+      body: {
+        hello?: string;
+      };
+      query: unknown;
+      params: unknown;
+      output: unknown;
+      iteration: unknown;
+      isForm: false;
+    };
+    isRPC?: boolean;
+  } & {
+    schema: vovk0.VovkHandlerSchema;
+    wrapper?: (req: vovk0.VovkRequest<any, any, any>, params: undefined) => Promise<{
+      hello?: string;
+    }>;
+  } & {
+    fn: {
+      <RETURN_TYPE = Promise<{
+        hello?: string;
+      }>>(input?: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: unknown;
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+      <RETURN_TYPE = Promise<{
+        hello?: string;
+      }>>(input: {
+        disableClientValidation?: boolean;
+      } & {
+        body?: {
+          hello?: string;
+        };
+      } & {
+        query?: unknown;
+      } & {
+        params?: unknown;
+      } & {
+        meta?: {
+          [key: string]: any;
+          __disableClientValidation?: boolean;
+        };
+      }): RETURN_TYPE;
+    };
+    models: {
+      iteration?: never;
+      output?: never;
+      params?: never;
+      query?: never;
+      body?: zod_v30.ZodObject<{
+        hello: zod_v30.ZodString;
+      }, "strip", zod_v30.ZodTypeAny, {
+        hello?: string;
+      }, {
+        hello?: string;
+      }>;
+    };
+  }, {
+    apiRoot?: string;
+    disableClientValidation?: boolean;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -4258,7 +4280,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -4469,7 +4491,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -4549,7 +4571,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -4629,7 +4651,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -4986,7 +5008,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5052,7 +5074,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5150,7 +5172,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5257,7 +5279,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5355,7 +5377,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5453,7 +5475,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5551,7 +5573,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5649,7 +5671,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5729,7 +5751,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -5920,7 +5942,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -6109,7 +6131,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -6298,7 +6320,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -6413,7 +6435,7 @@ declare const WithZodClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -6626,7 +6648,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -6704,7 +6726,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -6782,7 +6804,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -6870,7 +6892,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -7092,7 +7114,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -7176,7 +7198,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -7260,7 +7282,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -7618,7 +7640,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -7684,7 +7706,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -7786,7 +7808,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -7888,7 +7910,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -7990,7 +8012,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8092,7 +8114,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8194,7 +8216,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8278,7 +8300,7 @@ declare const WithYupClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8358,7 +8380,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8416,7 +8438,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8483,7 +8505,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8552,7 +8574,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8610,7 +8632,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8676,7 +8698,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8746,7 +8768,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8820,7 +8842,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8890,7 +8912,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -8960,7 +8982,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9030,7 +9052,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9096,7 +9118,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9155,7 +9177,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9214,7 +9236,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9273,7 +9295,7 @@ declare const WithDtoClientControllerRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9283,7 +9305,7 @@ declare const OpenApiControllerRPC: {
   getFromSchema: ClientMethod<typeof OpenApiController.getFromSchema, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9411,7 +9433,7 @@ declare const ZodControllerOnlyEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9527,7 +9549,7 @@ declare const ZodControllerOnlyEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9611,7 +9633,7 @@ declare const ZodControllerAndServiceEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9727,7 +9749,7 @@ declare const ZodControllerAndServiceEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9813,7 +9835,7 @@ declare const YupControllerOnlyEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -9923,7 +9945,7 @@ declare const YupControllerOnlyEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -10009,7 +10031,7 @@ declare const YupControllerAndServiceEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -10119,7 +10141,7 @@ declare const YupControllerAndServiceEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -10205,7 +10227,7 @@ declare const DtoControllerOnlyEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -10315,7 +10337,7 @@ declare const DtoControllerOnlyEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -10401,7 +10423,7 @@ declare const DtoControllerAndServiceEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;
@@ -10511,7 +10533,7 @@ declare const DtoControllerAndServiceEntityRPC: {
   }, {
     apiRoot?: string;
     disableClientValidation?: boolean;
-    validateOnClient?: vovk0.VovkValidateOnClient;
+    validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
     interpretAs?: string;
     init?: RequestInit;
   }, unknown>;

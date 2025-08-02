@@ -69,13 +69,13 @@ function withZod<
       IS_FORM
     >,
     toJSONSchema: (model) => zodToJsonSchema(model, { errorMessages: true }),
-    validate: async (data, model, { type, req, i }) => {
+    validate: async (data, model, { type, i }) => {
       try {
         model.parse(data);
       } catch (e) {
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
-          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server for ${req.url}. ${getErrorText(e)}`,
+          `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${getErrorText(e)}`,
           { [type]: data }
         );
       }

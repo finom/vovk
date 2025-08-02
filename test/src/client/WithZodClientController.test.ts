@@ -592,3 +592,36 @@ describe('Controller method as function with func', () => {
     // TODO
   });
 });
+
+describe('Zod 3', () => {
+  it.only('Should handle body validation on server and client', async () => {
+    const result = await WithZodClientControllerRPC.handleBodyZod3({
+      body: { hello: 'world' },
+    });
+
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
+
+    let { rejects } = expectPromise(async () => {
+      await WithZodClientControllerRPC.handleBodyZod3({
+        body: {
+          hello: 'wrong_length',
+        },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Validation failed. Invalid body on server: .*hello.*/);
+    await rejects.toThrowError(HttpException);
+
+    ({ rejects } = expectPromise(async () => {
+      await WithZodClientControllerRPC.handleBodyZod3({
+        body: {
+          hello: 'wrong_length',
+        },
+      });
+    }));
+
+    await rejects.toThrow(/Ajv validation failed. Invalid body on client: data\/hello.*/);
+    await rejects.toThrowError(HttpException);
+  });
+});

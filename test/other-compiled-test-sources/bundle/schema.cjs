@@ -286,6 +286,11 @@ var controllers$1 = {
 				"httpMethod": "POST",
 				"path": "handle-body"
 			},
+			"handleBodyZod3": {
+				"validation": { "body": { "$schema": "http://json-schema.org/draft-07/schema#" } },
+				"httpMethod": "POST",
+				"path": "handle-body-zod3"
+			},
 			"handleParams": {
 				"validation": { "params": {
 					"$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2357,7 +2362,7 @@ var generated_default = {
 };
 
 //#endregion
-//#region tmp_ts_rpc/schema.ts
+//#region tmp_prebundle/schema.ts
 const segments = {
 	"foo/client": client_default,
 	"generated": generated_default
@@ -2367,7 +2372,7 @@ const schema = {
 	segments,
 	meta: {
 		$schema: "https://vovk.dev/api/spec/v3/meta.json",
-		apiRoot: "http://localhost:3000/api",
+		apiRoot: "http://localhost:3210/api",
 		..._meta_default
 	}
 };

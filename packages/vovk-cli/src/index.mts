@@ -34,8 +34,9 @@ program
   .option('--next-dev', 'start schema watcher and Next.js with automatic port allocation')
   .option('--exit', 'kill the processe when schema and client is generated')
   .option('--schema-out <path>', 'path to schema output directory (default: .vovk-schema)')
+  .option('--https, --dev-https', 'use HTTPS for the dev server (default: false)')
   .action(async (nextArgs: string[], options: DevOptions) => {
-    const { nextDev, exit = false, schemaOut } = options;
+    const { nextDev, exit = false, schemaOut, devHttps } = options;
     const portAttempts = 30;
     const PORT = !nextDev
       ? process.env.PORT
@@ -66,6 +67,7 @@ program
               PORT,
               __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
               __VOVK_SCHEMA_OUT_FLAG__: schemaOut ?? '',
+              __VOVK_DEV_HTTPS_FLAG__: devHttps ? 'true' : 'false',
               __VOVK_EXIT__: exit ? 'true' : 'false',
             } satisfies VovkEnv,
           },
@@ -82,7 +84,7 @@ program
         // do nothing, all processes are killed
       }
     } else {
-      void new VovkDev({ schemaOut }).start({ exit });
+      void new VovkDev({ schemaOut, devHttps }).start({ exit });
     }
   });
 

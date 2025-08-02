@@ -14,6 +14,7 @@ export interface DevOptions {
   schemaOut?: string;
   nextDev?: boolean;
   exit?: boolean;
+  devHttps?: boolean;
 }
 
 export interface GenerateOptions {
@@ -94,5 +95,6 @@ export type VovkEnv = {
   VOVK_DEV_HTTPS?: string;
   __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
   __VOVK_SCHEMA_OUT_FLAG__?: string;
+  __VOVK_DEV_HTTPS_FLAG__?: 'true' | 'false';
   __VOVK_EXIT__?: 'true' | 'false';
 };

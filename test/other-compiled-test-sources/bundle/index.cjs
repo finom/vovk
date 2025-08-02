@@ -394,7 +394,6 @@ var require_VovkApp$1 = __commonJS({ "../packages/vovk/mjs/VovkApp.js"(exports) 
 	const reqQuery_1$1 = __importDefault$9(require_reqQuery$1());
 	const reqMeta_1$3 = __importDefault$9(require_reqMeta$1());
 	const reqForm_1$1 = __importDefault$9(require_reqForm$1());
-	const headers_1$1 = require("next/headers");
 	var VovkApp$1 = class {
 		static getHeadersFromOptions(options) {
 			if (!options) return {};
@@ -491,8 +490,7 @@ var require_VovkApp$1 = __commonJS({ "../packages/vovk/mjs/VovkApp.js"(exports) 
 			const controllers$2 = this.routes[httpMethod];
 			const path = params[Object.keys(params)[0]];
 			const handlers = {};
-			const headersList = await (0, headers_1$1.headers)();
-			const xMeta = headersList.get("x-meta");
+			const xMeta = nextReq.headers.get("x-meta");
 			const xMetaHeader = xMeta && JSON.parse(xMeta);
 			if (xMetaHeader) (0, reqMeta_1$3.default)(req, { xMetaHeader });
 			controllers$2.forEach((staticMethods, controller$1) => {
@@ -748,13 +746,14 @@ var require_fetcher$1 = __commonJS({ "../packages/vovk/mjs/client/fetcher.js"(ex
 	const types_1$20 = require_types$3();
 	const HttpException_1$12 = require_HttpException$1();
 	exports.DEFAULT_ERROR_MESSAGE = "Unknown error at default fetcher";
-	function createFetcher$1({ prepareRequestInit, transformResponse, onError } = {}) {
-		const newFetcher = async ({ httpMethod, getEndpoint, validate: validate$1, defaultHandler: defaultHandler$2, defaultStreamHandler: defaultStreamHandler$2, schema: schema$1 }, options) => {
+	function createFetcher$1({ prepareRequestInit, transformResponse, onSuccess, onError } = {}) {
+		const newFetcher = async ({ httpMethod, getEndpoint, validate: validate$1, defaultHandler: defaultHandler$2, defaultStreamHandler: defaultStreamHandler$2, schema: schema$1 }, inputOptions) => {
 			let response = null;
 			let respData = null;
 			let requestInit = null;
 			try {
-				const { params, query, body, meta, apiRoot, disableClientValidation, init, interpretAs } = options;
+				const { meta, apiRoot, disableClientValidation, init, interpretAs } = inputOptions;
+				let { body, query, params } = inputOptions;
 				const endpoint = getEndpoint({
 					apiRoot,
 					params,
@@ -768,11 +767,10 @@ var require_fetcher$1 = __commonJS({ "../packages/vovk/mjs/client/fetcher.js"(ex
 					endpoint
 				});
 				if (!disableClientValidation) try {
-					await validate$1({
+					({body, query, params} = await validate$1(inputOptions, { endpoint }) ?? {
 						body,
 						query,
-						params,
-						endpoint
+						params
 					});
 				} catch (e) {
 					if (e instanceof HttpException_1$12.HttpException) throw e;
@@ -795,7 +793,7 @@ var require_fetcher$1 = __commonJS({ "../packages/vovk/mjs/client/fetcher.js"(ex
 				};
 				if (body instanceof FormData) requestInit.body = body;
 				else if (body) requestInit.body = JSON.stringify(body);
-				requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, options) : requestInit;
+				requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
 				const controller = new AbortController();
 				requestInit.signal = controller.signal;
 				try {
@@ -820,10 +818,11 @@ var require_fetcher$1 = __commonJS({ "../packages/vovk/mjs/client/fetcher.js"(ex
 				});
 				else respData = response;
 				respData = await respData;
-				respData = transformResponse ? await transformResponse(respData, options, response, requestInit) : respData;
+				respData = transformResponse ? await transformResponse(respData, inputOptions, response, requestInit) : respData;
+				await onSuccess?.(respData, inputOptions, response, requestInit);
 				return [respData, response];
 			} catch (error$41) {
-				await onError?.(error$41, options, response, requestInit, respData);
+				await onError?.(error$41, inputOptions, response, requestInit, respData);
 				throw error$41;
 			}
 		};
@@ -1020,7 +1019,8 @@ var require_createRPC$1 = __commonJS({ "../packages/vovk/mjs/client/createRPC.js
 		for (const [key, value] of Object.entries(params ?? {})) result = result.replace(`{${key}}`, value);
 		return `${result}${queryStr ? "?" : ""}${queryStr}`;
 	};
-	const createRPC$2 = (schema$1, segmentName$2, rpcModuleName, fetcher$1 = fetcher_1$3.fetcher, options) => {
+	const createRPC$2 = (schema$1, segmentName$2, rpcModuleName, fetcher$1, options) => {
+		fetcher$1 ??= fetcher_1$3.fetcher;
 		const segmentNamePath = options?.segmentNameOverride ?? segmentName$2;
 		const segmentSchema = schema$1.segments[segmentName$2];
 		if (!segmentSchema) throw new Error(`Unable to create RPC module. Segment schema is missing for segment "${segmentName$2}".`);
@@ -1042,17 +1042,16 @@ var require_createRPC$1 = __commonJS({ "../packages/vovk/mjs/client/createRPC.js
 				return endpoint;
 			};
 			const handler = async (input = {}) => {
-				const validate$1 = async ({ body, query, params, endpoint }) => {
+				const validate$1 = async (validationInput, { endpoint }) => {
 					const validateOnClient$1 = input.validateOnClient ?? options?.validateOnClient;
 					if (validateOnClient$1 && validation$3) {
 						if (typeof validateOnClient$1 !== "function") throw new Error("validateOnClient must be a function");
-						await validateOnClient$1({
-							body,
-							query,
-							params,
+						return await validateOnClient$1({ ...validationInput }, validation$3, {
+							fullSchema: schema$1,
 							endpoint
-						}, validation$3, schema$1);
+						}) ?? validationInput;
 					}
+					return validationInput;
 				};
 				const internalOptions = {
 					name: staticMethodName,
@@ -1068,8 +1067,7 @@ var require_createRPC$1 = __commonJS({ "../packages/vovk/mjs/client/createRPC.js
 					...input,
 					body: input.body ?? null,
 					query: input.query ?? {},
-					params: input.params ?? {},
-					meta: input.meta
+					params: input.params ?? {}
 				};
 				if (!fetcher$1) throw new Error("Fetcher is not provided");
 				const [respData, resp] = await fetcher$1(internalOptions, internalInput);
@@ -1085,38 +1083,14 @@ var require_createRPC$1 = __commonJS({ "../packages/vovk/mjs/client/createRPC.js
 				controllerPrefix,
 				path
 			].filter(Boolean).join("/");
-			handler.queryKey = () => [
+			handler.queryKey = (key) => [
 				handler.segmentSchema.segmentName,
 				handler.controllerSchema.prefix ?? "",
 				handler.controllerSchema.rpcModuleName,
 				handler.schema.path,
-				handler.schema.httpMethod
+				handler.schema.httpMethod,
+				...key ?? []
 			];
-			handler.mutationKey = handler.queryKey;
-			handler.queryOptions = (input, opts) => {
-				const queryKey = handler.queryKey();
-				return {
-					queryFn: async ({ client: client$1 }) => {
-						const result = await handler(input);
-						if (Symbol.asyncIterator in result) {
-							(async () => {
-								for await (const chunk of result) client$1.setQueryData(queryKey, (data) => [...data, chunk]);
-							})();
-							return [];
-						}
-						return result;
-					},
-					queryKey,
-					...opts
-				};
-			};
-			handler.mutationOptions = (opts) => {
-				return {
-					mutationFn: handler,
-					mutationKey: handler.mutationKey(),
-					...opts
-				};
-			};
 			client[staticMethodName] = handler;
 		}
 		return client;
@@ -1278,7 +1252,7 @@ var require_getJSONSchemaExample$1 = __commonJS({ "../packages/vovk/mjs/utils/ge
 				formattedEntries.push(`${indentStr}  ${comment} -----`);
 			}
 			entries.forEach(([key, val], index) => {
-				const propSchema = schema$1.properties?.[key] || {};
+				const propSchema = schema$1.properties?.[key] ?? {};
 				let resolvedPropSchema = propSchema;
 				if (propSchema.$ref) resolvedPropSchema = resolveRef$5(propSchema.$ref, rootSchema);
 				if (resolvedPropSchema.description) {
@@ -2227,11 +2201,11 @@ var require_openapi$1 = __commonJS({ "../packages/vovk/mjs/openapi/index.js"(exp
 			return vovkSchemaToOpenAPI_1$1.vovkSchemaToOpenAPI;
 		}
 	});
-	const openAPIToVovkSchema_1$1 = require_openAPIToVovkSchema$1();
+	const index_1$3 = require_openAPIToVovkSchema$1();
 	Object.defineProperty(exports, "openAPIToVovkSchema", {
 		enumerable: true,
 		get: function() {
-			return openAPIToVovkSchema_1$1.openAPIToVovkSchema;
+			return index_1$3.openAPIToVovkSchema;
 		}
 	});
 	const error_1$1 = require_error$1();
@@ -2632,11 +2606,37 @@ var require_createLLMTools$1 = __commonJS({ "../packages/vovk/mjs/utils/createLL
 } });
 
 //#endregion
+//#region ../packages/vovk/mjs/utils/createValidateOnClient.js
+var require_createValidateOnClient$1 = __commonJS({ "../packages/vovk/mjs/utils/createValidateOnClient.js"(exports) {
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.createValidateOnClient = createValidateOnClient$1;
+	function createValidateOnClient$1({ validate: validate$1 }) {
+		const validateOnClient$1 = async function validateOnClient$2(input, validation$3, meta) {
+			const newInput = { ...input };
+			if (input.body && validation$3.body) newInput.body = await validate$1(input.body, validation$3.body, {
+				...meta,
+				type: "body"
+			}) ?? input.body;
+			if (input.query && validation$3.query) newInput.query = await validate$1(input.query, validation$3.query, {
+				...meta,
+				type: "query"
+			}) ?? input.query;
+			if (input.params && validation$3.params) newInput.params = await validate$1(input.params, validation$3.params, {
+				...meta,
+				type: "params"
+			}) ?? input.params;
+			return newInput;
+		};
+		return validateOnClient$1;
+	}
+} });
+
+//#endregion
 //#region ../packages/vovk/mjs/index.js
 var require_mjs = __commonJS({ "../packages/vovk/mjs/index.js"(exports) {
 	var _a$2;
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.initSegment = exports.prefix = exports.options = exports.head = exports.del = exports.patch = exports.put = exports.post = exports.get = exports.vovkSchemaToOpenAPI = exports.openAPIToVovkSchema = exports.openapi = exports.progressive = exports.createCodeExamples = exports.createLLMTools = exports.multitenant = exports.createStandardValidation = exports.withValidationLibrary = exports.generateStaticAPI = exports.createFetcher = exports.fetcher = exports.createRPC = exports.createDecorator = exports.createVovkApp = exports.HttpMethod = exports.HttpStatus = exports.HttpException = exports.JSONLinesResponse = exports.VovkSchemaIdEnum = void 0;
+	exports.initSegment = exports.prefix = exports.options = exports.head = exports.del = exports.patch = exports.put = exports.post = exports.get = exports.vovkSchemaToOpenAPI = exports.openAPIToVovkSchema = exports.openapi = exports.progressive = exports.createValidateOnClient = exports.createCodeExamples = exports.createLLMTools = exports.multitenant = exports.createStandardValidation = exports.withValidationLibrary = exports.generateStaticAPI = exports.createFetcher = exports.fetcher = exports.createRPC = exports.createDecorator = exports.createVovkApp = exports.HttpMethod = exports.HttpStatus = exports.HttpException = exports.JSONLinesResponse = exports.VovkSchemaIdEnum = void 0;
 	const createVovkApp_1$1 = require_createVovkApp$1();
 	Object.defineProperty(exports, "createVovkApp", {
 		enumerable: true,
@@ -2663,29 +2663,29 @@ var require_mjs = __commonJS({ "../packages/vovk/mjs/index.js"(exports) {
 			return types_1$13.VovkSchemaIdEnum;
 		}
 	});
-	const index_1$1 = require_client$1();
+	const index_1$2 = require_client$1();
 	Object.defineProperty(exports, "createRPC", {
 		enumerable: true,
 		get: function() {
-			return index_1$1.createRPC;
+			return index_1$2.createRPC;
 		}
 	});
 	Object.defineProperty(exports, "fetcher", {
 		enumerable: true,
 		get: function() {
-			return index_1$1.fetcher;
+			return index_1$2.fetcher;
 		}
 	});
 	Object.defineProperty(exports, "createFetcher", {
 		enumerable: true,
 		get: function() {
-			return index_1$1.createFetcher;
+			return index_1$2.createFetcher;
 		}
 	});
 	Object.defineProperty(exports, "progressive", {
 		enumerable: true,
 		get: function() {
-			return index_1$1.progressive;
+			return index_1$2.progressive;
 		}
 	});
 	const index_2$1 = require_openapi$1();
@@ -2768,6 +2768,13 @@ var require_mjs = __commonJS({ "../packages/vovk/mjs/index.js"(exports) {
 		enumerable: true,
 		get: function() {
 			return createCodeExamples_1$2.createCodeExamples;
+		}
+	});
+	const createValidateOnClient_1$1 = require_createValidateOnClient$1();
+	Object.defineProperty(exports, "createValidateOnClient", {
+		enumerable: true,
+		get: function() {
+			return createValidateOnClient_1$1.createValidateOnClient;
 		}
 	});
 	_a$2 = (0, createVovkApp_1$1.createVovkApp)(), exports.get = _a$2.get, exports.post = _a$2.post, exports.put = _a$2.put, exports.patch = _a$2.patch, exports.del = _a$2.del, exports.head = _a$2.head, exports.options = _a$2.options, exports.prefix = _a$2.prefix, exports.initSegment = _a$2.initSegment;
@@ -3060,6 +3067,11 @@ var controllers$1 = {
 				} },
 				"httpMethod": "POST",
 				"path": "handle-body"
+			},
+			"handleBodyZod3": {
+				"validation": { "body": { "$schema": "http://json-schema.org/draft-07/schema#" } },
+				"httpMethod": "POST",
+				"path": "handle-body-zod3"
 			},
 			"handleParams": {
 				"validation": { "params": {
@@ -5132,7 +5144,7 @@ var generated_default = {
 };
 
 //#endregion
-//#region tmp_ts_rpc/schema.ts
+//#region tmp_prebundle/schema.ts
 const segments = {
 	"foo/client": client_default,
 	"generated": generated_default
@@ -5142,7 +5154,7 @@ const schema = {
 	segments,
 	meta: {
 		$schema: "https://vovk.dev/api/spec/v3/meta.json",
-		apiRoot: "http://localhost:3000/api",
+		apiRoot: "http://localhost:3210/api",
 		..._meta_default
 	}
 };
@@ -21559,7 +21571,6 @@ var require_VovkApp = __commonJS({ "../packages/vovk/cjs/VovkApp.js"(exports) {
 	const reqQuery_1 = __importDefault$4(require_reqQuery());
 	const reqMeta_1$1 = __importDefault$4(require_reqMeta());
 	const reqForm_1 = __importDefault$4(require_reqForm());
-	const headers_1 = require("next/headers");
 	var VovkApp = class {
 		static getHeadersFromOptions(options) {
 			if (!options) return {};
@@ -21656,8 +21667,7 @@ var require_VovkApp = __commonJS({ "../packages/vovk/cjs/VovkApp.js"(exports) {
 			const controllers$2 = this.routes[httpMethod];
 			const path = params[Object.keys(params)[0]];
 			const handlers = {};
-			const headersList = await (0, headers_1.headers)();
-			const xMeta = headersList.get("x-meta");
+			const xMeta = nextReq.headers.get("x-meta");
 			const xMetaHeader = xMeta && JSON.parse(xMeta);
 			if (xMetaHeader) (0, reqMeta_1$1.default)(req, { xMetaHeader });
 			controllers$2.forEach((staticMethods, controller$1) => {
@@ -21913,13 +21923,14 @@ var require_fetcher = __commonJS({ "../packages/vovk/cjs/client/fetcher.js"(expo
 	const types_1$7 = require_types();
 	const HttpException_1$5 = require_HttpException();
 	exports.DEFAULT_ERROR_MESSAGE = "Unknown error at default fetcher";
-	function createFetcher({ prepareRequestInit, transformResponse, onError } = {}) {
-		const newFetcher = async ({ httpMethod, getEndpoint, validate: validate$1, defaultHandler: defaultHandler$2, defaultStreamHandler: defaultStreamHandler$2, schema: schema$1 }, options) => {
+	function createFetcher({ prepareRequestInit, transformResponse, onSuccess, onError } = {}) {
+		const newFetcher = async ({ httpMethod, getEndpoint, validate: validate$1, defaultHandler: defaultHandler$2, defaultStreamHandler: defaultStreamHandler$2, schema: schema$1 }, inputOptions) => {
 			let response = null;
 			let respData = null;
 			let requestInit = null;
 			try {
-				const { params, query, body, meta, apiRoot, disableClientValidation, init, interpretAs } = options;
+				const { meta, apiRoot, disableClientValidation, init, interpretAs } = inputOptions;
+				let { body, query, params } = inputOptions;
 				const endpoint = getEndpoint({
 					apiRoot,
 					params,
@@ -21933,11 +21944,10 @@ var require_fetcher = __commonJS({ "../packages/vovk/cjs/client/fetcher.js"(expo
 					endpoint
 				});
 				if (!disableClientValidation) try {
-					await validate$1({
+					({body, query, params} = await validate$1(inputOptions, { endpoint }) ?? {
 						body,
 						query,
-						params,
-						endpoint
+						params
 					});
 				} catch (e) {
 					if (e instanceof HttpException_1$5.HttpException) throw e;
@@ -21960,7 +21970,7 @@ var require_fetcher = __commonJS({ "../packages/vovk/cjs/client/fetcher.js"(expo
 				};
 				if (body instanceof FormData) requestInit.body = body;
 				else if (body) requestInit.body = JSON.stringify(body);
-				requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, options) : requestInit;
+				requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
 				const controller = new AbortController();
 				requestInit.signal = controller.signal;
 				try {
@@ -21985,10 +21995,11 @@ var require_fetcher = __commonJS({ "../packages/vovk/cjs/client/fetcher.js"(expo
 				});
 				else respData = response;
 				respData = await respData;
-				respData = transformResponse ? await transformResponse(respData, options, response, requestInit) : respData;
+				respData = transformResponse ? await transformResponse(respData, inputOptions, response, requestInit) : respData;
+				await onSuccess?.(respData, inputOptions, response, requestInit);
 				return [respData, response];
 			} catch (error$41) {
-				await onError?.(error$41, options, response, requestInit, respData);
+				await onError?.(error$41, inputOptions, response, requestInit, respData);
 				throw error$41;
 			}
 		};
@@ -22185,7 +22196,8 @@ var require_createRPC = __commonJS({ "../packages/vovk/cjs/client/createRPC.js"(
 		for (const [key, value] of Object.entries(params ?? {})) result = result.replace(`{${key}}`, value);
 		return `${result}${queryStr ? "?" : ""}${queryStr}`;
 	};
-	const createRPC$1 = (schema$1, segmentName$2, rpcModuleName, fetcher$1 = fetcher_1$1.fetcher, options) => {
+	const createRPC$1 = (schema$1, segmentName$2, rpcModuleName, fetcher$1, options) => {
+		fetcher$1 ??= fetcher_1$1.fetcher;
 		const segmentNamePath = options?.segmentNameOverride ?? segmentName$2;
 		const segmentSchema = schema$1.segments[segmentName$2];
 		if (!segmentSchema) throw new Error(`Unable to create RPC module. Segment schema is missing for segment "${segmentName$2}".`);
@@ -22207,17 +22219,16 @@ var require_createRPC = __commonJS({ "../packages/vovk/cjs/client/createRPC.js"(
 				return endpoint;
 			};
 			const handler = async (input = {}) => {
-				const validate$1 = async ({ body, query, params, endpoint }) => {
+				const validate$1 = async (validationInput, { endpoint }) => {
 					const validateOnClient$1 = input.validateOnClient ?? options?.validateOnClient;
 					if (validateOnClient$1 && validation$3) {
 						if (typeof validateOnClient$1 !== "function") throw new Error("validateOnClient must be a function");
-						await validateOnClient$1({
-							body,
-							query,
-							params,
+						return await validateOnClient$1({ ...validationInput }, validation$3, {
+							fullSchema: schema$1,
 							endpoint
-						}, validation$3, schema$1);
+						}) ?? validationInput;
 					}
+					return validationInput;
 				};
 				const internalOptions = {
 					name: staticMethodName,
@@ -22233,8 +22244,7 @@ var require_createRPC = __commonJS({ "../packages/vovk/cjs/client/createRPC.js"(
 					...input,
 					body: input.body ?? null,
 					query: input.query ?? {},
-					params: input.params ?? {},
-					meta: input.meta
+					params: input.params ?? {}
 				};
 				if (!fetcher$1) throw new Error("Fetcher is not provided");
 				const [respData, resp] = await fetcher$1(internalOptions, internalInput);
@@ -22250,38 +22260,14 @@ var require_createRPC = __commonJS({ "../packages/vovk/cjs/client/createRPC.js"(
 				controllerPrefix,
 				path
 			].filter(Boolean).join("/");
-			handler.queryKey = () => [
+			handler.queryKey = (key) => [
 				handler.segmentSchema.segmentName,
 				handler.controllerSchema.prefix ?? "",
 				handler.controllerSchema.rpcModuleName,
 				handler.schema.path,
-				handler.schema.httpMethod
+				handler.schema.httpMethod,
+				...key ?? []
 			];
-			handler.mutationKey = handler.queryKey;
-			handler.queryOptions = (input, opts) => {
-				const queryKey = handler.queryKey();
-				return {
-					queryFn: async ({ client: client$1 }) => {
-						const result = await handler(input);
-						if (Symbol.asyncIterator in result) {
-							(async () => {
-								for await (const chunk of result) client$1.setQueryData(queryKey, (data) => [...data, chunk]);
-							})();
-							return [];
-						}
-						return result;
-					},
-					queryKey,
-					...opts
-				};
-			};
-			handler.mutationOptions = (opts) => {
-				return {
-					mutationFn: handler,
-					mutationKey: handler.mutationKey(),
-					...opts
-				};
-			};
 			client[staticMethodName] = handler;
 		}
 		return client;
@@ -22443,7 +22429,7 @@ var require_getJSONSchemaExample = __commonJS({ "../packages/vovk/cjs/utils/getJ
 				formattedEntries.push(`${indentStr}  ${comment} -----`);
 			}
 			entries.forEach(([key, val], index) => {
-				const propSchema = schema$1.properties?.[key] || {};
+				const propSchema = schema$1.properties?.[key] ?? {};
 				let resolvedPropSchema = propSchema;
 				if (propSchema.$ref) resolvedPropSchema = resolveRef$1(propSchema.$ref, rootSchema);
 				if (resolvedPropSchema.description) {
@@ -23392,11 +23378,11 @@ var require_openapi = __commonJS({ "../packages/vovk/cjs/openapi/index.js"(expor
 			return vovkSchemaToOpenAPI_1.vovkSchemaToOpenAPI;
 		}
 	});
-	const openAPIToVovkSchema_1 = require_openAPIToVovkSchema();
+	const index_1$1 = require_openAPIToVovkSchema();
 	Object.defineProperty(exports, "openAPIToVovkSchema", {
 		enumerable: true,
 		get: function() {
-			return openAPIToVovkSchema_1.openAPIToVovkSchema;
+			return index_1$1.openAPIToVovkSchema;
 		}
 	});
 	const error_1 = require_error();
@@ -23797,11 +23783,37 @@ var require_createLLMTools = __commonJS({ "../packages/vovk/cjs/utils/createLLMT
 } });
 
 //#endregion
+//#region ../packages/vovk/cjs/utils/createValidateOnClient.js
+var require_createValidateOnClient = __commonJS({ "../packages/vovk/cjs/utils/createValidateOnClient.js"(exports) {
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.createValidateOnClient = createValidateOnClient;
+	function createValidateOnClient({ validate: validate$1 }) {
+		const validateOnClient$1 = async function validateOnClient$2(input, validation$3, meta) {
+			const newInput = { ...input };
+			if (input.body && validation$3.body) newInput.body = await validate$1(input.body, validation$3.body, {
+				...meta,
+				type: "body"
+			}) ?? input.body;
+			if (input.query && validation$3.query) newInput.query = await validate$1(input.query, validation$3.query, {
+				...meta,
+				type: "query"
+			}) ?? input.query;
+			if (input.params && validation$3.params) newInput.params = await validate$1(input.params, validation$3.params, {
+				...meta,
+				type: "params"
+			}) ?? input.params;
+			return newInput;
+		};
+		return validateOnClient$1;
+	}
+} });
+
+//#endregion
 //#region ../packages/vovk/cjs/index.js
 var require_cjs = __commonJS({ "../packages/vovk/cjs/index.js"(exports) {
 	var _a;
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.initSegment = exports.prefix = exports.options = exports.head = exports.del = exports.patch = exports.put = exports.post = exports.get = exports.vovkSchemaToOpenAPI = exports.openAPIToVovkSchema = exports.openapi = exports.progressive = exports.createCodeExamples = exports.createLLMTools = exports.multitenant = exports.createStandardValidation = exports.withValidationLibrary = exports.generateStaticAPI = exports.createFetcher = exports.fetcher = exports.createRPC = exports.createDecorator = exports.createVovkApp = exports.HttpMethod = exports.HttpStatus = exports.HttpException = exports.JSONLinesResponse = exports.VovkSchemaIdEnum = void 0;
+	exports.initSegment = exports.prefix = exports.options = exports.head = exports.del = exports.patch = exports.put = exports.post = exports.get = exports.vovkSchemaToOpenAPI = exports.openAPIToVovkSchema = exports.openapi = exports.progressive = exports.createValidateOnClient = exports.createCodeExamples = exports.createLLMTools = exports.multitenant = exports.createStandardValidation = exports.withValidationLibrary = exports.generateStaticAPI = exports.createFetcher = exports.fetcher = exports.createRPC = exports.createDecorator = exports.createVovkApp = exports.HttpMethod = exports.HttpStatus = exports.HttpException = exports.JSONLinesResponse = exports.VovkSchemaIdEnum = void 0;
 	const createVovkApp_1 = require_createVovkApp();
 	Object.defineProperty(exports, "createVovkApp", {
 		enumerable: true,
@@ -23935,6 +23947,13 @@ var require_cjs = __commonJS({ "../packages/vovk/cjs/index.js"(exports) {
 			return createCodeExamples_1.createCodeExamples;
 		}
 	});
+	const createValidateOnClient_1 = require_createValidateOnClient();
+	Object.defineProperty(exports, "createValidateOnClient", {
+		enumerable: true,
+		get: function() {
+			return createValidateOnClient_1.createValidateOnClient;
+		}
+	});
 	_a = (0, createVovkApp_1.createVovkApp)(), exports.get = _a.get, exports.post = _a.post, exports.put = _a.put, exports.patch = _a.patch, exports.del = _a.del, exports.head = _a.head, exports.options = _a.options, exports.prefix = _a.prefix, exports.initSegment = _a.initSegment;
 } });
 
@@ -23969,50 +23988,21 @@ var require_vovk_ajv = __commonJS({ "../packages/vovk-ajv/index.js"(exports) {
 		});
 		return ajv;
 	};
-	const validate = ({ data, schema: schema$1, localize = "en", type, endpoint, options, target }) => {
-		if (data && schema$1) {
-			const schemaTarget = schema$1.$schema.includes("://json-schema.org/draft-07/schema") ? "draft-07" : "draft-2020-12";
+	const validate = ({ input, schema: schema$1, localize = "en", type, endpoint, options, target }) => {
+		if (input && schema$1) {
+			const schemaTarget = schema$1.$schema?.includes("://json-schema.org/draft-07/schema") ? "draft-07" : "draft-2020-12";
 			const ajv = createAjv(options ?? {}, target ?? schemaTarget);
-			if (data instanceof FormData) data = Object.fromEntries(data.entries());
-			const isValid = ajv.validate(schema$1, data);
+			if (input instanceof FormData) input = Object.fromEntries(input.entries());
+			const isValid = ajv.validate(schema$1, input);
 			if (!isValid) {
 				ajv_i18n_1.default[localize](ajv.errors);
-				throw new vovk_1.HttpException(vovk_1.HttpStatus.NULL, `Ajv validation failed. Invalid ${data instanceof FormData ? "form" : type} on client: ${ajv.errorsText()}`, {
-					data,
+				throw new vovk_1.HttpException(vovk_1.HttpStatus.NULL, `Ajv validation failed. Invalid ${input instanceof FormData ? "form" : type} on client: ${ajv.errorsText()}`, {
+					input,
 					errors: ajv.errors,
 					endpoint
 				});
 			}
 		}
-	};
-	const validateAll = ({ input, validation: validation$3, localize = "en", target, options }) => {
-		validate({
-			data: input.body,
-			schema: validation$3.body,
-			target,
-			localize,
-			endpoint: input.endpoint,
-			options,
-			type: "body"
-		});
-		validate({
-			data: input.query,
-			schema: validation$3.query,
-			target,
-			localize,
-			endpoint: input.endpoint,
-			options,
-			type: "query"
-		});
-		validate({
-			data: input.params,
-			schema: validation$3.params,
-			target,
-			localize,
-			endpoint: input.endpoint,
-			options,
-			type: "params"
-		});
 	};
 	const getConfig = (schema$1) => {
 		const config$1 = schema$1.meta?.config?.libs?.ajv;
@@ -24025,97 +24015,101 @@ var require_vovk_ajv = __commonJS({ "../packages/vovk-ajv/index.js"(exports) {
 			target
 		};
 	};
-	const validateOnClientAjv = (input, validation$3, schema$1) => {
-		const { options, localize, target } = getConfig(schema$1);
-		return validateAll({
+	const validateOnClientAjv = (0, vovk_1.createValidateOnClient)({ validate: (input, schema$1, { endpoint, type, fullSchema }) => {
+		const { options, localize, target } = getConfig(fullSchema);
+		validate({
 			input,
-			validation: validation$3,
+			schema: schema$1,
 			target,
 			localize,
-			options
+			endpoint,
+			options,
+			type
 		});
-	};
-	const configure = ({ options: givenOptions, localize: givenLocalize, target: givenTarget }) => (input, validation$3, schema$1) => {
-		const { options, localize, target } = getConfig(schema$1);
-		validateAll({
+	} });
+	const configure = ({ options: givenOptions, localize: givenLocalize, target: givenTarget }) => (0, vovk_1.createValidateOnClient)({ validate: (input, schema$1, { endpoint, type, fullSchema }) => {
+		const { options, localize, target } = getConfig(fullSchema);
+		validate({
 			input,
-			validation: validation$3,
+			schema: schema$1,
 			target: givenTarget ?? target,
 			localize: givenLocalize ?? localize,
-			options: givenOptions ?? options
+			endpoint,
+			options: givenOptions ?? options,
+			type
 		});
-	};
+	} });
 	exports.validateOnClient = Object.assign(validateOnClientAjv, { configure });
 } });
 
 //#endregion
-//#region tmp_ts_rpc/index.ts
+//#region tmp_prebundle/index.ts
 var import_mjs = __toESM(require_mjs(), 1);
 var import_mjs$1 = __toESM(require_mjs(), 1);
 var import_vovk_ajv = __toESM(require_vovk_ajv(), 1);
 const CommonControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "CommonControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const StreamingControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "StreamingControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const StreamingGeneratorControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "StreamingGeneratorControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const CustomSchemaControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "CustomSchemaControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const WithZodClientControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "WithZodClientControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const WithYupClientControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "WithYupClientControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const WithDtoClientControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "WithDtoClientControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const OpenApiControllerRPC = (0, import_mjs$1.createRPC)(schema, "foo/client", "OpenApiControllerRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const NoValidationControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "NoValidationControllerOnlyEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const NoValidationControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "NoValidationControllerAndServiceEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const ZodControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "ZodControllerOnlyEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const ZodControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "ZodControllerAndServiceEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const YupControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "YupControllerOnlyEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const YupControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "YupControllerAndServiceEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const DtoControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "DtoControllerOnlyEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 const DtoControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(schema, "generated", "DtoControllerAndServiceEntityRPC", import_mjs.fetcher, {
 	validateOnClient: import_vovk_ajv.validateOnClient,
-	apiRoot: "http://localhost:3000/api"
+	apiRoot: "http://localhost:3210/api"
 });
 
 //#endregion

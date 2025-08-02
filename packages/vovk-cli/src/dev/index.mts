@@ -18,7 +18,7 @@ import { locateSegments, type Segment } from '../locateSegments.mjs';
 import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import writeMetaJson from './writeMetaJson.mjs';
-import type { VovkEnv } from '../types.mjs';
+import type { DevOptions, VovkEnv } from '../types.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
@@ -46,8 +46,11 @@ export class VovkDev {
 
   #schemaOut: string | null = null;
 
-  constructor({ schemaOut }: { schemaOut: string | undefined }) {
+  #devHttps: boolean;
+
+  constructor({ schemaOut, devHttps }: Pick<DevOptions, 'schemaOut' | 'devHttps'>) {
     this.#schemaOut = schemaOut ?? null;
+    this.#devHttps = devHttps ?? false;
   }
 
   #watchSegments = (callback: () => void) => {
@@ -301,7 +304,7 @@ export class VovkDev {
 
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
     const { apiRoot, log, port, config } = this.#projectInfo;
-    const { devHttps } = config;
+    const devHttps = this.#devHttps ?? config.devHttps;
     const endpoint = `${apiRoot.startsWith(`http${devHttps ? 's' : ''}://`) ? apiRoot : `http${devHttps ? 's' : ''}://localhost:${port}${apiRoot}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
@@ -403,7 +406,9 @@ export class VovkDev {
       });
     }
 
-    if (config.devHttps) {
+    const devHttps = this.#devHttps ?? config.devHttps;
+
+    if (devHttps) {
       const agent = new Agent({
         connect: {
           rejectUnauthorized: false,
@@ -470,7 +475,10 @@ export class VovkDev {
 }
 const env = process.env as VovkEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
-  void new VovkDev({ schemaOut: env.__VOVK_SCHEMA_OUT_FLAG__ || undefined }).start({
+  void new VovkDev({
+    schemaOut: env.__VOVK_SCHEMA_OUT_FLAG__ || undefined,
+    devHttps: env.__VOVK_DEV_HTTPS_FLAG__ === 'true',
+  }).start({
     exit: env.__VOVK_EXIT__ === 'true',
   });
 }

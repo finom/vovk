@@ -355,6 +355,15 @@
           "httpMethod": "POST",
           "path": "handle-body"
         },
+        "handleBodyZod3": {
+          "validation": {
+            "body": {
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-body-zod3"
+        },
         "handleParams": {
           "validation": {
             "params": {

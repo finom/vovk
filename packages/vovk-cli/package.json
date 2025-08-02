@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.301",
+  "version": "0.0.1-draft.305",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,10 +35,10 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.346"
+    "vovk": "^3.0.0-draft.350"
   },
   "optionalDependencies": {
-    "vovk-python": "^0.0.1-draft.55"
+    "vovk-python": "^0.0.1-draft.56"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",

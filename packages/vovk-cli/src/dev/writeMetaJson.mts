@@ -8,7 +8,7 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 export default async function writeMetaJson(schemaOutAbsolutePath: string, projectInfo: ProjectInfo | null) {
   const metaJsonPath = path.join(schemaOutAbsolutePath, META_FILE_NAME + '.json');
   const metaStr = JSON.stringify(
-    { config: projectInfo ? pick(projectInfo.config, projectInfo.config.emitConfig) : {} },
+    { config: projectInfo ? pick(projectInfo.config, [...projectInfo.config.emitConfig, '$schema']) : {} },
     null,
     2
   );

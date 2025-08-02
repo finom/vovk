@@ -6,7 +6,6 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import getPublicModuleNameFromPath from '../utils/getPublicModuleNameFromPath.mjs';
-import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
 
 export interface ClientTemplateFile {
   templateName: string;
@@ -47,22 +46,8 @@ export default async function getClientTemplateFiles({
       throw new Error(`Unknown template name: ${templateName}`);
     }
 
-    let usedDef = config.clientTemplateDefs[templateName];
-
-    if (usedDef.isTsClient) {
-      usedDef = {
-        ...usedDef,
-        requires: {
-          ...usedDef.requires,
-          [BuiltInTemplateName.mixins]: '.',
-        },
-      };
-    }
-
-    usedTemplateDefs[templateName] = usedDef;
+    usedTemplateDefs[templateName] = config.clientTemplateDefs[templateName];
   }
-
-  // $openapi['github']['components']['schemas']['User'];
 
   const templateFiles: ClientTemplateFile[] = [];
   const entries = Object.entries(usedTemplateDefs) as [] as [
@@ -93,6 +78,8 @@ export default async function getClientTemplateFiles({
 
     let files: { filePath: string; isSingleFileTemplate: boolean }[] = [];
 
+    const outCwdRelativeDir = forceOutCwdRelativeDir ?? cliOutDir ?? defOutDir ?? configOutDir;
+
     if (templateAbsolutePath) {
       if (entryType === FileSystemEntryType.FILE) {
         files = [{ filePath: templateAbsolutePath, isSingleFileTemplate: true }];
@@ -109,8 +96,6 @@ export default async function getClientTemplateFiles({
         continue;
       }
 
-      const outCwdRelativeDir = forceOutCwdRelativeDir ?? cliOutDir ?? defOutDir ?? configOutDir;
-
       for (const { filePath, isSingleFileTemplate } of files) {
         templateFiles.push({
           templateName,
@@ -123,16 +108,16 @@ export default async function getClientTemplateFiles({
           templateDef,
         });
       }
+    }
 
-      if (templateDef.requires) {
-        for (const [tName, reqRelativeDir] of Object.entries(templateDef.requires)) {
-          const def = config.clientTemplateDefs[tName];
-          if (!def) {
-            throw new Error(`Template "${tName}" required by "${templateName}" not found`);
-          }
-
-          entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir)]);
+    if (templateDef.requires) {
+      for (const [tName, reqRelativeDir] of Object.entries(templateDef.requires)) {
+        const def = config.clientTemplateDefs[tName];
+        if (!def) {
+          throw new Error(`Template "${tName}" required by "${templateName}" not found`);
         }
+
+        entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir)]);
       }
     }
   }
