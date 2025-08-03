@@ -10,11 +10,11 @@ import type { InitOptions } from '../types.mjs';
 export default async function createConfig({
   root,
   log,
-  options: { validationLibrary, reactQuery, lang, channel, dryRun },
+  options: { validationLibrary, lang, channel, dryRun },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
-  options: Pick<InitOptions, 'validationLibrary' | 'reactQuery' | 'lang' | 'channel' | 'dryRun'>;
+  options: Pick<InitOptions, 'validationLibrary' | 'lang' | 'channel' | 'dryRun'>;
 }) {
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
@@ -44,11 +44,6 @@ export default async function createConfig({
   if (lang?.length) {
     config.composedClient ??= {};
     config.composedClient.fromTemplates = ['mjs', 'cjs', ...lang];
-  }
-
-  if (reactQuery) {
-    config.imports ??= {};
-    config.imports.createRPC = 'vovk-react-query';
   }
 
   config.moduleTemplates = moduleTemplates;

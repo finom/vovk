@@ -53,7 +53,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     );
   }
 
-  assertConfig.makeConfig = (validationLibrary: string | null, useReactQuery?: boolean) => {
+  assertConfig.makeConfig = (validationLibrary: string | null) => {
     const config: VovkConfig = {
       moduleTemplates: {
         controller: `${validationLibrary ?? 'vovk-cli'}/module-templates/controller.ts.ejs`,
@@ -66,10 +66,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
       config.imports.validateOnClient = 'vovk-ajv';
     }
 
-    if (useReactQuery) {
-      config.imports ??= {};
-      config.imports.createRPC = 'vovk-react-query';
-    }
     return config;
   };
 

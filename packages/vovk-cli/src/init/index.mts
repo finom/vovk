@@ -37,7 +37,6 @@ export class Init {
       updateTsConfig,
       updateScripts,
       validationLibrary,
-      reactQuery,
       lang,
       dryRun,
       channel,
@@ -68,10 +67,6 @@ export class Init {
           'vovk-dto': ['class-validator', 'class-transformer', 'dto-mapped-types', 'reflect-metadata'],
         }[validationLibrary] ?? [])
       );
-    }
-
-    if (reactQuery) {
-      dependencies.push('vovk-react-query', '@tanstack/react-query');
     }
 
     if (updateScripts) {
@@ -166,7 +161,7 @@ export class Init {
       const { configAbsolutePath } = await createConfig({
         root,
         log,
-        options: { validationLibrary, reactQuery, channel, lang, dryRun },
+        options: { validationLibrary, channel, lang, dryRun },
       });
 
       log.info('Config created successfully at ' + chalkHighlightThing(configAbsolutePath));
@@ -188,7 +183,6 @@ export class Init {
       updateTsConfig,
       updateScripts,
       validationLibrary,
-      reactQuery,
       lang,
       dryRun,
       channel,
@@ -214,7 +208,6 @@ export class Init {
         updateTsConfig: updateTsConfig ?? true,
         updateScripts: updateScripts ?? 'implicit',
         validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
-        reactQuery: reactQuery ?? true,
         dryRun: dryRun ?? false,
         channel: channel ?? 'latest',
         lang: lang ?? [],
@@ -283,11 +276,6 @@ export class Init {
       ],
     });
 
-    reactQuery ??= await confirm({
-      default: false,
-      message: 'Do you want to use @tanstack/react-query for data fetching at React components?',
-    });
-
     if (typeof updateTsConfig === 'undefined') {
       let shouldAsk = false;
 
@@ -309,7 +297,7 @@ export class Init {
     }
 
     lang ??= await checkbox({
-      message: 'Do you want to generate RPC client for other languages besides TypeScript?',
+      message: 'Do you want to generate RPC client for other languages besides TypeScript (beta)?',
       choices: [
         { name: 'Python', value: 'py' },
         { name: 'Rust', value: 'rs' },
@@ -327,7 +315,6 @@ export class Init {
         updateTsConfig,
         updateScripts,
         validationLibrary,
-        reactQuery,
         lang,
         dryRun,
         channel,

@@ -1,6 +1,6 @@
 {
   "name": "vovk-init",
-  "version": "0.0.1-draft.75",
+  "version": "0.0.1-draft.76",
   "bin": "./index.mjs",
   "type": "module",
   "types": "./index.d.mts",
@@ -29,7 +29,7 @@
   "homepage": "https://vovk.dev",
   "dependencies": {
     "commander": "^13.1.0",
-    "vovk-cli": "^0.0.1-draft.305"
+    "vovk-cli": "^0.0.1-draft.306"
   },
   "devDependencies": {
     "loglevel": "^1.9.2"

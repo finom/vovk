@@ -68,7 +68,6 @@ export interface InitOptions {
   updateTsConfig?: boolean;
   updateScripts?: 'implicit' | 'explicit';
   validationLibrary?: string | null;
-  reactQuery?: boolean;
   dryRun?: boolean;
   lang?: string[];
   channel?: 'latest' | 'beta' | 'draft';
