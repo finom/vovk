@@ -13,6 +13,8 @@
 
 ---
 
-## Vovk.ts v3.0.0-draft (WIP)
+## Vovk.ts (WIP)
 
-Stay tuned.
+Got to finish the docs and some tests. Stay tuned!
+
+- [Documentation](https://vovk.dev/)
