@@ -38,7 +38,7 @@
     "vovk": "^3.0.0-draft.358"
   },
   "optionalDependencies": {
-    "vovk-python": "^0.0.1-draft.59"
+    "@rollup/rollup-linux-x64-gnu": "4.9.5"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
