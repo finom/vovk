@@ -4,7 +4,7 @@
     <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
     <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
   </picture><br>
-  <strong>RESTful + RPC = ♥️</strong>
+  <strong>RESTful API RPC</strong>
 </p>
 
 <p align="center">
