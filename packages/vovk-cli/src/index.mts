@@ -105,10 +105,7 @@ program
   .option('--prettify', 'prettify output files')
   .option('--schema, --schema-path <path>', 'path to schema folder (default: ./.vovk-schema)')
   .option('--config, --config-path <config>', 'path to config file')
-  .option(
-    '--force-ts-standalone',
-    'force TypeScript standalone mode (Next.js environment will be ignored, by default it\'s "true" for non-Next.js directories)'
-  )
+  .option('--origin <url>', 'set the origin URL for the generated client')
   .option(
     '--watch <s>',
     'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URL'
@@ -135,10 +132,11 @@ program
   .option('--out, --out-dir <path>', 'path to output directory for bundle')
   .option('--include, --include-segments <segments...>', 'include segments')
   .option('--exclude, --exclude-segments <segments...>', 'exclude segments')
-  .option('--ts-client-out-dir <path>', 'path to output directory for TypeScript client')
-  .option('--dont-delete-ts-client-out-dir-after', 'do not delete TypeScript client output directory after bundling')
+  .option('--prebundle-out-dir, --prebundle-out <path>', 'path to output directory for prebundle')
+  .option('--keep-prebundle-dir', 'do not delete prebundle directory after bundling')
   .option('--config <config>', 'path to config file')
   .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
+  .option('--origin <url>', 'set the origin URL for the generated client')
   .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema instead of Vovk schema')
   .option('--openapi-get-module-name <names...>', 'module names corresponding to the index of --openapi option')
   .option('--openapi-get-method-name <names...>', 'method names corresponding to the index of --openapi option')

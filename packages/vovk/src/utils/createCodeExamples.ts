@@ -109,7 +109,10 @@ ${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''
   const serdeUnwrap = (fake: string) => `from_value(json!(${fake})).unwrap()`;
 
   const RS_CODE = `use ${packageJson?.rs_name ?? packageNameSnake}::${rpcNameSnake};
-use serde_json::{ from_value, json };
+use serde_json::{ 
+  from_value, 
+  json 
+};
 
 pub fn main() {
   let response = ${rpcNameSnake}::${handlerNameSnake}(

@@ -22,13 +22,12 @@ export async function bundle({
   const { config, log, cwd, apiDirAbsolutePath } = projectInfo;
   const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
   const { bundle: bundleConfig } = config;
-  const tsFullClientOutAbsoluteDirInput = path.join(cwd, bundleConfig.tsClientOutDir);
+  const tsFullClientOutAbsoluteDirInput = path.join(cwd, bundleConfig.prebundleOutDir);
 
-  const tsClientOutDir = cliBundleOptions?.tsClientOutDir ?? bundleConfig.tsClientOutDir;
-  const dontDeleteTsClientOutDirAfter =
-    cliBundleOptions?.dontDeleteTsClientOutDirAfter ?? bundleConfig?.dontDeleteTsClientOutDirAfter ?? false;
+  const prebundleOutDir = cliBundleOptions?.prebundleOutDir ?? bundleConfig.prebundleOutDir;
+  const keepPrebundleDir = cliBundleOptions?.keepPrebundleDir ?? bundleConfig?.keepPrebundleDir ?? false;
 
-  if (!tsClientOutDir) {
+  if (!prebundleOutDir) {
     throw new Error('No output directory specified for composed client');
   }
 
@@ -40,6 +39,7 @@ export async function bundle({
 
   await generate({
     isEnsuringClient: false,
+    isBundle: true,
     projectInfo,
     forceNothingWrittenLog: true,
     fullSchema,
@@ -47,12 +47,13 @@ export async function bundle({
     package: bundleConfig.package,
     readme: bundleConfig.readme,
     cliGenerateOptions: {
+      origin: cliBundleOptions?.origin ?? bundleConfig.origin,
       openapiSpec: cliBundleOptions?.openapiSpec,
       openapiGetModuleName: cliBundleOptions?.openapiGetModuleName,
       openapiGetMethodName: cliBundleOptions?.openapiGetMethodName,
       openapiRootUrl: cliBundleOptions?.openapiRootUrl,
       composedFrom: [BuiltInTemplateName.ts],
-      composedOut: tsClientOutDir,
+      composedOut: prebundleOutDir,
       composedOnly: true,
       composedIncludeSegments: cliBundleOptions.includeSegments ?? bundleConfig.includeSegments,
       composedExcludeSegments: cliBundleOptions.excludeSegments ?? bundleConfig.excludeSegments,
@@ -95,6 +96,7 @@ export async function bundle({
       package: bundleConfig.package,
       readme: bundleConfig.readme,
       cliGenerateOptions: {
+        origin: cliBundleOptions?.origin ?? bundleConfig.origin,
         composedFrom: group.map(([templateName]) => templateName),
         composedOut: path.resolve(outDir, relativePath),
         composedOnly: true,
@@ -102,7 +104,7 @@ export async function bundle({
     });
   }
 
-  if (!dontDeleteTsClientOutDirAfter) {
+  if (!keepPrebundleDir) {
     await fs.rm(tsFullClientOutAbsoluteDirInput, { recursive: true, force: true });
     log.debug(
       `Deleted temporary TypeScript client output directory: ${chalkHighlightThing(tsFullClientOutAbsoluteDirInput)}`

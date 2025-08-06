@@ -112,10 +112,15 @@ export default async function getClientTemplateFiles({
 
     if (templateDef.requires) {
       for (const [tName, reqRelativeDir] of Object.entries(templateDef.requires)) {
-        const def = config.clientTemplateDefs[tName];
+        let def = config.clientTemplateDefs[tName];
         if (!def) {
           throw new Error(`Template "${tName}" required by "${templateName}" not found`);
         }
+
+        def = {
+          ...def,
+          origin: templateDef.origin ?? def.origin,
+        };
 
         entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir)]);
       }

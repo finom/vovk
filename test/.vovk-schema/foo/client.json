@@ -170,9 +170,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false
             },
             "query": {
@@ -183,9 +181,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             },
             "params": {
@@ -199,10 +195,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ],
+              "required": ["foo", "bar"],
               "additionalProperties": false
             },
             "output": {
@@ -216,9 +209,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "hello"
-                  ],
+                  "required": ["hello"],
                   "additionalProperties": false
                 },
                 "query": {
@@ -228,9 +219,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "search"
-                  ],
+                  "required": ["search"],
                   "additionalProperties": false
                 },
                 "params": {
@@ -243,10 +232,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
+                  "required": ["foo", "bar"],
                   "additionalProperties": false
                 },
                 "vovkParams": {
@@ -259,19 +245,11 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
+                  "required": ["foo", "bar"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ],
+              "required": ["body", "query", "params", "vovkParams"],
               "additionalProperties": false
             }
           },
@@ -293,15 +271,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -326,9 +300,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             }
           },
@@ -346,9 +318,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false
             }
           },
@@ -379,10 +349,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ],
+              "required": ["foo", "bar"],
               "additionalProperties": false
             }
           },
@@ -444,39 +411,24 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": [
-                                  "deepKey"
-                                ],
+                                "required": ["deepKey"],
                                 "additionalProperties": false
                               }
                             },
-                            "required": [
-                              "foo"
-                            ],
+                            "required": ["foo"],
                             "additionalProperties": false
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ],
+                      "required": ["x", "arrOfObjects"],
                       "additionalProperties": false
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ],
+                  "required": ["f", "u", "d"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ],
+              "required": ["x", "y", "z"],
               "additionalProperties": false
             }
           },
@@ -493,9 +445,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "helloOutput"
-              ],
+              "required": ["helloOutput"],
               "additionalProperties": false
             },
             "output": {
@@ -507,9 +457,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false
             }
           },
@@ -529,9 +477,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ],
+              "required": ["values"],
               "additionalProperties": false
             },
             "iteration": {
@@ -543,9 +489,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "value"
-              ],
+              "required": ["value"],
               "additionalProperties": false
             }
           },
@@ -560,11 +504,7 @@
               "properties": {
                 "enum_value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c"
-                  ]
+                  "enum": ["a", "b", "c"]
                 },
                 "num_minimum": {
                   "type": "number",
@@ -651,9 +591,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "requiredField"
-                  ],
+                  "required": ["requiredField"],
                   "additionalProperties": false
                 },
                 "obj_strict": {
@@ -663,9 +601,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "knownField"
-                  ],
+                  "required": ["knownField"],
                   "additionalProperties": false
                 },
                 "logical_anyOf": {
@@ -691,9 +627,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "a"
-                      ],
+                      "required": ["a"],
                       "additionalProperties": {}
                     },
                     {
@@ -703,9 +637,7 @@
                           "type": "number"
                         }
                       },
-                      "required": [
-                        "b"
-                      ],
+                      "required": ["b"],
                       "additionalProperties": {}
                     }
                   ]
@@ -756,9 +688,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false,
               "x-formData": true
             },
@@ -770,9 +700,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             }
           },
@@ -795,10 +723,7 @@
                   "contentEncoding": "binary"
                 }
               },
-              "required": [
-                "hello",
-                "file"
-              ],
+              "required": ["hello", "file"],
               "additionalProperties": false,
               "x-formData": true
             },
@@ -810,9 +735,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             }
           },
@@ -830,9 +753,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false
             },
             "query": {
@@ -843,9 +764,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             }
           },
@@ -863,9 +782,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false
             },
             "query": {
@@ -877,9 +794,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             }
           },
@@ -901,9 +816,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             }
           },
@@ -923,9 +836,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ],
+              "required": ["values"],
               "additionalProperties": false
             },
             "iteration": {
@@ -937,9 +848,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "value"
-              ],
+              "required": ["value"],
               "additionalProperties": false
             }
           },
@@ -956,9 +865,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false
             },
             "query": {
@@ -969,9 +876,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             },
             "params": {
@@ -985,10 +890,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ],
+              "required": ["foo", "bar"],
               "additionalProperties": false
             },
             "output": {
@@ -1002,9 +904,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "hello"
-                  ],
+                  "required": ["hello"],
                   "additionalProperties": false
                 },
                 "query": {
@@ -1014,9 +914,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "search"
-                  ],
+                  "required": ["search"],
                   "additionalProperties": false
                 },
                 "params": {
@@ -1029,10 +927,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
+                  "required": ["foo", "bar"],
                   "additionalProperties": false
                 },
                 "vovkParams": {
@@ -1045,19 +940,11 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
+                  "required": ["foo", "bar"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ],
+              "required": ["body", "query", "params", "vovkParams"],
               "additionalProperties": false
             }
           },
@@ -1074,9 +961,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "additionalProperties": false
             },
             "query": {
@@ -1087,9 +972,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "search"
-              ],
+              "required": ["search"],
               "additionalProperties": false
             },
             "params": {
@@ -1103,10 +986,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ],
+              "required": ["foo", "bar"],
               "additionalProperties": false
             },
             "output": {
@@ -1120,9 +1000,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "hello"
-                  ],
+                  "required": ["hello"],
                   "additionalProperties": false
                 },
                 "query": {
@@ -1132,9 +1010,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "search"
-                  ],
+                  "required": ["search"],
                   "additionalProperties": false
                 },
                 "params": {
@@ -1147,10 +1023,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
+                  "required": ["foo", "bar"],
                   "additionalProperties": false
                 },
                 "vovkParams": {
@@ -1163,19 +1036,11 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
+                  "required": ["foo", "bar"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ],
+              "required": ["body", "query", "params", "vovkParams"],
               "additionalProperties": false
             }
           },
@@ -1195,10 +1060,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "page",
-                "limit"
-              ],
+              "required": ["page", "limit"],
               "additionalProperties": false
             },
             "output": {
@@ -1217,10 +1079,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "id",
-                      "name"
-                    ],
+                    "required": ["id", "name"],
                     "additionalProperties": false
                   }
                 },
@@ -1231,10 +1090,7 @@
                   "type": "number"
                 }
               },
-              "required": [
-                "items",
-                "hasNextPage"
-              ],
+              "required": ["items", "hasNextPage"],
               "additionalProperties": false
             }
           },
@@ -1258,9 +1114,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -1270,9 +1124,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "params": {
               "type": "object",
@@ -1286,10 +1138,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "output": {
               "type": "object",
@@ -1302,9 +1151,7 @@
                       "maxLength": 5
                     }
                   },
-                  "required": [
-                    "hello"
-                  ]
+                  "required": ["hello"]
                 },
                 "query": {
                   "type": "object",
@@ -1314,9 +1161,7 @@
                       "maxLength": 5
                     }
                   },
-                  "required": [
-                    "search"
-                  ]
+                  "required": ["search"]
                 },
                 "params": {
                   "type": "object",
@@ -1330,10 +1175,7 @@
                       "maxLength": 5
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -1347,18 +1189,10 @@
                       "maxLength": 5
                     }
                   },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 }
               },
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ]
+              "required": ["body", "query", "params", "vovkParams"]
             }
           },
           "path": "all/{foo}/{bar}",
@@ -1379,15 +1213,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -1411,9 +1241,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "GET",
@@ -1429,9 +1257,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "POST",
@@ -1451,10 +1277,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             }
           },
           "path": "x/{foo}/{bar}/y",
@@ -1520,30 +1343,17 @@
                                 }
                               }
                             },
-                            "required": [
-                              "foo"
-                            ]
+                            "required": ["foo"]
                           }
                         }
                       },
-                      "required": [
-                        "x",
-                        "arrOfObjects"
-                      ]
+                      "required": ["x", "arrOfObjects"]
                     }
                   },
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
+                  "required": ["f", "u", "d"]
                 }
               },
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             }
           },
           "httpMethod": "GET",
@@ -1558,9 +1368,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "helloOutput"
-              ]
+              "required": ["helloOutput"]
             },
             "output": {
               "type": "object",
@@ -1570,9 +1378,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "GET",
@@ -1590,9 +1396,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "type": "object",
@@ -1602,9 +1406,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "GET",
@@ -1622,11 +1424,7 @@
               "properties": {
                 "enum_value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c"
-                  ]
+                  "enum": ["a", "b", "c"]
                 },
                 "num_minimum": {
                   "type": "number",
@@ -1707,9 +1505,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "requiredField"
-                  ]
+                  "required": ["requiredField"]
                 },
                 "obj_strict": {
                   "type": "object",
@@ -1734,10 +1530,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "a",
-                    "b"
-                  ]
+                  "required": ["a", "b"]
                 }
               }
             }
@@ -1760,9 +1553,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-formData": true
             },
             "query": {
@@ -1773,9 +1564,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -1791,9 +1580,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -1803,9 +1590,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -1821,9 +1606,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "type": "object",
@@ -1833,9 +1616,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -1856,9 +1637,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -1876,9 +1655,7 @@
                   }
                 }
               },
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "type": "object",
@@ -1888,9 +1665,7 @@
                   "maxLength": 5
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "POST",
@@ -1915,9 +1690,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
@@ -1929,9 +1702,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             },
             "params": {
               "x-isDto": true,
@@ -1947,10 +1718,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             },
             "output": {
               "x-isDto": true,
@@ -1963,9 +1731,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "hello"
-                  ]
+                  "required": ["hello"]
                 },
                 "HandleAllQueryDto": {
                   "properties": {
@@ -1975,9 +1741,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "search"
-                  ]
+                  "required": ["search"]
                 },
                 "HandleAllParamsDto": {
                   "properties": {
@@ -1991,10 +1755,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "foo",
-                    "bar"
-                  ]
+                  "required": ["foo", "bar"]
                 }
               },
               "properties": {
@@ -2012,12 +1773,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "body",
-                "query",
-                "params",
-                "vovkParams"
-              ]
+              "required": ["body", "query", "params", "vovkParams"]
             }
           },
           "path": "all/{foo}/{bar}",
@@ -2038,15 +1794,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "This is a bad request"
-                              ]
+                              "enum": ["This is a bad request"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                400
-                              ]
+                              "enum": [400]
                             }
                           }
                         }
@@ -2081,11 +1833,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "f",
-                    "u",
-                    "d"
-                  ]
+                  "required": ["f", "u", "d"]
                 },
                 "DDto": {
                   "properties": {
@@ -2094,9 +1842,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "x"
-                  ]
+                  "required": ["x"]
                 }
               },
               "properties": {
@@ -2115,11 +1861,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "x",
-                "y",
-                "z"
-              ]
+              "required": ["x", "y", "z"]
             }
           },
           "httpMethod": "GET",
@@ -2140,9 +1882,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "helloOutput"
-              ]
+              "required": ["helloOutput"]
             },
             "output": {
               "x-isDto": true,
@@ -2154,9 +1894,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "GET",
@@ -2180,9 +1918,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "x-isDto": true,
@@ -2190,18 +1926,11 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
               "type": "object",
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "GET",
@@ -2225,9 +1954,7 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "requiredField"
-                  ]
+                  "required": ["requiredField"]
                 },
                 "StrictObject": {
                   "properties": {
@@ -2236,19 +1963,13 @@
                     }
                   },
                   "type": "object",
-                  "required": [
-                    "knownField"
-                  ]
+                  "required": ["knownField"]
                 }
               },
               "properties": {
                 "enum_value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c"
-                  ]
+                  "enum": ["a", "b", "c"]
                 },
                 "num_minimum": {
                   "minimum": 1,
@@ -2382,9 +2103,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ],
+              "required": ["hello"],
               "x-formData": true
             },
             "query": {
@@ -2397,9 +2116,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -2421,9 +2138,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
@@ -2435,9 +2150,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -2455,9 +2168,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             },
             "query": {
               "x-isDto": true,
@@ -2469,9 +2180,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -2494,9 +2203,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "POST",
@@ -2514,9 +2221,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "values"
-              ]
+              "required": ["values"]
             },
             "iteration": {
               "x-isDto": true,
@@ -2524,18 +2229,11 @@
               "properties": {
                 "value": {
                   "type": "string",
-                  "enum": [
-                    "a",
-                    "b",
-                    "c",
-                    "d"
-                  ]
+                  "enum": ["a", "b", "c", "d"]
                 }
               },
               "type": "object",
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           },
           "httpMethod": "POST",
@@ -2557,9 +2255,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "search"
-              ]
+              "required": ["search"]
             }
           },
           "httpMethod": "GET",
@@ -2581,9 +2277,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "hello"
-              ]
+              "required": ["hello"]
             }
           },
           "httpMethod": "POST",
@@ -2609,10 +2303,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "foo",
-                "bar"
-              ]
+              "required": ["foo", "bar"]
             }
           },
           "path": "x/{foo}/{bar}/y",
@@ -2646,15 +2337,11 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": [
-                                "I am a teapot error"
-                              ]
+                              "enum": ["I am a teapot error"]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [
-                                418
-                              ]
+                              "enum": [418]
                             }
                           }
                         }

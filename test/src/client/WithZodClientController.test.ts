@@ -594,7 +594,7 @@ describe('Controller method as function with func', () => {
 });
 
 describe('Zod 3', () => {
-  it.only('Should handle body validation on server and client', async () => {
+  it('Should handle body validation on server and client', async () => {
     const result = await WithZodClientControllerRPC.handleBodyZod3({
       body: { hello: 'world' },
     });

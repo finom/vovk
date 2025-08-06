@@ -21,6 +21,7 @@ export interface GenerateOptions {
   prettify?: boolean;
   configPath?: string;
   schemaPath?: string;
+  origin?: string;
   openapiSpec?: string[];
   openapiGetModuleName?: string[];
   openapiGetMethodName?: string[];
@@ -42,14 +43,12 @@ export interface GenerateOptions {
 
 export interface BundleOptions
   extends Partial<
-    Pick<
-      VovkStrictConfig['bundle'],
-      'tsClientOutDir' | 'dontDeleteTsClientOutDirAfter' | 'includeSegments' | 'excludeSegments'
-    >
+    Pick<VovkStrictConfig['bundle'], 'prebundleOutDir' | 'keepPrebundleDir' | 'includeSegments' | 'excludeSegments'>
   > {
   config?: string;
   schema?: string;
   outDir?: string;
+  origin?: string;
   openapiSpec?: string[];
   openapiGetModuleName?: string[];
   openapiGetMethodName?: string[];
@@ -90,8 +89,6 @@ export type VovkEnv = {
   VOVK_ROOT_ENTRY?: string;
   VOVK_API_ENTRY_POINT?: string;
   VOVK_LOG_LEVEL?: LogLevelNames;
-  VOVK_PRETTIFY_CLIENT?: string;
-  VOVK_DEV_HTTPS?: string;
   __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
   __VOVK_SCHEMA_OUT_FLAG__?: string;
   __VOVK_DEV_HTTPS_FLAG__?: 'true' | 'false';

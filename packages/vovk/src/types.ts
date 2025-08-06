@@ -360,6 +360,7 @@ type ClientConfigCommon = {
   enabled?: boolean;
   outDir?: string;
   fromTemplates?: string[];
+  prettifyClient?: boolean;
 } & (
   | {
       excludeSegments?: never;
@@ -383,10 +384,12 @@ type ClientConfigSegmented = ClientConfigCommon & {
 
 type BundleConfig = {
   requires?: Record<string, string>;
-  tsClientOutDir?: string;
-  dontDeleteTsClientOutDirAfter?: boolean;
+  prebundleOutDir?: string;
+  keepPrebundleDir?: boolean;
+  origin?: string;
   package?: PackageJson;
   readme?: ReadmeConfig;
+  reExports?: Record<string, string>; // { 'X as Y': 'path/to/module' }
   tsdownBuildOptions?: Parameters<typeof build>[0];
 } & (
   | {
@@ -432,8 +435,7 @@ type VovkUserConfig = {
   modulesDir?: string;
   rootEntry?: string;
   origin?: string;
-  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn';
-  prettifyClient?: boolean;
+  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn' | (string & {});
   libs?: {
     ajv: KnownAny; // set by providing the typedoc comment in config
     [key: string]: KnownAny;
@@ -495,15 +497,15 @@ export type VovkStrictConfig = Required<
   >
 > & {
   emitConfig: (keyof VovkStrictConfig | string)[];
-  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>;
+  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments' | 'origin'>;
   imports: {
     fetcher: [string, string] | [string];
     validateOnClient: [string, string] | [string] | null;
     createRPC: [string, string] | [string];
   };
   libs: Record<string, KnownAny>;
-  composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir'>;
-  segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
+  composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
+  segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   openApiMixins: {
     [mixinName: string]: {
       source: Exclude<

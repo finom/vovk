@@ -19,6 +19,7 @@ import debounceWithArgs from '../utils/debounceWithArgs.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import writeMetaJson from './writeMetaJson.mjs';
 import type { DevOptions, VovkEnv } from '../types.mjs';
+import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
@@ -311,20 +312,23 @@ export class VovkDev {
 
     try {
       const resp = await fetch(endpoint);
+      const text = await resp.text();
+      const json = text ? JSON.parse(text) : null;
 
       if (resp.status !== 200) {
         const probableCause = {
           404: 'The segment did not compile or config.origin is wrong.',
         }[resp.status];
         log.warn(
-          `Schema request to ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}` : ''}`
+          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}` : ''}. Response text will be logged below on "debug" level.`
         );
+        log.debug(`Response from ${formatLoggedSegmentName(segmentName)}: ${text}`);
         return { isError: true };
       }
 
       let segmentSchema: VovkSegmentSchema | null = null;
       try {
-        ({ schema: segmentSchema } = (await resp.json()) as { schema: VovkSegmentSchema | null });
+        ({ schema: segmentSchema } = json as { schema: VovkSegmentSchema | null });
       } catch (error) {
         log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error)?.message}`);
       }
@@ -352,7 +356,7 @@ export class VovkDev {
   async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null) {
     const { log, config, cwd } = this.#projectInfo;
     if (!segmentSchema) {
-      log.warn(`${formatLoggedSegmentName(segmentName)} schema is null`);
+      log.warn(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} schema is null`);
       return;
     }
 

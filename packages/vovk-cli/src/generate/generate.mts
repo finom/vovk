@@ -150,6 +150,7 @@ const cliOptionsToOpenAPIMixins = ({
 
 export async function generate({
   isEnsuringClient = false,
+  isBundle = false,
   projectInfo,
   forceNothingWrittenLog,
   fullSchema,
@@ -159,6 +160,7 @@ export async function generate({
   readme: argReadme,
 }: {
   isEnsuringClient?: boolean;
+  isBundle?: boolean;
   projectInfo: ProjectInfo;
   forceNothingWrittenLog?: boolean;
   fullSchema: VovkSchema;
@@ -258,7 +260,7 @@ export async function generate({
           projectInfo,
           clientTemplateFile,
           fullSchema: composedFullSchema,
-          prettifyClient: config.prettifyClient,
+          prettifyClient: config.composedClient.prettifyClient,
           segmentName: null,
           imports: clientImports.composedClient,
           templateContent,
@@ -267,13 +269,14 @@ export async function generate({
           readme,
           isEnsuringClient,
           outCwdRelativeDir,
-          origin: config.origin ?? templateDef?.origin ?? null,
           templateDef,
           locatedSegments,
           isNodeNextResolution,
           hasMixins,
           isVovkProject,
           vovkCliPackage,
+          isBundle,
+          origin: cliGenerateOptions?.origin ?? templateDef.origin ?? config.origin,
         });
 
         const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
@@ -365,7 +368,7 @@ export async function generate({
               projectInfo,
               clientTemplateFile,
               fullSchema: segmentedFullSchema,
-              prettifyClient: config.prettifyClient,
+              prettifyClient: config.segmentedClient.prettifyClient,
               segmentName,
               imports: clientImports.segmentedClient[segmentName],
               templateContent,
@@ -374,13 +377,14 @@ export async function generate({
               readme,
               isEnsuringClient,
               outCwdRelativeDir,
-              origin: config.origin ?? templateDef?.origin ?? null,
               templateDef,
               locatedSegments,
               isNodeNextResolution,
               hasMixins,
               isVovkProject,
               vovkCliPackage,
+              isBundle,
+              origin: cliGenerateOptions?.origin ?? templateDef.origin ?? config.origin,
             });
 
             return {

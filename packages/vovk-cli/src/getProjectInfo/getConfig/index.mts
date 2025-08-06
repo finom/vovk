@@ -7,6 +7,7 @@ import type { VovkEnv } from '../../types.mjs';
 import getTemplateDefs, { BuiltInTemplateName } from './getTemplateDefs.mjs';
 import { normalizeOpenAPIMixins } from '../../utils/normalizeOpenAPIMixins.mjs';
 import chalkHighlightThing from '../../utils/chalkHighlightThing.mjs';
+import type { LogLevelNames } from 'loglevel';
 
 export default async function getConfig({ configPath, cwd }: { configPath?: string; cwd: string }) {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({
@@ -43,22 +44,25 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
       enabled: conf.composedClient?.enabled ?? true,
       fromTemplates: conf.composedClient?.fromTemplates ?? ['mjs', 'cjs'],
       outDir: conf.composedClient?.outDir ?? './node_modules/.vovk-client',
+      prettifyClient: conf.composedClient?.prettifyClient ?? false,
     },
     segmentedClient: {
       ...conf.segmentedClient,
       enabled: conf.segmentedClient?.enabled ?? false,
       fromTemplates: conf.segmentedClient?.fromTemplates ?? ['ts'],
       outDir: conf.segmentedClient?.outDir ?? path.join(srcRoot ?? '.', 'client'),
+      prettifyClient: conf.segmentedClient?.prettifyClient ?? true,
     },
     bundle: {
-      tsClientOutDir: conf.bundle?.tsClientOutDir ?? 'tmp_prebundle',
-      dontDeleteTsClientOutDirAfter: conf.bundle?.dontDeleteTsClientOutDirAfter ?? false,
+      prebundleOutDir: conf.bundle?.prebundleOutDir ?? 'tmp_prebundle',
+      keepPrebundleDir: conf.bundle?.keepPrebundleDir ?? false,
       requires: {
         [BuiltInTemplateName.readme]: '.',
         [BuiltInTemplateName.packageJson]: '.',
       },
       package: {},
       readme: {},
+      reExports: {},
       ...conf.bundle,
       tsdownBuildOptions: {
         outDir: conf.bundle?.tsdownBuildOptions?.outDir ?? 'dist',
@@ -71,8 +75,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',
     rootSegmentModulesDirName: conf.rootSegmentModulesDirName ?? '',
     logLevel: env.VOVK_LOG_LEVEL ?? conf.logLevel ?? 'info',
-    prettifyClient: (env.VOVK_PRETTIFY_CLIENT ? !!env.VOVK_PRETTIFY_CLIENT : null) ?? conf.prettifyClient ?? false,
-    devHttps: (env.VOVK_DEV_HTTPS ? !!env.VOVK_DEV_HTTPS : null) ?? conf.devHttps ?? false,
+    devHttps: conf.devHttps ?? false,
     moduleTemplates: {
       service: 'vovk-cli/module-templates/service.ts.ejs',
       controller: 'vovk-cli/module-templates/controller.ts.ejs',
@@ -91,7 +94,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     config.emitConfig = conf.emitConfig;
   } // else it's false and emitConfig already is []
 
-  const log = getLogger(config.logLevel);
+  const log = getLogger(config.logLevel as LogLevelNames);
 
   config.openApiMixins = await normalizeOpenAPIMixins({
     mixinModules: conf.openApiMixins ?? {},

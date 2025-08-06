@@ -8,7 +8,7 @@ import {
   type VovkValidationType,
   type VovkTypedMethod,
 } from 'vovk';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@finom/zod-to-json-schema';
 
 const getErrorText = (e: unknown) =>
   (e as z.ZodError).errors?.map((er) => `${er.message} (${er.path.join('/')})`).join(', ') ?? String(e);

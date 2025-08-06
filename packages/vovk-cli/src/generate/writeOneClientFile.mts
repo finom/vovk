@@ -32,13 +32,14 @@ export default async function writeOneClientFile({
   readme,
   isEnsuringClient,
   outCwdRelativeDir,
-  origin,
   templateDef,
   locatedSegments,
   isNodeNextResolution,
   hasMixins,
   isVovkProject,
   vovkCliPackage,
+  isBundle,
+  origin,
 }: {
   cwd: string;
   projectInfo: ProjectInfo;
@@ -58,15 +59,17 @@ export default async function writeOneClientFile({
   readme: VovkStrictConfig['bundle']['readme'];
   isEnsuringClient: boolean;
   outCwdRelativeDir: string;
-  origin: string | null;
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
   locatedSegments: Segment[];
   isNodeNextResolution: boolean;
   hasMixins: boolean;
   isVovkProject: boolean;
   vovkCliPackage: PackageJson;
+  isBundle: boolean;
+  origin: string | null;
 }) {
   const { config, apiRoot } = projectInfo;
+
   const { templateFilePath, relativeDir } = clientTemplateFile;
   const locatedSegmentsByName = _.keyBy(locatedSegments, 'segmentName');
 
@@ -138,15 +141,14 @@ export default async function writeOneClientFile({
               path.resolve(cwd, routeFilePath)
             )
           : null;
-        const {
-          origin: segmentConfigOrigin,
-          rootEntry: segmentConfigRootEntry,
-          segmentNameOverride,
-          reExports,
-        } = {
+        const segmentConfig = {
           ...(config.segmentConfig ? config.segmentConfig[sName] : {}),
           ...(templateDef.segmentConfig ? templateDef.segmentConfig[sName] : {}),
         };
+        const { origin: segmentConfigOrigin, rootEntry: segmentConfigRootEntry, segmentNameOverride } = segmentConfig;
+
+        const reExports = { ...segmentConfig.reExports, ...(isBundle ? projectInfo.config.bundle.reExports : {}) };
+
         return [
           sName,
           {
@@ -197,7 +199,7 @@ export default async function writeOneClientFile({
     : templateContent;
 
   // Optionally prettify
-  if (prettifyClient || config.prettifyClient) {
+  if (prettifyClient) {
     rendered = await prettify(rendered, outPath);
   }
 

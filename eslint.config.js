@@ -21,7 +21,6 @@ const ignores = [
   'packages/**/*.d.ts',
   'packages/**/*.cjs',
   'packages/**/*.d.cts',
-  'packages/vovk-react-query/index.cts',
   'test/other-compiled-test-sources/**',
   'packages/**/eslint.config.js',
   '**/emscripten_fetch_worker.js',

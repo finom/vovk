@@ -82,9 +82,6 @@ export default function getTemplateDefs(
     },
     [BuiltInTemplateName.rsPkg]: {
       templatePath: `vovk-rust/client-templates/${BuiltInTemplateName.rsPkg}/`,
-      requires: {
-        [BuiltInTemplateName.rsReadme]: './',
-      },
     },
     [BuiltInTemplateName.rsReadme]: {
       templatePath: `vovk-rust/client-templates/${BuiltInTemplateName.rsReadme}/`,
@@ -96,6 +93,7 @@ export default function getTemplateDefs(
       requires: {
         [BuiltInTemplateName.rsSrc]: './src/',
         [BuiltInTemplateName.rsPkg]: './',
+        [BuiltInTemplateName.rsReadme]: './',
       },
     },
     [BuiltInTemplateName.pySrc]: {
@@ -106,9 +104,6 @@ export default function getTemplateDefs(
     },
     [BuiltInTemplateName.pyPkg]: {
       templatePath: `vovk-python/client-templates/${BuiltInTemplateName.pyPkg}/`,
-      requires: {
-        [BuiltInTemplateName.pyReadme]: './',
-      },
     },
     [BuiltInTemplateName.pyReadme]: {
       templatePath: `vovk-python/client-templates/${BuiltInTemplateName.pyReadme}/`,
@@ -120,6 +115,7 @@ export default function getTemplateDefs(
       requires: {
         [BuiltInTemplateName.pySrc]: './src/[package_name]/',
         [BuiltInTemplateName.pyPkg]: './',
+        [BuiltInTemplateName.pyReadme]: './',
       },
     },
   };
@@ -136,6 +132,19 @@ export default function getTemplateDefs(
         defs[name] = {
           ...builtIn,
           ...templateDef,
+          composedClient: {
+            ...builtIn.composedClient,
+            ...templateDef.composedClient,
+          },
+          segmentedClient: {
+            ...builtIn.segmentedClient,
+            ...templateDef.segmentedClient,
+          },
+          segmentConfig: {
+            ...builtIn.segmentConfig,
+            ...templateDef.segmentConfig,
+          },
+          // 'requires' and other props will be overridden
         };
       }
     } else {

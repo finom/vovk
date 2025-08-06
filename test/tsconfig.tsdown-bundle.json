@@ -1,20 +1,20 @@
 {
-    "compilerOptions": {
-        "module": "es2022",
-        "moduleResolution": "bundler",
-        "target": "es2024",
-        "lib": ["esnext"],
+  "compilerOptions": {
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "target": "es2024",
+    "lib": ["esnext"],
 
     "declaration": true,
     "declarationMap": true,
     "allowJs": false,
-     "paths": {
-        "vovk/*": ["../packages/vovk/*"],
+    "paths": {
+      "vovk/*": ["../packages/vovk/*"]
       /* 
       "vovk-cli/*": ["../packages/vovk-cli/*"],
       "vovk-validate-client-ajv/*": ["../packages/vovk-ajv/*"],
       "vovk-python/*": ["../packages/vovk-python/*"], */
       //"next/*": ["./node_modules/next/*"]
-    },
     }
+  }
 }

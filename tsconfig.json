@@ -16,7 +16,7 @@
     "noEmit": true,
     "declaration": true,
     "paths": {
-      "next/*": ["./test/node_modules/next/*"],
+      "next/*": ["./test/node_modules/next/*"]
     }
   },
   "exclude": ["node_modules", "**/dist/**"],
@@ -32,6 +32,8 @@
     "test/next.config.mjs",
     "test/postcss.config.cjs",
     "packages/vovk-dto/index.cts",
-    "test/webpack.config.mjs"
-, "test/src/etc/useQuery.test.mts", "test/src/etc/useMutation.test.mts"  ]
+    "test/webpack.config.mjs",
+    "test/src/etc/useQuery.test.mts",
+    "test/src/etc/useMutation.test.mts"
+  ]
 }
