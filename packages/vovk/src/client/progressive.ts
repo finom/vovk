@@ -68,5 +68,8 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
       reg[prop] = { resolve, reject, promise, isSettled: false };
       return promise;
     },
+    ownKeys: () => {
+      throw new Error('Getting own keys is not possible as they are dynamically created');
+    },
   });
 }

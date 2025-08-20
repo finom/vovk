@@ -46,7 +46,7 @@ export const defaultStreamHandler = async ({
         if (done) break;
       } catch (error) {
         await reader.cancel();
-        const err = new Error('Stream error. ' + String(error));
+        const err = new Error('JSONLines stream error. ' + String(error));
         err.cause = error;
         throw err;
       }
@@ -59,7 +59,7 @@ export const defaultStreamHandler = async ({
         let data;
         try {
           data = JSON.parse(line) as object;
-          prepend = '';
+          prepend = prepend.slice(line.length + 1);
         } catch {
           break;
         }

@@ -459,7 +459,9 @@ export class VovkDev {
               void this.#requestSchema(segmentName).then(({ isError: isError2 }) => {
                 if (!isError2) {
                   clearInterval(interval);
-                  log.info(`Requested schema for ${formatLoggedSegmentName(segmentName)} after ${attempts} attempts`);
+                  log.info(
+                    `Requested schema for ${formatLoggedSegmentName(segmentName)} after ${attempts} attempt${attempts === 1 ? '' : 's'}`
+                  );
                 }
               });
             }, DELAY);

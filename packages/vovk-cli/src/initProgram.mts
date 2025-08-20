@@ -5,8 +5,8 @@ import { Init } from './init/index.mjs';
 // reused at vovk-init
 export function initProgram(program: Command) {
   return program
-    .argument('[prefix]', 'directory to initialize project in', '.')
-    .description('Initialize Vovk.ts project')
+    .description('Initialize Vovk.ts at existing Next.js project')
+    .option('--prefix <prefix>', 'directory to initialize project in')
     .option('-y, --yes', 'skip all prompts and use default values')
     .option('--log-level <level>', 'set log level', 'info')
     .option('--use-npm', 'use npm as package manager')
@@ -26,5 +26,5 @@ export function initProgram(program: Command) {
     )
     .option('--channel <channel>', 'channel to use for fetching packages', 'latest')
     .option('--dry-run', 'do not write files to disk')
-    .action((prefix: string = '.', options: InitOptions) => new Init().main(prefix, options));
+    .action((options: InitOptions) => new Init().main(options));
 }

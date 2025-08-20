@@ -57,6 +57,7 @@ export interface BundleOptions
 }
 
 export interface InitOptions {
+  prefix?: string;
   yes?: boolean;
   logLevel: LogLevelNames;
   useNpm?: boolean;

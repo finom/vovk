@@ -27,12 +27,8 @@ const createAjv = (options: NonNullable<Options>, target: NonNullable<VovkAjvCon
   ajvFormats(ajv);
   ajvErrors(ajv);
   ajv.addKeyword('x-isDto');
-  ajv.addKeyword('x-formData');
+  ajv.addKeyword('x-isForm');
   ajv.addKeyword('x-tsType');
-  ajv.addFormat('binary', {
-    type: 'string',
-    validate: (data) => (data as KnownAny) instanceof File || (data as KnownAny) instanceof Blob,
-  });
   return ajv;
 };
 
@@ -56,15 +52,46 @@ const validate = ({
   if (input && schema) {
     const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
     const ajv = createAjv(options ?? {}, target ?? schemaTarget);
+    const isFormData = input instanceof FormData;
     if (input instanceof FormData) {
-      input = Object.fromEntries(input.entries());
+      const formDataEntries = Array.from(input.entries());
+      const result: Record<string, KnownAny> = {};
+
+      formDataEntries.forEach(([key, value]) => {
+        // Process the value (handle Blobs/Files)
+        let processedValue: KnownAny;
+        if (value instanceof Blob) {
+          processedValue = '<binary>';
+        } else if (Array.isArray(value)) {
+          processedValue = value.map((item) => (item instanceof Blob ? '<binary>' : item));
+        } else {
+          processedValue = value;
+        }
+
+        // Handle duplicate keys
+        if (key in result) {
+          // If the key already exists
+          if (Array.isArray(result[key])) {
+            // If it's already an array, push to it
+            result[key].push(processedValue);
+          } else {
+            // If it's not an array yet, convert it to an array with both values
+            result[key] = [result[key], processedValue];
+          }
+        } else {
+          // First occurrence of this key
+          result[key] = processedValue;
+        }
+      });
+
+      input = result;
     }
     const isValid = ajv.validate(schema, input);
     if (!isValid) {
       ajvLocalize[localize](ajv.errors);
       throw new HttpException(
         HttpStatus.NULL,
-        `Ajv validation failed. Invalid ${input instanceof FormData ? 'form' : type} on client: ${ajv.errorsText()}`,
+        `Ajv validation failed. Invalid ${isFormData ? 'form' : type} on client: ${ajv.errorsText()}`,
         { input, errors: ajv.errors, endpoint }
       );
     }

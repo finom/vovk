@@ -1,13 +1,13 @@
 //#region .vovk-schema/_meta.json
 var config = {
-  $schema: 'https://vovk.dev/api/spec/v3/config.json',
   libs: {},
+  $schema: 'https://vovk.dev/api/schema/v3/config.json',
 };
 var _meta_default = { config };
 
 //#endregion
 //#region .vovk-schema/foo/client.json
-var $schema$1 = 'https://vovk.dev/api/spec/v3/segment.json';
+var $schema$1 = 'https://vovk.dev/api/schema/v3/segment.json';
 var emitSchema$1 = true;
 var segmentName$1 = 'foo/client';
 var segmentType$1 = 'segment';
@@ -302,7 +302,20 @@ var controllers$1 = {
         path: 'handle-body',
       },
       handleBodyZod3: {
-        validation: { body: { $schema: 'http://json-schema.org/draft-07/schema#' } },
+        validation: {
+          body: {
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+            },
+            required: ['hello'],
+            additionalProperties: false,
+            $schema: 'http://json-schema.org/draft-07/schema#',
+          },
+        },
         httpMethod: 'POST',
         path: 'handle-body-zod3',
       },
@@ -619,7 +632,7 @@ var controllers$1 = {
             },
             required: ['hello'],
             additionalProperties: false,
-            'x-formData': true,
+            'x-isForm': true,
           },
           query: {
             $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -650,7 +663,7 @@ var controllers$1 = {
             },
             required: ['hello', 'file'],
             additionalProperties: false,
-            'x-formData': true,
+            'x-isForm': true,
           },
           query: {
             $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -662,6 +675,40 @@ var controllers$1 = {
         },
         httpMethod: 'POST',
         path: 'handle-form-data-with-file',
+      },
+      handleFormDataWithMultipleFiles: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+              files: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  format: 'binary',
+                  contentEncoding: 'binary',
+                },
+              },
+            },
+            required: ['hello', 'files'],
+            additionalProperties: false,
+            'x-isForm': true,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
+          },
+        },
+        httpMethod: 'POST',
+        path: 'handle-form-data-with-multiple-files',
       },
       disableServerSideValidationBool: {
         validation: {
@@ -1349,7 +1396,7 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
-            'x-formData': true,
+            'x-isForm': true,
           },
           query: {
             type: 'object',
@@ -1841,7 +1888,7 @@ var controllers$1 = {
             },
             type: 'object',
             required: ['hello'],
-            'x-formData': true,
+            'x-isForm': true,
           },
           query: {
             'x-isDto': true,
@@ -2104,7 +2151,7 @@ var client_default = {
 
 //#endregion
 //#region .vovk-schema/generated.json
-var $schema = 'https://vovk.dev/api/spec/v3/segment.json';
+var $schema = 'https://vovk.dev/api/schema/v3/segment.json';
 var emitSchema = true;
 var segmentName = 'generated';
 var segmentType = 'segment';
@@ -2523,11 +2570,11 @@ const segments = {
   generated: generated_default,
 };
 const schema = {
-  $schema: 'https://vovk.dev/api/spec/v3/schema.json',
+  $schema: 'https://vovk.dev/api/schema/v3/schema.json',
   segments,
   meta: {
-    $schema: 'https://vovk.dev/api/spec/v3/meta.json',
-    apiRoot: 'http://localhost:3210/api',
+    $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+    apiRoot: 'http://localhost:3000/api',
     ..._meta_default,
   },
 };

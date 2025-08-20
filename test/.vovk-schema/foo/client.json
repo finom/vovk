@@ -1,5 +1,5 @@
 {
-  "$schema": "https://vovk.dev/api/spec/v3/segment.json",
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
   "emitSchema": true,
   "segmentName": "foo/client",
   "segmentType": "segment",
@@ -328,6 +328,15 @@
         "handleBodyZod3": {
           "validation": {
             "body": {
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": ["hello"],
+              "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
           },
@@ -690,7 +699,7 @@
               },
               "required": ["hello"],
               "additionalProperties": false,
-              "x-formData": true
+              "x-isForm": true
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -701,6 +710,21 @@
                 }
               },
               "required": ["search"],
+              "additionalProperties": false
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": ["hello", "search"],
               "additionalProperties": false
             }
           },
@@ -725,7 +749,7 @@
               },
               "required": ["hello", "file"],
               "additionalProperties": false,
-              "x-formData": true
+              "x-isForm": true
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -737,10 +761,87 @@
               },
               "required": ["search"],
               "additionalProperties": false
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "file": {
+                  "type": "string"
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": ["hello", "file", "search"],
+              "additionalProperties": false
             }
           },
           "httpMethod": "POST",
           "path": "handle-form-data-with-file"
+        },
+        "handleFormDataWithMultipleFiles": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "binary",
+                    "contentEncoding": "binary"
+                  }
+                }
+              },
+              "required": ["hello", "files"],
+              "additionalProperties": false,
+              "x-isForm": true
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": ["search"],
+              "additionalProperties": false
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": ["hello", "files", "search"],
+              "additionalProperties": false
+            }
+          },
+          "httpMethod": "POST",
+          "path": "handle-form-data-with-multiple-files"
         },
         "disableServerSideValidationBool": {
           "validation": {
@@ -1554,7 +1655,7 @@
                 }
               },
               "required": ["hello"],
-              "x-formData": true
+              "x-isForm": true
             },
             "query": {
               "type": "object",
@@ -2104,7 +2205,7 @@
               },
               "type": "object",
               "required": ["hello"],
-              "x-formData": true
+              "x-isForm": true
             },
             "query": {
               "x-isDto": true,

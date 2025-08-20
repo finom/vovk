@@ -171,13 +171,13 @@ export function openAPIToVovkSchema({
         }
         if (formDataBody) {
           Object.assign(formDataBody, {
-            'x-formData': true,
+            'x-isForm': true,
             'x-tsType': 'FormData',
           });
         }
         if (urlEncodedBody) {
           Object.assign(urlEncodedBody, {
-            'x-formData': true,
+            'x-isForm': true,
             'x-tsType': 'FormData',
           });
         }

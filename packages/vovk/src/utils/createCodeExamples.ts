@@ -1,5 +1,5 @@
 import type { VovkSimpleJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
-import { getJSONSchemaExample } from './getJSONSchemaExample';
+import { getJSONSchemaExample, getSampleValue } from './getJSONSchemaExample';
 
 const toSnakeCase = (str: string) =>
   str
@@ -8,6 +8,31 @@ const toSnakeCase = (str: string) =>
     .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
     .toLowerCase()
     .replace(/^_/, ''); // Remove leading underscore
+
+const getIndentSpaces = (level: number): string => ' '.repeat(level);
+
+function isTextFormat(mimeType?: string): boolean {
+  if (!mimeType) return false;
+  return (
+    mimeType.startsWith('text/') ||
+    [
+      'application/json',
+      'application/ld+json',
+      'application/xml',
+      'application/xhtml+xml',
+      'application/javascript',
+      'application/typescript',
+      'application/yaml',
+      'application/x-yaml',
+      'application/toml',
+      'application/sql',
+      'application/graphql',
+      'application/x-www-form-urlencoded',
+    ].includes(mimeType) ||
+    mimeType.endsWith('+json') ||
+    mimeType.endsWith('+xml')
+  );
+}
 
 export type CodeSamplePackageJson = {
   name?: string;
@@ -18,39 +43,68 @@ export type CodeSamplePackageJson = {
   [key: string]: KnownAny;
 };
 
-export function createCodeExamples({
-  handlerName,
-  handlerSchema,
-  controllerSchema,
-  package: packageJson,
-}: {
+type CodeGenerationParams = {
   handlerName: string;
-  handlerSchema: VovkHandlerSchema;
-  controllerSchema: VovkControllerSchema;
-  package?: CodeSamplePackageJson;
-}) {
-  const queryValidation = handlerSchema?.validation?.query as VovkSimpleJSONSchema | undefined;
-  const bodyValidation = handlerSchema?.validation?.body as VovkSimpleJSONSchema | undefined;
-  const paramsValidation = handlerSchema?.validation?.params as VovkSimpleJSONSchema | undefined;
-  const outputValidation = handlerSchema?.validation?.output as VovkSimpleJSONSchema | undefined;
-  const iterationValidation = handlerSchema?.validation?.iteration as VovkSimpleJSONSchema | undefined;
+  rpcName: string;
+  packageName: string;
+  queryValidation?: VovkSimpleJSONSchema;
+  bodyValidation?: VovkSimpleJSONSchema;
+  paramsValidation?: VovkSimpleJSONSchema;
+  outputValidation?: VovkSimpleJSONSchema;
+  iterationValidation?: VovkSimpleJSONSchema;
+  hasArg: boolean;
+};
+
+function generateTypeScriptCode({
+  handlerName,
+  rpcName,
+  packageName,
+  queryValidation,
+  bodyValidation,
+  paramsValidation,
+  outputValidation,
+  iterationValidation,
+  hasArg,
+}: CodeGenerationParams): string {
   const getTsSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
-  const getPySample = (schema: VovkSimpleJSONSchema, indent?: number) =>
-    getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4, comment: '#' });
-  const getRsSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
-    getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
-  const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation;
-  const rpcName = controllerSchema.rpcModuleName;
-  const handlerNameSnake = toSnakeCase(handlerName);
-  const rpcNameSnake = toSnakeCase(rpcName);
-  const packageName = packageJson?.name || 'vovk-client';
-  const packageNameSnake = toSnakeCase(packageName);
+
+  const getTsFormSample = (schema: VovkSimpleJSONSchema) => {
+    let formSample = '\nconst formData = new FormData();';
+    for (const [key, prop] of Object.entries(schema.properties || {})) {
+      const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
+      const desc = target.description ?? prop.description ?? undefined;
+      if (target.type === 'array' && target.items) {
+        formSample += getTsFormAppend(target.items, key, desc);
+        formSample += getTsFormAppend(target.items, key, desc);
+      } else {
+        formSample += getTsFormAppend(target, key, desc);
+      }
+    }
+    return formSample;
+  };
+
+  const getTsFormAppend = (schema: VovkSimpleJSONSchema, key: string, description?: string) => {
+    let sampleValue: string;
+    if (schema.type === 'string' && schema.format === 'binary') {
+      sampleValue = `new Blob(${isTextFormat(schema.contentMediaType) ? '["text_content"]' : '[binary_data]'}${
+        schema.contentMediaType ? `, { type: "${schema.contentMediaType}" }` : ''
+      })`;
+    } else if (schema.type === 'object') {
+      sampleValue = '"object_unknown"';
+    } else {
+      sampleValue = `"${getSampleValue(schema)}"`;
+    }
+
+    const desc = schema.description ?? description;
+
+    return `\n${desc ? `// ${desc}\n` : ''}formData.append("${key}", ${sampleValue});`;
+  };
 
   const tsArgs = hasArg
     ? `{
 ${[
-  bodyValidation ? `    body: ${getTsSample(bodyValidation)},` : null,
+  bodyValidation ? `    body: ${bodyValidation['x-isForm'] ? 'formData' : getTsSample(bodyValidation)},` : null,
   queryValidation ? `    query: ${getTsSample(queryValidation)},` : null,
   paramsValidation ? `    params: ${getTsSample(paramsValidation)},` : null,
 ]
@@ -58,8 +112,9 @@ ${[
   .join('\n')}
 }`
     : '';
-  const TS_CODE = `import { ${rpcName} } from '${packageName}';
 
+  const TS_CODE = `import { ${rpcName} } from '${packageName}';
+${bodyValidation?.['x-isForm'] ? getTsFormSample(bodyValidation) + '\n' : ''}
 ${iterationValidation ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
 ${
   outputValidation
@@ -81,13 +136,65 @@ for await (const item of response) {
       : ''
   }`;
 
-  const PY_CODE = `from ${packageJson?.py_name ?? packageNameSnake} import ${rpcName}
+  return TS_CODE.trim();
+}
 
+function generatePythonCode({
+  handlerName,
+  rpcName,
+  packageName,
+  queryValidation,
+  bodyValidation,
+  paramsValidation,
+  outputValidation,
+  iterationValidation,
+  hasArg,
+}: CodeGenerationParams): string {
+  const getPySample = (schema: VovkSimpleJSONSchema, indent?: number) =>
+    getJSONSchemaExample(schema, {
+      stripQuotes: false,
+      indent: indent ?? 4,
+      comment: '#',
+      ignoreBinary: true,
+      nestingIndent: 4,
+    });
+
+  const handlerNameSnake = toSnakeCase(handlerName);
+
+  const getFileTouple = (schema: VovkSimpleJSONSchema) => {
+    return `('name.ext', BytesIO(${isTextFormat(schema.contentMediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${schema.contentMediaType ? `, "${schema.contentMediaType}"` : ''})`;
+  };
+  const getPyFiles = (schema: VovkSimpleJSONSchema) => {
+    return Object.entries(schema.properties ?? {}).reduce((acc, [key, prop]) => {
+      const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
+      const desc = target.description ?? prop.description ?? undefined;
+
+      if (target.type === 'string' && target.format === 'binary') {
+        acc.push(
+          `${desc ? `${getIndentSpaces(8)}# ${desc}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target)})`
+        );
+      } else if (target.type === 'array' && target.items?.format === 'binary') {
+        const val = `${desc ? `${getIndentSpaces(8)}# ${desc}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target.items)})`;
+        acc.push(val, val);
+      }
+
+      return acc;
+    }, [] as string[]);
+  };
+
+  const pyFiles = bodyValidation ? getPyFiles(bodyValidation) : null;
+  const pyFilesArg = pyFiles?.length
+    ? `${getIndentSpaces(4)}files=[\n${pyFiles.join(',\n')}\n${getIndentSpaces(4)}],`
+    : null;
+
+  const PY_CODE = `from ${packageName} import ${rpcName}
+${bodyValidation?.['x-isForm'] ? 'from io import BytesIO\n' : ''}
 response = ${rpcName}.${handlerNameSnake}(${
     hasArg
       ? '\n' +
         [
           bodyValidation ? `    body=${getPySample(bodyValidation)},` : null,
+          pyFilesArg,
           queryValidation ? `    query=${getPySample(queryValidation)},` : null,
           paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
         ]
@@ -106,19 +213,113 @@ ${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''
       : ''
   }`;
 
+  return PY_CODE.trim();
+}
+
+function generateRustCode({
+  handlerName,
+  rpcName,
+  packageName,
+  queryValidation,
+  bodyValidation,
+  paramsValidation,
+  outputValidation,
+  iterationValidation,
+}: CodeGenerationParams): string {
+  const getRsJSONSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
+    getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
+  const getRsOutputSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
+    getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
+  /* const getRsFormSample = (schema: VovkSimpleJSONSchema, indent?: number, nesting = 0) => {
+    let formSample = 'let form = multipart::Form::new()';
+    for (const [key, prop] of Object.entries(schema.properties || {})) {
+      const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
+      let sampleValue; // = value.type === 'object' ? 'object_unknown' : getSampleValue(value);
+      if (target.type === 'string' && target.format === 'binary') {
+        sampleValue = isTextFormat(target.contentMediaType)
+          ? 'multipart::Part::text("text_content")'
+          : 'multipart::Part::bytes(binary_data)';
+
+        if (target.contentMediaType) {
+          sampleValue += `.mime_str("${target.contentMediaType}").unwrap()`;
+        }
+      } else if (prop.type === 'array') {
+        if (nesting === 0 && prop.items) {
+          sampleValue =
+            getRsFormSample(prop.items, indent, nesting + 1) + getRsFormSample(prop.items, indent, nesting + 1);
+        } else {
+          sampleValue = '"array_unknown"';
+        }
+      } else if (target.type === 'object') {
+        sampleValue = '"object_unknown"';
+      } else {
+        sampleValue = `"${getSampleValue(target)}"`;
+      }
+      formSample += `\n${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
+    }
+    return formSample;
+  }; */
+
+  const getRsFormSample = (schema: VovkSimpleJSONSchema) => {
+    let formSample = 'let form = multipart::Form::new()';
+    for (const [key, prop] of Object.entries(schema.properties || {})) {
+      const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
+      const desc = target.description ?? prop.description ?? undefined;
+      if (target.type === 'array' && target.items) {
+        formSample += getRsFormPart(target.items, key, desc);
+        formSample += getRsFormPart(target.items, key, desc);
+      } else {
+        formSample += getRsFormPart(target, key, desc);
+      }
+    }
+    return formSample;
+  };
+
+  const getRsFormPart = (schema: VovkSimpleJSONSchema, key: string, description?: string) => {
+    let sampleValue: string;
+    if (schema.type === 'string' && schema.format === 'binary') {
+      sampleValue = isTextFormat(schema.contentMediaType)
+        ? 'multipart::Part::text("text_content")'
+        : 'multipart::Part::bytes(binary_data)';
+
+      if (schema.contentMediaType) {
+        sampleValue += `.mime_str("${schema.contentMediaType}").unwrap()`;
+      }
+    } else if (schema.type === 'object') {
+      sampleValue = '"object_unknown"';
+    } else {
+      sampleValue = `"${getSampleValue(schema)}"`;
+    }
+
+    const desc = schema.description ?? description;
+
+    return `\n${getIndentSpaces(4)}${desc ? `// ${desc}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
+  };
+
+  const getBody = (schema: VovkSimpleJSONSchema) => {
+    if (schema['x-isForm']) {
+      return 'form';
+    }
+    return serdeUnwrap(getRsJSONSample(schema));
+  };
+
+  const handlerNameSnake = toSnakeCase(handlerName);
+  const rpcNameSnake = toSnakeCase(rpcName);
+
   const serdeUnwrap = (fake: string) => `from_value(json!(${fake})).unwrap()`;
 
-  const RS_CODE = `use ${packageJson?.rs_name ?? packageNameSnake}::${rpcNameSnake};
+  const RS_CODE = `use ${packageName}::${rpcNameSnake};
 use serde_json::{ 
   from_value, 
   json 
 };
+${bodyValidation?.['x-isForm'] ? `use multipart;` : ''}
 
-pub fn main() {
+pub fn main() {${bodyValidation?.['x-isForm'] ? '\n  ' + getRsFormSample(bodyValidation) + '\n' : ''}
   let response = ${rpcNameSnake}::${handlerNameSnake}(
-    ${bodyValidation ? serdeUnwrap(getRsSample(bodyValidation)) : '()'}, /* body */ 
-    ${queryValidation ? serdeUnwrap(getRsSample(queryValidation)) : '()'}, /* query */ 
-    ${paramsValidation ? serdeUnwrap(getRsSample(paramsValidation)) : '()'}, /* params */ 
+    ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
+    ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
+    ${paramsValidation ? serdeUnwrap(getRsJSONSample(paramsValidation)) : '()'}, /* params */ 
     None, /* headers (HashMap) */ 
     None, /* api_root */ 
     false, /* disable_client_validation */
@@ -127,19 +328,19 @@ pub fn main() {
       ? `\n\nmatch response {
     Ok(output) => println!("{:?}", output),
     /* 
-    output ${getTsSample(outputValidation)} 
+    output ${getRsOutputSample(outputValidation)} 
     */
     Err(e) => println!("error: {:?}", e),
   }`
       : ''
   }${
     iterationValidation
-      ? `match response {
+      ? `\n\nmatch response {
     Ok(stream) => {
       for (i, item) in stream.enumerate() {
         println!("#{}: {:?}", i, item);
         /*
-        #0: iteration ${getTsSample(iterationValidation, 8)}
+        #0: iteration ${getRsOutputSample(iterationValidation, 8)}
         */
       }
     },
@@ -149,5 +350,48 @@ pub fn main() {
   }
 }`;
 
-  return { ts: TS_CODE.trim(), py: PY_CODE.trim(), rs: RS_CODE.trim() };
+  return RS_CODE.trim();
+}
+
+export function createCodeExamples({
+  handlerName,
+  handlerSchema,
+  controllerSchema,
+  package: packageJson,
+}: {
+  handlerName: string;
+  handlerSchema: VovkHandlerSchema;
+  controllerSchema: VovkControllerSchema;
+  package?: CodeSamplePackageJson;
+}) {
+  const queryValidation = handlerSchema?.validation?.query as VovkSimpleJSONSchema | undefined;
+  const bodyValidation = handlerSchema?.validation?.body as VovkSimpleJSONSchema | undefined;
+  const paramsValidation = handlerSchema?.validation?.params as VovkSimpleJSONSchema | undefined;
+  const outputValidation = handlerSchema?.validation?.output as VovkSimpleJSONSchema | undefined;
+  const iterationValidation = handlerSchema?.validation?.iteration as VovkSimpleJSONSchema | undefined;
+
+  const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation;
+  const rpcName = controllerSchema.rpcModuleName;
+  const packageName = packageJson?.name || 'vovk-client';
+  const packageNameSnake = toSnakeCase(packageName);
+  const pyPackageName = packageJson?.py_name ?? packageNameSnake;
+  const rsPackageName = packageJson?.rs_name ?? packageNameSnake;
+
+  const commonParams: CodeGenerationParams = {
+    handlerName,
+    rpcName,
+    packageName,
+    queryValidation,
+    bodyValidation,
+    paramsValidation,
+    outputValidation,
+    iterationValidation,
+    hasArg,
+  };
+
+  const ts = generateTypeScriptCode(commonParams);
+  const py = generatePythonCode({ ...commonParams, packageName: pyPackageName });
+  const rs = generateRustCode({ ...commonParams, packageName: rsPackageName });
+
+  return { ts, py, rs };
 }

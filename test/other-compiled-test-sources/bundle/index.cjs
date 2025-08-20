@@ -105,10 +105,10 @@ var require_types$3 = __commonJS({
     })(HttpStatus$1 || (exports.HttpStatus = HttpStatus$1 = {}));
     var VovkSchemaIdEnum$1;
     (function (VovkSchemaIdEnum$2) {
-      VovkSchemaIdEnum$2['META'] = 'https://vovk.dev/api/spec/v3/meta.json';
-      VovkSchemaIdEnum$2['CONFIG'] = 'https://vovk.dev/api/spec/v3/config.json';
-      VovkSchemaIdEnum$2['SEGMENT'] = 'https://vovk.dev/api/spec/v3/segment.json';
-      VovkSchemaIdEnum$2['SCHEMA'] = 'https://vovk.dev/api/spec/v3/schema.json';
+      VovkSchemaIdEnum$2['META'] = 'https://vovk.dev/api/schema/v3/meta.json';
+      VovkSchemaIdEnum$2['CONFIG'] = 'https://vovk.dev/api/schema/v3/config.json';
+      VovkSchemaIdEnum$2['SEGMENT'] = 'https://vovk.dev/api/schema/v3/segment.json';
+      VovkSchemaIdEnum$2['SCHEMA'] = 'https://vovk.dev/api/schema/v3/schema.json';
     })(VovkSchemaIdEnum$1 || (exports.VovkSchemaIdEnum = VovkSchemaIdEnum$1 = {}));
   },
 });
@@ -419,6 +419,7 @@ var require_reqForm$1 = __commonJS({
           else formData[key] = value;
         else formData[key] = value.toString();
       formMap$1.set(req, formData);
+      console.log('Form data processed:', formData);
       return formData;
     }
   },
@@ -555,7 +556,13 @@ var require_VovkApp$1 = __commonJS({
         const controllers$2 = this.routes[httpMethod];
         const path = params[Object.keys(params)[0]];
         const handlers = {};
-        const xMeta = nextReq.headers.get('x-meta');
+        let headerList;
+        try {
+          headerList = nextReq.headers;
+        } catch {
+          headerList = null;
+        }
+        const xMeta = headerList?.get('x-meta');
         const xMetaHeader = xMeta && JSON.parse(xMeta);
         if (xMetaHeader) (0, reqMeta_1$3.default)(req, { xMetaHeader });
         controllers$2.forEach((staticMethods, controller$1) => {
@@ -641,7 +648,7 @@ var require_getSchema$1 = __commonJS({
     const types_1$22 = require_types$3();
     async function getControllerSchema$1(controller, rpcModuleName, exposeValidation) {
       const handlers = exposeValidation
-        ? controller._handlers
+        ? (controller._handlers ?? {})
         : Object.fromEntries(
             Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
           );
@@ -1036,7 +1043,7 @@ var require_defaultStreamHandler$1 = __commonJS({
             if (done) break;
           } catch (error$41) {
             await reader.cancel();
-            const err = new Error('Stream error. ' + String(error$41));
+            const err = new Error('JSONLines stream error. ' + String(error$41));
             err.cause = error$41;
             throw err;
           }
@@ -1047,7 +1054,7 @@ var require_defaultStreamHandler$1 = __commonJS({
             let data;
             try {
               data = JSON.parse(line$2);
-              prepend = '';
+              prepend = prepend.slice(line$2.length + 1);
             } catch {
               break;
             }
@@ -1313,6 +1320,9 @@ var require_progressive$1 = __commonJS({
               isSettled: false,
             };
             return promise;
+          },
+          ownKeys: () => {
+            throw new Error('Getting own keys is not possible as they are dynamically created');
           },
         }
       );
@@ -1655,7 +1665,10 @@ ${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''
       }`;
       const serdeUnwrap = (fake) => `from_value(json!(${fake})).unwrap()`;
       const RS_CODE = `use ${packageJson?.rs_name ?? packageNameSnake}::${rpcNameSnake};
-use serde_json::{ from_value, json };
+use serde_json::{ 
+  from_value, 
+  json 
+};
 
 pub fn main() {
   let response = ${rpcNameSnake}::${handlerNameSnake}(
@@ -1677,7 +1690,7 @@ pub fn main() {
       : ''
   }${
     iterationValidation
-      ? `match response {
+      ? `\n\nmatch response {
     Ok(stream) => {
       for (i, item) in stream.enumerate() {
         println!("#{}: {:?}", i, item);
@@ -2433,12 +2446,12 @@ var require_openAPIToVovkSchema$1 = __commonJS({
               urlEncodedBody = null;
             if (formDataBody)
               Object.assign(formDataBody, {
-                'x-formData': true,
+                'x-isForm': true,
                 'x-tsType': 'FormData',
               });
             if (urlEncodedBody)
               Object.assign(urlEncodedBody, {
-                'x-formData': true,
+                'x-isForm': true,
                 'x-tsType': 'FormData',
               });
             const bodySchemas = [jsonBody, formDataBody, urlEncodedBody].filter(Boolean);
@@ -2893,7 +2906,7 @@ var require_withValidationLibrary$1 = __commonJS({
       });
       if (toJSONSchema) {
         const getJsonSchema = (model, type) =>
-          Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-formData': isForm } : {});
+          Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-isForm': isForm } : {});
         const validation$3 = {};
         if (body && !skipSchemaEmissionKeys.includes('body')) validation$3.body = getJsonSchema(body, 'body');
         if (query && !skipSchemaEmissionKeys.includes('query')) validation$3.query = getJsonSchema(query, 'query');
@@ -3401,14 +3414,14 @@ var require_mjs = __commonJS({
 //#endregion
 //#region .vovk-schema/_meta.json
 var config = {
-  $schema: 'https://vovk.dev/api/spec/v3/config.json',
   libs: {},
+  $schema: 'https://vovk.dev/api/schema/v3/config.json',
 };
 var _meta_default = { config };
 
 //#endregion
 //#region .vovk-schema/foo/client.json
-var $schema$1 = 'https://vovk.dev/api/spec/v3/segment.json';
+var $schema$1 = 'https://vovk.dev/api/schema/v3/segment.json';
 var emitSchema$1 = true;
 var segmentName$1 = 'foo/client';
 var segmentType$1 = 'segment';
@@ -3703,7 +3716,20 @@ var controllers$1 = {
         path: 'handle-body',
       },
       handleBodyZod3: {
-        validation: { body: { $schema: 'http://json-schema.org/draft-07/schema#' } },
+        validation: {
+          body: {
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+            },
+            required: ['hello'],
+            additionalProperties: false,
+            $schema: 'http://json-schema.org/draft-07/schema#',
+          },
+        },
         httpMethod: 'POST',
         path: 'handle-body-zod3',
       },
@@ -4020,7 +4046,7 @@ var controllers$1 = {
             },
             required: ['hello'],
             additionalProperties: false,
-            'x-formData': true,
+            'x-isForm': true,
           },
           query: {
             $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -4051,7 +4077,7 @@ var controllers$1 = {
             },
             required: ['hello', 'file'],
             additionalProperties: false,
-            'x-formData': true,
+            'x-isForm': true,
           },
           query: {
             $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -4063,6 +4089,40 @@ var controllers$1 = {
         },
         httpMethod: 'POST',
         path: 'handle-form-data-with-file',
+      },
+      handleFormDataWithMultipleFiles: {
+        validation: {
+          body: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string',
+                maxLength: 5,
+              },
+              files: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  format: 'binary',
+                  contentEncoding: 'binary',
+                },
+              },
+            },
+            required: ['hello', 'files'],
+            additionalProperties: false,
+            'x-isForm': true,
+          },
+          query: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: { search: { type: 'string' } },
+            required: ['search'],
+            additionalProperties: false,
+          },
+        },
+        httpMethod: 'POST',
+        path: 'handle-form-data-with-multiple-files',
       },
       disableServerSideValidationBool: {
         validation: {
@@ -4750,7 +4810,7 @@ var controllers$1 = {
               },
             },
             required: ['hello'],
-            'x-formData': true,
+            'x-isForm': true,
           },
           query: {
             type: 'object',
@@ -5242,7 +5302,7 @@ var controllers$1 = {
             },
             type: 'object',
             required: ['hello'],
-            'x-formData': true,
+            'x-isForm': true,
           },
           query: {
             'x-isDto': true,
@@ -5505,7 +5565,7 @@ var client_default = {
 
 //#endregion
 //#region .vovk-schema/generated.json
-var $schema = 'https://vovk.dev/api/spec/v3/segment.json';
+var $schema = 'https://vovk.dev/api/schema/v3/segment.json';
 var emitSchema = true;
 var segmentName = 'generated';
 var segmentType = 'segment';
@@ -5924,11 +5984,11 @@ const segments = {
   generated: generated_default,
 };
 const schema = {
-  $schema: 'https://vovk.dev/api/spec/v3/schema.json',
+  $schema: 'https://vovk.dev/api/schema/v3/schema.json',
   segments,
   meta: {
-    $schema: 'https://vovk.dev/api/spec/v3/meta.json',
-    apiRoot: 'http://localhost:3210/api',
+    $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+    apiRoot: 'http://localhost:3000/api',
     ..._meta_default,
   },
 };
@@ -23891,10 +23951,10 @@ var require_types = __commonJS({
     })(HttpStatus || (exports.HttpStatus = HttpStatus = {}));
     var VovkSchemaIdEnum;
     (function (VovkSchemaIdEnum$2) {
-      VovkSchemaIdEnum$2['META'] = 'https://vovk.dev/api/spec/v3/meta.json';
-      VovkSchemaIdEnum$2['CONFIG'] = 'https://vovk.dev/api/spec/v3/config.json';
-      VovkSchemaIdEnum$2['SEGMENT'] = 'https://vovk.dev/api/spec/v3/segment.json';
-      VovkSchemaIdEnum$2['SCHEMA'] = 'https://vovk.dev/api/spec/v3/schema.json';
+      VovkSchemaIdEnum$2['META'] = 'https://vovk.dev/api/schema/v3/meta.json';
+      VovkSchemaIdEnum$2['CONFIG'] = 'https://vovk.dev/api/schema/v3/config.json';
+      VovkSchemaIdEnum$2['SEGMENT'] = 'https://vovk.dev/api/schema/v3/segment.json';
+      VovkSchemaIdEnum$2['SCHEMA'] = 'https://vovk.dev/api/schema/v3/schema.json';
     })(VovkSchemaIdEnum || (exports.VovkSchemaIdEnum = VovkSchemaIdEnum = {}));
   },
 });
@@ -24204,6 +24264,7 @@ var require_reqForm = __commonJS({
           else formData[key] = value;
         else formData[key] = value.toString();
       formMap.set(req, formData);
+      console.log('Form data processed:', formData);
       return formData;
     }
   },
@@ -24340,7 +24401,13 @@ var require_VovkApp = __commonJS({
         const controllers$2 = this.routes[httpMethod];
         const path = params[Object.keys(params)[0]];
         const handlers = {};
-        const xMeta = nextReq.headers.get('x-meta');
+        let headerList;
+        try {
+          headerList = nextReq.headers;
+        } catch {
+          headerList = null;
+        }
+        const xMeta = headerList?.get('x-meta');
         const xMetaHeader = xMeta && JSON.parse(xMeta);
         if (xMetaHeader) (0, reqMeta_1$1.default)(req, { xMetaHeader });
         controllers$2.forEach((staticMethods, controller$1) => {
@@ -24426,7 +24493,7 @@ var require_getSchema = __commonJS({
     const types_1$9 = require_types();
     async function getControllerSchema(controller, rpcModuleName, exposeValidation) {
       const handlers = exposeValidation
-        ? controller._handlers
+        ? (controller._handlers ?? {})
         : Object.fromEntries(
             Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
           );
@@ -24821,7 +24888,7 @@ var require_defaultStreamHandler = __commonJS({
             if (done) break;
           } catch (error$41) {
             await reader.cancel();
-            const err = new Error('Stream error. ' + String(error$41));
+            const err = new Error('JSONLines stream error. ' + String(error$41));
             err.cause = error$41;
             throw err;
           }
@@ -24832,7 +24899,7 @@ var require_defaultStreamHandler = __commonJS({
             let data;
             try {
               data = JSON.parse(line$2);
-              prepend = '';
+              prepend = prepend.slice(line$2.length + 1);
             } catch {
               break;
             }
@@ -25098,6 +25165,9 @@ var require_progressive = __commonJS({
               isSettled: false,
             };
             return promise;
+          },
+          ownKeys: () => {
+            throw new Error('Getting own keys is not possible as they are dynamically created');
           },
         }
       );
@@ -25433,7 +25503,10 @@ ${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''
       }`;
       const serdeUnwrap = (fake) => `from_value(json!(${fake})).unwrap()`;
       const RS_CODE = `use ${packageJson?.rs_name ?? packageNameSnake}::${rpcNameSnake};
-use serde_json::{ from_value, json };
+use serde_json::{ 
+  from_value, 
+  json 
+};
 
 pub fn main() {
   let response = ${rpcNameSnake}::${handlerNameSnake}(
@@ -25455,7 +25528,7 @@ pub fn main() {
       : ''
   }${
     iterationValidation
-      ? `match response {
+      ? `\n\nmatch response {
     Ok(stream) => {
       for (i, item) in stream.enumerate() {
         println!("#{}: {:?}", i, item);
@@ -26205,12 +26278,12 @@ var require_openAPIToVovkSchema = __commonJS({
               urlEncodedBody = null;
             if (formDataBody)
               Object.assign(formDataBody, {
-                'x-formData': true,
+                'x-isForm': true,
                 'x-tsType': 'FormData',
               });
             if (urlEncodedBody)
               Object.assign(urlEncodedBody, {
-                'x-formData': true,
+                'x-isForm': true,
                 'x-tsType': 'FormData',
               });
             const bodySchemas = [jsonBody, formDataBody, urlEncodedBody].filter(Boolean);
@@ -26661,7 +26734,7 @@ var require_withValidationLibrary = __commonJS({
       });
       if (toJSONSchema) {
         const getJsonSchema = (model, type) =>
-          Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-formData': isForm } : {});
+          Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-isForm': isForm } : {});
         const validation$3 = {};
         if (body && !skipSchemaEmissionKeys.includes('body')) validation$3.body = getJsonSchema(body, 'body');
         if (query && !skipSchemaEmissionKeys.includes('query')) validation$3.query = getJsonSchema(query, 'query');
@@ -27192,12 +27265,8 @@ var require_vovk_ajv = __commonJS({
       (0, ajv_formats_1.default)(ajv);
       (0, ajv_errors_1.default)(ajv);
       ajv.addKeyword('x-isDto');
-      ajv.addKeyword('x-formData');
+      ajv.addKeyword('x-isForm');
       ajv.addKeyword('x-tsType');
-      ajv.addFormat('binary', {
-        type: 'string',
-        validate: (data) => data instanceof File || data instanceof Blob,
-      });
       return ajv;
     };
     const validate = ({ input, schema: schema$1, localize = 'en', type, endpoint, options, target }) => {
@@ -27206,13 +27275,29 @@ var require_vovk_ajv = __commonJS({
           ? 'draft-07'
           : 'draft-2020-12';
         const ajv = createAjv(options ?? {}, target ?? schemaTarget);
-        if (input instanceof FormData) input = Object.fromEntries(input.entries());
+        const isFormData = input instanceof FormData;
+        if (input instanceof FormData) {
+          const formDataEntries = Array.from(input.entries());
+          const result = {};
+          formDataEntries.forEach(([key, value]) => {
+            let processedValue;
+            if (value instanceof Blob) processedValue = '<binary>';
+            else if (Array.isArray(value))
+              processedValue = value.map((item) => (item instanceof Blob ? '<binary>' : item));
+            else processedValue = value;
+            if (key in result)
+              if (Array.isArray(result[key])) result[key].push(processedValue);
+              else result[key] = [result[key], processedValue];
+            else result[key] = processedValue;
+          });
+          input = result;
+        }
         const isValid = ajv.validate(schema$1, input);
         if (!isValid) {
           ajv_i18n_1.default[localize](ajv.errors);
           throw new vovk_1.HttpException(
             vovk_1.HttpStatus.NULL,
-            `Ajv validation failed. Invalid ${input instanceof FormData ? 'form' : type} on client: ${ajv.errorsText()}`,
+            `Ajv validation failed. Invalid ${isFormData ? 'form' : type} on client: ${ajv.errorsText()}`,
             {
               input,
               errors: ajv.errors,
@@ -27278,7 +27363,7 @@ const CommonControllerRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const StreamingControllerRPC = (0, import_mjs$1.createRPC)(
@@ -27288,7 +27373,7 @@ const StreamingControllerRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const StreamingGeneratorControllerRPC = (0, import_mjs$1.createRPC)(
@@ -27298,7 +27383,7 @@ const StreamingGeneratorControllerRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const CustomSchemaControllerRPC = (0, import_mjs$1.createRPC)(
@@ -27308,7 +27393,7 @@ const CustomSchemaControllerRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const WithZodClientControllerRPC = (0, import_mjs$1.createRPC)(
@@ -27318,7 +27403,7 @@ const WithZodClientControllerRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const WithYupClientControllerRPC = (0, import_mjs$1.createRPC)(
@@ -27328,7 +27413,7 @@ const WithYupClientControllerRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const WithDtoClientControllerRPC = (0, import_mjs$1.createRPC)(
@@ -27338,7 +27423,7 @@ const WithDtoClientControllerRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const OpenApiControllerRPC = (0, import_mjs$1.createRPC)(
@@ -27348,7 +27433,7 @@ const OpenApiControllerRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const NoValidationControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
@@ -27358,7 +27443,7 @@ const NoValidationControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const NoValidationControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
@@ -27368,7 +27453,7 @@ const NoValidationControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const ZodControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
@@ -27378,7 +27463,7 @@ const ZodControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const ZodControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
@@ -27388,7 +27473,7 @@ const ZodControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const YupControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
@@ -27398,7 +27483,7 @@ const YupControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const YupControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
@@ -27408,7 +27493,7 @@ const YupControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const DtoControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
@@ -27418,7 +27503,7 @@ const DtoControllerOnlyEntityRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 const DtoControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
@@ -27428,7 +27513,7 @@ const DtoControllerAndServiceEntityRPC = (0, import_mjs$1.createRPC)(
   import_mjs.fetcher,
   {
     validateOnClient: import_vovk_ajv.validateOnClient,
-    apiRoot: 'http://localhost:3210/api',
+    apiRoot: 'http://localhost:3000/api',
   }
 );
 

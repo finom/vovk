@@ -1,3 +1,4 @@
+import * as undici_types0 from 'undici-types';
 import * as vovk0 from 'vovk';
 import { JSONLinesResponse, VovkRequest } from 'vovk';
 import { NextResponse } from 'next/server.js';
@@ -57,7 +58,7 @@ declare class CommonController {
       hello: string;
     }>
   >;
-  static getHelloWorldRawResponseObjectPromise(): Promise<Response>;
+  static getHelloWorldRawResponseObjectPromise(): Promise<undici_types0.Response>;
   static getHelloWorldObjectLiteralPromise(): Promise<{
     hello: string;
   }>;
@@ -164,7 +165,7 @@ declare class CommonController {
     field: 'value';
   }>;
   static getErrorResponse(): void;
-  static getJsonTextResponse(): Response;
+  static getJsonTextResponse(): undici_types0.Response;
   static getJsonlResponse(): JSONLinesResponse<{
     hello: string;
   }>;
@@ -313,10 +314,10 @@ declare enum HttpMethod {
   OPTIONS = 'OPTIONS',
 }
 declare enum VovkSchemaIdEnum {
-  META = 'https://vovk.dev/api/spec/v3/meta.json',
-  CONFIG = 'https://vovk.dev/api/spec/v3/config.json',
-  SEGMENT = 'https://vovk.dev/api/spec/v3/segment.json',
-  SCHEMA = 'https://vovk.dev/api/spec/v3/schema.json',
+  META = 'https://vovk.dev/api/schema/v3/meta.json',
+  CONFIG = 'https://vovk.dev/api/schema/v3/config.json',
+  SEGMENT = 'https://vovk.dev/api/schema/v3/segment.json',
+  SCHEMA = 'https://vovk.dev/api/schema/v3/schema.json',
 }
 type ReadmeConfig = {
   banner?: string;
@@ -325,6 +326,7 @@ type ClientConfigCommon = {
   enabled?: boolean;
   outDir?: string;
   fromTemplates?: string[];
+  prettifyClient?: boolean;
 } & (
   | {
       excludeSegments?: never;
@@ -345,10 +347,12 @@ type ClientConfigSegmented = ClientConfigCommon & {
 };
 type BundleConfig = {
   requires?: Record<string, string>;
-  tsClientOutDir?: string;
-  dontDeleteTsClientOutDirAfter?: boolean;
+  prebundleOutDir?: string;
+  keepPrebundleDir?: boolean;
+  origin?: string;
   package?: PackageJson;
   readme?: ReadmeConfig;
+  reExports?: Record<string, string>;
   tsdownBuildOptions?: Parameters<typeof build>[0];
 } & (
   | {
@@ -375,7 +379,6 @@ type ClientTemplateDef = {
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   segmentConfig?: false | SegmentConfig;
   requires?: Record<string, string>;
-  isTsClient?: boolean;
 };
 type GetOpenAPINameFn = (config: {
   operationObject: OperationObject;
@@ -390,8 +393,7 @@ type VovkUserConfig = {
   modulesDir?: string;
   rootEntry?: string;
   origin?: string;
-  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn';
-  prettifyClient?: boolean;
+  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn' | (string & {});
   libs?: {
     ajv: KnownAny;
     [key: string]: KnownAny;
@@ -443,15 +445,15 @@ type VovkStrictConfig = Required<
   >
 > & {
   emitConfig: (keyof VovkStrictConfig | string)[];
-  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>;
+  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments' | 'origin'>;
   imports: {
     fetcher: [string, string] | [string];
     validateOnClient: [string, string] | [string] | null;
     createRPC: [string, string] | [string];
   };
   libs: Record<string, KnownAny>;
-  composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir'>;
-  segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir'>;
+  composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
+  segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   openApiMixins: {
     [mixinName: string]: {
       source: Exclude<
@@ -1307,6 +1309,15 @@ declare const schema$1: {
             handleBodyZod3: {
               validation: {
                 body: {
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                      maxLength: number;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
                   $schema: string;
                 };
               };
@@ -1647,7 +1658,7 @@ declare const schema$1: {
                   };
                   required: string[];
                   additionalProperties: boolean;
-                  'x-formData': boolean;
+                  'x-isForm': boolean;
                 };
                 query: {
                   $schema: string;
@@ -1682,7 +1693,45 @@ declare const schema$1: {
                   };
                   required: string[];
                   additionalProperties: boolean;
-                  'x-formData': boolean;
+                  'x-isForm': boolean;
+                };
+                query: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    search: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+              };
+              httpMethod: string;
+              path: string;
+            };
+            handleFormDataWithMultipleFiles: {
+              validation: {
+                body: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                      maxLength: number;
+                    };
+                    files: {
+                      type: string;
+                      items: {
+                        type: string;
+                        format: string;
+                        contentEncoding: string;
+                      };
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                  'x-isForm': boolean;
                 };
                 query: {
                   $schema: string;
@@ -2514,7 +2563,7 @@ declare const schema$1: {
                     };
                   };
                   required: string[];
-                  'x-formData': boolean;
+                  'x-isForm': boolean;
                 };
                 query: {
                   type: string;
@@ -3040,7 +3089,7 @@ declare const schema$1: {
                   };
                   type: string;
                   required: string[];
-                  'x-formData': boolean;
+                  'x-isForm': boolean;
                 };
                 query: {
                   'x-isDto': boolean;
@@ -3784,8 +3833,8 @@ declare const schema$1: {
   };
   meta: {
     config: {
-      $schema: string;
       libs: {};
+      $schema: string;
     };
     $schema: string;
     apiRoot: string;
@@ -5756,9 +5805,7 @@ declare const WithZodClientControllerRPC: {
         unknown
       >
     ) => Promise<{
-      formData: {
-        hello: string;
-      };
+      hello: string;
       search: string;
     }>) & {
       __types: {
@@ -5769,7 +5816,10 @@ declare const WithZodClientControllerRPC: {
           search: string;
         };
         params: unknown;
-        output: unknown;
+        output: {
+          hello: string;
+          search: string;
+        };
         iteration: unknown;
         isForm: true;
       };
@@ -5780,18 +5830,14 @@ declare const WithZodClientControllerRPC: {
         req: vovk0.VovkRequest<any, any, any>,
         params: undefined
       ) => Promise<{
-        formData: {
-          hello: string;
-        };
+        hello: string;
         search: string;
       }>;
     } & {
       fn: {
         <
           RETURN_TYPE = Promise<{
-            formData: {
-              hello: string;
-            };
+            hello: string;
             search: string;
           }>,
         >(
@@ -5816,9 +5862,7 @@ declare const WithZodClientControllerRPC: {
         ): RETURN_TYPE;
         <
           RETURN_TYPE = Promise<{
-            formData: {
-              hello: string;
-            };
+            hello: string;
             search: string;
           }>,
         >(
@@ -5844,7 +5888,13 @@ declare const WithZodClientControllerRPC: {
       };
       models: {
         iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
-        output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+        output?: zod0.ZodObject<
+          {
+            hello: zod0.ZodString;
+            search: zod0.ZodString;
+          },
+          zod_v4_core0.$strip
+        >;
         params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
         query?: zod0.ZodObject<
           {
@@ -5882,10 +5932,8 @@ declare const WithZodClientControllerRPC: {
         unknown
       >
     ) => Promise<{
-      formData: {
-        hello: string;
-        file: zod_v4_core0.File;
-      };
+      hello: string;
+      file: string;
       search: string;
     }>) & {
       __types: {
@@ -5897,7 +5945,11 @@ declare const WithZodClientControllerRPC: {
           search: string;
         };
         params: unknown;
-        output: unknown;
+        output: {
+          hello: string;
+          file: string;
+          search: string;
+        };
         iteration: unknown;
         isForm: true;
       };
@@ -5908,20 +5960,16 @@ declare const WithZodClientControllerRPC: {
         req: vovk0.VovkRequest<any, any, any>,
         params: undefined
       ) => Promise<{
-        formData: {
-          hello: string;
-          file: zod_v4_core0.File;
-        };
+        hello: string;
+        file: string;
         search: string;
       }>;
     } & {
       fn: {
         <
           RETURN_TYPE = Promise<{
-            formData: {
-              hello: string;
-              file: zod_v4_core0.File;
-            };
+            hello: string;
+            file: string;
             search: string;
           }>,
         >(
@@ -5947,10 +5995,8 @@ declare const WithZodClientControllerRPC: {
         ): RETURN_TYPE;
         <
           RETURN_TYPE = Promise<{
-            formData: {
-              hello: string;
-              file: zod_v4_core0.File;
-            };
+            hello: string;
+            file: string;
             search: string;
           }>,
         >(
@@ -5977,7 +6023,14 @@ declare const WithZodClientControllerRPC: {
       };
       models: {
         iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
-        output?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+        output?: zod0.ZodObject<
+          {
+            hello: zod0.ZodString;
+            file: zod0.ZodString;
+            search: zod0.ZodString;
+          },
+          zod_v4_core0.$strip
+        >;
         params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
         query?: zod0.ZodObject<
           {
@@ -5989,6 +6042,143 @@ declare const WithZodClientControllerRPC: {
           {
             hello: zod0.ZodString;
             file: zod0.ZodFile;
+          },
+          zod_v4_core0.$strip
+        >;
+      };
+    },
+    {
+      apiRoot?: string;
+      disableClientValidation?: boolean;
+      validateOnClient?: vovk0.VovkValidateOnClient<unknown> | undefined;
+      interpretAs?: string;
+      init?: RequestInit;
+    },
+    unknown
+  >;
+  handleFormDataWithMultipleFiles: ClientMethod<
+    ((
+      req: vovk0.VovkRequest<
+        {
+          hello: string;
+          files: zod_v4_core0.File[];
+        },
+        {
+          search: string;
+        },
+        unknown
+      >
+    ) => Promise<{
+      hello: string;
+      files: string[];
+      search: string;
+    }>) & {
+      __types: {
+        body: {
+          hello: string;
+          files: zod_v4_core0.File[];
+        };
+        query: {
+          search: string;
+        };
+        params: unknown;
+        output: {
+          hello: string;
+          files: string[];
+          search: string;
+        };
+        iteration: unknown;
+        isForm: true;
+      };
+      isRPC?: boolean;
+    } & {
+      schema: vovk0.VovkHandlerSchema;
+      wrapper?: (
+        req: vovk0.VovkRequest<any, any, any>,
+        params: undefined
+      ) => Promise<{
+        hello: string;
+        files: string[];
+        search: string;
+      }>;
+    } & {
+      fn: {
+        <
+          RETURN_TYPE = Promise<{
+            hello: string;
+            files: string[];
+            search: string;
+          }>,
+        >(
+          input?: {
+            disableClientValidation?: boolean;
+          } & {
+            body?: {
+              hello: string;
+              files: zod_v4_core0.File[];
+            };
+          } & {
+            query?: {
+              search: string;
+            };
+          } & {
+            params?: unknown;
+          } & {
+            meta?: {
+              [key: string]: any;
+              __disableClientValidation?: boolean;
+            };
+          }
+        ): RETURN_TYPE;
+        <
+          RETURN_TYPE = Promise<{
+            hello: string;
+            files: string[];
+            search: string;
+          }>,
+        >(
+          input: {
+            disableClientValidation?: boolean;
+          } & {
+            body?: {
+              hello: string;
+              files: zod_v4_core0.File[];
+            };
+          } & {
+            query?: {
+              search: string;
+            };
+          } & {
+            params?: unknown;
+          } & {
+            meta?: {
+              [key: string]: any;
+              __disableClientValidation?: boolean;
+            };
+          }
+        ): RETURN_TYPE;
+      };
+      models: {
+        iteration?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+        output?: zod0.ZodObject<
+          {
+            hello: zod0.ZodString;
+            files: zod0.ZodArray<zod0.ZodString>;
+            search: zod0.ZodString;
+          },
+          zod_v4_core0.$strip
+        >;
+        params?: _standard_schema_spec0.StandardSchemaV1<unknown, unknown>;
+        query?: zod0.ZodObject<
+          {
+            search: zod0.ZodString;
+          },
+          zod_v4_core0.$strip
+        >;
+        body?: zod0.ZodObject<
+          {
+            hello: zod0.ZodString;
+            files: zod0.ZodArray<zod0.ZodFile>;
           },
           zod_v4_core0.$strip
         >;

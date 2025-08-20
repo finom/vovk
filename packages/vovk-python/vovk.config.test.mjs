@@ -6,7 +6,6 @@ const vovkConfig = {
   clientTemplateDefs: {
     py: {
       extends: 'py',
-      templatePath: '../packages/vovk-python/template/',
       composedClient: {
         outDir: '../packages/vovk-python/test_py/generated_python_client',
         package: {

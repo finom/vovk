@@ -335,6 +335,15 @@ declare const schema: {
             handleBodyZod3: {
               validation: {
                 body: {
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                      maxLength: number;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
                   $schema: string;
                 };
               };
@@ -675,7 +684,7 @@ declare const schema: {
                   };
                   required: string[];
                   additionalProperties: boolean;
-                  'x-formData': boolean;
+                  'x-isForm': boolean;
                 };
                 query: {
                   $schema: string;
@@ -710,7 +719,45 @@ declare const schema: {
                   };
                   required: string[];
                   additionalProperties: boolean;
-                  'x-formData': boolean;
+                  'x-isForm': boolean;
+                };
+                query: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    search: {
+                      type: string;
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+              };
+              httpMethod: string;
+              path: string;
+            };
+            handleFormDataWithMultipleFiles: {
+              validation: {
+                body: {
+                  $schema: string;
+                  type: string;
+                  properties: {
+                    hello: {
+                      type: string;
+                      maxLength: number;
+                    };
+                    files: {
+                      type: string;
+                      items: {
+                        type: string;
+                        format: string;
+                        contentEncoding: string;
+                      };
+                    };
+                  };
+                  required: string[];
+                  additionalProperties: boolean;
+                  'x-isForm': boolean;
                 };
                 query: {
                   $schema: string;
@@ -1542,7 +1589,7 @@ declare const schema: {
                     };
                   };
                   required: string[];
-                  'x-formData': boolean;
+                  'x-isForm': boolean;
                 };
                 query: {
                   type: string;
@@ -2068,7 +2115,7 @@ declare const schema: {
                   };
                   type: string;
                   required: string[];
-                  'x-formData': boolean;
+                  'x-isForm': boolean;
                 };
                 query: {
                   'x-isDto': boolean;
@@ -2812,8 +2859,8 @@ declare const schema: {
   };
   meta: {
     config: {
-      $schema: string;
       libs: {};
+      $schema: string;
     };
     $schema: string;
     apiRoot: string;

@@ -29,10 +29,10 @@ initProgram(program.command('init'));
 program
   .command('dev')
   .alias('d')
-  .description('start schema watcher (optional flag --next-dev to start it with Next.js)')
+  .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
   .argument('[nextArgs...]', 'extra arguments for the dev command')
   .option('--next-dev', 'start schema watcher and Next.js with automatic port allocation')
-  .option('--exit', 'kill the processe when schema and client is generated')
+  .option('--exit', 'kill the processes when schema and client is generated')
   .option('--schema-out <path>', 'path to schema output directory (default: .vovk-schema)')
   .option('--https, --dev-https', 'use HTTPS for the dev server (default: false)')
   .action(async (nextArgs: string[], options: DevOptions) => {
@@ -91,7 +91,7 @@ program
 program
   .command('generate')
   .alias('g')
-  .description('generate RPC client from schema')
+  .description('Generate RPC client from schema')
   .option('--composed-only', 'generate only composed client even if segmented client is enabled')
   .option('--out, --composed-out <path>', 'path to output directory for composed client')
   .option('--from, --composed-from <templates...>', 'client template names for composed client')
@@ -128,7 +128,7 @@ program
 program
   .command('bundle')
   .alias('b')
-  .description('generate TypeScrtipt RPC and bundle it')
+  .description('Generate TypeScript RPC and bundle it')
   .option('--out, --out-dir <path>', 'path to output directory for bundle')
   .option('--include, --include-segments <segments...>', 'include segments')
   .option('--exclude, --exclude-segments <segments...>', 'exclude segments')
@@ -161,7 +161,7 @@ program
   .command('new [components...]')
   .alias('n')
   .description(
-    'create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
+    'Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
   )
   .option('-o, --overwrite', 'overwrite existing files')
   .option(

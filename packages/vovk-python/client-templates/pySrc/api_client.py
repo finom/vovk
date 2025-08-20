@@ -52,7 +52,7 @@ class ApiClient:
         query: Optional[Any] = None,
         params: Optional[Any] = None,
         headers: Optional[Dict[str, str]] = None,
-        files: Optional[Dict[str, Any]] = None,
+        files: Optional[Any] = None,
         disable_client_validation: bool = False
     ) -> Any:
         """
@@ -93,7 +93,7 @@ class ApiClient:
         query: Optional[Any] = None,
         params: Optional[Any] = None,
         headers: Optional[Dict[str, str]] = None,
-        files: Optional[Dict[str, Any]] = None,
+        files: Optional[Any] = None,
         validation: Optional[Dict[str, Any]] = None,
         disable_client_validation: bool = False,
     ) -> Any:
@@ -128,7 +128,7 @@ class ApiClient:
             # Always use format checker by default
             format_checker = FormatChecker()
             # Validate body
-            if validation.get('body'):
+            if validation.get('body') and not validation['body'].get('x-isForm', False):
                 if body is None:
                     raise ValueError("Body is required for validation but not provided")
                 jsonschema.validate(instance=body, schema=validation['body'], format_checker=format_checker)
@@ -145,7 +145,7 @@ class ApiClient:
                     raise ValueError("Params are required for validation but not provided")
                 jsonschema.validate(instance=params, schema=validation['params'], format_checker=format_checker)
 
-        if validation and validation.get('body') and validation['body'].get('x-formData', False):
+        if validation and validation.get('body') and validation['body'].get('x-isForm', False):
             is_form = True
 
         # Process URL and substitute path parameters

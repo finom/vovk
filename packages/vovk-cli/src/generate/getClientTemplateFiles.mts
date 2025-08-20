@@ -6,6 +6,8 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType, { FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import getPublicModuleNameFromPath from '../utils/getPublicModuleNameFromPath.mjs';
+import omit from 'lodash/omit.js';
+import merge from 'lodash/merge.js';
 
 export interface ClientTemplateFile {
   templateName: string;
@@ -120,6 +122,8 @@ export default async function getClientTemplateFiles({
         def = {
           ...def,
           origin: templateDef.origin ?? def.origin,
+          composedClient: merge(omit(templateDef?.composedClient ?? {}, ['outDir']), def.composedClient),
+          segmentedClient: merge(omit(templateDef?.segmentedClient ?? {}, ['outDir']), def.segmentedClient),
         };
 
         entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir)]);

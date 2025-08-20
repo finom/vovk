@@ -1,101 +1,104 @@
-import type { KnownAny } from 'vovk';
-
-interface JSONSchema {
-  type?: string | string[];
-  title?: string;
-  description?: string;
-  enum?: KnownAny[];
-  items?: JSONSchema | JSONSchema[];
-  properties?: { [key: string]: JSONSchema };
-  required?: string[];
-  oneOf?: JSONSchema[];
-  anyOf?: JSONSchema[];
-  allOf?: JSONSchema[];
-  format?: string;
-}
+import type { VovkSimpleJSONSchema } from 'vovk';
 
 interface ConvertOptions {
-  schema: JSONSchema;
+  schema: VovkSimpleJSONSchema;
   namespace: string;
   className: string;
   pad: number;
 }
 
 /**
+ * Check if a schema represents a file upload field (format: binary)
+ */
+function isFileUploadSchema(s: VovkSimpleJSONSchema): boolean {
+  // Check if it's a string with format: binary
+  if (s.type === 'string' && s.format === 'binary') {
+    return true;
+  }
+
+  // Check if it's an array of type with string included and format: binary
+  if (Array.isArray(s.type) && s.type.includes('string') && s.format === 'binary') {
+    return true;
+  }
+
+  // Check if it's an array of files
+  if (s.type === 'array' && s.items) {
+    if (Array.isArray(s.items)) {
+      // For tuple-style items, check if any is a file
+      return s.items.some((item) => isFileUploadSchema(item));
+    } else {
+      return isFileUploadSchema(s.items);
+    }
+  }
+
+  return false;
+}
+
+export function hasFiles(schema: VovkSimpleJSONSchema): boolean {
+  return Object.values(schema.properties ?? {}).some((prop) => isFileUploadSchema(prop));
+}
+
+export function hasNormalData(schema: VovkSimpleJSONSchema): boolean {
+  return Object.values(schema.properties ?? {}).some((prop) => !isFileUploadSchema(prop));
+}
+
+/**
  * Convert a JSON schema to Python type definitions (TypedDict and others).
  * Returns a string containing Python code with all needed classes and the top-level type.
+ * This version EXCLUDES file upload properties (format: binary).
  */
-export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
-  const { schema, namespace, className } = options;
+export function convertJSONSchemaToPythonDataType(options: ConvertOptions): string {
+  const { schema, namespace, className, pad } = options;
 
   if (!schema) return '';
 
   // A buffer to collect the generated class definitions, in order of creation.
-  // We'll add definitions for nested objects (TypedDicts) before we define the top-level class.
   const classDefinitions: string[] = [];
 
-  // To avoid re-generating the same schema multiple times, keep track of
-  // name -> fully qualified type, or schema object -> type mapping, etc.
-  // For simplicity, we do a naive approach. In a bigger system, you might want a
-  // more robust hashing of schemas or $ref resolution.
-  const seenObjects = new Map<JSONSchema, string>();
+  // To avoid re-generating the same schema multiple times
+  const seenObjects = new Map<VovkSimpleJSONSchema, string>();
 
   /**
-   * Turn a schema into a Python type expression (e.g., "str", "int", "MyNamespace.MyClass", "List[str]", etc.)
-   *
-   * If the schema is for an object, it will generate a new TypedDict class
-   * definition (unless one already exists for that schema) and return its name.
-   *
-   * `propNameForParent` is used to help generate child class names (e.g., "Body_x_y").
+   * Turn a schema into a Python type expression
    */
-  function buildType(s: JSONSchema, propNameForParent: string): string {
+  function buildType(s: VovkSimpleJSONSchema, propNameForParent: string): string {
+    // Skip file upload schemas at the type level
+    if (isFileUploadSchema(s)) {
+      return 'Any'; // This will be filtered out at property level
+    }
+
     // For convenience, handle arrays of type or single type
-    // (e.g. type: ['string', 'null']) => Union[str, None]
     const allTypes = Array.isArray(s.type) ? s.type : s.type ? [s.type] : [];
 
     // 1. Enums
     if (s.enum && s.enum.length > 0) {
-      // If there's an enum, we generate a `Literal[...]` of those values.
-      // Example: enum: ["A", "B"] => Literal["A", "B"]
-      // For numeric enums: enum: [1, 2] => Literal[1, 2]
       const literalValues = s.enum.map((val) => (typeof val === 'string' ? `"${val}"` : val));
       return `Literal[${literalValues.join(', ')}]`;
     }
 
     // 2. allOf
-    //    Merge sub-schemas into a single "object" type. A naive approach is:
-    //    - gather all properties from sub-schemas
-    //    - combine required arrays
-    //    - produce a new object schema
-    // In more advanced usage, allOf could be something else (like a union), but typically it's merging.
     if (s.allOf && s.allOf.length > 0) {
-      const merged: JSONSchema = {
+      const merged: VovkSimpleJSONSchema = {
         type: 'object',
         properties: {},
         required: [],
       };
       for (const sub of s.allOf) {
         const subType = sub.type;
-        // if sub-type is "object", merge the properties
         if (!subType || subType === 'object') {
           merged.properties = {
             ...merged.properties,
             ...sub.properties,
           };
-          // merge required
           if (sub.required) {
             merged.required = Array.from(new Set([...merged.required!, ...sub.required]));
           }
-        } else {
-          // If we see a primitive in allOf, that's trickier.
-          // For simplicity, treat it as we would an 'object' with no properties.
         }
       }
       return buildType(merged, propNameForParent);
     }
 
     // 3. anyOf / oneOf => Union
-    //    We'll produce a Union of all possible sub-schemas.
     if (s.anyOf && s.anyOf.length > 0) {
       const subTypes = s.anyOf.map((sub, i) => buildType(sub, propNameForParent + `_anyOf_${i}`));
       return `Union[${subTypes.join(', ')}]`;
@@ -106,7 +109,6 @@ export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
     }
 
     // 4. If we can detect multiple types, produce a Union
-    //    E.g. type: ["string", "null"] => Union[str, None]
     if (allTypes.length > 1) {
       const subTypes = allTypes.map((t) => buildType({ ...s, type: t }, propNameForParent));
       return `Union[${subTypes.join(', ')}]`;
@@ -116,8 +118,6 @@ export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
     if (allTypes.length === 1) {
       switch (allTypes[0]) {
         case 'string':
-          // If format is "date-time", "date", etc., we might want a special python type.
-          // For simplicity, treat them all as "str".
           return 'str';
         case 'boolean':
           return 'bool';
@@ -126,44 +126,32 @@ export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
         case 'number':
           return 'float';
         case 'null':
-          // Just "None" in Python. If you want it optional, might do Optional[<something>].
           return 'None';
         case 'array':
-          // `items` can be a single schema or an array of schemas (tuple form).
-          // If it's an array of schemas, we'd produce a tuple. For simplicity, do Union or just a single type.
           if (Array.isArray(s.items)) {
-            // naive approach: treat as a tuple of the listed item types
             const tupleTypes = s.items.map((sub, i) => buildType(sub, propNameForParent + `_items_${i}`));
             return `Tuple[${tupleTypes.join(', ')}]`;
           } else if (s.items) {
             const itemType = buildType(s.items, propNameForParent + `_items`);
             return `List[${itemType}]`;
           } else {
-            // array of anything
             return `List[Any]`;
           }
 
         case 'object': {
-          // We create a TypedDict. Possibly we have 'properties' to evaluate.
-          // If we've seen this exact schema object, return the previously created name.
           if (seenObjects.has(s)) {
             return seenObjects.get(s)!;
           }
 
-          // Generate a new class name. For the top-level class, use className as-is.
-          // For nested classes, prefix with double underscore to indicate private classes.
           const isTopLevel = propNameForParent === className;
           const newClassName = isTopLevel ? className : `__${propNameForParent}`;
           const fullyQualifiedName = `${namespace}.${newClassName}`;
 
-          // Mark this schema as seen
           seenObjects.set(s, fullyQualifiedName);
 
-          // Start building the class definition lines
           const lines: string[] = [];
           lines.push(`class ${newClassName}(TypedDict):`);
 
-          // Add docstring if title or description exists
           if (s.title || s.description) {
             lines.push(`    """`);
             if (s.title) {
@@ -173,7 +161,6 @@ export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
               lines.push(``);
             }
             if (s.description) {
-              // Split description by newlines and add proper indentation to each line
               const descLines = s.description.split('\n');
               for (const descLine of descLines) {
                 lines.push(`    ${descLine}`);
@@ -185,63 +172,155 @@ export function convertJSONSchemaToPythonType(options: ConvertOptions): string {
           const props = s.properties || {};
           const required = new Set(s.required || []);
 
-          if (Object.keys(props).length === 0) {
-            // No properties => use 'pass' to make a valid class in Python
+          // Filter out file upload properties
+          const nonFileProps = Object.entries(props).filter(([, propSchema]) => !isFileUploadSchema(propSchema));
+
+          if (nonFileProps.length === 0) {
             lines.push(`    pass`);
           } else {
-            for (const [propName, propSchema] of Object.entries(props)) {
+            for (const [propName, propSchema] of nonFileProps) {
               const isRequired = required.has(propName);
-              // Build the child type, using the parent name without prefix for path construction
               const childPropPath = `${propNameForParent}_${propName}`;
               const childPropType = buildType(propSchema, childPropPath);
-              // If it's not required, we do "Optional[<type>]"
               const finalType = isRequired ? childPropType : `Optional[${childPropType}]`;
               lines.push(`    ${propName}: ${finalType}`);
             }
           }
 
-          // Add the class definition to our definitions array
           classDefinitions.push(lines.join('\n'));
-
-          // Return the fully qualified name so parents can reference it
           return fullyQualifiedName;
         }
         default:
-          // Fallback: if there's a type we haven't handled, just say `Any`
           return 'Any';
       }
     }
 
-    // 6. If no type is declared, treat it as "Any"
     return 'Any';
   }
 
-  // 1. Build the type for the top-level schema
-  //    The top-level might produce either "str", "int", or a typed-dict class, etc.
   const topLevelTypeName = buildType(schema, className);
 
-  // 2. If the top-level is itself a class (TypedDict), we've already generated it.
-  //    But if it's a primitive, union, etc., we might want to create a top-level alias or class.
-  //    In the example, the user wants a top-level "class Body(TypedDict): ...", so if the schema
-  //    is an object, we do indeed have a class named "Body(...)" in the definitions array.
-  //    If not an object, let's create a type alias or a dummy class for the top-level anyway.
   const isTypedDictTop =
     topLevelTypeName === `${namespace}.${className}` &&
     classDefinitions.some((def) => def.startsWith(`class ${className}(`));
 
   if (!isTypedDictTop) {
-    // The top-level was not an object or wasn't automatically named `className`.
-    // Let's define a top-level alias for consistency. e.g.:
-    //
-    // Body = Union[str, None]
-    //
-    // Or if it is an object but has a different auto-generated name, we alias it.
     classDefinitions.push(`${className} = ${topLevelTypeName}`);
+  }
+
+  // If there are no non-file properties, return an empty TypedDict
+  if (classDefinitions.length === 0) {
+    classDefinitions.push(`class ${className}(TypedDict):\n    pass`);
   }
 
   return classDefinitions
     .join('\n')
     .split('\n')
-    .map((line) => `${' '.repeat(options.pad)}${line}`)
+    .map((line) => `${' '.repeat(pad)}${line}`)
     .join('\n');
+}
+
+export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): string {
+  const { schema, className, pad } = options;
+
+  if (!schema || schema.type !== 'object') {
+    // Files must be in an object schema
+    return '';
+  }
+
+  const lines: string[] = [];
+  const props = schema.properties || {};
+  const required = new Set(schema.required || []);
+
+  // Filter to only file upload properties
+  const fileProps = Object.entries(props).filter(([, propSchema]) => isFileUploadSchema(propSchema));
+
+  if (fileProps.length === 0) {
+    return '';
+  }
+
+  // Check if any property is an array (multiple files)
+  const hasArrayFields = fileProps.some(([, propSchema]) => propSchema.type === 'array');
+
+  // If there are array fields or multiple fields, use List[Tuple[...]] format
+  // Otherwise, use TypedDict for single fields
+  if (hasArrayFields || fileProps.length > 1) {
+    // Generate as a type alias for list of tuples
+    lines.push(`# File upload type for requests library`);
+    lines.push(`# Use as: files=${className}Value where ${className}Value is a list of tuples`);
+
+    // Add docstring if exists
+    if (schema.title || schema.description) {
+      lines.push(`"""`);
+      if (schema.title) {
+        lines.push(`${schema.title} - File Uploads`);
+      }
+      if (schema.title && schema.description) {
+        lines.push(``);
+      }
+      if (schema.description) {
+        const descLines = schema.description.split('\n');
+        for (const descLine of descLines) {
+          lines.push(`${descLine}`);
+        }
+      }
+      lines.push(`"""`);
+    }
+
+    // Define the file tuple type
+    const fileTupleType =
+      'Union[Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
+
+    // Generate the type alias
+    lines.push(`${className} = List[Tuple[str, ${fileTupleType}]]`);
+    lines.push(``);
+
+    // Add example usage
+    lines.push(`# Example usage:`);
+    lines.push(`# ${className.toLowerCase()}: ${className} = [`);
+
+    for (const [propName, propSchema] of fileProps) {
+      if (propSchema.type === 'array') {
+        lines.push(`#     ('${propName}', ('file1.pdf', open('file1.pdf', 'rb'), 'application/pdf')),`);
+        lines.push(`#     ('${propName}', ('file2.pdf', open('file2.pdf', 'rb'), 'application/pdf')),`);
+      } else {
+        lines.push(`#     ('${propName}', ('file.jpg', open('file.jpg', 'rb'), 'image/jpeg')),`);
+      }
+    }
+    lines.push(`# ]`);
+    lines.push(`# response = requests.post(url, files=${className.toLowerCase()})`);
+  } else {
+    const [propName] = fileProps[0];
+    const isRequired = required.has(propName);
+
+    lines.push(`class ${className}(TypedDict):`);
+
+    // Add docstring if exists
+    if (schema.title || schema.description) {
+      lines.push(`    """`);
+      if (schema.title) {
+        lines.push(`    ${schema.title} - File Upload`);
+      }
+      if (schema.title && schema.description) {
+        lines.push(``);
+      }
+      if (schema.description) {
+        const descLines = schema.description.split('\n');
+        for (const descLine of descLines) {
+          lines.push(`    ${descLine}`);
+        }
+      }
+      lines.push(`    """`);
+    }
+
+    // Single file type
+    const fileType =
+      'Union[BinaryIO, Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
+    const finalType = isRequired ? fileType : `Optional[${fileType}]`;
+
+    lines.push(`    ${propName}: ${finalType}`);
+    lines.push(`    # Example: open('file.jpg', 'rb') or ('filename.jpg', open('file.jpg', 'rb'), 'image/jpeg')`);
+  }
+
+  return lines.map((line) => `${' '.repeat(pad)}${line}`).join('\n');
 }

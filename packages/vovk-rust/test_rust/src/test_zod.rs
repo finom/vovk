@@ -5,6 +5,8 @@ pub mod test_zod {
     use generated_rust_client::with_zod_client_controller_rpc;
     use crate::get_constraining_object;
     use generated_rust_client::HttpException;
+    use reqwest::blocking::multipart;
+
      
     // #[ignore = "needs external database"] | #[should_panic(expected = "Invalid input")]
     #[test]
@@ -302,6 +304,104 @@ pub mod test_zod {
         
         assert!(result.is_err());
         assert!(result.err().unwrap().to_string().contains("Validation failed"));
+    }
+
+     #[test]
+    fn test_form() {
+        let form = multipart::Form::new()
+            .text("hello", "world");
+        // Test successful form data validation
+        let data = with_zod_client_controller_rpc::handle_form_data(
+            form,
+            with_zod_client_controller_rpc::handle_form_data_::query {
+                search: "value".to_string(),
+            },
+            (),
+            None,
+            None,
+            false,
+        ).unwrap();
+
+        assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"hello": "world", "search": "value"}));
+
+        let form = multipart::Form::new()
+            .text("hello", "wrong_length");
+
+        // Test client-side validation error
+        let result = with_zod_client_controller_rpc::handle_form_data(
+            form,
+            with_zod_client_controller_rpc::handle_form_data_::query {
+                search: "value".to_string(),
+            },
+            (),
+            None,
+            None,
+            false,
+        );
+        
+        assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("hello"));
+    }
+    
+    #[test]
+    fn test_form_with_file() {        
+        // Create file content
+        let file_content = "file_text_content";
+        let file_part = multipart::Part::text(file_content)
+            .file_name("example.txt")
+            .mime_str("text/plain").unwrap();
+
+        let form = multipart::Form::new()
+            .text("hello", "world")
+            .part("file", file_part);
+
+        // Test successful form data with file validation
+        let data = with_zod_client_controller_rpc::handle_form_data_with_file(
+            form,
+            with_zod_client_controller_rpc::handle_form_data_with_file_::query {
+                search: "value".to_string(),
+            },
+            (),
+            None,
+            None,
+            false,
+        ).unwrap();
+
+        assert_eq!(
+            serde_json::to_value(&data).unwrap(), 
+            serde_json::json!({"hello": "world", "search": "value", "file": "file_text_content"})
+        );
+    }
+    
+    #[test]
+    fn test_form_with_multiple_files() {
+        let form = multipart::Form::new()
+            .text("hello", "world")
+            .part("files", multipart::Part::text("file_text_content1")
+                .file_name("filename1.txt")
+                .mime_str("text/plain").unwrap())
+            .part("files", multipart::Part::text("file_text_content2"));
+
+        let data = with_zod_client_controller_rpc::handle_form_data_with_multiple_files(
+            form,
+            with_zod_client_controller_rpc::handle_form_data_with_multiple_files_::query {
+                search: "value".to_string(),
+            },
+            (),
+            None,
+            None,
+            false,
+        ).unwrap();
+
+        assert_eq!(
+            serde_json::to_value(&data).unwrap(), 
+            serde_json::json!({
+                "hello": "world", 
+                "search": "value", 
+                "files": ["file_text_content1", "file_text_content2"]
+            })
+        );
     }
     
     #[test]

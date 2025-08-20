@@ -207,10 +207,11 @@ export default class WithZodClientController {
     isForm: true,
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
+    output: z.object({ hello: z.string().max(5), search: z.string() }),
     handle: async (req) => {
-      const formData = await req.vovk.form();
+      const { hello } = await req.vovk.form();
       const search = req.vovk.query().search;
-      return { formData, search };
+      return { hello, search };
     },
   });
 
@@ -219,10 +220,24 @@ export default class WithZodClientController {
     isForm: true,
     body: z.object({ hello: z.string().max(5), file: z.file() }),
     query: z.object({ search: z.string() }),
+    output: z.object({ hello: z.string().max(5), file: z.string(), search: z.string() }),
     handle: async (req) => {
-      const formData = await req.vovk.form();
+      const { hello, file } = await req.vovk.form();
       const search = req.vovk.query().search;
-      return { formData, search };
+      return { hello, file: await file.text(), search };
+    },
+  });
+
+  @post.auto()
+  static handleFormDataWithMultipleFiles = withZod({
+    isForm: true,
+    body: z.object({ hello: z.string().max(5), files: z.array(z.file()) }),
+    query: z.object({ search: z.string() }),
+    output: z.object({ hello: z.string().max(5), files: z.array(z.string()), search: z.string() }),
+    handle: async (req) => {
+      const { hello, files } = await req.vovk.form();
+      const search = req.vovk.query().search;
+      return { hello, files: await Promise.all(files.map((file) => file.text())), search };
     },
   });
 

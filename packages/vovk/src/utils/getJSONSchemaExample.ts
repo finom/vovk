@@ -4,10 +4,16 @@ interface SamplerOptions {
   comment?: '//' | '#';
   stripQuotes?: boolean;
   indent?: number;
+  nestingIndent?: number;
+  ignoreBinary?: boolean;
 }
 
-export function getJSONSchemaExample(schema: KnownAny, options: SamplerOptions, rootSchema?: KnownAny): string {
-  const { comment = '//', stripQuotes = false, indent = 0 } = options;
+export function getJSONSchemaExample(
+  schema: VovkSimpleJSONSchema,
+  options: SamplerOptions,
+  rootSchema?: VovkSimpleJSONSchema
+): string {
+  const { comment = '//', stripQuotes = false, indent = 0, nestingIndent = 4, ignoreBinary = false } = options;
 
   if (!schema || typeof schema !== 'object') return 'null';
 
@@ -15,14 +21,33 @@ export function getJSONSchemaExample(schema: KnownAny, options: SamplerOptions, 
   rootSchema = rootSchema || schema;
 
   // Get the sample value
-  const sampleValue = getSampleValue(schema, rootSchema);
+  const sampleValue = getSampleValue(schema, rootSchema, ignoreBinary);
 
   // Format the output with descriptions
-  return formatWithDescriptions(sampleValue, schema, rootSchema, comment, stripQuotes, indent);
+  return formatWithDescriptions(
+    sampleValue,
+    schema,
+    rootSchema,
+    comment,
+    stripQuotes,
+    indent,
+    nestingIndent,
+    ignoreBinary
+  );
 }
 
-function getSampleValue(schema: KnownAny, rootSchema: KnownAny): KnownAny {
+export function getSampleValue(
+  schema: VovkSimpleJSONSchema,
+  rootSchema?: VovkSimpleJSONSchema,
+  ignoreBinary?: boolean
+): KnownAny {
   if (!schema || typeof schema !== 'object') return null;
+  rootSchema = rootSchema || schema;
+
+  // Check if this is a binary string schema and should be ignored
+  if (ignoreBinary && schema.type === 'string' && schema.format === 'binary') {
+    return undefined;
+  }
 
   // If there's an example, use it
   if (schema.example !== undefined) {
@@ -41,7 +66,7 @@ function getSampleValue(schema: KnownAny, rootSchema: KnownAny): KnownAny {
 
   // Handle $ref if present
   if (schema.$ref) {
-    return handleRef(schema.$ref, rootSchema);
+    return handleRef(schema.$ref, rootSchema, ignoreBinary);
   }
 
   // Handle enum if present
@@ -51,17 +76,17 @@ function getSampleValue(schema: KnownAny, rootSchema: KnownAny): KnownAny {
 
   // Handle oneOf, anyOf, allOf
   if (schema.oneOf && schema.oneOf.length > 0) {
-    return getSampleValue(schema.oneOf[0], rootSchema);
+    return getSampleValue(schema.oneOf[0], rootSchema, ignoreBinary);
   }
 
   if (schema.anyOf && schema.anyOf.length > 0) {
-    return getSampleValue(schema.anyOf[0], rootSchema);
+    return getSampleValue(schema.anyOf[0], rootSchema, ignoreBinary);
   }
 
   if (schema.allOf && schema.allOf.length > 0) {
     // Merge all schemas in allOf
     const mergedSchema = schema.allOf.reduce((acc: KnownAny, s: KnownAny) => ({ ...acc, ...s }), {});
-    return getSampleValue(mergedSchema, rootSchema);
+    return getSampleValue(mergedSchema, rootSchema, ignoreBinary);
   }
 
   // Handle different types
@@ -75,9 +100,9 @@ function getSampleValue(schema: KnownAny, rootSchema: KnownAny): KnownAny {
       case 'boolean':
         return handleBoolean();
       case 'object':
-        return handleObject(schema, rootSchema);
+        return handleObject(schema, rootSchema, ignoreBinary);
       case 'array':
-        return handleArray(schema, rootSchema);
+        return handleArray(schema, rootSchema, ignoreBinary);
       case 'null':
         return null;
       default:
@@ -87,7 +112,7 @@ function getSampleValue(schema: KnownAny, rootSchema: KnownAny): KnownAny {
 
   // If type is not specified but properties are, treat it as an object
   if (schema.properties) {
-    return handleObject(schema, rootSchema);
+    return handleObject(schema, rootSchema, ignoreBinary);
   }
 
   // Default fallback
@@ -100,9 +125,17 @@ function formatWithDescriptions(
   rootSchema: KnownAny,
   comment: string,
   stripQuotes: boolean,
-  indent: number
+  indent: number,
+  nestingIndent: number, // Added parameter
+  ignoreBinary?: boolean
 ): string {
   const indentStr = ' '.repeat(indent);
+  const nestIndentStr = ' '.repeat(nestingIndent); // Create nesting indent string
+
+  // Handle undefined (for ignored binary fields)
+  if (value === undefined) {
+    return '';
+  }
 
   // Handle null
   if (value === null) {
@@ -120,8 +153,17 @@ function formatWithDescriptions(
 
     const items = value.map((item) => {
       const itemSchema = schema.items || ({} as VovkSimpleJSONSchema);
-      const formattedItem = formatWithDescriptions(item, itemSchema, rootSchema, comment, stripQuotes, indent + 2);
-      return `${indentStr}  ${formattedItem}`;
+      const formattedItem = formatWithDescriptions(
+        item,
+        itemSchema,
+        rootSchema,
+        comment,
+        stripQuotes,
+        indent + nestingIndent, // Use nestingIndent instead of hardcoded 4
+        nestingIndent,
+        ignoreBinary
+      );
+      return `${indentStr}${nestIndentStr}${formattedItem}`; // Use nestIndentStr for item indentation
     });
 
     return `[\n${items.join(',\n')}\n${indentStr}]`;
@@ -138,11 +180,11 @@ function formatWithDescriptions(
     // Add top-level description for objects
     if (isTopLevel && schema.type === 'object' && schema.description) {
       const descLines = schema.description.split('\n');
-      formattedEntries.push(`${indentStr}  ${comment} -----`);
+      formattedEntries.push(`${indentStr}${nestIndentStr}${comment} -----`);
       descLines.forEach((line) => {
-        formattedEntries.push(`${indentStr}  ${comment} ${line.trim()}`);
+        formattedEntries.push(`${indentStr}${nestIndentStr}${comment} ${line.trim()}`);
       });
-      formattedEntries.push(`${indentStr}  ${comment} -----`);
+      formattedEntries.push(`${indentStr}${nestIndentStr}${comment} -----`);
     }
 
     entries.forEach(([key, val], index) => {
@@ -158,7 +200,7 @@ function formatWithDescriptions(
       if (resolvedPropSchema.description) {
         const descLines = resolvedPropSchema.description.split('\n');
         descLines.forEach((line) => {
-          formattedEntries.push(`${indentStr}  ${comment} ${line.trim()}`);
+          formattedEntries.push(`${indentStr}${nestIndentStr}${comment} ${line.trim()}`);
         });
       }
 
@@ -172,10 +214,14 @@ function formatWithDescriptions(
         rootSchema,
         comment,
         stripQuotes,
-        indent + 2
+        indent + nestingIndent,
+        nestingIndent,
+        ignoreBinary
       );
 
-      formattedEntries.push(`${indentStr}  ${formattedKey}: ${formattedValue}${index < entries.length - 1 ? ',' : ''}`);
+      formattedEntries.push(
+        `${indentStr}${nestIndentStr}${formattedKey}: ${formattedValue}${index < entries.length - 1 ? ',' : ''}`
+      );
     });
 
     return `{\n${formattedEntries.join('\n')}\n${indentStr}}`;
@@ -196,9 +242,9 @@ function resolveRef(ref: string, rootSchema: KnownAny): KnownAny {
   return current;
 }
 
-function handleRef(ref: string, rootSchema: KnownAny): KnownAny {
+function handleRef(ref: string, rootSchema: KnownAny, ignoreBinary?: boolean): KnownAny {
   const resolved = resolveRef(ref, rootSchema);
-  return getSampleValue(resolved, rootSchema);
+  return getSampleValue(resolved, rootSchema, ignoreBinary);
 }
 
 function handleString(schema: KnownAny): string {
@@ -235,6 +281,8 @@ function handleString(schema: KnownAny): string {
         return '+123-456-7890';
       case 'password':
         return '******';
+      case 'binary':
+        return 'binary-data';
       default:
         return 'string';
     }
@@ -262,7 +310,7 @@ function handleBoolean(): boolean {
   return true;
 }
 
-function handleObject(schema: KnownAny, rootSchema: KnownAny): object {
+function handleObject(schema: KnownAny, rootSchema: KnownAny, ignoreBinary?: boolean): object {
   const result: Record<string, KnownAny> = {};
 
   if (schema.properties) {
@@ -270,25 +318,47 @@ function handleObject(schema: KnownAny, rootSchema: KnownAny): object {
 
     for (const [key, propSchema] of Object.entries<KnownAny>(schema.properties)) {
       if (required.includes(key) || required.length === 0) {
-        result[key] = getSampleValue(propSchema, rootSchema);
+        const value = getSampleValue(propSchema, rootSchema, ignoreBinary);
+        // Only add the property if it's not undefined (which happens when ignoreBinary is true and it's a binary field)
+        if (value !== undefined) {
+          result[key] = value;
+        }
       }
     }
   }
 
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-    result['additionalProp'] = getSampleValue(schema.additionalProperties, rootSchema);
+    const value = getSampleValue(schema.additionalProperties, rootSchema, ignoreBinary);
+    if (value !== undefined) {
+      result['additionalProp'] = value;
+    }
   }
 
   return result;
 }
 
-function handleArray(schema: KnownAny, rootSchema: KnownAny) {
+function handleArray(schema: KnownAny, rootSchema: KnownAny, ignoreBinary?: boolean) {
   if (schema.items) {
     const itemSchema = schema.items;
+
+    // Check if the items are binary strings that should be ignored
+    if (ignoreBinary && itemSchema.type === 'string' && itemSchema.format === 'binary') {
+      return undefined;
+    }
+
     const minItems = schema.minItems || 1;
     const numItems = Math.min(minItems, 3);
 
-    return Array.from({ length: numItems }, () => getSampleValue(itemSchema, rootSchema));
+    const items = Array.from({ length: numItems }, () => getSampleValue(itemSchema, rootSchema, ignoreBinary)).filter(
+      (item) => item !== undefined
+    ); // Filter out undefined values from ignored binary items
+
+    // If all items were filtered out (e.g., all were binary), return undefined instead of empty array
+    if (items.length === 0 && numItems > 0) {
+      return undefined;
+    }
+
+    return items;
   }
 
   return [];

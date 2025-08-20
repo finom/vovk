@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { convertJSONSchemaToPythonType } from '../index.js'; // Replace with your actual module path
+import { convertJSONSchemaToPythonDataType } from '../index.js'; // Replace with your actual module path
 
-test('convertJSONSchemaToPythonType - simple types', async (t) => {
+test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
   await t.test('converts string schema', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: { type: 'string' },
       namespace: 'MyNamespace',
       className: 'MyString',
@@ -15,7 +15,7 @@ test('convertJSONSchemaToPythonType - simple types', async (t) => {
   });
 
   await t.test('converts integer schema', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: { type: 'integer' },
       namespace: 'MyNamespace',
       className: 'MyInteger',
@@ -26,7 +26,7 @@ test('convertJSONSchemaToPythonType - simple types', async (t) => {
   });
 
   await t.test('converts number schema', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: { type: 'number' },
       namespace: 'MyNamespace',
       className: 'MyNumber',
@@ -37,7 +37,7 @@ test('convertJSONSchemaToPythonType - simple types', async (t) => {
   });
 
   await t.test('converts boolean schema', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: { type: 'boolean' },
       namespace: 'MyNamespace',
       className: 'MyBoolean',
@@ -48,7 +48,7 @@ test('convertJSONSchemaToPythonType - simple types', async (t) => {
   });
 
   await t.test('converts null schema', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: { type: 'null' },
       namespace: 'MyNamespace',
       className: 'MyNull',
@@ -59,9 +59,9 @@ test('convertJSONSchemaToPythonType - simple types', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - array types', async (t) => {
+test('convertJSONSchemaToPythonDataType - array types', async (t) => {
   await t.test('converts array of strings', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'array',
         items: { type: 'string' },
@@ -75,7 +75,7 @@ test('convertJSONSchemaToPythonType - array types', async (t) => {
   });
 
   await t.test('converts array of any type', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'array',
       },
@@ -88,9 +88,10 @@ test('convertJSONSchemaToPythonType - array types', async (t) => {
   });
 
   await t.test('converts tuple type', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'array',
+        // @ts-expect-error Weird
         items: [{ type: 'string' }, { type: 'integer' }, { type: 'boolean' }],
       },
       namespace: 'MyNamespace',
@@ -102,9 +103,9 @@ test('convertJSONSchemaToPythonType - array types', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - enum types', async (t) => {
+test('convertJSONSchemaToPythonDataType - enum types', async (t) => {
   await t.test('converts string enum', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'string',
         enum: ['one', 'two', 'three'],
@@ -118,7 +119,7 @@ test('convertJSONSchemaToPythonType - enum types', async (t) => {
   });
 
   await t.test('converts numeric enum', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'integer',
         enum: [1, 2, 3],
@@ -132,9 +133,9 @@ test('convertJSONSchemaToPythonType - enum types', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - union types', async (t) => {
+test('convertJSONSchemaToPythonDataType - union types', async (t) => {
   await t.test('converts union of primitive types', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: ['string', 'null'],
       },
@@ -147,7 +148,7 @@ test('convertJSONSchemaToPythonType - union types', async (t) => {
   });
 
   await t.test('converts union with oneOf', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         oneOf: [{ type: 'string' }, { type: 'integer' }],
       },
@@ -160,7 +161,7 @@ test('convertJSONSchemaToPythonType - union types', async (t) => {
   });
 
   await t.test('converts union with anyOf', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         anyOf: [{ type: 'string' }, { type: 'integer' }, { type: 'boolean' }],
       },
@@ -173,9 +174,9 @@ test('convertJSONSchemaToPythonType - union types', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - simple objects', async (t) => {
+test('convertJSONSchemaToPythonDataType - simple objects', async (t) => {
   await t.test('converts simple object', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {
@@ -197,7 +198,7 @@ test('convertJSONSchemaToPythonType - simple objects', async (t) => {
   });
 
   await t.test('converts empty object', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {},
@@ -214,9 +215,9 @@ test('convertJSONSchemaToPythonType - simple objects', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - complex objects', async (t) => {
+test('convertJSONSchemaToPythonDataType - complex objects', async (t) => {
   await t.test('converts nested objects', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {
@@ -250,7 +251,7 @@ class Person(TypedDict):
   });
 
   await t.test('converts object with arrays', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {
@@ -290,9 +291,9 @@ class Person(TypedDict):
   });
 });
 
-test('convertJSONSchemaToPythonType - allOf', async (t) => {
+test('convertJSONSchemaToPythonDataType - allOf', async (t) => {
   await t.test('converts allOf with merged properties', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         allOf: [
           {
@@ -328,9 +329,9 @@ test('convertJSONSchemaToPythonType - allOf', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - complex nesting', async (t) => {
+test('convertJSONSchemaToPythonDataType - complex nesting', async (t) => {
   await t.test('converts deeply nested structure', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {
@@ -404,9 +405,9 @@ test('convertJSONSchemaToPythonType - complex nesting', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - error handling', async (t) => {
+test('convertJSONSchemaToPythonDataType - error handling', async (t) => {
   await t.test('handles empty schema', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {},
       namespace: 'MyNamespace',
       className: 'EmptySchema',
@@ -417,7 +418,7 @@ test('convertJSONSchemaToPythonType - error handling', async (t) => {
   });
 
   await t.test('handles null schema', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       schema: null as any,
       namespace: 'MyNamespace',
@@ -429,9 +430,9 @@ test('convertJSONSchemaToPythonType - error handling', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - padding', async (t) => {
+test('convertJSONSchemaToPythonDataType - padding', async (t) => {
   await t.test('applies padding correctly', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {
@@ -452,9 +453,9 @@ test('convertJSONSchemaToPythonType - padding', async (t) => {
   });
 });
 
-test('convertJSONSchemaToPythonType - real-world examples', async (t) => {
+test('convertJSONSchemaToPythonDataType - real-world examples', async (t) => {
   await t.test('converts API response schema', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {
@@ -535,7 +536,7 @@ class Response(TypedDict):
   });
 
   await t.test('converts config schema with advanced features', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {
@@ -669,7 +670,7 @@ class AppConfig(TypedDict):
   });
 
   await t.test('converts schema with special format fields', () => {
-    const result = convertJSONSchemaToPythonType({
+    const result = convertJSONSchemaToPythonDataType({
       schema: {
         type: 'object',
         properties: {

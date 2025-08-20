@@ -325,10 +325,12 @@ export interface VovkLLMTool {
 
 export type VovkSimpleJSONSchema = {
   $schema?: string;
-  type: string;
+  type?: string | string[];
   format?: string;
   $ref?: string;
   items?: VovkSimpleJSONSchema;
+  enum?: KnownAny[];
+  title?: string;
   description?: string;
   properties?: Record<string, VovkSimpleJSONSchema>;
   required?: string[];
@@ -340,16 +342,25 @@ export type VovkSimpleJSONSchema = {
   anyOf?: VovkSimpleJSONSchema[];
   oneOf?: VovkSimpleJSONSchema[];
   allOf?: VovkSimpleJSONSchema[];
+  // older schema
+  const?: KnownAny;
+  example?: KnownAny;
+  // binary
+  contentEncoding?: string;
+  contentMediaType?: string;
+  minLength?: number;
+  maxLength?: number;
+  // 'x-foo' extensions
   [key: `x-${string}`]: KnownAny;
 };
 
 // -----
 
 export enum VovkSchemaIdEnum {
-  META = 'https://vovk.dev/api/spec/v3/meta.json',
-  CONFIG = 'https://vovk.dev/api/spec/v3/config.json',
-  SEGMENT = 'https://vovk.dev/api/spec/v3/segment.json',
-  SCHEMA = 'https://vovk.dev/api/spec/v3/schema.json',
+  META = 'https://vovk.dev/api/schema/v3/meta.json',
+  CONFIG = 'https://vovk.dev/api/schema/v3/config.json',
+  SEGMENT = 'https://vovk.dev/api/schema/v3/segment.json',
+  SCHEMA = 'https://vovk.dev/api/schema/v3/schema.json',
 }
 
 type ReadmeConfig = {

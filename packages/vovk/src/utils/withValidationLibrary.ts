@@ -216,7 +216,7 @@ export function withValidationLibrary<
 
   if (toJSONSchema) {
     const getJsonSchema = (model: KnownAny, type: VovkValidationType) =>
-      Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-formData': isForm } : {});
+      Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-isForm': isForm } : {});
 
     const validation: VovkHandlerSchema['validation'] = {};
     if (body && !skipSchemaEmissionKeys.includes('body')) {

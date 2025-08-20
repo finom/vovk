@@ -8,7 +8,7 @@ import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import installDependencies, { getPackageManager } from './installDependencies.mjs';
 import getLogger from '../utils/getLogger.mjs';
 import createConfig from './createConfig.mjs';
-import updateNPMScripts, { getDevScript } from './updateNPMScripts.mjs';
+import updateNPMScripts, { getBuildScript, getDevScript } from './updateNPMScripts.mjs';
 import checkTSConfigForExperimentalDecorators from './checkTSConfigForExperimentalDecorators.mjs';
 import updateTypeScriptConfig from './updateTypeScriptConfig.mjs';
 import updateDependenciesWithoutInstalling from './updateDependenciesWithoutInstalling.mjs';
@@ -170,26 +170,24 @@ export class Init {
     }
   }
 
-  async main(
-    prefix: string,
-    {
-      yes,
-      logLevel,
-      useNpm,
-      useYarn,
-      usePnpm,
-      useBun,
-      skipInstall,
-      updateTsConfig,
-      updateScripts,
-      validationLibrary,
-      lang,
-      dryRun,
-      channel,
-    }: InitOptions
-  ) {
+  async main({
+    prefix,
+    yes,
+    logLevel,
+    useNpm,
+    useYarn,
+    usePnpm,
+    useBun,
+    skipInstall,
+    updateTsConfig,
+    updateScripts,
+    validationLibrary,
+    lang,
+    dryRun,
+    channel,
+  }: InitOptions) {
     const cwd = process.cwd();
-    const root = path.resolve(cwd, prefix);
+    const root = path.resolve(cwd, prefix ?? '.');
     const log = getLogger(logLevel);
     const pkgJson = await NPMCliPackageJson.load(root);
 
@@ -200,6 +198,7 @@ export class Init {
 
     if (yes) {
       return this.#init({ configPaths, pkgJson }, {
+        prefix: prefix ?? '.',
         useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
         useYarn: useYarn ?? false,
         usePnpm: usePnpm ?? false,
@@ -255,18 +254,18 @@ export class Init {
           })));
 
     updateScripts ??= await select({
-      message: 'Do you want to update "dev" NPM script at package.json?',
+      message: 'Do you want to update "dev" and "build" NPM scripts at package.json?',
       default: 'implicit',
       choices: [
         {
           name: 'Yes, use "concurrently" implicitly',
           value: 'implicit' as const,
-          description: `The script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}`,
+          description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)} and the "build" scrilt will run "vovk generate" before "next build" ${chalk.whiteBright.bold(`"${getBuildScript(pkgJson)}"`)}`,
         },
         {
           name: 'Yes, use "concurrently" explicitly',
           value: 'explicit' as const,
-          description: `The script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}`,
+          description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)} and the "build" scrilt will run "vovk generate" before "next build" ${chalk.whiteBright.bold(`"${getBuildScript(pkgJson)}"`)}`,
         },
         {
           name: 'No',

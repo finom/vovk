@@ -6,7 +6,6 @@ const vovkConfig = {
   clientTemplateDefs: {
     rs: {
       extends: 'rs',
-      templatePath: '../packages/vovk-rust/template/',
       composedClient: {
         outDir: '../packages/vovk-rust/generated_rust_client',
         package: {

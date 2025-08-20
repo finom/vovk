@@ -3,7 +3,7 @@ from typing import Generator, cast, List
 from jsonschema import ValidationError
 from generated_python_client.src.test_generated_python_client import HttpException, WithZodClientControllerRPC
 from utils import noop, get_constraining_object
-
+from io import BytesIO
 
 class TestZod(unittest.TestCase):
     def test_ok(self) -> None:
@@ -146,59 +146,63 @@ class TestZod(unittest.TestCase):
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid output on server. .*hello.*")
 
     def test_form(self) -> None:
-        """  
-        it('Should handle form data', async () => {
-            let formData = new FormData();
-            formData.append('hello', 'world');
-
-            const result = await WithZodClientControllerRPC.handleFormData({
-            body: formData,
-            query: { search: 'foo' },
-            });
-            const expected = {
-            formData: {
-                hello: 'world',
-            },
-            search: 'foo',
-            };
-            null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies typeof expected;
-            // @ts-expect-error Expect error
-            null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies null;
-            deepStrictEqual(result satisfies typeof expected, expected);
-
-            const { rejects } = expectPromise(async () => {
-            formData = new FormData();
-            formData.append('hello', 'wrong_length');
-            await WithZodClientControllerRPC.handleFormData({
-                body: formData,
-                query: { search: 'foo' },
-                disableClientValidation: true,
-            });
-            });
-
-            await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
-            await rejects.toThrowError(HttpException);
-        });
-        """
-        data: WithZodClientControllerRPC.HandleFormDataBody = WithZodClientControllerRPC.handle_form_data(
+        data: WithZodClientControllerRPC.HandleFormDataOutput = WithZodClientControllerRPC.handle_form_data(
             body={"hello": "world"},
             query={"search": "value"},
         )
-        self.assertEqual(data, {'formData': {'hello': 'world'}, 'search': 'value'})
-
-        with self.assertRaises(ValidationError) as context:
-            WithZodClientControllerRPC.handle_form_data(
-                body={"hello": "wrong_length"},
-                query={"search": "value"},
-            )
-        
-        self.assertIn("'wrong_length' is too long", str(context.exception).lower())
+        self.assertEqual(data, {'hello': 'world', 'search': 'value'})
 
         with self.assertRaises(HttpException) as context2:
             WithZodClientControllerRPC.handle_form_data(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
-                disable_client_validation=True
+            )
+        self.assertRegex(str(context2.exception), r"Validation failed. Invalid form on server. .*hello.*")
+
+    def test_form_with_file(self) -> None:
+        file_content = "file_text_content"
+        file_data = BytesIO(file_content.encode('utf-8'))
+
+        data: WithZodClientControllerRPC.HandleFormDataWithFileOutput = WithZodClientControllerRPC.handle_form_data_with_file(
+            body={"hello": "world"},
+            query={"search": "value"},
+            files={"file": ('filename.txt', file_data, 'text/plain')}
+        )
+        self.assertEqual(data, {'file': 'file_text_content', 'hello': 'world', 'search': 'value'})
+
+        with self.assertRaises(HttpException) as context2:
+            WithZodClientControllerRPC.handle_form_data_with_file(
+                body={"hello": "wrong_length"},
+                query={"search": "value"},
+                files={"file": ('filename.txt', file_data, 'text/plain')}
+            )
+        self.assertRegex(str(context2.exception), r"Validation failed. Invalid form on server. .*hello.*")
+
+    def test_form_with_multiple_files(self) -> None:
+        file_content1 = "file_text_content1"
+        file_data1 = BytesIO(file_content1.encode('utf-8'))
+
+        file_content2 = "file_text_content2"
+        file_data2 = BytesIO(file_content2.encode('utf-8'))
+
+        data: WithZodClientControllerRPC.HandleFormDataWithMultipleFilesOutput = WithZodClientControllerRPC.handle_form_data_with_multiple_files(
+            body={"hello": "world"},
+            query={"search": "value"},
+            files=[
+                ('files', ('filename1.txt', file_data1, 'text/plain')),
+                ('files', ('filename2.txt', file_data2, 'text/plain'))
+            ]
+        )
+        self.assertEqual(data, {'files': ['file_text_content1', 'file_text_content2'], 'hello': 'world', 'search': 'value'})
+
+        with self.assertRaises(HttpException) as context2:
+            WithZodClientControllerRPC.handle_form_data_with_multiple_files(
+                body={"hello": "wrong_length"},
+                query={"search": "value"},
+                files=[
+                    ('files', ('filename1.txt', file_data1, 'text/plain')),
+                    ('files', ('filename2.txt', file_data2, 'text/plain'))
+                ]
             )
         self.assertRegex(str(context2.exception), r"Validation failed. Invalid form on server. .*hello.*")
 

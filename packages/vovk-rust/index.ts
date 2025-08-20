@@ -352,7 +352,7 @@ export function processObject(
   // Add documentation comments for the struct
   code += generateDocComment(schema, level, pad);
 
-  if (schema.type === 'object' && schema['x-formData'] === true) {
+  if (schema.type === 'object' && schema['x-isForm'] === true) {
     code += `${indentFn(level)}pub use reqwest::multipart::Form as ${currentName};\n`;
     return code;
   }
@@ -552,7 +552,7 @@ export function convertJSONSchemasToRustTypes({
               required: defSchema.required || [],
               title: defSchema.title,
               description: defSchema.description,
-              'x-formData': defSchema['x-formData'],
+              'x-isForm': defSchema['x-isForm'],
             };
             result += processObject(rootDefObject, [defName], 1, schemaObj, pad);
           } else if (defSchema.type === 'string' && defSchema.enum) {
@@ -576,7 +576,7 @@ export function convertJSONSchemasToRustTypes({
         required: schemaObj.required || [],
         title: schemaObj.title,
         description: schemaObj.description,
-        'x-formData': schemaObj['x-formData'],
+        'x-isForm': schemaObj['x-isForm'],
       };
 
       result += processObject(rootObject, [schemaName], 1, schemaObj, pad);

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://vovk.dev/api/spec/v3/segment.json",
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
   "emitSchema": true,
   "segmentName": "generated",
   "segmentType": "segment",

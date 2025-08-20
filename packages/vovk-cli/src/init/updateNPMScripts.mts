@@ -8,6 +8,11 @@ export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'imp
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
 }
 
+export function getBuildScript(pkgJson: NPMCliPackageJson) {
+  const nextBuild = pkgJson.content.scripts?.build ?? 'next build';
+  return `vovk generate && ${nextBuild}`;
+}
+
 export default async function updateNPMScripts(
   pkgJson: NPMCliPackageJson,
   root: string,
@@ -17,6 +22,7 @@ export default async function updateNPMScripts(
     scripts: {
       ...pkgJson.content.scripts,
       dev: getDevScript(pkgJson, updateScriptsMode),
+      build: getBuildScript(pkgJson),
     },
   });
 

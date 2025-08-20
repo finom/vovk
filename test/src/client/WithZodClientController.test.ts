@@ -430,17 +430,15 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
   it('Should handle form data with file', async () => {
     let formData = new FormData();
     formData.append('hello', 'world');
-    formData.append('file', new Blob(['file content'], { type: 'text/plain' }), 'file.txt');
+    formData.append('file', new Blob(['file_text_content'], { type: 'text/plain' }), 'file.txt');
 
     const result = await WithZodClientControllerRPC.handleFormDataWithFile({
       body: formData,
       query: { search: 'foo' },
     });
     const expected = {
-      formData: {
-        file: {},
-        hello: 'world',
-      },
+      hello: 'world',
+      file: 'file_text_content',
       search: 'foo',
     };
     null as unknown as VovkReturnType<
@@ -489,6 +487,58 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     }));
 
     await rejects.toThrow(/Validation failed. Invalid form on server: .*file.*/);
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle form data with multiple files', async () => {
+    let formData = new FormData();
+    formData.append('hello', 'world');
+    formData.append('files', new Blob(['file_text_content1'], { type: 'text/plain' }), 'file1.txt');
+    formData.append('files', new Blob(['file_text_content2'], { type: 'text/plain' }), 'file2.txt');
+
+    const result = await WithZodClientControllerRPC.handleFormDataWithMultipleFiles({
+      body: formData,
+      query: { search: 'foo' },
+      disableClientValidation: true,
+    });
+    const expected = {
+      files: ['file_text_content1', 'file_text_content2'],
+      hello: 'world',
+      search: 'foo',
+    };
+    null as unknown as VovkReturnType<
+      typeof WithZodClientControllerRPC.handleFormDataWithMultipleFiles
+    > satisfies typeof expected;
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormDataWithMultipleFiles> satisfies null;
+    deepStrictEqual(result satisfies typeof expected, expected);
+
+    let { rejects } = expectPromise(async () => {
+      formData = new FormData();
+      formData.append('hello', 'wrong_length');
+      formData.append('files', new Blob(['file content'], { type: 'text/plain' }), 'file1.txt');
+      formData.append('files', new Blob(['file content'], { type: 'text/plain' }), 'file2.txt');
+      await WithZodClientControllerRPC.handleFormDataWithMultipleFiles({
+        body: formData,
+        query: { search: 'foo' },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+    await rejects.toThrowError(HttpException);
+
+    // No files
+    ({ rejects } = expectPromise(async () => {
+      formData = new FormData();
+      formData.append('hello', 'world');
+      await WithZodClientControllerRPC.handleFormDataWithMultipleFiles({
+        body: formData,
+        query: { search: 'foo' },
+      });
+    }));
+
+    await rejects.toThrow(/Ajv validation failed. Invalid form on client: .*files.*/);
     await rejects.toThrowError(HttpException);
   });
 
