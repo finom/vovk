@@ -2,15 +2,21 @@ import path from 'node:path';
 import getConfig from './getConfig/index.mjs';
 import { getPackageJson } from '../utils/getPackageJson.mjs';
 import { readFile } from 'node:fs/promises';
+import { LogLevelNames } from 'loglevel';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
-export default async function getProjectInfo({
-  port: givenPort,
-  cwd = process.cwd(),
-  configPath,
-  srcRootRequired = true,
-}: { port?: number; cwd?: string; configPath?: string; srcRootRequired?: boolean } = {}) {
+export default async function getProjectInfo(
+  {
+    port: givenPort,
+    cwd = process.cwd(),
+    configPath,
+    srcRootRequired = true,
+    logLevel,
+  }: { port?: number; cwd?: string; configPath?: string; srcRootRequired?: boolean; logLevel?: LogLevelNames } = {
+    logLevel: 'info',
+  }
+) {
   const port = givenPort?.toString() ?? process.env.PORT ?? '3000';
 
   // Make PORT available to the config file at getConfig
@@ -19,6 +25,7 @@ export default async function getProjectInfo({
   const { config, srcRoot, configAbsolutePaths, log } = await getConfig({
     configPath,
     cwd,
+    logLevel,
   });
 
   const packageJson = await getPackageJson(cwd, log);

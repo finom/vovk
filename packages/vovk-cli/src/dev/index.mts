@@ -20,6 +20,7 @@ import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import writeMetaJson from './writeMetaJson.mjs';
 import type { DevOptions, VovkEnv } from '../types.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import { LogLevelNames } from 'loglevel';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
@@ -49,9 +50,12 @@ export class VovkDev {
 
   #devHttps: boolean;
 
-  constructor({ schemaOut, devHttps }: Pick<DevOptions, 'schemaOut' | 'devHttps'>) {
-    this.#schemaOut = schemaOut ?? null;
-    this.#devHttps = devHttps ?? false;
+  #logLevel: LogLevelNames;
+
+  constructor({ schemaOut, devHttps, logLevel }: Pick<DevOptions, 'schemaOut' | 'devHttps' | 'logLevel'>) {
+    this.#schemaOut = schemaOut || null;
+    this.#devHttps = devHttps || false;
+    this.#logLevel = logLevel || 'info';
   }
 
   #watchSegments = (callback: () => void) => {
@@ -193,7 +197,7 @@ export class VovkDev {
     let isReady = false;
 
     const handle = debounce(async () => {
-      this.#projectInfo = await getProjectInfo();
+      this.#projectInfo = await getProjectInfo({ logLevel: this.#logLevel });
       const { config, apiDirAbsolutePath } = this.#projectInfo;
       this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
       await this.#modulesWatcher?.close();
@@ -399,7 +403,7 @@ export class VovkDev {
 
   async start({ exit }: { exit: boolean }) {
     const now = Date.now();
-    this.#projectInfo = await getProjectInfo();
+    this.#projectInfo = await getProjectInfo({ logLevel: this.#logLevel });
     const { log, config, cwd, apiDirAbsolutePath } = this.#projectInfo;
     this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     log.info('Starting...');
@@ -484,6 +488,7 @@ if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
   void new VovkDev({
     schemaOut: env.__VOVK_SCHEMA_OUT_FLAG__ || undefined,
     devHttps: env.__VOVK_DEV_HTTPS_FLAG__ === 'true',
+    logLevel: env.__VOVK_LOG_LEVEL__,
   }).start({
     exit: env.__VOVK_EXIT__ === 'true',
   });

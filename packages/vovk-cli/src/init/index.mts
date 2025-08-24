@@ -8,13 +8,14 @@ import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import installDependencies, { getPackageManager } from './installDependencies.mjs';
 import getLogger from '../utils/getLogger.mjs';
 import createConfig from './createConfig.mjs';
-import updateNPMScripts, { getBuildScript, getDevScript } from './updateNPMScripts.mjs';
+import updateNPMScripts, { getDevScript } from './updateNPMScripts.mjs';
 import checkTSConfigForExperimentalDecorators from './checkTSConfigForExperimentalDecorators.mjs';
 import updateTypeScriptConfig from './updateTypeScriptConfig.mjs';
 import updateDependenciesWithoutInstalling from './updateDependenciesWithoutInstalling.mjs';
 import logUpdateDependenciesError from './logUpdateDependenciesError.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { InitOptions } from '../types.mjs';
+import { createStandardSchemaValidatorFile } from './createStandardSchemaValidatorFile.mjs';
 
 export class Init {
   root: string;
@@ -24,9 +25,11 @@ export class Init {
     {
       configPaths,
       pkgJson,
+      cwd = process.cwd(),
     }: {
       configPaths: string[];
       pkgJson: NPMCliPackageJson;
+      cwd: string;
     },
     {
       useNpm,
@@ -61,10 +64,17 @@ export class Init {
 
     if (validationLibrary) {
       dependencies.push(
-        validationLibrary,
         ...({
-          'vovk-zod': ['zod'],
-          'vovk-dto': ['class-validator', 'class-transformer', 'dto-mapped-types', 'reflect-metadata'],
+          zod: ['zod', 'vovk-zod'],
+          'class-validator': [
+            'class-validator',
+            'class-transformer',
+            'dto-mapped-types',
+            'reflect-metadata',
+            'vovk-dto',
+          ],
+          valibot: ['valibot', '@valibot/to-json-schema'],
+          arktype: ['arktype'],
         }[validationLibrary] ?? [])
       );
     }
@@ -87,7 +97,7 @@ export class Init {
           experimentalDecorators: true,
         };
 
-        if (validationLibrary === 'vovk-dto') {
+        if (validationLibrary === 'class-validator') {
           compilerOptions.emitDecoratorMetadata = true;
         }
         if (!dryRun) await updateTypeScriptConfig(root, compilerOptions);
@@ -157,6 +167,13 @@ export class Init {
       }
     }
 
+    if (validationLibrary === 'valibot' || validationLibrary === 'arktype') {
+      createStandardSchemaValidatorFile({
+        cwd,
+        validationLibrary,
+      });
+    }
+
     try {
       const { configAbsolutePath } = await createConfig({
         root,
@@ -188,7 +205,7 @@ export class Init {
   }: InitOptions) {
     const cwd = process.cwd();
     const root = path.resolve(cwd, prefix ?? '.');
-    const log = getLogger(logLevel);
+    const log = getLogger(logLevel ?? 'info');
     const pkgJson = await NPMCliPackageJson.load(root);
 
     this.root = root;
@@ -197,7 +214,7 @@ export class Init {
     const configPaths = await getConfigPaths({ cwd, relativePath: prefix });
 
     if (yes) {
-      return this.#init({ configPaths, pkgJson }, {
+      return this.#init({ configPaths, pkgJson, cwd }, {
         prefix: prefix ?? '.',
         useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
         useYarn: useYarn ?? false,
@@ -206,7 +223,7 @@ export class Init {
         skipInstall: skipInstall ?? false,
         updateTsConfig: updateTsConfig ?? true,
         updateScripts: updateScripts ?? 'implicit',
-        validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'vovk-zod'),
+        validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'zod'),
         dryRun: dryRun ?? false,
         channel: channel ?? 'latest',
         lang: lang ?? [],
@@ -236,18 +253,27 @@ export class Init {
         : (validationLibrary ??
           (await select({
             message: 'Choose validation library',
-            default: 'vovk-zod',
+            default: 'zod',
             choices: [
               {
-                name: 'vovk-zod',
-                value: 'vovk-zod',
+                name: 'Zod',
+                value: 'zod',
                 description: 'Use Zod for data validation',
               },
               {
-                name: 'vovk-dto',
-                value: 'vovk-dto',
-                description:
-                  'Use class-validator for data validation. Also installs class-transformer, dto-mapped-types and reflect-metadata',
+                name: 'class-validator',
+                value: 'class-validator',
+                description: 'Use class-validator for data validation',
+              },
+              {
+                name: 'Valibot',
+                value: 'valibot',
+                description: 'Use valibot for data validation.',
+              },
+              {
+                name: 'ArkType',
+                value: 'arktype',
+                description: 'Use arktype for data validation.',
               },
               { name: 'None', value: null, description: 'Install validation library later' },
             ],
@@ -260,12 +286,12 @@ export class Init {
         {
           name: 'Yes, use "concurrently" implicitly',
           value: 'implicit' as const,
-          description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)} and the "build" scrilt will run "vovk generate" before "next build" ${chalk.whiteBright.bold(`"${getBuildScript(pkgJson)}"`)}`,
+          description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)} and the "prebuild" script will run "vovk generate"`,
         },
         {
           name: 'Yes, use "concurrently" explicitly',
           value: 'explicit' as const,
-          description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)} and the "build" scrilt will run "vovk generate" before "next build" ${chalk.whiteBright.bold(`"${getBuildScript(pkgJson)}"`)}`,
+          description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)} and the "prebuild" script will run "vovk generate"`,
         },
         {
           name: 'No',
@@ -286,7 +312,7 @@ export class Init {
 
       if (shouldAsk) {
         const keys = ['experimentalDecorators'];
-        if (validationLibrary === 'vovk-dto') {
+        if (validationLibrary === 'class-validator') {
           keys.push('emitDecoratorMetadata');
         }
         updateTsConfig = await confirm({
@@ -296,7 +322,7 @@ export class Init {
     }
 
     lang ??= await checkbox({
-      message: 'Do you want to generate RPC client for other languages besides TypeScript (beta)?',
+      message: 'Do you want to generate RPC client for other languages besides TypeScript (experimental)?',
       choices: [
         { name: 'Python', value: 'py' },
         { name: 'Rust', value: 'rs' },
@@ -304,7 +330,7 @@ export class Init {
     });
 
     await this.#init(
-      { configPaths, pkgJson },
+      { configPaths, pkgJson, cwd },
       {
         useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
         useYarn: useYarn ?? false,

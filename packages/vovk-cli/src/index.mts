@@ -35,8 +35,9 @@ program
   .option('--exit', 'kill the processes when schema and client is generated')
   .option('--schema-out <path>', 'path to schema output directory (default: .vovk-schema)')
   .option('--https, --dev-https', 'use HTTPS for the dev server (default: false)')
+  .option('--log-level <level>', 'set the log level')
   .action(async (nextArgs: string[], options: DevOptions) => {
-    const { nextDev, exit = false, schemaOut, devHttps } = options;
+    const { nextDev, exit = false, schemaOut, devHttps, logLevel } = options;
     const portAttempts = 30;
     const PORT = !nextDev
       ? process.env.PORT
@@ -66,9 +67,11 @@ program
             env: {
               PORT,
               __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
+              // TODO: Pass these as flags
               __VOVK_SCHEMA_OUT_FLAG__: schemaOut ?? '',
               __VOVK_DEV_HTTPS_FLAG__: devHttps ? 'true' : 'false',
               __VOVK_EXIT__: exit ? 'true' : 'false',
+              __VOVK_LOG_LEVEL__: logLevel ?? undefined,
             } satisfies VovkEnv,
           },
         ],
@@ -84,7 +87,7 @@ program
         // do nothing, all processes are killed
       }
     } else {
-      void new VovkDev({ schemaOut, devHttps }).start({ exit });
+      void new VovkDev({ schemaOut, devHttps, logLevel }).start({ exit });
     }
   });
 
@@ -116,8 +119,13 @@ program
   .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
   .option('--openapi-mixin-name <names...>', 'mixin names corresponding to the index of --openapi option')
   .option('--openapi-fallback <paths...>', 'save OpenAPI spec and use it as a fallback if URL is not available')
+  .option('--log-level <level>', 'set the log level')
   .action(async (cliGenerateOptions: GenerateOptions) => {
-    const projectInfo = await getProjectInfo({ configPath: cliGenerateOptions.configPath, srcRootRequired: false });
+    const projectInfo = await getProjectInfo({
+      configPath: cliGenerateOptions.configPath,
+      srcRootRequired: false,
+      logLevel: cliGenerateOptions.logLevel,
+    });
     await new VovkGenerate({
       projectInfo,
       forceNothingWrittenLog: true,
@@ -137,12 +145,18 @@ program
   .option('--config <config>', 'path to config file')
   .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
   .option('--origin <url>', 'set the origin URL for the generated client')
+  .option('--tsconfig <path>', 'path to tsconfig.json for bundling by tsdown')
   .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema instead of Vovk schema')
   .option('--openapi-get-module-name <names...>', 'module names corresponding to the index of --openapi option')
   .option('--openapi-get-method-name <names...>', 'method names corresponding to the index of --openapi option')
   .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
+  .option('--log-level <level>', 'set the log level')
   .action(async (cliBundleOptions: BundleOptions) => {
-    const projectInfo = await getProjectInfo({ configPath: cliBundleOptions.config, srcRootRequired: false });
+    const projectInfo = await getProjectInfo({
+      configPath: cliBundleOptions.config,
+      srcRootRequired: false,
+      logLevel: cliBundleOptions.logLevel,
+    });
     const { cwd, config, log, isNextInstalled } = projectInfo;
     const fullSchema = await getProjectFullSchema({
       schemaOutAbsolutePath: path.resolve(cwd, cliBundleOptions?.schema ?? config.schemaOutDir),
@@ -173,7 +187,16 @@ program
   .option('--no-segment-update', 'do not update segment files when creating a new module')
   .option('--dry-run', 'do not write files to disk')
   .option('--static', 'if the segment is static')
-  .action((components: string[], newOptions: NewOptions) => newComponents(components, newOptions));
+  .option('--log-level <level>', 'set the log level')
+  .action(async (components: string[], newOptions: NewOptions) =>
+    newComponents(
+      components,
+      await getProjectInfo({
+        logLevel: newOptions.logLevel,
+      }),
+      newOptions
+    )
+  );
 
 program
   .command('help')

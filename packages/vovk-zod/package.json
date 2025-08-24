@@ -1,14 +1,14 @@
 {
   "name": "vovk-zod",
-  "version": "1.0.0-draft.132",
+  "version": "1.0.0-draft.133",
   "description": "Zod validation for Vovk.ts",
   "main": "./esm/index.js",
   "module": "./cjs/index.js",
   "types": "./esm/index.d.js",
   "scripts": {
-    "build": "rm -rf esm js && npm run build:esm && npm run build:js",
+    "build": "rm -rf esm cjs && npm run build:esm && npm run build:cjs",
     "build:esm": "tsc --outDir esm --module esnext --moduleResolution node",
-    "build:js": "tsc --outDir js --module commonjs --moduleResolution node",
+    "build:cjs": "tsc --outDir cjs --module commonjs --moduleResolution node",
     "tsc": "tsc --noEmit",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u"

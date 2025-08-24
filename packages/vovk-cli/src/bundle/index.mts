@@ -32,10 +32,13 @@ export async function bundle({
   }
 
   const outDir = cliBundleOptions?.outDir ?? bundleConfig.tsdownBuildOptions.outDir;
+  const tsconfig = cliBundleOptions?.tsconfig ?? bundleConfig.tsdownBuildOptions.tsconfig;
 
   if (!outDir) {
     throw new Error('No output directory specified for bundling');
   }
+
+  const outDirAbsolute = path.resolve(cwd, outDir);
 
   await generate({
     isEnsuringClient: false,
@@ -65,11 +68,11 @@ export async function bundle({
     dts: true,
     format: ['cjs', 'esm'],
     fixedExtension: true,
-    outDir,
+    clean: true,
     ...bundleConfig.tsdownBuildOptions,
+    outDir: outDirAbsolute,
+    tsconfig,
   });
-
-  const outDirAbsolute = path.resolve(cwd, outDir);
 
   log.debug(`Bundled index.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
@@ -78,8 +81,9 @@ export async function bundle({
     dts: true,
     format: ['cjs'],
     fixedExtension: true,
-    outDir,
+    outDir: outDirAbsolute,
     clean: false,
+    tsconfig,
   });
 
   log.debug(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
@@ -98,7 +102,7 @@ export async function bundle({
       cliGenerateOptions: {
         origin: cliBundleOptions?.origin ?? bundleConfig.origin,
         composedFrom: group.map(([templateName]) => templateName),
-        composedOut: path.resolve(outDir, relativePath),
+        composedOut: path.resolve(outDirAbsolute, relativePath),
         composedOnly: true,
       },
     });

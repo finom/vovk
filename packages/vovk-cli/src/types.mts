@@ -15,6 +15,7 @@ export interface DevOptions {
   nextDev?: boolean;
   exit?: boolean;
   devHttps?: boolean;
+  logLevel?: LogLevelNames;
 }
 
 export interface GenerateOptions {
@@ -39,6 +40,7 @@ export interface GenerateOptions {
   segmentedOnly?: boolean;
   segmentedIncludeSegments?: string[];
   segmentedExcludeSegments?: string[];
+  logLevel?: LogLevelNames;
 }
 
 export interface BundleOptions
@@ -49,17 +51,18 @@ export interface BundleOptions
   schema?: string;
   outDir?: string;
   origin?: string;
+  tsconfig?: string;
   openapiSpec?: string[];
   openapiGetModuleName?: string[];
   openapiGetMethodName?: string[];
   openapiRootUrl?: string[];
   openapiMixinName?: string[];
+  logLevel?: LogLevelNames;
 }
 
 export interface InitOptions {
   prefix?: string;
   yes?: boolean;
-  logLevel: LogLevelNames;
   useNpm?: boolean;
   useYarn?: boolean;
   usePnpm?: boolean;
@@ -67,10 +70,11 @@ export interface InitOptions {
   skipInstall?: boolean;
   updateTsConfig?: boolean;
   updateScripts?: 'implicit' | 'explicit';
-  validationLibrary?: string | null;
+  validationLibrary?: 'zod' | 'class-validator' | 'valibot' | 'arktype' | null;
   dryRun?: boolean;
   lang?: string[];
   channel?: 'latest' | 'beta' | 'draft';
+  logLevel?: LogLevelNames;
 }
 
 export interface NewOptions {
@@ -81,6 +85,7 @@ export interface NewOptions {
   noSegmentUpdate?: boolean;
   empty?: boolean;
   static?: boolean;
+  logLevel?: LogLevelNames;
 }
 
 export type VovkEnv = {
@@ -89,9 +94,9 @@ export type VovkEnv = {
   VOVK_ORIGIN?: string;
   VOVK_ROOT_ENTRY?: string;
   VOVK_API_ENTRY_POINT?: string;
-  VOVK_LOG_LEVEL?: LogLevelNames;
   __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
   __VOVK_SCHEMA_OUT_FLAG__?: string;
   __VOVK_DEV_HTTPS_FLAG__?: 'true' | 'false';
   __VOVK_EXIT__?: 'true' | 'false';
+  __VOVK_LOG_LEVEL__?: LogLevelNames;
 };

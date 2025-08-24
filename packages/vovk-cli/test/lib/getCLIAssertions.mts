@@ -30,7 +30,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function vovkInit(extraParams?: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
-    const script = `./dist/index.mjs init ${dir} --channel=draft --log-level=debug ${extraParams}`;
+    const script = `./dist/index.mjs init --prefix ${dir} --channel=draft --log-level=debug ${extraParams}`;
     return runScript(script, {
       ...options,
       cwd,

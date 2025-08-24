@@ -7,6 +7,10 @@ import YupControllerOnlyEntityController from '../../../../modules/generated/yup
 import YupControllerAndServiceEntityController from '../../../../modules/generated/yupControllerAndServiceEntity/YupControllerAndServiceEntityController.ts';
 import DtoControllerOnlyEntityController from '../../../../modules/generated/dtoControllerOnlyEntity/DtoControllerOnlyEntityController.ts';
 import DtoControllerAndServiceEntityController from '../../../../modules/generated/dtoControllerAndServiceEntity/DtoControllerAndServiceEntityController.ts';
+import ValibotControllerOnlyEntityController from '../../../../modules/generated/valibotControllerOnlyEntity/ValibotControllerOnlyEntityController.ts';
+import ValibotControllerAndServiceEntityController from '../../../../modules/generated/valibotControllerAndServiceEntity/ValibotControllerAndServiceEntityController.ts';
+import ArktypeControllerOnlyEntityController from '../../../../modules/generated/arktypeControllerOnlyEntity/ArktypeControllerOnlyEntityController.ts';
+import ArktypeControllerAndServiceEntityController from '../../../../modules/generated/arktypeControllerAndServiceEntity/ArktypeControllerAndServiceEntityController.ts';
 
 const controllers = {
   NoValidationControllerOnlyEntityRPC: NoValidationControllerOnlyEntityController,
@@ -17,6 +21,10 @@ const controllers = {
   YupControllerAndServiceEntityRPC: YupControllerAndServiceEntityController,
   DtoControllerOnlyEntityRPC: DtoControllerOnlyEntityController,
   DtoControllerAndServiceEntityRPC: DtoControllerAndServiceEntityController,
+  ValibotControllerOnlyEntityRPC: ValibotControllerOnlyEntityController,
+  ValibotControllerAndServiceEntityRPC: ValibotControllerAndServiceEntityController,
+  ArktypeControllerOnlyEntityRPC: ArktypeControllerOnlyEntityController,
+  ArktypeControllerAndServiceEntityRPC: ArktypeControllerAndServiceEntityController,
 };
 
 export type Controllers = typeof controllers;

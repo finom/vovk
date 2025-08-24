@@ -1,0 +1,68 @@
+<% const vars = { 
+  ModuleName: t.TheThing + 'Controller',
+  ServiceName: t.TheThing + 'Service',
+}; %>
+---
+dir: <%= t.defaultDir %>
+fileName: <%= vars.ModuleName + '.ts' %>
+sourceName: <%= vars.ModuleName %>
+compiledName: <%= t.TheThing + 'RPC' %>
+---
+
+import { prefix, get, put, post, del, openapi } from 'vovk';
+import * as v from 'valibot';
+import withValibot from '@/lib/withValibot<%= t.nodeNextResolutionExt.ts %>';
+<% if(t.withService) { %>
+import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
+<% } %>
+
+@prefix('<%= t['the-things'] %>')
+export default class <%= vars.ModuleName %> {
+    @openapi({
+      summary: 'Get <%= t.TheThings %>',
+    })
+    @get()
+    static get<%= t.TheThings %> = withValibot({
+        query: v.object({ search: v.string() }), 
+        handle(req) {
+            const search = req.nextUrl.searchParams.get('search');
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
+            <% } else { %>
+            return { results: [], search };
+            <% } %>
+        }
+    });
+
+    @openapi({
+        summary: 'Update <%= t.TheThing %>',
+    })
+    @put('{id}')
+    static update<%= t.TheThing %> = withValibot({
+        body: v.object({
+          foo: v.union([v.literal('bar'), v.literal('baz')]),
+        }),
+        query: v.object({ q: v.string() }),
+        params: v.object({ id: v.string() }),
+        async handle(req, params) {
+            const { id } = params;
+            const body = await req.json();
+            const q = req.nextUrl.searchParams.get('q');
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
+            <% } else { %>
+            return { id, body, q };
+            <% } %>
+        }
+    });
+
+    @post()
+    static create<%= t.TheThing %> = () => {
+        // ...
+    };
+
+    @del(':id')
+    static delete<%= t.TheThing %> = () => {
+        // ...
+    };
+}

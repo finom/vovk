@@ -57,7 +57,7 @@ export type VovkStreamAsyncIterable<T> = {
   [Symbol.asyncDispose](): Promise<void> | void;
   [Symbol.asyncIterator](): AsyncIterator<T>;
   onIterate: (cb: (data: T, i: number) => void) => () => void;
-  abort: () => Promise<void> | void;
+  cancel: () => Promise<void> | void;
 };
 
 type StaticMethodReturn<T extends ControllerStaticMethod> =

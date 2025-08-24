@@ -28,7 +28,7 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Bundles composed client', async () => {
-    await runAtProjectDir(`../dist/index.mjs bundle`);
+    await runAtProjectDir(`../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug`);
 
     await assertDirFileList('./dist', [
       'index.mjs',
@@ -43,7 +43,7 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Bundles composed client to an --out dir', async () => {
-    await runAtProjectDir(`../dist/index.mjs bundle --out my_dist`);
+    await runAtProjectDir(`../dist/index.mjs bundle --out my_dist --tsconfig ../tsconfig.test.json --log-level debug`);
 
     await assertDirFileList('./my_dist', [
       'index.mjs',
@@ -61,11 +61,11 @@ await describe('TypeScript bundle', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
-        outDir: './composed-bundle',
+        tsdownBuildOptions: { outDir: './composed-bundle' },
         includeSegments: ['foo', 'bar/baz'],
       },
     }));
-    await runAtProjectDir(`../dist/index.mjs bundle`);
+    await runAtProjectDir(`../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug`);
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',
@@ -86,11 +86,11 @@ await describe('TypeScript bundle', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
-        outDir: './composed-bundle',
+        tsdownBuildOptions: { outDir: './composed-bundle' },
         excludeSegments: ['', 'bar/baz'],
       },
     }));
-    await runAtProjectDir(`../dist/index.mjs bundle`);
+    await runAtProjectDir(`../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug`);
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',
@@ -108,7 +108,9 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Builds composed bundle with included segments using --include flag', async () => {
-    await runAtProjectDir(`../dist/index.mjs bundle --include foo --include bar/baz --out ./composed-bundle`);
+    await runAtProjectDir(
+      `../dist/index.mjs bundle --include foo --include bar/baz --out ./composed-bundle --tsconfig ../tsconfig.test.json --log-level debug`
+    );
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',
@@ -126,7 +128,9 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Builds composed bundle with excluded segments using --exclude flag', async () => {
-    await runAtProjectDir(`../dist/index.mjs bundle --exclude "" --exclude bar/baz --out ./composed-bundle`);
+    await runAtProjectDir(
+      `../dist/index.mjs bundle --exclude "" --exclude bar/baz --out ./composed-bundle --tsconfig ../tsconfig.test.json --log-level debug`
+    );
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',

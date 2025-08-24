@@ -22,7 +22,7 @@ export function initProgram(program: Command) {
     )
     .option(
       '--validation-library <library>',
-      'validation library to use ("vovk-zod", "vovk-dto" or another); set to "none" to skip'
+      'validation library to use ("zod", "class-validator", "valibot", "arktype" or another); set to "none" to skip'
     )
     .option('--channel <channel>', 'channel to use for fetching packages', 'latest')
     .option('--dry-run', 'do not write files to disk')

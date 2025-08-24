@@ -43,7 +43,7 @@ describe('Streaming generator', () => {
     let count = 0;
 
     for await (const message of resp) {
-      if (++count === 2) await resp.abort();
+      if (++count === 2) await resp.cancel();
       expectedCollected.push(message);
     }
 

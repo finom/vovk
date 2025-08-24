@@ -403,9 +403,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
       query: { search: 'foo' },
     });
     const expected = {
-      formData: {
-        hello: 'world',
-      },
+      hello: 'world',
       search: 'foo',
     };
     null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleFormData> satisfies typeof expected;

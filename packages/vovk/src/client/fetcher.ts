@@ -91,11 +91,11 @@ export function createFetcher<T>({
         requestInit.body = JSON.stringify(body);
       }
 
-      requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
-
       const controller = new AbortController();
 
       requestInit.signal = controller.signal;
+
+      requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
 
       try {
         response = await fetch(endpoint, requestInit);

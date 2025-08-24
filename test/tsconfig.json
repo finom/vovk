@@ -27,6 +27,7 @@
     ],
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./src/*"],
       /* "vovk/*": ["../packages/vovk/*"],
       "vovk-cli/*": ["../packages/vovk-cli/*"],
       "vovk-validate-client-ajv/*": ["../packages/vovk-ajv/*"],

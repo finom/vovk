@@ -9,7 +9,15 @@ import { normalizeOpenAPIMixins } from '../../utils/normalizeOpenAPIMixins.mjs';
 import chalkHighlightThing from '../../utils/chalkHighlightThing.mjs';
 import type { LogLevelNames } from 'loglevel';
 
-export default async function getConfig({ configPath, cwd }: { configPath?: string; cwd: string }) {
+export default async function getConfig({
+  configPath,
+  cwd,
+  logLevel,
+}: {
+  configPath?: string;
+  cwd: string;
+  logLevel?: LogLevelNames;
+}) {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({
     configPath,
     cwd,
@@ -74,7 +82,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',
     rootSegmentModulesDirName: conf.rootSegmentModulesDirName ?? '',
-    logLevel: env.VOVK_LOG_LEVEL ?? conf.logLevel ?? 'info',
+    logLevel: conf.logLevel ?? 'info',
     devHttps: conf.devHttps ?? false,
     moduleTemplates: {
       service: 'vovk-cli/module-templates/service.ts.ejs',
@@ -94,7 +102,7 @@ export default async function getConfig({ configPath, cwd }: { configPath?: stri
     config.emitConfig = conf.emitConfig;
   } // else it's false and emitConfig already is []
 
-  const log = getLogger(config.logLevel as LogLevelNames);
+  const log = getLogger(logLevel ?? (config.logLevel as LogLevelNames));
 
   config.openApiMixins = await normalizeOpenAPIMixins({
     mixinModules: conf.openApiMixins ?? {},

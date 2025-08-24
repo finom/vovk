@@ -1,6 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import getProjectInfo from '../getProjectInfo/index.mjs';
+import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
@@ -8,17 +8,19 @@ import prettify from '../utils/prettify.mjs';
 import chalk from 'chalk';
 
 export default async function newSegment({
+  projectInfo,
   segmentName,
   isStaticSegment,
   overwrite,
   dryRun,
 }: {
+  projectInfo: ProjectInfo;
   segmentName: string;
   isStaticSegment?: boolean;
   overwrite?: boolean;
   dryRun?: boolean;
 }) {
-  const { apiDirAbsolutePath, log, config } = await getProjectInfo();
+  const { apiDirAbsolutePath, log, config } = projectInfo;
   if (!apiDirAbsolutePath) {
     throw new Error('No API directory found. Please ensure you are in a Nest.js project.');
   }

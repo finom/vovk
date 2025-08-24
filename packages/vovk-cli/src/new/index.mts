@@ -1,9 +1,11 @@
 import newModule from './newModule.mjs';
 import newSegment from './newSegment.mjs';
 import type { NewOptions } from '../types.mjs';
+import type { ProjectInfo } from '../getProjectInfo/index.mts';
 
 export async function newComponents(
   components: string[],
+  projectInfo: ProjectInfo,
   { dryRun, dir, templates, overwrite, noSegmentUpdate, empty, static: isStaticSegment }: NewOptions
 ) {
   if (components[0] === 'segment' || components[0] === 'segments') {
@@ -17,7 +19,7 @@ export async function newComponents(
     }
 
     for (const segmentName of segmentNames) {
-      await newSegment({ segmentName, isStaticSegment, overwrite, dryRun });
+      await newSegment({ projectInfo, segmentName, isStaticSegment, overwrite, dryRun });
     }
   } else {
     // vovk new [what...] [moduleNameWithOptionalSegment]
@@ -32,6 +34,7 @@ export async function newComponents(
     }
 
     await newModule({
+      projectInfo,
       what,
       moduleNameWithOptionalSegment,
       dir,

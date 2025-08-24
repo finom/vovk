@@ -9,7 +9,10 @@
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "vovk/*": ["../vovk/mjs/*"]
+    }
   },
   "include": ["src/**/*", "templates/**/*", "test/**/*", "tmp/**/*", "eslint.config.js", "tsconfig.tsdown-bundle.json"],
   "exclude": ["node_modules", "dist", "test/test_data"]

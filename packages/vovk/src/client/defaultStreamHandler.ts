@@ -42,10 +42,11 @@ export const defaultStreamHandler = async ({
 
       try {
         let done;
+        if (canceled) break;
         ({ value, done } = await reader.read());
         if (done) break;
       } catch (error) {
-        await reader.cancel();
+        // await reader.cancel(); // TODO in which cases it needs to be canceled?
         const err = new Error('JSONLines stream error. ' + String(error));
         err.cause = error;
         throw err;
@@ -72,11 +73,14 @@ export const defaultStreamHandler = async ({
           i++;
           if ('isError' in data && 'reason' in data) {
             const upcomingError = data.reason;
-            await reader.cancel();
+            canceled = true;
+            controller.abort(data.reason);
 
             if (typeof upcomingError === 'string') {
               throw new Error(upcomingError);
             }
+
+            controller.abort('Stream disposed');
 
             throw upcomingError;
           } else if (!canceled) {
@@ -90,8 +94,14 @@ export const defaultStreamHandler = async ({
   return {
     status: response.status,
     [Symbol.asyncIterator]: asyncIterator,
-    [Symbol.dispose]: () => controller.abort(),
-    [Symbol.asyncDispose]: () => controller.abort(),
+    [Symbol.dispose]: () => {
+      canceled = true;
+      controller.abort('Stream disposed');
+    },
+    [Symbol.asyncDispose]: () => {
+      canceled = true;
+      controller.abort('Stream async disposed');
+    },
     onIterate: (cb) => {
       if (canceled) return () => {};
       subscribers.add(cb);
@@ -99,9 +109,9 @@ export const defaultStreamHandler = async ({
         subscribers.delete(cb);
       };
     },
-    abort: () => {
+    cancel: (reason?: string | Error) => {
       canceled = true;
-      return controller.abort();
+      return controller.abort(reason ?? 'Stream aborted intentionally');
     },
   };
 };

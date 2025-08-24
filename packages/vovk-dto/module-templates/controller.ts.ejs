@@ -1,11 +1,11 @@
 <% const vars = { 
-  RpcModuleName: t.TheThing + 'Controller',
+  ModuleName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
 }; %>
 ---
 dir: <%= t.defaultDir %>
-fileName: <%= vars.RpcModuleName + '.ts' %>
-sourceName: <%= vars.RpcModuleName %>
+fileName: <%= vars.ModuleName + '.ts' %>
+sourceName: <%= vars.ModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 import { prefix, get, put, post, del, openapi } from 'vovk';
@@ -31,7 +31,7 @@ class Update<%= t.TheThing %>QueryDto {
 }
 
 @prefix('<%= t['the-things'] %>')
-export default class <%= vars.RpcModuleName %> {
+export default class <%= vars.ModuleName %> {
     @openapi({
       summary: 'Get <%= t.TheThings %>',
     })

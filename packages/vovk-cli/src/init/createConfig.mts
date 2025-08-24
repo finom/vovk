@@ -24,16 +24,38 @@ export default async function createConfig({
     .then((content) => (JSON.parse(content) as { type: 'module' }).type === 'module');
   const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
 
+  const typeTemplates = {
+    controller: 'vovk-cli/type/module-templates/controller.ts.ejs',
+    service: 'vovk-cli/type/module-templates/service.ts.ejs',
+  };
+
   const moduleTemplates: VovkConfig['moduleTemplates'] = {
-    controller: 'vovk-cli/module-templates/controller.ts.ejs',
-    service: 'vovk-cli/module-templates/service.ts.ejs',
+    ...typeTemplates,
+    ...{
+      type: typeTemplates,
+      zod: {
+        controller: 'vovk-zod/module-templates/controller.ts.ejs',
+        service: 'vovk-zod/module-templates/service.ts.ejs',
+      },
+      'class-validator': {
+        controller: 'vovk-dto/module-templates/controller.ts.ejs',
+        service: 'vovk-dto/module-templates/service.ts.ejs',
+      },
+      valibot: {
+        controller: 'vovk-cli/valibot/module-templates/controller.ts.ejs',
+      },
+      arktype: {
+        controller: 'vovk-cli/arktype/module-templates/controller.ts.ejs',
+      },
+    }[validationLibrary ?? 'type'],
   };
 
   config.imports ??= {};
-  config.imports.validateOnClient = validationLibrary === 'vovk-dto' ? 'vovk-dto/validateOnClient' : 'vovk-ajv';
+  config.imports.validateOnClient = validationLibrary === 'class-validator' ? 'vovk-dto/validateOnClient' : 'vovk-ajv';
 
-  if (validationLibrary) {
+  if (validationLibrary && !moduleTemplates) {
     try {
+      // TODO: Legacy, is it useful to keep it?
       const validationTemplates = await getTemplateFilesFromPackage(validationLibrary, channel);
       Object.assign(moduleTemplates, validationTemplates);
     } catch (error) {

@@ -381,7 +381,9 @@ pub mod test_zod {
             .part("files", multipart::Part::text("file_text_content1")
                 .file_name("filename1.txt")
                 .mime_str("text/plain").unwrap())
-            .part("files", multipart::Part::text("file_text_content2"));
+            .part("files", multipart::Part::text("file_text_content2")
+                .file_name("filename2.txt")
+                .mime_str("text/plain").unwrap());
 
         let data = with_zod_client_controller_rpc::handle_form_data_with_multiple_files(
             form,

@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import { getTsconfig } from 'get-tsconfig';
 import render from './render.mjs';
 import addClassToSegmentCode from './addClassToSegmentCode.mjs';
-import getProjectInfo from '../getProjectInfo/index.mjs';
+import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
 import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
@@ -26,6 +26,7 @@ function splitByLast(str: string, delimiter: string = '/'): [string, string] {
 }
 
 export default async function newModule({
+  projectInfo,
   what,
   moduleNameWithOptionalSegment,
   dryRun,
@@ -35,6 +36,7 @@ export default async function newModule({
   overwrite,
   empty,
 }: {
+  projectInfo: ProjectInfo;
   what: string[];
   moduleNameWithOptionalSegment: string;
   dryRun?: boolean;
@@ -44,7 +46,7 @@ export default async function newModule({
   overwrite?: boolean;
   empty?: boolean;
 }) {
-  const { config, log, cwd, apiDirAbsolutePath } = await getProjectInfo();
+  const { config, log, cwd, apiDirAbsolutePath } = projectInfo;
   const segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
   const isNodeNextResolution = ['node16', 'nodenext'].includes(
     (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
