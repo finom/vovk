@@ -25,8 +25,8 @@ export default async function createConfig({
   const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
 
   const typeTemplates = {
-    controller: 'vovk-cli/type/module-templates/controller.ts.ejs',
-    service: 'vovk-cli/type/module-templates/service.ts.ejs',
+    controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
+    service: 'vovk-cli/module-templates/type/service.ts.ejs',
   };
 
   const moduleTemplates: VovkConfig['moduleTemplates'] = {
@@ -35,17 +35,15 @@ export default async function createConfig({
       type: typeTemplates,
       zod: {
         controller: 'vovk-zod/module-templates/controller.ts.ejs',
-        service: 'vovk-zod/module-templates/service.ts.ejs',
       },
       'class-validator': {
         controller: 'vovk-dto/module-templates/controller.ts.ejs',
-        service: 'vovk-dto/module-templates/service.ts.ejs',
       },
       valibot: {
-        controller: 'vovk-cli/valibot/module-templates/controller.ts.ejs',
+        controller: 'vovk-cli/module-templates/valibot/controller.ts.ejs',
       },
       arktype: {
-        controller: 'vovk-cli/arktype/module-templates/controller.ts.ejs',
+        controller: 'vovk-cli/module-templates/arktype/controller.ts.ejs',
       },
     }[validationLibrary ?? 'type'],
   };

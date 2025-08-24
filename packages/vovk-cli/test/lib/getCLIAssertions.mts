@@ -54,17 +54,37 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   assertConfig.makeConfig = (validationLibrary: string | null) => {
-    const config: VovkConfig = {
-      moduleTemplates: {
-        controller: `${validationLibrary ?? 'vovk-cli'}/module-templates/controller.ts.ejs`,
-        service: 'vovk-cli/module-templates/service.ts.ejs',
-      },
+    const typeTemplates = {
+      controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
+      service: 'vovk-cli/module-templates/type/service.ts.ejs',
     };
 
-    if (validationLibrary) {
-      config.imports ??= {};
-      config.imports.validateOnClient = 'vovk-ajv';
-    }
+    const moduleTemplates: VovkConfig['moduleTemplates'] = {
+      ...typeTemplates,
+      ...{
+        type: typeTemplates,
+        zod: {
+          controller: 'vovk-zod/module-templates/controller.ts.ejs',
+        },
+        'class-validator': {
+          controller: 'vovk-dto/module-templates/controller.ts.ejs',
+        },
+        valibot: {
+          controller: 'vovk-cli/module-templates/valibot/controller.ts.ejs',
+        },
+        arktype: {
+          controller: 'vovk-cli/module-templates/arktype/controller.ts.ejs',
+        },
+      }[validationLibrary ?? 'type'],
+    };
+
+    const config: VovkConfig = {
+      moduleTemplates,
+    };
+
+    config.imports ??= {};
+    config.imports.validateOnClient =
+      validationLibrary === 'class-validator' ? 'vovk-dto/validateOnClient' : 'vovk-ajv';
 
     return config;
   };

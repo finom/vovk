@@ -46,7 +46,16 @@ export class Init {
     }: Omit<InitOptions, 'yes' | 'logLevel'>
   ) {
     const { log, root } = this;
-    const dependencies: string[] = ['vovk', 'vovk-client', 'vovk-ajv', 'openapi3-ts'];
+    const dependencies: string[] = [
+      'vovk',
+      'vovk-client',
+      'openapi3-ts',
+      'vovk-ajv',
+      'ajv',
+      'ajv-errors',
+      'ajv-formats',
+      'ajv-i18n',
+    ];
     const devDependencies: string[] = ['vovk-cli'];
 
     if (lang?.includes('py')) {

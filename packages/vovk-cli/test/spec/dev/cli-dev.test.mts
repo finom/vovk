@@ -1,9 +1,9 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import type { VovkSegmentSchema } from 'vovk';
 import assert from 'node:assert';
+import type { VovkSegmentSchema } from 'vovk';
+import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 
 let dev: Promise<string> & {
   kill: () => void;
@@ -40,9 +40,9 @@ await describe('CLI dev', async () => {
         await runAtProjectDir('../dist/index.mjs new controller user');
 
         await assertFile('src/modules/user/UserController.ts', [
-          `export default class UserController {
-        @get()
-        static getUsers = async (`,
+          `export default class UserController {`,
+          `@get()`,
+          `static getUsers = async (`,
         ]);
 
         await assertFile('src/app/api/[[...vovk]]/route.ts', [

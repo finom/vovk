@@ -32,8 +32,8 @@ await describe('Custom components', async () => {
     await runAtProjectDir('../dist/index.mjs new c state user');
 
     await assertFile('src/modules/user/UserController.ts', [
-      `export default class UserController {
-          @get()
+      `export default class UserController {`,
+      `@get()
           static getUsers = async (`,
       `static createUser = `,
       `static updateUser = `,
