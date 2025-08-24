@@ -609,7 +609,7 @@ await describe('CLI init', async () => {
         packageManager: 'pnpm@8.6.0',
       });
       await pkgJson.save();
-      await vovkInit('--yes --use-pnpm', { combo: [ENTER] });
+      await vovkInit('--yes --use-pnpm', { combo: [ENTER, ENTER] });
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
