@@ -36,6 +36,9 @@ export default async function createConfig({
       zod: {
         controller: 'vovk-zod/module-templates/controller.ts.ejs',
       },
+      yup: {
+        controller: 'vovk-yup/module-templates/controller.ts.ejs',
+      },
       'class-validator': {
         controller: 'vovk-dto/module-templates/controller.ts.ejs',
       },

@@ -82,6 +82,7 @@ export class Init {
             'reflect-metadata',
             'vovk-dto',
           ],
+          yup: ['yup', 'vovk-yup'],
           valibot: ['valibot', '@valibot/to-json-schema'],
           arktype: ['arktype'],
         }[validationLibrary] ?? [])
