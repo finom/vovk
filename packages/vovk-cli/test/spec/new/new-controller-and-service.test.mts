@@ -39,9 +39,9 @@ await describe('CLI new controller and service', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `import UserService from './UserService';`,
-      `export default class UserController {
-        @get()
-        static getUsers = async (`,
+      `export default class UserController {`,
+      `@get()
+      static getUsers = async (`,
       `static createUser = `,
       `static updateUser = `,
     ]);

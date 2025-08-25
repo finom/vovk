@@ -401,7 +401,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and down arrow selection', async () => {
     await createNextApp();
     await vovkInit('', { combo: combos.DTO_VALIDATION_ARROW });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('yup'));
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('class-validator'));
 
     await assertDeps({
       dependencies: [

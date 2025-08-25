@@ -80,8 +80,8 @@ await describe('CLI new controller and flags', async () => {
     await runAtProjectDir('../dist/index.mjs new controller veryComplexEntity --dir=custom-dir');
 
     await assertFile('custom-dir/VeryComplexEntityController.ts', [
-      `export default class VeryComplexEntityController {
-        @get()
+      `export default class VeryComplexEntityController {`,
+      `@get()
         static getVeryComplexEntities = async (`,
       `static createVeryComplexEntity = `,
       `static updateVeryComplexEntity = `,
@@ -112,8 +112,8 @@ await describe('CLI new controller and flags', async () => {
     await runAtProjectDir('../dist/index.mjs new controller coolRedChair --no-segment-update');
 
     await assertFile('src/modules/coolRedChair/CoolRedChairController.ts', [
-      `export default class CoolRedChairController {
-        @get()
+      `export default class CoolRedChairController {`,
+      `@get()
         static getCoolRedChairs = async (`,
       `static createCoolRedChair = `,
       `static updateCoolRedChair = `,

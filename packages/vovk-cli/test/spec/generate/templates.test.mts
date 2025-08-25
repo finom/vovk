@@ -143,7 +143,7 @@ await describe('Client templates', async () => {
   await it('Generates Python client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --from=py --out ${compiledClientFolderName}`);
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    await assertDirFileList(compiledClientFolderName, ['data', 'src', 'README.md', 'setup.cfg', 'pyproject.toml']);
+    await assertDirFileList(compiledClientFolderName, ['src', 'README.md', 'setup.cfg', 'pyproject.toml']);
     await assertDirFileList(`${compiledClientFolderName}/src`, ['tmp_test_dir']);
     await assertDirFileList(`${compiledClientFolderName}/src/tmp_test_dir`, ['__init__.py', 'api_client.py']);
     await assertDirFileList(`${compiledClientFolderName}/data`, ['schema.json']);
@@ -151,7 +151,7 @@ await describe('Client templates', async () => {
 
   await it('Generates Rust client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --from=rs --out ${compiledClientFolderName}`);
-    await assertDirFileList(compiledClientFolderName, ['Cargo.toml', 'src', 'data', 'README.md']);
+    await assertDirFileList(compiledClientFolderName, ['Cargo.toml', 'src', 'README.md']);
     await assertDirFileList(`${compiledClientFolderName}/src`, ['lib.rs', 'http_request.rs', 'read_full_schema.rs']);
     await assertDirFileList(`${compiledClientFolderName}/data`, ['schema.json']);
   });
