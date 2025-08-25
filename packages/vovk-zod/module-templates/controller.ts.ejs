@@ -11,7 +11,7 @@ compiledName: <%= t.TheThing + 'RPC' %>
 
 import { prefix, get, put, post, del, openapi } from 'vovk';
 import { withZod } from 'vovk-zod';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>

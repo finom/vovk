@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 
-await describe('CLI new controller only', async () => {
+await describe.only('CLI new controller only', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir',
