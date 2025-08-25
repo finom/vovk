@@ -91,8 +91,17 @@ export const defaultStreamHandler = async ({
     }
   }
 
+  const asPromise = async () => {
+    const items = [];
+    for await (const item of asyncIterator()) {
+      items.push(item);
+    }
+    return items;
+  };
+
   return {
     status: response.status,
+    asPromise,
     [Symbol.asyncIterator]: asyncIterator,
     [Symbol.dispose]: () => {
       canceled = true;

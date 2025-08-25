@@ -90,7 +90,7 @@ export default class CommonController {
 
     const body = await req.vovk.body();
     const query = req.vovk.query();
-    const meta = req.vovk.meta<{ isMeta1: true; isMeta2: true }>();
+    const meta = req.vovk.meta<{ isMeta1: true; isMeta2: true; xMetaHeader: { clientMeta: true } }>();
 
     req.vovk.meta(null);
 

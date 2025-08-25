@@ -1,15 +1,15 @@
-import type { KnownAny, VovkHandlerSchema, VovkLLMTool } from '../types';
+import type { KnownAny, VovkHandlerSchema, VovkLLMTool, VovkBasicJSONSchema } from '../types';
 
 type Handler = ((...args: KnownAny[]) => KnownAny) & {
   fn?: (input: KnownAny) => KnownAny;
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
   models?: {
-    body?: KnownAny;
-    query?: KnownAny;
-    params?: KnownAny;
-    output?: KnownAny;
-    iteration?: KnownAny;
+    body?: VovkBasicJSONSchema;
+    query?: VovkBasicJSONSchema;
+    params?: VovkBasicJSONSchema;
+    output?: VovkBasicJSONSchema;
+    iteration?: VovkBasicJSONSchema;
   };
 };
 
@@ -32,6 +32,7 @@ type CallerInput = {
   meta: Record<string, KnownAny> | undefined;
   handlerName: string;
   moduleName: string;
+  resultFormatter: typeof defaultResultFormatter;
 };
 
 const createLLMTool = ({
@@ -41,6 +42,7 @@ const createLLMTool = ({
   module,
   init,
   meta,
+  resultFormatter,
   onExecute,
   onError,
 }: {
@@ -50,6 +52,7 @@ const createLLMTool = ({
   module: Record<string, Handler>;
   init: RequestInit | undefined;
   meta: Record<string, KnownAny> | undefined;
+  resultFormatter: typeof defaultResultFormatter;
   onExecute: (result: KnownAny, callerInput: CallerInput, options: KnownAny) => void;
   onError: (error: Error, callerInput: CallerInput, options: KnownAny) => void;
 }): VovkLLMTool => {
@@ -73,7 +76,7 @@ const createLLMTool = ({
       query?: KnownAny;
       params?: KnownAny;
     },
-    options: KnownAny
+    options?: KnownAny
   ) => {
     const { body, query, params } = input;
 
@@ -88,6 +91,7 @@ const createLLMTool = ({
       meta,
       handlerName,
       moduleName,
+      resultFormatter,
     };
 
     return caller(callerInput, options)
@@ -121,7 +125,7 @@ const createLLMTool = ({
     parameters: {
       type: 'object',
       properties: parametersProperties,
-      required: Object.keys(parametersProperties),
+      required: Object.keys(parametersProperties) as Array<keyof typeof parametersProperties>,
       additionalProperties: false,
     },
     models,
@@ -129,44 +133,82 @@ const createLLMTool = ({
 };
 
 async function defaultCaller(
-  { handler, body, query, params, init, meta }: CallerInput,
+  { handler, body, query, params, init, meta, resultFormatter, schema }: CallerInput,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _options: KnownAny
 ) {
-  if (handler.isRPC) {
-    return handler({
-      handler,
-      body,
-      query,
-      params,
-      init,
-      meta,
-    });
+  if (!handler.isRPC && !handler.fn) {
+    throw new Error('Handler is not a valid RPC or controller method');
   }
-  if (handler.fn) {
-    return handler.fn({
-      body,
-      query,
-      params,
-      meta,
-    });
-  }
+  try {
+    let result;
+    if (handler.isRPC) {
+      result = await handler({
+        handler,
+        body,
+        query,
+        params,
+        init,
+        meta,
+      });
+    }
+    if (handler.fn) {
+      result = await handler.fn({
+        body,
+        query,
+        params,
+        meta,
+      });
+    }
 
-  throw new Error('Handler is not a valid RPC or controller method');
+    return resultFormatter(result, schema);
+  } catch (e) {
+    return resultFormatter(e, schema);
+  }
 }
+
+async function mcpResultFormatter(result: KnownAny, schema: VovkHandlerSchema) {
+  const successMessage = schema?.openapi?.['x-tool-successMessage'] ?? 'Tool executed successfully.';
+  const errorMessage = schema?.openapi?.['x-tool-errorMessage'] ?? 'An error occurred while executing the tool.';
+  const includeResponse = schema?.openapi?.['x-tool-includeResponse'] ?? true;
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: [
+          result instanceof Error ? errorMessage : successMessage,
+          includeResponse
+            ? `${result instanceof Error ? 'Error' : 'Result'}:\n${JSON.stringify(result, null, 2)}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join('\n\n'),
+      },
+    ],
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function defaultResultFormatter(result: KnownAny, _schema: VovkHandlerSchema) {
+  return result;
+}
+
 export function createLLMTools({
   modules,
   caller = defaultCaller,
   meta,
+  resultFormatter,
   onExecute = (result) => result,
   onError = () => {},
 }: {
   modules: Record<string, object | [object, { init?: RequestInit }]>;
   caller?: typeof defaultCaller;
   meta?: Record<string, KnownAny>;
+  resultFormatter?: typeof defaultResultFormatter | null | 'mcp';
   onExecute?: (result: KnownAny, callerInput: CallerInput, options: KnownAny) => void;
   onError?: (error: Error, callerInput: CallerInput, options: KnownAny) => void;
-}): { tools: VovkLLMTool[] } {
+}): { tools: VovkLLMTool[]; toolsByName: Record<string, VovkLLMTool> } {
   const moduleWithConfig = modules as
     | Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>
     | Record<string, [Record<string, Handler & { schema?: VovkHandlerSchema }>, { init?: RequestInit }]>;
@@ -180,7 +222,7 @@ export function createLLMTools({
         module = moduleWithconfig;
       }
       return Object.entries(module ?? {})
-        .filter(([, handler]) => handler?.schema?.openapi && !handler?.schema?.openapi?.['x-tool-exclude'])
+        .filter(([, handler]) => handler?.schema?.openapi && !handler?.schema?.openapi?.['x-tool-disable'])
         .map(([handlerName]) =>
           createLLMTool({
             moduleName,
@@ -189,13 +231,20 @@ export function createLLMTools({
             module,
             init,
             meta,
+            resultFormatter: resultFormatter
+              ? resultFormatter === 'mcp'
+                ? mcpResultFormatter
+                : resultFormatter
+              : defaultResultFormatter,
             onExecute,
             onError,
           })
         );
     })
     .flat();
+  const toolsByName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
   return {
     tools,
+    toolsByName,
   };
 }

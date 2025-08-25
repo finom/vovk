@@ -2,11 +2,11 @@ import type { VovkHandlerSchema, KnownAny, VovkController, VovkRequest } from '.
 
 type Next = () => Promise<unknown>;
 
-export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
-  handler: null | ((this: VovkController, req: REQUEST, next: Next, ...args: ARGS) => unknown),
+export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>(
+  handler: null | ((this: VovkController, req: TRequest, next: Next, ...args: TArgs) => unknown),
   initHandler?: (
     this: VovkController,
-    ...args: ARGS
+    ...args: TArgs
   ) =>
     | Omit<VovkHandlerSchema, 'path' | 'httpMethod'>
     | ((
@@ -16,7 +16,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
     | null
     | undefined
 ) {
-  return function decoratorCreator(...args: ARGS) {
+  return function decoratorCreator(...args: TArgs) {
     return function decorator(target: KnownAny, propertyKey: string) {
       const controller = target as VovkController;
 
@@ -32,7 +32,7 @@ export function createDecorator<ARGS extends unknown[], REQUEST = VovkRequest>(
       }
       const sourceMethod = originalMethod._sourceMethod ?? originalMethod;
 
-      const method = function method(req: REQUEST, params?: unknown) {
+      const method = function method(req: TRequest, params?: unknown) {
         const next: Next = async () => {
           return (await originalMethod.call(controller, req, params)) as unknown;
         };

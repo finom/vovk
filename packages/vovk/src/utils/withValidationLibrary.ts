@@ -6,6 +6,7 @@ import {
   VovkValidationType,
   type KnownAny,
   type VovkRequest,
+  type VovkOperationObject,
 } from '../types';
 import reqMeta from './reqMeta';
 import { setHandlerSchema } from './setHandlerSchema';
@@ -45,6 +46,7 @@ export function withValidationLibrary<
   handle,
   toJSONSchema,
   validate,
+  openapi,
 }: {
   isForm?: IS_FORM;
   disableServerSideValidation?: boolean | VovkValidationType[];
@@ -70,6 +72,7 @@ export function withValidationLibrary<
       i?: number;
     }
   ) => KnownAny;
+  openapi?: VovkOperationObject;
 }) {
   const disableServerSideValidationKeys =
     disableServerSideValidation === false
@@ -159,7 +162,7 @@ export function withValidationLibrary<
 
     return outputHandler(req, handlerParams);
   }) as T & {
-    schema: VovkHandlerSchema;
+    schema: Omit<VovkHandlerSchema, 'httpMethod' | 'path'> & Partial<VovkHandlerSchema>;
     wrapper?: (req: VovkRequestAny, params: Parameters<T>[1]) => ReturnType<T>;
   };
 
@@ -215,26 +218,27 @@ export function withValidationLibrary<
   const resultHandlerEnhanced = Object.assign(resultHandler, { fn, models });
 
   if (toJSONSchema) {
-    const getJsonSchema = (model: KnownAny, type: VovkValidationType) =>
+    const getJSONSchema = (model: KnownAny, type: VovkValidationType) =>
       Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-isForm': isForm } : {});
 
     const validation: VovkHandlerSchema['validation'] = {};
     if (body && !skipSchemaEmissionKeys.includes('body')) {
-      validation.body = getJsonSchema(body, 'body');
+      validation.body = getJSONSchema(body, 'body');
     }
     if (query && !skipSchemaEmissionKeys.includes('query')) {
-      validation.query = getJsonSchema(query, 'query');
+      validation.query = getJSONSchema(query, 'query');
     }
     if (params && !skipSchemaEmissionKeys.includes('params')) {
-      validation.params = getJsonSchema(params, 'params');
+      validation.params = getJSONSchema(params, 'params');
     }
     if (output && !skipSchemaEmissionKeys.includes('output')) {
-      validation.output = getJsonSchema(output, 'output');
+      validation.output = getJSONSchema(output, 'output');
     }
     if (iteration && !skipSchemaEmissionKeys.includes('iteration')) {
-      validation.iteration = getJsonSchema(iteration, 'iteration');
+      validation.iteration = getJSONSchema(iteration, 'iteration');
     }
-    setHandlerSchema(resultHandlerEnhanced, { validation });
+    resultHandlerEnhanced.schema = { validation, openapi };
+    setHandlerSchema(resultHandlerEnhanced, { validation, openapi });
   }
 
   return resultHandlerEnhanced;

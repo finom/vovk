@@ -7,7 +7,8 @@ import {
   type VovkRequest,
   type KnownAny,
   type VovkValidationType,
-  VovkTypedMethod,
+  type VovkTypedMethod,
+  type VovkOperationObject,
 } from 'vovk';
 import { validationMetadatasToSchemas, targetConstructorToSchema } from 'class-validator-jsonschema';
 export { validateOnClient } from './validateOnClient.js';
@@ -108,6 +109,7 @@ function withDto<
   skipSchemaEmission,
   validateEachIteration,
   options,
+  openapi,
 }: {
   isForm?: IS_FORM;
   body?: BODY_DTO;
@@ -123,6 +125,7 @@ function withDto<
     classTransformOptions?: ClassTransformOptions;
     validatorOptions?: ValidatorOptions;
   };
+  openapi?: VovkOperationObject;
 }) {
   const schemas = validationMetadatasToSchemas();
 
@@ -174,6 +177,7 @@ function withDto<
 
       return instance;
     },
+    openapi,
   });
 }
 

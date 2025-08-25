@@ -1,5 +1,12 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { HttpStatus, KnownAny, VovkRequest, VovkTypedMethod, VovkValidationType } from '../types';
+import {
+  HttpStatus,
+  type KnownAny,
+  type VovkRequest,
+  type VovkTypedMethod,
+  type VovkValidationType,
+  type VovkOperationObject,
+} from '../types';
 import { withValidationLibrary } from './withValidationLibrary';
 import { HttpException } from '../HttpException';
 
@@ -35,6 +42,7 @@ export function createStandardValidation({
     disableServerSideValidation,
     skipSchemaEmission,
     validateEachIteration,
+    openapi,
   }: {
     isForm?: IS_FORM;
     body?: BODY;
@@ -46,6 +54,7 @@ export function createStandardValidation({
     disableServerSideValidation?: boolean | VovkValidationType[];
     skipSchemaEmission?: boolean | VovkValidationType[];
     validateEachIteration?: boolean;
+    openapi?: VovkOperationObject;
   }) {
     return withValidationLibrary({
       isForm,
@@ -81,6 +90,7 @@ export function createStandardValidation({
 
         return (result as StandardSchemaV1.SuccessResult<typeof model>).value;
       },
+      openapi,
     });
   }
 

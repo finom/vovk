@@ -1,12 +1,12 @@
 import type { VovkValidateOnClient } from '../client';
-import type { KnownAny, VovkSimpleJSONSchema } from '../types';
+import type { KnownAny, VovkBasicJSONSchema } from '../types';
 
 export function createValidateOnClient<TFetcherOptions>({
   validate,
 }: {
   validate: (
     input: unknown,
-    schema: VovkSimpleJSONSchema,
+    schema: VovkBasicJSONSchema,
     meta: Parameters<VovkValidateOnClient<TFetcherOptions>>[2] & { type: 'body' | 'query' | 'params' }
   ) => KnownAny | Promise<KnownAny>;
 }): VovkValidateOnClient<TFetcherOptions> {

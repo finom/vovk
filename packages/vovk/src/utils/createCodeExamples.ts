@@ -1,4 +1,4 @@
-import type { VovkSimpleJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
+import type { VovkBasicJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
 import { getJSONSchemaExample, getSampleValue } from './getJSONSchemaExample';
 
 const toSnakeCase = (str: string) =>
@@ -47,11 +47,11 @@ type CodeGenerationParams = {
   handlerName: string;
   rpcName: string;
   packageName: string;
-  queryValidation?: VovkSimpleJSONSchema;
-  bodyValidation?: VovkSimpleJSONSchema;
-  paramsValidation?: VovkSimpleJSONSchema;
-  outputValidation?: VovkSimpleJSONSchema;
-  iterationValidation?: VovkSimpleJSONSchema;
+  queryValidation?: VovkBasicJSONSchema;
+  bodyValidation?: VovkBasicJSONSchema;
+  paramsValidation?: VovkBasicJSONSchema;
+  outputValidation?: VovkBasicJSONSchema;
+  iterationValidation?: VovkBasicJSONSchema;
   hasArg: boolean;
 };
 
@@ -66,10 +66,10 @@ function generateTypeScriptCode({
   iterationValidation,
   hasArg,
 }: CodeGenerationParams): string {
-  const getTsSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
+  const getTsSample = (schema: VovkBasicJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
 
-  const getTsFormSample = (schema: VovkSimpleJSONSchema) => {
+  const getTsFormSample = (schema: VovkBasicJSONSchema) => {
     let formSample = '\nconst formData = new FormData();';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
@@ -84,7 +84,7 @@ function generateTypeScriptCode({
     return formSample;
   };
 
-  const getTsFormAppend = (schema: VovkSimpleJSONSchema, key: string, description?: string) => {
+  const getTsFormAppend = (schema: VovkBasicJSONSchema, key: string, description?: string) => {
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
       sampleValue = `new Blob(${isTextFormat(schema.contentMediaType) ? '["text_content"]' : '[binary_data]'}${
@@ -150,7 +150,7 @@ function generatePythonCode({
   iterationValidation,
   hasArg,
 }: CodeGenerationParams): string {
-  const getPySample = (schema: VovkSimpleJSONSchema, indent?: number) =>
+  const getPySample = (schema: VovkBasicJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, {
       stripQuotes: false,
       indent: indent ?? 4,
@@ -161,10 +161,10 @@ function generatePythonCode({
 
   const handlerNameSnake = toSnakeCase(handlerName);
 
-  const getFileTouple = (schema: VovkSimpleJSONSchema) => {
+  const getFileTouple = (schema: VovkBasicJSONSchema) => {
     return `('name.ext', BytesIO(${isTextFormat(schema.contentMediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${schema.contentMediaType ? `, "${schema.contentMediaType}"` : ''})`;
   };
-  const getPyFiles = (schema: VovkSimpleJSONSchema) => {
+  const getPyFiles = (schema: VovkBasicJSONSchema) => {
     return Object.entries(schema.properties ?? {}).reduce((acc, [key, prop]) => {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
       const desc = target.description ?? prop.description ?? undefined;
@@ -226,11 +226,11 @@ function generateRustCode({
   outputValidation,
   iterationValidation,
 }: CodeGenerationParams): string {
-  const getRsJSONSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
+  const getRsJSONSample = (schema: VovkBasicJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
-  const getRsOutputSample = (schema: VovkSimpleJSONSchema, indent?: number) =>
+  const getRsOutputSample = (schema: VovkBasicJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
-  /* const getRsFormSample = (schema: VovkSimpleJSONSchema, indent?: number, nesting = 0) => {
+  /* const getRsFormSample = (schema: VovkBasicJSONSchema, indent?: number, nesting = 0) => {
     let formSample = 'let form = multipart::Form::new()';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
@@ -260,7 +260,7 @@ function generateRustCode({
     return formSample;
   }; */
 
-  const getRsFormSample = (schema: VovkSimpleJSONSchema) => {
+  const getRsFormSample = (schema: VovkBasicJSONSchema) => {
     let formSample = 'let form = multipart::Form::new()';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
@@ -275,7 +275,7 @@ function generateRustCode({
     return formSample;
   };
 
-  const getRsFormPart = (schema: VovkSimpleJSONSchema, key: string, description?: string) => {
+  const getRsFormPart = (schema: VovkBasicJSONSchema, key: string, description?: string) => {
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
       sampleValue = isTextFormat(schema.contentMediaType)
@@ -296,7 +296,7 @@ function generateRustCode({
     return `\n${getIndentSpaces(4)}${desc ? `// ${desc}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
   };
 
-  const getBody = (schema: VovkSimpleJSONSchema) => {
+  const getBody = (schema: VovkBasicJSONSchema) => {
     if (schema['x-isForm']) {
       return 'form';
     }
@@ -364,11 +364,11 @@ export function createCodeExamples({
   controllerSchema: VovkControllerSchema;
   package?: CodeSamplePackageJson;
 }) {
-  const queryValidation = handlerSchema?.validation?.query as VovkSimpleJSONSchema | undefined;
-  const bodyValidation = handlerSchema?.validation?.body as VovkSimpleJSONSchema | undefined;
-  const paramsValidation = handlerSchema?.validation?.params as VovkSimpleJSONSchema | undefined;
-  const outputValidation = handlerSchema?.validation?.output as VovkSimpleJSONSchema | undefined;
-  const iterationValidation = handlerSchema?.validation?.iteration as VovkSimpleJSONSchema | undefined;
+  const queryValidation = handlerSchema?.validation?.query as VovkBasicJSONSchema | undefined;
+  const bodyValidation = handlerSchema?.validation?.body as VovkBasicJSONSchema | undefined;
+  const paramsValidation = handlerSchema?.validation?.params as VovkBasicJSONSchema | undefined;
+  const outputValidation = handlerSchema?.validation?.output as VovkBasicJSONSchema | undefined;
+  const iterationValidation = handlerSchema?.validation?.iteration as VovkBasicJSONSchema | undefined;
 
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation;
   const rpcName = controllerSchema.rpcModuleName;

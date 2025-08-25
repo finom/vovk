@@ -53,6 +53,7 @@ type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
 export type VovkStreamAsyncIterable<T> = {
   status: number;
+  asPromise: () => Promise<T[]>;
   [Symbol.dispose](): Promise<void> | void;
   [Symbol.asyncDispose](): Promise<void> | void;
   [Symbol.asyncIterator](): AsyncIterator<T>;

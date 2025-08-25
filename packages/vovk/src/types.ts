@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
 import type { JSONLinesResponse } from './JSONLinesResponse';
-import { VovkStreamAsyncIterable } from './client/types';
+import type { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
 import { build } from 'tsdown';
 
@@ -9,35 +9,35 @@ export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explici
 
 export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
 
-export type VovkHandlerSchema<T = KnownAny> = {
+export type VovkHandlerSchema = {
   path: string;
   httpMethod: string; // HttpMethod type makes JSON incompatible with VovkHandlerSchema type
   validation?: {
-    query?: T;
-    body?: T;
-    params?: T;
-    output?: T;
-    iteration?: T;
+    query?: VovkBasicJSONSchema;
+    body?: VovkBasicJSONSchema;
+    params?: VovkBasicJSONSchema;
+    output?: VovkBasicJSONSchema;
+    iteration?: VovkBasicJSONSchema;
   };
-  openapi?: OperationObject;
+  openapi?: VovkOperationObject;
   misc?: Record<string, KnownAny>;
 };
 
-export type VovkControllerSchema<T = KnownAny> = {
+export type VovkControllerSchema = {
   rpcModuleName: string;
   originalControllerName?: string;
   prefix?: string;
   forceApiRoot?: string;
-  handlers: Record<string, VovkHandlerSchema<T>>;
+  handlers: Record<string, VovkHandlerSchema>;
 };
 
-export type VovkSegmentSchema<T = KnownAny> = {
+export type VovkSegmentSchema = {
   $schema: typeof VovkSchemaIdEnum.SEGMENT | (string & {});
   emitSchema: boolean;
   segmentName: string;
   segmentType: 'segment' | 'mixin' | (string & {});
   forceApiRoot?: string;
-  controllers: Record<string, VovkControllerSchema<T>>;
+  controllers: Record<string, VovkControllerSchema>;
   meta?: {
     components?: OpenAPIObject['components'];
     package?: PackageJson;
@@ -54,9 +54,9 @@ export type VovkMetaSchema = {
   [key: string]: KnownAny;
 };
 
-export type VovkSchema<T = KnownAny> = {
+export type VovkSchema = {
   $schema: typeof VovkSchemaIdEnum.SCHEMA | (string & {});
-  segments: Record<string, VovkSegmentSchema<T>>;
+  segments: Record<string, VovkSegmentSchema>;
   meta?: VovkMetaSchema;
 };
 
@@ -268,7 +268,7 @@ export enum HttpStatus {
   METHOD_NOT_ALLOWED = 405,
   NOT_ACCEPTABLE = 406,
   PROXY_AUTHENTICATION_REQUIRED = 407,
-  REQUEST_TIMEOUT = 408,
+  TRequest_TIMEOUT = 408,
   CONFLICT = 409,
   GONE = 410,
   LENGTH_REQUIRED = 411,
@@ -276,14 +276,14 @@ export enum HttpStatus {
   PAYLOAD_TOO_LARGE = 413,
   URI_TOO_LONG = 414,
   UNSUPPORTED_MEDIA_TYPE = 415,
-  REQUESTED_RANGE_NOT_SATISFIABLE = 416,
+  TRequestED_RANGE_NOT_SATISFIABLE = 416,
   EXPECTATION_FAILED = 417,
   I_AM_A_TEAPOT = 418,
   MISDIRECTED = 421,
   UNPROCESSABLE_ENTITY = 422,
   FAILED_DEPENDENCY = 424,
   PRECONDITION_REQUIRED = 428,
-  TOO_MANY_REQUESTS = 429,
+  TOO_MANY_TRequestS = 429,
   INTERNAL_SERVER_ERROR = 500,
   NOT_IMPLEMENTED = 501,
   BAD_GATEWAY = 502,
@@ -301,14 +301,18 @@ export interface VovkLLMTool {
       query?: KnownAny;
       params?: KnownAny;
     },
-    options: KnownAny
+    options?: KnownAny
   ) => Promise<KnownAny>;
   name: string;
   description: string;
   parameters?: {
     type: 'object';
-    properties?: Record<string, KnownAny>;
-    required?: string[];
+    properties?: {
+      body?: VovkBasicJSONSchema;
+      query?: VovkBasicJSONSchema;
+      params?: VovkBasicJSONSchema;
+    };
+    required?: ('body' | 'query' | 'params')[];
     additionalProperties?: boolean;
   };
   models:
@@ -323,25 +327,25 @@ export interface VovkLLMTool {
   type: 'function';
 }
 
-export type VovkSimpleJSONSchema = {
+export type VovkBasicJSONSchema = {
   $schema?: string;
   type?: string | string[];
   format?: string;
   $ref?: string;
-  items?: VovkSimpleJSONSchema;
+  items?: VovkBasicJSONSchema;
   enum?: KnownAny[];
   title?: string;
   description?: string;
-  properties?: Record<string, VovkSimpleJSONSchema>;
+  properties?: Record<string, VovkBasicJSONSchema>;
   required?: string[];
   examples?: KnownAny[];
   // support both $defs and definitions
-  $defs?: Record<string, VovkSimpleJSONSchema>;
-  definitions?: Record<string, VovkSimpleJSONSchema>;
+  $defs?: Record<string, VovkBasicJSONSchema>;
+  definitions?: Record<string, VovkBasicJSONSchema>;
   additionalProperties?: boolean;
-  anyOf?: VovkSimpleJSONSchema[];
-  oneOf?: VovkSimpleJSONSchema[];
-  allOf?: VovkSimpleJSONSchema[];
+  anyOf?: VovkBasicJSONSchema[];
+  oneOf?: VovkBasicJSONSchema[];
+  allOf?: VovkBasicJSONSchema[];
   // older schema
   const?: KnownAny;
   example?: KnownAny;
@@ -352,6 +356,23 @@ export type VovkSimpleJSONSchema = {
   maxLength?: number;
   // 'x-foo' extensions
   [key: `x-${string}`]: KnownAny;
+};
+
+export type VovkOperationObject = OperationObject & {
+  'x-tool-disable'?: boolean;
+  'x-tool-description'?: string;
+  'x-tool-successMessage'?: string;
+  'x-tool-errorMessage'?: string;
+  'x-tool-includeResponse'?: boolean;
+};
+
+export type VovkToolInfo = {
+  disable?: boolean;
+  description?: string;
+  successMessage?: string;
+  errorMessage?: string;
+  includeResponse?: boolean;
+  [key: string]: KnownAny;
 };
 
 // -----

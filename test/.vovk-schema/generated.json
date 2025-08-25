@@ -83,11 +83,11 @@
               "additionalProperties": false
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get ZodControllerOnlyEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateZodControllerOnlyEntity": {
           "validation": {
@@ -140,11 +140,11 @@
               "additionalProperties": false
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update ZodControllerOnlyEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createZodControllerOnlyEntity": {
           "path": "",
@@ -177,11 +177,11 @@
               "additionalProperties": false
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get ZodControllerAndServiceEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateZodControllerAndServiceEntity": {
           "validation": {
@@ -234,11 +234,11 @@
               "additionalProperties": false
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update ZodControllerAndServiceEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createZodControllerAndServiceEntity": {
           "path": "",
@@ -267,11 +267,11 @@
               }
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get YupControllerOnlyEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateYupControllerOnlyEntity": {
           "validation": {
@@ -302,11 +302,11 @@
               }
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update YupControllerOnlyEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createYupControllerOnlyEntity": {
           "path": "",
@@ -335,11 +335,11 @@
               }
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get YupControllerAndServiceEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateYupControllerAndServiceEntity": {
           "validation": {
@@ -370,11 +370,11 @@
               }
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update YupControllerAndServiceEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createYupControllerAndServiceEntity": {
           "path": "",
@@ -407,11 +407,11 @@
               ]
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get DtoControllerOnlyEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateDtoControllerOnlyEntity": {
           "validation": {
@@ -446,11 +446,11 @@
               ]
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update DtoControllerOnlyEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createDtoControllerOnlyEntity": {
           "path": "",
@@ -483,11 +483,11 @@
               ]
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get DtoControllerAndServiceEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateDtoControllerAndServiceEntity": {
           "validation": {
@@ -522,11 +522,11 @@
               ]
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update DtoControllerAndServiceEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createDtoControllerAndServiceEntity": {
           "path": "",
@@ -558,11 +558,11 @@
               ]
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get ValibotControllerOnlyEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateValibotControllerOnlyEntity": {
           "validation": {
@@ -610,11 +610,11 @@
               ]
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update ValibotControllerOnlyEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createValibotControllerOnlyEntity": {
           "path": "",
@@ -646,11 +646,11 @@
               ]
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get ValibotControllerAndServiceEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateValibotControllerAndServiceEntity": {
           "validation": {
@@ -698,11 +698,11 @@
               ]
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update ValibotControllerAndServiceEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createValibotControllerAndServiceEntity": {
           "path": "",
@@ -734,11 +734,11 @@
               ]
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get ArktypeControllerOnlyEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateArktypeControllerOnlyEntity": {
           "validation": {
@@ -782,11 +782,11 @@
               ]
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update ArktypeControllerOnlyEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createArktypeControllerOnlyEntity": {
           "path": "",
@@ -818,11 +818,11 @@
               ]
             }
           },
-          "path": "",
-          "httpMethod": "GET",
           "openapi": {
             "summary": "Get ArktypeControllerAndServiceEntities"
-          }
+          },
+          "path": "",
+          "httpMethod": "GET"
         },
         "updateArktypeControllerAndServiceEntity": {
           "validation": {
@@ -866,11 +866,11 @@
               ]
             }
           },
-          "path": "{id}",
-          "httpMethod": "PUT",
           "openapi": {
             "summary": "Update ArktypeControllerAndServiceEntity"
-          }
+          },
+          "path": "{id}",
+          "httpMethod": "PUT"
         },
         "createArktypeControllerAndServiceEntity": {
           "path": "",

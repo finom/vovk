@@ -185,27 +185,25 @@ describe('Client with vovk-client', () => {
     });
   });
 
-  // TODO
   it('Should store controller schema at handler.controllerSchema', async () => {
-    ok(CommonControllerRPC.postWithAll.controllerSchema);
+    ok(CommonControllerRPC.postWithAll.controllerSchema.handlers);
   });
 
-  // TODO
   it('Should store segment schema at handler.segmentSchema', async () => {
-    ok(CommonControllerRPC.postWithAll.segmentSchema);
+    ok(CommonControllerRPC.postWithAll.segmentSchema.segmentName);
   });
 
-  // TODO
   it('Should store full schema at handler.fullSchema', async () => {
-    ok(CommonControllerRPC.postWithAll.fullSchema);
+    ok(CommonControllerRPC.postWithAll.fullSchema.segments);
   });
 
-  it('Should handle requests body and query with using of req.vovk object', async () => {
+  it('Should handle requests body, query and meta using of req.vovk object', async () => {
     const body = { isBody: true } as const;
     const query = { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] } as const;
     const result = await CommonControllerRPC.postWithBodyAndQueryUsingReqVovk({
       body,
       query,
+      meta: { clientMeta: true },
     });
 
     null as unknown as VovkBody<typeof CommonControllerRPC.postWithBodyAndQueryUsingReqVovk> satisfies typeof body;
@@ -215,7 +213,7 @@ describe('Client with vovk-client', () => {
     deepStrictEqual(result satisfies VovkReturnType<typeof CommonControllerRPC.postWithBodyAndQueryUsingReqVovk>, {
       body: { isBody: true },
       query: { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] },
-      meta: { isMeta1: true, isMeta2: true },
+      meta: { isMeta1: true, isMeta2: true, xMetaHeader: { clientMeta: true } },
       metaNulled: {},
     });
   });

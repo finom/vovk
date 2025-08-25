@@ -7,6 +7,7 @@ import {
   type KnownAny,
   type VovkValidationType,
   type VovkTypedMethod,
+  type VovkOperationObject,
 } from 'vovk';
 import { zodToJsonSchema } from '@finom/zod-to-json-schema';
 
@@ -37,6 +38,7 @@ function withZod<
   disableServerSideValidation,
   skipSchemaEmission,
   validateEachIteration,
+  openapi,
 }: {
   isForm?: IS_FORM;
   body?: ZOD_BODY;
@@ -48,6 +50,7 @@ function withZod<
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
+  openapi?: VovkOperationObject;
 }) {
   return withValidationLibrary({
     isForm,
@@ -80,6 +83,7 @@ function withZod<
         );
       }
     },
+    openapi,
   });
 }
 

@@ -1,7 +1,7 @@
 import { ComponentsObject } from 'openapi3-ts/oas31';
 import { camelCase } from '../../utils/camelCase';
 import { upperFirst } from '../../utils/upperFirst';
-import { KnownAny, VovkSimpleJSONSchema } from '../../types';
+import { KnownAny, VovkBasicJSONSchema } from '../../types';
 
 // fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: KnownAny): KnownAny {
@@ -16,10 +16,10 @@ function cloneJSON(obj: KnownAny): KnownAny {
 }
 
 export function applyComponentsSchemas(
-  schema: VovkSimpleJSONSchema,
+  schema: VovkBasicJSONSchema,
   components: ComponentsObject['schemas'],
   mixinName: string
-): VovkSimpleJSONSchema | VovkSimpleJSONSchema[] {
+): VovkBasicJSONSchema | VovkBasicJSONSchema[] {
   const key = 'components/schemas';
   if (!components || !Object.keys(components).length) return schema;
 
@@ -33,12 +33,12 @@ export function applyComponentsSchemas(
   const addedComponents = new Set<string>();
 
   // Process a schema object and replace $refs
-  function processSchema(obj: VovkSimpleJSONSchema): VovkSimpleJSONSchema | VovkSimpleJSONSchema[] {
+  function processSchema(obj: VovkBasicJSONSchema): VovkBasicJSONSchema | VovkBasicJSONSchema[] {
     if (!obj || typeof obj !== 'object') return obj;
 
     // Handle arrays first - they don't have $ref
     if (Array.isArray(obj)) {
-      return obj.map((item) => processSchema(item)) as VovkSimpleJSONSchema[];
+      return obj.map((item) => processSchema(item)) as VovkBasicJSONSchema[];
     }
 
     // Now we know it's an object, so we can safely access $ref
@@ -65,9 +65,9 @@ export function applyComponentsSchemas(
     // Process properties recursively
     for (const key in newObj) {
       if (Object.prototype.hasOwnProperty.call(newObj, key)) {
-        newObj[key as keyof VovkSimpleJSONSchema] = processSchema(
-          newObj[key as keyof VovkSimpleJSONSchema]
-        ) as VovkSimpleJSONSchema;
+        newObj[key as keyof VovkBasicJSONSchema] = processSchema(
+          newObj[key as keyof VovkBasicJSONSchema]
+        ) as VovkBasicJSONSchema;
       }
     }
 

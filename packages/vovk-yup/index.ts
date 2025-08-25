@@ -6,7 +6,8 @@ import {
   type VovkRequest,
   type KnownAny,
   type VovkValidationType,
-  VovkTypedMethod,
+  type VovkTypedMethod,
+  type VovkOperationObject,
 } from 'vovk';
 import { convertSchema } from '@sodaru/yup-to-json-schema';
 
@@ -117,6 +118,7 @@ function withYup<
   skipSchemaEmission,
   validateEachIteration,
   options,
+  openapi,
 }: {
   isForm?: IS_FORM;
   body?: YUP_BODY;
@@ -131,6 +133,7 @@ function withYup<
   options?: {
     validateOptions?: Yup.ValidateOptions;
   };
+  openapi?: VovkOperationObject;
 }) {
   return withValidationLibrary({
     isForm,
@@ -165,6 +168,7 @@ function withYup<
         );
       }
     },
+    openapi,
   });
 }
 

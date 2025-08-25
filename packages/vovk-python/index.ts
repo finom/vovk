@@ -1,7 +1,7 @@
-import type { VovkSimpleJSONSchema } from 'vovk';
+import type { VovkBasicJSONSchema } from 'vovk';
 
 interface ConvertOptions {
-  schema: VovkSimpleJSONSchema;
+  schema: VovkBasicJSONSchema;
   namespace: string;
   className: string;
   pad: number;
@@ -10,7 +10,7 @@ interface ConvertOptions {
 /**
  * Check if a schema represents a file upload field (format: binary)
  */
-function isFileUploadSchema(s: VovkSimpleJSONSchema): boolean {
+function isFileUploadSchema(s: VovkBasicJSONSchema): boolean {
   // Check if it's a string with format: binary
   if (s.type === 'string' && s.format === 'binary') {
     return true;
@@ -34,11 +34,11 @@ function isFileUploadSchema(s: VovkSimpleJSONSchema): boolean {
   return false;
 }
 
-export function hasFiles(schema: VovkSimpleJSONSchema): boolean {
+export function hasFiles(schema: VovkBasicJSONSchema): boolean {
   return Object.values(schema.properties ?? {}).some((prop) => isFileUploadSchema(prop));
 }
 
-export function hasNormalData(schema: VovkSimpleJSONSchema): boolean {
+export function hasNormalData(schema: VovkBasicJSONSchema): boolean {
   return Object.values(schema.properties ?? {}).some((prop) => !isFileUploadSchema(prop));
 }
 
@@ -56,12 +56,12 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
   const classDefinitions: string[] = [];
 
   // To avoid re-generating the same schema multiple times
-  const seenObjects = new Map<VovkSimpleJSONSchema, string>();
+  const seenObjects = new Map<VovkBasicJSONSchema, string>();
 
   /**
    * Turn a schema into a Python type expression
    */
-  function buildType(s: VovkSimpleJSONSchema, propNameForParent: string): string {
+  function buildType(s: VovkBasicJSONSchema, propNameForParent: string): string {
     // Skip file upload schemas at the type level
     if (isFileUploadSchema(s)) {
       return 'Any'; // This will be filtered out at property level
@@ -78,7 +78,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
     // 2. allOf
     if (s.allOf && s.allOf.length > 0) {
-      const merged: VovkSimpleJSONSchema = {
+      const merged: VovkBasicJSONSchema = {
         type: 'object',
         properties: {},
         required: [],

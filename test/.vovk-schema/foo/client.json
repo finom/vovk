@@ -103,6 +103,10 @@
         "postWithStreamingAndDelayedUnhandledError": {
           "httpMethod": "POST",
           "path": "post-with-streaming-and-delayed-unhandled-error"
+        },
+        "progressiveResponse": {
+          "httpMethod": "POST",
+          "path": "progressive-response"
         }
       }
     },
@@ -275,8 +279,6 @@
               "additionalProperties": false
             }
           },
-          "path": "all/{foo}/{bar}",
-          "httpMethod": "POST",
           "openapi": {
             "responses": {
               "400": {
@@ -313,7 +315,9 @@
             },
             "summary": "This is a summary",
             "description": "This is a description"
-          }
+          },
+          "path": "all/{foo}/{bar}",
+          "httpMethod": "POST"
         },
         "handleQuery": {
           "validation": {
@@ -1480,8 +1484,6 @@
               ]
             }
           },
-          "path": "all/{foo}/{bar}",
-          "httpMethod": "POST",
           "openapi": {
             "responses": {
               "400": {
@@ -1518,7 +1520,9 @@
             },
             "summary": "This is a summary",
             "description": "This is a description"
-          }
+          },
+          "path": "all/{foo}/{bar}",
+          "httpMethod": "POST"
         },
         "handleQuery": {
           "validation": {
@@ -2139,8 +2143,6 @@
               ]
             }
           },
-          "path": "all/{foo}/{bar}",
-          "httpMethod": "POST",
           "openapi": {
             "responses": {
               "400": {
@@ -2177,7 +2179,9 @@
             },
             "summary": "This is a summary",
             "description": "This is a description"
-          }
+          },
+          "path": "all/{foo}/{bar}",
+          "httpMethod": "POST"
         },
         "handleNestedQuery": {
           "validation": {

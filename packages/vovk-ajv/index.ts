@@ -8,7 +8,7 @@ import {
   HttpException,
   HttpStatus,
   KnownAny,
-  VovkSimpleJSONSchema,
+  VovkBasicJSONSchema,
   type VovkSchema,
   type VovkValidateOnClient,
 } from 'vovk';
@@ -42,7 +42,7 @@ const validate = ({
   target,
 }: {
   input: unknown;
-  schema: VovkSimpleJSONSchema;
+  schema: VovkBasicJSONSchema;
   localize: Lang;
   type: 'body' | 'query' | 'params';
   endpoint: string;

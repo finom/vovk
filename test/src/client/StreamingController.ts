@@ -101,4 +101,30 @@ export default class StreamingController {
 
     return response;
   }
+
+  @post.auto()
+  static async progressiveResponse(req: VovkRequest<{ hello: 'world' }>) {
+    const { hello } = await req.json();
+    const getFoo = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { foo: 'foo1' } as const;
+    };
+
+    const getBar = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return { bar: 'bar2' } as const;
+    };
+
+    const response = new JSONLinesResponse<{ foo: 'foo1' } | { bar: 'bar2' } | { hello: 'world' }>(req);
+
+    Promise.all([
+      Promise.resolve(response.send({ hello })),
+      getFoo().then(({ foo }) => response.send({ foo })),
+      getBar().then(({ bar }) => response.send({ bar })),
+    ])
+      .then(response.close)
+      .catch(response.throw);
+
+    return response;
+  }
 }

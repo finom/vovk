@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
 import type { Token, default as StreamingController } from './StreamingController.ts';
 import { expectPromise } from '../lib.ts';
-import { HttpException, type VovkYieldType } from 'vovk';
+import { HttpException, progressive, type VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from 'vovk-client';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
@@ -173,7 +173,7 @@ describe('Streaming', () => {
     deepStrictEqual(expected, expectedCollected);
   });
 
-  // TODO: Stream never ends if not using dispose. No error when using dispose. Need help here.
+  // TODO: Stream never ends if not using dispose. No error when using dispose.
   it.skip('Should handle unhandled errors in the middle of stream', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
@@ -192,5 +192,27 @@ describe('Streaming', () => {
     }).rejects.toThrow();
 
     deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should work with "progressive" utility', async () => {
+    const { foo, bar, hello } = progressive(StreamingControllerRPC.progressiveResponse, { body: { hello: 'world' } });
+    deepStrictEqual(await hello, 'world');
+    deepStrictEqual(await foo, 'foo1');
+    deepStrictEqual(await bar, 'bar2');
+  });
+
+  it('onIterate and asPromise should work', async () => {
+    const resp = await StreamingControllerRPC.progressiveResponse({ body: { hello: 'world' } });
+    const data: Partial<VovkYieldType<typeof StreamingControllerRPC.progressiveResponse>> = {};
+
+    resp.onIterate((message) => {
+      Object.assign(data, message);
+    });
+    deepStrictEqual(await resp.asPromise(), [{ hello: 'world' }, { foo: 'foo1' }, { bar: 'bar2' }]);
+    deepStrictEqual(data, {
+      hello: 'world',
+      foo: 'foo1',
+      bar: 'bar2',
+    });
   });
 });
