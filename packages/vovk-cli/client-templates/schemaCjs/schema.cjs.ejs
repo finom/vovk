@@ -16,10 +16,7 @@ const schema = {
   $schema: '<%- t.VovkSchemaIdEnum.SCHEMA %>',
   segments,
   meta: {
-    apiRoot: '<%= t.apiRoot %>', // for debugging purposes
-    <% if(t.isVovkProject) { %>
-    ...meta
-    <% } %>
+    <% if(t.isVovkProject) { %>...meta<% } %>
   }
 };
 

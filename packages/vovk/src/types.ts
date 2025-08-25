@@ -28,7 +28,7 @@ export type VovkControllerSchema = {
   originalControllerName?: string;
   prefix?: string;
   forceApiRoot?: string;
-  handlers: Record<string, VovkHandlerSchema>;
+  handlers: { [key: string]: VovkHandlerSchema };
 };
 
 export type VovkSegmentSchema = {
@@ -37,7 +37,7 @@ export type VovkSegmentSchema = {
   segmentName: string;
   segmentType: 'segment' | 'mixin' | (string & {});
   forceApiRoot?: string;
-  controllers: Record<string, VovkControllerSchema>;
+  controllers: { [key: string]: VovkControllerSchema };
   meta?: {
     components?: OpenAPIObject['components'];
     package?: PackageJson;
@@ -56,7 +56,7 @@ export type VovkMetaSchema = {
 
 export type VovkSchema = {
   $schema: typeof VovkSchemaIdEnum.SCHEMA | (string & {});
-  segments: Record<string, VovkSegmentSchema>;
+  segments: { [key: string]: VovkSegmentSchema };
   meta?: VovkMetaSchema;
 };
 
@@ -336,12 +336,12 @@ export type VovkBasicJSONSchema = {
   enum?: KnownAny[];
   title?: string;
   description?: string;
-  properties?: Record<string, VovkBasicJSONSchema>;
+  properties?: { [key: string]: VovkBasicJSONSchema };
   required?: string[];
   examples?: KnownAny[];
   // support both $defs and definitions
-  $defs?: Record<string, VovkBasicJSONSchema>;
-  definitions?: Record<string, VovkBasicJSONSchema>;
+  $defs?: { [key: string]: VovkBasicJSONSchema };
+  definitions?: { [key: string]: VovkBasicJSONSchema };
   additionalProperties?: boolean;
   anyOf?: VovkBasicJSONSchema[];
   oneOf?: VovkBasicJSONSchema[];

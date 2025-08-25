@@ -35,12 +35,13 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 };
 
 export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
-  schema: VovkSchema,
+  givenSchema: unknown,
   segmentName: string,
   rpcModuleName: string,
   fetcher?: VovkClientFetcher<OPTS>,
   options?: VovkDefaultFetcherOptions<OPTS>
 ): VovkClient<T, OPTS> => {
+  const schema = givenSchema as VovkSchema; // fixes incompatibilities with JSON module
   fetcher ??= defaultFetcher as NonNullable<typeof fetcher>;
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];

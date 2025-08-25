@@ -22,11 +22,7 @@ export const schema = {
   $schema: '<%- t.VovkSchemaIdEnum.SCHEMA %>',
   segments,
   meta: {
-    $schema: '<%- t.VovkSchemaIdEnum.META %>',
-    apiRoot: '<%= t.apiRoot %>', // for debugging purposes
-    <% if(t.isVovkProject) { %>
-    ...meta,
-    <% } %>
+    <% if(t.isVovkProject) { %>...meta,<% } %>
   }
 };
 

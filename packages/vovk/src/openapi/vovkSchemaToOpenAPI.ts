@@ -5,10 +5,10 @@ import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
 
 function extractComponents(
   schema: VovkBasicJSONSchema | undefined
-): [VovkBasicJSONSchema | undefined, Record<string, VovkBasicJSONSchema>] {
+): [VovkBasicJSONSchema | undefined, { [key: string]: VovkBasicJSONSchema }] {
   if (!schema) return [undefined, {}];
 
-  const components: Record<string, VovkBasicJSONSchema> = {};
+  const components: { [key: string]: VovkBasicJSONSchema } = {};
 
   // Function to collect components and replace $refs recursively
   const process = (obj: VovkBasicJSONSchema, path: string[] = []): VovkBasicJSONSchema | VovkBasicJSONSchema[] => {
@@ -63,7 +63,7 @@ export function vovkSchemaToOpenAPI({
   package?: CodeSamplePackageJson;
 }): OpenAPIObject {
   const paths: PathsObject = {};
-  const components: Record<string, VovkBasicJSONSchema> = {};
+  const components: { [key: string]: VovkBasicJSONSchema } = {};
 
   for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments ?? {})) {
     for (const c of Object.values(segmentSchema.controllers)) {
