@@ -140,9 +140,9 @@ export default function getTemplateDefs(
             ...builtIn.segmentedClient,
             ...templateDef.segmentedClient,
           },
-          segmentConfig: {
-            ...builtIn.segmentConfig,
-            ...templateDef.segmentConfig,
+          projectConfig: {
+            ...builtIn.projectConfig,
+            ...templateDef.projectConfig,
           },
           // 'requires' and other props will be overridden
         };

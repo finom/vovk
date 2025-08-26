@@ -52,12 +52,15 @@ export class VovkGenerate {
   }
 
   async getFullSchema(): Promise<VovkSchema> {
-    const { log, config, cwd, isNextInstalled } = this.#projectInfo;
+    const { log, config, cwd, isNextInstalled, packageJson } = this.#projectInfo;
     const { schemaPath } = this.#cliGenerateOptions;
+
     const fullSchema = await getProjectFullSchema({
       schemaOutAbsolutePath: path.resolve(cwd, schemaPath ?? config.schemaOutDir),
       isNextInstalled,
       log,
+      package: packageJson,
+      config,
     });
     return fullSchema;
   }

@@ -1,29 +1,35 @@
 import { readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { glob } from 'glob';
-import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
+import { VovkSchemaIdEnum, VovkStrictConfig, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
+import { PackageJson } from 'type-fest';
 
 export async function getProjectFullSchema({
   schemaOutAbsolutePath,
   isNextInstalled,
   log,
+  package: packageJson,
+  config,
 }: {
   schemaOutAbsolutePath: string;
   isNextInstalled: boolean;
   log: ProjectInfo['log'];
+  package: PackageJson;
+  config: VovkStrictConfig;
 }): Promise<VovkSchema> {
   const result: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {},
-    meta: {
-      $schema: VovkSchemaIdEnum.META,
-      config: {
-        $schema: VovkSchemaIdEnum.CONFIG,
-      },
-    },
+    meta: getMetaSchema({
+      config,
+      package: packageJson,
+    }),
   };
+
+  console.log('result', result)
 
   const isEmptyLogOrWarn = isNextInstalled ? log.warn : log.debug;
 

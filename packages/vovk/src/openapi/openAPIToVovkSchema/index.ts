@@ -6,82 +6,25 @@ import type {
   SchemaObject,
 } from 'openapi3-ts/oas31';
 import {
-  GetOpenAPINameFn,
   HttpMethod,
+  VovkOpenAPIMixinNormalized,
   VovkBasicJSONSchema,
-  VovkConfig,
   type VovkSchema,
   VovkSchemaIdEnum,
-  VovkStrictConfig,
 } from '../../types';
-import { generateFnName } from '../generateFnName';
-import { camelCase } from '../../utils/camelCase';
 import { applyComponentsSchemas } from './applyComponentsSchemas';
 import { inlineRefs } from './inlineRefs';
-
-const getNamesNestJS = (operationObject: OperationObject): [string, string] => {
-  const operationId = operationObject.operationId;
-  if (!operationId) {
-    throw new Error('Operation ID is required for NestJS module name generation');
-  }
-
-  const controllerHandlerMatch = operationId?.match(/^([A-Z][a-zA-Z0-9]*)_([a-zA-Z0-9_]+)/);
-
-  if (!controllerHandlerMatch) {
-    throw new Error(`Invalid operationId format for NestJS: ${operationId}`);
-  }
-  const [controllerName, handlerName] = controllerHandlerMatch.slice(1, 3) as [string, string];
-  return [controllerName.replace(/Controller$/, 'RPC'), handlerName];
-};
-
-const normalizeGetModuleName = (getModuleName: NonNullable<VovkConfig['openApiMixins']>[string]['getModuleName']) => {
-  if (getModuleName === 'nestjs-operation-id') {
-    getModuleName = ({ operationObject }: { operationObject: OperationObject }) => getNamesNestJS(operationObject)[0];
-  } else if (typeof getModuleName === 'string') {
-    const moduleName = getModuleName;
-    getModuleName = () => moduleName;
-  } else if (typeof getModuleName !== 'function') {
-    throw new Error('getModuleName must be a function or one of the predefined strings');
-  }
-
-  return getModuleName;
-};
-
-const normalizeGetMethodName = (getMethodName: NonNullable<VovkConfig['openApiMixins']>[string]['getMethodName']) => {
-  if (getMethodName === 'nestjs-operation-id') {
-    getMethodName = ({ operationObject }: { operationObject: OperationObject }) => getNamesNestJS(operationObject)[1];
-  } else if (getMethodName === 'camel-case-operation-id') {
-    getMethodName = ({ operationObject }: Parameters<GetOpenAPINameFn>[0]) => {
-      const operationId = operationObject.operationId;
-      if (!operationId) {
-        throw new Error('Operation ID is required for camel-case method name generation');
-      }
-      return camelCase(operationId);
-    };
-  } else if (getMethodName === 'auto') {
-    getMethodName = ({ operationObject, method, path }: Parameters<GetOpenAPINameFn>[0]) => {
-      const operationId = operationObject.operationId;
-      const isCamelCase = operationId && /^[a-z][a-zA-Z0-9]*$/.test(operationId);
-      const isSnakeCase = operationId && /^[a-z][a-z0-9_]+$/.test(operationId);
-
-      return isCamelCase ? operationId : isSnakeCase ? camelCase(operationId) : generateFnName(method, path);
-    };
-  } else if (typeof getMethodName !== 'function') {
-    throw new Error('getMethodName must be a function or one of the predefined strings');
-  }
-
-  return getMethodName;
-};
 
 export function openAPIToVovkSchema({
   apiRoot,
   source: { object: openAPIObject },
-  getModuleName = 'api',
-  getMethodName = 'auto',
+  getModuleName,
+  getMethodName,
   errorMessageKey,
   package: packageJson,
-  mixinName,
-}: VovkStrictConfig['openApiMixins'][string] & { mixinName: string }): VovkSchema {
+  segmentName,
+}: VovkOpenAPIMixinNormalized & { segmentName?: string }): VovkSchema {
+  segmentName = segmentName ?? '';
   const forceApiRoot =
     apiRoot ??
     openAPIObject.servers?.[0]?.url ??
@@ -95,10 +38,10 @@ export function openAPIToVovkSchema({
   const schema: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {
-      [mixinName]: {
+      [segmentName]: {
         $schema: VovkSchemaIdEnum.SEGMENT,
         emitSchema: true,
-        segmentName: mixinName,
+        segmentName,
         segmentType: 'mixin',
         controllers: {},
         meta: {
@@ -118,9 +61,9 @@ export function openAPIToVovkSchema({
       },
     },
   };
-  const segment = schema.segments[mixinName];
-  getModuleName = normalizeGetModuleName(getModuleName);
-  getMethodName = normalizeGetMethodName(getMethodName);
+  const segment = schema.segments[segmentName];
+  //getModuleName = normalizeGetModuleName(getModuleName);
+  // getMethodName = normalizeGetMethodName(getMethodName);
   return Object.entries(openAPIObject.paths ?? {}).reduce((acc, [path, operations]) => {
     Object.entries(operations ?? {})
       .filter(([, operation]) => operation && typeof operation === 'object')
@@ -214,19 +157,19 @@ export function openAPIToVovkSchema({
           openapi: operation,
           validation: {
             ...(query && {
-              query: applyComponentsSchemas(query, componentsSchemas, mixinName),
+              query: applyComponentsSchemas(query, componentsSchemas, segmentName),
             }),
             ...(params && {
-              params: applyComponentsSchemas(params, componentsSchemas, mixinName),
+              params: applyComponentsSchemas(params, componentsSchemas, segmentName),
             }),
             ...(body && {
-              body: applyComponentsSchemas(body, componentsSchemas, mixinName),
+              body: applyComponentsSchemas(body, componentsSchemas, segmentName),
             }),
             ...(output && {
-              output: applyComponentsSchemas(output, componentsSchemas, mixinName),
+              output: applyComponentsSchemas(output, componentsSchemas, segmentName),
             }),
             ...(iteration && {
-              iteration: applyComponentsSchemas(iteration, componentsSchemas, mixinName),
+              iteration: applyComponentsSchemas(iteration, componentsSchemas, segmentName),
             }),
           },
         };

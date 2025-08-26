@@ -1,7 +1,15 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
-import { type CodeSamplePackageJson, createCodeExamples } from '../utils/createCodeExamples';
-import { HttpStatus, type VovkBasicJSONSchema, type HttpMethod, type VovkSchema, KnownAny } from '../types';
+import { createCodeExamples } from '../utils/createCodeExamples';
+import {
+  HttpStatus,
+  type VovkBasicJSONSchema,
+  type HttpMethod,
+  type VovkSchema,
+  type KnownAny,
+  type VovkProjectConfigCommon,
+} from '../types';
 import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
+import { getGeneratorConfig } from '../utils/getGeneratorConfig';
 
 function extractComponents(
   schema: VovkBasicJSONSchema | undefined
@@ -54,17 +62,25 @@ function extractComponents(
 export function vovkSchemaToOpenAPI({
   rootEntry,
   schema: fullSchema,
-  openAPIObject = {},
-  package: packageJson = { name: 'my-rpc-client' },
+  config,
+  segmentName,
 }: {
   rootEntry: string;
   schema: VovkSchema;
-  openAPIObject?: Partial<OpenAPIObject>;
-  package?: CodeSamplePackageJson;
+  config: VovkProjectConfigCommon;
+  segmentName?: string;
 }): OpenAPIObject {
   const paths: PathsObject = {};
   const components: { [key: string]: VovkBasicJSONSchema } = {};
-
+  const {
+    openAPIObject,
+    snippets: snippetsConfig,
+    package: packageJson,
+  } = getGeneratorConfig({
+    schema: fullSchema,
+    config,
+    segmentName,
+  });
   for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments ?? {})) {
     for (const c of Object.values(segmentSchema.controllers)) {
       for (const [handlerName, h] of Object.entries(c.handlers ?? {})) {
@@ -90,6 +106,7 @@ export function vovkSchemaToOpenAPI({
             handlerName,
             handlerSchema: h,
             controllerSchema: c,
+            config: snippetsConfig,
           });
           const queryParameters =
             queryValidation && 'type' in queryValidation && 'properties' in queryValidation
@@ -119,9 +136,9 @@ export function vovkSchemaToOpenAPI({
           paths[path][httpMethod] = {
             ...h.openapi,
             ...paths[path][httpMethod],
-            'x-codeSamples': [
-              ...(paths[path][httpMethod]['x-codeSamples'] ?? []),
-              ...(h.openapi['x-codeSamples'] ?? []),
+            'x-codeSnippets': [
+              ...(paths[path][httpMethod]['x-codeSnippets'] ?? []),
+              ...(h.openapi['x-codeSnippets'] ?? []),
               {
                 label: 'TypeScript RPC',
                 lang: 'typescript',
@@ -221,11 +238,6 @@ export function vovkSchemaToOpenAPI({
   return {
     ...openAPIObject,
     openapi: '3.1.0',
-    info: {
-      title: packageJson?.description ?? 'API',
-      version: packageJson?.version ?? '0.0.1',
-      ...openAPIObject?.info,
-    },
     components: {
       schemas: {
         ...(openAPIObject?.components?.schemas ?? components),

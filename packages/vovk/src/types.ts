@@ -375,8 +375,15 @@ export enum VovkSchemaIdEnum {
   SCHEMA = 'https://vovk.dev/api/schema/v3/schema.json',
 }
 
-type ReadmeConfig = {
+export type VovkReadmeConfig = {
   banner?: string;
+  installCommand?: string;
+  description?: string;
+};
+
+export type VovkSnippetsConfig = {
+  apiRoot?: string;
+  headers?: Record<string, string>;
 };
 
 type ClientConfigCommon = {
@@ -395,24 +402,14 @@ type ClientConfigCommon = {
     }
 );
 
-type ClientConfigComposed = ClientConfigCommon & {
-  package?: PackageJson;
-  readme?: ReadmeConfig;
-};
+type ClientConfigComposed = ClientConfigCommon;
 
-type ClientConfigSegmented = ClientConfigCommon & {
-  packages?: Record<string, PackageJson>;
-  readmes?: Record<string, ReadmeConfig>;
-};
+type ClientConfigSegmented = ClientConfigCommon;
 
 type BundleConfig = {
   requires?: Record<string, string>;
   prebundleOutDir?: string;
   keepPrebundleDir?: boolean;
-  origin?: string;
-  package?: PackageJson;
-  readme?: ReadmeConfig;
-  reExports?: Record<string, string>; // { 'X as Y': 'path/to/module' }
   tsdownBuildOptions?: Parameters<typeof build>[0];
 } & (
   | {
@@ -425,31 +422,87 @@ type BundleConfig = {
     }
 );
 
-type SegmentConfigItem = {
-  origin?: string;
-  rootEntry?: string;
-  segmentNameOverride?: string;
-  reExports?: Record<string, string>; // { 'X as Y': 'path/to/module' }
-};
-
-type SegmentConfig = Record<string, SegmentConfigItem>;
+export interface VovkProjectConfigCommon {
+  origin?: string | null;
+  package?: PackageJson;
+  readme?: VovkReadmeConfig;
+  snippets?: VovkSnippetsConfig;
+  openAPIObject?: OpenAPIObject;
+}
 
 export type ClientTemplateDef = {
   extends?: string;
   templatePath?: string | null;
-  origin?: string | null;
   composedClient?: Omit<ClientConfigComposed, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
-  segmentConfig?: false | SegmentConfig;
   requires?: Record<string, string>;
+  projectConfig?: VovkProjectConfigCommon;
 };
 
 export type GetOpenAPINameFn = (config: {
-  operationObject: OperationObject;
+  operationObject: VovkOperationObject;
   method: HttpMethod;
   path: string;
   openAPIObject: OpenAPIObject;
 }) => string;
+
+export interface VovkOpenAPIMixin {
+  source:
+    | {
+        file: string;
+      }
+    | {
+        url: string;
+        fallback?: string;
+      }
+    | {
+        object: OpenAPIObject;
+      };
+  package?: PackageJson;
+  readme?: VovkReadmeConfig;
+  snippets?: VovkSnippetsConfig;
+  apiRoot?: string;
+  getModuleName?: // if not provided, will use 'api' by default
+  | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
+    | (string & {}) // literal module name, like MedusaRPC, GithubReposRPC, etc.
+    | 'api' // declared for documentation purposes as default
+    | GetOpenAPINameFn;
+  getMethodName?: // if not provided, will use 'camel-case-operation-id' if operationId is snake_case, in other cases will use 'auto' strategy
+  | 'nestjs-operation-id' // getUser from 'UserController_getUser' operation ID
+    | 'camel-case-operation-id' // operation ID to camelCase
+    | 'auto' // auto-detect based on operationObject method and path
+    | GetOpenAPINameFn;
+  errorMessageKey?: string;
+}
+
+export interface VovkOpenAPIMixinNormalized
+  extends Omit<VovkOpenAPIMixin, 'source' | 'getMethodName' | 'getModuleName'> {
+  source: Exclude<
+    NonNullable<VovkOpenAPIMixin['source']>,
+    { file: string } | { url: string } // "object" only
+  >;
+  getMethodName: GetOpenAPINameFn;
+  getModuleName: GetOpenAPINameFn;
+}
+
+export interface VovkSegmentConfig extends VovkProjectConfigCommon {
+  rootEntry?: string;
+  segmentNameOverride?: string;
+  reExports?: Record<string, string>; // { 'X as Y': 'path/to/module' }
+  openAPIMixin?: VovkOpenAPIMixin;
+}
+
+export interface VovkProjectConfig extends VovkProjectConfigCommon {
+  bundle?: VovkProjectConfigCommon & {
+    reExports?: Record<string, string>; // { 'X as Y': 'path/to/module' }
+  };
+  segments?: Record<string, VovkSegmentConfig>;
+}
+
+interface ProjectConfigStrict extends Omit<VovkProjectConfig, 'origin' | 'segments'> {
+  origin: string;
+  segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin: VovkOpenAPIMixinNormalized }>;
+}
 
 type VovkUserConfig = {
   $schema?: typeof VovkSchemaIdEnum.CONFIG | (string & {});
@@ -457,7 +510,6 @@ type VovkUserConfig = {
   schemaOutDir?: string;
   modulesDir?: string;
   rootEntry?: string;
-  origin?: string;
   logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn' | (string & {});
   libs?: {
     ajv: KnownAny; // set by providing the typedoc comment in config
@@ -479,36 +531,7 @@ type VovkUserConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
-  segmentConfig?: false | SegmentConfig;
-  openApiMixins?: {
-    [mixinName: string]: {
-      source:
-        | {
-            file: string;
-          }
-        | {
-            url: string;
-            fallback?: string;
-          }
-        | {
-            object: OpenAPIObject;
-          };
-      package?: PackageJson;
-      readme?: ReadmeConfig;
-      apiRoot?: string;
-      getModuleName?: // if not provided, will use 'api' by default
-      | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
-        | (string & {}) // literal module name, like MedusaRPC, GithubReposRPC, etc.
-        | 'api' // declared for documentation purposes as default
-        | GetOpenAPINameFn;
-      getMethodName?: // if not provided, will use 'camel-case-operation-id' if operationId is snake_case, in other cases will use 'auto' strategy
-      | 'nestjs-operation-id' // getUser from 'UserController_getUser' operation ID
-        | 'camel-case-operation-id' // operation ID to camelCase
-        | 'auto' // auto-detect based on operationObject method and path
-        | GetOpenAPINameFn;
-      errorMessageKey?: string;
-    };
-  };
+  projectConfig?: VovkProjectConfig;
 };
 
 export type VovkConfig = VovkUserConfig;
@@ -516,11 +539,18 @@ export type VovkConfig = VovkUserConfig;
 export type VovkStrictConfig = Required<
   Omit<
     VovkUserConfig,
-    'emitConfig' | 'libs' | 'imports' | 'composedClient' | 'segmentedClient' | 'bundle' | 'extendClientWithOpenAPI'
+    | 'emitConfig'
+    | 'libs'
+    | 'imports'
+    | 'composedClient'
+    | 'segmentedClient'
+    | 'bundle'
+    | 'extendClientWithOpenAPI'
+    | 'projectConfig'
   >
 > & {
   emitConfig: (keyof VovkStrictConfig | string)[];
-  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments' | 'origin'>;
+  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>;
   imports: {
     fetcher: [string, string] | [string];
     validateOnClient: [string, string] | [string] | null;
@@ -529,17 +559,7 @@ export type VovkStrictConfig = Required<
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
-  openApiMixins: {
-    [mixinName: string]: {
-      source: Exclude<
-        NonNullable<VovkConfig['openApiMixins']>[string]['source'],
-        { file: string } | { url: string } // "object" only
-      >;
-      apiRoot?: string; // if not set, uses openapi.servers[0].url
-      getModuleName: NonNullable<VovkConfig['openApiMixins']>[string]['getModuleName'];
-      getMethodName: NonNullable<VovkConfig['openApiMixins']>[string]['getMethodName'];
-    };
-  };
+  projectConfig: ProjectConfigStrict;
 };
 
 // utils

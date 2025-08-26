@@ -5,7 +5,7 @@ import getUserConfig from './getUserConfig.mjs';
 import getRelativeSrcRoot from './getRelativeSrcRoot.mjs';
 import type { VovkEnv } from '../../types.mjs';
 import getTemplateDefs, { BuiltInTemplateName } from './getTemplateDefs.mjs';
-import { normalizeOpenAPIMixins } from '../../utils/normalizeOpenAPIMixins.mjs';
+import { normalizeOpenAPIMixin } from '../../utils/normalizeOpenAPIMixin.mjs';
 import chalkHighlightThing from '../../utils/chalkHighlightThing.mjs';
 import type { LogLevelNames } from 'loglevel';
 
@@ -24,6 +24,8 @@ export default async function getConfig({
   });
 
   const conf = userConfig ?? {};
+  const log = getLogger(logLevel ?? (conf.logLevel as LogLevelNames));
+
   const env = process.env as VovkEnv;
   const clientTemplateDefs = getTemplateDefs(conf.clientTemplateDefs);
 
@@ -68,9 +70,6 @@ export default async function getConfig({
         [BuiltInTemplateName.readme]: '.',
         [BuiltInTemplateName.packageJson]: '.',
       },
-      package: {},
-      readme: {},
-      reExports: {},
       ...conf.bundle,
       tsdownBuildOptions: {
         outDir: conf.bundle?.tsdownBuildOptions?.outDir ?? 'dist',
@@ -79,7 +78,6 @@ export default async function getConfig({
     },
     modulesDir: conf.modulesDir ?? path.join(srcRoot ?? '.', 'modules'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
-    origin: (env.VOVK_ORIGIN ?? conf.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',
     rootSegmentModulesDirName: conf.rootSegmentModulesDirName ?? '',
     logLevel: conf.logLevel ?? 'info',
@@ -90,25 +88,32 @@ export default async function getConfig({
       ...conf.moduleTemplates,
     },
     libs: conf.libs ?? {},
-    segmentConfig: conf.segmentConfig ?? {},
-    openApiMixins: {},
+    projectConfig: {
+      ...conf.projectConfig,
+      origin: (env.VOVK_ORIGIN ?? conf?.projectConfig?.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
+      segments: Object.fromEntries(
+        await Promise.all(
+          Object.entries(conf.projectConfig?.segments ?? {}).map(async ([key, value]) => [
+            key,
+            {
+              ...value,
+              openAPIMixin: value.openAPIMixin
+                ? await normalizeOpenAPIMixin({ mixinModule: value.openAPIMixin, log, cwd })
+                : undefined,
+            },
+          ])
+        )
+      ),
+    },
   };
 
   if (typeof conf.emitConfig === 'undefined') {
-    config.emitConfig = ['libs'];
+    config.emitConfig = ['libs', 'projectConfig'] satisfies (keyof VovkStrictConfig)[];
   } else if (conf.emitConfig === true) {
     config.emitConfig = Object.keys(config) as (keyof VovkStrictConfig)[];
   } else if (Array.isArray(conf.emitConfig)) {
     config.emitConfig = conf.emitConfig;
   } // else it's false and emitConfig already is []
-
-  const log = getLogger(logLevel ?? (config.logLevel as LogLevelNames));
-
-  config.openApiMixins = await normalizeOpenAPIMixins({
-    mixinModules: conf.openApiMixins ?? {},
-    cwd,
-    log,
-  });
 
   if (!userConfig) {
     log.warn(`Unable to load config at ${chalkHighlightThing(cwd)}. Using default values. ${error ?? ''}`);

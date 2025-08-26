@@ -11,7 +11,7 @@ import writeMetaJson from './writeMetaJson.mjs';
  * Ensure that the schema files are created to avoid any import errors.
  */
 export default async function ensureSchemaFiles(
-  projectInfo: ProjectInfo | null,
+  projectInfo: ProjectInfo,
   schemaOutAbsolutePath: string,
   segmentNames: string[]
 ): Promise<void> {

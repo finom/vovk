@@ -121,7 +121,7 @@ export default async function getClientTemplateFiles({
 
         def = {
           ...def,
-          origin: templateDef.origin ?? def.origin,
+          projectConfig: merge({}, templateDef?.projectConfig, def.projectConfig),
           composedClient: merge(omit(templateDef?.composedClient ?? {}, ['outDir']), def.composedClient),
           segmentedClient: merge(omit(templateDef?.segmentedClient ?? {}, ['outDir']), def.segmentedClient),
         };

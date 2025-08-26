@@ -1,14 +1,13 @@
 <%- t.getFirstLineBanner('html') %>
 # <%= t.package.name.replace(/-/g, '_') %> v<%= t.package.version %> [![Rust](https://img.shields.io/badge/Rust-lang-000000.svg?style=flat&logo=rust)](https://www.rust-lang.org) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
 
-<%- t.package.description ? `> ${t.package.description}` : '' %>
+<%- t.readme.description ?? (`${t.package.description ? `> ${t.package.description}` : ''}`) %>
 
 <%- t.package.license ? `License: **${t.package.license}**` : '' %>
 
-
 ```bash
 # Install the package
-cargo install <%= t.package.name.replace(/-/g, '_') %>
+<%= t.readme.installCommand ?? `cargo install ${t.package.name.replace(/-/g, '_')}` %>
 ```
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
@@ -30,6 +29,7 @@ cargo install <%= t.package.name.replace(/-/g, '_') %>
     handlerName,
     controllerSchema,
     package: t.package,
+    config: t.snippets,
 }).rs %>
 ```
         <% }) %>

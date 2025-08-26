@@ -203,7 +203,7 @@ export function generateEnum(schema: KnownAny, name: string, level: number, pad:
 
   schema.enum.forEach((value: string, index: number) => {
     // Create valid Rust enum variant
-    const variant = value.replace(/[^a-zA-Z0-9_]/g, '_');
+    const variant = value?.replace(/[^a-zA-Z0-9_]/g, '_');
 
     // Add documentation if available in enumDescriptions
     if (schema.enumDescriptions && schema.enumDescriptions[index]) {

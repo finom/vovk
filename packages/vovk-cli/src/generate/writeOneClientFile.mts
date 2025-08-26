@@ -2,7 +2,14 @@ import fs from 'fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
 import _ from 'lodash';
-import { createCodeExamples, VovkSchemaIdEnum, type VovkSchema, type VovkStrictConfig } from 'vovk';
+import {
+  createCodeExamples,
+  VovkReadmeConfig,
+  VovkSchemaIdEnum,
+  VovkSnippetsConfig,
+  type VovkSchema,
+  type VovkStrictConfig,
+} from 'vovk';
 import * as YAML from 'yaml';
 import TOML from '@iarna/toml';
 import type { PackageJson } from 'type-fest';
@@ -30,9 +37,10 @@ export default async function writeOneClientFile({
   matterResult: { data, content },
   package: packageJson,
   readme,
+  snippets,
   isEnsuringClient,
   outCwdRelativeDir,
-  templateDef,
+  // templateDef,
   locatedSegments,
   isNodeNextResolution,
   hasMixins,
@@ -56,7 +64,8 @@ export default async function writeOneClientFile({
     content: string;
   };
   package: PackageJson;
-  readme: VovkStrictConfig['bundle']['readme'];
+  readme: VovkReadmeConfig;
+  snippets: VovkSnippetsConfig;
   isEnsuringClient: boolean;
   outCwdRelativeDir: string;
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
@@ -108,6 +117,7 @@ export default async function writeOneClientFile({
     isVovkProject,
     package: packageJson,
     readme,
+    snippets,
     ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports,
@@ -142,12 +152,15 @@ export default async function writeOneClientFile({
             )
           : null;
         const segmentConfig = {
-          ...(config.segmentConfig ? config.segmentConfig[sName] : {}),
-          ...(templateDef.segmentConfig ? templateDef.segmentConfig[sName] : {}),
+          ...config.projectConfig.segments?.[sName],
+          // ...templateDef.projectConfig?.segments?.[sName],
         };
         const { origin: segmentConfigOrigin, rootEntry: segmentConfigRootEntry, segmentNameOverride } = segmentConfig;
 
-        const reExports = { ...segmentConfig.reExports, ...(isBundle ? projectInfo.config.bundle.reExports : {}) };
+        const reExports = {
+          ...segmentConfig.reExports,
+          ...(isBundle ? projectInfo.config.projectConfig?.bundle?.reExports : {}),
+        };
 
         return [
           sName,

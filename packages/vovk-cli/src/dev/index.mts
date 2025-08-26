@@ -21,22 +21,14 @@ import writeMetaJson from './writeMetaJson.mjs';
 import type { DevOptions, VovkEnv } from '../types.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import { LogLevelNames } from 'loglevel';
+import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
 
 export class VovkDev {
   #projectInfo: ProjectInfo;
 
   #segments: Segment[] = [];
 
-  #fullSchema: VovkSchema = {
-    $schema: VovkSchemaIdEnum.SCHEMA,
-    segments: {},
-    meta: {
-      $schema: VovkSchemaIdEnum.META,
-      config: {
-        $schema: VovkSchemaIdEnum.CONFIG,
-      },
-    },
-  };
+  #schemaSegments: VovkSchema['segments'] = {};
 
   #isWatching = false;
 
@@ -281,7 +273,7 @@ export class VovkDev {
     const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
     if (importRegex.test(code) && namesOfClasses.length) {
       const affectedSegments = this.#segments.filter((s) => {
-        const segmentSchema = this.#fullSchema.segments[s.segmentName];
+        const segmentSchema = this.#schemaSegments[s.segmentName];
         if (!segmentSchema) return false;
         const controllersByOriginalName = keyBy(
           segmentSchema.controllers,
@@ -349,13 +341,21 @@ export class VovkDev {
     return { isError: false };
   }, 500);
 
-  #generate = debounce(
-    () =>
-      generate({ projectInfo: this.#projectInfo, fullSchema: this.#fullSchema, locatedSegments: this.#segments }).then(
-        this.#onFirstTimeGenerate
-      ),
-    1000
-  );
+  #generate = debounce(() => {
+    const fullSchema = {
+      $schema: VovkSchemaIdEnum.SCHEMA,
+      segments: this.#schemaSegments,
+      meta: getMetaSchema({
+        config: this.#projectInfo.config,
+        package: this.#projectInfo.packageJson,
+      }),
+    };
+    return generate({
+      projectInfo: this.#projectInfo,
+      fullSchema,
+      locatedSegments: this.#segments,
+    }).then(this.#onFirstTimeGenerate);
+  }, 1000);
 
   async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null) {
     const { log, config, cwd } = this.#projectInfo;
@@ -374,7 +374,7 @@ export class VovkDev {
       return;
     }
 
-    this.#fullSchema.segments[segmentName] = segmentSchema;
+    this.#schemaSegments[segmentName] = segmentSchema;
     if (segmentSchema.emitSchema) {
       const now = Date.now();
       const { diffResult } = await writeOneSegmentSchemaFile({
@@ -395,7 +395,7 @@ export class VovkDev {
       );
     }
 
-    if (this.#segments.every((s) => this.#fullSchema.segments[s.segmentName])) {
+    if (this.#segments.every((s) => this.#schemaSegments[s.segmentName])) {
       log.debug(`All segments with "emitSchema" have schema.`);
       this.#generate();
     }

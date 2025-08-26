@@ -1,5 +1,12 @@
-import type { VovkBasicJSONSchema, KnownAny, VovkControllerSchema, VovkHandlerSchema } from '../types';
+import type {
+  VovkBasicJSONSchema,
+  KnownAny,
+  VovkControllerSchema,
+  VovkHandlerSchema,
+  VovkSnippetsConfig,
+} from '../types';
 import { getJSONSchemaExample, getSampleValue } from './getJSONSchemaExample';
+import { getSampleFromObject } from './getSampleFromObject';
 
 const toSnakeCase = (str: string) =>
   str
@@ -53,6 +60,7 @@ type CodeGenerationParams = {
   outputValidation?: VovkBasicJSONSchema;
   iterationValidation?: VovkBasicJSONSchema;
   hasArg: boolean;
+  config: VovkSnippetsConfig;
 };
 
 function generateTypeScriptCode({
@@ -65,6 +73,7 @@ function generateTypeScriptCode({
   outputValidation,
   iterationValidation,
   hasArg,
+  config,
 }: CodeGenerationParams): string {
   const getTsSample = (schema: VovkBasicJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
@@ -107,6 +116,12 @@ ${[
   bodyValidation ? `    body: ${bodyValidation['x-isForm'] ? 'formData' : getTsSample(bodyValidation)},` : null,
   queryValidation ? `    query: ${getTsSample(queryValidation)},` : null,
   paramsValidation ? `    params: ${getTsSample(paramsValidation)},` : null,
+  config?.apiRoot ? `    apiRoot: '${config.apiRoot}',` : null,
+  config?.headers
+    ? `    init: {
+      headers: ${getSampleFromObject(config.headers, { stripQuotes: true, indent: 6 })}
+    },`
+    : null,
 ]
   .filter(Boolean)
   .join('\n')}
@@ -149,6 +164,7 @@ function generatePythonCode({
   outputValidation,
   iterationValidation,
   hasArg,
+  config,
 }: CodeGenerationParams): string {
   const getPySample = (schema: VovkBasicJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, {
@@ -197,6 +213,10 @@ response = ${rpcName}.${handlerNameSnake}(${
           pyFilesArg,
           queryValidation ? `    query=${getPySample(queryValidation)},` : null,
           paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
+          config?.apiRoot ? `    api_root="${config.apiRoot}",` : null,
+          config?.headers
+            ? `    headers=${getSampleFromObject(config.headers, { stripQuotes: false, indent: 4, nestingIndent: 4 })},`
+            : null,
         ]
           .filter(Boolean)
           .join('\n') +
@@ -225,6 +245,7 @@ function generateRustCode({
   paramsValidation,
   outputValidation,
   iterationValidation,
+  config,
 }: CodeGenerationParams): string {
   const getRsJSONSample = (schema: VovkBasicJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
@@ -296,6 +317,15 @@ function generateRustCode({
     return `\n${getIndentSpaces(4)}${desc ? `// ${desc}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
   };
 
+  const getHashMapSample = (map: Record<string, KnownAny>, indent = 4) => {
+    const entries = Object.entries(map)
+      .map(([key, value]) => {
+        return `${getIndentSpaces(indent + 2)}("${key}".to_string(), "${value}".to_string())`;
+      })
+      .join(',\n');
+    return `HashMap::from([\n${entries}\n${getIndentSpaces(4)}])`;
+  };
+
   const getBody = (schema: VovkBasicJSONSchema) => {
     if (schema['x-isForm']) {
       return 'form';
@@ -320,8 +350,8 @@ pub fn main() {${bodyValidation?.['x-isForm'] ? '\n  ' + getRsFormSample(bodyVal
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
     ${paramsValidation ? serdeUnwrap(getRsJSONSample(paramsValidation)) : '()'}, /* params */ 
-    None, /* headers (HashMap) */ 
-    None, /* api_root */ 
+    ${config?.headers ? `${getHashMapSample(config.headers)}, /* headers */` : 'None, /* headers (HashMap) */ '}
+    ${config?.apiRoot ? `"${config.apiRoot}".to_string(), /* api_root */` : 'None, /* api_root */'}
     false, /* disable_client_validation */
   );${
     outputValidation
@@ -358,11 +388,13 @@ export function createCodeExamples({
   handlerSchema,
   controllerSchema,
   package: packageJson,
+  config,
 }: {
   handlerName: string;
   handlerSchema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   package?: CodeSamplePackageJson;
+  config: VovkSnippetsConfig;
 }) {
   const queryValidation = handlerSchema?.validation?.query as VovkBasicJSONSchema | undefined;
   const bodyValidation = handlerSchema?.validation?.body as VovkBasicJSONSchema | undefined;
@@ -387,6 +419,7 @@ export function createCodeExamples({
     outputValidation,
     iterationValidation,
     hasArg,
+    config,
   };
 
   const ts = generateTypeScriptCode(commonParams);

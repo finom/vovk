@@ -8,50 +8,77 @@ const config = {
   imports: {
     validateOnClient: 'vovk-ajv',
   },
-  prettifyClient: true,
   segmentedClient: {
     enabled: true,
     fromTemplates: ['cjs', 'mjs', 'readme'],
     outDir: './dist',
+    prettifyClient: true,
   },
   composedClient: {
     enabled: false,
   },
   logLevel: 'debug',
-  openApiMixins: {
-    petstore: {
-      source: {
-        url: 'https://petstore3.swagger.io/api/v3/openapi.json',
-        fallback: './.openapi-cache/petstore.json',
+  clientTemplateDefs: {
+    readme: {
+      extends: 'readme',
+      projectConfig: {
+        readme: {
+          installCommand: 'npm install vovk-apis',
+        }
       },
-      getModuleName: 'PetstoreRPC',
-      getMethodName: 'auto',
-      package: { name: 'vovk-apis/petstore' },
-    },
-    github: {
-      source: {
-        url: 'https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json',
-        fallback: './.openapi-cache/github.json',
+    }
+  },
+  projectConfig: {
+    segments: {
+      petstore: {
+        openAPIMixin: {
+          source: {
+            url: 'https://petstore3.swagger.io/api/v3/openapi.json',
+            fallback: './.openapi-cache/petstore.json',
+          },
+          getModuleName: 'PetstoreRPC',
+          getMethodName: 'auto',
+          package: { name: 'vovk-apis/petstore' },
+        },
       },
-      getModuleName: ({ operationObject }) => {
-        const [operationNs] = operationObject.operationId?.split('/') ?? ['unknown'];
-        return `Github${startCase(camelCase(operationNs)).replace(/ /g, '')}RPC`;
+      github: {
+        openAPIMixin: {
+          source: {
+            url: 'https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json',
+            fallback: './.openapi-cache/github.json',
+          },
+          getModuleName: ({ operationObject }) => {
+            const [operationNs] = operationObject.operationId?.split('/') ?? ['unknown'];
+            return `Github${startCase(camelCase(operationNs)).replace(/ /g, '')}RPC`;
+          },
+          getMethodName: ({ operationObject }) => {
+            const [, operationName] = operationObject.operationId?.split('/') ?? ['', 'ERROR'];
+            return camelCase(operationName);
+          },
+          package: { name: 'vovk-apis/github' },
+          snippets: {
+            headers: {
+              Authorization: 'Bearer ABC123',
+              "X-GitHub-Api-Version": "2022-11-28",
+            }
+          },
+        },
       },
-      getMethodName: ({ operationObject }) => {
-        const [, operationName] = operationObject.operationId?.split('/') ?? ['', 'ERROR'];
-        return camelCase(operationName);
+      telegram: {
+        openAPIMixin: {
+          source: {
+            url: 'https://raw.githubusercontent.com/sys-001/telegram-bot-api-versions/refs/heads/main/files/openapi/yaml/v183.yaml',
+            fallback: './.openapi-cache/telegram.yaml',
+          },
+          getModuleName: 'TelegramRPC',
+          getMethodName: ({ path }) => path.replace(/^\//, ''),
+          errorMessageKey: 'description',
+          package: { name: 'vovk-apis/telegram' },
+          snippets: {
+            apiRoot: 'https://api.telegram.org/bot${token}'
+          }
+        },
       },
-      package: { name: 'vovk-apis/github' },
-    },
-    telegram: {
-      source: {
-        url: 'https://raw.githubusercontent.com/sys-001/telegram-bot-api-versions/refs/heads/main/files/openapi/yaml/v183.yaml',
-        fallback: './.openapi-cache/telegram.yaml',
-      },
-      getModuleName: 'TelegramRPC',
-      getMethodName: ({ path }) => path.replace(/^\//, ''),
-      errorMessageKey: 'description',
-      package: { name: 'vovk-apis/telegram' },
     },
   },
 };

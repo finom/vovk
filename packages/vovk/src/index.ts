@@ -19,6 +19,12 @@ import {
   type VovkHandlerSchema,
   type VovkSchema,
   type VovkConfig,
+  type VovkProjectConfig,
+  type VovkProjectConfigCommon,
+  type VovkReadmeConfig,
+  type VovkSnippetsConfig,
+  type VovkOpenAPIMixin,
+  type VovkOpenAPIMixinNormalized,
   type VovkStrictConfig,
   type VovkValidationType,
   type VovkLLMTool,
@@ -48,6 +54,7 @@ import { multitenant } from './utils/multitenant';
 import { createLLMTools } from './utils/createLLMTools';
 import { createCodeExamples } from './utils/createCodeExamples';
 import { createValidateOnClient } from './utils/createValidateOnClient';
+import { getGeneratorConfig } from './utils/getGeneratorConfig';
 
 export {
   type KnownAny,
@@ -72,6 +79,12 @@ export {
   type VovkSchema,
   type VovkConfig,
   type VovkStrictConfig,
+  type VovkProjectConfig,
+  type VovkProjectConfigCommon,
+  type VovkReadmeConfig,
+  type VovkSnippetsConfig,
+  type VovkOpenAPIMixin,
+  type VovkOpenAPIMixinNormalized,
   type VovkValidationType,
   type VovkLLMTool,
   type VovkTypedMethod,
@@ -98,6 +111,7 @@ export {
   openapi,
   openAPIToVovkSchema,
   vovkSchemaToOpenAPI,
+  getGeneratorConfig,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initSegment } = createVovkApp();

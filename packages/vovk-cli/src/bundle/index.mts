@@ -47,10 +47,8 @@ export async function bundle({
     forceNothingWrittenLog: true,
     fullSchema,
     locatedSegments,
-    package: bundleConfig.package,
-    readme: bundleConfig.readme,
     cliGenerateOptions: {
-      origin: cliBundleOptions?.origin ?? bundleConfig.origin,
+      origin: cliBundleOptions?.origin,
       openapiSpec: cliBundleOptions?.openapiSpec,
       openapiGetModuleName: cliBundleOptions?.openapiGetModuleName,
       openapiGetMethodName: cliBundleOptions?.openapiGetMethodName,
@@ -97,10 +95,8 @@ export async function bundle({
       forceNothingWrittenLog: true,
       fullSchema,
       locatedSegments,
-      package: bundleConfig.package,
-      readme: bundleConfig.readme,
       cliGenerateOptions: {
-        origin: cliBundleOptions?.origin ?? bundleConfig.origin,
+        origin: cliBundleOptions?.origin,
         composedFrom: group.map(([templateName]) => templateName),
         composedOut: path.resolve(outDirAbsolute, relativePath),
         composedOnly: true,

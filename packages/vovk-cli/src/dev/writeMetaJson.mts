@@ -1,14 +1,17 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import pick from 'lodash/pick.js';
 import { META_FILE_NAME } from './writeOneSegmentSchemaFile.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
 
-export default async function writeMetaJson(schemaOutAbsolutePath: string, projectInfo: ProjectInfo | null) {
+export default async function writeMetaJson(schemaOutAbsolutePath: string, projectInfo: ProjectInfo) {
   const metaJsonPath = path.join(schemaOutAbsolutePath, META_FILE_NAME + '.json');
   const metaStr = JSON.stringify(
-    { config: projectInfo ? pick(projectInfo.config, [...projectInfo.config.emitConfig, '$schema']) : {} },
+    getMetaSchema({
+      config: projectInfo.config,
+      package: projectInfo.packageJson,
+    }),
     null,
     2
   );

@@ -2,13 +2,13 @@
 # <%= t.package.name.replace(/-/g, '_') %> v<%= t.package.version %> [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/) ![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)
 
 
-<%- t.package.description ? `> ${t.package.description}` : '' %>
+<%- t.readme.description ?? (`${t.package.description ? `> ${t.package.description}` : ''}`) %>
 
 <%- t.package.license ? `License: **${t.package.license}**` : '' %>
 
 ```bash
 # Install the package
-pip install <%= t.package.name.replace(/-/g, '_') %>
+<%= t.readme.installCommand ?? `pip install ${t.package.name.replace(/-/g, '_')}` %>
 ```
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
@@ -30,6 +30,7 @@ pip install <%= t.package.name.replace(/-/g, '_') %>
     handlerName,
     controllerSchema,
     package: t.package,
+    config: t.snippets,
 }).py %>
 ```
         <% }) %>

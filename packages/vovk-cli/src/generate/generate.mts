@@ -2,7 +2,13 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import matter from 'gray-matter';
 import _ from 'lodash';
-import { openAPIToVovkSchema, VovkConfig, type VovkSchema, type VovkStrictConfig } from 'vovk';
+import {
+  getGeneratorConfig,
+  openAPIToVovkSchema,
+  VovkOpenAPIMixin,
+  type VovkSchema,
+  type VovkStrictConfig,
+} from 'vovk';
 import type { PackageJson } from 'type-fest';
 import getClientTemplateFiles from './getClientTemplateFiles.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
@@ -11,12 +17,11 @@ import type { GenerateOptions } from '../types.mjs';
 import pickSegmentFullSchema from '../utils/pickSegmentFullSchema.mjs';
 import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
 import getTemplateClientImports from './getTemplateClientImports.mjs';
-import mergePackages from './mergePackages.mjs';
 import writeOneClientFile, { normalizeOutTemplatePath } from './writeOneClientFile.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { getTsconfig } from 'get-tsconfig';
-import { normalizeOpenAPIMixins } from '../utils/normalizeOpenAPIMixins.mjs';
+import { normalizeOpenAPIMixin } from '../utils/normalizeOpenAPIMixin.mjs';
 import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
 
 const getIncludedSegmentNames = (
@@ -120,7 +125,7 @@ const cliOptionsToOpenAPIMixins = ({
   openapiSpec,
   openapiFallback,
   openapiMixinName,
-}: GenerateOptions): NonNullable<VovkConfig['openApiMixins']> => {
+}: GenerateOptions): NonNullable<VovkOpenAPIMixin[]> => {
   return Object.fromEntries(
     (
       openapiSpec?.map((spec, i) => {
@@ -156,8 +161,6 @@ export async function generate({
   fullSchema,
   locatedSegments,
   cliGenerateOptions,
-  package: argPackageJson,
-  readme: argReadme,
 }: {
   isEnsuringClient?: boolean;
   isBundle?: boolean;
@@ -166,35 +169,43 @@ export async function generate({
   fullSchema: VovkSchema;
   locatedSegments: Segment[];
   cliGenerateOptions?: GenerateOptions;
-  package?: PackageJson;
-  readme?: VovkStrictConfig['bundle']['readme'];
 }) {
   fullSchema = {
     ...fullSchema,
     // sort segments by name to avoid unnecessary rendering
-    segments: Object.fromEntries(Object.entries(fullSchema.segments).sort(([a], [b]) => a.localeCompare(b))),
+    segments: Object.fromEntries(
+      Object.entries(fullSchema.segments)
+        .sort(([a], [b]) => a.localeCompare(b))
+        // preserve original object, so segments can be extended
+        .map((segment) => ({ ...segment }))
+    ),
   };
-  const { config, cwd, log, srcRoot, packageJson: rootPackageJson, vovkCliPackage } = projectInfo;
-  const allOpenAPIMixins = {
-    ...config.openApiMixins,
-    ...cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {}),
-  };
-  if (Object.keys(allOpenAPIMixins).length) {
-    const mixins = Object.fromEntries(
-      Object.entries(await normalizeOpenAPIMixins({ mixinModules: allOpenAPIMixins, log })).map(([mixinName, conf]) => [
-        mixinName,
-        openAPIToVovkSchema({ ...conf, mixinName }).segments[mixinName],
-      ])
-    );
+  const { config, cwd, log, srcRoot, vovkCliPackage } = projectInfo;
 
-    fullSchema = {
-      ...fullSchema,
-      segments: {
-        ...fullSchema.segments,
-        ...mixins,
+  Object.entries(config.projectConfig.segments ?? {}).forEach(([segmentName, segmentConfig]) => {
+    fullSchema.segments = {
+      ...fullSchema.segments,
+      [segmentName]: {
+        ...fullSchema.segments[segmentName],
+        ...openAPIToVovkSchema({ ...segmentConfig.openAPIMixin, segmentName }).segments[segmentName],
       },
     };
-  }
+  });
+
+  const cliMixins = cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {});
+
+  await Promise.all(
+    Object.entries(cliMixins).map(async ([mixinName, mixinModule]) => {
+      fullSchema.segments = {
+        ...fullSchema.segments,
+        [mixinName]: {
+          ...fullSchema.segments[mixinName],
+          ...openAPIToVovkSchema(await normalizeOpenAPIMixin({ mixinModule, log })).segments[mixinName],
+        },
+      };
+    })
+  );
+
   const isNodeNextResolution = ['node16', 'nodenext'].includes(
     (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
   );
@@ -241,13 +252,16 @@ export async function generate({
           outCwdRelativeDir,
         });
 
-        const packageJson = await mergePackages({
-          log,
-          rootPackageJson,
-          packages: [config.composedClient.package, templateDef.composedClient?.package, argPackageJson],
+        const {
+          package: packageJson,
+          readme,
+          origin,
+          snippets,
+        } = getGeneratorConfig({
+          schema: fullSchema,
+          config: templateDef.projectConfig,
+          isBundle,
         });
-
-        const readme = Object.assign({}, config.composedClient.readme, templateDef.composedClient?.readme, argReadme);
 
         const composedFullSchema = pickSegmentFullSchema(fullSchema, segmentNames);
         const hasMixins = Object.values(composedFullSchema.segments).some((segment) => segment.segmentType === 'mixin');
@@ -267,6 +281,7 @@ export async function generate({
           matterResult,
           package: packageJson,
           readme,
+          snippets,
           isEnsuringClient,
           outCwdRelativeDir,
           templateDef,
@@ -276,7 +291,7 @@ export async function generate({
           isVovkProject,
           vovkCliPackage,
           isBundle,
-          origin: cliGenerateOptions?.origin ?? templateDef.origin ?? config.origin,
+          origin: cliGenerateOptions?.origin ?? origin,
         });
 
         const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
@@ -336,24 +351,17 @@ export async function generate({
         });
         const results = await Promise.all(
           segmentNames.map(async (segmentName) => {
-            const packageJson = await mergePackages({
-              log,
-              rootPackageJson,
-              packages: [
-                fullSchema.segments[segmentName]?.meta?.package,
-                config.segmentedClient.packages?.[segmentName],
-                templateDef.segmentedClient?.packages?.[segmentName],
-                argPackageJson,
-              ],
+            const {
+              package: packageJson,
+              readme,
+              origin,
+              snippets,
+            } = getGeneratorConfig({
+              schema: fullSchema,
+              config: templateDef.projectConfig,
+              segmentName,
+              isBundle,
             });
-
-            const readme = Object.assign(
-              {},
-              // TODO fullSchema.segments[segmentName]?.meta?.readme,
-              config.segmentedClient.readmes?.[segmentName],
-              templateDef.segmentedClient?.readmes?.[segmentName],
-              argReadme
-            );
 
             const segmentedFullSchema = pickSegmentFullSchema(fullSchema, [segmentName]);
             const hasMixins = Object.values(segmentedFullSchema.segments).some(
@@ -375,6 +383,7 @@ export async function generate({
               matterResult,
               package: packageJson,
               readme,
+              snippets,
               isEnsuringClient,
               outCwdRelativeDir,
               templateDef,
@@ -384,7 +393,7 @@ export async function generate({
               isVovkProject,
               vovkCliPackage,
               isBundle,
-              origin: cliGenerateOptions?.origin ?? templateDef.origin ?? config.origin,
+              origin: cliGenerateOptions?.origin ?? origin,
             });
 
             return {

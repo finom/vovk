@@ -3,13 +3,13 @@
 
 # <%= t.package.name %> v<%= t.package.version %> [![TypeScript](https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555)](https://www.typescriptlang.org/) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
 
-<%- t.package.description ? `> ${t.package.description}` : '' %>
+<%- t.readme.description ?? (`${t.package.description ? `> ${t.package.description}` : ''}`) %>
 
 <%- t.package.license ? `License: **${t.package.license}**` : '' %>
 
 ```bash
 # Install the package
-npm install <%= t.package.name %>
+<%= t.readme.installCommand ?? `npm install ${t.package.name}` %>
 ```
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
@@ -31,6 +31,7 @@ npm install <%= t.package.name %>
     handlerName,
     controllerSchema,
     package: t.package,
+    config: t.snippets,
 }).ts %>
 ```
         <% }) %>
