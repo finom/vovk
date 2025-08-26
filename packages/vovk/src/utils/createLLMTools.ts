@@ -70,7 +70,7 @@ const createLLMTool = ({
     throw new Error(`Handler "${handlerName}" in module "${moduleName}" does not have a valid schema.`);
   }
 
-  const execute = (
+  const execute = async (
     input: {
       body?: KnownAny;
       query?: KnownAny;
@@ -94,9 +94,14 @@ const createLLMTool = ({
       resultFormatter,
     };
 
-    return caller(callerInput, options)
-      .then((data) => onExecute(data, callerInput, options) ?? data)
-      .catch((error) => onError?.(error, callerInput, options) ?? error);
+    const [result, error] = await caller(callerInput, options);
+    if (error) {
+      onError?.(error, callerInput, options);
+    } else {
+      onExecute(result, callerInput, options);
+    }
+
+    return result;
   };
   const parametersProperties = {
     ...(schema?.validation?.body
@@ -161,9 +166,9 @@ async function defaultCaller(
       });
     }
 
-    return resultFormatter(result, schema);
+    return [resultFormatter(result, schema), null] as [KnownAny, null];
   } catch (e) {
-    return resultFormatter(e, schema);
+    return [resultFormatter(e, schema), e] as [KnownAny, Error];
   }
 }
 

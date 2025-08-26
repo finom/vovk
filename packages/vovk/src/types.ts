@@ -366,15 +366,6 @@ export type VovkOperationObject = OperationObject & {
   'x-tool-includeResponse'?: boolean;
 };
 
-export type VovkToolInfo = {
-  disable?: boolean;
-  description?: string;
-  successMessage?: string;
-  errorMessage?: string;
-  includeResponse?: boolean;
-  [key: string]: KnownAny;
-};
-
 // -----
 
 export enum VovkSchemaIdEnum {
