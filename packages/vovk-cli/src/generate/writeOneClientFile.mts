@@ -152,14 +152,14 @@ export default async function writeOneClientFile({
             )
           : null;
         const segmentConfig = {
-          ...config.projectConfig.segments?.[sName],
-          // ...templateDef.projectConfig?.segments?.[sName],
+          ...config.generatorConfig.segments?.[sName],
+          // ...templateDef.generatorConfig?.segments?.[sName],
         };
         const { origin: segmentConfigOrigin, rootEntry: segmentConfigRootEntry, segmentNameOverride } = segmentConfig;
 
         const reExports = {
           ...segmentConfig.reExports,
-          ...(isBundle ? projectInfo.config.projectConfig?.bundle?.reExports : {}),
+          ...(isBundle ? projectInfo.config.bundle.generatorConfig?.reExports : {}),
         };
 
         return [

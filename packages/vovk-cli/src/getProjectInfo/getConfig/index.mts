@@ -70,6 +70,7 @@ export default async function getConfig({
         [BuiltInTemplateName.readme]: '.',
         [BuiltInTemplateName.packageJson]: '.',
       },
+      generatorConfig: {},
       ...conf.bundle,
       tsdownBuildOptions: {
         outDir: conf.bundle?.tsdownBuildOptions?.outDir ?? 'dist',
@@ -88,12 +89,12 @@ export default async function getConfig({
       ...conf.moduleTemplates,
     },
     libs: conf.libs ?? {},
-    projectConfig: {
-      ...conf.projectConfig,
-      origin: (env.VOVK_ORIGIN ?? conf?.projectConfig?.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
+    generatorConfig: {
+      ...conf.generatorConfig,
+      origin: (env.VOVK_ORIGIN ?? conf?.generatorConfig?.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
       segments: Object.fromEntries(
         await Promise.all(
-          Object.entries(conf.projectConfig?.segments ?? {}).map(async ([key, value]) => [
+          Object.entries(conf.generatorConfig?.segments ?? {}).map(async ([key, value]) => [
             key,
             {
               ...value,
@@ -108,7 +109,7 @@ export default async function getConfig({
   };
 
   if (typeof conf.emitConfig === 'undefined') {
-    config.emitConfig = ['libs', 'projectConfig'] satisfies (keyof VovkStrictConfig)[];
+    config.emitConfig = ['libs', 'generatorConfig'] satisfies (keyof VovkStrictConfig)[];
   } else if (conf.emitConfig === true) {
     config.emitConfig = Object.keys(config) as (keyof VovkStrictConfig)[];
   } else if (Array.isArray(conf.emitConfig)) {

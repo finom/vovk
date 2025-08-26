@@ -35,7 +35,7 @@ export default async function getProjectInfo(
     throw new Error(`Could not find app router directory at ${cwd}. Check Next.js docs for more info.`);
   }
 
-  const apiRoot = `${config.projectConfig.origin ?? ''}/${config.rootEntry}`;
+  const apiRoot = `${config.generatorConfig.origin ?? ''}/${config.rootEntry}`;
   const apiDirAbsolutePath = srcRoot ? path.resolve(cwd, srcRoot, 'app', config.rootEntry) : null;
 
   if (configAbsolutePaths.length > 1) {

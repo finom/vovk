@@ -9,11 +9,11 @@ import camelCase from 'lodash/camelCase.js';
 import { generateFnName } from './generateFnName.mjs';
 
 type OpenAPIMixin = NonNullable<
-  NonNullable<NonNullable<NonNullable<VovkConfig['projectConfig']>['segments']>[string]>['openAPIMixin']
+  NonNullable<NonNullable<NonNullable<VovkConfig['generatorConfig']>['segments']>[string]>['openAPIMixin']
 >;
 
 type OpenAPIMixinStrict = NonNullable<
-  NonNullable<NonNullable<VovkStrictConfig['projectConfig']>['segments']>[string]
+  NonNullable<NonNullable<VovkStrictConfig['generatorConfig']>['segments']>[string]
 >['openAPIMixin'];
 
 export type GetOpenAPINameFn = (config: {
@@ -143,12 +143,12 @@ export async function normalizeOpenAPIMixin({
   cwd = process.cwd(),
 }: {
   mixinModule: NonNullable<
-    NonNullable<NonNullable<NonNullable<VovkConfig['projectConfig']>['segments']>[string]>['openAPIMixin']
+    NonNullable<NonNullable<NonNullable<VovkConfig['generatorConfig']>['segments']>[string]>['openAPIMixin']
   >;
   log: ProjectInfo['log'];
   cwd?: string;
 }): Promise<
-  NonNullable<NonNullable<NonNullable<VovkStrictConfig['projectConfig']>['segments']>[string]>['openAPIMixin']
+  NonNullable<NonNullable<NonNullable<VovkStrictConfig['generatorConfig']>['segments']>[string]>['openAPIMixin']
 > {
   const { source, getModuleName, getMethodName } = mixinModule;
   let openAPIObject: OpenAPIObject;

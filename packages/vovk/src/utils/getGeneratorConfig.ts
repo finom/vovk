@@ -1,5 +1,5 @@
 import type { PackageJson } from 'type-fest';
-import type { VovkProjectConfigCommon, VovkReadmeConfig, VovkSnippetsConfig, VovkSchema } from '../types';
+import type { VovkGeneratorConfigCommon, VovkReadmeConfig, VovkSnippetsConfig, VovkSchema } from '../types';
 import deepExtend from './deepExtend';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
@@ -10,7 +10,7 @@ export function getGeneratorConfig({
   isBundle,
 }: {
   schema: VovkSchema;
-  config?: VovkProjectConfigCommon;
+  config?: VovkGeneratorConfigCommon;
   segmentName?: string;
   isBundle?: boolean;
 }): {
@@ -23,11 +23,11 @@ export function getGeneratorConfig({
   const packageJson = deepExtend(
     {} as PackageJson,
     schema.meta?.package,
-    schema.meta?.config?.projectConfig?.package,
-    isBundle ? schema.meta?.config?.projectConfig?.bundle?.package : undefined,
+    schema.meta?.config?.generatorConfig?.package,
+    isBundle ? schema.meta?.config?.bundle?.generatorConfig?.package : undefined,
     segmentName ? schema.segments?.[segmentName]?.meta?.package : undefined,
-    segmentName ? schema.meta?.config?.projectConfig?.segments?.[segmentName]?.package : undefined,
-    segmentName ? schema.meta?.config?.projectConfig?.segments?.[segmentName]?.openAPIMixin?.package : undefined,
+    segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.package : undefined,
+    segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIMixin?.package : undefined,
     config?.package
   );
 
@@ -42,32 +42,32 @@ export function getGeneratorConfig({
           description: packageJson.description,
         },
       },
-      schema.meta?.config?.projectConfig?.openAPIObject,
-      isBundle ? schema.meta?.config?.projectConfig?.bundle?.openAPIObject : undefined,
-      segmentName ? schema.meta?.config?.projectConfig?.segments?.[segmentName]?.openAPIObject : undefined,
+      schema.meta?.config?.generatorConfig?.openAPIObject,
+      isBundle ? schema.meta?.config?.bundle?.generatorConfig?.openAPIObject : undefined,
+      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIObject : undefined,
       config?.openAPIObject
     ),
     snippets: deepExtend(
       {},
-      schema.meta?.config?.projectConfig?.snippets,
-      isBundle ? schema.meta?.config?.projectConfig?.bundle?.snippets : undefined,
-      segmentName ? schema.meta?.config?.projectConfig?.segments?.[segmentName]?.snippets : undefined,
-      segmentName ? schema.meta?.config?.projectConfig?.segments?.[segmentName]?.openAPIMixin?.snippets : undefined,
+      schema.meta?.config?.generatorConfig?.snippets,
+      isBundle ? schema.meta?.config?.bundle?.generatorConfig?.snippets : undefined,
+      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.snippets : undefined,
+      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIMixin?.snippets : undefined,
       config?.snippets
     ),
     readme: deepExtend(
       {},
-      schema.meta?.config?.projectConfig?.readme,
-      isBundle ? schema.meta?.config?.projectConfig?.bundle?.readme : undefined,
-      segmentName ? schema.meta?.config?.projectConfig?.segments?.[segmentName]?.readme : undefined,
-      segmentName ? schema.meta?.config?.projectConfig?.segments?.[segmentName]?.openAPIMixin?.readme : undefined,
+      schema.meta?.config?.generatorConfig?.readme,
+      isBundle ? schema.meta?.config?.bundle?.generatorConfig?.readme : undefined,
+      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.readme : undefined,
+      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIMixin?.readme : undefined,
       config?.readme
     ),
     origin:
       config?.origin ||
-      schema.meta?.config?.projectConfig?.origin ||
-      (segmentName ? schema.meta?.config?.projectConfig?.segments?.[segmentName]?.origin : undefined) ||
-      (isBundle ? schema.meta?.config?.projectConfig?.bundle?.origin : undefined) ||
+      schema.meta?.config?.generatorConfig?.origin ||
+      (segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.origin : undefined) ||
+      (isBundle ? schema.meta?.config?.bundle?.generatorConfig?.origin : undefined) ||
       '',
   };
 }

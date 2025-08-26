@@ -1,4 +1,5 @@
 import type { LogLevelNames } from 'loglevel';
+import type { build } from 'tsdown';
 import type { VovkStrictConfig } from 'vovk';
 
 export type VovkModuleRenderResult = {
@@ -100,3 +101,7 @@ export type VovkEnv = {
   __VOVK_EXIT__?: 'true' | 'false';
   __VOVK_LOG_LEVEL__?: LogLevelNames;
 };
+
+declare global {
+  var TSdownBuildOptions: Parameters<typeof build>[0];
+}

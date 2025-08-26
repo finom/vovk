@@ -3,7 +3,6 @@ import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
 import type { JSONLinesResponse } from './JSONLinesResponse';
 import type { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
-import { build } from 'tsdown';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -410,7 +409,8 @@ type BundleConfig = {
   requires?: Record<string, string>;
   prebundleOutDir?: string;
   keepPrebundleDir?: boolean;
-  tsdownBuildOptions?: Parameters<typeof build>[0];
+  tsdownBuildOptions?: Parameters<typeof import('tsdown').build>[0];
+  generatorConfig: VovkGeneratorConfigCommon;
 } & (
   | {
       excludeSegments?: never;
@@ -422,12 +422,13 @@ type BundleConfig = {
     }
 );
 
-export interface VovkProjectConfigCommon {
+export interface VovkGeneratorConfigCommon {
   origin?: string | null;
   package?: PackageJson;
   readme?: VovkReadmeConfig;
   snippets?: VovkSnippetsConfig;
   openAPIObject?: OpenAPIObject;
+  reExports?: Record<string, string>;
 }
 
 export type ClientTemplateDef = {
@@ -436,7 +437,7 @@ export type ClientTemplateDef = {
   composedClient?: Omit<ClientConfigComposed, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   requires?: Record<string, string>;
-  projectConfig?: VovkProjectConfigCommon;
+  generatorConfig?: VovkGeneratorConfigCommon;
 };
 
 export type GetOpenAPINameFn = (config: {
@@ -485,21 +486,17 @@ export interface VovkOpenAPIMixinNormalized
   getModuleName: GetOpenAPINameFn;
 }
 
-export interface VovkSegmentConfig extends VovkProjectConfigCommon {
+export interface VovkSegmentConfig extends VovkGeneratorConfigCommon {
   rootEntry?: string;
   segmentNameOverride?: string;
-  reExports?: Record<string, string>; // { 'X as Y': 'path/to/module' }
   openAPIMixin?: VovkOpenAPIMixin;
 }
 
-export interface VovkProjectConfig extends VovkProjectConfigCommon {
-  bundle?: VovkProjectConfigCommon & {
-    reExports?: Record<string, string>; // { 'X as Y': 'path/to/module' }
-  };
+export interface VovkGeneratorConfig extends VovkGeneratorConfigCommon {
   segments?: Record<string, VovkSegmentConfig>;
 }
 
-interface ProjectConfigStrict extends Omit<VovkProjectConfig, 'origin' | 'segments'> {
+interface ProjectConfigStrict extends Omit<VovkGeneratorConfig, 'origin' | 'segments'> {
   origin: string;
   segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin: VovkOpenAPIMixinNormalized }>;
 }
@@ -531,7 +528,7 @@ type VovkUserConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
-  projectConfig?: VovkProjectConfig;
+  generatorConfig?: VovkGeneratorConfig;
 };
 
 export type VovkConfig = VovkUserConfig;
@@ -546,7 +543,7 @@ export type VovkStrictConfig = Required<
     | 'segmentedClient'
     | 'bundle'
     | 'extendClientWithOpenAPI'
-    | 'projectConfig'
+    | 'generator'
   >
 > & {
   emitConfig: (keyof VovkStrictConfig | string)[];
@@ -559,7 +556,7 @@ export type VovkStrictConfig = Required<
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
-  projectConfig: ProjectConfigStrict;
+  generatorConfig: ProjectConfigStrict;
 };
 
 // utils

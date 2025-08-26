@@ -21,14 +21,14 @@ const config = {
   clientTemplateDefs: {
     readme: {
       extends: 'readme',
-      projectConfig: {
+      generatorConfig: {
         readme: {
           installCommand: 'npm install vovk-apis',
         }
       },
     }
   },
-  projectConfig: {
+  generatorConfig: {
     segments: {
       petstore: {
         openAPIMixin: {

@@ -29,8 +29,6 @@ export async function getProjectFullSchema({
     }),
   };
 
-  console.log('result', result)
-
   const isEmptyLogOrWarn = isNextInstalled ? log.warn : log.debug;
 
   // Handle config.json

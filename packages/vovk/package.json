@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "3.0.0-draft.396",
+  "version": "3.0.0-draft.397",
   "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "types": "./mjs/index.d.ts",
@@ -46,7 +46,6 @@
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",
-    "tsdown": "^0.13.0",
     "type-fest": "*"
   }
 }

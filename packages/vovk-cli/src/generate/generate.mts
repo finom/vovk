@@ -182,7 +182,7 @@ export async function generate({
   };
   const { config, cwd, log, srcRoot, vovkCliPackage } = projectInfo;
 
-  Object.entries(config.projectConfig.segments ?? {}).forEach(([segmentName, segmentConfig]) => {
+  Object.entries(config.generatorConfig.segments ?? {}).forEach(([segmentName, segmentConfig]) => {
     fullSchema.segments = {
       ...fullSchema.segments,
       [segmentName]: {
@@ -259,7 +259,7 @@ export async function generate({
           snippets,
         } = getGeneratorConfig({
           schema: fullSchema,
-          config: templateDef.projectConfig,
+          config: templateDef.generatorConfig,
           isBundle,
         });
 
@@ -358,7 +358,7 @@ export async function generate({
               snippets,
             } = getGeneratorConfig({
               schema: fullSchema,
-              config: templateDef.projectConfig,
+              config: templateDef.generatorConfig,
               segmentName,
               isBundle,
             });
