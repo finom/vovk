@@ -9,7 +9,7 @@ sourceName: <%= vars.ModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { prefix, get, put, post, del, describe } from 'vovk';
+import { prefix, get, put, post, del, operation } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 <% if(t.withService) { %>
@@ -18,7 +18,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextReso
 
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.ModuleName %> {
-    @describe({
+    @operation({
       summary: 'Get <%= t.TheThings %>',
     })
     @get()
@@ -34,7 +34,7 @@ export default class <%= vars.ModuleName %> {
        }
     });
 
-    @describe({
+    @operation({
         summary: 'Update <%= t.TheThing %>',
     })
     @put('{id}')

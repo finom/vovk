@@ -1,10 +1,10 @@
-import { prefix, get, put, post, del, describe } from 'vovk';
+import { prefix, get, put, post, del, operation } from 'vovk';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod';
 
 @prefix('zod-controller-only-entities')
 export default class ZodControllerOnlyEntityController {
-  @describe({
+  @operation({
     summary: 'Get ZodControllerOnlyEntities',
   })
   @get()
@@ -17,7 +17,7 @@ export default class ZodControllerOnlyEntityController {
     },
   });
 
-  @describe({
+  @operation({
     summary: 'Update ZodControllerOnlyEntity',
   })
   @put('{id}')

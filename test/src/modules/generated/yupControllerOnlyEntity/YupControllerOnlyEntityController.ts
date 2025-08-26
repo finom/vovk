@@ -1,10 +1,10 @@
-import { prefix, get, put, post, del, describe } from 'vovk';
+import { prefix, get, put, post, del, operation } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
 @prefix('yup-controller-only-entities')
 export default class YupControllerOnlyEntityController {
-  @describe({
+  @operation({
     summary: 'Get YupControllerOnlyEntities',
   })
   @get()
@@ -17,7 +17,7 @@ export default class YupControllerOnlyEntityController {
     },
   });
 
-  @describe({
+  @operation({
     summary: 'Update YupControllerOnlyEntity',
   })
   @put('{id}')

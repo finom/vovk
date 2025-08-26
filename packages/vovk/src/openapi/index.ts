@@ -4,7 +4,7 @@ import { error } from './error';
 import { createDecorator } from '../utils/createDecorator';
 import type { VovkOperationObject } from '../types';
 
-export const describeDecorator = createDecorator(null, (openAPIOperationObject: VovkOperationObject = {}) => {
+export const operationDecorator = createDecorator(null, (openAPIOperationObject: VovkOperationObject = {}) => {
   return (handlerSchema) => {
     return {
       ...handlerSchema,
@@ -16,6 +16,6 @@ export const describeDecorator = createDecorator(null, (openAPIOperationObject: 
   };
 });
 
-export const describe = Object.assign(describeDecorator, { error });
+export const operation = Object.assign(operationDecorator, { error });
 
 export { vovkSchemaToOpenAPI, openAPIToVovkSchema };

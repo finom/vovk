@@ -16,7 +16,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextReso
 
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.rpcModuleName %> {
-    @describe({
+    @operation({
         summary: 'Get <%= t.TheThings %>',
     })
     @get()
@@ -29,7 +29,7 @@ export default class <%= vars.rpcModuleName %> {
         <% } %>
     }
 
-    @describe({
+    @operation({
         summary: 'Update <%= t.TheThing %>',
     })
     @put('{id}')

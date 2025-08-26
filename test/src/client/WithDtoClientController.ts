@@ -56,11 +56,11 @@ class WithDtoClientService {
 
 @prefix('with-dto')
 export default class WithDtoClientController {
-  @describe({
+  @operation({
     summary: 'This is a summary',
     description: 'This is a description',
   })
-  @describe.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  @operation.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/{foo}/{bar}')
   static handleAll = withDto({
     body: HandleAllBodyDto,

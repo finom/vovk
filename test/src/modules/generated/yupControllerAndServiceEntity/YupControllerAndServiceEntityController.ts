@@ -1,4 +1,4 @@
-import { prefix, get, put, post, del, describe } from 'vovk';
+import { prefix, get, put, post, del, operation } from 'vovk';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
@@ -6,7 +6,7 @@ import YupControllerAndServiceEntityService from './YupControllerAndServiceEntit
 
 @prefix('yup-controller-and-service-entities')
 export default class YupControllerAndServiceEntityController {
-  @describe({
+  @operation({
     summary: 'Get YupControllerAndServiceEntities',
   })
   @get()
@@ -19,7 +19,7 @@ export default class YupControllerAndServiceEntityController {
     },
   });
 
-  @describe({
+  @operation({
     summary: 'Update YupControllerAndServiceEntity',
   })
   @put('{id}')

@@ -76,11 +76,11 @@ class WithYupClientService {
 
 @prefix('with-yup')
 export default class WithYupClientController {
-  @describe({
+  @operation({
     summary: 'This is a summary',
     description: 'This is a description',
   })
-  @describe.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  @operation.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/{foo}/{bar}')
   static handleAll = withYup({
     body: yup.object({ hello: yup.string().max(5).required() }),

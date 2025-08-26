@@ -2,7 +2,7 @@ import { prefix, get, put, post, del, describe, type VovkRequest } from 'vovk';
 
 @prefix('no-validation-controller-only-entities')
 export default class NoValidationControllerOnlyEntityController {
-  @describe({
+  @operation({
     summary: 'Get NoValidationControllerOnlyEntities',
   })
   @get()
@@ -12,7 +12,7 @@ export default class NoValidationControllerOnlyEntityController {
     return { results: [], search };
   };
 
-  @describe({
+  @operation({
     summary: 'Update NoValidationControllerOnlyEntity',
   })
   @put('{id}')

@@ -4,7 +4,7 @@ import NoValidationControllerAndServiceEntityService from './NoValidationControl
 
 @prefix('no-validation-controller-and-service-entities')
 export default class NoValidationControllerAndServiceEntityController {
-  @describe({
+  @operation({
     summary: 'Get NoValidationControllerAndServiceEntities',
   })
   @get()
@@ -14,7 +14,7 @@ export default class NoValidationControllerAndServiceEntityController {
     return NoValidationControllerAndServiceEntityService.getNoValidationControllerAndServiceEntities(search);
   };
 
-  @describe({
+  @operation({
     summary: 'Update NoValidationControllerAndServiceEntity',
   })
   @put('{id}')
