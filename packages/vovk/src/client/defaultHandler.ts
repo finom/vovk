@@ -20,8 +20,8 @@ export const defaultHandler = async ({ response, schema }: { response: Response;
 
   if (!response.ok) {
     const errorKey =
-      schema.openapi && 'x-errorMessageKey' in schema.openapi
-        ? (schema.openapi['x-errorMessageKey'] as string)
+      schema.operationObject && 'x-errorMessageKey' in schema.operationObject
+        ? (schema.operationObject['x-errorMessageKey'] as string)
         : 'message';
     // handle server errors
     const errorResponse = result as KnownAny;

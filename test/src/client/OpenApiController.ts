@@ -1,15 +1,15 @@
-import { get, HttpStatus, prefix } from 'vovk';
-import { openapi, fromSchema } from 'vovk-openapi';
+import { get, HttpStatus, prefix, describe } from 'vovk';
 import { schema } from 'vovk-client';
 
 @prefix('openapi')
 export default class OpenApiController {
   @get()
-  @openapi({
+  @describe({
     summary: 'Hello, World!',
   })
-  @openapi.error(HttpStatus.I_AM_A_TEAPOT, 'I am a teapot error')
+  @describe.error(HttpStatus.I_AM_A_TEAPOT, 'I am a teapot error')
   static getFromSchema() {
+    // @ts-expect-error TODO!
     return fromSchema({
       rootEntry: 'api',
       schema,

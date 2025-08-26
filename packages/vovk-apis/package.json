@@ -44,10 +44,10 @@
     "test": "echo 'Placeholder'"
   },
   "dependencies": {
-    "vovk": "^3.0.0-draft.397",
-    "vovk-ajv": "^0.0.0-draft.94"
+    "vovk": "^3.0.0-draft.398",
+    "vovk-ajv": "^0.0.0-draft.95"
   },
   "devDependencies": {
-    "vovk-cli": "^0.0.1-draft.335"
+    "vovk-cli": "^0.0.1-draft.336"
   }
 }

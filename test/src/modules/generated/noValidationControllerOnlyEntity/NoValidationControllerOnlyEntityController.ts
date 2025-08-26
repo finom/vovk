@@ -1,8 +1,8 @@
-import { prefix, get, put, post, del, openapi, type VovkRequest } from 'vovk';
+import { prefix, get, put, post, del, describe, type VovkRequest } from 'vovk';
 
 @prefix('no-validation-controller-only-entities')
 export default class NoValidationControllerOnlyEntityController {
-  @openapi({
+  @describe({
     summary: 'Get NoValidationControllerOnlyEntities',
   })
   @get()
@@ -12,7 +12,7 @@ export default class NoValidationControllerOnlyEntityController {
     return { results: [], search };
   };
 
-  @openapi({
+  @describe({
     summary: 'Update NoValidationControllerOnlyEntity',
   })
   @put('{id}')

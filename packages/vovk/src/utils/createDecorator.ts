@@ -63,7 +63,7 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
         ...handlerSchema,
         // avoid override of path and httpMethod
         ...(initResult?.validation ? { validation: initResult.validation } : {}),
-        ...(initResult?.openapi ? { openapi: initResult.openapi } : {}),
+        ...(initResult?.operationObject ? { operationObject: initResult.operationObject } : {}),
         ...(initResult?.misc ? { misc: initResult.misc } : {}),
       };
       method.schema = methodSchema;

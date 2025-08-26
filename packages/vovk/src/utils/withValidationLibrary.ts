@@ -46,7 +46,7 @@ export function withValidationLibrary<
   handle,
   toJSONSchema,
   validate,
-  openapi,
+  operationObject,
 }: {
   isForm?: IS_FORM;
   disableServerSideValidation?: boolean | VovkValidationType[];
@@ -72,7 +72,7 @@ export function withValidationLibrary<
       i?: number;
     }
   ) => KnownAny;
-  openapi?: VovkOperationObject;
+  operationObject?: VovkOperationObject;
 }) {
   const disableServerSideValidationKeys =
     disableServerSideValidation === false
@@ -237,8 +237,8 @@ export function withValidationLibrary<
     if (iteration && !skipSchemaEmissionKeys.includes('iteration')) {
       validation.iteration = getJSONSchema(iteration, 'iteration');
     }
-    resultHandlerEnhanced.schema = { validation, openapi };
-    setHandlerSchema(resultHandlerEnhanced, { validation, openapi });
+    resultHandlerEnhanced.schema = { validation, operationObject };
+    setHandlerSchema(resultHandlerEnhanced, { validation, operationObject });
   }
 
   return resultHandlerEnhanced;

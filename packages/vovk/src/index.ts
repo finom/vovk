@@ -43,7 +43,7 @@ import {
   createFetcher,
   progressive,
 } from './client/index';
-import { openapi, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi/index';
+import { describe, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi';
 import { HttpException } from './HttpException';
 import { createDecorator } from './utils/createDecorator';
 import { JSONLinesResponse } from './JSONLinesResponse';
@@ -108,7 +108,7 @@ export {
   createCodeExamples,
   createValidateOnClient,
   progressive,
-  openapi,
+  describe,
   openAPIToVovkSchema,
   vovkSchemaToOpenAPI,
   getGeneratorConfig,

@@ -3,13 +3,13 @@ import {
   put,
   get,
   prefix,
+  describe,
   HttpStatus,
   type VovkBody,
   type VovkQuery,
   type VovkParams,
   type VovkOutput,
 } from 'vovk';
-import { openapi } from 'vovk-openapi';
 import { withZod } from 'vovk-zod';
 import { withZod as withZod3 } from 'vovk-zod/v3';
 import { z } from 'zod';
@@ -85,11 +85,11 @@ class WithZodClientService {
 
 @prefix('with-zod')
 export default class WithZodClientController {
-  @openapi({
+  @describe({
     summary: 'This is a summary',
     description: 'This is a description',
   })
-  @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  @describe.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/{foo}/{bar}')
   static handleAll = withZod({
     ...HandleAllInput,

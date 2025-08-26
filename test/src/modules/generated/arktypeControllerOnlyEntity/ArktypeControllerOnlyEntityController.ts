@@ -1,10 +1,10 @@
-import { prefix, get, put, post, del, openapi } from 'vovk';
+import { prefix, get, put, post, del, describe } from 'vovk';
 import { type } from 'arktype';
 import withArk from '@/lib/withArk.ts';
 
 @prefix('arktype-controller-only-entities')
 export default class ArktypeControllerOnlyEntityController {
-  @openapi({
+  @describe({
     summary: 'Get ArktypeControllerOnlyEntities',
   })
   @get()
@@ -17,7 +17,7 @@ export default class ArktypeControllerOnlyEntityController {
     },
   });
 
-  @openapi({
+  @describe({
     summary: 'Update ArktypeControllerOnlyEntity',
   })
   @put('{id}')

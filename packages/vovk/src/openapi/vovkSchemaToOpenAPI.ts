@@ -60,14 +60,14 @@ function extractComponents(
 }
 
 export function vovkSchemaToOpenAPI({
-  rootEntry,
+  rootEntry = 'api',
   schema: fullSchema,
   config,
   segmentName,
 }: {
-  rootEntry: string;
+  rootEntry?: string;
   schema: VovkSchema;
-  config: VovkGeneratorConfigCommon;
+  config?: VovkGeneratorConfigCommon;
   segmentName?: string;
 }): OpenAPIObject {
   const paths: PathsObject = {};
@@ -84,7 +84,7 @@ export function vovkSchemaToOpenAPI({
   for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments ?? {})) {
     for (const c of Object.values(segmentSchema.controllers)) {
       for (const [handlerName, h] of Object.entries(c.handlers ?? {})) {
-        if (h.openapi) {
+        if (h.operationObject) {
           const [queryValidation, queryComponents] = extractComponents(h?.validation?.query);
           const [bodyValidation, bodyComponents] = extractComponents(h?.validation?.body);
           const [paramsValidation, paramsComponents] = extractComponents(h?.validation?.params);
@@ -134,11 +134,11 @@ export function vovkSchemaToOpenAPI({
           const httpMethod = h.httpMethod.toLowerCase() as Lowercase<HttpMethod>;
           paths[path][httpMethod] ??= {};
           paths[path][httpMethod] = {
-            ...h.openapi,
+            ...h.operationObject,
             ...paths[path][httpMethod],
             'x-codeSnippets': [
               ...(paths[path][httpMethod]['x-codeSnippets'] ?? []),
-              ...(h.openapi['x-codeSnippets'] ?? []),
+              ...(h.operationObject?.['x-codeSnippets'] ?? []),
               {
                 label: 'TypeScript RPC',
                 lang: 'typescript',
@@ -157,7 +157,7 @@ export function vovkSchemaToOpenAPI({
             ],
             ...((queryParameters || pathParameters
               ? {
-                  parameters: h.openapi.parameters ?? [...(queryParameters || []), ...(pathParameters || [])],
+                  parameters: h.operationObject?.parameters ?? [...(queryParameters || []), ...(pathParameters || [])],
                 }
               : {}) as OperationObject['parameters']),
             ...(paths[path][httpMethod].parameters
@@ -176,7 +176,7 @@ export function vovkSchemaToOpenAPI({
                         },
                       },
                     },
-                    ...h.openapi?.responses,
+                    ...h.operationObject?.responses,
                   },
                 }
               : {}),
@@ -201,7 +201,7 @@ export function vovkSchemaToOpenAPI({
                         },
                       },
                     },
-                    ...h.openapi?.responses,
+                    ...h.operationObject?.responses,
                   },
                 }
               : {}),
@@ -212,7 +212,7 @@ export function vovkSchemaToOpenAPI({
               : {}),
             ...(bodyValidation && 'type' in bodyValidation
               ? {
-                  requestBody: h.openapi?.requestBody ?? {
+                  requestBody: h.operationObject?.requestBody ?? {
                     description: 'description' in bodyValidation ? bodyValidation.description : 'Request body',
                     required: true,
                     content: {
@@ -228,7 +228,7 @@ export function vovkSchemaToOpenAPI({
                   requestBody: paths[path][httpMethod].requestBody,
                 }
               : {}),
-            tags: paths[path][httpMethod].tags ?? h.openapi?.tags,
+            tags: paths[path][httpMethod].tags ?? h.operationObject?.tags,
           };
         }
       }

@@ -66,7 +66,7 @@ const createLLMTool = ({
   }
   const { schema, models } = handler;
 
-  if (!schema || !schema.openapi) {
+  if (!schema || !schema.operationObject) {
     throw new Error(`Handler "${handlerName}" in module "${moduleName}" does not have a valid schema.`);
   }
 
@@ -125,8 +125,9 @@ const createLLMTool = ({
     execute,
     name: `${moduleName}_${handlerName}`,
     description:
-      schema.openapi?.['x-tool-description'] ??
-      ([schema.openapi?.summary ?? '', schema.openapi?.description ?? ''].filter(Boolean).join('\n') || handlerName),
+      schema.operationObject?.['x-tool-description'] ??
+      ([schema.operationObject?.summary ?? '', schema.operationObject?.description ?? ''].filter(Boolean).join('\n') ||
+        handlerName),
     parameters: {
       type: 'object',
       properties: parametersProperties,
@@ -173,9 +174,10 @@ async function defaultCaller(
 }
 
 async function mcpResultFormatter(result: KnownAny, schema: VovkHandlerSchema) {
-  const successMessage = schema?.openapi?.['x-tool-successMessage'] ?? 'Tool executed successfully.';
-  const errorMessage = schema?.openapi?.['x-tool-errorMessage'] ?? 'An error occurred while executing the tool.';
-  const includeResponse = schema?.openapi?.['x-tool-includeResponse'] ?? true;
+  const successMessage = schema?.operationObject?.['x-tool-successMessage'] ?? 'Tool executed successfully.';
+  const errorMessage =
+    schema?.operationObject?.['x-tool-errorMessage'] ?? 'An error occurred while executing the tool.';
+  const includeResponse = schema?.operationObject?.['x-tool-includeResponse'] ?? true;
 
   return {
     content: [
@@ -227,7 +229,9 @@ export function createLLMTools({
         module = moduleWithconfig;
       }
       return Object.entries(module ?? {})
-        .filter(([, handler]) => handler?.schema?.openapi && !handler?.schema?.openapi?.['x-tool-disable'])
+        .filter(
+          ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool-disable']
+        )
         .map(([handlerName]) =>
           createLLMTool({
             moduleName,

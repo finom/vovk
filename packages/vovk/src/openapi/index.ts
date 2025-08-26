@@ -4,18 +4,18 @@ import { error } from './error';
 import { createDecorator } from '../utils/createDecorator';
 import type { VovkOperationObject } from '../types';
 
-export const openapiDecorator = createDecorator(null, (openAPIOperationObject: VovkOperationObject = {}) => {
+export const describeDecorator = createDecorator(null, (openAPIOperationObject: VovkOperationObject = {}) => {
   return (handlerSchema) => {
     return {
       ...handlerSchema,
-      openapi: {
-        ...handlerSchema?.openapi,
+      operationObject: {
+        ...handlerSchema?.operationObject,
         ...openAPIOperationObject,
       },
     };
   };
 });
 
-export const openapi = Object.assign(openapiDecorator, { error });
+export const describe = Object.assign(describeDecorator, { error });
 
 export { vovkSchemaToOpenAPI, openAPIToVovkSchema };

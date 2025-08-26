@@ -56,10 +56,10 @@ export const error = createDecorator(null, (status: HttpStatus, message: string)
   return (handlerSchema: VovkHandlerSchema | null) => {
     return {
       ...handlerSchema,
-      openapi: {
-        ...handlerSchema?.openapi,
+      operationObject: {
+        ...handlerSchema?.operationObject,
         responses: {
-          ...handlerSchema?.openapi?.responses,
+          ...handlerSchema?.operationObject?.responses,
           [status]: {
             description: `${status} ${statusDisplayText[status]}`,
             content: {
@@ -76,8 +76,8 @@ export const error = createDecorator(null, (status: HttpStatus, message: string)
                           type: 'string',
                           enum: [
                             message,
-                            ...(handlerSchema?.openapi?.responses?.[status]?.content?.['application/json']?.schema
-                              ?.allOf?.[1]?.properties?.message?.enum ?? []),
+                            ...(handlerSchema?.operationObject?.responses?.[status]?.content?.['application/json']
+                              ?.schema?.allOf?.[1]?.properties?.message?.enum ?? []),
                           ],
                         },
                         statusCode: {

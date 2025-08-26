@@ -3,6 +3,7 @@ import {
   put,
   get,
   prefix,
+  describe,
   HttpStatus,
   type VovkBody,
   type VovkQuery,
@@ -10,7 +11,6 @@ import {
   type VovkOutput,
   type VovkRequest,
 } from 'vovk';
-import { openapi } from 'vovk-openapi';
 import { withDto, validateOnClient } from 'vovk-dto';
 import {
   ConstrainingDto,
@@ -56,11 +56,11 @@ class WithDtoClientService {
 
 @prefix('with-dto')
 export default class WithDtoClientController {
-  @openapi({
+  @describe({
     summary: 'This is a summary',
     description: 'This is a description',
   })
-  @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  @describe.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/{foo}/{bar}')
   static handleAll = withDto({
     body: HandleAllBodyDto,

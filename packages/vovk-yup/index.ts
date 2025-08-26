@@ -118,7 +118,7 @@ function withYup<
   skipSchemaEmission,
   validateEachIteration,
   options,
-  openapi,
+  operationObject,
 }: {
   isForm?: IS_FORM;
   body?: YUP_BODY;
@@ -133,7 +133,7 @@ function withYup<
   options?: {
     validateOptions?: Yup.ValidateOptions;
   };
-  openapi?: VovkOperationObject;
+  operationObject?: VovkOperationObject;
 }) {
   return withValidationLibrary({
     isForm,
@@ -168,7 +168,7 @@ function withYup<
         );
       }
     },
-    openapi,
+    operationObject,
   });
 }
 

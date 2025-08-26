@@ -35,6 +35,8 @@ export function openAPIToVovkSchema({
   if (!forceApiRoot) {
     throw new Error('API root URL is required in OpenAPI configuration');
   }
+
+  const { paths, ...noPathsOpenAPIObject } = openAPIObject;
   const schema: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {
@@ -45,26 +47,25 @@ export function openAPIToVovkSchema({
         segmentType: 'mixin',
         controllers: {},
         meta: {
-          components: openAPIObject.components,
+          openAPIObject: noPathsOpenAPIObject,
           package: Object.assign(
             {},
-            packageJson,
-            openAPIObject.info
+            noPathsOpenAPIObject.info
               ? {
                   description:
                     packageJson?.description ??
-                    `**${openAPIObject.info.title}**\n${openAPIObject.info.description ?? ''}`,
+                    `**${noPathsOpenAPIObject.info.title}**\n${noPathsOpenAPIObject.info.description ?? ''}`,
                 }
-              : {}
+              : {},
+            packageJson
           ),
         },
       },
     },
   };
   const segment = schema.segments[segmentName];
-  //getModuleName = normalizeGetModuleName(getModuleName);
-  // getMethodName = normalizeGetMethodName(getMethodName);
-  return Object.entries(openAPIObject.paths ?? {}).reduce((acc, [path, operations]) => {
+
+  return Object.entries(paths ?? {}).reduce((acc, [path, operations]) => {
     Object.entries(operations ?? {})
       .filter(([, operation]) => operation && typeof operation === 'object')
       .forEach(([method, operation]: [string, OperationObject]) => {
@@ -154,7 +155,7 @@ export function openAPIToVovkSchema({
         segment.controllers[rpcModuleName].handlers[handlerName] = {
           httpMethod: method.toUpperCase(),
           path,
-          openapi: operation,
+          operationObject: operation,
           validation: {
             ...(query && {
               query: applyComponentsSchemas(query, componentsSchemas, segmentName),

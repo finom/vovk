@@ -1,10 +1,10 @@
-import { prefix, get, put, post, del, openapi } from 'vovk';
+import { prefix, get, put, post, del, describe } from 'vovk';
 import * as v from 'valibot';
 import withValibot from '@/lib/withValibot.ts';
 
 @prefix('valibot-controller-only-entities')
 export default class ValibotControllerOnlyEntityController {
-  @openapi({
+  @describe({
     summary: 'Get ValibotControllerOnlyEntities',
   })
   @get()
@@ -17,7 +17,7 @@ export default class ValibotControllerOnlyEntityController {
     },
   });
 
-  @openapi({
+  @describe({
     summary: 'Update ValibotControllerOnlyEntity',
   })
   @put('{id}')

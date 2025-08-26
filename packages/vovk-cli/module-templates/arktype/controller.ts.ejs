@@ -9,7 +9,7 @@ sourceName: <%= vars.ModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { prefix, get, put, post, del, openapi } from 'vovk';
+import { prefix, get, put, post, del, describe } from 'vovk';
 import { type } from 'arktype';
 import withArk from '@/lib/withArk<%= t.nodeNextResolutionExt.ts %>';
 <% if(t.withService) { %>
@@ -18,7 +18,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextReso
 
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.ModuleName %> {
-    @openapi({
+    @describe({
       summary: 'Get <%= t.TheThings %>',
     })
     @get()
@@ -34,7 +34,7 @@ export default class <%= vars.ModuleName %> {
         }
     });
 
-    @openapi({
+    @describe({
         summary: 'Update <%= t.TheThing %>',
     })
     @put('{id}')

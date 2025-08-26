@@ -1,4 +1,4 @@
-import { prefix, get, put, post, del, openapi } from 'vovk';
+import { prefix, get, put, post, del, describe } from 'vovk';
 import * as v from 'valibot';
 import withValibot from '@/lib/withValibot.ts';
 
@@ -6,7 +6,7 @@ import ValibotControllerAndServiceEntityService from './ValibotControllerAndServ
 
 @prefix('valibot-controller-and-service-entities')
 export default class ValibotControllerAndServiceEntityController {
-  @openapi({
+  @describe({
     summary: 'Get ValibotControllerAndServiceEntities',
   })
   @get()
@@ -19,7 +19,7 @@ export default class ValibotControllerAndServiceEntityController {
     },
   });
 
-  @openapi({
+  @describe({
     summary: 'Update ValibotControllerAndServiceEntity',
   })
   @put('{id}')

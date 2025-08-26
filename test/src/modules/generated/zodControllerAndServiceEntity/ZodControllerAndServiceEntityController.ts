@@ -1,4 +1,4 @@
-import { prefix, get, put, post, del, openapi } from 'vovk';
+import { prefix, get, put, post, del, describe } from 'vovk';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod';
 
@@ -6,7 +6,7 @@ import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntit
 
 @prefix('zod-controller-and-service-entities')
 export default class ZodControllerAndServiceEntityController {
-  @openapi({
+  @describe({
     summary: 'Get ZodControllerAndServiceEntities',
   })
   @get()
@@ -19,7 +19,7 @@ export default class ZodControllerAndServiceEntityController {
     },
   });
 
-  @openapi({
+  @describe({
     summary: 'Update ZodControllerAndServiceEntity',
   })
   @put('{id}')

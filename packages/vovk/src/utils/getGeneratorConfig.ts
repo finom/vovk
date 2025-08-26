@@ -44,6 +44,7 @@ export function getGeneratorConfig({
       },
       schema.meta?.config?.generatorConfig?.openAPIObject,
       isBundle ? schema.meta?.config?.bundle?.generatorConfig?.openAPIObject : undefined,
+      segmentName ? schema?.segments?.[segmentName]?.meta?.openAPIObject : undefined,
       segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIObject : undefined,
       config?.openAPIObject
     ),

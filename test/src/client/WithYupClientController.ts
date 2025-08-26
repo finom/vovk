@@ -3,13 +3,13 @@ import {
   put,
   get,
   prefix,
+  describe,
   HttpStatus,
   type VovkBody,
   type VovkQuery,
   type VovkParams,
   type VovkOutput,
 } from 'vovk';
-import { openapi } from 'vovk-openapi';
 import { withYup } from 'vovk-yup';
 import * as yup from 'yup';
 
@@ -76,11 +76,11 @@ class WithYupClientService {
 
 @prefix('with-yup')
 export default class WithYupClientController {
-  @openapi({
+  @describe({
     summary: 'This is a summary',
     description: 'This is a description',
   })
-  @openapi.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  @describe.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/{foo}/{bar}')
   static handleAll = withYup({
     body: yup.object({ hello: yup.string().max(5).required() }),

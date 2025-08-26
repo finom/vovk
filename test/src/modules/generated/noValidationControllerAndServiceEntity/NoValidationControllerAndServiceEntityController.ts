@@ -1,10 +1,10 @@
-import { prefix, get, put, post, del, openapi, type VovkRequest } from 'vovk';
+import { prefix, get, put, post, del, describe, type VovkRequest } from 'vovk';
 
 import NoValidationControllerAndServiceEntityService from './NoValidationControllerAndServiceEntityService.ts';
 
 @prefix('no-validation-controller-and-service-entities')
 export default class NoValidationControllerAndServiceEntityController {
-  @openapi({
+  @describe({
     summary: 'Get NoValidationControllerAndServiceEntities',
   })
   @get()
@@ -14,7 +14,7 @@ export default class NoValidationControllerAndServiceEntityController {
     return NoValidationControllerAndServiceEntityService.getNoValidationControllerAndServiceEntities(search);
   };
 
-  @openapi({
+  @describe({
     summary: 'Update NoValidationControllerAndServiceEntity',
   })
   @put('{id}')

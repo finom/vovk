@@ -42,7 +42,7 @@ export function createStandardValidation({
     disableServerSideValidation,
     skipSchemaEmission,
     validateEachIteration,
-    openapi,
+    operationObject,
   }: {
     isForm?: IS_FORM;
     body?: BODY;
@@ -54,7 +54,7 @@ export function createStandardValidation({
     disableServerSideValidation?: boolean | VovkValidationType[];
     skipSchemaEmission?: boolean | VovkValidationType[];
     validateEachIteration?: boolean;
-    openapi?: VovkOperationObject;
+    operationObject?: VovkOperationObject;
   }) {
     return withValidationLibrary({
       isForm,
@@ -90,7 +90,7 @@ export function createStandardValidation({
 
         return (result as StandardSchemaV1.SuccessResult<typeof model>).value;
       },
-      openapi,
+      operationObject,
     });
   }
 

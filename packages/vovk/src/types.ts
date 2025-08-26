@@ -18,7 +18,7 @@ export type VovkHandlerSchema = {
     output?: VovkBasicJSONSchema;
     iteration?: VovkBasicJSONSchema;
   };
-  openapi?: VovkOperationObject;
+  operationObject?: VovkOperationObject;
   misc?: Record<string, KnownAny>;
 };
 
@@ -38,9 +38,9 @@ export type VovkSegmentSchema = {
   forceApiRoot?: string;
   controllers: { [key: string]: VovkControllerSchema };
   meta?: {
-    components?: OpenAPIObject['components'];
+    openAPIObject?: Omit<OpenAPIObject, 'paths'>;
     package?: PackageJson;
-    [key: string]: KnownAny; // additional metadata can be added here
+    // [key: string]: KnownAny; // additional metadata can be added here
   };
 };
 
@@ -48,9 +48,8 @@ export type VovkMetaSchema = {
   $schema: typeof VovkSchemaIdEnum.META | (string & {});
   config: RequireFields<Partial<VovkStrictConfig>, '$schema'>;
   package?: PackageJson;
-  apiRoot?: string;
-  openapi?: OpenAPIObject;
-  [key: string]: KnownAny;
+  openAPIObject?: OpenAPIObject;
+  // [key: string]: KnownAny;
 };
 
 export type VovkSchema = {

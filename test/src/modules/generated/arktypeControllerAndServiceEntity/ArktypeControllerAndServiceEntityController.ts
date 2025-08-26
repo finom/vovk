@@ -1,4 +1,4 @@
-import { prefix, get, put, post, del, openapi } from 'vovk';
+import { prefix, get, put, post, del, describe } from 'vovk';
 import { type } from 'arktype';
 import withArk from '@/lib/withArk.ts';
 
@@ -6,7 +6,7 @@ import ArktypeControllerAndServiceEntityService from './ArktypeControllerAndServ
 
 @prefix('arktype-controller-and-service-entities')
 export default class ArktypeControllerAndServiceEntityController {
-  @openapi({
+  @describe({
     summary: 'Get ArktypeControllerAndServiceEntities',
   })
   @get()
@@ -19,7 +19,7 @@ export default class ArktypeControllerAndServiceEntityController {
     },
   });
 
-  @openapi({
+  @describe({
     summary: 'Update ArktypeControllerAndServiceEntity',
   })
   @put('{id}')

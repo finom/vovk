@@ -185,10 +185,7 @@ export async function generate({
   Object.entries(config.generatorConfig.segments ?? {}).forEach(([segmentName, segmentConfig]) => {
     fullSchema.segments = {
       ...fullSchema.segments,
-      [segmentName]: {
-        ...fullSchema.segments[segmentName],
-        ...openAPIToVovkSchema({ ...segmentConfig.openAPIMixin, segmentName }).segments[segmentName],
-      },
+      [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin, segmentName }).segments[segmentName],
     };
   });
 
@@ -198,10 +195,7 @@ export async function generate({
     Object.entries(cliMixins).map(async ([mixinName, mixinModule]) => {
       fullSchema.segments = {
         ...fullSchema.segments,
-        [mixinName]: {
-          ...fullSchema.segments[mixinName],
-          ...openAPIToVovkSchema(await normalizeOpenAPIMixin({ mixinModule, log })).segments[mixinName],
-        },
+        [mixinName]: openAPIToVovkSchema(await normalizeOpenAPIMixin({ mixinModule, log })).segments[mixinName],
       };
     })
   );
