@@ -1,4 +1,4 @@
-import { prefix, get, put, post, del, describe, type VovkRequest } from 'vovk';
+import { prefix, get, put, post, del, operation, type VovkRequest } from 'vovk';
 
 @prefix('no-validation-controller-only-entities')
 export default class NoValidationControllerOnlyEntityController {

@@ -42,7 +42,7 @@ import {
   fetcher,
   createFetcher,
   progressive,
-} from './client/index';
+} from './client';
 import { operation, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi';
 import { HttpException } from './HttpException';
 import { createDecorator } from './utils/createDecorator';

@@ -1,6 +1,6 @@
 {
   "name": "vovk-client",
-  "version": "0.0.4-draft.120",
+  "version": "0.0.4-draft.121",
   "description": "Vovk.ts client",
   "scripts": {
     "npm-publish": "npm publish"
@@ -17,6 +17,10 @@
       "import": "./schema.cjs",
       "require": "./schema.cjs",
       "types": "./schema.d.cts"
+    },
+    "./openapi": {
+      "import": "./openapi.cjs",
+      "require": "./openapi.cjs"
     }
   },
   "type": "module",

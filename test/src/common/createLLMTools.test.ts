@@ -6,7 +6,7 @@ import { createLLMTools, HttpException } from 'vovk';
 
 describe('createLLMTools', async () => {
   const handlerWithBody = withZod({
-    openapi: {
+    operationObject: {
       description: 'handlerWithBody description',
     },
     body: z.object({ foo: z.string().max(5) }),
@@ -18,7 +18,7 @@ describe('createLLMTools', async () => {
   });
 
   const handlerWithQuery = withZod({
-    openapi: {
+    operationObject: {
       description: 'handlerWithQuery description',
     },
     query: z.object({ bar: z.string().max(5) }),
@@ -37,7 +37,7 @@ describe('createLLMTools', async () => {
   });
 
   const handlerWithExcluded = withZod({
-    openapi: {
+    operationObject: {
       'x-tool-disable': true,
     },
     query: z.object({ bar: z.string().max(5) }),
@@ -47,7 +47,7 @@ describe('createLLMTools', async () => {
   });
 
   const handlerWithToolDescription = withZod({
-    openapi: {
+    operationObject: {
       'x-tool-description': 'handlerWithToolDescription x-tool-description',
       description: 'handlerWithToolDescription description',
     },
@@ -129,7 +129,7 @@ describe('createLLMTools', async () => {
 
   describe('MCP with attributes', () => {
     const handlerWithAttributes = withZod({
-      openapi: {
+      operationObject: {
         description: 'handlerWithAttributes description',
         'x-tool-successMessage': 'Custom success message.',
         'x-tool-errorMessage': 'Custom error message.',

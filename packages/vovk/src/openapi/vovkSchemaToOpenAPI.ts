@@ -63,7 +63,7 @@ export function vovkSchemaToOpenAPI({
   rootEntry = 'api',
   schema: fullSchema,
   config,
-  segmentName,
+  segmentName: givenSegmentName,
 }: {
   rootEntry?: string;
   schema: VovkSchema;
@@ -79,9 +79,11 @@ export function vovkSchemaToOpenAPI({
   } = getGeneratorConfig({
     schema: fullSchema,
     config,
-    segmentName,
+    segmentName: givenSegmentName,
   });
-  for (const [segmentName, segmentSchema] of Object.entries(fullSchema.segments ?? {})) {
+  for (const [segmentName, segmentSchema] of givenSegmentName
+    ? ([[givenSegmentName, fullSchema.segments[givenSegmentName]]] as const)
+    : Object.entries(fullSchema.segments ?? {})) {
     for (const c of Object.values(segmentSchema.controllers)) {
       for (const [handlerName, h] of Object.entries(c.handlers ?? {})) {
         if (h.operationObject) {

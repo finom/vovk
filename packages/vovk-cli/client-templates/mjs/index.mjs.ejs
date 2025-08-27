@@ -2,6 +2,7 @@
 import { fetcher } from '<%= t.imports.module.fetcher %>';
 import { createRPC } from '<%= t.imports.module.createRPC %>';
 import { schema } from './schema.cjs';
+import openapi from './openapi.json' with { type: 'json' };
 <% if (t.imports.module.validateOnClient) { %>
 import { validateOnClient } from '<%= t.imports.module.validateOnClient %>';
 <% } else { %>
@@ -20,4 +21,4 @@ export const <%= rpcModuleName %> = createRPC(
   }); 
 });
 %>
-export { schema };
+export { schema, openapi };

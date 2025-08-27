@@ -10,12 +10,25 @@ const vovkConfig = {
     outDir: './other-compiled-test-sources/segmented-client',
   },
   schemaOutDir: './.vovk-schema',
-  origin: `http://localhost:${process.env.PORT}`,
   rootEntry: 'api',
   logLevel: 'debug',
   moduleTemplates: {
     service: 'none',
     controller: 'none',
+  },
+  generatorConfig: {
+    origin: `http://localhost:${process.env.PORT}`,
+    openAPIObject: {
+      info: {
+        title: 'Hello, OpenAPI!',
+        version: '1.0.0',
+      },
+      servers: [
+        {
+          url: 'http://localhost:3000',
+        },
+      ],
+    },
   },
   bundle: {
     tsdownBuildOptions: {
@@ -28,6 +41,8 @@ const vovkConfig = {
       extends: 'py',
       composedClient: {
         outDir: './tmp/py',
+      },
+      generatorConfig: {
         package: {
           name: 'test_generated_python_client',
           version: '0.0.1',
@@ -40,6 +55,8 @@ const vovkConfig = {
       extends: 'rs',
       composedClient: {
         outDir: './tmp/rs',
+      },
+      generatorConfig: {
         package: {
           name: 'test_generated_rust_client',
           version: '0.0.1',

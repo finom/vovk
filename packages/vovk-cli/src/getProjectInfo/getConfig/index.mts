@@ -24,7 +24,8 @@ export default async function getConfig({
   });
 
   const conf = userConfig ?? {};
-  const log = getLogger(logLevel ?? (conf.logLevel as LogLevelNames));
+  logLevel = logLevel ?? (conf.logLevel as LogLevelNames) ?? 'info';
+  const log = getLogger(logLevel);
 
   const env = process.env as VovkEnv;
   const clientTemplateDefs = getTemplateDefs(conf.clientTemplateDefs);
@@ -69,6 +70,7 @@ export default async function getConfig({
       requires: {
         [BuiltInTemplateName.readme]: '.',
         [BuiltInTemplateName.packageJson]: '.',
+        [BuiltInTemplateName.openapiJson]: '.',
       },
       generatorConfig: {},
       ...conf.bundle,
@@ -81,7 +83,7 @@ export default async function getConfig({
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',
     rootEntry: env.VOVK_ROOT_ENTRY ?? conf.rootEntry ?? 'api',
     rootSegmentModulesDirName: conf.rootSegmentModulesDirName ?? '',
-    logLevel: conf.logLevel ?? 'info',
+    logLevel,
     devHttps: conf.devHttps ?? false,
     moduleTemplates: {
       service: 'vovk-cli/module-templates/service.ts.ejs',

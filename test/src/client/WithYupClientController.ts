@@ -3,7 +3,7 @@ import {
   put,
   get,
   prefix,
-  describe,
+  operation,
   HttpStatus,
   type VovkBody,
   type VovkQuery,

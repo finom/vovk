@@ -6,6 +6,7 @@ import {
   getGeneratorConfig,
   openAPIToVovkSchema,
   VovkOpenAPIMixin,
+  vovkSchemaToOpenAPI,
   type VovkSchema,
   type VovkStrictConfig,
 } from 'vovk';
@@ -257,6 +258,11 @@ export async function generate({
           isBundle,
         });
 
+        const openapi = vovkSchemaToOpenAPI({
+          schema: fullSchema,
+          rootEntry: config.rootEntry,
+        });
+
         const composedFullSchema = pickSegmentFullSchema(fullSchema, segmentNames);
         const hasMixins = Object.values(composedFullSchema.segments).some((segment) => segment.segmentType === 'mixin');
         if (templateName === BuiltInTemplateName.mixins && !hasMixins) {
@@ -273,6 +279,7 @@ export async function generate({
           imports: clientImports.composedClient,
           templateContent,
           matterResult,
+          openapi,
           package: packageJson,
           readme,
           snippets,
@@ -365,6 +372,12 @@ export async function generate({
               return null;
             }
 
+            const openapi = vovkSchemaToOpenAPI({
+              schema: fullSchema,
+              rootEntry: config.rootEntry,
+              segmentName,
+            });
+
             const { written } = await writeOneClientFile({
               cwd,
               projectInfo,
@@ -375,6 +388,7 @@ export async function generate({
               imports: clientImports.segmentedClient[segmentName],
               templateContent,
               matterResult,
+              openapi,
               package: packageJson,
               readme,
               snippets,

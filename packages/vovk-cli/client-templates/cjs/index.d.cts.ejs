@@ -20,6 +20,7 @@ export const <%= rpcModuleName %>: ReturnType<typeof createRPC<<%= segment.segme
   <% }) 
 }) %>
 export { schema } from './schema.cjs';
+export { default as openapi } from './openapi.json' assert { type: 'json' };
 <% if (t.hasMixins) { %>
 export { Mixins };
 <% } %>

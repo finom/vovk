@@ -2,6 +2,7 @@
 const { fetcher } = require('<%= t.imports.fetcher %>');
 const { createRPC } = require('<%= t.imports.createRPC %>');
 const { schema } = require('./schema.cjs');
+const openapi = require('./openapi.json');
 const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
     <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhatCommaDivisible, reExportFrom]) => {
@@ -17,3 +18,4 @@ exports.<%= rpcModuleName %> = createRPC(
   <% })
 }) %>
 exports.schema = schema;
+exports.openapi = openapi;

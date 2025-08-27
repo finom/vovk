@@ -12,14 +12,14 @@
         "getNoValidationControllerOnlyEntities": {
           "path": "",
           "httpMethod": "GET",
-          "openapi": {
+          "operationObject": {
             "summary": "Get NoValidationControllerOnlyEntities"
           }
         },
         "updateNoValidationControllerOnlyEntity": {
           "path": "{id}",
           "httpMethod": "PUT",
-          "openapi": {
+          "operationObject": {
             "summary": "Update NoValidationControllerOnlyEntity"
           }
         },
@@ -41,14 +41,14 @@
         "getNoValidationControllerAndServiceEntities": {
           "path": "",
           "httpMethod": "GET",
-          "openapi": {
+          "operationObject": {
             "summary": "Get NoValidationControllerAndServiceEntities"
           }
         },
         "updateNoValidationControllerAndServiceEntity": {
           "path": "{id}",
           "httpMethod": "PUT",
-          "openapi": {
+          "operationObject": {
             "summary": "Update NoValidationControllerAndServiceEntity"
           }
         },
@@ -77,11 +77,13 @@
                   "type": "string"
                 }
               },
-              "required": ["search"],
+              "required": [
+                "search"
+              ],
               "additionalProperties": false
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get ZodControllerOnlyEntities"
           },
           "path": "",
@@ -106,7 +108,9 @@
                   ]
                 }
               },
-              "required": ["foo"],
+              "required": [
+                "foo"
+              ],
               "additionalProperties": false
             },
             "query": {
@@ -117,7 +121,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"],
+              "required": [
+                "q"
+              ],
               "additionalProperties": false
             },
             "params": {
@@ -128,11 +134,13 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update ZodControllerOnlyEntity"
           },
           "path": "{id}",
@@ -163,11 +171,13 @@
                   "type": "string"
                 }
               },
-              "required": ["search"],
+              "required": [
+                "search"
+              ],
               "additionalProperties": false
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get ZodControllerAndServiceEntities"
           },
           "path": "",
@@ -192,7 +202,9 @@
                   ]
                 }
               },
-              "required": ["foo"],
+              "required": [
+                "foo"
+              ],
               "additionalProperties": false
             },
             "query": {
@@ -203,7 +215,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"],
+              "required": [
+                "q"
+              ],
               "additionalProperties": false
             },
             "params": {
@@ -214,11 +228,13 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update ZodControllerAndServiceEntity"
           },
           "path": "{id}",
@@ -251,7 +267,7 @@
               }
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get YupControllerOnlyEntities"
           },
           "path": "",
@@ -263,11 +279,18 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -279,7 +302,7 @@
               }
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update YupControllerOnlyEntity"
           },
           "path": "{id}",
@@ -312,7 +335,7 @@
               }
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get YupControllerAndServiceEntities"
           },
           "path": "",
@@ -324,11 +347,18 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "type": ["string"],
-                  "enum": ["bar", "baz"]
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "type": "object",
@@ -340,7 +370,7 @@
               }
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update YupControllerAndServiceEntity"
           },
           "path": "{id}",
@@ -372,10 +402,12 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get DtoControllerOnlyEntities"
           },
           "path": "",
@@ -389,11 +421,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -404,10 +441,12 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update DtoControllerOnlyEntity"
           },
           "path": "{id}",
@@ -439,10 +478,12 @@
                 }
               },
               "type": "object",
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get DtoControllerAndServiceEntities"
           },
           "path": "",
@@ -456,11 +497,16 @@
               "properties": {
                 "foo": {
                   "type": "string",
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
               "type": "object",
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "x-isDto": true,
@@ -471,10 +517,12 @@
                 }
               },
               "type": "object",
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update DtoControllerAndServiceEntity"
           },
           "path": "{id}",
@@ -505,10 +553,12 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get ValibotControllerOnlyEntities"
           },
           "path": "",
@@ -531,7 +581,9 @@
                   ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -541,7 +593,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             },
             "params": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -551,10 +605,12 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update ValibotControllerOnlyEntity"
           },
           "path": "{id}",
@@ -585,10 +641,12 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get ValibotControllerAndServiceEntities"
           },
           "path": "",
@@ -611,7 +669,9 @@
                   ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -621,7 +681,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             },
             "params": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -631,10 +693,12 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update ValibotControllerAndServiceEntity"
           },
           "path": "{id}",
@@ -665,10 +729,12 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get ArktypeControllerOnlyEntities"
           },
           "path": "",
@@ -681,10 +747,15 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -694,7 +765,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -704,10 +777,12 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update ArktypeControllerOnlyEntity"
           },
           "path": "{id}",
@@ -738,10 +813,12 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Get ArktypeControllerAndServiceEntities"
           },
           "path": "",
@@ -754,10 +831,15 @@
               "type": "object",
               "properties": {
                 "foo": {
-                  "enum": ["bar", "baz"]
+                  "enum": [
+                    "bar",
+                    "baz"
+                  ]
                 }
               },
-              "required": ["foo"]
+              "required": [
+                "foo"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -767,7 +849,9 @@
                   "type": "string"
                 }
               },
-              "required": ["q"]
+              "required": [
+                "q"
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -777,10 +861,12 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
-          "openapi": {
+          "operationObject": {
             "summary": "Update ArktypeControllerAndServiceEntity"
           },
           "path": "{id}",

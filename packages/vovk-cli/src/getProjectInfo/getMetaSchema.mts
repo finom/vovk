@@ -11,7 +11,28 @@ export default function getMetaSchema({
 }) {
   return {
     $schema: VovkSchemaIdEnum.META,
-    package: pick(packageJson, ['name', 'version', 'description', 'author', 'license']),
+    package: {
+      ...pick(packageJson, ['name', 'version', 'description', 'author', 'license']),
+      main: './index.cjs',
+      module: './index.mjs',
+      types: './index.d.mts',
+      exports: {
+        '.': {
+          import: './index.mjs',
+          require: './index.cjs',
+          types: './index.d.mts',
+        },
+        './schema': {
+          import: './schema.cjs',
+          require: './schema.cjs',
+          types: './schema.d.cts',
+        },
+        './openapi': {
+          import: './openapi.json',
+          require: './openapi.json',
+        },
+      },
+    },
     ...{
       config: (config
         ? pick(config, [...(config.emitConfig as (keyof VovkConfig)[]), '$schema'])

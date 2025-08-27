@@ -3,6 +3,7 @@ import type { VovkClientFetcher } from 'vovk';
 import { fetcher } from '<%= t.imports.fetcher %>';
 import { createRPC } from '<%= t.imports.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
+import openapi from './openapi.json' with { type: 'json' };
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
 <% }
@@ -27,7 +28,7 @@ export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin
 );
 <% }) 
 }) %>
-export { schema };
+export { schema, openapi };
 <% if (t.hasMixins) { %>
 export { Mixins };
 <% } %>

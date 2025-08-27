@@ -9,7 +9,7 @@ sourceName: <%= vars.rpcModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { prefix, get, put, post, del, openapi, type VovkRequest } from 'vovk';
+import { prefix, get, put, post, del, operation, type VovkRequest } from 'vovk';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>

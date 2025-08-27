@@ -38,7 +38,7 @@ export type VovkSegmentSchema = {
   forceApiRoot?: string;
   controllers: { [key: string]: VovkControllerSchema };
   meta?: {
-    openAPIObject?: Omit<OpenAPIObject, 'paths'>;
+    openAPIObject?: Partial<Omit<OpenAPIObject, 'paths'>>;
     package?: PackageJson;
     // [key: string]: KnownAny; // additional metadata can be added here
   };
@@ -48,7 +48,7 @@ export type VovkMetaSchema = {
   $schema: typeof VovkSchemaIdEnum.META | (string & {});
   config: RequireFields<Partial<VovkStrictConfig>, '$schema'>;
   package?: PackageJson;
-  openAPIObject?: OpenAPIObject;
+  openAPIObject?: Partial<OpenAPIObject>;
   // [key: string]: KnownAny;
 };
 
@@ -409,7 +409,7 @@ type BundleConfig = {
   prebundleOutDir?: string;
   keepPrebundleDir?: boolean;
   tsdownBuildOptions?: Parameters<typeof import('tsdown').build>[0];
-  generatorConfig: VovkGeneratorConfigCommon;
+  generatorConfig?: VovkGeneratorConfigCommon;
 } & (
   | {
       excludeSegments?: never;
@@ -426,7 +426,7 @@ export interface VovkGeneratorConfigCommon {
   package?: PackageJson;
   readme?: VovkReadmeConfig;
   snippets?: VovkSnippetsConfig;
-  openAPIObject?: OpenAPIObject;
+  openAPIObject?: Partial<OpenAPIObject>;
   reExports?: Record<string, string>;
 }
 

@@ -20,6 +20,7 @@ import type { ClientImports } from './getTemplateClientImports.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compileJSONSchemaToTypeScriptType.mjs';
+import { OpenAPIObject } from 'openapi3-ts/oas31';
 
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
   return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');
@@ -35,6 +36,7 @@ export default async function writeOneClientFile({
   imports,
   templateContent,
   matterResult: { data, content },
+  openapi,
   package: packageJson,
   readme,
   snippets,
@@ -63,6 +65,7 @@ export default async function writeOneClientFile({
     };
     content: string;
   };
+  openapi: OpenAPIObject;
   package: PackageJson;
   readme: VovkReadmeConfig;
   snippets: VovkSnippetsConfig;
@@ -118,6 +121,7 @@ export default async function writeOneClientFile({
     package: packageJson,
     readme,
     snippets,
+    openapi,
     ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports,
