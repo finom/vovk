@@ -17,7 +17,7 @@ const combos = {
   RUST: [ENTER, ENTER, ENTER, ENTER, DOWN, DOWN, SPACE, ENTER],
 };
 
-await describe('CLI init', async () => {
+await describe.only('CLI init', async () => {
   const dir = 'tmp_test_dir';
   const cwd = path.resolve(import.meta.dirname, '../../..');
 
@@ -54,6 +54,7 @@ await describe('CLI init', async () => {
       dev: 'vovk dev --next-dev',
       test: 'jest',
       build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -118,6 +119,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: "PORT=3000 concurrently 'next dev' 'vovk dev' --kill-others",
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -273,6 +276,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -290,6 +295,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -307,6 +314,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig(true);
@@ -324,6 +333,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -349,6 +360,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -371,6 +384,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -393,6 +408,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -418,6 +435,8 @@ await describe('CLI init', async () => {
 
     await assertScripts({
       dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
     });
 
     await assertTsConfig();
@@ -466,6 +485,8 @@ await describe('CLI init', async () => {
 
       await assertScripts({
         dev: 'vovk dev --next-dev',
+        build: 'next build',
+        prebuild: 'vovk generate',
       });
 
       await assertTsConfig();
@@ -495,6 +516,8 @@ await describe('CLI init', async () => {
 
       await assertScripts({
         dev: 'vovk dev --next-dev',
+        build: 'next build',
+        prebuild: 'vovk generate',
       });
 
       await assertTsConfig();
@@ -528,6 +551,8 @@ await describe('CLI init', async () => {
 
       await assertScripts({
         dev: 'vovk dev --next-dev',
+        build: 'next build',
+        prebuild: 'vovk generate',
       });
 
       await assertTsConfig();
@@ -557,6 +582,8 @@ await describe('CLI init', async () => {
 
       await assertScripts({
         dev: 'vovk dev --next-dev',
+        build: 'next build',
+        prebuild: 'vovk generate',
       });
 
       await assertTsConfig();
@@ -590,6 +617,8 @@ await describe('CLI init', async () => {
 
       await assertScripts({
         dev: 'vovk dev --next-dev',
+        build: 'next build',
+        prebuild: 'vovk generate',
       });
 
       await assertTsConfig();
@@ -619,6 +648,8 @@ await describe('CLI init', async () => {
 
       await assertScripts({
         dev: 'vovk dev --next-dev',
+        build: 'next build',
+        prebuild: 'vovk generate',
       });
 
       await assertTsConfig();

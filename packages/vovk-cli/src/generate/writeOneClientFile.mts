@@ -16,11 +16,11 @@ import type { PackageJson } from 'type-fest';
 import prettify from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
-import type { ClientImports } from './getTemplateClientImports.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compileJSONSchemaToTypeScriptType.mjs';
 import { OpenAPIObject } from 'openapi3-ts/oas31';
+import getTemplateClientImports from './getTemplateClientImports.mjs';
 
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
   return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');
@@ -33,7 +33,7 @@ export default async function writeOneClientFile({
   fullSchema,
   prettifyClient,
   segmentName,
-  imports,
+  // imports,
   templateContent,
   matterResult: { data, content },
   openapi,
@@ -57,7 +57,7 @@ export default async function writeOneClientFile({
   fullSchema: VovkSchema;
   prettifyClient: boolean;
   segmentName: string | null; // null for composed client
-  imports: ClientImports;
+  // imports: ClientImports;
   templateContent: string;
   matterResult: {
     data: {
@@ -124,7 +124,7 @@ export default async function writeOneClientFile({
     openapi,
     ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
-    imports,
+    imports: {},
     schema: fullSchema,
     VovkSchemaIdEnum,
     createCodeExamples,
@@ -142,6 +142,13 @@ export default async function writeOneClientFile({
       typeof segmentName === 'string'
         ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME), config.schemaOutDir)
         : path.relative(outCwdRelativeDir, config.schemaOutDir),
+    segmentImports: Object.fromEntries(
+      Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
+        const imports = getTemplateClientImports({ fullSchema, segmentName: sName, isBundle, outCwdRelativeDir });
+
+        return [sName, imports];
+      })
+    ),
     segmentMeta: Object.fromEntries(
       Object.values(fullSchema.segments).map(({ segmentName: sName, forceApiRoot }) => {
         const { routeFilePath = null } = locatedSegmentsByName[sName] ?? {};
@@ -197,7 +204,6 @@ export default async function writeOneClientFile({
   if (data.imports instanceof Array) {
     for (const imp of data.imports) {
       t.imports = {
-        ...t.imports,
         [imp]: await import(imp),
       };
     }

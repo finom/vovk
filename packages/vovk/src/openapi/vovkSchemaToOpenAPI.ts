@@ -79,7 +79,7 @@ export function vovkSchemaToOpenAPI({
   } = getGeneratorConfig({
     schema: fullSchema,
     config,
-    segmentName: givenSegmentName,
+    segmentName: givenSegmentName ?? null,
   });
   for (const [segmentName, segmentSchema] of givenSegmentName
     ? ([[givenSegmentName, fullSchema.segments[givenSegmentName]]] as const)
@@ -138,9 +138,9 @@ export function vovkSchemaToOpenAPI({
           paths[path][httpMethod] = {
             ...h.operationObject,
             ...paths[path][httpMethod],
-            'x-codeSnippets': [
-              ...(paths[path][httpMethod]['x-codeSnippets'] ?? []),
-              ...(h.operationObject?.['x-codeSnippets'] ?? []),
+            'x-codeSamples': [
+              ...(paths[path][httpMethod]['x-codeSamples'] ?? []),
+              ...(h.operationObject?.['x-codeSamples'] ?? []),
               {
                 label: 'TypeScript RPC',
                 lang: 'typescript',

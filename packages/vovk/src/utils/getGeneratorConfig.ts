@@ -1,5 +1,11 @@
 import type { PackageJson } from 'type-fest';
-import type { VovkGeneratorConfigCommon, VovkReadmeConfig, VovkSnippetsConfig, VovkSchema } from '../types';
+import type {
+  VovkGeneratorConfigCommon,
+  VovkReadmeConfig,
+  VovkSnippetsConfig,
+  VovkSchema,
+  VovkGeneratorConfigStrict,
+} from '../types';
 import deepExtend from './deepExtend';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
@@ -11,7 +17,7 @@ export function getGeneratorConfig({
 }: {
   schema: VovkSchema;
   config?: VovkGeneratorConfigCommon;
-  segmentName?: string;
+  segmentName: string | null;
   isBundle?: boolean;
 }): {
   readme: VovkReadmeConfig;
@@ -19,6 +25,7 @@ export function getGeneratorConfig({
   snippets: VovkSnippetsConfig;
   origin: string;
   package: PackageJson;
+  imports: VovkGeneratorConfigStrict['imports'];
 } {
   const packageJson = deepExtend(
     {} as PackageJson,
@@ -27,7 +34,6 @@ export function getGeneratorConfig({
     isBundle ? schema.meta?.config?.bundle?.generatorConfig?.package : undefined,
     segmentName ? schema.segments?.[segmentName]?.meta?.package : undefined,
     segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.package : undefined,
-    segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIMixin?.package : undefined,
     config?.package
   );
 
@@ -53,7 +59,6 @@ export function getGeneratorConfig({
       schema.meta?.config?.generatorConfig?.snippets,
       isBundle ? schema.meta?.config?.bundle?.generatorConfig?.snippets : undefined,
       segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.snippets : undefined,
-      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIMixin?.snippets : undefined,
       config?.snippets
     ),
     readme: deepExtend(
@@ -61,7 +66,6 @@ export function getGeneratorConfig({
       schema.meta?.config?.generatorConfig?.readme,
       isBundle ? schema.meta?.config?.bundle?.generatorConfig?.readme : undefined,
       segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.readme : undefined,
-      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIMixin?.readme : undefined,
       config?.readme
     ),
     origin:
@@ -70,5 +74,12 @@ export function getGeneratorConfig({
       (segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.origin : undefined) ||
       (isBundle ? schema.meta?.config?.bundle?.generatorConfig?.origin : undefined) ||
       '',
+    imports: deepExtend(
+      {} as VovkGeneratorConfigStrict['imports'],
+      schema.meta?.config?.generatorConfig?.imports,
+      isBundle ? schema.meta?.config?.bundle?.generatorConfig?.imports : undefined,
+      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.imports : undefined,
+      config?.imports
+    ),
   };
 }

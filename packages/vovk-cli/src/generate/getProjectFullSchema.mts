@@ -5,7 +5,7 @@ import { VovkSchemaIdEnum, VovkStrictConfig, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
-import { PackageJson } from 'type-fest';
+import type { PackageJson } from 'type-fest';
 
 export async function getProjectFullSchema({
   schemaOutAbsolutePath,

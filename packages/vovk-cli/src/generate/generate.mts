@@ -17,7 +17,6 @@ import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import pickSegmentFullSchema from '../utils/pickSegmentFullSchema.mjs';
 import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
-import getTemplateClientImports from './getTemplateClientImports.mjs';
 import writeOneClientFile, { normalizeOutTemplatePath } from './writeOneClientFile.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
@@ -241,12 +240,6 @@ export async function generate({
               content: string;
             })
           : { data: { imports: [] }, content: templateContent };
-        const clientImports = await getTemplateClientImports({
-          config,
-          fullSchema,
-          outCwdRelativeDir,
-        });
-
         const {
           package: packageJson,
           readme,
@@ -256,6 +249,7 @@ export async function generate({
           schema: fullSchema,
           config: templateDef.generatorConfig,
           isBundle,
+          segmentName: null,
         });
 
         const openapi = vovkSchemaToOpenAPI({
@@ -276,7 +270,6 @@ export async function generate({
           fullSchema: composedFullSchema,
           prettifyClient: config.composedClient.prettifyClient,
           segmentName: null,
-          imports: clientImports.composedClient,
           templateContent,
           matterResult,
           openapi,
@@ -345,11 +338,7 @@ export async function generate({
               content: string;
             })
           : { data: { imports: [] }, content: templateContent };
-        const clientImports = await getTemplateClientImports({
-          config,
-          fullSchema,
-          outCwdRelativeDir,
-        });
+
         const results = await Promise.all(
           segmentNames.map(async (segmentName) => {
             const {
@@ -385,7 +374,6 @@ export async function generate({
               fullSchema: segmentedFullSchema,
               prettifyClient: config.segmentedClient.prettifyClient,
               segmentName,
-              imports: clientImports.segmentedClient[segmentName],
               templateContent,
               matterResult,
               openapi,

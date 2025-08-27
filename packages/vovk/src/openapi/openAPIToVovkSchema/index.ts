@@ -21,7 +21,6 @@ export function openAPIToVovkSchema({
   getModuleName,
   getMethodName,
   errorMessageKey,
-  package: packageJson,
   segmentName,
 }: VovkOpenAPIMixinNormalized & { segmentName?: string }): VovkSchema {
   segmentName = segmentName ?? '';
@@ -48,17 +47,6 @@ export function openAPIToVovkSchema({
         controllers: {},
         meta: {
           openAPIObject: noPathsOpenAPIObject,
-          package: Object.assign(
-            {},
-            noPathsOpenAPIObject.info
-              ? {
-                  description:
-                    packageJson?.description ??
-                    `**${noPathsOpenAPIObject.info.title}**\n${noPathsOpenAPIObject.info.description ?? ''}`,
-                }
-              : {},
-            packageJson
-          ),
         },
       },
     },

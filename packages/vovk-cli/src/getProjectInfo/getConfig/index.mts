@@ -32,9 +32,9 @@ export default async function getConfig({
 
   const srcRoot = await getRelativeSrcRoot({ cwd });
 
-  const validateOnClientImport = conf.imports?.validateOnClient ?? null;
-  const fetcherImport = conf.imports?.fetcher ?? 'vovk';
-  const createRPCImport = conf.imports?.createRPC ?? 'vovk';
+  const validateOnClientImport = conf.generatorConfig?.imports?.validateOnClient ?? null;
+  const fetcherImport = conf.generatorConfig?.imports?.fetcher ?? 'vovk';
+  const createRPCImport = conf.generatorConfig?.imports?.createRPC ?? 'vovk';
 
   const imports = {
     fetcher: typeof fetcherImport === 'string' ? ([fetcherImport] as [string]) : fetcherImport,
@@ -48,7 +48,6 @@ export default async function getConfig({
   const config: VovkStrictConfig = {
     $schema: VovkSchemaIdEnum.CONFIG,
     clientTemplateDefs,
-    imports,
     emitConfig: [],
     composedClient: {
       ...conf.composedClient,
@@ -93,6 +92,7 @@ export default async function getConfig({
     libs: conf.libs ?? {},
     generatorConfig: {
       ...conf.generatorConfig,
+      imports,
       origin: (env.VOVK_ORIGIN ?? conf?.generatorConfig?.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
       segments: Object.fromEntries(
         await Promise.all(

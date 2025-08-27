@@ -402,7 +402,7 @@ export function createCodeExamples({
   const outputValidation = handlerSchema?.validation?.output as VovkBasicJSONSchema | undefined;
   const iterationValidation = handlerSchema?.validation?.iteration as VovkBasicJSONSchema | undefined;
 
-  const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation;
+  const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;
   const packageName = packageJson?.name || 'vovk-client';
   const packageNameSnake = toSnakeCase(packageName);

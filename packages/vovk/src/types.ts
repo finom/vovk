@@ -8,6 +8,11 @@ export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explici
 
 export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
 
+type VovkPackageJson = PackageJson & {
+  rs_name?: string;
+  py_name?: string;
+};
+
 export type VovkHandlerSchema = {
   path: string;
   httpMethod: string; // HttpMethod type makes JSON incompatible with VovkHandlerSchema type
@@ -39,7 +44,7 @@ export type VovkSegmentSchema = {
   controllers: { [key: string]: VovkControllerSchema };
   meta?: {
     openAPIObject?: Partial<Omit<OpenAPIObject, 'paths'>>;
-    package?: PackageJson;
+    package?: VovkPackageJson;
     // [key: string]: KnownAny; // additional metadata can be added here
   };
 };
@@ -47,7 +52,7 @@ export type VovkSegmentSchema = {
 export type VovkMetaSchema = {
   $schema: typeof VovkSchemaIdEnum.META | (string & {});
   config: RequireFields<Partial<VovkStrictConfig>, '$schema'>;
-  package?: PackageJson;
+  package?: VovkPackageJson;
   openAPIObject?: Partial<OpenAPIObject>;
   // [key: string]: KnownAny;
 };
@@ -423,11 +428,16 @@ type BundleConfig = {
 
 export interface VovkGeneratorConfigCommon {
   origin?: string | null;
-  package?: PackageJson;
+  package?: VovkPackageJson;
   readme?: VovkReadmeConfig;
   snippets?: VovkSnippetsConfig;
   openAPIObject?: Partial<OpenAPIObject>;
   reExports?: Record<string, string>;
+  imports?: {
+    fetcher?: string | [string, string] | [string];
+    validateOnClient?: string | [string, string] | [string] | null;
+    createRPC?: string | [string, string] | [string];
+  };
 }
 
 export type ClientTemplateDef = {
@@ -458,9 +468,6 @@ export interface VovkOpenAPIMixin {
     | {
         object: OpenAPIObject;
       };
-  package?: PackageJson;
-  readme?: VovkReadmeConfig;
-  snippets?: VovkSnippetsConfig;
   apiRoot?: string;
   getModuleName?: // if not provided, will use 'api' by default
   | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
@@ -495,8 +502,13 @@ export interface VovkGeneratorConfig extends VovkGeneratorConfigCommon {
   segments?: Record<string, VovkSegmentConfig>;
 }
 
-interface ProjectConfigStrict extends Omit<VovkGeneratorConfig, 'origin' | 'segments'> {
+export interface VovkGeneratorConfigStrict extends Omit<VovkGeneratorConfig, 'origin' | 'segments' | 'imports'> {
   origin: string;
+  imports: {
+    fetcher: [string, string] | [string];
+    validateOnClient: [string, string] | [string] | null;
+    createRPC: [string, string] | [string];
+  };
   segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin: VovkOpenAPIMixinNormalized }>;
 }
 
@@ -516,11 +528,6 @@ type VovkUserConfig = {
   segmentedClient?: ClientConfigSegmented;
   bundle?: BundleConfig;
   clientTemplateDefs?: Record<string, ClientTemplateDef>;
-  imports?: {
-    fetcher?: string | [string, string] | [string];
-    validateOnClient?: string | [string, string] | [string];
-    createRPC?: string | [string, string] | [string];
-  };
   rootSegmentModulesDirName?: string;
   moduleTemplates?: {
     service?: string;
@@ -547,15 +554,10 @@ export type VovkStrictConfig = Required<
 > & {
   emitConfig: (keyof VovkStrictConfig | string)[];
   bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>;
-  imports: {
-    fetcher: [string, string] | [string];
-    validateOnClient: [string, string] | [string] | null;
-    createRPC: [string, string] | [string];
-  };
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
-  generatorConfig: ProjectConfigStrict;
+  generatorConfig: VovkGeneratorConfigStrict;
 };
 
 // utils
