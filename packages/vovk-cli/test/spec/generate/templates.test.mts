@@ -51,6 +51,7 @@ await describe('Client templates', async () => {
       'index.d.mts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
     ]);
   });
 
@@ -64,6 +65,7 @@ await describe('Client templates', async () => {
       'schema.cjs',
       'schema.d.cts',
       'schema.ts',
+      'openapi.json',
     ]);
   });
 
@@ -84,6 +86,7 @@ await describe('Client templates', async () => {
       'custom.ts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
     ]);
   });
 
@@ -106,6 +109,7 @@ await describe('Client templates', async () => {
       'custom.ts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
     ]);
   });
 
@@ -129,6 +133,7 @@ await describe('Client templates', async () => {
       'hello-world.js',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
     ]);
   });
 

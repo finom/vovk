@@ -37,6 +37,7 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
       'package.json',
       'README.md',
     ]);
@@ -52,6 +53,7 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
       'package.json',
       'README.md',
     ]);
@@ -73,6 +75,7 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
       'package.json',
       'README.md',
     ]);
@@ -98,6 +101,7 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
       'package.json',
       'README.md',
     ]);
@@ -118,6 +122,7 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
       'package.json',
       'README.md',
     ]);
@@ -138,6 +143,7 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
       'package.json',
       'README.md',
     ]);

@@ -38,6 +38,7 @@ await describe('Full & segmented client', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
+      'openapi.json',
     ]);
 
     await assertNotExists('./node_modules/.vovk-client/root/index.mjs');

@@ -426,7 +426,7 @@ await describe('CLI init', async () => {
   await it('Uses Rust template', async () => {
     await createNextApp();
     await vovkInit('', { combo: combos.RUST });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('yup'));
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     const { config } = await assertConfig.getStrictConfig();
 
