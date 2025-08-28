@@ -5,10 +5,10 @@ from generated_python_client.src.test_generated_python_client import CommonContr
 class TestCommon(unittest.TestCase):
     def test_headers(self) -> None:
         data = CommonControllerRPC.get_hello_world_headers(
-            headers={ 'x-test': 'world' }
+            headers={ 'x-vovk-test': 'world' }
         )
         
-        self.assertEqual(data, { 'hello': 'world' })
+        self.assertEqual(data, { 'x-vovk-test': 'world' })
 if __name__ == "__main__":
     unittest.main()
 
