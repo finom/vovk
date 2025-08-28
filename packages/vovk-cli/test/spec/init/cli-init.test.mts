@@ -12,10 +12,12 @@ const combos = {
   NO_VALIDATION: ['N', ENTER, ENTER, 'Y', ENTER, ENTER, ENTER],
   NO_TS_CONFIG_UPDATE: [ENTER, ENTER, 'N', ENTER, ENTER],
   ONE_FLAG_PASSED: [ENTER, ENTER, ENTER],
-  DTO_VALIDATION_ARROW: [DOWN, ENTER, ENTER, ENTER, ENTER],
+  DTO: [DOWN, ENTER, ENTER, ENTER, ENTER],
   YES: [ENTER, ENTER, ENTER, ENTER, ENTER],
   RUST: [ENTER, ENTER, ENTER, DOWN, SPACE, ENTER],
   PYTHON_AND_RUST: [ENTER, ENTER, ENTER, SPACE, DOWN, SPACE, ENTER],
+  VALIBOT: [DOWN, DOWN, DOWN, SPACE, ENTER, ENTER, ENTER, ENTER],
+  ARKTYPE: [DOWN, DOWN, SPACE, ENTER, ENTER, ENTER, ENTER],
 };
 
 await describe('CLI init', async () => {
@@ -34,6 +36,7 @@ await describe('CLI init', async () => {
     assertFileExists,
     assertNotExists,
     assertTsConfig,
+    assertFile,
   } = getCLIAssertions({ cwd, dir });
 
   await it('Works with --yes and does not change other scripts', async () => {
@@ -416,9 +419,9 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await it('Works with prompting and down arrow selection', async () => {
+  await it('Works with prompting and down arrow selection for DTO', async () => {
     await createNextApp();
-    await vovkInit('', { combo: combos.DTO_VALIDATION_ARROW });
+    await vovkInit('', { combo: combos.DTO });
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('class-validator'));
 
     await assertDeps({
@@ -441,6 +444,66 @@ await describe('CLI init', async () => {
     });
 
     await assertTsConfig();
+  });
+
+  await it('Works with prompting and down arrow selection for Arktype', async () => {
+    await createNextApp();
+    await vovkInit('', { combo: combos.ARKTYPE });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('arktype'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-client', 'arktype'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
+    });
+
+    await assertTsConfig();
+
+    await assertFile(`src/lib/withArk.ts`, [
+      `import { createStandardValidation } from 'vovk';
+import { type } from 'arktype';
+
+const withArk = createStandardValidation({
+  toJSONSchema: (model: type) => model.toJsonSchema(),
+});
+
+export default withArk;`,
+    ]);
+  });
+
+  await it('Works with prompting and down arrow selection for Valibot', async () => {
+    await createNextApp();
+    await vovkInit('', { combo: combos.VALIBOT });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('valibot'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-client', 'valibot', '@valibot/to-json-schema'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
+    });
+
+    await assertTsConfig();
+    await assertFile(`src/lib/withValibot.ts`, [
+      `import { createStandardValidation, KnownAny } from 'vovk';
+import { toJsonSchema } from '@valibot/to-json-schema';
+import * as v from 'valibot';
+
+const withValibot = createStandardValidation({
+  toJSONSchema: (model: v.BaseSchema<KnownAny, KnownAny, KnownAny>) => toJsonSchema(model),
+});
+
+export default withValibot;`,
+    ]);
   });
 
   await it('Uses Rust template', async () => {

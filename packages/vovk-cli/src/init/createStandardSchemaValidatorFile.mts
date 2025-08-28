@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
-import getRelativeSrcRoot from '../getProjectInfo/getConfig/getRelativeSrcRoot.mjs';
 import path from 'path';
+import getRelativeSrcRoot from '../getProjectInfo/getConfig/getRelativeSrcRoot.mjs';
 
 function getCode(validationLibrary: 'arktype' | 'valibot') {
   if (validationLibrary === 'valibot') {
@@ -32,15 +32,18 @@ export default withArk;
 }
 
 export async function createStandardSchemaValidatorFile({
-  cwd,
+  root,
   validationLibrary,
 }: {
-  cwd: string;
+  root: string;
   validationLibrary: 'arktype' | 'valibot';
 }) {
   const code = getCode(validationLibrary);
-  const srcRoot = (await getRelativeSrcRoot({ cwd })) ?? '.';
-  const libDir = path.join(cwd, srcRoot, 'lib');
+  const srcRoot = (await getRelativeSrcRoot({ cwd: root })) ?? '.';
+
+  const libDir = path.resolve(root, srcRoot, 'lib');
+
+  const filePath = path.join(libDir, `${validationLibrary === 'arktype' ? 'withArk' : 'withValibot'}.ts`);
   await fs.mkdir(libDir, { recursive: true });
-  await fs.writeFile(path.join(libDir, `${validationLibrary === 'arktype' ? 'withArk' : 'withValibot'}.ts`), code);
+  await fs.writeFile(filePath, code);
 }

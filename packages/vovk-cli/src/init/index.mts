@@ -25,7 +25,6 @@ export class Init {
     {
       configPaths,
       pkgJson,
-      cwd = process.cwd(),
     }: {
       configPaths: string[];
       pkgJson: NPMCliPackageJson;
@@ -170,7 +169,7 @@ export class Init {
 
     if (validationLibrary === 'valibot' || validationLibrary === 'arktype') {
       createStandardSchemaValidatorFile({
-        cwd,
+        root,
         validationLibrary,
       });
     }
@@ -267,21 +266,21 @@ export class Init {
                 description: 'Use class-validator for data validation',
               },
               {
-                name: 'Valibot',
-                value: 'valibot',
-                description: 'Use valibot for data validation.',
-              },
-              {
                 name: 'ArkType',
                 value: 'arktype',
-                description: 'Use arktype for data validation.',
+                description: 'Use ArkType for data validation.',
+              },
+              {
+                name: 'Valibot',
+                value: 'valibot',
+                description: 'Use Valibot for data validation.',
               },
               { name: 'None', value: null, description: 'Install validation library later' },
             ],
           })));
 
     updateScripts ??= await select({
-      message: 'Do you want to update "dev" and "build" NPM scripts at package.json?',
+      message: 'Do you want to update "dev" and add "prebuild" NPM scripts at package.json?',
       default: 'implicit',
       choices: [
         {
