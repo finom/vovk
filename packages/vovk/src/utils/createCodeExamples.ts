@@ -323,7 +323,7 @@ function generateRustCode({
         return `${getIndentSpaces(indent + 2)}("${key}".to_string(), "${value}".to_string())`;
       })
       .join(',\n');
-    return `HashMap::from([\n${entries}\n${getIndentSpaces(4)}])`;
+    return `Some(&HashMap::from([\n${entries}\n${getIndentSpaces(4)}]))`;
   };
 
   const getBody = (schema: VovkBasicJSONSchema) => {

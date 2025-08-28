@@ -11,7 +11,7 @@ pub mod test_common {
             (),
             (),
             Some(&HashMap::from([
-                (String::from("x-test"), String::from("world")),
+                (String::from("x-vovk-test"), String::from("world")),
             ])),
             None,
             false
@@ -20,7 +20,7 @@ pub mod test_common {
         // Assert that the returned data matches the expected value
         assert_eq!(
             serde_json::to_value(&data).unwrap(),
-            serde_json::json!({"hello": "world"})
+            serde_json::json!({"x-vovk-test": "world"})
         );
     }
 }
