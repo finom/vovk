@@ -16,7 +16,7 @@
     "test:rs": "npm --prefix packages/vovk-rust run test",
     "test": "npm run build && npm run test:main && npm run test:rs && npm run test:py && npm run test:cli",
     "test-only": "npm run build && npm --prefix test run generate && cross-env PORT=3210 concurrently \"sleep 30 && NODE_ENV=test node --experimental-strip-types --test --test-only --test-concurrency=1 ./test/**/*.test.ts\" \"npm run serve:unit\" --kill-others --success first",
-    "unit": "cross-env PORT=3210 concurrently \"sleep 30 && npm run test:unit\" \"npm run serve:unit\" --kill-others --success first",
+    "unit": "cross-env PORT=3210 concurrently \"npm run serve:unit\" \"sleep 40 && npm run test:unit\" --kill-others --success first",
     "test:unit": "NODE_ENV=test node --experimental-strip-types --test --test-concurrency=1 ./test/**/*.test.ts",
     "prettier": "prettier --write .",
     "serve:unit": "npm --prefix test run generate && npm --prefix test run dev",
