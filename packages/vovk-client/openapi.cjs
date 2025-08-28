@@ -1,3 +1,1 @@
-module.exports = {
-  ...require('../.vovk-client/openapi.json'),
-};
+module.exports = require('../.vovk-client/openapi.cjs') ?? {};

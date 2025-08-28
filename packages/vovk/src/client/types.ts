@@ -178,7 +178,7 @@ export type VovkClientFetcher<TFetcherOptions> = (
 export type VovkDefaultFetcherOptions<T> = T & {
   apiRoot?: string;
   disableClientValidation?: boolean;
-  validateOnClient?: VovkValidateOnClient<T>;
+  validateOnClient?: VovkValidateOnClient<T> | Promise<{ validateOnClient: VovkValidateOnClient<T> }>;
   interpretAs?: string;
   init?: RequestInit;
 };

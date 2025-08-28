@@ -24,10 +24,10 @@ await describe('TypeScript bundle', async () => {
     await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi');
     await runAtProjectDir('../dist/index.mjs new segment a/b/c/d/e');
     await runAtProjectDir('../dist/index.mjs new controller a/b/c/d/e/post');
-    await vovkDevAndKill();
   });
 
   await it('Bundles composed client', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug`);
 
     await assertDirFileList('./dist', [
@@ -37,13 +37,35 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
-      'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
+      'package.json',
+      'README.md',
+    ]);
+  });
+
+  await it('Bundles composed client from custom schema dir using --schema-out for dev and --schema for bundle', async () => {
+    await vovkDevAndKill('--schema-out ./custom-schema-dir');
+    await runAtProjectDir(
+      `../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug --schema ./custom-schema-dir`
+    );
+
+    await assertDirFileList('./dist', [
+      'index.mjs',
+      'index.d.mts',
+      'index.cjs',
+      'index.d.cts',
+      'schema.cjs',
+      'schema.d.cts',
+      'openapi.d.cts',
+      'openapi.cjs',
       'package.json',
       'README.md',
     ]);
   });
 
   await it('Bundles composed client to an --out dir', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs bundle --out my_dist --tsconfig ../tsconfig.test.json --log-level debug`);
 
     await assertDirFileList('./my_dist', [
@@ -53,13 +75,15 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
-      'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
       'package.json',
       'README.md',
     ]);
   });
 
   await it('Builds composed bundle with included segments', async () => {
+    await vovkDevAndKill();
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
@@ -75,17 +99,22 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
-      'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
       'package.json',
       'README.md',
     ]);
-    const { schema }: { schema: VovkSchema } = await import(
+    let { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'composed-bundle', 'schema.cjs') + '?' + Math.random()
     );
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
+
+    ({ schema } = await import(path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 
   await it('Builds composed bundle with excluded segments', async () => {
+    await vovkDevAndKill();
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
@@ -101,17 +130,22 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
-      'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
       'package.json',
       'README.md',
     ]);
-    const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-bundle', 'index.mjs') + '?' + Math.random()
+    let { schema }: { schema: VovkSchema } = await import(
+      path.join(projectDir, 'composed-bundle', 'schema.cjs') + '?' + Math.random()
     );
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
+
+    ({ schema } = await import(path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
   await it('Builds composed bundle with included segments using --include flag', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(
       `../dist/index.mjs bundle --include foo --include bar/baz --out ./composed-bundle --tsconfig ../tsconfig.test.json --log-level debug`
     );
@@ -122,17 +156,22 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
-      'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
       'package.json',
       'README.md',
     ]);
-    const { schema }: { schema: VovkSchema } = await import(
+    let { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'composed-bundle', 'schema.cjs') + '?' + Math.random()
     );
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
+
+    ({ schema } = await import(path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 
   await it('Builds composed bundle with excluded segments using --exclude flag', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(
       `../dist/index.mjs bundle --exclude "" --exclude bar/baz --out ./composed-bundle --tsconfig ../tsconfig.test.json --log-level debug`
     );
@@ -143,13 +182,17 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
-      'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
       'package.json',
       'README.md',
     ]);
-    const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()
+    let { schema }: { schema: VovkSchema } = await import(
+      path.join(projectDir, 'composed-bundle', 'schema.cjs') + '?' + Math.random()
     );
-    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
+
+    ({ schema } = await import(path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()));
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 });

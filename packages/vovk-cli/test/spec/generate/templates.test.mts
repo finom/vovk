@@ -24,7 +24,6 @@ await describe('Client templates', async () => {
     await vovkInit('--yes');
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new controller user');
-    await vovkDevAndKill();
     await updateConfig(projectDir + '/vovk.config.js', (config) => ({
       ...config,
       clientTemplateDefs: {
@@ -41,7 +40,27 @@ await describe('Client templates', async () => {
     }));
   });
 
+  await it('Generates composed client from custom schema dir using --schema-out for dev and --schema for generate', async () => {
+    await vovkDevAndKill('--schema-out ./custom-schema-dir');
+    await runAtProjectDir(`../dist/index.mjs generate --out ${compiledClientFolderName} --schema ./custom-schema-dir`);
+
+    await assertDirFileList(compiledClientFolderName, [
+      'index.cjs',
+      'index.d.cts',
+      'index.mjs',
+      'index.d.mts',
+      'schema.cjs',
+      'schema.d.cts',
+      'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
+    ]);
+
+    assertFile(`${compiledClientFolderName}/schema.cjs`, [`require('./../custom-schema-dir/root.json')`]);
+  });
+
   await it('Should use default templates', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs generate --out ${compiledClientFolderName}`);
 
     await assertDirFileList(compiledClientFolderName, [
@@ -52,10 +71,13 @@ await describe('Client templates', async () => {
       'schema.cjs',
       'schema.d.cts',
       'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
     ]);
   });
 
   await it('Should use default templates explicitly', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs generate --from=mjs --from=ts --out ${compiledClientFolderName}`);
 
     await assertDirFileList(compiledClientFolderName, [
@@ -66,13 +88,17 @@ await describe('Client templates', async () => {
       'schema.d.cts',
       'schema.ts',
       'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
+      'openapi.ts',
     ]);
   });
 
   await it('Generates file from compiled and custom template', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs generate --from=cjs --from=custom --out ${compiledClientFolderName}`);
 
-    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { fetcher } = require('vovk')`]);
+    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { createRPC } = require('vovk')`]);
     await assertFile(`${compiledClientFolderName}/index.d.cts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
@@ -87,15 +113,18 @@ await describe('Client templates', async () => {
       'schema.cjs',
       'schema.d.cts',
       'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
     ]);
   });
 
   await it('Generates file from compiled and custom template as file', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(
       `../dist/index.mjs generate --from=cjs --from=customAsFile --out ${compiledClientFolderName}`
     );
 
-    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { fetcher } = require('vovk')`]);
+    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { createRPC } = require('vovk')`]);
     await assertFile(`${compiledClientFolderName}/index.d.cts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
@@ -110,15 +139,18 @@ await describe('Client templates', async () => {
       'schema.cjs',
       'schema.d.cts',
       'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
     ]);
   });
 
   await it('Generates files from multiple custom templates', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(
       `../dist/index.mjs generate --from=cjs --from=custom --from helloWorld --from=cjs --out ${compiledClientFolderName}`
     );
 
-    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { fetcher } = require('vovk')`]);
+    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { createRPC } = require('vovk');`]);
     await assertFile(`${compiledClientFolderName}/index.d.cts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
@@ -134,10 +166,13 @@ await describe('Client templates', async () => {
       'schema.cjs',
       'schema.d.cts',
       'openapi.json',
+      'openapi.d.cts',
+      'openapi.cjs',
     ]);
   });
 
   await it('Generates README.md and package.json', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(
       `../dist/index.mjs generate --from=readme --from=packageJson --out ${compiledClientFolderName}`
     );
@@ -150,14 +185,23 @@ await describe('Client templates', async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await assertDirFileList(compiledClientFolderName, ['src', 'README.md', 'setup.cfg', 'pyproject.toml']);
     await assertDirFileList(`${compiledClientFolderName}/src`, ['tmp_test_dir']);
-    await assertDirFileList(`${compiledClientFolderName}/src/tmp_test_dir`, ['__init__.py', 'api_client.py']);
-    await assertDirFileList(`${compiledClientFolderName}/data`, ['schema.json']);
+    await assertDirFileList(`${compiledClientFolderName}/src/tmp_test_dir`, [
+      '__init__.py',
+      'api_client.py',
+      'py.typed',
+      'schema.json',
+    ]);
   });
 
   await it('Generates Rust client', async () => {
+    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs generate --from=rs --out ${compiledClientFolderName}`);
     await assertDirFileList(compiledClientFolderName, ['Cargo.toml', 'src', 'README.md']);
-    await assertDirFileList(`${compiledClientFolderName}/src`, ['lib.rs', 'http_request.rs', 'read_full_schema.rs']);
-    await assertDirFileList(`${compiledClientFolderName}/data`, ['schema.json']);
+    await assertDirFileList(`${compiledClientFolderName}/src`, [
+      'lib.rs',
+      'http_request.rs',
+      'read_full_schema.rs',
+      'schema.json',
+    ]);
   });
 });

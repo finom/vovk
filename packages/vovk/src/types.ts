@@ -502,13 +502,8 @@ export interface VovkGeneratorConfig extends VovkGeneratorConfigCommon {
   segments?: Record<string, VovkSegmentConfig>;
 }
 
-export interface VovkGeneratorConfigStrict extends Omit<VovkGeneratorConfig, 'origin' | 'segments' | 'imports'> {
+export interface VovkGeneratorConfigStrict extends Omit<VovkGeneratorConfig, 'origin' | 'segments'> {
   origin: string;
-  imports: {
-    fetcher: [string, string] | [string];
-    validateOnClient: [string, string] | [string] | null;
-    createRPC: [string, string] | [string];
-  };
   segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin: VovkOpenAPIMixinNormalized }>;
 }
 

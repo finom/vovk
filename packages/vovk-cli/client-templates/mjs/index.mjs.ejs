@@ -1,21 +1,15 @@
 <%- t.getFirstLineBanner() %>
-import { fetcher } from '<%= t.imports.module.fetcher %>';
-import { createRPC } from '<%= t.imports.module.createRPC %>';
+import { createRPC } from '<%= t.commonImports.module.createRPC %>';
 import { schema } from './schema.cjs';
-import openapi from './openapi.json' with { type: 'json' };
-<% if (t.imports.module.validateOnClient) { %>
-import { validateOnClient } from '<%= t.imports.module.validateOnClient %>';
-<% } else { %>
-const validateOnClient = undefined;
-<% } 
-Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
+import { openapi } from './openapi.cjs';
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
   <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhat, reExportFrom]) => { %>
 export { <%= reExportWhat %> } from '<%= reExportFrom %>';
   <% }) %>
   <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %> = createRPC(
-  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', fetcher,
-  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
+  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', import('<%- t.segmentImports[segment.segmentName].module.fetcher %>'),
+  { validateOnClient: <%- t.segmentImports[segment.segmentName].module.validateOnClient ? `import('${t.segmentImports[segment.segmentName].validateOnClient}')` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
 );
 <% 
   }); 

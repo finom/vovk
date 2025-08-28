@@ -1,8 +1,7 @@
 <%- t.getFirstLineBanner() %>
-const { fetcher } = require('<%= t.imports.fetcher %>');
-const { createRPC } = require('<%= t.imports.createRPC %>');
+const { createRPC } = require('<%= t.commonImports.createRPC %>');
 const { schema } = require('./schema.cjs');
-const openapi = require('./openapi.json');
+const { openapi } = require('./openapi.cjs');
 const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
     <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhatCommaDivisible, reExportFrom]) => {
@@ -12,8 +11,8 @@ exports['<%= reExportWhat.split(/\s+as\s+/)[1] ?? reExportWhat %>'] = require('<
        }) %>
   <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 exports.<%= rpcModuleName %> = createRPC(
-  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', fetcher,
-  { validateOnClient, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
+  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', require('<%= t.segmentImports[segment.segmentName].fetcher %>').fetcher,
+  { validateOnClient: <%- t.segmentImports[segment.segmentName].validateOnClient ? `require('${t.segmentImports[segment.segmentName].validateOnClient}').validateOnClient` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
 );
   <% })
 }) %>

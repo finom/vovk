@@ -1,0 +1,83 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "client2",
+  "segmentType": "segment",
+  "controllers": {
+    "CommonControllerDifferentFetcherRPC": {
+      "rpcModuleName": "CommonControllerDifferentFetcherRPC",
+      "originalControllerName": "CommonController",
+      "prefix": "common",
+      "handlers": {
+        "getHelloWorldResponseObject": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-response-object"
+        },
+        "getHelloWorldObjectLiteral": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-object-literal"
+        },
+        "getHelloWorldNextResponseObjectPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-next-response-object-promise"
+        },
+        "getHelloWorldRawResponseObjectPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-raw-response-object-promise"
+        },
+        "getHelloWorldObjectLiteralPromise": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-object-literal-promise"
+        },
+        "getHelloWorldHeaders": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-headers"
+        },
+        "getHelloWorldArray": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-array"
+        },
+        "getHelloWorldAndEmptyGeneric": {
+          "httpMethod": "GET",
+          "path": "get-hello-world-and-empty-generic"
+        },
+        "getWithParams": {
+          "path": "with-params/{hello}",
+          "httpMethod": "GET"
+        },
+        "postWithAll": {
+          "path": "with-all/{hello}",
+          "httpMethod": "POST"
+        },
+        "postWithBodyAndQueryUsingReqVovk": {
+          "path": "with-all-using-req-vovk",
+          "httpMethod": "POST"
+        },
+        "getNestedQuery": {
+          "path": "nested-query",
+          "httpMethod": "GET"
+        },
+        "postWithFormDataUsingReqVovk": {
+          "path": "form-data",
+          "httpMethod": "POST"
+        },
+        "getErrorResponse": {
+          "path": "error",
+          "httpMethod": "GET"
+        },
+        "getJsonTextResponse": {
+          "path": "json-text",
+          "httpMethod": "GET"
+        },
+        "getJsonlResponse": {
+          "path": "jsonl",
+          "httpMethod": "GET"
+        },
+        "getJsonlTextResponse": {
+          "path": "jsonl-text",
+          "httpMethod": "GET"
+        }
+      }
+    }
+  }
+}

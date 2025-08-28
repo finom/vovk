@@ -36,8 +36,14 @@ export default class CommonController {
   @get.auto()
   static async getHelloWorldHeaders() {
     const headerList = await headers();
-    const hello = headerList.get('x-test');
-    return { hello };
+    return Object.fromEntries(
+      headerList
+        .entries()
+        .filter(([key]) => key.startsWith('x-vovk-'))
+        .map(([key, value]) => {
+          return [key, value];
+        })
+    );
   }
 
   @get.auto()

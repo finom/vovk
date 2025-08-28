@@ -48,6 +48,7 @@ export async function bundle({
     fullSchema,
     locatedSegments,
     cliGenerateOptions: {
+      schemaPath: cliBundleOptions?.schemaPath,
       origin: cliBundleOptions?.origin,
       openapiSpec: cliBundleOptions?.openapiSpec,
       openapiGetModuleName: cliBundleOptions?.openapiGetModuleName,
@@ -86,6 +87,18 @@ export async function bundle({
 
   log.debug(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
+  await build({
+    entry: path.join(tsFullClientOutAbsoluteDirInput, './openapi.ts'),
+    dts: true,
+    format: ['cjs'],
+    fixedExtension: true,
+    outDir: outDirAbsolute,
+    clean: false,
+    tsconfig,
+  });
+
+  log.debug(`Bundled openapi.ts to ${chalkHighlightThing(outDirAbsolute)}`);
+
   const requiresGroup = groupBy(Object.entries(bundleConfig.requires), ([, relativePath]) => relativePath);
 
   for (const [relativePath, group] of Object.entries(requiresGroup)) {
@@ -96,6 +109,7 @@ export async function bundle({
       fullSchema,
       locatedSegments,
       cliGenerateOptions: {
+        schemaPath: cliBundleOptions?.schemaPath,
         origin: cliBundleOptions?.origin,
         composedFrom: group.map(([templateName]) => templateName),
         composedOut: path.resolve(outDirAbsolute, relativePath),

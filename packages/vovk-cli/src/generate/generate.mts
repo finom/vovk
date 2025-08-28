@@ -182,12 +182,14 @@ export async function generate({
   };
   const { config, cwd, log, srcRoot, vovkCliPackage } = projectInfo;
 
-  Object.entries(config.generatorConfig.segments ?? {}).forEach(([segmentName, segmentConfig]) => {
-    fullSchema.segments = {
-      ...fullSchema.segments,
-      [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin, segmentName }).segments[segmentName],
-    };
-  });
+  Object.entries(config.generatorConfig.segments ?? {})
+    .filter(([, segmentConfig]) => segmentConfig.openAPIMixin)
+    .forEach(([segmentName, segmentConfig]) => {
+      fullSchema.segments = {
+        ...fullSchema.segments,
+        [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin, segmentName }).segments[segmentName],
+      };
+    });
 
   const cliMixins = cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {});
 
@@ -286,6 +288,8 @@ export async function generate({
           vovkCliPackage,
           isBundle,
           origin: cliGenerateOptions?.origin ?? origin,
+          configKey: 'composedClient',
+          cliSchemaPath: cliGenerateOptions?.schemaPath ?? null,
         });
 
         const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
@@ -390,6 +394,8 @@ export async function generate({
               vovkCliPackage,
               isBundle,
               origin: cliGenerateOptions?.origin ?? origin,
+              configKey: 'segmentedClient',
+              cliSchemaPath: cliGenerateOptions?.schemaPath ?? null,
             });
 
             return {

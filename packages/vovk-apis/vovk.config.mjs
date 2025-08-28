@@ -24,9 +24,9 @@ const config = {
       generatorConfig: {
         readme: {
           installCommand: 'npm install vovk-apis',
-        }
+        },
       },
-    }
+    },
   },
   generatorConfig: {
     segments: {
@@ -59,8 +59,8 @@ const config = {
           snippets: {
             headers: {
               Authorization: 'Bearer ABC123',
-              "X-GitHub-Api-Version": "2022-11-28",
-            }
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
           },
         },
       },
@@ -75,8 +75,8 @@ const config = {
           errorMessageKey: 'description',
           package: { name: 'vovk-apis/telegram' },
           snippets: {
-            apiRoot: 'https://api.telegram.org/bot${token}'
-          }
+            apiRoot: 'https://api.telegram.org/bot${token}',
+          },
         },
       },
     },

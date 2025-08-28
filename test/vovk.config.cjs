@@ -2,9 +2,6 @@
 /** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
   modulesDir: './src/modules',
-  imports: {
-    validateOnClient: '../packages/vovk-ajv/index.js',
-  },
   segmentedClient: {
     enabled: true,
     outDir: './other-compiled-test-sources/segmented-client',
@@ -18,6 +15,9 @@ const vovkConfig = {
   },
   generatorConfig: {
     origin: `http://localhost:${process.env.PORT}`,
+    imports: {
+      validateOnClient: '../packages/vovk-ajv/index.js',
+    },
     openAPIObject: {
       info: {
         title: 'Hello, OpenAPI!',
@@ -28,6 +28,13 @@ const vovkConfig = {
           url: 'http://localhost:3000',
         },
       ],
+    },
+    segments: {
+      client2: {
+        imports: {
+          fetcher: './src/lib/fetcher.ts',
+        },
+      },
     },
   },
   bundle: {

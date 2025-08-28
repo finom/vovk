@@ -3,6 +3,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import assert from 'node:assert';
 import type { VovkSegmentSchema } from 'vovk';
+import { Agent, setGlobalDispatcher } from 'undici';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 
 let dev: Promise<string> & {
@@ -16,10 +17,23 @@ await describe('CLI dev', async () => {
   const getSchema = async () =>
     JSON.parse(await fs.readFile(path.join(cwd, dir, '.vovk-schema/root.json'), 'utf8')) as VovkSegmentSchema;
 
+  const agent = new Agent({
+    connect: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  setGlobalDispatcher(agent);
+
   const devCommands = {
     Implicit: '../dist/index.mjs dev --next-dev',
+    'Implicit with --https': '../dist/index.mjs dev --next-dev --https -- --experimental-https',
     Explicit: 'npx concurrently "npx next dev" "../dist/index.mjs dev" --kill-others',
+    'Explicit with --https':
+      'npx concurrently "npx next dev --experimental-https" "../dist/index.mjs dev --https" --kill-others',
   };
+
+  const PORT = 3420;
 
   for (const [name, devCommand] of Object.entries(devCommands)) {
     await it(name, async () => {
@@ -34,7 +48,7 @@ await describe('CLI dev', async () => {
                 controllers, 
             });`,
         ]);
-        dev = runAtProjectDir(devCommand, name === 'Explicit' ? { env: { PORT: 3420 } } : undefined);
+        dev = runAtProjectDir(devCommand, { env: { PORT } });
         await new Promise((resolve) => setTimeout(resolve, 10_000));
 
         await runAtProjectDir('../dist/index.mjs new controller user');
@@ -79,6 +93,13 @@ await describe('CLI dev', async () => {
         await new Promise((resolve) => setTimeout(resolve, 10_000));
 
         assert.ok((await getSchema()).controllers.CustomUserRPC.handlers.getPeople);
+        const protocol = name.includes('--https') ? 'https' : 'http';
+        const resp = await (await fetch(`${protocol}://localhost:${PORT}/api/users?search=hello1`)).json();
+
+        assert.deepStrictEqual(resp, {
+          results: [],
+          search: 'hello1',
+        });
         dev.kill();
       } catch (error) {
         dev.kill();

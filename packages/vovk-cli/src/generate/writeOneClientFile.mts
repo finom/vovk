@@ -50,6 +50,8 @@ export default async function writeOneClientFile({
   vovkCliPackage,
   isBundle,
   origin,
+  configKey,
+  cliSchemaPath,
 }: {
   cwd: string;
   projectInfo: ProjectInfo;
@@ -79,6 +81,8 @@ export default async function writeOneClientFile({
   vovkCliPackage: PackageJson;
   isBundle: boolean;
   origin: string | null;
+  configKey: 'composedClient' | 'segmentedClient';
+  cliSchemaPath: string | null;
 }) {
   const { config, apiRoot } = projectInfo;
 
@@ -96,9 +100,11 @@ export default async function writeOneClientFile({
     packageJson
   );
 
-  let placeholder = `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
+  let placeholder = !templateFilePath.endsWith('.json.ejs')
+    ? `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
 // If you still see this text, the client is not generated yet because of an unknown problem.
-// Feel free to report an issue at https://github.com/finom/vovk/issues`;
+// Feel free to report an issue at https://github.com/finom/vovk/issues`
+    : '{}';
   placeholder = outPath.endsWith('.py') ? placeholder.replace(/\/\//g, '#') : placeholder;
 
   const getFirstLineBanner = (type: 'html' | 'sh' | 'c' = 'c') => {
@@ -140,11 +146,17 @@ export default async function writeOneClientFile({
     },
     schemaOutDir:
       typeof segmentName === 'string'
-        ? path.relative(path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME), config.schemaOutDir)
-        : path.relative(outCwdRelativeDir, config.schemaOutDir),
+        ? path.relative(
+            path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME),
+            cliSchemaPath ?? config.schemaOutDir
+          )
+        : path.relative(outCwdRelativeDir, cliSchemaPath ?? config.schemaOutDir),
+    commonImports: getTemplateClientImports({ fullSchema, isBundle, outCwdRelativeDir, segmentName })['composedClient'],
     segmentImports: Object.fromEntries(
       Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
-        const imports = getTemplateClientImports({ fullSchema, segmentName: sName, isBundle, outCwdRelativeDir });
+        const clientImports = getTemplateClientImports({ fullSchema, segmentName: sName, isBundle, outCwdRelativeDir });
+        const imports =
+          configKey === 'composedClient' ? clientImports['composedClient'] : clientImports['segmentedClient'][sName];
 
         return [sName, imports];
       })

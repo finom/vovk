@@ -28,8 +28,9 @@ export default function getMetaSchema({
           types: './schema.d.cts',
         },
         './openapi': {
-          import: './openapi.json',
-          require: './openapi.json',
+          import: './openapi.cjs',
+          require: './openapi.cjs',
+          types: './openapi.d.cts',
         },
       },
     },

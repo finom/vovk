@@ -1,8 +1,6 @@
-
 <%- t.getFirstLineBanner() %>
 import type { VovkClientFetcher } from 'vovk';
-import type { fetcher } from '<%= t.imports.module.fetcher %>';
-import type { createRPC } from '<%= t.imports.module.createRPC %>';
+import type { createRPC } from '<%= t.commonImports.module.createRPC %>';
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
 <% }}) %>
@@ -10,17 +8,16 @@ import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segme
 import type { Controllers as MixinControllers, Mixins } from "./mixins";
 <% } %>
 
-type Options = typeof fetcher extends VovkClientFetcher<infer U> ? U : never;
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { %>
   <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhat, reExportFrom]) => { %>
 export { <%= reExportWhat %> } from '<%= reExportFrom %>';
   <% }) %>
   <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
-export const <%= rpcModuleName %>: ReturnType<typeof createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], Options>>;
+export const <%= rpcModuleName %>: ReturnType<typeof createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].module.fetcher %>').fetcher extends VovkClientFetcher<infer U> ? U : never>>;
   <% }) 
 }) %>
 export { schema } from './schema.cjs';
-export { default as openapi } from './openapi.json' assert { type: 'json' };
+export { openapi } from './openapi.cjs';
 <% if (t.hasMixins) { %>
 export { Mixins };
 <% } %>

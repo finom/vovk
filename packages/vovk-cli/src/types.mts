@@ -48,7 +48,8 @@ export interface BundleOptions
   extends Partial<
     Pick<VovkStrictConfig['bundle'], 'prebundleOutDir' | 'keepPrebundleDir' | 'includeSegments' | 'excludeSegments'>
   > {
-  config?: string;
+  configPath?: string;
+  schemaPath?: string;
   schema?: string;
   outDir?: string;
   origin?: string;

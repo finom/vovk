@@ -11,13 +11,14 @@ export enum BuiltInTemplateName {
   schemaCjs = 'schemaCjs',
   schemaJson = 'schemaJson',
 
-  // types
-  standaloneTypesTs = 'standaloneTypesTs',
+  // openapi
+  openapiTs = 'openapiTs',
+  openapiCjs = 'openapiCjs',
+  openapiJson = 'openapiJson',
 
   // misc
   readme = 'readme',
   packageJson = 'packageJson',
-  openapiJson = 'openapiJson',
   mixins = 'mixins',
 
   // other languages (packages installed separately)
@@ -36,28 +37,43 @@ export default function getTemplateDefs(
 ): VovkStrictConfig['clientTemplateDefs'] {
   const defs: VovkStrictConfig['clientTemplateDefs'] = {};
   const builtInDefs: VovkStrictConfig['clientTemplateDefs'] = {
+    [BuiltInTemplateName.openapiTs]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.openapiTs}/`,
+      requires: {
+        [BuiltInTemplateName.openapiJson]: './',
+      },
+    },
+    [BuiltInTemplateName.openapiCjs]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.openapiCjs}/`,
+      requires: {
+        [BuiltInTemplateName.openapiJson]: './',
+      },
+    },
+    [BuiltInTemplateName.openapiJson]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.openapiJson}/`,
+    },
     [BuiltInTemplateName.ts]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.ts}/`,
       requires: {
-        [BuiltInTemplateName.schemaTs]: '.',
-        [BuiltInTemplateName.openapiJson]: '.',
-        [BuiltInTemplateName.mixins]: '.', // used conditionally if OpenAPI mixins are used
+        [BuiltInTemplateName.schemaTs]: './',
+        [BuiltInTemplateName.openapiTs]: './',
+        [BuiltInTemplateName.mixins]: './', // used conditionally if OpenAPI mixins are used
       },
     },
     [BuiltInTemplateName.cjs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.cjs}/`,
       requires: {
-        [BuiltInTemplateName.schemaCjs]: '.',
-        [BuiltInTemplateName.openapiJson]: '.',
-        [BuiltInTemplateName.mixins]: '.', // used conditionally if OpenAPI mixins are used
+        [BuiltInTemplateName.schemaCjs]: './',
+        [BuiltInTemplateName.openapiCjs]: './',
+        [BuiltInTemplateName.mixins]: './', // used conditionally if OpenAPI mixins are used
       },
     },
     [BuiltInTemplateName.mjs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.mjs}/`,
       requires: {
-        [BuiltInTemplateName.schemaCjs]: '.',
-        [BuiltInTemplateName.openapiJson]: '.',
-        [BuiltInTemplateName.mixins]: '.', // used conditionally if OpenAPI mixins are used
+        [BuiltInTemplateName.schemaCjs]: './',
+        [BuiltInTemplateName.openapiCjs]: './',
+        [BuiltInTemplateName.mixins]: './', // used conditionally if OpenAPI mixins are used
       },
     },
     [BuiltInTemplateName.schemaTs]: {
@@ -75,9 +91,7 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.packageJson]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.packageJson}/`,
     },
-    [BuiltInTemplateName.openapiJson]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.openapiJson}/`,
-    },
+
     [BuiltInTemplateName.mixins]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.mixins}/`,
     },
@@ -106,7 +120,7 @@ export default function getTemplateDefs(
     [BuiltInTemplateName.pySrc]: {
       templatePath: `vovk-python/client-templates/${BuiltInTemplateName.pySrc}/`,
       requires: {
-        [BuiltInTemplateName.schemaJson]: '.',
+        [BuiltInTemplateName.schemaJson]: './',
       },
     },
     [BuiltInTemplateName.pyPkg]: {

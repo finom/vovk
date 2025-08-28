@@ -16,7 +16,7 @@ const vovkConfig = {
           license: 'MIT',
           description: 'Vovk Rust Client',
         },
-      }
+      },
     },
   },
   composedClient: {

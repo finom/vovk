@@ -53,7 +53,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     );
   }
 
-  assertConfig.makeConfig = (validationLibrary: string | null) => {
+  assertConfig.makeConfig = (validationLibrary: string | null, extras?: Partial<VovkConfig>) => {
     const typeTemplates = {
       controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
       service: 'vovk-cli/module-templates/type/service.ts.ejs',
@@ -84,12 +84,12 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     const config: VovkConfig = {
       moduleTemplates,
     };
-
-    config.imports ??= {};
-    config.imports.validateOnClient =
+    config.generatorConfig ??= {};
+    config.generatorConfig.imports ??= {};
+    config.generatorConfig.imports.validateOnClient =
       validationLibrary === 'class-validator' ? 'vovk-dto/validateOnClient' : 'vovk-ajv';
 
-    return config;
+    return { ...config, ...extras };
   };
 
   assertConfig.getStrictConfig = () => getConfig({ cwd: projectDir });
@@ -211,8 +211,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     assert.deepStrictEqual(dir.sort(), files.sort(), `Directory ${dirPath} does not contain the correct files`);
   }
 
-  async function vovkDevAndKill() {
-    return runAtProjectDir(`../dist/index.mjs dev --next-dev --exit -- --turbo`);
+  async function vovkDevAndKill(vovkArguments?: string) {
+    return runAtProjectDir(`../dist/index.mjs dev --next-dev --exit ${vovkArguments ?? ''} -- --turbo`);
   }
 
   return {

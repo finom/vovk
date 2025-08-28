@@ -38,11 +38,11 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   givenSchema: unknown,
   segmentName: string,
   rpcModuleName: string,
-  fetcher?: VovkClientFetcher<OPTS>,
+  givenFetcher?: VovkClientFetcher<OPTS> | Promise<{ fetcher: VovkClientFetcher<OPTS> }>,
   options?: VovkDefaultFetcherOptions<OPTS>
 ): VovkClient<T, OPTS> => {
   const schema = givenSchema as VovkSchema; // fixes incompatibilities with JSON module
-  fetcher ??= defaultFetcher as NonNullable<typeof fetcher>;
+  // fetcher ??= defaultFetcher as NonNullable<typeof fetcher>;
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];
   if (!segmentSchema)
@@ -83,6 +83,10 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         transform?: (respData: unknown, resp: Response) => unknown;
       } & OPTS = {} as OPTS
     ) => {
+      const fetcher =
+        givenFetcher instanceof Promise
+          ? (await givenFetcher).fetcher
+          : (givenFetcher ?? (defaultFetcher as unknown as VovkClientFetcher<OPTS>));
       const validate: Parameters<typeof fetcher>[0]['validate'] = async (
         validationInput,
         {
@@ -91,7 +95,11 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
           endpoint: string;
         }
       ) => {
-        const validateOnClient = input.validateOnClient ?? options?.validateOnClient;
+        const validateOnClient =
+          input.validateOnClient ??
+          (options?.validateOnClient instanceof Promise
+            ? ((await options?.validateOnClient)?.validateOnClient as VovkValidateOnClient<OPTS>)
+            : options?.validateOnClient);
         if (validateOnClient && validation) {
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');

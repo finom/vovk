@@ -1,4 +1,4 @@
-import { CommonControllerRPC } from 'vovk-client';
+import { CommonControllerRPC, CommonControllerDifferentFetcherRPC } from 'vovk-client';
 import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
 import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
 import {
@@ -100,15 +100,29 @@ describe('Client with vovk-client', () => {
   it(`Should handle headers`, async () => {
     const result = await CommonControllerRPC.getHelloWorldHeaders({
       apiRoot,
-      init: { headers: { 'x-test': 'world' } },
+      init: { headers: { 'x-vovk-test': 'world' } },
     });
-    deepStrictEqual(result satisfies { hello: string | null }, { hello: 'world' });
+    deepStrictEqual(result, { 'x-vovk-test': 'world' });
+  });
+
+  it.only(`Should handle headers and response transform and different fetcher`, async () => {
+    const result = await CommonControllerDifferentFetcherRPC.getHelloWorldHeaders<
+      VovkBody<typeof CommonController.getHelloWorldHeaders> & { fetcherExtraProperty: 'my-extra-value' }
+    >({
+      apiRoot,
+      init: { headers: { 'x-vovk-test': 'world' } },
+    });
+    deepStrictEqual(result, {
+      'x-vovk-test': 'world',
+      'x-vovk-fetcher-header': 'my-header-value',
+      fetcherExtraProperty: 'my-extra-value',
+    });
   });
 
   it(`Should handle simple requests and return a normal array`, async () => {
     const result = await CommonControllerRPC.getHelloWorldArray({
       apiRoot,
-      init: { headers: { 'x-test': 'world' } },
+      init: { headers: { 'x-vovk-test': 'world' } },
     });
     deepStrictEqual(result satisfies { hello: string }[], [{ hello: 'world' }]);
   });

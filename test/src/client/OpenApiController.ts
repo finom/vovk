@@ -1,5 +1,6 @@
 import { get, HttpStatus, prefix, operation } from 'vovk';
 import { openapi } from 'vovk-client';
+import { openapi as openapiModule } from 'vovk-client/openapi';
 
 @prefix('openapi')
 export default class OpenApiController {
@@ -9,6 +10,6 @@ export default class OpenApiController {
   })
   @operation.error(HttpStatus.I_AM_A_TEAPOT, 'I am a teapot error')
   static openapi() {
-    return openapi;
+    return { openapi, openapiModule };
   }
 }

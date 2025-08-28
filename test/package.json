@@ -31,7 +31,7 @@
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
     "valibot": "^1.1.0",
-    "vovk-client": "^0.0.4-draft.81",
+    "vovk-client": "^0.0.4-draft.127",
     "zod": "^4.0.10"
   },
   "devDependencies": {

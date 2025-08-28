@@ -14,10 +14,11 @@ const combos = {
   ONE_FLAG_PASSED: [ENTER, ENTER, ENTER],
   DTO_VALIDATION_ARROW: [DOWN, ENTER, ENTER, ENTER, ENTER],
   YES: [ENTER, ENTER, ENTER, ENTER, ENTER],
-  RUST: [ENTER, ENTER, ENTER, ENTER, DOWN, DOWN, SPACE, ENTER],
+  RUST: [ENTER, ENTER, ENTER, DOWN, SPACE, ENTER],
+  PYTHON_AND_RUST: [ENTER, ENTER, ENTER, SPACE, DOWN, SPACE, ENTER],
 };
 
-await describe.only('CLI init', async () => {
+await describe('CLI init', async () => {
   const dir = 'tmp_test_dir';
   const cwd = path.resolve(import.meta.dirname, '../../..');
 
@@ -445,17 +446,61 @@ await describe.only('CLI init', async () => {
   await it('Uses Rust template', async () => {
     await createNextApp();
     await vovkInit('', { combo: combos.RUST });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(
+      ['vovk.config.js'],
+      assertConfig.makeConfig('zod', {
+        composedClient: {
+          fromTemplates: ['mjs', 'cjs', 'rs'],
+        },
+      })
+    );
 
     const { config } = await assertConfig.getStrictConfig();
 
     deepStrictEqual(config.composedClient, {
+      enabled: true,
       fromTemplates: ['mjs', 'cjs', 'rs'],
+      outDir: './node_modules/.vovk-client',
+      prettifyClient: false,
     });
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-rust'],
-      devDependencies: ['vovk-cli'],
+      dependencies: ['vovk'],
+      devDependencies: ['vovk-cli', 'vovk-rust'],
+    });
+
+    await assertDeps({
+      dependencies: ['vovk-python'],
+      opposite: true,
+    });
+
+    await assertTsConfig();
+  });
+
+  await it('Uses Python and Rust template', async () => {
+    await createNextApp();
+    await vovkInit('', { combo: combos.PYTHON_AND_RUST });
+    await assertConfig(
+      ['vovk.config.js'],
+      assertConfig.makeConfig('zod', {
+        composedClient: {
+          fromTemplates: ['mjs', 'cjs', 'py', 'rs'],
+        },
+      })
+    );
+
+    const { config } = await assertConfig.getStrictConfig();
+
+    deepStrictEqual(config.composedClient, {
+      enabled: true,
+      fromTemplates: ['mjs', 'cjs', 'py', 'rs'],
+      outDir: './node_modules/.vovk-client',
+      prettifyClient: false,
+    });
+
+    await assertDeps({
+      dependencies: ['vovk'],
+      devDependencies: ['vovk-cli', 'vovk-rust'],
     });
 
     await assertDeps({

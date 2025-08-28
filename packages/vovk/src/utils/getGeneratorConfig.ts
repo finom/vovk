@@ -75,7 +75,11 @@ export function getGeneratorConfig({
       (isBundle ? schema.meta?.config?.bundle?.generatorConfig?.origin : undefined) ||
       '',
     imports: deepExtend(
-      {} as VovkGeneratorConfigStrict['imports'],
+      {
+        fetcher: ['vovk'] as const,
+        validateOnClient: null,
+        createRPC: ['vovk'] as const,
+      } as NonNullable<VovkGeneratorConfigStrict['imports']>,
       schema.meta?.config?.generatorConfig?.imports,
       isBundle ? schema.meta?.config?.bundle?.generatorConfig?.imports : undefined,
       segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.imports : undefined,

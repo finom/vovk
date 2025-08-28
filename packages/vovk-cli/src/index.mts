@@ -142,8 +142,8 @@ program
   .option('--exclude, --exclude-segments <segments...>', 'exclude segments')
   .option('--prebundle-out-dir, --prebundle-out <path>', 'path to output directory for prebundle')
   .option('--keep-prebundle-dir', 'do not delete prebundle directory after bundling')
-  .option('--config <config>', 'path to config file')
-  .option('--schema <path>', 'path to schema folder (default: .vovk-schema)')
+  .option('--schema, --schema-path <path>', 'path to schema folder (default: .vovk-schema)')
+  .option('--config, --config-path <config>', 'path to config file')
   .option('--origin <url>', 'set the origin URL for the generated client')
   .option('--tsconfig <path>', 'path to tsconfig.json for bundling by tsdown')
   .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema instead of Vovk schema')
@@ -153,7 +153,7 @@ program
   .option('--log-level <level>', 'set the log level')
   .action(async (cliBundleOptions: BundleOptions) => {
     const projectInfo = await getProjectInfo({
-      configPath: cliBundleOptions.config,
+      configPath: cliBundleOptions.configPath,
       srcRootRequired: false,
       logLevel: cliBundleOptions.logLevel,
     });

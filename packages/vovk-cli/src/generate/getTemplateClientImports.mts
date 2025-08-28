@@ -19,7 +19,20 @@ export default function getTemplateClientImports({
   segmentName: string | null;
   isBundle: boolean;
 }) {
-  const { imports } = getGeneratorConfig({ schema: fullSchema, segmentName, isBundle });
+  const { imports: configImports } = getGeneratorConfig({ schema: fullSchema, segmentName, isBundle });
+
+  const validateOnClientImport = configImports?.validateOnClient ?? null;
+  const fetcherImport = configImports?.fetcher ?? 'vovk';
+  const createRPCImport = configImports?.createRPC ?? 'vovk';
+  const imports = {
+    fetcher: typeof fetcherImport === 'string' ? ([fetcherImport] as const) : fetcherImport,
+    validateOnClient:
+      typeof validateOnClientImport === 'string'
+        ? ([validateOnClientImport] as const)
+        : (validateOnClientImport ?? null),
+    createRPC: typeof createRPCImport === 'string' ? ([createRPCImport] as const) : createRPCImport,
+  };
+
   const getImportPath = (p: string, s = '') =>
     p.startsWith('.') ? path.relative(path.join(outCwdRelativeDir, s), p) : p;
 

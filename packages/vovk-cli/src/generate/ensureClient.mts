@@ -2,6 +2,7 @@ import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { generate } from './generate.mjs';
 import type { Segment } from '../locateSegments.mjs';
+import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
 
 const getEmptySegmentRecordSchema = (segmentNames: string[]) => {
   const result: VovkSchema['segments'] = {};
@@ -25,12 +26,7 @@ export default async function ensureClient(projectInfo: ProjectInfo, locatedSegm
     fullSchema: {
       $schema: VovkSchemaIdEnum.SCHEMA,
       segments: getEmptySegmentRecordSchema(locatedSegments.map(({ segmentName }) => segmentName)),
-      meta: {
-        $schema: VovkSchemaIdEnum.META,
-        config: {
-          $schema: VovkSchemaIdEnum.CONFIG,
-        },
-      },
+      meta: getMetaSchema({ config: projectInfo.config, package: projectInfo.packageJson }),
     },
     locatedSegments,
   });
