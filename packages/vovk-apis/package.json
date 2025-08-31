@@ -1,6 +1,6 @@
 {
   "name": "vovk-apis",
-  "version": "0.0.0",
+  "version": "0.0.1-draft.0",
   "description": "3rd party APIs",
   "exports": {
     "./petstore": {
@@ -44,10 +44,10 @@
     "test": "echo 'Placeholder'"
   },
   "dependencies": {
-    "vovk": "^3.0.0-draft.405",
-    "vovk-ajv": "^0.0.0-draft.99"
+    "vovk": "^3.0.0-draft.414",
+    "vovk-ajv": "^0.0.0-draft.100"
   },
   "devDependencies": {
-    "vovk-cli": "^0.0.1-draft.340"
+    "vovk-cli": "^0.0.1-draft.352"
   }
 }

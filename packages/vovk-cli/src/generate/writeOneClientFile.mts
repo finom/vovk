@@ -40,6 +40,7 @@ export default async function writeOneClientFile({
   package: packageJson,
   readme,
   snippets,
+  reExports,
   isEnsuringClient,
   outCwdRelativeDir,
   // templateDef,
@@ -71,6 +72,7 @@ export default async function writeOneClientFile({
   package: PackageJson;
   readme: VovkReadmeConfig;
   snippets: VovkSnippetsConfig;
+  reExports: VovkStrictConfig['generatorConfig']['reExports'];
   isEnsuringClient: boolean;
   outCwdRelativeDir: string;
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
@@ -100,11 +102,12 @@ export default async function writeOneClientFile({
     packageJson
   );
 
-  let placeholder = !templateFilePath.endsWith('.json.ejs')
-    ? `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
+  let placeholder = templateFilePath.endsWith('.json.ejs')
+    ? ''
+    : `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
 // If you still see this text, the client is not generated yet because of an unknown problem.
-// Feel free to report an issue at https://github.com/finom/vovk/issues`
-    : '{}';
+// Feel free to report an issue at https://github.com/finom/vovk/issues`;
+
   placeholder = outPath.endsWith('.py') ? placeholder.replace(/\/\//g, '#') : placeholder;
 
   const getFirstLineBanner = (type: 'html' | 'sh' | 'c' = 'c') => {
@@ -119,6 +122,15 @@ export default async function writeOneClientFile({
     }
   };
 
+  reExports = _.mapValues(reExports ?? {}, (p) =>
+    p.startsWith('.')
+      ? path.relative(
+          path.join(outCwdRelativeDir, typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'),
+          path.resolve(cwd, p)
+        )
+      : p
+  );
+
   // Data for the EJS templates:
   const t = {
     _, // lodash
@@ -127,6 +139,7 @@ export default async function writeOneClientFile({
     package: packageJson,
     readme,
     snippets,
+    reExports,
     openapi,
     ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
@@ -180,11 +193,6 @@ export default async function writeOneClientFile({
         };
         const { origin: segmentConfigOrigin, rootEntry: segmentConfigRootEntry, segmentNameOverride } = segmentConfig;
 
-        const reExports = {
-          ...segmentConfig.reExports,
-          ...(isBundle ? projectInfo.config.bundle.generatorConfig?.reExports : {}),
-        };
-
         return [
           sName,
           {
@@ -196,17 +204,6 @@ export default async function writeOneClientFile({
             routeFilePath,
             segmentImportPath,
             segmentNameOverride,
-            reExports: _.mapValues(reExports ?? {}, (p) =>
-              p.startsWith('.')
-                ? path.relative(
-                    path.join(
-                      outCwdRelativeDir,
-                      typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'
-                    ),
-                    path.resolve(cwd, p)
-                  )
-                : p
-            ),
           },
         ];
       })

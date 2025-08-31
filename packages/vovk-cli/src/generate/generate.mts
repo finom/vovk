@@ -180,7 +180,7 @@ export async function generate({
         .map((segment) => ({ ...segment }))
     ),
   };
-  const { config, cwd, log, srcRoot, vovkCliPackage } = projectInfo;
+  const { config, cwd, log, srcRoot, vovkCliPackage, packageJson: projectPackageJson } = projectInfo;
 
   Object.entries(config.generatorConfig.segments ?? {})
     .filter(([, segmentConfig]) => segmentConfig.openAPIMixin)
@@ -247,9 +247,11 @@ export async function generate({
           readme,
           origin,
           snippets,
+          reExports,
         } = getGeneratorConfig({
           schema: fullSchema,
-          config: templateDef.generatorConfig,
+          configs: [templateDef.generatorConfig ?? {}],
+          projectPackageJson,
           isBundle,
           segmentName: null,
         });
@@ -278,6 +280,7 @@ export async function generate({
           package: packageJson,
           readme,
           snippets,
+          reExports,
           isEnsuringClient,
           outCwdRelativeDir,
           templateDef,
@@ -350,9 +353,11 @@ export async function generate({
               readme,
               origin,
               snippets,
+              reExports,
             } = getGeneratorConfig({
               schema: fullSchema,
-              config: templateDef.generatorConfig,
+              configs: [templateDef.generatorConfig ?? {}],
+              projectPackageJson,
               segmentName,
               isBundle,
             });
@@ -384,6 +389,7 @@ export async function generate({
               package: packageJson,
               readme,
               snippets,
+              reExports,
               isEnsuringClient,
               outCwdRelativeDir,
               templateDef,

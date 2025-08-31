@@ -10,7 +10,7 @@ export default async function writeMetaJson(schemaOutAbsolutePath: string, proje
   const metaStr = JSON.stringify(
     getMetaSchema({
       config: projectInfo.config,
-      package: projectInfo.packageJson,
+      useEmitConfig: true,
     }),
     null,
     2

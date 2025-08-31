@@ -5,19 +5,16 @@ import { VovkSchemaIdEnum, VovkStrictConfig, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
-import type { PackageJson } from 'type-fest';
 
 export async function getProjectFullSchema({
   schemaOutAbsolutePath,
   isNextInstalled,
   log,
-  package: packageJson,
   config,
 }: {
   schemaOutAbsolutePath: string;
   isNextInstalled: boolean;
   log: ProjectInfo['log'];
-  package: PackageJson;
   config: VovkStrictConfig;
 }): Promise<VovkSchema> {
   const result: VovkSchema = {
@@ -25,7 +22,7 @@ export async function getProjectFullSchema({
     segments: {},
     meta: getMetaSchema({
       config,
-      package: packageJson,
+      useEmitConfig: false,
     }),
   };
 
@@ -35,7 +32,15 @@ export async function getProjectFullSchema({
   const metaPath = path.join(schemaOutAbsolutePath, `${META_FILE_NAME}.json`);
   try {
     const metaContent = await readFile(metaPath, 'utf-8');
-    result.meta = JSON.parse(metaContent);
+    const fromFileMeta = JSON.parse(metaContent);
+    result.meta = {
+      ...result.meta,
+      ...fromFileMeta,
+      config: {
+        ...result.meta?.config,
+        ...fromFileMeta?.config,
+      },
+    };
   } catch {
     isEmptyLogOrWarn(`${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
   }

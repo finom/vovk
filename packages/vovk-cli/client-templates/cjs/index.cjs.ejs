@@ -3,12 +3,12 @@ const { createRPC } = require('<%= t.commonImports.createRPC %>');
 const { schema } = require('./schema.cjs');
 const { openapi } = require('./openapi.cjs');
 const { validateOnClient = null } = <%- t.imports.validateOnClient ? `require('${t.imports.validateOnClient}')` : '{}'%>;
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
-    <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhatCommaDivisible, reExportFrom]) => {
-      reExportWhatCommaDivisible.split(/\s*,\s*/).forEach((reExportWhat) => { %>
+<% Object.entries(t.reExports).forEach(([reExportWhatCommaDivisible, reExportFrom]) => {
+    reExportWhatCommaDivisible.split(/\s*,\s*/).forEach((reExportWhat) => { %>
 exports['<%= reExportWhat.split(/\s+as\s+/)[1] ?? reExportWhat %>'] = require('<%= reExportFrom %>')['<%= reExportWhat.split(/\s+as\s+/)[0] %>'];
-    <% })
-       }) %>
+  <% })
+}) %>
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
   <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 exports.<%= rpcModuleName %> = createRPC(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', require('<%= t.segmentImports[segment.segmentName].fetcher %>').fetcher,

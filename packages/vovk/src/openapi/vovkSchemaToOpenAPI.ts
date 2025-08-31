@@ -62,12 +62,12 @@ function extractComponents(
 export function vovkSchemaToOpenAPI({
   rootEntry = 'api',
   schema: fullSchema,
-  config,
+  configs,
   segmentName: givenSegmentName,
 }: {
   rootEntry?: string;
   schema: VovkSchema;
-  config?: VovkGeneratorConfigCommon;
+  configs?: VovkGeneratorConfigCommon[];
   segmentName?: string;
 }): OpenAPIObject {
   const paths: PathsObject = {};
@@ -78,7 +78,7 @@ export function vovkSchemaToOpenAPI({
     package: packageJson,
   } = getGeneratorConfig({
     schema: fullSchema,
-    config,
+    configs,
     segmentName: givenSegmentName ?? null,
   });
   for (const [segmentName, segmentSchema] of givenSegmentName

@@ -52,7 +52,6 @@ export type VovkSegmentSchema = {
 export type VovkMetaSchema = {
   $schema: typeof VovkSchemaIdEnum.META | (string & {});
   config: RequireFields<Partial<VovkStrictConfig>, '$schema'>;
-  package?: VovkPackageJson;
   openAPIObject?: Partial<OpenAPIObject>;
   // [key: string]: KnownAny;
 };

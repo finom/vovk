@@ -157,12 +157,11 @@ program
       srcRootRequired: false,
       logLevel: cliBundleOptions.logLevel,
     });
-    const { cwd, config, log, isNextInstalled, packageJson } = projectInfo;
+    const { cwd, config, log, isNextInstalled } = projectInfo;
     const fullSchema = await getProjectFullSchema({
       schemaOutAbsolutePath: path.resolve(cwd, cliBundleOptions?.schema ?? config.schemaOutDir),
       log,
       isNextInstalled,
-      package: packageJson,
       config,
     });
 

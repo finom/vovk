@@ -10,10 +10,10 @@ import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segme
 if (t.hasMixins) { %>
 import type { Controllers as MixinControllers, Mixins } from "./mixins.d.ts";
 <% } %>
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {   %>
-  <% Object.entries(t.segmentMeta[segment.segmentName].reExports).forEach(([reExportWhat, reExportFrom]) => { %>
+<% Object.entries(t.reExports).forEach(([reExportWhat, reExportFrom]) => { %>
 export { <%= reExportWhat %> } from '<%= reExportFrom %>';
-  <% }) %>   
+<% }) %>   
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {   %>
   <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].module.fetcher %>').fetcher extends VovkClientFetcher<infer U> ? U : never>(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', import('<%- t.segmentImports[segment.segmentName].module.fetcher %>'),

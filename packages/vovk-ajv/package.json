@@ -1,6 +1,6 @@
 {
   "name": "vovk-ajv",
-  "version": "0.0.0-draft.99",
+  "version": "0.0.0-draft.100",
   "description": "Local validation for JSON schemas for vovk-zod and other validation libraries for Vovk.ts",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/finom/vovk#readme",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.405",
+    "vovk": "^3.0.0-draft.414",
     "ajv": "^8.17.1"
   },
   "dependencies": {

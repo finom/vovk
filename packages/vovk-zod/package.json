@@ -1,6 +1,6 @@
 {
   "name": "vovk-zod",
-  "version": "1.0.0-draft.140",
+  "version": "1.0.0-draft.141",
   "description": "Zod validation for Vovk.ts",
   "main": "./esm/index.js",
   "module": "./cjs/index.js",
@@ -32,7 +32,7 @@
   "author": "Andrey Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.405",
+    "vovk": "^3.0.0-draft.414",
     "zod": "^4.0.14"
   },
   "dependencies": {
