@@ -125,7 +125,7 @@ const cliOptionsToOpenAPIMixins = ({
   openapiSpec,
   openapiFallback,
   openapiMixinName,
-}: GenerateOptions): NonNullable<VovkOpenAPIMixin[]> => {
+}: GenerateOptions): Record<string, NonNullable<VovkOpenAPIMixin>> => {
   return Object.fromEntries(
     (
       openapiSpec?.map((spec, i) => {
@@ -135,9 +135,9 @@ const cliOptionsToOpenAPIMixins = ({
               ? { url: spec, fallback: openapiFallback?.[i] }
               : { file: spec },
           apiRoot: openapiRootUrl?.[i] ?? '/',
-          getModuleName: openapiGetModuleName?.[i] ?? undefined,
+          getModuleName: openapiGetModuleName?.[i] ?? 'api',
           getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
-          mixinName: openapiMixinName?.[i],
+          mixinName: openapiMixinName?.[i] ?? 'mixin' + (i > 0 ? i + 1 : ''),
         };
       }) || []
     ).map(({ source, apiRoot, getModuleName, getMethodName, mixinName }) => [
@@ -197,7 +197,10 @@ export async function generate({
     Object.entries(cliMixins).map(async ([mixinName, mixinModule]) => {
       fullSchema.segments = {
         ...fullSchema.segments,
-        [mixinName]: openAPIToVovkSchema(await normalizeOpenAPIMixin({ mixinModule, log })).segments[mixinName],
+        [mixinName]: openAPIToVovkSchema({
+          segmentName: mixinName,
+          ...(await normalizeOpenAPIMixin({ mixinModule, log })),
+        }).segments[mixinName],
       };
     })
   );
@@ -272,7 +275,7 @@ export async function generate({
           projectInfo,
           clientTemplateFile,
           fullSchema: composedFullSchema,
-          prettifyClient: config.composedClient.prettifyClient,
+          prettifyClient: cliGenerateOptions?.prettify ?? config.composedClient.prettifyClient,
           segmentName: null,
           templateContent,
           matterResult,
@@ -382,7 +385,7 @@ export async function generate({
               projectInfo,
               clientTemplateFile,
               fullSchema: segmentedFullSchema,
-              prettifyClient: config.segmentedClient.prettifyClient,
+              prettifyClient: cliGenerateOptions?.prettify ?? config.segmentedClient.prettifyClient,
               segmentName,
               templateContent,
               matterResult,

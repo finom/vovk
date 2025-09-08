@@ -144,6 +144,9 @@ export function openAPIToVovkSchema({
           httpMethod: method.toUpperCase(),
           path,
           operationObject: operation,
+          misc: {
+            originalPath: path,
+          },
           validation: {
             ...(query && {
               query: applyComponentsSchemas(query, componentsSchemas, segmentName),

@@ -114,8 +114,14 @@ program
     'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URL'
   )
   .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema for client generation')
-  .option('--openapi-get-module-name <names...>', 'module names corresponding to the index of --openapi option')
-  .option('--openapi-get-method-name <names...>', 'method names corresponding to the index of --openapi option')
+  .option(
+    '--openapi-module-name, --openapi-get-module-name <names...>',
+    'module names corresponding to the index of --openapi option'
+  )
+  .option(
+    '--openapi-method-name, --openapi-get-method-name <names...>',
+    'method names corresponding to the index of --openapi option'
+  )
   .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
   .option('--openapi-mixin-name <names...>', 'mixin names corresponding to the index of --openapi option')
   .option('--openapi-fallback <paths...>', 'save OpenAPI spec and use it as a fallback if URL is not available')

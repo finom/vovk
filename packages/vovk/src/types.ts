@@ -479,6 +479,7 @@ export interface VovkOpenAPIMixin {
     | 'auto' // auto-detect based on operationObject method and path
     | GetOpenAPINameFn;
   errorMessageKey?: string;
+  mixinName?: string;
 }
 
 export interface VovkOpenAPIMixinNormalized

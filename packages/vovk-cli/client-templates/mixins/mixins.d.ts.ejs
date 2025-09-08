@@ -56,7 +56,7 @@ export type Controllers = {
           <%- getType(segment, controllerSchema, handlerName, 'body') %>, 
           <%- getType(segment, controllerSchema, handlerName, 'query') %>, 
           <%- getType(segment, controllerSchema, handlerName, 'params')  %>
-          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>` : 'Promise<KnownAny>' %>,
+          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<KnownAny>' %>,
         <% } %>
       };
      <% } %>

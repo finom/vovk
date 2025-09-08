@@ -8,9 +8,9 @@ const meta = <%- JSON.stringify(t.publicMeta, null, 2) %>;
 <% if(t.hasMixins) { %>
 const mixins = require('./mixins.json');
 <% } %>
-const segments = {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { if(segment.segmentType !== 'mixin') { %>
+const segments = {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType !== 'mixin').forEach((segment) => { %>
     '<%= segment.segmentName %>': require('./<%= t.schemaOutDir %>/<%= segment.segmentName || t.ROOT_SEGMENT_FILE_NAME %>.json'),
-<% }}) %>
+<% }) %>
   <% if(t.hasMixins) { %>
   ...mixins,
   <% } %>

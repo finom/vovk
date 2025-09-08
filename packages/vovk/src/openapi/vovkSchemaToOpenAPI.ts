@@ -131,6 +131,7 @@ export function vovkSchemaToOpenAPI({
               : null;
 
           const path =
+            h.misc?.originalPath ??
             '/' + [rootEntry.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path].filter(Boolean).join('/');
           paths[path] = paths[path] ?? {};
           const httpMethod = h.httpMethod.toLowerCase() as Lowercase<HttpMethod>;

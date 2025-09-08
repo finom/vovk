@@ -79,6 +79,7 @@
     "@types/tar-stream": "^3.1.4",
     "concat-stream": "^2.0.0",
     "create-next-app": "^15.4.4",
+    "http-server": "^14.1.1",
     "node-pty": "^1.0.0",
     "zod": "^4.0.10"
   }

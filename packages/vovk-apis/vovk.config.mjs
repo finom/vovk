@@ -9,7 +9,7 @@ const config = {
     enabled: true,
     fromTemplates: ['cjs', 'mjs', 'readme'],
     outDir: './dist',
-    prettifyClient: false,
+    prettifyClient: false, // takes too much time and memory on Github Mixin
   },
   composedClient: {
     enabled: false,
