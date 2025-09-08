@@ -293,6 +293,7 @@ export async function generate({
           origin: cliGenerateOptions?.origin ?? origin,
           configKey: 'composedClient',
           cliSchemaPath: cliGenerateOptions?.schemaPath ?? null,
+          projectConfig: config,
         });
 
         const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
@@ -402,6 +403,7 @@ export async function generate({
               origin: cliGenerateOptions?.origin ?? origin,
               configKey: 'segmentedClient',
               cliSchemaPath: cliGenerateOptions?.schemaPath ?? null,
+              projectConfig: config,
             });
 
             return {

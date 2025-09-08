@@ -73,6 +73,7 @@ export function getGeneratorConfig({
     openAPIObject: deepExtend(
       {} as OpenAPIObject,
       {
+        openapi: '3.1.0',
         info: {
           title: packageJson.name,
           version: packageJson.version,

@@ -13,6 +13,11 @@
       "import": "./dist/petstore/schema.cjs",
       "require": "./dist/petstore/schema.cjs"
     },
+    "./petstore/openapi": {
+      "types": "./dist/petstore/openapi.d.cts",
+      "import": "./dist/petstore/openapi.cjs",
+      "require": "./dist/petstore/openapi.cjs"
+    },
     "./github": {
       "types": "./dist/github/index.d.mts",
       "import": "./dist/github/index.mts",
@@ -23,6 +28,11 @@
       "import": "./dist/github/schema.cjs",
       "require": "./dist/github/schema.cjs"
     },
+    "./github/openapi": {
+      "types": "./dist/github/openapi.d.cts",
+      "import": "./dist/github/openapi.cjs",
+      "require": "./dist/github/openapi.cjs"
+    },
     "./telegram": {
       "types": "./dist/telegram/index.d.mts",
       "import": "./dist/telegram/index.mts",
@@ -32,20 +42,26 @@
       "types": "./dist/telegram/schema.d.cts",
       "import": "./dist/telegram/schema.cjs",
       "require": "./dist/telegram/schema.cjs"
+    },
+    "./telegram/openapi": {
+      "types": "./dist/telegram/openapi.d.cts",
+      "import": "./dist/telegram/openapi.cjs",
+      "require": "./dist/telegram/openapi.cjs"
     }
   },
   "scripts": {
     "build": "node ../vovk-cli/dist/index.mjs generate",
     "npm-publish": "npm publish",
     "ncu": "npm-check-updates -u",
-    "pre-test": "echo 'Placeholder'",
     "test-only": "echo 'Placeholder'",
-    "unit": "echo 'Placeholder'",
-    "test": "echo 'Placeholder'"
+    "test": "npm run unit",
+    "pretest": "npm run build",
+    "unit": "node --experimental-strip-types --test --test-concurrency=1 test/*.mts"
   },
   "dependencies": {
     "vovk": "^3.0.0-draft.414",
-    "vovk-ajv": "^0.0.0-draft.100"
+    "vovk-ajv": "^0.0.0-draft.100",
+    "ajv": "^8.17.1"
   },
   "devDependencies": {
     "vovk-cli": "^0.0.1-draft.352"

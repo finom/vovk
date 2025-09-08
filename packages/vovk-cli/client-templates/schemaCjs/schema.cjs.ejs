@@ -1,7 +1,10 @@
 <%- t.getFirstLineBanner() %>
 <% if(t.isVovkProject) { %>
 const meta = require('./<%= t.schemaOutDir %>/_meta.json');
+<% } else { %>
+const meta = <%- JSON.stringify(t.publicMeta, null, 2) %>;
 <% } %>
+
 <% if(t.hasMixins) { %>
 const mixins = require('./mixins.json');
 <% } %>
@@ -15,9 +18,7 @@ const segments = {<% Object.values(t.schema.segments).filter((segment) => segmen
 const schema = {
   $schema: '<%- t.VovkSchemaIdEnum.SCHEMA %>',
   segments,
-  meta: {
-    <% if(t.isVovkProject) { %>...meta<% } %>
-  }
+  meta,
 };
 
 module.exports.schema = schema;

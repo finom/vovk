@@ -5,10 +5,10 @@ import type { VovkRequest, VovkStreamAsyncIterable, KnownAny } from 'vovk';
 
 export namespace Mixins {
   <% for (const segment of mixins) { %>
-    <% if(segment.meta?.components?.schemas) { %>
+    <% if(segment.meta?.openAPIObject?.components?.schemas) { %>
       export namespace <%= t._.upperFirst(t._.camelCase(segment.segmentName)) %> {
-        <% for (const [componentName, componentSchema] of Object.entries(segment.meta.components.schemas)) { %>
-          <%- t.compileJSONSchemaToTypeScriptType(componentSchema, componentName, segment.meta.components, { dontCreateRefTypes: true }) %>
+        <% for (const [componentName, componentSchema] of Object.entries(segment.meta.openAPIObject.components.schemas)) { %>
+          <%- t.compileJSONSchemaToTypeScriptType(componentSchema, componentName, segment.meta.openAPIObject.components, { dontCreateRefTypes: true }) %>
         <% } %>
       }
     <% } %>

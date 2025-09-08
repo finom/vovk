@@ -239,8 +239,8 @@ export function vovkSchemaToOpenAPI({
 
   return {
     ...openAPIObject,
-    openapi: '3.1.0',
     components: {
+      ...openAPIObject?.components,
       schemas: {
         ...(openAPIObject?.components?.schemas ?? components),
         HttpStatus: {

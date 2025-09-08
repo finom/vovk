@@ -5,14 +5,11 @@ import startCase from 'lodash/startCase.js';
 
 /** @type {import('vovk').VovkConfig} */
 const config = {
-  imports: {
-    validateOnClient: 'vovk-ajv',
-  },
   segmentedClient: {
     enabled: true,
     fromTemplates: ['cjs', 'mjs', 'readme'],
     outDir: './dist',
-    prettifyClient: true,
+    prettifyClient: false,
   },
   composedClient: {
     enabled: false,
@@ -28,7 +25,18 @@ const config = {
       },
     },
   },
+  libs: {
+    /** @type {import('vovk-ajv').VovkAjvConfig} */
+    ajv: {
+      options: {
+        strict: false, // Petstore provides "xml" keyword that gives errors in strict mode, proably fixes other issues
+      },
+    },
+  },
   generatorConfig: {
+    imports: {
+      validateOnClient: 'vovk-ajv',
+    },
     segments: {
       petstore: {
         openAPIMixin: {
@@ -38,8 +46,9 @@ const config = {
           },
           getModuleName: 'PetstoreRPC',
           getMethodName: 'auto',
-          package: { name: 'vovk-apis/petstore' },
+          apiRoot: 'https://petstore3.swagger.io/api/v3',
         },
+        package: { name: 'vovk-apis/petstore' },
       },
       github: {
         openAPIMixin: {
@@ -55,12 +64,12 @@ const config = {
             const [, operationName] = operationObject.operationId?.split('/') ?? ['', 'ERROR'];
             return camelCase(operationName);
           },
-          package: { name: 'vovk-apis/github' },
-          snippets: {
-            headers: {
-              Authorization: 'Bearer ABC123',
-              'X-GitHub-Api-Version': '2022-11-28',
-            },
+        },
+        package: { name: 'vovk-apis/github' },
+        snippets: {
+          headers: {
+            Authorization: 'Bearer ABC123',
+            'X-GitHub-Api-Version': '2022-11-28',
           },
         },
       },
@@ -73,10 +82,10 @@ const config = {
           getModuleName: 'TelegramRPC',
           getMethodName: ({ path }) => path.replace(/^\//, ''),
           errorMessageKey: 'description',
-          package: { name: 'vovk-apis/telegram' },
-          snippets: {
-            apiRoot: 'https://api.telegram.org/bot${token}',
-          },
+        },
+        package: { name: 'vovk-apis/telegram' },
+        snippets: {
+          apiRoot: 'https://api.telegram.org/bot${token}',
         },
       },
     },

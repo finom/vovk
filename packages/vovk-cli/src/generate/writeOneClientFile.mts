@@ -21,6 +21,7 @@ import type { Segment } from '../locateSegments.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compileJSONSchemaToTypeScriptType.mjs';
 import { OpenAPIObject } from 'openapi3-ts/oas31';
 import getTemplateClientImports from './getTemplateClientImports.mjs';
+import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
 
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
   return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');
@@ -53,6 +54,7 @@ export default async function writeOneClientFile({
   origin,
   configKey,
   cliSchemaPath,
+  projectConfig,
 }: {
   cwd: string;
   projectInfo: ProjectInfo;
@@ -85,6 +87,7 @@ export default async function writeOneClientFile({
   origin: string | null;
   configKey: 'composedClient' | 'segmentedClient';
   cliSchemaPath: string | null;
+  projectConfig: VovkStrictConfig;
 }) {
   const { config, apiRoot } = projectInfo;
 
@@ -145,12 +148,14 @@ export default async function writeOneClientFile({
     apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
     imports: {},
     schema: fullSchema,
+    config: projectConfig,
     VovkSchemaIdEnum,
     createCodeExamples,
     compileJSONSchemaToTypeScriptType,
     YAML,
     TOML,
     getFirstLineBanner,
+    publicMeta: getMetaSchema({ config: projectConfig, useEmitConfig: true }),
     nodeNextResolutionExt: {
       ts: isNodeNextResolution ? '.ts' : '',
       js: isNodeNextResolution ? '.js' : '',
