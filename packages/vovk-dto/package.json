@@ -1,6 +1,6 @@
 {
   "name": "vovk-dto",
-  "version": "0.0.1-draft.89",
+  "version": "0.0.1-draft.90",
   "description": "Dto validation for Vovk.js",
   "main": "index.js",
   "scripts": {
@@ -27,9 +27,9 @@
   "peerDependencies": {
     "class-transformer": "latest",
     "class-validator": "latest",
-    "vovk": "^3.0.0-draft.414"
+    "vovk": "^3.0.0-draft.415"
   },
   "dependencies": {
-    "class-validator-jsonschema": "^5.0.2"
+    "class-validator-jsonschema": "^5.1.0"
   }
 }
