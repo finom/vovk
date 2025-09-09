@@ -336,6 +336,8 @@ export type VovkBasicJSONSchema = {
   $ref?: string;
   items?: VovkBasicJSONSchema;
   enum?: KnownAny[];
+  minimum?: number;
+  maximum?: number;
   title?: string;
   description?: string;
   properties?: { [key: string]: VovkBasicJSONSchema };
@@ -383,7 +385,7 @@ export type VovkReadmeConfig = {
   description?: string;
 };
 
-export type VovkSnippetsConfig = {
+export type VovkSamplesConfig = {
   apiRoot?: string;
   headers?: Record<string, string>;
 };
@@ -429,7 +431,7 @@ export interface VovkGeneratorConfigCommon {
   origin?: string | null;
   package?: VovkPackageJson;
   readme?: VovkReadmeConfig;
-  snippets?: VovkSnippetsConfig;
+  samples?: VovkSamplesConfig;
   openAPIObject?: Partial<OpenAPIObject>;
   reExports?: Record<string, string>;
   imports?: {

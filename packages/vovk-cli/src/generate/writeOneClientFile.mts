@@ -3,10 +3,10 @@ import path from 'node:path';
 import ejs from 'ejs';
 import _ from 'lodash';
 import {
-  createCodeExamples,
+  createCodeSamples,
   VovkReadmeConfig,
   VovkSchemaIdEnum,
-  VovkSnippetsConfig,
+  VovkSamplesConfig,
   type VovkSchema,
   type VovkStrictConfig,
 } from 'vovk';
@@ -40,7 +40,7 @@ export default async function writeOneClientFile({
   openapi,
   package: packageJson,
   readme,
-  snippets,
+  samples,
   reExports,
   isEnsuringClient,
   outCwdRelativeDir,
@@ -73,7 +73,7 @@ export default async function writeOneClientFile({
   openapi: OpenAPIObject;
   package: PackageJson;
   readme: VovkReadmeConfig;
-  snippets: VovkSnippetsConfig;
+  samples: VovkSamplesConfig;
   reExports: VovkStrictConfig['generatorConfig']['reExports'];
   isEnsuringClient: boolean;
   outCwdRelativeDir: string;
@@ -141,7 +141,7 @@ export default async function writeOneClientFile({
     isVovkProject,
     package: packageJson,
     readme,
-    snippets,
+    samples,
     reExports,
     openapi,
     ROOT_SEGMENT_FILE_NAME,
@@ -150,7 +150,7 @@ export default async function writeOneClientFile({
     schema: fullSchema,
     config: projectConfig,
     VovkSchemaIdEnum,
-    createCodeExamples,
+    createCodeSamples,
     compileJSONSchemaToTypeScriptType,
     YAML,
     TOML,

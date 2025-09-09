@@ -1,5 +1,5 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
-import { createCodeExamples } from '../utils/createCodeExamples';
+import { createCodeSamples } from '../utils/createCodeSamples';
 import {
   HttpStatus,
   type VovkBasicJSONSchema,
@@ -74,7 +74,7 @@ export function vovkSchemaToOpenAPI({
   const components: { [key: string]: VovkBasicJSONSchema } = {};
   const {
     openAPIObject,
-    snippets: snippetsConfig,
+    samples: samplesConfig,
     package: packageJson,
   } = resolveGeneratorConfigValues({
     schema: fullSchema,
@@ -103,12 +103,12 @@ export function vovkSchemaToOpenAPI({
             iterationComponents
           );
 
-          const { ts, rs, py } = createCodeExamples({
+          const { ts, rs, py } = createCodeSamples({
             package: packageJson,
             handlerName,
             handlerSchema: h,
             controllerSchema: c,
-            config: snippetsConfig,
+            config: samplesConfig,
           });
           const queryParameters =
             queryValidation && 'type' in queryValidation && 'properties' in queryValidation

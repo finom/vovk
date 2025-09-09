@@ -66,7 +66,7 @@ const config = {
           },
         },
         package: { name: 'vovk-apis/github' },
-        snippets: {
+        samples: {
           headers: {
             Authorization: 'Bearer ABC123',
             'X-GitHub-Api-Version': '2022-11-28',
@@ -84,7 +84,7 @@ const config = {
           errorMessageKey: 'description',
         },
         package: { name: 'vovk-apis/telegram' },
-        snippets: {
+        samples: {
           apiRoot: 'https://api.telegram.org/bot${token}',
         },
       },

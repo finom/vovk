@@ -24,12 +24,12 @@
 `<%= handlerSchema.httpMethod %> <%= [...(forceApiRoot ? [forceApiRoot] : [t.apiRoot, segmentName]), controllerSchema.prefix, handlerSchema.path].map((part, i) => i > 0 ? t._.trim(part, '/') : part).filter(Boolean).join('/') %>`
 
 ```rust
-<%- t.createCodeExamples({
+<%- t.createCodeSamples({
     handlerSchema,
     handlerName,
     controllerSchema,
     package: t.package,
-    config: t.snippets,
+    config: t.samples,
 }).rs %>
 ```
         <% }) %>

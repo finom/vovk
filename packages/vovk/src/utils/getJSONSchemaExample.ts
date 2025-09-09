@@ -175,10 +175,9 @@ function formatWithDescriptions(
     if (entries.length === 0) return '{}';
 
     const formattedEntries: string[] = [];
-    const isTopLevel = indent === 0;
 
     // Add top-level description for objects
-    if (isTopLevel && schema.type === 'object' && schema.description) {
+    if (schema.type === 'object' && schema.description) {
       const descLines = schema.description.split('\n');
       formattedEntries.push(`${indentStr}${nestIndentStr}${comment} -----`);
       descLines.forEach((line) => {

@@ -2,7 +2,7 @@ import type { PackageJson } from 'type-fest';
 import type {
   VovkGeneratorConfigCommon,
   VovkReadmeConfig,
-  VovkSnippetsConfig,
+  VovkSamplesConfig,
   VovkSchema,
   VovkGeneratorConfigStrict,
 } from '../types';
@@ -24,7 +24,7 @@ export function resolveGeneratorConfigValues({
 }): {
   readme: VovkReadmeConfig;
   openAPIObject: OpenAPIObject;
-  snippets: VovkSnippetsConfig;
+  samples: VovkSamplesConfig;
   origin: string;
   package: PackageJson;
   imports: VovkGeneratorConfigStrict['imports'];
@@ -90,14 +90,14 @@ export function resolveGeneratorConfigValues({
         : undefined,
       configs?.reduce((acc, config) => deepExtend(acc, config.openAPIObject), {} as OpenAPIObject)
     ),
-    snippets: deepExtend(
+    samples: deepExtend(
       {},
-      schema.meta?.config?.generatorConfig?.snippets,
-      isBundle ? schema.meta?.config?.bundle?.generatorConfig?.snippets : undefined,
+      schema.meta?.config?.generatorConfig?.samples,
+      isBundle ? schema.meta?.config?.bundle?.generatorConfig?.samples : undefined,
       typeof segmentName === 'string'
-        ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.snippets
+        ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.samples
         : undefined,
-      configs?.reduce((acc, config) => deepExtend(acc, config.snippets), {} as VovkSnippetsConfig)
+      configs?.reduce((acc, config) => deepExtend(acc, config.samples), {} as VovkSamplesConfig)
     ),
     readme: deepExtend(
       {},

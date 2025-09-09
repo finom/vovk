@@ -32,7 +32,7 @@ describe('resolveGeneratorConfigValues', () => {
       });
       deepStrictEqual(result.reExports, {});
       deepStrictEqual(result.readme, {});
-      deepStrictEqual(result.snippets, {});
+      deepStrictEqual(result.samples, {});
     });
 
     it('should handle empty configs array', () => {
@@ -792,7 +792,7 @@ describe('resolveGeneratorConfigValues', () => {
               generatorConfig: {
                 package: { homepage: 'https://bundle.example.com' },
                 origin: 'https://bundle.example.com',
-                snippets: { apiRoot: '/api/v2' },
+                samples: { apiRoot: '/api/v2' },
               },
             } as VovkStrictConfig['bundle'],
           },
@@ -826,7 +826,7 @@ describe('resolveGeneratorConfigValues', () => {
       });
 
       strictEqual(result.origin, 'https://config.example.com');
-      deepStrictEqual(result.snippets, { apiRoot: '/api/v2' });
+      deepStrictEqual(result.samples, { apiRoot: '/api/v2' });
     });
 
     it('should handle origin field with all null values', () => {

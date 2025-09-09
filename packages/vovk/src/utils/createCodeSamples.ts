@@ -3,7 +3,7 @@ import type {
   KnownAny,
   VovkControllerSchema,
   VovkHandlerSchema,
-  VovkSnippetsConfig,
+  VovkSamplesConfig,
 } from '../types';
 import { getJSONSchemaExample, getSampleValue } from './getJSONSchemaExample';
 import { getSampleFromObject } from './getSampleFromObject';
@@ -60,7 +60,7 @@ type CodeGenerationParams = {
   outputValidation?: VovkBasicJSONSchema;
   iterationValidation?: VovkBasicJSONSchema;
   hasArg: boolean;
-  config: VovkSnippetsConfig;
+  config: VovkSamplesConfig;
 };
 
 function generateTypeScriptCode({
@@ -119,7 +119,7 @@ ${[
   config?.apiRoot ? `    apiRoot: '${config.apiRoot}',` : null,
   config?.headers
     ? `    init: {
-      headers: ${getSampleFromObject(config.headers, { stripQuotes: true, indent: 6 })}
+      headers: ${getSampleFromObject(config.headers, { stripQuotes: true, indent: 6, nestingIndent: 4 })}
     },`
     : null,
 ]
@@ -251,35 +251,6 @@ function generateRustCode({
     getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
   const getRsOutputSample = (schema: VovkBasicJSONSchema, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
-  /* const getRsFormSample = (schema: VovkBasicJSONSchema, indent?: number, nesting = 0) => {
-    let formSample = 'let form = multipart::Form::new()';
-    for (const [key, prop] of Object.entries(schema.properties || {})) {
-      const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
-      let sampleValue; // = value.type === 'object' ? 'object_unknown' : getSampleValue(value);
-      if (target.type === 'string' && target.format === 'binary') {
-        sampleValue = isTextFormat(target.contentMediaType)
-          ? 'multipart::Part::text("text_content")'
-          : 'multipart::Part::bytes(binary_data)';
-
-        if (target.contentMediaType) {
-          sampleValue += `.mime_str("${target.contentMediaType}").unwrap()`;
-        }
-      } else if (prop.type === 'array') {
-        if (nesting === 0 && prop.items) {
-          sampleValue =
-            getRsFormSample(prop.items, indent, nesting + 1) + getRsFormSample(prop.items, indent, nesting + 1);
-        } else {
-          sampleValue = '"array_unknown"';
-        }
-      } else if (target.type === 'object') {
-        sampleValue = '"object_unknown"';
-      } else {
-        sampleValue = `"${getSampleValue(target)}"`;
-      }
-      formSample += `\n${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
-    }
-    return formSample;
-  }; */
 
   const getRsFormSample = (schema: VovkBasicJSONSchema) => {
     let formSample = 'let form = multipart::Form::new()';
@@ -343,8 +314,7 @@ use serde_json::{
   from_value, 
   json 
 };
-${bodyValidation?.['x-isForm'] ? `use multipart;` : ''}
-
+${bodyValidation?.['x-isForm'] ? `use multipart;\n` : ''}
 pub fn main() {${bodyValidation?.['x-isForm'] ? '\n  ' + getRsFormSample(bodyValidation) + '\n' : ''}
   let response = ${rpcNameSnake}::${handlerNameSnake}(
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
@@ -383,7 +353,7 @@ pub fn main() {${bodyValidation?.['x-isForm'] ? '\n  ' + getRsFormSample(bodyVal
   return RS_CODE.trim();
 }
 
-export function createCodeExamples({
+export function createCodeSamples({
   handlerName,
   handlerSchema,
   controllerSchema,
@@ -394,7 +364,7 @@ export function createCodeExamples({
   handlerSchema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   package?: CodeSamplePackageJson;
-  config: VovkSnippetsConfig;
+  config: VovkSamplesConfig;
 }) {
   const queryValidation = handlerSchema?.validation?.query as VovkBasicJSONSchema | undefined;
   const bodyValidation = handlerSchema?.validation?.body as VovkBasicJSONSchema | undefined;

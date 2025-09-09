@@ -22,7 +22,7 @@ import {
   type VovkGeneratorConfig,
   type VovkGeneratorConfigCommon,
   type VovkReadmeConfig,
-  type VovkSnippetsConfig,
+  type VovkSamplesConfig,
   type VovkOpenAPIMixin,
   type VovkOpenAPIMixinNormalized,
   type VovkStrictConfig,
@@ -52,7 +52,7 @@ import { withValidationLibrary } from './utils/withValidationLibrary';
 import { createStandardValidation } from './utils/createStandardValidation';
 import { multitenant } from './utils/multitenant';
 import { createLLMTools } from './utils/createLLMTools';
-import { createCodeExamples } from './utils/createCodeExamples';
+import { createCodeSamples } from './utils/createCodeSamples';
 import { createValidateOnClient } from './utils/createValidateOnClient';
 import { resolveGeneratorConfigValues } from './utils/resolveGeneratorConfigValues';
 
@@ -82,7 +82,7 @@ export {
   type VovkGeneratorConfig,
   type VovkGeneratorConfigCommon,
   type VovkReadmeConfig,
-  type VovkSnippetsConfig,
+  type VovkSamplesConfig,
   type VovkOpenAPIMixin,
   type VovkOpenAPIMixinNormalized,
   type VovkValidationType,
@@ -105,7 +105,7 @@ export {
   createStandardValidation,
   multitenant,
   createLLMTools,
-  createCodeExamples,
+  createCodeSamples,
   createValidateOnClient,
   progressive,
   operation,
