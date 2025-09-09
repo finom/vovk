@@ -13,8 +13,8 @@ type OpenAPIMixin = NonNullable<
 >;
 
 type OpenAPIMixinStrict = NonNullable<
-  NonNullable<NonNullable<VovkStrictConfig['generatorConfig']>['segments']>[string]
->['openAPIMixin'];
+  NonNullable<NonNullable<NonNullable<VovkStrictConfig['generatorConfig']>['segments']>[string]>['openAPIMixin']
+>;
 
 export type GetOpenAPINameFn = (config: {
   operationObject: VovkOperationObject;
@@ -148,7 +148,9 @@ export async function normalizeOpenAPIMixin({
   log: ProjectInfo['log'];
   cwd?: string;
 }): Promise<
-  NonNullable<NonNullable<NonNullable<VovkStrictConfig['generatorConfig']>['segments']>[string]>['openAPIMixin']
+  NonNullable<
+    NonNullable<NonNullable<NonNullable<VovkStrictConfig['generatorConfig']>['segments']>[string]>['openAPIMixin']
+  >
 > {
   const { source, getModuleName, getMethodName } = mixinModule;
   let openAPIObject: OpenAPIObject;

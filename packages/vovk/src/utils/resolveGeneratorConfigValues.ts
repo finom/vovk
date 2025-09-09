@@ -9,7 +9,7 @@ import type {
 import deepExtend from './deepExtend';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
-export function getGeneratorConfig({
+export function resolveGeneratorConfigValues({
   schema,
   configs,
   segmentName,
@@ -57,8 +57,10 @@ export function getGeneratorConfig({
     projectPackageJson,
     schema.meta?.config?.generatorConfig?.package,
     isBundle ? schema.meta?.config?.bundle?.generatorConfig?.package : undefined,
-    segmentName ? schema.segments?.[segmentName]?.meta?.package : undefined,
-    segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.package : undefined,
+    typeof segmentName === 'string' ? schema.segments?.[segmentName]?.meta?.package : undefined,
+    typeof segmentName === 'string'
+      ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.package
+      : undefined,
     configs?.reduce((acc, config) => deepExtend(acc, config.package), {} as PackageJson)
   );
 
@@ -82,28 +84,36 @@ export function getGeneratorConfig({
       },
       schema.meta?.config?.generatorConfig?.openAPIObject,
       isBundle ? schema.meta?.config?.bundle?.generatorConfig?.openAPIObject : undefined,
-      segmentName ? schema?.segments?.[segmentName]?.meta?.openAPIObject : undefined,
-      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIObject : undefined,
+      typeof segmentName === 'string' ? schema?.segments?.[segmentName]?.meta?.openAPIObject : undefined,
+      typeof segmentName === 'string'
+        ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.openAPIObject
+        : undefined,
       configs?.reduce((acc, config) => deepExtend(acc, config.openAPIObject), {} as OpenAPIObject)
     ),
     snippets: deepExtend(
       {},
       schema.meta?.config?.generatorConfig?.snippets,
       isBundle ? schema.meta?.config?.bundle?.generatorConfig?.snippets : undefined,
-      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.snippets : undefined,
+      typeof segmentName === 'string'
+        ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.snippets
+        : undefined,
       configs?.reduce((acc, config) => deepExtend(acc, config.snippets), {} as VovkSnippetsConfig)
     ),
     readme: deepExtend(
       {},
       schema.meta?.config?.generatorConfig?.readme,
       isBundle ? schema.meta?.config?.bundle?.generatorConfig?.readme : undefined,
-      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.readme : undefined,
+      typeof segmentName === 'string'
+        ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.readme
+        : undefined,
       configs?.reduce((acc, config) => deepExtend(acc, config.readme), {} as VovkReadmeConfig)
     ),
     origin:
       [
         isBundle ? schema.meta?.config?.bundle?.generatorConfig?.origin : undefined,
-        segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.origin : undefined,
+        typeof segmentName === 'string'
+          ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.origin
+          : undefined,
         schema.meta?.config?.generatorConfig?.origin,
         ...(configs?.map((config) => config.origin) ?? []),
       ]
@@ -117,7 +127,9 @@ export function getGeneratorConfig({
       } as NonNullable<VovkGeneratorConfigStrict['imports']>,
       schema.meta?.config?.generatorConfig?.imports,
       isBundle ? schema.meta?.config?.bundle?.generatorConfig?.imports : undefined,
-      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.imports : undefined,
+      typeof segmentName === 'string'
+        ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.imports
+        : undefined,
       configs?.reduce(
         (acc, config) => deepExtend(acc, config.imports),
         {} as NonNullable<VovkGeneratorConfigStrict['imports']>

@@ -502,9 +502,8 @@ export interface VovkGeneratorConfig extends VovkGeneratorConfigCommon {
   segments?: Record<string, VovkSegmentConfig>;
 }
 
-export interface VovkGeneratorConfigStrict extends Omit<VovkGeneratorConfig, 'origin' | 'segments'> {
-  origin: string;
-  segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin: VovkOpenAPIMixinNormalized }>;
+export interface VovkGeneratorConfigStrict extends Omit<VovkGeneratorConfig, 'segments'> {
+  segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin?: VovkOpenAPIMixinNormalized }>;
 }
 
 type VovkUserConfig = {

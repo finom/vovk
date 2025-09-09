@@ -54,7 +54,7 @@ import { multitenant } from './utils/multitenant';
 import { createLLMTools } from './utils/createLLMTools';
 import { createCodeExamples } from './utils/createCodeExamples';
 import { createValidateOnClient } from './utils/createValidateOnClient';
-import { getGeneratorConfig } from './utils/getGeneratorConfig';
+import { resolveGeneratorConfigValues } from './utils/resolveGeneratorConfigValues';
 
 export {
   type KnownAny,
@@ -111,7 +111,7 @@ export {
   operation,
   openAPIToVovkSchema,
   vovkSchemaToOpenAPI,
-  getGeneratorConfig,
+  resolveGeneratorConfigValues,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initSegment } = createVovkApp();

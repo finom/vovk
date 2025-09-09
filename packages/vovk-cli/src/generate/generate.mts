@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import matter from 'gray-matter';
 import _ from 'lodash';
 import {
-  getGeneratorConfig,
+  resolveGeneratorConfigValues,
   openAPIToVovkSchema,
   VovkOpenAPIMixin,
   vovkSchemaToOpenAPI,
@@ -187,7 +187,7 @@ export async function generate({
     .forEach(([segmentName, segmentConfig]) => {
       fullSchema.segments = {
         ...fullSchema.segments,
-        [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin, segmentName }).segments[segmentName],
+        [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin!, segmentName }).segments[segmentName],
       };
     });
 
@@ -256,7 +256,7 @@ export async function generate({
           origin,
           snippets,
           reExports,
-        } = getGeneratorConfig({
+        } = resolveGeneratorConfigValues({
           schema: fullSchema,
           configs: [templateDef.generatorConfig ?? {}],
           projectPackageJson,
@@ -365,7 +365,7 @@ export async function generate({
               origin,
               snippets,
               reExports,
-            } = getGeneratorConfig({
+            } = resolveGeneratorConfigValues({
               schema: fullSchema,
               configs: [templateDef.generatorConfig ?? {}],
               projectPackageJson,

@@ -9,7 +9,7 @@ import {
   type VovkGeneratorConfigCommon,
 } from '../types';
 import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
-import { getGeneratorConfig } from '../utils/getGeneratorConfig';
+import { resolveGeneratorConfigValues } from '../utils/resolveGeneratorConfigValues';
 
 function extractComponents(
   schema: VovkBasicJSONSchema | undefined
@@ -76,7 +76,7 @@ export function vovkSchemaToOpenAPI({
     openAPIObject,
     snippets: snippetsConfig,
     package: packageJson,
-  } = getGeneratorConfig({
+  } = resolveGeneratorConfigValues({
     schema: fullSchema,
     configs,
     segmentName: givenSegmentName ?? null,

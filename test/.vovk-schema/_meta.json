@@ -1,32 +1,5 @@
 {
   "$schema": "https://vovk.dev/api/schema/v3/meta.json",
-  "package": {
-    "name": "test",
-    "version": "0.1.1-beta.0",
-    "description": "Vovk test app",
-    "author": "Andrey Gubanov",
-    "license": "MIT",
-    "main": "./index.cjs",
-    "module": "./index.mjs",
-    "types": "./index.d.mts",
-    "exports": {
-      ".": {
-        "import": "./index.mjs",
-        "require": "./index.cjs",
-        "types": "./index.d.mts"
-      },
-      "./schema": {
-        "import": "./schema.cjs",
-        "require": "./schema.cjs",
-        "types": "./schema.d.cts"
-      },
-      "./openapi": {
-        "import": "./openapi.cjs",
-        "require": "./openapi.cjs",
-        "types": "./openapi.d.cts"
-      }
-    }
-  },
   "config": {
     "libs": {},
     "generatorConfig": {
