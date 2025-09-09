@@ -134,7 +134,7 @@ const cliOptionsToOpenAPIMixins = ({
             spec.startsWith('http://') || spec.startsWith('https://')
               ? { url: spec, fallback: openapiFallback?.[i] }
               : { file: spec },
-          apiRoot: openapiRootUrl?.[i] ?? '/',
+          apiRoot: openapiRootUrl?.[i] ?? '',
           getModuleName: openapiGetModuleName?.[i] ?? 'api',
           getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
           mixinName: openapiMixinName?.[i] ?? 'mixin' + (i > 0 ? i + 1 : ''),
@@ -193,17 +193,22 @@ export async function generate({
 
   const cliMixins = cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {});
 
-  await Promise.all(
-    Object.entries(cliMixins).map(async ([mixinName, mixinModule]) => {
-      fullSchema.segments = {
-        ...fullSchema.segments,
-        [mixinName]: openAPIToVovkSchema({
-          segmentName: mixinName,
-          ...(await normalizeOpenAPIMixin({ mixinModule, log })),
-        }).segments[mixinName],
-      };
-    })
-  );
+  fullSchema.segments = {
+    ...fullSchema.segments,
+    ...Object.fromEntries(
+      await Promise.all(
+        Object.entries(cliMixins).map(async ([mixinName, mixinModule]) => {
+          return [
+            mixinName,
+            openAPIToVovkSchema({
+              segmentName: mixinName,
+              ...(await normalizeOpenAPIMixin({ mixinModule, log })),
+            }).segments[mixinName],
+          ];
+        })
+      )
+    ),
+  };
 
   const isNodeNextResolution = ['node16', 'nodenext'].includes(
     (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''

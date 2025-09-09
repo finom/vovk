@@ -4,8 +4,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { runScript } from '../../lib/runScript.mts';
 import { ok, strictEqual } from 'node:assert';
-import { HttpMethod } from 'vovk';
+import { HttpMethod, type VovkSchema } from 'vovk';
 import * as YAML from 'yaml';
+import { Worker } from 'worker_threads';
 
 const PORT = 3020;
 
@@ -13,6 +14,23 @@ const artifactsDir = path.join(path.resolve(import.meta.dirname, '../../..'), 't
 
 function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
   return runScript(command, { cwd: artifactsDir, ...options });
+}
+
+async function importFresh(modulePath: string): Promise<{ schema: VovkSchema }> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(
+      `
+      import { parentPort } from 'worker_threads';
+      import('${modulePath}').then(module => {
+        parentPort.postMessage({ schema: module.schema });
+      });
+    `,
+      { eval: true }
+    );
+
+    worker.on('message', resolve);
+    worker.on('error', reject);
+  });
 }
 
 const getSpec = ({
@@ -29,6 +47,7 @@ const getSpec = ({
     title: 'Test API',
     version: '1.0.0',
   },
+  servers: [{ url: 'https://example.com/api/v1' }],
   paths: {
     '/test': {
       post: {
@@ -88,16 +107,16 @@ const getSpec = ({
   },
 });
 
-const writeSpec = async (opts?: Parameters<typeof getSpec>[0], format?: 'json' | 'yaml') => {
+const writeSpec = async (opts?: Parameters<typeof getSpec>[0], format?: 'json' | 'yaml', name = 'spec') => {
   const spec = getSpec(opts);
   const specStr = format === 'yaml' ? YAML.stringify(spec) : JSON.stringify(spec, null, 2);
-  const specFileName = format === 'yaml' ? 'spec.yaml' : 'spec.json';
+  const specFileName = format === 'yaml' ? `${name}.yaml` : `${name}.json`;
   await fs.mkdir(artifactsDir, { recursive: true });
   const specPath = path.join(artifactsDir, specFileName);
   await fs.writeFile(specPath, specStr);
 };
 
-await describe.only('OpenAPI flags', async () => {
+await describe('OpenAPI flags', async () => {
   await it('can generate from local openapi spec with default options', async () => {
     await writeSpec();
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
@@ -128,7 +147,9 @@ await describe.only('OpenAPI flags', async () => {
       'boolean'
     );
     ok(typeof api.postTest === 'function', 'api.postTest should be a function');
-    await fs.rmdir(generatedClientDir, { recursive: true });
+    strictEqual(schema.segments.mixin.forceApiRoot, 'https://example.com/api/v1');
+    strictEqual(schema2.segments.mixin.forceApiRoot, 'https://example.com/api/v1');
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('assigns x-isForm to multipart/form-data bodies', async () => {
@@ -143,7 +164,7 @@ await describe.only('OpenAPI flags', async () => {
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.body['x-isForm'], true);
     ok(typeof api.postTest === 'function', 'api.postTest should be a function');
-    await fs.rmdir(generatedClientDir, { recursive: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('assigns x-isForm to application/x-www-form-urlencoded bodies', async () => {
@@ -157,7 +178,7 @@ await describe.only('OpenAPI flags', async () => {
 
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.body['x-isForm'], true);
-    await fs.rmdir(generatedClientDir, { recursive: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('creates iteration validation with content-type application/jsonl', async () => {
@@ -175,7 +196,7 @@ await describe.only('OpenAPI flags', async () => {
       schema.segments.mixin.controllers.api.handlers.postTest.validation.iteration.properties.success.type,
       'boolean'
     );
-    await fs.rmdir(generatedClientDir, { recursive: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('creates iteration validation with content-type application/jsonlines', async () => {
@@ -193,7 +214,7 @@ await describe.only('OpenAPI flags', async () => {
       schema.segments.mixin.controllers.api.handlers.postTest.validation.iteration.properties.success.type,
       'boolean'
     );
-    await fs.rmdir(generatedClientDir, { recursive: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('generates handler name without operation id', async () => {
@@ -210,7 +231,7 @@ await describe.only('OpenAPI flags', async () => {
       schema.segments.mixin.controllers.api.handlers.createByTest.validation.output.properties.success.type,
       'boolean'
     );
-    await fs.rmdir(generatedClientDir, { recursive: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('can accept custom module name and custom mixin name', async () => {
@@ -241,7 +262,7 @@ await describe.only('OpenAPI flags', async () => {
       'boolean'
     );
     ok(typeof MyRPC.postTest === 'function', 'api.postTest should be a function');
-    await fs.rmdir(generatedClientDir, { recursive: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('works with nextjs-operation-id', async () => {
@@ -274,7 +295,7 @@ await describe.only('OpenAPI flags', async () => {
       'boolean'
     );
     ok(typeof MyRPC.postTest2 === 'function', 'api.postTest2 should be a function');
-    await fs.rmdir(generatedClientDir, { recursive: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('can use JSON URL and write fallback', async () => {
@@ -331,7 +352,35 @@ await describe.only('OpenAPI flags', async () => {
     await fs.rm(generatedClientDir, { recursive: true });
   });
 
-  await it.skip('can watch JSON file and regenerate on spec change', async () => {});
+  await it('can watch JSON file and regenerate on spec change', async () => {
+    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+
+    const watch = runAtProjectDir(
+      `../dist/index.mjs generate --openapi ${artifactsDir}/spec.json --out ${generatedClientDir} --from mjs --watch 1`
+    );
+
+    try {
+      await writeSpec();
+
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
+      const { schema } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+
+      strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
+
+      await writeSpec({ operationId: 'postTest2' });
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      const { schema: schema2 } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
+    } catch (e) {
+      watch.kill();
+      await fs.rm(generatedClientDir, { recursive: true, force: true });
+      throw e;
+    }
+
+    watch.kill();
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
 
   await it('can watch JSON URL and regenerate on spec change', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
@@ -344,31 +393,133 @@ await describe.only('OpenAPI flags', async () => {
     try {
       await writeSpec();
 
-      const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
+      const { schema } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+
       strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
 
       await writeSpec({ operationId: 'postTest2' });
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      const { schema: schema2 } = await import(path.join(generatedClientDir, 'index.mjs'));
+      const { schema: schema2 } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       httpServer.kill();
       watch.kill();
-      await fs.rm(generatedClientDir, { recursive: true });
+      await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
     httpServer.kill();
     watch.kill();
-    await fs.rm(generatedClientDir, { recursive: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
-  await it.skip('can watch YAML file and regenerate on spec change', async () => {});
+  await it('can watch YAML file and regenerate on spec change', async () => {
+    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
-  await it.skip('can watch YAML URL and regenerate on spec change', async () => {});
+    const watch = runAtProjectDir(
+      `../dist/index.mjs generate --openapi ${artifactsDir}/spec.yaml --out ${generatedClientDir} --from mjs --watch 1`
+    );
 
-  // TODO check other flags
-  // --openapi-root-url
-  // --openapi-mixin-name
-  // multiple --openapi flags
+    try {
+      await writeSpec({}, 'yaml');
+
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
+      const { schema } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+
+      strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
+
+      await writeSpec({ operationId: 'postTest2' }, 'yaml');
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      const { schema: schema2 } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
+    } catch (e) {
+      watch.kill();
+      await fs.rm(generatedClientDir, { recursive: true, force: true });
+      throw e;
+    }
+
+    watch.kill();
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+
+  await it('can watch YAML URL and regenerate on spec change', async () => {
+    const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
+    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+
+    const watch = runAtProjectDir(
+      `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.yaml --out ${generatedClientDir} --from mjs --watch 1`
+    );
+
+    try {
+      await writeSpec({}, 'yaml');
+
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
+      const { schema } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+
+      strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
+
+      await writeSpec({ operationId: 'postTest2' }, 'yaml');
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      const { schema: schema2 } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
+    } catch (e) {
+      httpServer.kill();
+      watch.kill();
+      await fs.rm(generatedClientDir, { recursive: true, force: true });
+      throw e;
+    }
+
+    httpServer.kill();
+    watch.kill();
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+
+  await it('defines --openapi-root-url flag to override server url', async () => {
+    await writeSpec();
+    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+
+    await runAtProjectDir(
+      `../dist/index.mjs generate --openapi spec.json --openapi-root-url https://api.example.com/v1 --out ${generatedClientDir} --from mjs`
+    );
+
+    const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+
+    strictEqual(schema.segments.mixin.forceApiRoot, 'https://api.example.com/v1');
+
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+
+  await it('uses multiple --openapi flags in row', async () => {
+    await writeSpec(
+      {
+        operationId: 'postTest1',
+      },
+      'json',
+      'spec1'
+    );
+    await writeSpec(
+      {
+        operationId: 'postTest2',
+      },
+      'yaml',
+      'spec2'
+    );
+    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+
+    await runAtProjectDir(
+      `../dist/index.mjs generate --openapi ${artifactsDir}/spec1.json --openapi spec2.yaml --openapi-module-name RPC1 --openapi-get-module-name RPC2 --openapi-mixin-name mixin1 --openapi-mixin-name mixin2 --out ${generatedClientDir} --from mjs`
+    );
+
+    const { schema, RPC1, RPC2 } = await import(path.join(generatedClientDir, 'index.mjs'));
+
+    strictEqual(schema.segments.mixin1.controllers.RPC1.handlers.postTest1.httpMethod, HttpMethod.POST);
+    strictEqual(schema.segments.mixin2.controllers.RPC2.handlers.postTest2.httpMethod, HttpMethod.POST);
+    ok(typeof RPC1.postTest1 === 'function', 'RPC1.postTest1 should be a function');
+    ok(typeof RPC2.postTest2 === 'function', 'RPC2.postTest2 should be a function');
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
 });

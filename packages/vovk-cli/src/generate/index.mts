@@ -140,7 +140,7 @@ export class VovkGenerate {
       .watch(openApiSpecPaths, {
         cwd,
         persistent: true,
-        ignoreInitial: true,
+        ignoreInitial: false,
       })
       .on('all', (event, path) => {
         if (event === 'change' || event === 'add' || event === 'ready' || event === 'unlink') {
@@ -192,11 +192,6 @@ export class VovkGenerate {
         }
 
         const content = await response.text();
-
-        if (lastContent === null) {
-          lastContent = content;
-          return;
-        }
 
         if (content !== lastContent) {
           log.info(`Remote OpenAPI spec changed at ${chalkHighlightThing(openApiSpecUrl)}`);

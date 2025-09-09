@@ -25,11 +25,11 @@ export function openAPIToVovkSchema({
 }: VovkOpenAPIMixinNormalized & { segmentName?: string }): VovkSchema {
   segmentName = segmentName ?? '';
   const forceApiRoot =
-    apiRoot ??
-    openAPIObject.servers?.[0]?.url ??
-    ('host' in openAPIObject
-      ? `https://${openAPIObject.host}${'basePath' in openAPIObject ? openAPIObject.basePath : ''}`
-      : null);
+    apiRoot ||
+    (openAPIObject.servers?.[0]?.url ??
+      ('host' in openAPIObject
+        ? `https://${openAPIObject.host}${'basePath' in openAPIObject ? openAPIObject.basePath : ''}`
+        : null));
 
   if (!forceApiRoot) {
     throw new Error('API root URL is required in OpenAPI configuration');
@@ -45,6 +45,7 @@ export function openAPIToVovkSchema({
         segmentName,
         segmentType: 'mixin',
         controllers: {},
+        forceApiRoot,
         meta: {
           openAPIObject: noPathsOpenAPIObject,
         },
@@ -71,7 +72,6 @@ export function openAPIToVovkSchema({
           operationObject: operation,
         });
         segment.controllers[rpcModuleName] ??= {
-          forceApiRoot,
           rpcModuleName,
           handlers: {},
         };
