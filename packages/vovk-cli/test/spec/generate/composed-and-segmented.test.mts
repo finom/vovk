@@ -1,11 +1,12 @@
 import { it, describe, beforeEach } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
 import path from 'node:path';
+import fs from 'node:fs/promises';
 import type { VovkSchema } from 'vovk';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfig from '../../lib/updateConfig.mts';
 
-await describe('Full & segmented client', async () => {
+await describe('Composed & Segmented client', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, assertNotExists, vovkDevAndKill, assertDirFileList } =
     getCLIAssertions({
       cwd: path.resolve(import.meta.dirname, '../../..'),
@@ -117,6 +118,56 @@ await describe('Full & segmented client', async () => {
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
+  await it('Uses generatorConfig re-exports with composed client (all re-exports compiled into one file)', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      composedClient: {
+        outDir: './composed-client',
+        fromTemplates: ['ts'],
+      },
+      generatorConfig: {
+        reExports: {
+          'x as y': './x.ts',
+          z: './z.ts',
+        },
+        segments: {
+          '': {
+            reExports: {
+              'default as c': './c.ts',
+            },
+          },
+          foo: {
+            reExports: {
+              'default as a': './a.ts',
+            },
+          },
+          'a/b/c/d/e': {
+            reExports: {
+              'default as b': './b.ts',
+            },
+          },
+        },
+      },
+    }));
+    await fs.writeFile(path.join(projectDir, 'x.ts'), 'export const x = 1;');
+    await fs.writeFile(path.join(projectDir, 'z.ts'), 'export const z = 2;');
+    await fs.writeFile(path.join(projectDir, 'a.ts'), 'export default 3;');
+    await fs.writeFile(path.join(projectDir, 'b.ts'), 'export default 4;');
+    await fs.writeFile(path.join(projectDir, 'c.ts'), 'export default 5;');
+    const tsconfig = JSON.parse(await fs.readFile(path.join(projectDir, 'tsconfig.json'), 'utf-8'));
+    tsconfig.compilerOptions = tsconfig.compilerOptions || {};
+    tsconfig.compilerOptions.moduleResolution = 'nodenext';
+    await fs.writeFile(path.join(projectDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2));
+    await runAtProjectDir(`../dist/index.mjs generate`);
+    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    const { y, z, a, b, c }: { y: number; z: number; a: number; b: number; c: number } = await import(
+      path.join(projectDir, 'composed-client', 'index.ts') + '?' + Math.random()
+    );
+    deepStrictEqual({ y, z, a, b, c }, { y: 1, z: 2, a: 3, b: 4, c: 5 });
+  });
+
+  // -----
+
   await it('Generates segmented client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
     await assertDirFileList('./segmented-client/root', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
@@ -135,6 +186,7 @@ await describe('Full & segmented client', async () => {
     await assertDirFileList('./segmented-client/bar/baz', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
     await assertDirFileList('./segmented-client/a/b/c/d/e', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
   });
+
   await it('Generates segmented client with included segments', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
@@ -190,6 +242,7 @@ await describe('Full & segmented client', async () => {
     );
     deepStrictEqual(Object.keys(schema.segments), ['bar/baz']);
   });
+
   await it('Generates segmented client with excluded segments using --segmented-include-segments flag', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
@@ -205,5 +258,64 @@ await describe('Full & segmented client', async () => {
       path.join(projectDir, 'segmented-client/foo', 'schema.ts') + '?' + Math.random()
     );
     deepStrictEqual(Object.keys(schema.segments), ['foo']);
+  });
+
+  await it('Uses generatorConfig re-exports with segmented client (re-exports correspond to their segment, and the top-level re-exports are compiled into the root segment)', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      segmentedClient: {
+        outDir: './segmented-client',
+        fromTemplates: ['ts'],
+      },
+      generatorConfig: {
+        reExports: {
+          'x as y': './x.ts',
+          z: './z.ts',
+        },
+        segments: {
+          '': {
+            reExports: {
+              'default as c': './c.ts',
+            },
+          },
+          foo: {
+            reExports: {
+              'default as a': './a.ts',
+            },
+          },
+          'a/b/c/d/e': {
+            reExports: {
+              'default as b': './b.ts',
+            },
+          },
+        },
+      },
+    }));
+    await fs.writeFile(path.join(projectDir, 'x.ts'), 'export const x = 1;');
+    await fs.writeFile(path.join(projectDir, 'z.ts'), 'export const z = 2;');
+    await fs.writeFile(path.join(projectDir, 'a.ts'), 'export default 3;');
+    await fs.writeFile(path.join(projectDir, 'b.ts'), 'export default 4;');
+    await fs.writeFile(path.join(projectDir, 'c.ts'), 'export default 5;');
+    const tsconfig = JSON.parse(await fs.readFile(path.join(projectDir, 'tsconfig.json'), 'utf-8'));
+    tsconfig.compilerOptions = tsconfig.compilerOptions || {};
+    tsconfig.compilerOptions.moduleResolution = 'nodenext';
+    await fs.writeFile(path.join(projectDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2));
+    await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
+
+    await assertDirFileList('./segmented-client/root', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList('./segmented-client/foo', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList('./segmented-client/a/b/c/d/e', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    const { y, z, c }: { y: number; z: number; a: number; b: number; c: number } = await import(
+      path.join(projectDir, 'segmented-client/root/index.ts') + '?' + Math.random()
+    );
+    deepStrictEqual({ y, z, c }, { y: 1, z: 2, c: 5 });
+    const { a }: { a: number } = await import(
+      path.join(projectDir, 'segmented-client/foo/index.ts') + '?' + Math.random()
+    );
+    deepStrictEqual({ a }, { a: 3 });
+    const { b }: { b: number } = await import(
+      path.join(projectDir, 'segmented-client/a/b/c/d/e/index.ts') + '?' + Math.random()
+    );
+    deepStrictEqual({ b }, { b: 4 });
   });
 });

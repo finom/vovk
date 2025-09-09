@@ -132,6 +132,7 @@ program
       srcRootRequired: false,
       logLevel: cliGenerateOptions.logLevel,
     });
+
     await new VovkGenerate({
       projectInfo,
       forceNothingWrittenLog: true,

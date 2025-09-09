@@ -210,9 +210,9 @@ export async function generate({
     ),
   };
 
-  const isNodeNextResolution = ['node16', 'nodenext'].includes(
-    (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
-  );
+  const moduleResolution = await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase();
+
+  const isNodeNextResolution = !moduleResolution || ['node16', 'nodenext'].includes(moduleResolution ?? '');
   const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
@@ -263,6 +263,8 @@ export async function generate({
           isBundle,
           segmentName: null,
         });
+
+        // console.log('reExports', fullSchema.meta)
 
         const openapi = vovkSchemaToOpenAPI({
           schema: fullSchema,

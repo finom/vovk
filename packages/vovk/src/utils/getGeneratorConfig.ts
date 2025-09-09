@@ -129,7 +129,16 @@ export function getGeneratorConfig({
       {} as NonNullable<VovkGeneratorConfigStrict['reExports']>,
       !segmentName && schema.meta?.config?.generatorConfig?.reExports,
       !segmentName && isBundle ? schema.meta?.config?.bundle?.generatorConfig?.reExports : undefined,
-      segmentName ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.reExports : undefined,
+      // for segmented client, apply all reExports from all segments
+      typeof segmentName !== 'string' &&
+        Object.values(schema.meta?.config?.generatorConfig?.segments ?? {}).reduce(
+          (acc, segmentConfig) => deepExtend(acc, segmentConfig.reExports ?? {}),
+          {} as NonNullable<VovkGeneratorConfigStrict['reExports']>
+        ),
+      // for a specific segment, apply reExports from that segment
+      typeof segmentName === 'string'
+        ? schema.meta?.config?.generatorConfig?.segments?.[segmentName]?.reExports
+        : undefined,
       configs?.reduce(
         (acc, config) => deepExtend(acc, config.reExports),
         {} as NonNullable<VovkGeneratorConfigStrict['reExports']>
