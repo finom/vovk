@@ -21,6 +21,7 @@ const vovkConfig = {
     openAPIObject: {
       info: {
         title: 'Hello, OpenAPI!',
+        description: 'Vovk test app',
         version: '1.0.0',
       },
       servers: [
