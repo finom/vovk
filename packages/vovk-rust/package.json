@@ -13,7 +13,7 @@
     "unit:rs": "RUST_BACKTRACE=full cargo test --manifest-path ./test_rust/Cargo.toml -- --show-output",
     "unit:ts": "npm run pre-test && node --experimental-strip-types --test --test-concurrency=1 test_ts/*.mts",
     "generate": "npm run generate --prefix ../../test -- --config=../packages/vovk-rust/vovk.config.test.mjs",
-    "test": "npm run unit:ts && PORT=3210 concurrently 'sleep 20 && npm run unit:rs' 'npm run generate && npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
+    "test": "npm run unit:ts && PORT=3210 concurrently 'sleep 60 && npm run unit:rs' 'npm run generate && npm run build --prefix ../../test && npm run start --prefix ../../test' --kill-others --success first"
   },
   "main": "./index.js",
   "type": "module",
