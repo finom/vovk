@@ -66,6 +66,7 @@ export async function bundle({
     entry: path.join(tsFullClientOutAbsoluteDirInput, './index.ts'),
     dts: true,
     format: ['cjs', 'esm'],
+    hash: false,
     fixedExtension: true,
     clean: true,
     ...bundleConfig.tsdownBuildOptions,

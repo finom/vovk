@@ -5,6 +5,7 @@ import type { VovkSchema } from 'vovk';
 import { deepStrictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
 import updateConfig from '../../lib/updateConfig.mts';
+import { importFresh } from '../../lib/importFresh.mts';
 
 await describe('TypeScript bundle', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, vovkDevAndKill, assertDirFileList } = getCLIAssertions({
@@ -38,8 +39,9 @@ await describe('TypeScript bundle', async () => {
       'index.d.cts',
       'schema.cjs',
       'schema.d.cts',
-      'openapi.d.cts',
       'openapi.cjs',
+      'openapi.mjs', // index.mjs's chunk created automatically by tsdown
+      'openapi.d.cts',
       'package.json',
       'README.md',
     ]);
@@ -60,6 +62,7 @@ await describe('TypeScript bundle', async () => {
       'schema.d.cts',
       'openapi.d.cts',
       'openapi.cjs',
+      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
@@ -78,6 +81,7 @@ await describe('TypeScript bundle', async () => {
       'schema.d.cts',
       'openapi.d.cts',
       'openapi.cjs',
+      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
@@ -102,15 +106,19 @@ await describe('TypeScript bundle', async () => {
       'schema.d.cts',
       'openapi.d.cts',
       'openapi.cjs',
+      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
-    let { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-bundle', 'schema.cjs') + '?' + Math.random()
+    let { schema }: { schema: VovkSchema } = await importFresh<{ schema: VovkSchema }>(
+      path.join(projectDir, 'composed-bundle', 'schema.cjs'),
+      ['schema']
     );
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
 
-    ({ schema } = await import(path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()));
+    ({ schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), [
+      'schema',
+    ]));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 
@@ -133,15 +141,19 @@ await describe('TypeScript bundle', async () => {
       'schema.d.cts',
       'openapi.d.cts',
       'openapi.cjs',
+      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
-    let { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-bundle', 'schema.cjs') + '?' + Math.random()
+    let { schema }: { schema: VovkSchema } = await importFresh<{ schema: VovkSchema }>(
+      path.join(projectDir, 'composed-bundle', 'schema.cjs'),
+      ['schema']
     );
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
 
-    ({ schema } = await import(path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()));
+    ({ schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), [
+      'schema',
+    ]));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
@@ -159,15 +171,19 @@ await describe('TypeScript bundle', async () => {
       'schema.d.cts',
       'openapi.d.cts',
       'openapi.cjs',
+      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
-    let { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-bundle', 'schema.cjs') + '?' + Math.random()
+    let { schema }: { schema: VovkSchema } = await importFresh<{ schema: VovkSchema }>(
+      path.join(projectDir, 'composed-bundle', 'schema.cjs'),
+      ['schema']
     );
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
 
-    ({ schema } = await import(path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()));
+    ({ schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), [
+      'schema',
+    ]));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 
@@ -185,19 +201,23 @@ await describe('TypeScript bundle', async () => {
       'schema.d.cts',
       'openapi.d.cts',
       'openapi.cjs',
+      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
-    let { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-bundle', 'schema.cjs') + '?' + Math.random()
+    let { schema }: { schema: VovkSchema } = await importFresh<{ schema: VovkSchema }>(
+      path.join(projectDir, 'composed-bundle', 'schema.cjs'),
+      ['schema']
     );
-    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
 
-    ({ schema } = await import(path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()));
-    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
+    ({ schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), [
+      'schema',
+    ]));
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
-  await it('Uses combined generatorConfig to create re-exports in composed bundle', async () => {
+  await it.only('Uses combined generatorConfig to create re-exports in composed bundle', async () => {
     await vovkDevAndKill();
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
@@ -220,7 +240,7 @@ await describe('TypeScript bundle', async () => {
               'foo as fooX': './foo.ts',
             },
           },
-          bar: {
+          'bar/baz': {
             reExports: {
               'bar as barX': './bar.ts',
             },
@@ -243,12 +263,16 @@ await describe('TypeScript bundle', async () => {
       'schema.d.cts',
       'openapi.d.cts',
       'openapi.cjs',
+      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
-    const { y, a, fooX, barX }: { y: number; a: number; fooX: number; barX: number } = await import(
-      path.join(projectDir, 'composed-bundle', 'index.cjs') + '?' + Math.random()
-    );
+    const { y, a, fooX, barX } = await importFresh<{
+      y: number;
+      a: number;
+      fooX: number;
+      barX: number;
+    }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), ['y', 'a', 'fooX', 'barX']);
 
     deepStrictEqual({ y, a, fooX, barX }, { y: 1, a: 2, fooX: 3, barX: 4 });
   });

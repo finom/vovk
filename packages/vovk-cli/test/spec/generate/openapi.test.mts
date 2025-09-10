@@ -6,7 +6,7 @@ import { runScript } from '../../lib/runScript.mts';
 import { ok, strictEqual } from 'node:assert';
 import { HttpMethod, type VovkSchema } from 'vovk';
 import * as YAML from 'yaml';
-import { Worker } from 'worker_threads';
+import { importFresh } from '../../lib/importFresh.mts';
 
 const PORT = 3020;
 
@@ -14,23 +14,6 @@ const artifactsDir = path.join(path.resolve(import.meta.dirname, '../../..'), 't
 
 function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
   return runScript(command, { cwd: artifactsDir, ...options });
-}
-
-async function importFresh(modulePath: string): Promise<{ schema: VovkSchema }> {
-  return new Promise((resolve, reject) => {
-    const worker = new Worker(
-      `
-      import { parentPort } from 'worker_threads';
-      import('${modulePath}').then(module => {
-        parentPort.postMessage({ schema: module.schema });
-      });
-    `,
-      { eval: true }
-    );
-
-    worker.on('message', resolve);
-    worker.on('error', reject);
-  });
 }
 
 const getSpec = ({
@@ -364,13 +347,18 @@ await describe('OpenAPI flags', async () => {
 
       await new Promise((resolve) => setTimeout(resolve, 2500));
 
-      const { schema } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.mjs'), [
+        'schema',
+      ]);
 
       strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
 
       await writeSpec({ operationId: 'postTest2' });
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      const { schema: schema2 } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(
+        path.join(generatedClientDir, 'index.mjs'),
+        ['schema']
+      );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       watch.kill();
@@ -395,13 +383,18 @@ await describe('OpenAPI flags', async () => {
 
       await new Promise((resolve) => setTimeout(resolve, 2500));
 
-      const { schema } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.mjs'), [
+        'schema',
+      ]);
 
       strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
 
       await writeSpec({ operationId: 'postTest2' });
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      const { schema: schema2 } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(
+        path.join(generatedClientDir, 'index.mjs'),
+        ['schema']
+      );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       httpServer.kill();
@@ -427,13 +420,18 @@ await describe('OpenAPI flags', async () => {
 
       await new Promise((resolve) => setTimeout(resolve, 2500));
 
-      const { schema } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.mjs'), [
+        'schema',
+      ]);
 
       strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
 
       await writeSpec({ operationId: 'postTest2' }, 'yaml');
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      const { schema: schema2 } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(
+        path.join(generatedClientDir, 'index.mjs'),
+        ['schema']
+      );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       watch.kill();
@@ -458,13 +456,18 @@ await describe('OpenAPI flags', async () => {
 
       await new Promise((resolve) => setTimeout(resolve, 2500));
 
-      const { schema } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.mjs'), [
+        'schema',
+      ]);
 
       strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
 
       await writeSpec({ operationId: 'postTest2' }, 'yaml');
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      const { schema: schema2 } = await importFresh(path.join(generatedClientDir, 'index.mjs'));
+      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(
+        path.join(generatedClientDir, 'index.mjs'),
+        ['schema']
+      );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       httpServer.kill();
