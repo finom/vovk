@@ -18,17 +18,17 @@ export function createStandardValidation({
   function withStandard<
     T extends (
       req: REQ,
-      params: PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferInput<PARAMS> : Record<string, string>
+      params: TParams extends StandardSchemaV1 ? StandardSchemaV1.InferInput<TParams> : Record<string, string>
     ) => KnownAny,
-    BODY extends StandardSchemaV1,
-    QUERY extends StandardSchemaV1,
-    PARAMS extends StandardSchemaV1,
+    TBody extends StandardSchemaV1,
+    TQuery extends StandardSchemaV1,
+    TParams extends StandardSchemaV1,
     OUTPUT extends StandardSchemaV1,
     ITERATION extends StandardSchemaV1,
     REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-      BODY extends StandardSchemaV1 ? StandardSchemaV1.InferInput<BODY> : undefined,
-      QUERY extends StandardSchemaV1 ? StandardSchemaV1.InferInput<QUERY> : undefined,
-      PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferInput<PARAMS> : undefined
+      TBody extends StandardSchemaV1 ? StandardSchemaV1.InferInput<TBody> : undefined,
+      TQuery extends StandardSchemaV1 ? StandardSchemaV1.InferInput<TQuery> : undefined,
+      TParams extends StandardSchemaV1 ? StandardSchemaV1.InferInput<TParams> : undefined
     >,
     IS_FORM extends boolean = false,
   >({
@@ -45,9 +45,9 @@ export function createStandardValidation({
     operationObject,
   }: {
     isForm?: IS_FORM;
-    body?: BODY;
-    query?: QUERY;
-    params?: PARAMS;
+    body?: TBody;
+    query?: TQuery;
+    params?: TParams;
     output?: OUTPUT;
     iteration?: ITERATION;
     handle: T;
@@ -68,9 +68,9 @@ export function createStandardValidation({
       validateEachIteration,
       handle: handle as VovkTypedMethod<
         T,
-        BODY extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<BODY> : KnownAny,
-        QUERY extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<QUERY> : KnownAny,
-        PARAMS extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<PARAMS> : KnownAny,
+        TBody extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TBody> : KnownAny,
+        TQuery extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TQuery> : KnownAny,
+        TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : KnownAny,
         OUTPUT extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<OUTPUT> : KnownAny,
         ITERATION extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<ITERATION> : KnownAny,
         IS_FORM

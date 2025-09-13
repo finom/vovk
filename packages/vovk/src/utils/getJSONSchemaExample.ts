@@ -32,7 +32,8 @@ export function getJSONSchemaExample(
     stripQuotes,
     indent,
     nestingIndent,
-    ignoreBinary
+    ignoreBinary,
+    true // isTopLevel
   );
 }
 
@@ -126,8 +127,9 @@ function formatWithDescriptions(
   comment: string,
   stripQuotes: boolean,
   indent: number,
-  nestingIndent: number, // Added parameter
-  ignoreBinary?: boolean
+  nestingIndent: number,
+  ignoreBinary: boolean,
+  isTopLevel: boolean
 ): string {
   const indentStr = ' '.repeat(indent);
   const nestIndentStr = ' '.repeat(nestingIndent); // Create nesting indent string
@@ -161,7 +163,8 @@ function formatWithDescriptions(
         stripQuotes,
         indent + nestingIndent, // Use nestingIndent instead of hardcoded 4
         nestingIndent,
-        ignoreBinary
+        ignoreBinary,
+        false
       );
       return `${indentStr}${nestIndentStr}${formattedItem}`; // Use nestIndentStr for item indentation
     });
@@ -177,7 +180,7 @@ function formatWithDescriptions(
     const formattedEntries: string[] = [];
 
     // Add top-level description for objects
-    if (schema.type === 'object' && schema.description) {
+    if (isTopLevel && schema.type === 'object' && schema.description) {
       const descLines = schema.description.split('\n');
       formattedEntries.push(`${indentStr}${nestIndentStr}${comment} -----`);
       descLines.forEach((line) => {
@@ -215,7 +218,8 @@ function formatWithDescriptions(
         stripQuotes,
         indent + nestingIndent,
         nestingIndent,
-        ignoreBinary
+        ignoreBinary,
+        false
       );
 
       formattedEntries.push(

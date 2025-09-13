@@ -6,13 +6,7 @@ import type {
   HttpMethod,
   VovkSchema,
 } from '../types';
-import type {
-  ClientMethod,
-  VovkClient,
-  VovkClientFetcher,
-  VovkDefaultFetcherOptions,
-  VovkValidateOnClient,
-} from './types';
+import type { ClientMethod, VovkRPCModule, VovkFetcher, VovkFetcherOptions, VovkValidateOnClient } from './types';
 
 import { fetcher as defaultFetcher } from './fetcher';
 import { defaultHandler } from './defaultHandler';
@@ -38,9 +32,9 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   givenSchema: unknown,
   segmentName: string,
   rpcModuleName: string,
-  givenFetcher?: VovkClientFetcher<OPTS> | Promise<{ fetcher: VovkClientFetcher<OPTS> }>,
-  options?: VovkDefaultFetcherOptions<OPTS>
-): VovkClient<T, OPTS> => {
+  givenFetcher?: VovkFetcher<OPTS> | Promise<{ fetcher: VovkFetcher<OPTS> }>,
+  options?: VovkFetcherOptions<OPTS>
+): VovkRPCModule<T, OPTS> => {
   const schema = givenSchema as VovkSchema; // fixes incompatibilities with JSON module
   // fetcher ??= defaultFetcher as NonNullable<typeof fetcher>;
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
@@ -48,7 +42,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   if (!segmentSchema)
     throw new Error(`Unable to create RPC module. Segment schema is missing for segment "${segmentName}".`);
   const controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
-  const client = {} as VovkClient<T, OPTS>;
+  const client = {} as VovkRPCModule<T, OPTS>;
   if (!controllerSchema) {
     throw new Error(
       `Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName}".`
@@ -86,7 +80,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       const fetcher =
         givenFetcher instanceof Promise
           ? (await givenFetcher).fetcher
-          : (givenFetcher ?? (defaultFetcher as unknown as VovkClientFetcher<OPTS>));
+          : (givenFetcher ?? (defaultFetcher as unknown as VovkFetcher<OPTS>));
       const validate: Parameters<typeof fetcher>[0]['validate'] = async (
         validationInput,
         {

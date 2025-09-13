@@ -27,9 +27,9 @@ export function withValidationLibrary<
     KnownAny,
     boolean
   >,
-  BODY_MODEL,
-  QUERY_MODEL,
-  PARAMS_MODEL,
+  TBody_MODEL,
+  TQuery_MODEL,
+  TParams_MODEL,
   OUTPUT_MODEL,
   ITERATION_MODEL,
   IS_FORM extends boolean = false,
@@ -52,9 +52,9 @@ export function withValidationLibrary<
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
-  body?: BODY_MODEL;
-  query?: QUERY_MODEL;
-  params?: PARAMS_MODEL;
+  body?: TBody_MODEL;
+  query?: TQuery_MODEL;
+  params?: TParams_MODEL;
   output?: OUTPUT_MODEL;
   iteration?: ITERATION_MODEL;
   handle: T;
@@ -64,7 +64,7 @@ export function withValidationLibrary<
   ) => KnownAny;
   validate: (
     data: KnownAny,
-    model: NonNullable<BODY_MODEL | QUERY_MODEL | PARAMS_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
+    model: NonNullable<TBody_MODEL | TQuery_MODEL | TParams_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
     meta: {
       type: VovkValidationType | 'form';
       req: VovkRequestAny;

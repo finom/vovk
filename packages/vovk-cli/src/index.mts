@@ -110,7 +110,7 @@ program
   .option('--config, --config-path <config>', 'path to config file')
   .option('--origin <url>', 'set the origin URL for the generated client')
   .option(
-    '--watch <s>',
+    '--watch [s]',
     'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URL'
   )
   .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema for client generation')

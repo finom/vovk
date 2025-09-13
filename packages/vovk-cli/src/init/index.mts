@@ -27,7 +27,7 @@ export class Init {
       pkgJson,
     }: {
       configPaths: string[];
-      pkgJson: NPMCliPackageJson;
+      pkgJson: NPMCliPackageJson | null;
       cwd: string;
     },
     {
@@ -45,7 +45,8 @@ export class Init {
     }: Omit<InitOptions, 'yes' | 'logLevel'>
   ) {
     const { log, root } = this;
-    const dependencies: string[] = ['vovk', 'vovk-client', 'openapi3-ts', 'vovk-ajv', 'ajv'];
+
+    const dependencies: string[] = ['vovk', 'vovk-client', 'vovk-ajv'];
     const devDependencies: string[] = ['vovk-cli'];
 
     if (lang?.includes('py')) {
@@ -81,7 +82,7 @@ export class Init {
 
     if (updateScripts) {
       try {
-        if (!dryRun) await updateNPMScripts(pkgJson, root, updateScripts);
+        if (!dryRun && pkgJson) await updateNPMScripts(pkgJson, root, updateScripts);
         log.info('Updated scripts at package.json');
       } catch (error) {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
@@ -111,7 +112,7 @@ export class Init {
       }
     }
 
-    if (!dryRun) {
+    if (!dryRun && pkgJson) {
       let depsUpdated = false;
       try {
         await updateDependenciesWithoutInstalling({
@@ -206,7 +207,7 @@ export class Init {
     const cwd = process.cwd();
     const root = path.resolve(cwd, prefix ?? '.');
     const log = getLogger(logLevel ?? 'info');
-    const pkgJson = await NPMCliPackageJson.load(root);
+    const pkgJson = await NPMCliPackageJson.load(root).catch(() => null);
 
     this.root = root;
     this.log = log;
@@ -231,11 +232,14 @@ export class Init {
     }
 
     if (!(await getFileSystemEntryType(path.join(root, 'package.json')))) {
-      throw new Error(`package.json not found at ${root}. Run "npx create-next-app" to create a new Next.js project.`);
-    }
-
-    if (!(await getFileSystemEntryType(path.join(root, 'tsconfig.json')))) {
-      throw new Error(`tsconfig.json not found at ${root}. Run "npx tsc --init" to create a new tsconfig.json file.`);
+      log.warn(
+        `${chalkHighlightThing('package.json')} not found at ${chalkHighlightThing(root)}. Run "npx create-next-app" to create a new Next.js project
+        .`
+      );
+    } else if (pkgJson && !(await getFileSystemEntryType(path.join(root, 'tsconfig.json')))) {
+      log.warn(
+        `${chalkHighlightThing('tsconfig.json')} not found at ${chalkHighlightThing(root)}. Run "npx tsc --init" to create a new tsconfig.json file.`
+      );
     }
 
     if (configPaths.length) {
@@ -279,29 +283,31 @@ export class Init {
             ],
           })));
 
-    updateScripts ??= await select({
-      message: 'Do you want to update "dev" and add "prebuild" NPM scripts at package.json?',
-      default: 'implicit',
-      choices: [
-        {
-          name: 'Yes, use "concurrently" implicitly',
-          value: 'implicit' as const,
-          description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)} and the "prebuild" script will run "vovk generate"`,
-        },
-        {
-          name: 'Yes, use "concurrently" explicitly',
-          value: 'explicit' as const,
-          description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)} and the "prebuild" script will run "vovk generate"`,
-        },
-        {
-          name: 'No',
-          value: undefined,
-          description: 'Add the NPM scripts manually',
-        },
-      ],
-    });
+    updateScripts ??= !pkgJson
+      ? undefined
+      : await select({
+          message: 'Do you want to update "dev" and add "prebuild" NPM scripts at package.json?',
+          default: 'implicit',
+          choices: [
+            {
+              name: 'Yes, use "concurrently" implicitly',
+              value: 'implicit' as const,
+              description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)} and the "prebuild" script will run "vovk generate"`,
+            },
+            {
+              name: 'Yes, use "concurrently" explicitly',
+              value: 'explicit' as const,
+              description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)} and the "prebuild" script will run "vovk generate"`,
+            },
+            {
+              name: 'No',
+              value: undefined,
+              description: 'Add the NPM scripts manually',
+            },
+          ],
+        });
 
-    if (typeof updateTsConfig === 'undefined') {
+    if (typeof updateTsConfig === 'undefined' && pkgJson) {
       let shouldAsk = false;
 
       try {

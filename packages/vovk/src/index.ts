@@ -20,7 +20,6 @@ import {
   type VovkSchema,
   type VovkConfig,
   type VovkGeneratorConfig,
-  type VovkGeneratorConfigCommon,
   type VovkReadmeConfig,
   type VovkSamplesConfig,
   type VovkOpenAPIMixin,
@@ -33,9 +32,9 @@ import {
   type VovkOperationObject,
 } from './types';
 import {
-  type VovkClient,
-  type VovkClientFetcher,
-  type VovkDefaultFetcherOptions,
+  type VovkRPCModule,
+  type VovkFetcher,
+  type VovkFetcherOptions,
   type VovkValidateOnClient,
   type VovkStreamAsyncIterable,
   createRPC,
@@ -58,9 +57,9 @@ import { resolveGeneratorConfigValues } from './utils/resolveGeneratorConfigValu
 
 export {
   type KnownAny,
-  type VovkClient,
-  type VovkClientFetcher,
-  type VovkDefaultFetcherOptions,
+  type VovkRPCModule,
+  type VovkFetcher,
+  type VovkFetcherOptions,
   type VovkStreamAsyncIterable,
   type VovkValidateOnClient,
   type VovkSegmentSchema,
@@ -80,7 +79,6 @@ export {
   type VovkConfig,
   type VovkStrictConfig,
   type VovkGeneratorConfig,
-  type VovkGeneratorConfigCommon,
   type VovkReadmeConfig,
   type VovkSamplesConfig,
   type VovkOpenAPIMixin,

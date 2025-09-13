@@ -1,12 +1,12 @@
 import { schema } from 'vovk-client';
 import type ClientController from './CommonController.ts';
-import { createRPC, fetcher, type VovkDefaultFetcherOptions } from 'vovk';
+import { createRPC, fetcher, type VovkFetcherOptions } from 'vovk';
 import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
-const defaultController = createRPC<typeof ClientController, VovkDefaultFetcherOptions<unknown>>(
+const defaultController = createRPC<typeof ClientController, VovkFetcherOptions<unknown>>(
   schema,
   'foo/client',
   'CommonControllerRPC',
@@ -23,7 +23,7 @@ describe('Internal client API', () => {
   });
 
   it('Should handle custom options', async () => {
-    const noOptionsController = createRPC<typeof ClientController, VovkDefaultFetcherOptions<unknown>>(
+    const noOptionsController = createRPC<typeof ClientController, VovkFetcherOptions<unknown>>(
       schema,
       'foo/client',
       'CommonControllerRPC'

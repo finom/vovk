@@ -29,20 +29,20 @@ export type StaticMethodInput<
     };
   },
 > = OmitNullable<
-  (Parameters<T>[0] extends VovkRequest<infer BODY, infer QUERY, infer PARAMS>
-    ? (BODY extends Record<KnownAny, KnownAny>
+  (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
+    ? (TBody extends Record<KnownAny, KnownAny>
         ? {
-            body: T['__types'] extends { isForm: true } ? FormData : BODY;
+            body: T['__types'] extends { isForm: true } ? FormData : TBody;
           }
         : Empty) &
-        (QUERY extends Record<KnownAny, KnownAny>
+        (TQuery extends Record<KnownAny, KnownAny>
           ? {
-              query: QUERY;
+              query: TQuery;
             }
           : Empty) &
-        (PARAMS extends Record<KnownAny, KnownAny>
+        (TParams extends Record<KnownAny, KnownAny>
           ? {
-              params: PARAMS;
+              params: TParams;
             }
           : Empty) & { meta?: { [key: string]: KnownAny } }
     : Empty) &
@@ -78,11 +78,11 @@ type StaticMethodOptions<
   TFetcherOptions extends Record<string, KnownAny>,
   TStreamIteration,
   R,
-  F extends VovkDefaultFetcherOptions<KnownAny>,
+  F extends VovkFetcherOptions<KnownAny>,
 > = Partial<
   TFetcherOptions & {
     transform: (staticMethodReturn: Awaited<StaticMethodReturn<T>>, resp: Response) => R;
-    fetcher: VovkClientFetcher<F>;
+    fetcher: VovkFetcher<F>;
   }
 >;
 
@@ -121,10 +121,10 @@ export type ClientMethod<
   TFetcherOptions extends Record<string, KnownAny>,
   TStreamIteration extends KnownAny = unknown,
 > = (IsEmptyObject<StaticMethodInput<T>> extends true
-  ? <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<TFetcherOptions>>(
+  ? <R, F extends VovkFetcherOptions<KnownAny> = VovkFetcherOptions<TFetcherOptions>>(
       options?: Prettify<StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
     ) => ClientMethodReturn<T, TStreamIteration, R>
-  : <R, F extends VovkDefaultFetcherOptions<KnownAny> = VovkDefaultFetcherOptions<TFetcherOptions>>(
+  : <R, F extends VovkFetcherOptions<KnownAny> = VovkFetcherOptions<TFetcherOptions>>(
       options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
     ) => ClientMethodReturn<T, TStreamIteration, R>) & {
   isRPC: true;
@@ -145,11 +145,11 @@ type VovkClientWithNever<T, TFetcherOptions extends { [key: string]: KnownAny }>
   [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], TFetcherOptions> : never;
 };
 
-export type VovkClient<T, TFetcherOptions extends { [key: string]: KnownAny }> = OmitNever<
+export type VovkRPCModule<T, TFetcherOptions extends { [key: string]: KnownAny }> = OmitNever<
   VovkClientWithNever<T, TFetcherOptions>
 >;
 
-export type VovkClientFetcher<TFetcherOptions> = (
+export type VovkFetcher<TFetcherOptions> = (
   options: {
     name: string;
     httpMethod: HttpMethod;
@@ -175,7 +175,7 @@ export type VovkClientFetcher<TFetcherOptions> = (
   } & TFetcherOptions
 ) => Promise<[KnownAny, Response]>;
 
-export type VovkDefaultFetcherOptions<T> = T & {
+export type VovkFetcherOptions<T> = T & {
   apiRoot?: string;
   disableClientValidation?: boolean;
   validateOnClient?: VovkValidateOnClient<T> | Promise<{ validateOnClient: VovkValidateOnClient<T> }>;

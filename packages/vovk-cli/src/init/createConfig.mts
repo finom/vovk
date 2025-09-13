@@ -21,6 +21,7 @@ export default async function createConfig({
   const dir = (await getFileSystemEntryType(dotConfigPath)) === FileSystemEntryType.DIRECTORY ? dotConfigPath : root;
   const isModule = await fs
     .readFile(path.join(root, 'package.json'), 'utf-8')
+    .catch(() => '{}')
     .then((content) => (JSON.parse(content) as { type: 'module' }).type === 'module');
   const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
 
