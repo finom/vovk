@@ -6,7 +6,7 @@ import type { ProjectInfo } from '../getProjectInfo/index.mts';
 export async function newComponents(
   components: string[],
   projectInfo: ProjectInfo,
-  { dryRun, dir, templates, overwrite, noSegmentUpdate, empty, static: isStaticSegment }: NewOptions
+  { dryRun, outDir, templates, overwrite, noSegmentUpdate, empty, static: isStaticSegment }: NewOptions
 ) {
   if (components[0] === 'segment' || components[0] === 'segments') {
     // vovk new segment [segmentName]
@@ -37,7 +37,7 @@ export async function newComponents(
       projectInfo,
       what,
       moduleNameWithOptionalSegment,
-      dir,
+      outDir,
       templates,
       overwrite,
       noSegmentUpdate,

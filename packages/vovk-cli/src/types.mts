@@ -4,7 +4,7 @@ import type { VovkStrictConfig } from 'vovk';
 
 export type VovkModuleRenderResult = {
   fileName: string;
-  dir: string;
+  outDir: string;
   sourceName?: string;
   compiledName?: string;
   code: string;
@@ -82,7 +82,7 @@ export interface InitOptions {
 export interface NewOptions {
   dryRun?: boolean;
   templates?: string[];
-  dir?: string;
+  outDir?: string;
   overwrite?: boolean;
   noSegmentUpdate?: boolean;
   empty?: boolean;

@@ -190,7 +190,7 @@ program
     '--template, --templates <templates...>',
     'override config template; accepts an array of strings that correspond the order of the components'
   )
-  .option('--dir <dirname>', 'override dirName in template file; relative to the root of the project')
+  .option('--out, --out-dir <dirname>', 'override outDir in template file; relative to the root of the project')
   .option('--empty', 'create an empty module')
   .option('--no-segment-update', 'do not update segment files when creating a new module')
   .option('--dry-run', 'do not write files to disk')

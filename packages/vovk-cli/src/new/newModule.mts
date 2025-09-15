@@ -30,7 +30,7 @@ export default async function newModule({
   what,
   moduleNameWithOptionalSegment,
   dryRun,
-  dir: dirFlag,
+  outDir: outDirFlag,
   templates: templatesFlag,
   noSegmentUpdate,
   overwrite,
@@ -40,7 +40,7 @@ export default async function newModule({
   what: string[];
   moduleNameWithOptionalSegment: string;
   dryRun?: boolean;
-  dir?: string;
+  outDir?: string;
   templates?: string[];
   noSegmentUpdate?: boolean;
   overwrite?: boolean;
@@ -98,7 +98,7 @@ export default async function newModule({
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
 
     const {
-      dir: renderedDir,
+      outDir: renderedOutDir,
       fileName,
       sourceName,
       compiledName,
@@ -113,16 +113,16 @@ export default async function newModule({
       templateFileName: templateAbsolutePath,
       isNodeNextResolution,
     });
-    const dir = dirFlag || renderedDir;
-    if (!dir) {
-      throw new Error(`The template for "${type}" does not provide a dir`);
+    const outDir = outDirFlag || renderedOutDir;
+    if (!outDir) {
+      throw new Error(`The template for "${type}" does not provide a outDir`);
     }
 
     if (!fileName) {
       throw new Error(`The template for "${type}" does not provide a fileName`);
     }
 
-    const absoluteModuleDir = path.join(cwd, dir);
+    const absoluteModuleDir = path.join(cwd, outDir);
     const absoluteModulePath = path.join(absoluteModuleDir, fileName);
 
     const prettiedCode = await prettify(code, absoluteModulePath);
