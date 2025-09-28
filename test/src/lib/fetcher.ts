@@ -12,7 +12,7 @@ export const fetcher = createFetcher({
   },
   transformResponse: (responseData) => {
     return {
-      ...responseData,
+      ...(responseData as object),
       fetcherExtraProperty: 'my-extra-value',
     };
   },
