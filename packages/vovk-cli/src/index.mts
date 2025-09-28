@@ -186,15 +186,18 @@ program
     'Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
   )
   .option('-o, --overwrite', 'overwrite existing files')
+  .option('--static', '(new segment only) if the segment is static')
   .option(
     '--template, --templates <templates...>',
-    'override config template; accepts an array of strings that correspond the order of the components'
+    '(new module only) override config template; accepts an array of strings that correspond the order of the components'
   )
-  .option('--out, --out-dir <dirname>', 'override outDir in template file; relative to the root of the project')
-  .option('--empty', 'create an empty module')
-  .option('--no-segment-update', 'do not update segment files when creating a new module')
+  .option(
+    '--out, --out-dir <dirname>',
+    '(new module only) override outDir in template file; relative to the root of the project'
+  )
+  .option('--no-segment-update', '(new module only) do not update segment files when creating a new module')
+  .option('--empty', '(new module only) create an empty module')
   .option('--dry-run', 'do not write files to disk')
-  .option('--static', 'if the segment is static')
   .option('--log-level <level>', 'set the log level')
   .action(async (components: string[], newOptions: NewOptions) =>
     newComponents(

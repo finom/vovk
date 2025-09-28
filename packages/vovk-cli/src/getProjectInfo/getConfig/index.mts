@@ -71,8 +71,8 @@ export default async function getConfig({
     logLevel,
     devHttps: conf.devHttps ?? false,
     moduleTemplates: {
-      service: 'vovk-cli/module-templates/service.ts.ejs',
-      controller: 'vovk-cli/module-templates/controller.ts.ejs',
+      service: 'vovk-cli/module-templates/type/service.ts.ejs',
+      controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
       ...conf.moduleTemplates,
     },
     libs: conf.libs ?? {},

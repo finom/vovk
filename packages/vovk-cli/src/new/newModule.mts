@@ -113,7 +113,7 @@ export default async function newModule({
       templateFileName: templateAbsolutePath,
       isNodeNextResolution,
     });
-    const outDir = outDirFlag || renderedOutDir;
+    const outDir = outDirFlag ?? renderedOutDir;
     if (!outDir) {
       throw new Error(`The template for "${type}" does not provide a outDir`);
     }

@@ -1,11 +1,11 @@
 <% const vars = { 
-  rpcModuleName: t.TheThing + 'Controller',
+  ControllerName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
 }; %>
 ---
 outDir: <%= t.defaultOutDir %>
-fileName: <%= vars.rpcModuleName + '.ts' %>
-sourceName: <%= vars.rpcModuleName %>
+fileName: <%= vars.ControllerName + '.ts' %>
+sourceName: <%= vars.ControllerName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
@@ -15,7 +15,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextReso
 <% } %>
 
 @prefix('<%= t['the-things'] %>')
-export default class <%= vars.rpcModuleName %> {
+export default class <%= vars.ControllerName %> {
     @operation({
         summary: 'Get <%= t.TheThings %>',
     })

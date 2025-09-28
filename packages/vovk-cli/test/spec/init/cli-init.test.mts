@@ -466,10 +466,18 @@ await describe('CLI init', async () => {
 
     await assertFile(`src/lib/withArk.ts`, [
       `import { createStandardValidation } from 'vovk';
-import { type } from 'arktype';
+import type { type } from 'arktype';
 
 const withArk = createStandardValidation({
-  toJSONSchema: (model: type) => model.toJsonSchema(),
+  toJSONSchema: (model: type) => model.toJsonSchema({
+    fallback: { 
+      proto: (ctx) => ctx.proto === File ? {
+        type: "string",
+        format: "binary",
+      } : ctx.base,
+      default: (ctx) => ctx.base
+    }
+  })
 });
 
 export default withArk;`,
@@ -494,12 +502,17 @@ export default withArk;`,
 
     await assertTsConfig();
     await assertFile(`src/lib/withValibot.ts`, [
-      `import { createStandardValidation, KnownAny } from 'vovk';
+      `import { createStandardValidation } from 'vovk';
 import { toJsonSchema } from '@valibot/to-json-schema';
-import * as v from 'valibot';
 
 const withValibot = createStandardValidation({
-  toJSONSchema: (model: v.BaseSchema<KnownAny, KnownAny, KnownAny>) => toJsonSchema(model),
+  toJSONSchema: (model) => toJsonSchema(model, {
+    overrideSchema(context) {
+      if (context.valibotSchema.type === 'file') {
+        return { type: 'string', format: 'binary' };
+      }
+    },
+  }),
 });
 
 export default withValibot;`,

@@ -110,7 +110,6 @@ export class VovkApp {
     methodKeys = allMethodKeys
       // First, try to match literal routes exactly.
       .filter((p) => {
-        if (p.includes('{')) return false; // Skip parameterized paths
         return p === pathStr;
       });
 

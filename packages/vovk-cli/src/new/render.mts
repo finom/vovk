@@ -64,7 +64,7 @@ export default async function render(
       cjs: isNodeNextResolution ? '.cjs' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },
-    defaultDir: getModuleDirName(segmentName, theThing),
+    defaultOutDir: getModuleDirName(segmentName, theThing),
 
     // libraries
     _, // lodash

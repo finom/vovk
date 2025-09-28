@@ -28,7 +28,8 @@ type CallerInput = {
         iteration?: KnownAny;
       }
     | undefined;
-  init?: RequestInit;
+  init: RequestInit | undefined;
+  apiRoot: string | undefined;
   meta: Record<string, KnownAny> | undefined;
   handlerName: string;
   moduleName: string;
@@ -41,6 +42,7 @@ const createLLMTool = ({
   caller,
   module,
   init,
+  apiRoot,
   meta,
   resultFormatter,
   onExecute,
@@ -51,6 +53,7 @@ const createLLMTool = ({
   caller: typeof defaultCaller;
   module: Record<string, Handler>;
   init: RequestInit | undefined;
+  apiRoot: string | undefined;
   meta: Record<string, KnownAny> | undefined;
   resultFormatter: typeof defaultResultFormatter;
   onExecute: (result: KnownAny, callerInput: CallerInput, options: KnownAny) => void;
@@ -88,6 +91,7 @@ const createLLMTool = ({
       query,
       params,
       init,
+      apiRoot,
       meta,
       handlerName,
       moduleName,
@@ -209,7 +213,7 @@ export function createLLMTools({
   onExecute = (result) => result,
   onError = () => {},
 }: {
-  modules: Record<string, object | [object, { init?: RequestInit }]>;
+  modules: Record<string, object | [object, { init?: RequestInit; apiRoot?: string }]>;
   caller?: typeof defaultCaller;
   meta?: Record<string, KnownAny>;
   resultFormatter?: typeof defaultResultFormatter | null | 'mcp';
@@ -218,13 +222,17 @@ export function createLLMTools({
 }): { tools: VovkLLMTool[]; toolsByName: Record<string, VovkLLMTool> } {
   const moduleWithConfig = modules as
     | Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>
-    | Record<string, [Record<string, Handler & { schema?: VovkHandlerSchema }>, { init?: RequestInit }]>;
+    | Record<
+        string,
+        [Record<string, Handler & { schema?: VovkHandlerSchema }>, { init?: RequestInit; apiRoot?: string }]
+      >;
   const tools = Object.entries(moduleWithConfig ?? {})
     .map(([moduleName, moduleWithconfig]) => {
       let init: RequestInit | undefined;
+      let apiRoot: string | undefined;
       let module: Record<string, Handler>;
       if (Array.isArray(moduleWithconfig)) {
-        [module, { init }] = moduleWithconfig;
+        [module, { init, apiRoot }] = moduleWithconfig;
       } else {
         module = moduleWithconfig;
       }
@@ -239,6 +247,7 @@ export function createLLMTools({
             caller,
             module,
             init,
+            apiRoot,
             meta,
             resultFormatter: resultFormatter
               ? resultFormatter === 'mcp'

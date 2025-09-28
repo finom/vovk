@@ -1,5 +1,5 @@
 <%- t.getFirstLineBanner() %>
-import type { VovkClientFetcher } from 'vovk';
+import type { VovkFetcher } from 'vovk';
 import { createRPC } from '<%= t.commonImports.module.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
 import { openapi } from './openapi<%= t.nodeNextResolutionExt.ts %>';
@@ -15,7 +15,7 @@ export { <%= reExportWhat %> } from '<%= reExportFrom %>';
 <% }) %>   
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {   %>
   <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
-export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].module.fetcher %>').fetcher extends VovkClientFetcher<infer U> ? U : never>(
+export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].module.fetcher %>').fetcher extends VovkFetcher<infer U> ? U : never>(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', import('<%- t.segmentImports[segment.segmentName].module.fetcher %>'),
   { validateOnClient: <%- t.segmentImports[segment.segmentName].module.validateOnClient ? `import('${t.segmentImports[segment.segmentName].validateOnClient}')` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
 );

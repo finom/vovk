@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { VovkApp as VovkApp } from './VovkApp';
+import { VovkApp } from './VovkApp';
 import {
   HttpMethod,
   type KnownAny,
@@ -139,7 +139,7 @@ export function createVovkApp() {
 
         const properties = Object.keys(controller._handlers[propertyKey]?.validation?.params?.properties ?? {});
         const kebab = toKebabCase(propertyKey); // 🥙
-        const path = properties.length ? `${kebab}/${properties.map((prop) => `:${prop}`).join('/')}` : kebab;
+        const path = properties.length ? `${kebab}/${properties.map((prop) => `{${prop}}`).join('/')}` : kebab;
 
         assignSchema({ controller, propertyKey, path, options, httpMethod, vovkApp });
       }
