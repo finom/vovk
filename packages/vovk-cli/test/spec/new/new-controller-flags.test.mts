@@ -77,7 +77,7 @@ await describe('CLI new controller and flags', async () => {
         controllers, 
       });`,
     ]);
-    await runAtProjectDir('../dist/index.mjs new controller veryComplexEntity --dir=custom-dir');
+    await runAtProjectDir('../dist/index.mjs new controller veryComplexEntity --out=custom-dir');
 
     await assertFile('custom-dir/VeryComplexEntityController.ts', [
       `export default class VeryComplexEntityController {`,
