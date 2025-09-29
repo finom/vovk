@@ -157,7 +157,9 @@ export class VovkApp {
     return { handler: null, methodParams };
   };
 
-  #allHandlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> | null = null;
+  #allHandlers: Partial<
+    Record<HttpMethod, Record<string, { staticMethod: RouteHandler; controller: VovkController }>>
+  > = {};
 
   #collectHandlers = (httpMethod: HttpMethod) => {
     const controllers = this.routes[httpMethod];
@@ -178,8 +180,8 @@ export class VovkApp {
   #callMethod = async (httpMethod: HttpMethod, nextReq: NextRequest, params: Record<string, string[]>) => {
     const req = nextReq as unknown as VovkRequest<KnownAny, KnownAny, KnownAny>;
     const path = params[Object.keys(params)[0]];
-    const handlers = this.#allHandlers ?? this.#collectHandlers(httpMethod);
-    this.#allHandlers = handlers;
+    const handlers = this.#allHandlers[httpMethod] ?? this.#collectHandlers(httpMethod);
+    this.#allHandlers[httpMethod] = handlers;
     let headerList: typeof nextReq.headers | null;
     try {
       headerList = nextReq.headers;
