@@ -102,19 +102,12 @@ export class VovkApp {
       return { handler: handlers[''], methodParams };
     }
 
-    const allMethodKeys = Object.keys(handlers);
-
-    let methodKeys: string[] = [];
     const pathStr = path.join('/');
 
-    methodKeys = allMethodKeys
-      // First, try to match literal routes exactly.
-      .filter((p) => {
-        return p === pathStr;
-      });
+    let methodKey = handlers[pathStr] ? pathStr : null;
 
-    if (!methodKeys.length) {
-      methodKeys = allMethodKeys.filter((p) => {
+    if (!methodKey) {
+      const methodKeys = Object.keys(handlers).filter((p) => {
         const routeSegments = p.split('/');
         if (routeSegments.length !== path.length) return false;
         const params: Record<string, string> = {};
@@ -124,7 +117,6 @@ export class VovkApp {
           const pathSegment = path[i];
 
           if (routeSegment.includes('{')) {
-            // const parameter = routeSegment.slice(1);
             const regexPattern = routeSegment
               .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape special chars
               .replace(/\\{(\w+)\\}/g, '(?<$1>[^/]+)'); // Replace {var} with named groups
@@ -150,13 +142,13 @@ export class VovkApp {
 
         return true;
       });
-    }
 
-    if (methodKeys.length > 1) {
-      throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Conflicting routes found: ${methodKeys.join(', ')}`);
-    }
+      if (methodKeys.length > 1) {
+        throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Conflicting routes found: ${methodKeys.join(', ')}`);
+      }
 
-    const [methodKey] = methodKeys;
+      [methodKey] = methodKeys;
+    }
 
     if (methodKey) {
       return { handler: handlers[methodKey], methodParams };
@@ -165,22 +157,12 @@ export class VovkApp {
     return { handler: null, methodParams };
   };
 
-  #callMethod = async (httpMethod: HttpMethod, nextReq: NextRequest, params: Record<string, string[]>) => {
-    const req = nextReq as unknown as VovkRequest<KnownAny, KnownAny, KnownAny>;
-    const controllers = this.routes[httpMethod];
-    const path = params[Object.keys(params)[0]];
-    const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
-    let headerList: typeof nextReq.headers | null;
-    try {
-      headerList = nextReq.headers;
-    } catch {
-      // this is static rendering environment, headers are not available
-      headerList = null;
-    }
-    const xMeta = headerList?.get('x-meta');
-    const xMetaHeader: Record<string, KnownAny> = xMeta && JSON.parse(xMeta);
+  #allHandlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> | null = null;
 
-    if (xMetaHeader) reqMeta(req, { xMetaHeader });
+  #collectHandlers = (httpMethod: HttpMethod) => {
+    const controllers = this.routes[httpMethod];
+
+    const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
     controllers.forEach((staticMethods, controller) => {
       const prefix = controller._prefix ?? '';
 
@@ -189,6 +171,26 @@ export class VovkApp {
         handlers[fullPath] = { staticMethod, controller };
       });
     });
+
+    return handlers;
+  };
+
+  #callMethod = async (httpMethod: HttpMethod, nextReq: NextRequest, params: Record<string, string[]>) => {
+    const req = nextReq as unknown as VovkRequest<KnownAny, KnownAny, KnownAny>;
+    const path = params[Object.keys(params)[0]];
+    const handlers = this.#allHandlers ?? this.#collectHandlers(httpMethod);
+    this.#allHandlers = handlers;
+    let headerList: typeof nextReq.headers | null;
+    try {
+      headerList = nextReq.headers;
+    } catch {
+      // this is static rendering environment, headers are not available
+      headerList = null;
+    }
+    const xMeta = headerList?.get('x-meta');
+    const xMetaHeader: Record<string, unknown> = xMeta && JSON.parse(xMeta);
+
+    if (xMetaHeader) reqMeta(req, { xMetaHeader });
 
     const { handler, methodParams } = this.#getHandler({ handlers, path, params });
 
