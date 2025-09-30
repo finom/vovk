@@ -87,6 +87,11 @@ export class VovkApp {
     );
   };
 
+  #routeRegexCache = new Map<string, RegExp>();
+  #routeSegmentsCache = new Map<string, string[]>();
+  #routeParamPositionsCache = new Map<string, { index: number; paramName: string }[]>();
+  #routeMatchCache = new Map<string, { route: string; params: Record<string, string> }>();
+
   #getHandler = ({
     handlers,
     path,
@@ -104,50 +109,135 @@ export class VovkApp {
 
     const pathStr = path.join('/');
 
+    // Fast path: Check if this exact path has been matched before
+    const cachedMatch = this.#routeMatchCache.get(pathStr);
+    if (cachedMatch) {
+      return {
+        handler: handlers[cachedMatch.route],
+        methodParams: cachedMatch.params,
+      };
+    }
+
+    // Check for direct static route match
     let methodKey = handlers[pathStr] ? pathStr : null;
 
     if (!methodKey) {
-      const methodKeys = Object.keys(handlers).filter((p) => {
-        const routeSegments = p.split('/');
-        if (routeSegments.length !== path.length) return false;
-        const params: Record<string, string> = {};
+      const methodKeys: string[] = [];
+      const pathLength = path.length;
 
-        for (let i = 0; i < routeSegments.length; i++) {
-          const routeSegment = routeSegments[i];
-          const pathSegment = path[i];
+      // First pass: group routes by length for quick filtering
+      const routesByLength = new Map<number, string[]>();
 
-          if (routeSegment.includes('{')) {
-            const regexPattern = routeSegment
-              .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape special chars
-              .replace(/\\{(\w+)\\}/g, '(?<$1>[^/]+)'); // Replace {var} with named groups
+      for (const p of Object.keys(handlers)) {
+        let routeSegments = this.#routeSegmentsCache.get(p);
+        if (!routeSegments) {
+          routeSegments = p.split('/');
+          this.#routeSegmentsCache.set(p, routeSegments);
 
-            const values = pathSegment.match(new RegExp(`^${regexPattern}$`))?.groups ?? {};
-
-            for (const parameter in values) {
-              if (!Object.prototype.hasOwnProperty.call(values, parameter)) continue;
-              if (parameter in params) {
-                throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${parameter}" at ${p}`);
+          // Pre-compute parameter positions for routes with parameters
+          if (p.includes('{')) {
+            const paramPositions: { index: number; paramName: string }[] = [];
+            for (let i = 0; i < routeSegments.length; i++) {
+              const segment = routeSegments[i];
+              if (segment.includes('{')) {
+                const paramMatch = segment.match(/\{(\w+)\}/);
+                if (paramMatch) {
+                  paramPositions.push({ index: i, paramName: paramMatch[1] });
+                }
               }
-
-              // If it's a parameterized segment, capture the parameter value.
-              params[parameter] = values[parameter];
             }
-          } else if (routeSegment !== pathSegment) {
-            // If it's a literal segment and it does not match the corresponding path segment, return false.
-            return false;
+            this.#routeParamPositionsCache.set(p, paramPositions);
           }
         }
 
-        methodParams = params;
+        const segmentLength = routeSegments.length;
+        if (segmentLength !== pathLength) continue;
 
-        return true;
-      });
+        const lengthRoutes = routesByLength.get(segmentLength) || [];
+        lengthRoutes.push(p);
+        routesByLength.set(segmentLength, lengthRoutes);
+      }
+
+      // Only process routes with matching segment count
+      const candidateRoutes = routesByLength.get(pathLength) || [];
+
+      for (const p of candidateRoutes) {
+        const routeSegments = this.#routeSegmentsCache.get(p)!;
+        const params: Record<string, string> = {};
+
+        // Fast path for routes with parameters
+        const paramPositions = this.#routeParamPositionsCache.get(p);
+        if (paramPositions) {
+          let isMatch = true;
+
+          // First check all non-parameter segments for a quick fail
+          for (let i = 0; i < routeSegments.length; i++) {
+            const routeSegment = routeSegments[i];
+            if (!routeSegment.includes('{') && routeSegment !== path[i]) {
+              isMatch = false;
+              break;
+            }
+          }
+
+          if (!isMatch) continue;
+
+          // Now process parameter segments
+          for (const { index, paramName } of paramPositions) {
+            const routeSegment = routeSegments[index];
+            const pathSegment = path[index];
+
+            let regex = this.#routeRegexCache.get(routeSegment);
+            if (!regex) {
+              const regexPattern = routeSegment
+                .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                .replace(/\\{(\w+)\\}/g, '(?<$1>[^/]+)');
+              regex = new RegExp(`^${regexPattern}$`);
+              this.#routeRegexCache.set(routeSegment, regex);
+            }
+
+            const values = pathSegment.match(regex)?.groups;
+            if (!values) {
+              isMatch = false;
+              break;
+            }
+
+            if (paramName in params) {
+              throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${paramName}" at ${p}`);
+            }
+
+            params[paramName] = values[paramName];
+          }
+
+          if (isMatch) {
+            methodParams = params;
+            methodKeys.push(p);
+          }
+        } else {
+          // Static route - simple equality comparison for all segments
+          let isMatch = true;
+          for (let i = 0; i < routeSegments.length; i++) {
+            if (routeSegments[i] !== path[i]) {
+              isMatch = false;
+              break;
+            }
+          }
+
+          if (isMatch) {
+            methodKeys.push(p);
+          }
+        }
+      }
 
       if (methodKeys.length > 1) {
         throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Conflicting routes found: ${methodKeys.join(', ')}`);
       }
 
       [methodKey] = methodKeys;
+
+      // Cache successful matches
+      if (methodKey) {
+        this.#routeMatchCache.set(pathStr, { route: methodKey, params: methodParams });
+      }
     }
 
     if (methodKey) {

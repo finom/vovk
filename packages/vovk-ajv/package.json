@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/finom/vovk#readme",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.422",
+    "vovk": "^3.0.0-draft.432",
     "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^3.0.1",
