@@ -1,5 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import chalk from 'chalk';
 import { getTsconfig } from 'get-tsconfig';
 import render from './render.mjs';
 import addClassToSegmentCode from './addClassToSegmentCode.mjs';
@@ -129,12 +130,14 @@ export default async function newModule({
 
     if (!dryRun) {
       if (!overwrite && (await getFileSystemEntryType(absoluteModulePath))) {
-        log.warn(`File ${chalkHighlightThing(absoluteModulePath)} already exists, skipping this "${type}"`);
+        log.warn(
+          `File ${chalkHighlightThing(absoluteModulePath)} already exists, skipping this "${chalkHighlightThing(type)}". You can use --overwrite flag to overwrite it.`
+        );
       } else {
         await fs.mkdir(absoluteModuleDir, { recursive: true });
         await fs.writeFile(absoluteModulePath, prettiedCode);
         log.info(
-          `Created${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
+          `${chalk.green('Created')}${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
         );
       }
     }
@@ -169,7 +172,7 @@ export default async function newModule({
       }
 
       log.info(
-        `Added ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
+        `${chalk.green('Added')} ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
       );
     }
   }

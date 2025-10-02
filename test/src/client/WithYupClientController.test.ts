@@ -1,14 +1,7 @@
 import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithYupClientControllerRPC } from 'vovk-client';
-import {
-  HttpException,
-  type VovkReturnType,
-  type VovkHandlerSchema,
-  type VovkYieldType,
-  type VovkOutput,
-  type VovkIteration,
-} from 'vovk';
+import { HttpException, type VovkReturnType, type VovkYieldType, type VovkOutput, type VovkIteration } from 'vovk';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type WithYupClientController from './WithYupClientController.ts';
 
@@ -387,36 +380,12 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     await rejects.toThrowError(HttpException);
   });
 
-  it.skip('Should store schema at handler.schema', async () => {
-    deepStrictEqual(WithYupClientControllerRPC.handleAll.schema satisfies VovkHandlerSchema, {
-      httpMethod: 'POST',
-      path: ':foo',
-      validation: {
-        body: {
-          $schema: 'http://json-schema.org/draft-07/schema#',
-          additionalProperties: false,
-          properties: {
-            hello: {
-              const: 'body',
-              type: 'string',
-            },
-          },
-          required: ['hello'],
-          type: 'object',
-        },
-        query: {
-          $schema: 'http://json-schema.org/draft-07/schema#',
-          additionalProperties: false,
-          properties: {
-            hey: {
-              const: 'query',
-              type: 'string',
-            },
-          },
-          required: ['hey'],
-          type: 'object',
-        },
-      },
-    });
+  it.only('Should store schema at handler.schema, handler.controllerSchema, handler.segmentSchema and handler.fullSchema', async () => {
+    strictEqual(WithYupClientControllerRPC.handleAll.schema.httpMethod, 'POST');
+    strictEqual(WithYupClientControllerRPC.handleAll.schema.path, 'all/{foo}/{bar}');
+    strictEqual(WithYupClientControllerRPC.handleAll.controllerSchema.prefix, 'with-yup');
+    strictEqual(WithYupClientControllerRPC.handleAll.controllerSchema.rpcModuleName, 'WithYupClientControllerRPC');
+    strictEqual(WithYupClientControllerRPC.handleAll.segmentSchema.segmentName, 'foo/client');
+    ok(WithYupClientControllerRPC.handleAll.fullSchema.segments);
   });
 });

@@ -2,14 +2,7 @@ import test, { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithZodClientControllerRPC } from 'vovk-client';
 import { validateOnClient as validateOnClientAjv } from 'vovk-ajv';
-import {
-  HttpException,
-  type VovkReturnType,
-  type VovkHandlerSchema,
-  type VovkYieldType,
-  type VovkOutput,
-  type VovkIteration,
-} from 'vovk';
+import { HttpException, type VovkReturnType, type VovkYieldType, type VovkOutput, type VovkIteration } from 'vovk';
 import type WithZodClientController from './WithZodClientController.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
@@ -540,37 +533,13 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrowError(HttpException);
   });
 
-  it.skip('Should store schema at handler.schema', async () => {
-    deepStrictEqual(WithZodClientControllerRPC.handleAll.schema satisfies VovkHandlerSchema, {
-      httpMethod: 'POST',
-      path: ':foo',
-      validation: {
-        body: {
-          $schema: 'http://json-schema.org/draft-07/schema#',
-          additionalProperties: false,
-          properties: {
-            hello: {
-              const: 'body',
-              type: 'string',
-            },
-          },
-          required: ['hello'],
-          type: 'object',
-        },
-        query: {
-          $schema: 'http://json-schema.org/draft-07/schema#',
-          additionalProperties: false,
-          properties: {
-            hey: {
-              const: 'query',
-              type: 'string',
-            },
-          },
-          required: ['hey'],
-          type: 'object',
-        },
-      },
-    });
+  it.only('Should store schema at handler.schema, handler.controllerSchema, handler.segmentSchema and handler.fullSchema', async () => {
+    strictEqual(WithZodClientControllerRPC.handleAll.schema.httpMethod, 'POST');
+    strictEqual(WithZodClientControllerRPC.handleAll.schema.path, 'all/{foo}/{bar}');
+    strictEqual(WithZodClientControllerRPC.handleAll.controllerSchema.prefix, 'with-zod');
+    strictEqual(WithZodClientControllerRPC.handleAll.controllerSchema.rpcModuleName, 'WithZodClientControllerRPC');
+    strictEqual(WithZodClientControllerRPC.handleAll.segmentSchema.segmentName, 'foo/client');
+    ok(WithZodClientControllerRPC.handleAll.fullSchema.segments);
   });
 });
 
@@ -634,10 +603,6 @@ describe('Controller method as function with func', () => {
     null as unknown as VovkOutput<typeof WithZodClientController.handleAllNoHttpAsFunction> satisfies null;
 
     deepStrictEqual(result satisfies typeof expected, expected);
-  });
-
-  it.skip('disableClientValidation in Controller.handler.fn', () => {
-    // TODO
   });
 });
 

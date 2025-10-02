@@ -2,7 +2,7 @@ import { it, describe, beforeEach } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import type { VovkSchema } from 'vovk';
-import { deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
 import updateConfig from '../../lib/updateConfig.mts';
 import { importFresh } from '../../lib/importFresh.mts';
@@ -217,7 +217,7 @@ await describe('TypeScript bundle', async () => {
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
-  await it.only('Uses combined generatorConfig to create re-exports in composed bundle', async () => {
+  await it('Uses combined generatorConfig to create re-exports in composed bundle', async () => {
     await vovkDevAndKill();
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
@@ -275,5 +275,43 @@ await describe('TypeScript bundle', async () => {
     }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), ['y', 'a', 'fooX', 'barX']);
 
     deepStrictEqual({ y, a, fooX, barX }, { y: 1, a: 2, fooX: 3, barX: 4 });
+  });
+
+  await it('Uses origin option', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      bundle: {
+        generatorConfig: {
+          origin: 'https://example.com/',
+        },
+      },
+    }));
+
+    await vovkDevAndKill();
+    await runAtProjectDir(
+      `../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug --out ./dist-origin-1`
+    );
+    const { UserRPC } = await import(path.join(projectDir, 'dist-origin-1', 'index.mjs'));
+
+    strictEqual(UserRPC.createUser.apiRoot, 'https://example.com/api');
+  });
+
+  await it('Uses --origin flag', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      bundle: {
+        generatorConfig: {
+          origin: 'https://example.com/', // should be overridden by --origin
+        },
+      },
+    }));
+
+    await vovkDevAndKill();
+    await runAtProjectDir(
+      `../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug --out ./dist-origin-2 --origin https://example.org/`
+    );
+    const { UserRPC } = await import(path.join(projectDir, 'dist-origin-2', 'index.mjs'));
+
+    strictEqual(UserRPC.createUser.apiRoot, 'https://example.org/api');
   });
 });

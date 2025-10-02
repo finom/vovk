@@ -29,7 +29,7 @@ export default async function newSegment({
 
   if (!overwrite && (await getFileSystemEntryType(absoluteSegmentRoutePath))) {
     throw new Error(
-      `Unable to create new segment. ${formatLoggedSegmentName(segmentName, { upperFirst: true })} already exists.`
+      `Unable to create new segment. ${formatLoggedSegmentName(segmentName, { upperFirst: true })} already exists. You can use --overwrite flag to overwrite it.`
     );
   }
 
@@ -62,7 +62,7 @@ ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
   }
 
   log.info(
-    `${formatLoggedSegmentName(segmentName, { upperFirst: true, isStatic: isStaticSegment })} created at ${absoluteSegmentRoutePath}.`
+    `${chalk.green('Created')} ${formatLoggedSegmentName(segmentName, { isStatic: isStaticSegment })} at ${absoluteSegmentRoutePath}.`
   );
 
   const dir = chalk.cyanBright([segmentName, 'thing'].filter(Boolean).join('/'));

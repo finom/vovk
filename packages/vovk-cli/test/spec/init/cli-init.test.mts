@@ -50,7 +50,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -77,7 +77,7 @@ await describe('CLI init', async () => {
     await assertConfig([], null);
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
       devDependencies: ['vovk-cli'],
       opposite: true,
     });
@@ -100,7 +100,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -117,7 +117,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -154,7 +154,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -191,7 +191,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -251,7 +251,7 @@ await describe('CLI init', async () => {
     await assertConfig(['.config/vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -274,7 +274,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -293,7 +293,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -312,7 +312,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -331,7 +331,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+      dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -600,7 +600,7 @@ export default withValibot;`,
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
-        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
         devDependencies: ['vovk-cli'],
       });
 
@@ -631,7 +631,7 @@ export default withValibot;`,
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
-        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod'],
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
         devDependencies: ['vovk-cli'],
       });
 
@@ -666,7 +666,7 @@ export default withValibot;`,
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
-        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
         devDependencies: ['vovk-cli'],
       });
 
@@ -697,7 +697,7 @@ export default withValibot;`,
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
-        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod'],
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
         devDependencies: ['vovk-cli'],
       });
 
@@ -732,7 +732,7 @@ export default withValibot;`,
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
-        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod', 'vovk-client'],
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
         devDependencies: ['vovk-cli'],
       });
 
@@ -763,7 +763,7 @@ export default withValibot;`,
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
-        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'ajv', 'zod'],
+        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
         devDependencies: ['vovk-cli'],
       });
 

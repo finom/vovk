@@ -44,47 +44,71 @@ export class VovkApp {
   };
 
   GET = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod(HttpMethod.GET, req, await data.params);
+    this.#callMethod({ httpMethod: HttpMethod.GET, req, params: await data.params });
 
   POST = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod(HttpMethod.POST, req, await data.params);
+    this.#callMethod({ httpMethod: HttpMethod.POST, req, params: await data.params });
 
   PUT = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod(HttpMethod.PUT, req, await data.params);
+    this.#callMethod({ httpMethod: HttpMethod.PUT, req, params: await data.params });
 
   PATCH = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod(HttpMethod.PATCH, req, await data.params);
+    this.#callMethod({ httpMethod: HttpMethod.PATCH, req, params: await data.params });
 
   DELETE = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod(HttpMethod.DELETE, req, await data.params);
+    this.#callMethod({ httpMethod: HttpMethod.DELETE, req, params: await data.params });
 
   HEAD = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod(HttpMethod.HEAD, req, await data.params);
+    this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params });
 
   OPTIONS = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod(HttpMethod.OPTIONS, req, await data.params);
+    this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params });
 
-  respond = (status: HttpStatus, body: unknown, options?: DecoratorOptions) => {
-    return new Response(JSON.stringify(body), {
-      status,
+  respond = async ({
+    statusCode,
+    responseBody,
+    options,
+  }: {
+    req: VovkRequest;
+    statusCode: HttpStatus;
+    responseBody: unknown;
+    options?: DecoratorOptions;
+  }) => {
+    const response = new Response(JSON.stringify(responseBody), {
+      status: statusCode,
       headers: {
         'content-type': 'application/json',
         ...VovkApp.getHeadersFromOptions(options),
       },
     });
+
+    return response;
   };
 
-  #respondWithError = (statusCode: HttpStatus, message: string, options?: DecoratorOptions, cause?: unknown) => {
-    return this.respond(
+  #respondWithError = ({
+    req,
+    statusCode,
+    message,
+    options,
+    cause,
+  }: {
+    req: VovkRequest;
+    statusCode: HttpStatus;
+    message: string;
+    options?: DecoratorOptions;
+    cause?: unknown;
+  }) => {
+    return this.respond({
+      req,
       statusCode,
-      {
+      responseBody: {
         cause,
         statusCode,
         message,
         isError: true,
       } satisfies VovkErrorResponse,
-      options
-    );
+      options,
+    });
   };
 
   #routeRegexCache = new Map<string, RegExp>();
@@ -267,8 +291,16 @@ export class VovkApp {
     return handlers;
   };
 
-  #callMethod = async (httpMethod: HttpMethod, nextReq: NextRequest, params: Record<string, string[]>) => {
-    const req = nextReq as unknown as VovkRequest<KnownAny, KnownAny, KnownAny>;
+  #callMethod = async ({
+    httpMethod,
+    req: nextReq,
+    params,
+  }: {
+    httpMethod: HttpMethod;
+    req: NextRequest;
+    params: Record<string, string[]>;
+  }) => {
+    const req = nextReq as unknown as VovkRequest;
     const path = params[Object.keys(params)[0]];
     const handlers = this.#allHandlers[httpMethod] ?? this.#collectHandlers(httpMethod);
     this.#allHandlers[httpMethod] = handlers;
@@ -287,13 +319,15 @@ export class VovkApp {
     const { handler, methodParams } = this.#getHandler({ handlers, path, params });
 
     if (!handler) {
-      return this.#respondWithError(
-        HttpStatus.NOT_FOUND,
-        `${Object.keys(handlers)} - Route ${path.join('/')} is not found`
-      );
+      return this.#respondWithError({
+        req,
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `${Object.keys(handlers)} - Route ${path.join('/')} is not found`,
+      });
     }
 
     const { staticMethod, controller } = handler;
+    const { _onSuccess: onSuccess, _onBefore: onBefore } = controller;
 
     req.vovk = {
       body: () => req.json(),
@@ -305,9 +339,11 @@ export class VovkApp {
 
     try {
       await staticMethod._options?.before?.call(controller, req);
+      await onBefore?.(req);
       const result = await staticMethod.call(controller, req, methodParams);
 
       if (result instanceof Response) {
+        await onSuccess?.(result, req);
         return result;
       }
 
@@ -338,11 +374,13 @@ export class VovkApp {
 
           return streamResponse.close();
         })();
-
+        await onSuccess?.(streamResponse, req);
         return streamResponse;
       }
 
-      return this.respond(200, result ?? null, staticMethod._options);
+      const responseBody = result ?? null;
+      await onSuccess?.(responseBody, req);
+      return this.respond({ req, statusCode: 200, responseBody, options: staticMethod._options });
     } catch (e) {
       const err = e as HttpException;
       try {
@@ -354,7 +392,13 @@ export class VovkApp {
 
       if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
         const statusCode = err.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
-        return this.#respondWithError(statusCode, err.message, staticMethod._options, err.cause);
+        return this.#respondWithError({
+          req,
+          statusCode,
+          message: err.message,
+          options: staticMethod._options,
+          cause: err.cause,
+        });
       }
 
       throw e; // if NEXT_REDIRECT or NEXT_NOT_FOUND, rethrow it

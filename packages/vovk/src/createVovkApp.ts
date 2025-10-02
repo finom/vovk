@@ -175,18 +175,26 @@ export function createVovkApp() {
     emitSchema?: boolean;
     forceApiRoot?: string;
     onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
+    onSuccess?: (resp: unknown, req: VovkRequest) => void | Promise<void>;
+    onBefore?: (req: VovkRequest) => void | Promise<void>;
   }) => {
     options.segmentName = trimPath(options.segmentName ?? '');
     for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}) as [string, VovkController][]) {
       controller._rpcModuleName = rpcModuleName;
       controller._onError = options?.onError;
+      controller._onSuccess = options?.onSuccess;
+      controller._onBefore = options?.onBefore;
     }
 
     async function GET_DEV(req: NextRequest, data: { params: Promise<Record<string, string[]>> }) {
       const params = await data.params;
       if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
         const schema = await getSchema(options);
-        return vovkApp.respond(200, { schema });
+        return vovkApp.respond({
+          req: req as unknown as VovkRequest,
+          statusCode: 200,
+          responseBody: { schema },
+        });
       }
       return vovkApp.GET(req, data);
     }

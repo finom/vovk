@@ -93,6 +93,8 @@ export type VovkControllerInternal = {
   _handlers: VovkControllerSchema['handlers'];
   _handlersMetadata?: Record<string, { staticParams?: Record<string, string>[] }>;
   _onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
+  _onSuccess?: (resp: unknown, req: VovkRequest) => void | Promise<void>;
+  _onBefore?: (req: VovkRequest) => void | Promise<void>;
 };
 
 export type VovkController = StaticClass &
@@ -115,9 +117,9 @@ export type RouteHandler = ((
 };
 
 export interface VovkRequest<
-  TBody extends KnownAny = undefined,
-  TQuery extends KnownAny = undefined,
-  TParams extends KnownAny = undefined,
+  TBody extends KnownAny = unknown,
+  TQuery extends KnownAny = unknown,
+  TParams extends KnownAny = unknown,
 > extends Omit<NextRequest, 'json' | 'nextUrl'> {
   json: () => Promise<TBody>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
@@ -149,7 +151,7 @@ export interface VovkRequest<
 }
 
 export type ControllerStaticMethod<
-  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<unknown, unknown, unknown>,
+  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest,
   TParams extends { [key: string]: string } = KnownAny,
 > = ((req: REQ, params: TParams) => unknown) & {
   _controller?: VovkController;

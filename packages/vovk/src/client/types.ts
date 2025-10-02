@@ -133,6 +133,7 @@ export type ClientMethod<
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkSchema;
   path: string;
+  apiRoot: string;
   queryKey: (key?: unknown[]) => unknown[];
   __types: T['__types'];
 };

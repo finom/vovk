@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.369",
+  "version": "0.0.1-draft.370",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,11 +35,11 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.432",
-    "vovk-ajv": "^0.0.0-draft.103",
-    "vovk-client": "^0.0.4-draft.131",
-    "vovk-python": "^0.0.1-draft.73",
-    "vovk-rust": "^0.0.1-draft.59"
+    "vovk": "^3.0.0-draft.440",
+    "vovk-ajv": "^0.0.0-draft.104",
+    "vovk-client": "^0.0.4-draft.132",
+    "vovk-python": "^0.0.1-draft.74",
+    "vovk-rust": "^0.0.1-draft.60"
   },
   "optionalDependencies": {
     "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.36"

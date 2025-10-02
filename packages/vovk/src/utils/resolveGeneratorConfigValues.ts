@@ -112,7 +112,9 @@ export function resolveGeneratorConfigValues({
         ...(configs?.map((config) => config.origin) ?? []),
       ]
         .filter(Boolean)
-        .at(-1) ?? '',
+        .at(-1)
+        // remove trailing slash if any
+        ?.replace(/\/$/, '') ?? '',
     imports: deepExtend(
       {
         fetcher: ['vovk'] as const,

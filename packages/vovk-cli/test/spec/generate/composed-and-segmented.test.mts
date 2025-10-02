@@ -318,4 +318,34 @@ await describe('Composed & Segmented client', async () => {
     );
     deepStrictEqual({ b }, { b: 4 });
   });
+
+  await it('Uses origin option', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      generatorConfig: {
+        origin: 'https://example.com/',
+      },
+    }));
+
+    await runAtProjectDir(`../dist/index.mjs generate --out ./composed-client-origin-1 --from mjs --composed-only`);
+    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-1', 'index.mjs'));
+
+    deepStrictEqual(UserRPC.createUser.apiRoot, 'https://example.com/api');
+  });
+
+  await it('Uses --origin flag', async () => {
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+      ...config,
+      generatorConfig: {
+        origin: 'https://example.com/', // should be overridden by --origin
+      },
+    }));
+
+    await runAtProjectDir(
+      `../dist/index.mjs generate --out ./composed-client-origin-2 --from mjs --composed-only --origin https://example.org/`
+    );
+    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-2', 'index.mjs'));
+
+    deepStrictEqual(UserRPC.createUser.apiRoot, 'https://example.org/api');
+  });
 });

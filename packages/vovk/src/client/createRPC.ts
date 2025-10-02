@@ -50,11 +50,13 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   }
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
 
+  const forceApiRoot = controllerSchema.forceApiRoot ?? segmentSchema.forceApiRoot;
+  const originalApiRoot = forceApiRoot ?? options?.apiRoot ?? '/api';
+
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
     const getEndpoint = ({ apiRoot, params, query }: { apiRoot?: string; params: unknown; query: unknown }) => {
-      const forceApiRoot = controllerSchema.forceApiRoot ?? segmentSchema.forceApiRoot;
-      apiRoot = apiRoot ?? forceApiRoot ?? options?.apiRoot ?? '/api';
+      apiRoot = apiRoot ?? originalApiRoot;
       const endpoint = [
         apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
         apiRoot,
@@ -137,6 +139,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
     handler.segmentSchema = segmentSchema;
     handler.fullSchema = schema;
     handler.isRPC = true;
+    handler.apiRoot = originalApiRoot;
     handler.path = [segmentNamePath, controllerPrefix, path].filter(Boolean).join('/');
     handler.queryKey = (key?: unknown[]) => [
       handler.segmentSchema.segmentName,
