@@ -1,4 +1,0 @@
-requests
-jsonschema
-types-requests
-types-jsonschema

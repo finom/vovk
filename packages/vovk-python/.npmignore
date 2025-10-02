@@ -5,3 +5,5 @@ tsconfig.*
 eslint.config.js
 generated_python_client
 test_*
+requirements.txt
+vovk.config.*

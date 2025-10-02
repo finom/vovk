@@ -5,3 +5,4 @@ tsconfig.*
 eslint.config.js
 generated_rust_client
 test_*
+vovk.config.*
