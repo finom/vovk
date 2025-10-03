@@ -36,7 +36,7 @@
   "homepage": "https://vovk.dev",
   "peerDependencies": {
     "vovk": "^3.0.0-draft.442",
-    "vovk-ajv": "^0.0.0-draft.106",
+    "vovk-ajv": "^0.0.0-draft.107",
     "vovk-client": "^0.0.4-draft.134",
     "vovk-python": "^0.0.1-draft.76",
     "vovk-rust": "^0.0.1-draft.62"

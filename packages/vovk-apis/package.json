@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "vovk": "^3.0.0-draft.442",
-    "vovk-ajv": "^0.0.0-draft.106",
+    "vovk-ajv": "^0.0.0-draft.107",
     "ajv": "^8.17.1"
   },
   "devDependencies": {

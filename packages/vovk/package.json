@@ -42,7 +42,7 @@
   "homepage": "https://vovk.dev",
   "peerDependencies": {
     "next": "*",
-    "openapi3-ts": "^4.4.0"
+    "openapi3-ts": "^4"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",
