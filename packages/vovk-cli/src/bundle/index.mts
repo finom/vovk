@@ -62,6 +62,8 @@ export async function bundle({
     },
   });
 
+  log.debug('Bundling index.ts');
+
   await build({
     entry: path.join(tsFullClientOutAbsoluteDirInput, './index.ts'),
     dts: true,
@@ -76,6 +78,8 @@ export async function bundle({
 
   log.debug(`Bundled index.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
+  log.debug('Bundling schema.ts');
+
   await build({
     entry: path.join(tsFullClientOutAbsoluteDirInput, './schema.ts'),
     dts: true,
@@ -87,6 +91,8 @@ export async function bundle({
   });
 
   log.debug(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
+
+  log.debug('Bundling openapi.ts');
 
   await build({
     entry: path.join(tsFullClientOutAbsoluteDirInput, './openapi.ts'),

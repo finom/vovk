@@ -2,7 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "bundler",
     "paths": {
-      "vovk/*": ["./tmp_test_dir/node_modules/vovk/mjs/*"]
+      "vovk/*": ["../vovk/mjs/*"]
     }
   }
 }

@@ -13,8 +13,8 @@ import type { Controllers as MixinControllers, Mixins } from "./mixins.d.ts";
 <% Object.entries(t.reExports).forEach(([reExportWhat, reExportFrom]) => { %>
 export { <%= reExportWhat %> } from '<%= reExportFrom %>';
 <% }) %>   
-<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {   %>
-  <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {  
+  Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
 export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].module.fetcher %>').fetcher extends VovkFetcher<infer U> ? U : never>(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', import('<%- t.segmentImports[segment.segmentName].module.fetcher %>'),
   { validateOnClient: <%- t.segmentImports[segment.segmentName].module.validateOnClient ? `import('${t.segmentImports[segment.segmentName].validateOnClient}')` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }

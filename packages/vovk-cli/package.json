@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.372",
+  "version": "0.0.1-draft.375",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,26 +35,26 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.442",
-    "vovk-ajv": "^0.0.0-draft.107",
-    "vovk-client": "^0.0.4-draft.134",
-    "vovk-python": "^0.0.1-draft.76",
-    "vovk-rust": "^0.0.1-draft.62"
+    "vovk": "^3.0.0-draft.443",
+    "vovk-ajv": "^0.0.0-draft.108",
+    "vovk-client": "^0.0.4-draft.135",
+    "vovk-python": "^0.0.1-draft.77",
+    "vovk-rust": "^0.0.1-draft.63"
   },
   "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.36"
+    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.41"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
-    "@inquirer/prompts": "^7.8.4",
-    "@npmcli/package-json": "^7.0.0",
+    "@inquirer/prompts": "^7.8.6",
+    "@npmcli/package-json": "^7.0.1",
     "@types/json-schema": "^7.0.15",
     "chalk": "^5.6.2",
     "chokidar": "^4.0.3",
     "clone-deep": "^4.0.1",
     "commander": "^13.1.0",
     "concurrently": "^9.2.1",
-    "dotenv": "^17.2.2",
+    "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "get-tsconfig": "^4.10.1",
     "glob": "^11.0.3",
@@ -69,8 +69,8 @@
     "tar-stream": "^3.1.7",
     "ts-morph": "^27.0.0",
     "tsdown": "^0.15.0",
-    "type-fest": "^4.41.0",
-    "undici": "^7.15.0",
+    "type-fest": "^5.0.1",
+    "undici": "^7.16.0",
     "yaml": "^2.8.1"
   },
   "devDependencies": {
@@ -81,9 +81,9 @@
     "@types/pluralize": "^0.0.33",
     "@types/tar-stream": "^3.1.4",
     "concat-stream": "^2.0.0",
-    "create-next-app": "^15.5.2",
+    "create-next-app": "^15.5.4",
     "http-server": "^14.1.1",
     "node-pty": "^1.0.0",
-    "zod": "^4.1.5"
+    "zod": "^4.1.11"
   }
 }
