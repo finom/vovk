@@ -460,7 +460,7 @@ type SegmentConfigImports = {
   validateOnClient?: string | [string, string] | [string] | null;
 };
 
-export interface VovkGeneratorConfig<TImports extends GeneratorConfigImports> {
+export interface VovkGeneratorConfig<TImports extends GeneratorConfigImports = GeneratorConfigImports> {
   origin?: string | null;
   package?: VovkPackageJson;
   readme?: VovkReadmeConfig;
