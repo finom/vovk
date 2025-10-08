@@ -8,7 +8,7 @@ export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explici
 
 export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
 
-type VovkPackageJson = PackageJson & {
+export type VovkPackageJson = PackageJson & {
   rs_name?: string;
   py_name?: string;
 };
@@ -290,7 +290,7 @@ export enum HttpStatus {
   METHOD_NOT_ALLOWED = 405,
   NOT_ACCEPTABLE = 406,
   PROXY_AUTHENTICATION_REQUIRED = 407,
-  TRequest_TIMEOUT = 408,
+  REQUEST_TIMEOUT = 408,
   CONFLICT = 409,
   GONE = 410,
   LENGTH_REQUIRED = 411,
@@ -298,7 +298,7 @@ export enum HttpStatus {
   PAYLOAD_TOO_LARGE = 413,
   URI_TOO_LONG = 414,
   UNSUPPORTED_MEDIA_TYPE = 415,
-  TRequestED_RANGE_NOT_SATISFIABLE = 416,
+  REQUESTED_RANGE_NOT_SATISFIABLE = 416,
   EXPECTATION_FAILED = 417,
   I_AM_A_TEAPOT = 418,
   MISDIRECTED = 421,
@@ -437,7 +437,7 @@ type BundleConfig = {
   prebundleOutDir?: string;
   keepPrebundleDir?: boolean;
   tsdownBuildOptions?: Parameters<typeof import('tsdown').build>[0];
-  generatorConfig?: VovkGeneratorConfig;
+  generatorConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
 } & (
   | {
       excludeSegments?: never;
@@ -449,18 +449,25 @@ type BundleConfig = {
     }
 );
 
-export interface VovkGeneratorConfig {
+type GeneratorConfigImports = {
+  fetcher?: string | [string, string] | [string];
+  validateOnClient?: string | [string, string] | [string] | null;
+  createRPC?: string | [string, string] | [string];
+};
+
+type SegmentConfigImports = {
+  fetcher?: string | [string, string] | [string];
+  validateOnClient?: string | [string, string] | [string] | null;
+};
+
+export interface VovkGeneratorConfig<TImports extends GeneratorConfigImports> {
   origin?: string | null;
   package?: VovkPackageJson;
   readme?: VovkReadmeConfig;
   samples?: VovkSamplesConfig;
   openAPIObject?: Partial<OpenAPIObject>;
   reExports?: Record<string, string>;
-  imports?: {
-    fetcher?: string | [string, string] | [string];
-    validateOnClient?: string | [string, string] | [string] | null;
-    createRPC?: string | [string, string] | [string];
-  };
+  imports?: TImports;
 }
 
 export type ClientTemplateDef = {
@@ -469,7 +476,7 @@ export type ClientTemplateDef = {
   composedClient?: Omit<ClientConfigComposed, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   requires?: Record<string, string>;
-  generatorConfig?: VovkGeneratorConfig;
+  generatorConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
 };
 
 export type GetOpenAPINameFn = (config: {
@@ -516,7 +523,7 @@ export interface VovkOpenAPIMixinNormalized
   getModuleName: GetOpenAPINameFn;
 }
 
-export interface VovkSegmentConfig extends VovkGeneratorConfig {
+export interface VovkSegmentConfig extends VovkGeneratorConfig<SegmentConfigImports> {
   rootEntry?: string;
   segmentNameOverride?: string;
   openAPIMixin?: VovkOpenAPIMixin;
@@ -544,7 +551,7 @@ type VovkUserConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
-  generatorConfig?: VovkGeneratorConfig & {
+  generatorConfig?: VovkGeneratorConfig<GeneratorConfigImports> & {
     segments?: Record<string, VovkSegmentConfig>;
   };
 };
@@ -552,24 +559,14 @@ type VovkUserConfig = {
 export type VovkConfig = VovkUserConfig;
 
 export type VovkStrictConfig = Required<
-  Omit<
-    VovkUserConfig,
-    | 'emitConfig'
-    | 'libs'
-    | 'imports'
-    | 'composedClient'
-    | 'segmentedClient'
-    | 'bundle'
-    | 'extendClientWithOpenAPI'
-    | 'generator'
-  >
+  Omit<VovkUserConfig, 'emitConfig' | 'libs' | 'composedClient' | 'segmentedClient' | 'bundle'>
 > & {
   emitConfig: (keyof VovkStrictConfig | string)[];
   bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>;
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
-  generatorConfig: VovkGeneratorConfig & {
+  generatorConfig: VovkGeneratorConfig<GeneratorConfigImports> & {
     segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin?: VovkOpenAPIMixinNormalized }>;
   };
 };

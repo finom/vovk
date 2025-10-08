@@ -207,7 +207,10 @@ export function createVovkApp() {
       DELETE: vovkApp.DELETE,
       HEAD: vovkApp.HEAD,
       OPTIONS: vovkApp.OPTIONS,
-    };
+    } satisfies Record<
+      HttpMethod,
+      (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) => Promise<unknown>
+    >;
   };
 
   return {

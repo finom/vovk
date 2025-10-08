@@ -64,6 +64,6 @@
     "ajv": "^8.17.1"
   },
   "devDependencies": {
-    "vovk-cli": "^0.0.1-draft.375"
+    "vovk-cli": "^0.0.1-draft.376"
   }
 }
