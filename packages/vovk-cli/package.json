@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.376",
+  "version": "0.0.1-draft.379",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,7 +35,7 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.443",
+    "vovk": "^3.0.0-draft.460",
     "vovk-ajv": "^0.0.0-draft.108",
     "vovk-client": "^0.0.4-draft.135",
     "vovk-python": "^0.0.1-draft.77",
@@ -68,7 +68,7 @@
     "prettier": "^3.6.2",
     "tar-stream": "^3.1.7",
     "ts-morph": "^27.0.0",
-    "tsdown": "^0.15.6",
+    "tsdown": "^0.15.7",
     "type-fest": "^5.0.1",
     "undici": "^7.16.0",
     "yaml": "^2.8.1"
@@ -85,8 +85,5 @@
     "http-server": "^14.1.1",
     "node-pty": "^1.0.0",
     "zod": "^4.1.11"
-  },
-  "overrides": {
-    "rolldown": "0.15.1"
   }
 }

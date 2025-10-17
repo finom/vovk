@@ -92,6 +92,42 @@ describe('Validation with with vovk-dto', () => {
     deepStrictEqual(result satisfies ExpectedType, expected);
   });
 
+  it.only('Should be OK with preferTransformed: false', async () => {
+    const result = await WithDtoClientControllerRPC.handleAllpreferTransformedFalse({
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'foo', bar: 'bar' },
+    });
+
+    const expected = {
+      body: { hello: 'world' },
+      query: { search: 'value' },
+      params: { foo: 'foo', bar: 'bar' },
+      vovkParams: { foo: 'foo', bar: 'bar' },
+    };
+
+    type ExpectedType = {
+      body: { hello: string };
+      query: { search: string };
+      params: { foo: string; bar: string };
+      vovkParams: { foo: string; bar: string };
+    };
+
+    null as unknown as VovkReturnType<
+      typeof WithDtoClientControllerRPC.handleAllpreferTransformedFalse
+    > satisfies typeof expected;
+    null as unknown as VovkOutput<
+      typeof WithDtoClientControllerRPC.handleAllpreferTransformedFalse
+    > satisfies typeof expected;
+    null as unknown as VovkOutput<
+      typeof WithDtoClientController.handleAllpreferTransformedFalse
+    > satisfies typeof expected;
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithDtoClientControllerRPC.handleAllpreferTransformedFalse> satisfies null;
+
+    deepStrictEqual(result satisfies ExpectedType, expected);
+  });
+
   it('Should transform response', async () => {
     const result = await WithDtoClientControllerRPC.handleAllClient({
       body: { hello: 'world' },
@@ -353,8 +389,7 @@ describe('Validation with with vovk-dto', () => {
     null as unknown as VovkYieldType<typeof WithDtoClientControllerRPC.handleStream> satisfies { value: string };
     null as unknown as VovkIteration<typeof WithDtoClientController.handleStream> satisfies { value: string };
     null as unknown as VovkIteration<typeof WithDtoClientControllerRPC.handleStream> satisfies { value: string };
-
-    deepStrictEqual(expected, expectedCollected);
+    deepStrictEqual(expectedCollected, expected);
   });
 
   it('Should handle stream first iteration validation', async () => {

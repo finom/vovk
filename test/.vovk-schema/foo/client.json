@@ -2183,6 +2183,59 @@
           "path": "all/{foo}/{bar}",
           "httpMethod": "POST"
         },
+        "handleAllpreferTransformedFalse": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "hello": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "search": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "search"
+              ]
+            },
+            "params": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "foo": {
+                  "maxLength": 5,
+                  "type": "string"
+                },
+                "bar": {
+                  "maxLength": 5,
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "foo",
+                "bar"
+              ]
+            }
+          },
+          "path": "all-prefer-transformed-false/{foo}/{bar}",
+          "httpMethod": "POST"
+        },
         "handleNestedQuery": {
           "validation": {
             "query": {

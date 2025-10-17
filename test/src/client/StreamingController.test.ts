@@ -29,7 +29,7 @@ describe('Streaming', () => {
     deepStrictEqual(expected, expectedCollected);
   });
 
-  it('Should be able to cancel', async () => {
+  it('Should be able to abort', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
@@ -44,7 +44,7 @@ describe('Streaming', () => {
 
     for await (const message of resp) {
       expectedCollected.push(message);
-      if (++count === 2) await resp.cancel();
+      if (++count === 2) await resp.abortController.abort();
     }
 
     for await (const message of resp) {
@@ -82,7 +82,7 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
-    await resp.cancel();
+    await resp.abortController.abort();
 
     deepStrictEqual(expected, expectedCollected);
   });

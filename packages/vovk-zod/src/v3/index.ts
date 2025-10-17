@@ -38,6 +38,7 @@ function withZod<
   disableServerSideValidation,
   skipSchemaEmission,
   validateEachIteration,
+  preferTransformed,
   operationObject,
 }: {
   isForm?: IS_FORM;
@@ -50,6 +51,7 @@ function withZod<
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
+  preferTransformed?: boolean;
   operationObject?: VovkOperationObject;
 }) {
   return withValidationLibrary({
@@ -83,6 +85,7 @@ function withZod<
         );
       }
     },
+    preferTransformed,
     operationObject,
   });
 }

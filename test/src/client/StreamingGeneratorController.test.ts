@@ -29,7 +29,7 @@ describe('Streaming generator', () => {
     deepStrictEqual(expected, expectedCollected);
   });
 
-  it('Should be able to cancel', async () => {
+  it('Should be able to abort', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
     const expectedCollected: typeof expected = [];
@@ -43,7 +43,7 @@ describe('Streaming generator', () => {
     let count = 0;
 
     for await (const message of resp) {
-      if (++count === 2) await resp.cancel();
+      if (++count === 2) await resp.abortController.abort();
       expectedCollected.push(message);
     }
 

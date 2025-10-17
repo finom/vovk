@@ -18,7 +18,7 @@ export function createStandardValidation({
   function withStandard<
     T extends (
       req: REQ,
-      params: TParams extends StandardSchemaV1 ? StandardSchemaV1.InferInput<TParams> : Record<string, string>
+      params: TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : Record<string, string>
     ) => KnownAny,
     TBody extends StandardSchemaV1,
     TQuery extends StandardSchemaV1,
@@ -26,9 +26,9 @@ export function createStandardValidation({
     OUTPUT extends StandardSchemaV1,
     ITERATION extends StandardSchemaV1,
     REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-      TBody extends StandardSchemaV1 ? StandardSchemaV1.InferInput<TBody> : undefined,
-      TQuery extends StandardSchemaV1 ? StandardSchemaV1.InferInput<TQuery> : undefined,
-      TParams extends StandardSchemaV1 ? StandardSchemaV1.InferInput<TParams> : undefined
+      TBody extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TBody> : undefined,
+      TQuery extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TQuery> : undefined,
+      TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : undefined
     >,
     IS_FORM extends boolean = false,
   >({
@@ -42,6 +42,7 @@ export function createStandardValidation({
     disableServerSideValidation,
     skipSchemaEmission,
     validateEachIteration,
+    preferTransformed,
     operationObject,
   }: {
     isForm?: IS_FORM;
@@ -54,6 +55,7 @@ export function createStandardValidation({
     disableServerSideValidation?: boolean | VovkValidationType[];
     skipSchemaEmission?: boolean | VovkValidationType[];
     validateEachIteration?: boolean;
+    preferTransformed?: boolean;
     operationObject?: VovkOperationObject;
   }) {
     return withValidationLibrary({
@@ -90,6 +92,7 @@ export function createStandardValidation({
 
         return (result as StandardSchemaV1.SuccessResult<typeof model>).value;
       },
+      preferTransformed,
       operationObject,
     });
   }

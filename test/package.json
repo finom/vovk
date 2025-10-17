@@ -13,10 +13,10 @@
     "start": "NODE_ENV=test next start",
     "lint": "next lint",
     "generate": "node ../packages/vovk-cli/dist/index.mjs generate",
-    "bundle": "node ../packages/vovk-cli/dist/index.mjs bundle --dont-delete-ts-client-out-dir-after",
+    "bundle": "node ../packages/vovk-cli/dist/index.mjs bundle --keep-prebundle-dir",
     "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --composed-schema-json --template=python --composed-schema-json --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh",
-    "build-other-compiled-sources": "rm -rf other-compiled-test-sources && node ../packages/vovk-cli/dist/index.mjs bundle && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
+    "build-other-compiled-sources": "rm -rf other-compiled-test-sources && echo 'TODO: there should be bundle command' && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
   },
   "type": "module",
   "dependencies": {
@@ -51,5 +51,8 @@
     "tailwindcss": "^4",
     "ts-loader": "^9.5.4",
     "webpack-cli": "^6.0.1"
+  },
+  "overrides": {
+    "rolldown": "0.15.1"
   }
 }

@@ -3,33 +3,31 @@ import type { VovkStreamAsyncIterable } from './types';
 import { HttpException } from '../HttpException';
 import '../utils/shim';
 
-export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultStreamHandler';
+export const DEFAULT_ERROR_MESSAGE = 'An unknown error at defaultStreamHandler';
 
-export const defaultStreamHandler = async ({
+export const defaultStreamHandler = ({
   response,
-  controller,
+  abortController,
 }: {
   response: Response;
-  controller: AbortController;
+  abortController: AbortController;
   schema: VovkHandlerSchema;
-}): Promise<VovkStreamAsyncIterable<unknown>> => {
+}): VovkStreamAsyncIterable<unknown> => {
   if (!response.ok) {
-    let result: unknown;
-    try {
-      result = await response.json();
-    } catch {
-      // ignore parsing errors
-    }
+    response
+      .json()
+      .then((res) => {
+        throw new HttpException(response.status, (res as VovkErrorResponse).message ?? DEFAULT_ERROR_MESSAGE);
+      })
+      .catch((e) => {
+        throw new HttpException(response.status, (e as Error).message ?? DEFAULT_ERROR_MESSAGE, e);
+      });
     // handle server errors
-    throw new HttpException(response.status, (result as VovkErrorResponse).message ?? DEFAULT_ERROR_MESSAGE);
   }
 
   if (!response.body) throw new HttpException(HttpStatus.NULL, 'Stream body is falsy. Check your controller code.');
 
   const reader = response.body.getReader();
-
-  // if streaming is too rapid, we need to make sure that the loop is stopped
-  let canceled = false;
 
   const subscribers = new Set<(data: unknown, i: number) => void>();
 
@@ -42,7 +40,7 @@ export const defaultStreamHandler = async ({
 
       try {
         let done;
-        if (canceled) break;
+        if (abortController.signal.aborted) break;
         ({ value, done } = await reader.read());
         if (done) break;
       } catch (error) {
@@ -67,23 +65,20 @@ export const defaultStreamHandler = async ({
 
         if (data) {
           subscribers.forEach((cb) => {
-            if (!canceled) cb(data, i);
+            if (!abortController.signal.aborted) cb(data, i);
           });
 
           i++;
           if ('isError' in data && 'reason' in data) {
             const upcomingError = data.reason;
-            canceled = true;
-            controller.abort(data.reason);
+            abortController.abort(data.reason);
 
             if (typeof upcomingError === 'string') {
               throw new Error(upcomingError);
             }
 
-            controller.abort('Stream disposed');
-
             throw upcomingError;
-          } else if (!canceled) {
+          } else if (!abortController.signal.aborted) {
             yield data;
           }
         }
@@ -102,25 +97,20 @@ export const defaultStreamHandler = async ({
   return {
     status: response.status,
     asPromise,
+    abortController,
     [Symbol.asyncIterator]: asyncIterator,
     [Symbol.dispose]: () => {
-      canceled = true;
-      controller.abort('Stream disposed');
+      abortController.abort('Stream disposed');
     },
     [Symbol.asyncDispose]: () => {
-      canceled = true;
-      controller.abort('Stream async disposed');
+      abortController.abort('Stream async disposed');
     },
     onIterate: (cb) => {
-      if (canceled) return () => {};
+      if (abortController.signal.aborted) return () => {};
       subscribers.add(cb);
       return () => {
         subscribers.delete(cb);
       };
-    },
-    cancel: (reason?: string | Error) => {
-      canceled = true;
-      return controller.abort(reason ?? 'Stream aborted intentionally');
     },
   };
 };

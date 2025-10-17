@@ -91,9 +91,9 @@ export function createFetcher<T>({
         requestInit.body = JSON.stringify(body);
       }
 
-      const controller = new AbortController();
+      const abortController = new AbortController();
 
-      requestInit.signal = controller.signal;
+      requestInit.signal = abortController.signal;
 
       requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
 
@@ -112,14 +112,12 @@ export function createFetcher<T>({
       const contentType = interpretAs ?? response.headers.get('content-type');
 
       if (contentType?.startsWith('application/jsonl')) {
-        respData = defaultStreamHandler({ response, controller, schema });
+        respData = defaultStreamHandler({ response, abortController, schema });
       } else if (contentType?.startsWith('application/json')) {
-        respData = defaultHandler({ response, schema });
+        respData = await defaultHandler({ response, schema });
       } else {
         respData = response;
       }
-
-      respData = await respData;
 
       respData = transformResponse ? await transformResponse(respData, inputOptions, response, requestInit) : respData;
 

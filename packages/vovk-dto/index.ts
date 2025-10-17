@@ -109,6 +109,7 @@ function withDto<
   skipSchemaEmission,
   validateEachIteration,
   options,
+  preferTransformed,
   operationObject,
 }: {
   isForm?: IS_FORM;
@@ -125,6 +126,7 @@ function withDto<
     classTransformOptions?: ClassTransformOptions;
     validatorOptions?: ValidatorOptions;
   };
+  preferTransformed?: boolean;
   operationObject?: VovkOperationObject;
 }) {
   const schemas = validationMetadatasToSchemas();
@@ -177,6 +179,7 @@ function withDto<
 
       return instance;
     },
+    preferTransformed,
     operationObject,
   });
 }

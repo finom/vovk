@@ -118,6 +118,7 @@ function withYup<
   skipSchemaEmission,
   validateEachIteration,
   options,
+  preferTransformed,
   operationObject,
 }: {
   isForm?: IS_FORM;
@@ -133,6 +134,7 @@ function withYup<
   options?: {
     validateOptions?: Yup.ValidateOptions;
   };
+  preferTransformed?: boolean;
   operationObject?: VovkOperationObject;
 }) {
   return withValidationLibrary({
@@ -168,6 +170,7 @@ function withYup<
         );
       }
     },
+    preferTransformed,
     operationObject,
   });
 }

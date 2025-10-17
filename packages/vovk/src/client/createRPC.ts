@@ -41,12 +41,19 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   const segmentSchema = schema.segments[segmentName];
   if (!segmentSchema)
     throw new Error(`Unable to create RPC module. Segment schema is missing for segment "${segmentName}".`);
-  const controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
+  let controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
   const client = {} as VovkRPCModule<T, OPTS>;
   if (!controllerSchema) {
-    throw new Error(
-      `Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName}".`
+    // eslint-disable-next-line no-console
+    console.warn(
+      `🐺 Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName}". Assuming that schema is not ready yet and a segment is importing an uncompiled RPC module.`
     );
+
+    controllerSchema = {
+      rpcModuleName,
+      prefix: '',
+      handlers: {},
+    };
   }
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
 

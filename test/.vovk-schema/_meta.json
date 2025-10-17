@@ -2,31 +2,6 @@
   "$schema": "https://vovk.dev/api/schema/v3/meta.json",
   "config": {
     "libs": {},
-    "generatorConfig": {
-      "origin": "http://localhost:3210",
-      "imports": {
-        "validateOnClient": "../packages/vovk-ajv/index.js"
-      },
-      "openAPIObject": {
-        "info": {
-          "title": "Hello, OpenAPI!",
-          "description": "Vovk test app",
-          "version": "1.0.0"
-        },
-        "servers": [
-          {
-            "url": "http://localhost:3000"
-          }
-        ]
-      },
-      "segments": {
-        "client2": {
-          "imports": {
-            "fetcher": "./src/lib/fetcher.ts"
-          }
-        }
-      }
-    },
     "$schema": "https://vovk.dev/api/schema/v3/config.json"
   }
 }

@@ -30,7 +30,7 @@ program
   .command('dev')
   .alias('d')
   .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
-  .argument('[nextArgs...]', 'extra arguments for the dev command')
+  .argument('[nextArgs...]', 'extra arguments for the implicit next dev command call')
   .option('--next-dev', 'start schema watcher and Next.js with automatic port allocation')
   .option('--exit', 'kill the processes when schema and client is generated')
   .option('--schema-out <path>', 'path to schema output directory (default: .vovk-schema)')

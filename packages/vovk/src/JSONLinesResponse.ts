@@ -44,6 +44,9 @@ export class JSONLinesResponse<T> extends Response {
     this.controller = request ? readableController! : null;
 
     request?.signal?.addEventListener('abort', this.close, { once: true });
+
+    // this will make promise on the client-side to resolve immediately
+    this.controller?.enqueue(encoder?.encode(''));
   }
 
   public send = (data: T | StreamAbortMessage) => {

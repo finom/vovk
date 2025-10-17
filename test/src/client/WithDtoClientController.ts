@@ -30,7 +30,7 @@ import {
 } from './WithDtoClientController.dto.ts';
 import { WithDtoClientControllerRPC } from 'vovk-client';
 import { plainToInstance } from 'class-transformer';
-import { ok } from 'node:assert';
+import { ok, strictEqual } from 'node:assert';
 import 'reflect-metadata/lite';
 
 class WithDtoClientService {
@@ -67,7 +67,7 @@ export default class WithDtoClientController {
     query: HandleAllQueryDto,
     params: HandleAllParamsDto,
     output: HandleAllOutputDto,
-    handle: async (req, params) => {
+    handle: async (req, params): Promise<VovkOutput<typeof WithDtoClientController.handleAll>> => {
       const body = await req.vovk.body();
       const query = req.vovk.query();
       const vovkParams = req.vovk.params();
@@ -82,6 +82,30 @@ export default class WithDtoClientController {
         params: plainToInstance(HandleAllParamsDto, params),
         vovkParams,
       });
+    },
+  });
+
+  @post('all-prefer-transformed-false/{foo}/{bar}')
+  static handleAllpreferTransformedFalse = withDto({
+    body: HandleAllBodyDto,
+    query: HandleAllQueryDto,
+    params: HandleAllParamsDto,
+    preferTransformed: false,
+    handle: async (req, params) => {
+      const body = await req.vovk.body();
+      const query = req.vovk.query();
+      const vovkParams = req.vovk.params();
+      // ok function changes TS type narrowing, so we use strictEqual
+      strictEqual(body instanceof HandleAllBodyDto, false, 'Body is an instance of HandleAllBodyDto');
+      strictEqual(query instanceof HandleAllQueryDto, false, 'Query is an instance of HandleAllQueryDto');
+      strictEqual(vovkParams instanceof HandleAllParamsDto, false, 'Params is an instance of HandleAllParamsDto');
+
+      return {
+        body,
+        query,
+        params,
+        vovkParams,
+      };
     },
   });
 
@@ -241,8 +265,8 @@ export default class WithDtoClientController {
     },
   });
 
-  // The tests are run on nodejs without TS compilator so decorators are not supported and it's not possible import a DTO at .test.ts file
-  // this endpoint and other ones ended with "Client" implement a proxy to be able to test errors on client: side
+  // The tests are run on nodejs without TS compiler, so decorators are not supported and it's not possible import a DTO at .test.ts file
+  // this endpoint and other ones ended with "Client" implement a proxy to be able to test errors on the client-side
   @post('all/{foo}/{bar}/client')
   static handleAllClient = async (
     req: VovkRequest<HandleAllBodyDto, HandleAllQueryDto>,
