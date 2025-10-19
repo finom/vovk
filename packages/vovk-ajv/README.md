@@ -1,22 +1,43 @@
-<p align="center"> 
-  <picture>
-    <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
-    <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
-    <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
-  </picture><br>
-  <strong>RESTful + RPC = ♥️</strong>
+<p align="center">
+  <a href="https://vovk.dev">
+    <picture>
+      <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
+      <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
+      <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
+    </picture>
+  </a>
+  <br>
+  <strong>RESTful API + RPC = ♥️</strong>
 </p>
 
 <p align="center">
-  Back-end meta-framework for <a href="https://nextjs.org/docs/app">Next.js</a>
+  Back-end for <a href="https://nextjs.org/docs/app">Next.js</a>
 </p>
 
 ---
 
-## vovk-validate-client-ajv [![npm version](https://badge.fury.io/js/vovk-validate-client-ajv.svg)](https://www.npmjs.com/package/vovk-validate-client-ajv)
+## vovk-ajv [![npm version](https://badge.fury.io/js/vovk-ajv.svg)](https://www.npmjs.com/package/vovk-ajv)
 
-A library that is re-exported from [vovk-zod/validateOnClient](https://vovk.dev/validation/vovk-zod) and [vovk-yup/validateOnClient](https://vovk.dev/validation/vovk-yup) that provides client-side validation for JSON schemas emitted by these libraries. If you build a custom validation library that also emits JSON schemas, you can use this package to create your `validateOnClient` function.
+[Ajv](https://ajv.js.org/) [client-side validation](https://vovk.dev/validation/client) for Vovk.ts. Exports `validateOnClient` function that can be injected into `createRPC` function at the generated RPC client by modifying [imports config](https://vovk.dev/imports#validateonclient).
 
 ```ts
-export { default } from 'vovk-validate-client-ajv';
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  generatorConfig: {
+    imports: {
+      validateOnClient: 'vovk-ajv',
+    },
+  },
+  libs: {
+    /** @type {import('vovk-ajv').VovkAjvConfig} */
+    ajv: {
+      options: {
+        strict: false,
+      },
+      localize: 'de',
+    },
+  },
+};
+ 
+export default config;
 ```
