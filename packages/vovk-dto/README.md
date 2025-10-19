@@ -1,26 +1,59 @@
-<p align="center"> 
-  <picture>
-    <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
-    <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
-    <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
-  </picture><br>
-  <strong>RESTful + RPC = ♥️</strong>
-</p>
-
 <p align="center">
-  Back-end meta-framework for <a href="https://nextjs.org/docs/app">Next.js</a>
+  <a href="https://vovk.dev">
+    <picture>
+      <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
+      <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
+      <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
+    </picture>
+  </a>
+  <br>
+  <strong>Back-end for <a href="https://nextjs.org/">Next.js</a></strong>
 </p>
 
 ---
 
 ## vovk-dto [![npm version](https://badge.fury.io/js/vovk-dto.svg)](https://www.npmjs.com/package/vovk-dto)
 
-Validation library for DTOs (Data Transfer Objects) implemented with [class-validator](<[https://](https://www.npmjs.com/package/class-validator)>)
+[class-validator](https://www.npmjs.com/package/class-validator) library for Vovk.ts.
 
 ```sh
 npm install vovk-dto
 ```
 
-For more information, please visit the [documentation](https://vovk.dev/validation/vovk-dto) and check out the [live DTO example](https://vovk-examples.vercel.app/dto).
+```ts
+import { withDto } from 'vovk-dto';
+import { post, prefix } from 'vovk';
+import { UserBodyDto, UserQueryDto, UserParamsDto } from './UserDtos';
 
-You might also be interested type mapping library for DTOs [dto-mapped-types](https://github.com/finom/dto-mapped-types).
+@prefix('users')
+export default class UserController {
+  @post('{id}')
+  static updateUser = withDto({
+    body: UserBodyDto,
+    query: UserQueryDto,
+    params: UserParamsDto,
+    handle: (req) => {
+      // ...
+    } 
+  })
+}
+```
+
+Also offers `validateOnClient` function that can be set at [imports config](https://vovk.dev/imports#validateonclient).
+
+```ts
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  generatorConfig: {
+    imports: {
+      validateOnClient: 'vovk-dto/validateOnClient',
+    },
+  },
+};
+ 
+export default config;
+```
+
+For more information, please visit the [documentation](https://vovk.dev/validation/dto).
+
+You might also be interested in the type mapping library for DTOs: [dto-mapped-types](https://github.com/finom/dto-mapped-types).

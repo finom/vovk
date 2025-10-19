@@ -16,6 +16,11 @@
 
 [Ajv](https://ajv.js.org/) [client-side validation](https://vovk.dev/validation/client) for Vovk.ts. Exports `validateOnClient` function that can be injected into `createRPC` function at the generated RPC client by modifying [imports config](https://vovk.dev/imports#validateonclient).
 
+```sh
+npm install vovk-ajv
+```
+
+
 ```ts
 /** @type {import('vovk').VovkConfig} */
 const config = {
