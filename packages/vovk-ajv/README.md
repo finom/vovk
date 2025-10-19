@@ -7,11 +7,7 @@
     </picture>
   </a>
   <br>
-  <strong>RESTful API + RPC = ♥️</strong>
-</p>
-
-<p align="center">
-  Back-end for <a href="https://nextjs.org/docs/app">Next.js</a>
+  <strong>Back-end for <a href="https://nextjs.org/docs/app">Next.js</a></strong>
 </p>
 
 ---
