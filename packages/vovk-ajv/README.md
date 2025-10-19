@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://vovk.dev" target="_blank">
+  <a href="https://vovk.dev">
     <picture>
       <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
       <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
@@ -7,7 +7,7 @@
     </picture>
   </a>
   <br>
-  <strong>Back-end for <a href="https://nextjs.org/" target="_blank">Next.js</a></strong>
+  <strong>Back-end for <a href="https://nextjs.org/">Next.js</a></strong>
 </p>
 
 ---
