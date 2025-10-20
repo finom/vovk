@@ -51,8 +51,5 @@
     "tailwindcss": "^4",
     "ts-loader": "^9.5.4",
     "webpack-cli": "^6.0.1"
-  },
-  "overrides": {
-    "rolldown": "0.15.1"
   }
 }
