@@ -25,7 +25,7 @@ Vovk.ts is a conceptual back-end meta-framework built on top of the Next.js App 
 - First-class [OpenAPI support](https://vovk.dev/openapi).
 - Single-point deployment for front-end and back-end as a standard Next.js app.
 - Supports wide range of [validation libraries]((https://vovk.dev/validation/standard)), including [Standard Schema](https://vovk.dev/validation/standard).
-- [Function calling](https://vovk.dev/function-calling) framework that transforms your app into an AI agent or [JARVIS-grade user interface](https://vovk.dev/realtime-ui).
+- [Function calling](https://vovk.dev/function-calling) framework that transforms your app into an AI agent or [JARVIS-grade real-time UI](https://vovk.dev/realtime-ui).
 - [Fast](https://vovk.dev/performance).
 - Built on standards and conventions.
 

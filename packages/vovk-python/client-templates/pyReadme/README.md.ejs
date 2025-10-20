@@ -17,9 +17,9 @@
 ## <%= controllerSchema.rpcModuleName %>
         <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => { %>
 ### <%= controllerSchema.rpcModuleName %>.<%= t._.snakeCase(handlerName) %>
-<%- handlerSchema.openapi?.summary ? `> ${handlerSchema.openapi.summary}` : '' %>
+<%- handlerSchema.operationObject?.summary ? `> ${handlerSchema.operationObject.summary}` : '' %>
 
-<%- handlerSchema.openapi?.description ? `${handlerSchema.openapi.description}` : '' %>
+<%- handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>
 
 <% const forceApiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? controllerSchema.forceApiRoot; %>
 `<%= handlerSchema.httpMethod %> <%= [...(forceApiRoot ? [forceApiRoot] : [t.apiRoot, segmentName]), controllerSchema.prefix, handlerSchema.path].map((part, i) => i > 0 ? t._.trim(part, '/') : part).filter(Boolean).join('/') %>`
