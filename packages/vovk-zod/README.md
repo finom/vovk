@@ -20,4 +20,32 @@
 npm install vovk-zod
 ```
 
+```ts
+import { withZod } from 'vovk-zod';
+import { post, prefix } from 'vovk';
+import { z } from 'zod';
+
+@prefix('users')
+export default class UserController {
+  @post('{id}')
+  static updateUser = withZod({
+    body: z.object({
+      name: z.string().min(2).max(100),
+      email: z.string().email(),
+    }),
+    query: z.object({
+      includePosts: z.boolean().default(false),
+    }),
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+    handle: (req) => {
+      // ...
+    } 
+  })
+}
+```
+
+`withZod` imported from `vovk-zod` targets Zod 4. If you need Zod 3 support, import it from `vovk-zod/v3`.
+
 For more information, please visit the [documentation](https://vovk.dev/validation/zod).
