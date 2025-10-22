@@ -1,7 +1,6 @@
 import { Project, QuoteKind, IndentationText, NewLineKind, SyntaxKind, CodeBlockWriter, Node } from 'ts-morph';
 import type { KnownAny } from 'vovk';
 
-/** @deprecated Use updateConfig */
 export default function updateConfigProperty(
   absolutePathToTheFile: string,
   pathToProperty: string[],
@@ -97,6 +96,8 @@ function writeInitializer(writer: CodeBlockWriter, value: KnownAny): void {
   if (typeof value === 'string') {
     writer.quote(value);
   } else if (typeof value === 'number' || typeof value === 'boolean') {
+    writer.write(value.toString());
+  } else if (typeof value === 'function') {
     writer.write(value.toString());
   } else if (Array.isArray(value)) {
     writer.write('[');

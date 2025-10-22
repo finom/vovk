@@ -436,9 +436,8 @@ type BundleConfig = {
   requires?: Record<string, string>;
   prebundleOutDir?: string;
   keepPrebundleDir?: boolean;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore Make tsdown optional
-  tsdownBuildOptions?: Parameters<typeof import('tsdown') extends { build: infer T } ? T : never>[0];
+  outDir?: string;
+  build: (options: { outDir: string; prebundleDir: string; entry: string }) => Promise<void>;
   generatorConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
 } & (
   | {

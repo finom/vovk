@@ -152,7 +152,6 @@ program
   .option('--schema, --schema-path <path>', 'path to schema folder (default: .vovk-schema)')
   .option('--config, --config-path <config>', 'path to config file')
   .option('--origin <url>', 'set the origin URL for the generated client')
-  .option('--tsconfig <path>', 'path to tsconfig.json for bundling by tsdown')
   .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema instead of Vovk schema')
   .option('--openapi-get-module-name <names...>', 'module names corresponding to the index of --openapi option')
   .option('--openapi-get-method-name <names...>', 'method names corresponding to the index of --openapi option')

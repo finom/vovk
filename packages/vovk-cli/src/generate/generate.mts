@@ -5,8 +5,8 @@ import _ from 'lodash';
 import {
   resolveGeneratorConfigValues,
   openAPIToVovkSchema,
-  VovkOpenAPIMixin,
   vovkSchemaToOpenAPI,
+  type VovkOpenAPIMixin,
   type VovkSchema,
   type VovkStrictConfig,
 } from 'vovk';

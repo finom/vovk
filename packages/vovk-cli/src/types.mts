@@ -48,12 +48,12 @@ export interface BundleOptions
   extends Partial<
     Pick<VovkStrictConfig['bundle'], 'prebundleOutDir' | 'keepPrebundleDir' | 'includeSegments' | 'excludeSegments'>
   > {
+  bundler?: 'tsdown' | 'ncc';
   configPath?: string;
   schemaPath?: string;
   schema?: string;
   outDir?: string;
   origin?: string;
-  tsconfig?: string;
   openapiSpec?: string[];
   openapiGetModuleName?: string[];
   openapiGetMethodName?: string[];

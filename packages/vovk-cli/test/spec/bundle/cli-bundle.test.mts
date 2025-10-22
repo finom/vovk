@@ -1,11 +1,12 @@
 import { it, describe, beforeEach } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import type { VovkSchema } from 'vovk';
+import type { VovkSchema, VovkStrictConfig } from 'vovk';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
 import updateConfig from '../../lib/updateConfig.mts';
 import { importFresh } from '../../lib/importFresh.mts';
+import updateConfigProperty from '../../lib/updateConfigProperty.mts';
 
 await describe('TypeScript bundle', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, vovkDevAndKill, assertDirFileList } = getCLIAssertions({
@@ -122,16 +123,47 @@ await describe('TypeScript bundle', async () => {
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 
-  await it('Builds composed bundle with excluded segments', async () => {
+  await it.only('Builds composed bundle with excluded segments', async () => {
     await vovkDevAndKill();
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
-        tsdownBuildOptions: { outDir: './composed-bundle' },
+        // tsdownBuildOptions: { outDir: './composed-bundle' },
         excludeSegments: ['', 'bar/baz'],
+        build: () => {
+          throw new Error('Not implemented');
+        },
       },
     }));
-    await runAtProjectDir(`../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug`);
+    await fs.writeFile(
+      path.join(projectDir, 'tsconfig.build.json'),
+      JSON.stringify({
+        compilerOptions: {
+          moduleResolution: 'bundler',
+          paths: {
+            'vovk/*': ['./node_modules/vovk/*'],
+          },
+        },
+      })
+    );
+    await updateConfigProperty(
+      path.join(projectDir, 'vovk.config.js'),
+      ['bundle', 'build'],
+      async ({ entry, outDir }: Parameters<VovkStrictConfig['bundle']['build']>[0]) => {
+        const { build } = await import('tsdown');
+        await build({
+          entry,
+          dts: true,
+          format: ['cjs', 'esm'],
+          hash: false,
+          fixedExtension: true,
+          clean: true,
+          outDir,
+          tsconfig: './tsconfig.build.json',
+        });
+      }
+    );
+    await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',

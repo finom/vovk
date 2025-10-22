@@ -35,10 +35,6 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-typescript": "^12.1.4",
     "@tailwindcss/postcss": "^4.1.14",
     "@types/node": "^24.6.2",
     "@types/react": "^19",
@@ -48,8 +44,6 @@
     "openapi3-ts": "^4.5.0",
     "postcss": "^8",
     "tailwind": "^4.0.0",
-    "tailwindcss": "^4",
-    "ts-loader": "^9.5.4",
-    "webpack-cli": "^6.0.1"
+    "tailwindcss": "^4"
   }
 }

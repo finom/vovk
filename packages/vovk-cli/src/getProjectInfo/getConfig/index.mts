@@ -53,16 +53,18 @@ export default async function getConfig({
     bundle: {
       prebundleOutDir: conf.bundle?.prebundleOutDir ?? 'tmp_prebundle',
       keepPrebundleDir: conf.bundle?.keepPrebundleDir ?? false,
+      outDir: conf.bundle?.outDir ?? 'dist',
       requires: {
         [BuiltInTemplateName.readme]: '.',
         [BuiltInTemplateName.packageJson]: '.',
       },
       generatorConfig: {},
+      build:
+        conf.bundle?.build ??
+        (() => {
+          throw new Error('No bundle.build function specified');
+        }),
       ...conf.bundle,
-      tsdownBuildOptions: {
-        outDir: conf.bundle?.tsdownBuildOptions?.outDir ?? 'dist',
-        ...conf.bundle?.tsdownBuildOptions,
-      },
     },
     modulesDir: conf.modulesDir ?? path.join(srcRoot ?? '.', 'modules'),
     schemaOutDir: env.VOVK_SCHEMA_OUT_DIR ?? conf.schemaOutDir ?? './.vovk-schema',

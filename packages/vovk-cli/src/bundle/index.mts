@@ -1,7 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { VovkSchema } from 'vovk';
-import { build } from 'tsdown';
 import groupBy from 'lodash/groupBy.js';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { generate } from '../generate/generate.mjs';
@@ -9,6 +8,28 @@ import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { BundleOptions } from '../types.mjs';
 import { locateSegments } from '../locateSegments.mjs';
+
+/*
+async function tsdownBundle({
+  outDirAbsolute,
+  tsFullClientOutAbsoluteDirInput,
+}: {
+  outDirAbsolute: string;
+  tsFullClientOutAbsoluteDirInput: string;
+}) {
+  const { build } = await import('tsdown');
+
+  await build({
+    entry: path.join(tsFullClientOutAbsoluteDirInput, './index.ts'),
+    dts: true,
+    format: ['cjs', 'esm'],
+    hash: false,
+    fixedExtension: true,
+    clean: true,
+    ...tsdownBuildOptions,
+    outDir: outDirAbsolute,
+  });
+} */
 
 export async function bundle({
   projectInfo,
@@ -22,17 +43,11 @@ export async function bundle({
   const { config, log, cwd, apiDirAbsolutePath } = projectInfo;
   const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
   const { bundle: bundleConfig } = config;
-  const tsFullClientOutAbsoluteDirInput = path.join(cwd, bundleConfig.prebundleOutDir);
 
-  const prebundleOutDir = cliBundleOptions?.prebundleOutDir ?? bundleConfig.prebundleOutDir;
   const keepPrebundleDir = cliBundleOptions?.keepPrebundleDir ?? bundleConfig?.keepPrebundleDir ?? false;
-
-  if (!prebundleOutDir) {
-    throw new Error('No output directory specified for composed client');
-  }
-
-  const outDir = cliBundleOptions?.outDir ?? bundleConfig.tsdownBuildOptions.outDir;
-  const tsconfig = cliBundleOptions?.tsconfig ?? bundleConfig.tsdownBuildOptions.tsconfig;
+  const prebundleOutDirAbsolute = path.resolve(cwd, cliBundleOptions?.prebundleOutDir ?? bundleConfig.prebundleOutDir);
+  const entry = path.join(prebundleOutDirAbsolute, 'index.ts');
+  const outDir = cliBundleOptions?.outDir ?? bundleConfig.outDir;
 
   if (!outDir) {
     throw new Error('No output directory specified for bundling');
@@ -55,56 +70,22 @@ export async function bundle({
       openapiGetMethodName: cliBundleOptions?.openapiGetMethodName,
       openapiRootUrl: cliBundleOptions?.openapiRootUrl,
       composedFrom: [BuiltInTemplateName.ts],
-      composedOut: prebundleOutDir,
+      composedOut: prebundleOutDirAbsolute,
       composedOnly: true,
       composedIncludeSegments: cliBundleOptions.includeSegments ?? bundleConfig.includeSegments,
       composedExcludeSegments: cliBundleOptions.excludeSegments ?? bundleConfig.excludeSegments,
     },
   });
 
-  log.debug('Bundling index.ts');
+  log.debug(`Bundling ${chalkHighlightThing(entry)} to ${chalkHighlightThing(outDirAbsolute)}`);
 
-  await build({
-    entry: path.join(tsFullClientOutAbsoluteDirInput, './index.ts'),
-    dts: true,
-    format: ['cjs', 'esm'],
-    hash: false,
-    fixedExtension: true,
-    clean: true,
-    ...bundleConfig.tsdownBuildOptions,
+  await bundleConfig.build({
     outDir: outDirAbsolute,
-    tsconfig,
+    prebundleDir: prebundleOutDirAbsolute,
+    entry,
   });
 
   log.debug(`Bundled index.ts to ${chalkHighlightThing(outDirAbsolute)}`);
-
-  log.debug('Bundling schema.ts');
-
-  await build({
-    entry: path.join(tsFullClientOutAbsoluteDirInput, './schema.ts'),
-    dts: true,
-    format: ['cjs'],
-    fixedExtension: true,
-    outDir: outDirAbsolute,
-    clean: false,
-    tsconfig,
-  });
-
-  log.debug(`Bundled schema.ts to ${chalkHighlightThing(outDirAbsolute)}`);
-
-  log.debug('Bundling openapi.ts');
-
-  await build({
-    entry: path.join(tsFullClientOutAbsoluteDirInput, './openapi.ts'),
-    dts: true,
-    format: ['cjs'],
-    fixedExtension: true,
-    outDir: outDirAbsolute,
-    clean: false,
-    tsconfig,
-  });
-
-  log.debug(`Bundled openapi.ts to ${chalkHighlightThing(outDirAbsolute)}`);
 
   const requiresGroup = groupBy(Object.entries(bundleConfig.requires), ([, relativePath]) => relativePath);
 
@@ -126,13 +107,11 @@ export async function bundle({
   }
 
   if (!keepPrebundleDir) {
-    await fs.rm(tsFullClientOutAbsoluteDirInput, { recursive: true, force: true });
-    log.debug(
-      `Deleted temporary TypeScript client output directory: ${chalkHighlightThing(tsFullClientOutAbsoluteDirInput)}`
-    );
+    await fs.rm(prebundleOutDirAbsolute, { recursive: true, force: true });
+    log.debug(`Deleted temporary TypeScript client output directory: ${chalkHighlightThing(prebundleOutDirAbsolute)}`);
   } else {
     log.debug(
-      `Temporary TypeScript client output directory not deleted: ${chalkHighlightThing(tsFullClientOutAbsoluteDirInput)}`
+      `Temporary TypeScript client output directory not deleted because it is marked to keep: ${chalkHighlightThing(prebundleOutDirAbsolute)}`
     );
   }
 

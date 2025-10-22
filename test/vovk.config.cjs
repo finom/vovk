@@ -39,10 +39,11 @@ const vovkConfig = {
     },
   },
   bundle: {
-    tsdownBuildOptions: {
+    outDir: './other-compiled-test-sources/bundle',
+    /* tsdownBuildOptions: {
       outDir: './other-compiled-test-sources/bundle',
       tsconfig: './tsconfig.tsdown-bundle.json',
-    },
+    }, */
   },
   clientTemplateDefs: {
     py: {

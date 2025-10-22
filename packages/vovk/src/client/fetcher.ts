@@ -1,5 +1,5 @@
 import type { VovkFetcherOptions, VovkFetcher } from './types';
-import { HttpStatus } from '../types';
+import { HttpStatus, type VovkHandlerSchema } from '../types';
 import { HttpException } from '../HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
@@ -14,21 +14,22 @@ export function createFetcher<T>({
   transformResponse?: (
     respData: unknown,
     options: VovkFetcherOptions<T>,
-    response: Response,
-    init: RequestInit
+    info: { response: Response; init: RequestInit; schema: VovkHandlerSchema }
   ) => unknown | Promise<unknown>;
   onSuccess?: (
     respData: unknown,
     options: VovkFetcherOptions<T>,
-    response: Response,
-    init: RequestInit
+    info: { response: Response; init: RequestInit; schema: VovkHandlerSchema }
   ) => void | Promise<void>;
   onError?: (
     error: HttpException,
     options: VovkFetcherOptions<T>,
-    response: Response | null,
-    init: RequestInit | null,
-    respData: unknown | null
+    info: {
+      response: Response | null;
+      init: RequestInit | null;
+      respData: unknown | null;
+      schema: VovkHandlerSchema;
+    }
   ) => void | Promise<void>;
 } = {}) {
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
@@ -119,13 +120,15 @@ export function createFetcher<T>({
         respData = response;
       }
 
-      respData = transformResponse ? await transformResponse(respData, inputOptions, response, requestInit) : respData;
+      respData = transformResponse
+        ? await transformResponse(respData, inputOptions, { response, init: requestInit, schema })
+        : respData;
 
-      await onSuccess?.(respData, inputOptions, response, requestInit);
+      await onSuccess?.(respData, inputOptions, { response, init: requestInit, schema });
 
       return [respData, response];
     } catch (error) {
-      await onError?.(error as HttpException, inputOptions, response, requestInit, respData);
+      await onError?.(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
 
       throw error;
     }

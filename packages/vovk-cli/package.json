@@ -35,14 +35,14 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.461",
+    "vovk": "^3.0.0-draft.462",
     "vovk-ajv": "^0.0.0-draft.109",
     "vovk-client": "^0.0.4-draft.136",
     "vovk-python": "^0.0.1-draft.78",
     "vovk-rust": "^0.0.1-draft.64"
   },
   "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.41"
+    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.44"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
@@ -68,7 +68,6 @@
     "prettier": "^3.6.2",
     "tar-stream": "^3.1.7",
     "ts-morph": "^27.0.0",
-    "tsdown": "^0.15.8",
     "type-fest": "^5.0.1",
     "undici": "^7.16.0",
     "yaml": "^2.8.1"
@@ -84,6 +83,7 @@
     "create-next-app": "^15.5.4",
     "http-server": "^14.1.1",
     "node-pty": "^1.0.0",
+    "tsdown": "^0.15.9",
     "zod": "^4.1.11"
   }
 }

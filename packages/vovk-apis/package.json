@@ -59,7 +59,7 @@
     "unit": "node --experimental-strip-types --test --test-concurrency=1 test/*.mts"
   },
   "dependencies": {
-    "vovk": "^3.0.0-draft.461",
+    "vovk": "^3.0.0-draft.462",
     "vovk-ajv": "^0.0.0-draft.109",
     "ajv": "^8.17.1"
   },
