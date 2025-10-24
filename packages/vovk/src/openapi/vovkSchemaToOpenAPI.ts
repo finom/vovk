@@ -6,7 +6,7 @@ import {
   type HttpMethod,
   type VovkSchema,
   type KnownAny,
-  type VovkGeneratorConfig,
+  type VovkOutputConfig,
 } from '../types';
 import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
 import { resolveGeneratorConfigValues } from '../utils/resolveGeneratorConfigValues';
@@ -67,7 +67,7 @@ export function vovkSchemaToOpenAPI({
 }: {
   rootEntry?: string;
   schema: VovkSchema;
-  configs?: VovkGeneratorConfig[];
+  configs?: VovkOutputConfig[];
   segmentName?: string;
 }): OpenAPIObject {
   const paths: PathsObject = {};

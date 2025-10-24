@@ -1,5 +1,5 @@
 import type { PackageJson } from 'type-fest';
-import type { VovkGeneratorConfig, VovkReadmeConfig, VovkSamplesConfig, VovkSchema } from '../types';
+import type { VovkOutputConfig, VovkReadmeConfig, VovkSamplesConfig, VovkSchema } from '../types';
 import deepExtend from './deepExtend';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
@@ -11,7 +11,7 @@ export function resolveGeneratorConfigValues({
   projectPackageJson,
 }: {
   schema: VovkSchema;
-  configs?: VovkGeneratorConfig[];
+  configs?: VovkOutputConfig[];
   segmentName: string | null;
   isBundle?: boolean;
   projectPackageJson?: PackageJson;
@@ -21,8 +21,8 @@ export function resolveGeneratorConfigValues({
   samples: VovkSamplesConfig;
   origin: string;
   package: PackageJson;
-  imports: VovkGeneratorConfig['imports'];
-  reExports: VovkGeneratorConfig['reExports'];
+  imports: VovkOutputConfig['imports'];
+  reExports: VovkOutputConfig['reExports'];
 } {
   const packageJson = deepExtend(
     {} as PackageJson,
@@ -120,7 +120,7 @@ export function resolveGeneratorConfigValues({
         fetcher: ['vovk'] as const,
         validateOnClient: null,
         createRPC: ['vovk'] as const,
-      } as NonNullable<VovkGeneratorConfig['imports']>,
+      } as NonNullable<VovkOutputConfig['imports']>,
       schema.meta?.config?.outputConfig?.imports,
       isBundle ? schema.meta?.config?.bundle?.outputConfig?.imports : undefined,
       typeof segmentName === 'string'
@@ -128,20 +128,20 @@ export function resolveGeneratorConfigValues({
         : undefined,
       configs?.reduce(
         (acc, config) => deepExtend(acc, config.imports),
-        {} as NonNullable<VovkGeneratorConfig['imports']>
+        {} as NonNullable<VovkOutputConfig['imports']>
       )
     ),
     reExports: deepExtend(
       // segmentName can be an empty string (for the root segment) and null (for composed clients)
       // therefore, !segmentName indicates that this either a composed client or a root segment of a segmented client
-      {} as NonNullable<VovkGeneratorConfig['reExports']>,
+      {} as NonNullable<VovkOutputConfig['reExports']>,
       !segmentName && schema.meta?.config?.outputConfig?.reExports,
       !segmentName && isBundle ? schema.meta?.config?.bundle?.outputConfig?.reExports : undefined,
       // for segmented client, apply all reExports from all segments
       typeof segmentName !== 'string' &&
         Object.values(schema.meta?.config?.outputConfig?.segments ?? {}).reduce(
           (acc, segmentConfig) => deepExtend(acc, segmentConfig.reExports ?? {}),
-          {} as NonNullable<VovkGeneratorConfig['reExports']>
+          {} as NonNullable<VovkOutputConfig['reExports']>
         ),
       // for a specific segment, apply reExports from that segment
       typeof segmentName === 'string'
@@ -149,7 +149,7 @@ export function resolveGeneratorConfigValues({
         : undefined,
       configs?.reduce(
         (acc, config) => deepExtend(acc, config.reExports),
-        {} as NonNullable<VovkGeneratorConfig['reExports']>
+        {} as NonNullable<VovkOutputConfig['reExports']>
       )
     ),
   };

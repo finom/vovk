@@ -438,7 +438,7 @@ type BundleConfig = {
   keepPrebundleDir?: boolean;
   outDir?: string;
   build: (options: { outDir: string; prebundleDir: string; entry: string }) => Promise<void>;
-  outputConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
+  outputConfig?: VovkOutputConfig<GeneratorConfigImports>;
 } & (
   | {
       excludeSegments?: never;
@@ -461,7 +461,7 @@ type SegmentConfigImports = {
   validateOnClient?: string | [string, string] | [string] | null;
 };
 
-export interface VovkGeneratorConfig<TImports extends GeneratorConfigImports = GeneratorConfigImports> {
+export interface VovkOutputConfig<TImports extends GeneratorConfigImports = GeneratorConfigImports> {
   origin?: string | null;
   package?: VovkPackageJson;
   readme?: VovkReadmeConfig;
@@ -477,7 +477,7 @@ export type ClientTemplateDef = {
   composedClient?: Omit<ClientConfigComposed, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   requires?: Record<string, string>;
-  outputConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
+  outputConfig?: VovkOutputConfig<GeneratorConfigImports>;
 };
 
 export type GetOpenAPINameFn = (config: {
@@ -524,7 +524,7 @@ export interface VovkOpenAPIMixinNormalized
   getModuleName: GetOpenAPINameFn;
 }
 
-export interface VovkSegmentConfig extends VovkGeneratorConfig<SegmentConfigImports> {
+export interface VovkSegmentConfig extends VovkOutputConfig<SegmentConfigImports> {
   rootEntry?: string;
   segmentNameOverride?: string;
   openAPIMixin?: VovkOpenAPIMixin;
@@ -552,7 +552,7 @@ type VovkUserConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
-  outputConfig?: VovkGeneratorConfig<GeneratorConfigImports> & {
+  outputConfig?: VovkOutputConfig<GeneratorConfigImports> & {
     segments?: Record<string, VovkSegmentConfig>;
   };
 };
@@ -567,7 +567,7 @@ export type VovkStrictConfig = Required<
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
-  outputConfig: VovkGeneratorConfig<GeneratorConfigImports> & {
+  outputConfig: VovkOutputConfig<GeneratorConfigImports> & {
     segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin?: VovkOpenAPIMixinNormalized }>;
   };
 };

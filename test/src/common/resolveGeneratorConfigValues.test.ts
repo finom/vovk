@@ -3,7 +3,7 @@ import { deepStrictEqual, strictEqual } from 'node:assert';
 import type { PackageJson } from 'type-fest';
 import {
   type VovkSchema,
-  type VovkGeneratorConfigCommon,
+  type VovkOutputConfigCommon,
   resolveGeneratorConfigValues,
   type KnownAny,
   type VovkStrictConfig,
@@ -229,7 +229,7 @@ describe('resolveGeneratorConfigValues', () => {
         },
       };
 
-      const configs: VovkGeneratorConfigCommon[] = [
+      const configs: VovkOutputConfigCommon[] = [
         { package: { version: '0.6.0' } },
         { package: { keywords: ['api', 'vovk'] } },
       ];
@@ -276,7 +276,7 @@ describe('resolveGeneratorConfigValues', () => {
         },
       };
 
-      const configs: VovkGeneratorConfigCommon[] = [
+      const configs: VovkOutputConfigCommon[] = [
         {
           openAPIObject: {
             info: {
@@ -327,7 +327,7 @@ describe('resolveGeneratorConfigValues', () => {
         },
       };
 
-      const configs: VovkGeneratorConfigCommon[] = [
+      const configs: VovkOutputConfigCommon[] = [
         { origin: 'https://config1.example.com' },
         { origin: null },
         { origin: 'https://config2.example.com' },
@@ -362,7 +362,7 @@ describe('resolveGeneratorConfigValues', () => {
         },
       };
 
-      const configs: VovkGeneratorConfigCommon[] = [
+      const configs: VovkOutputConfigCommon[] = [
         {
           imports: {
             createRPC: ['@custom/rpc', 'createCustomRPC'],
@@ -702,7 +702,7 @@ describe('resolveGeneratorConfigValues', () => {
         },
       };
 
-      const configs: VovkGeneratorConfigCommon[] = [{}, {}, {}];
+      const configs: VovkOutputConfigCommon[] = [{}, {}, {}];
 
       const result = resolveGeneratorConfigValues({
         schema,
@@ -717,7 +717,7 @@ describe('resolveGeneratorConfigValues', () => {
     });
 
     it('should handle configs array with sequential merging', () => {
-      const configs: VovkGeneratorConfigCommon[] = [
+      const configs: VovkOutputConfigCommon[] = [
         {
           package: { name: 'first', version: '1.0.0' },
           readme: { banner: 'First banner' },
@@ -799,7 +799,7 @@ describe('resolveGeneratorConfigValues', () => {
         },
       };
 
-      const configs: VovkGeneratorConfigCommon[] = [
+      const configs: VovkOutputConfigCommon[] = [
         {
           package: { repository: 'https://github.com/test/repo' },
           origin: 'https://config.example.com',
@@ -844,7 +844,7 @@ describe('resolveGeneratorConfigValues', () => {
         },
       };
 
-      const configs: VovkGeneratorConfigCommon[] = [{ origin: null }, { origin: null }];
+      const configs: VovkOutputConfigCommon[] = [{ origin: null }, { origin: null }];
 
       const result = resolveGeneratorConfigValues({
         schema,
