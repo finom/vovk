@@ -74,7 +74,7 @@ export default async function writeOneClientFile({
   package: PackageJson;
   readme: VovkReadmeConfig;
   samples: VovkSamplesConfig;
-  reExports: VovkStrictConfig['generatorConfig']['reExports'];
+  reExports: VovkStrictConfig['outputConfig']['reExports'];
   isEnsuringClient: boolean;
   outCwdRelativeDir: string;
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
@@ -193,8 +193,8 @@ export default async function writeOneClientFile({
             )
           : null;
         const segmentConfig = {
-          ...config.generatorConfig.segments?.[sName],
-          // ...templateDef.generatorConfig?.segments?.[sName],
+          ...config.outputConfig.segments?.[sName],
+          // ...templateDef.outputConfig?.segments?.[sName],
         };
         const { origin: segmentConfigOrigin, rootEntry: segmentConfigRootEntry, segmentNameOverride } = segmentConfig;
 

@@ -2,14 +2,14 @@
 /** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
   logLevel: 'debug',
-  generatorConfig: { origin: `http://localhost:${process.env.PORT}` },
+  outputConfig: { origin: `http://localhost:${process.env.PORT}` },
   clientTemplateDefs: {
     rs: {
       extends: 'rs',
       composedClient: {
         outDir: '../packages/vovk-rust/generated_rust_client',
       },
-      generatorConfig: {
+      outputConfig: {
         package: {
           name: 'generated_rust_client',
           version: '0.1.0',

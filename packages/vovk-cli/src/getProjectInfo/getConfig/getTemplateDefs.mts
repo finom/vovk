@@ -161,9 +161,9 @@ export default function getTemplateDefs(
             ...builtIn.segmentedClient,
             ...templateDef.segmentedClient,
           },
-          generatorConfig: {
-            ...builtIn.generatorConfig,
-            ...templateDef.generatorConfig,
+          outputConfig: {
+            ...builtIn.outputConfig,
+            ...templateDef.outputConfig,
           },
           // 'requires' and other props will be overridden
         };

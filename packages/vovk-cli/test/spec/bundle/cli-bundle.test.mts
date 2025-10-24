@@ -249,20 +249,20 @@ await describe('TypeScript bundle', async () => {
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
-  await it('Uses combined generatorConfig to create re-exports in composed bundle', async () => {
+  await it('Uses combined outputConfig to create re-exports in composed bundle', async () => {
     await vovkDevAndKill();
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
         tsdownBuildOptions: { outDir: './composed-bundle' },
         includeSegments: ['foo', 'bar/baz'],
-        generatorConfig: {
+        outputConfig: {
           reExports: {
             'x as y': './x.ts',
           },
         },
       },
-      generatorConfig: {
+      outputConfig: {
         reExports: {
           a: './a.ts',
         },
@@ -313,7 +313,7 @@ await describe('TypeScript bundle', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
-        generatorConfig: {
+        outputConfig: {
           origin: 'https://example.com/',
         },
       },
@@ -332,7 +332,7 @@ await describe('TypeScript bundle', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
-        generatorConfig: {
+        outputConfig: {
           origin: 'https://example.com/', // should be overridden by --origin
         },
       },

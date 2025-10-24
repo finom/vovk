@@ -2,14 +2,14 @@
 /** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
   logLevel: 'debug',
-  generatorConfig: { origin: `http://localhost:${process.env.PORT}` },
+  outputConfig: { origin: `http://localhost:${process.env.PORT}` },
   clientTemplateDefs: {
     py: {
       extends: 'py',
       composedClient: {
         outDir: '../packages/vovk-python/test_py/generated_python_client',
       },
-      generatorConfig: {
+      outputConfig: {
         package: {
           name: 'test_generated_python_client',
           version: '0.0.1',

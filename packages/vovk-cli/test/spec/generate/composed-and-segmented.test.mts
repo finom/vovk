@@ -118,14 +118,14 @@ await describe('Composed & Segmented client', async () => {
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
-  await it('Uses generatorConfig re-exports with composed client (all re-exports compiled into one file)', async () => {
+  await it('Uses outputConfig re-exports with composed client (all re-exports compiled into one file)', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       composedClient: {
         outDir: './composed-client',
         fromTemplates: ['ts'],
       },
-      generatorConfig: {
+      outputConfig: {
         reExports: {
           'x as y': './x.ts',
           z: './z.ts',
@@ -260,14 +260,14 @@ await describe('Composed & Segmented client', async () => {
     deepStrictEqual(Object.keys(schema.segments), ['foo']);
   });
 
-  await it('Uses generatorConfig re-exports with segmented client (re-exports correspond to their segment, and the top-level re-exports are compiled into the root segment)', async () => {
+  await it('Uses outputConfig re-exports with segmented client (re-exports correspond to their segment, and the top-level re-exports are compiled into the root segment)', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       segmentedClient: {
         outDir: './segmented-client',
         fromTemplates: ['ts'],
       },
-      generatorConfig: {
+      outputConfig: {
         reExports: {
           'x as y': './x.ts',
           z: './z.ts',
@@ -322,7 +322,7 @@ await describe('Composed & Segmented client', async () => {
   await it('Uses origin option', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
-      generatorConfig: {
+      outputConfig: {
         origin: 'https://example.com/',
       },
     }));
@@ -336,7 +336,7 @@ await describe('Composed & Segmented client', async () => {
   await it('Uses --origin flag', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
-      generatorConfig: {
+      outputConfig: {
         origin: 'https://example.com/', // should be overridden by --origin
       },
     }));

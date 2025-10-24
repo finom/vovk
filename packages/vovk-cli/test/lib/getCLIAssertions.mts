@@ -84,9 +84,9 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     const config: VovkConfig = {
       moduleTemplates,
     };
-    config.generatorConfig ??= {};
-    config.generatorConfig.imports ??= {};
-    config.generatorConfig.imports.validateOnClient =
+    config.outputConfig ??= {};
+    config.outputConfig.imports ??= {};
+    config.outputConfig.imports.validateOnClient =
       validationLibrary === 'class-validator' ? 'vovk-dto/validateOnClient' : 'vovk-ajv';
 
     return { ...config, ...extras };

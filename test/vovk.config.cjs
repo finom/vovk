@@ -13,7 +13,7 @@ const vovkConfig = {
     service: 'none',
     controller: 'none',
   },
-  generatorConfig: {
+  outputConfig: {
     origin: `http://localhost:${process.env.PORT}`,
     imports: {
       validateOnClient: '../packages/vovk-ajv/index.js',
@@ -51,7 +51,7 @@ const vovkConfig = {
       composedClient: {
         outDir: './tmp/py',
       },
-      generatorConfig: {
+      outputConfig: {
         package: {
           name: 'test_generated_python_client',
           version: '0.0.1',
@@ -65,7 +65,7 @@ const vovkConfig = {
       composedClient: {
         outDir: './tmp/rs',
       },
-      generatorConfig: {
+      outputConfig: {
         package: {
           name: 'test_generated_rust_client',
           version: '0.0.1',

@@ -58,7 +58,7 @@ export default async function getConfig({
         [BuiltInTemplateName.readme]: '.',
         [BuiltInTemplateName.packageJson]: '.',
       },
-      generatorConfig: {},
+      outputConfig: {},
       build:
         conf.bundle?.build ??
         (() => {
@@ -78,12 +78,12 @@ export default async function getConfig({
       ...conf.moduleTemplates,
     },
     libs: conf.libs ?? {},
-    generatorConfig: {
-      ...conf.generatorConfig,
-      origin: (env.VOVK_ORIGIN ?? conf?.generatorConfig?.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
+    outputConfig: {
+      ...conf.outputConfig,
+      origin: (env.VOVK_ORIGIN ?? conf?.outputConfig?.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
       segments: Object.fromEntries(
         await Promise.all(
-          Object.entries(conf.generatorConfig?.segments ?? {}).map(async ([key, value]) => [
+          Object.entries(conf.outputConfig?.segments ?? {}).map(async ([key, value]) => [
             key,
             {
               ...value,

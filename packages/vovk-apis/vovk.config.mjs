@@ -18,7 +18,7 @@ const config = {
   clientTemplateDefs: {
     readme: {
       extends: 'readme',
-      generatorConfig: {
+      outputConfig: {
         readme: {
           installCommand: 'npm install vovk-apis',
         },
@@ -33,7 +33,7 @@ const config = {
       },
     },
   },
-  generatorConfig: {
+  outputConfig: {
     imports: {
       validateOnClient: 'vovk-ajv',
     },

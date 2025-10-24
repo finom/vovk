@@ -43,7 +43,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               origin: 'https://api.example.com',
             },
           },
@@ -82,7 +82,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               segments: {
                 users: { reExports: { User: './types/User' } },
                 posts: { reExports: { Post: './types/Post' } },
@@ -123,7 +123,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               segments: {
                 '': {
                   package: { version: '1.0.0' },
@@ -202,7 +202,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               package: {
                 name: 'schema-package',
                 version: '0.2.0',
@@ -218,7 +218,7 @@ describe('resolveGeneratorConfigValues', () => {
               },
             },
             bundle: {
-              generatorConfig: {
+              outputConfig: {
                 package: {
                   version: '0.5.0',
                   homepage: 'https://bundle.example.com',
@@ -247,8 +247,8 @@ describe('resolveGeneratorConfigValues', () => {
         name: 'segment-package', // from segment meta
         version: '0.6.0', // from configs array (last override)
         description: 'project description', // from projectPackageJson
-        license: 'MIT', // from schema generatorConfig
-        authors: ['test-author'], // from segment generatorConfig
+        license: 'MIT', // from schema outputConfig
+        authors: ['test-author'], // from segment outputConfig
         homepage: 'https://bundle.example.com', // from bundle
         keywords: ['api', 'vovk'], // from configs array
       });
@@ -262,7 +262,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               openAPIObject: {
                 info: {
                   title: 'Base API',
@@ -310,7 +310,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               origin: 'https://first.example.com',
               segments: {
                 test: {
@@ -319,7 +319,7 @@ describe('resolveGeneratorConfigValues', () => {
               },
             },
             bundle: {
-              generatorConfig: {
+              outputConfig: {
                 origin: 'https://bundle.example.com',
               },
             } as VovkStrictConfig['bundle'],
@@ -352,7 +352,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               imports: {
                 fetcher: '@custom/fetcher',
                 validateOnClient: '@custom/validator',
@@ -393,11 +393,11 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               package: { name: 'base' },
             },
             bundle: {
-              generatorConfig: {
+              outputConfig: {
                 package: { name: 'bundled' },
                 origin: 'https://bundle.example.com',
               },
@@ -424,11 +424,11 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               package: { name: 'base' },
             },
             bundle: {
-              generatorConfig: {
+              outputConfig: {
                 package: { name: 'bundled' },
                 origin: 'https://bundle.example.com',
               },
@@ -471,7 +471,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               segments: {
                 users: {
                   origin: 'https://users.example.com',
@@ -554,7 +554,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               reExports: { Base: './base' },
               segments: {
                 users: { reExports: { User: './User', Profile: './Profile' } },
@@ -665,7 +665,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               package: null as KnownAny,
               origin: null,
               imports: null as KnownAny,
@@ -697,7 +697,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {},
+            outputConfig: {},
           },
         },
       };
@@ -778,7 +778,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               package: { license: 'MIT' },
               origin: 'https://base.example.com',
               segments: {
@@ -789,7 +789,7 @@ describe('resolveGeneratorConfigValues', () => {
               },
             },
             bundle: {
-              generatorConfig: {
+              outputConfig: {
                 package: { homepage: 'https://bundle.example.com' },
                 origin: 'https://bundle.example.com',
                 samples: { apiRoot: '/api/v2' },
@@ -837,7 +837,7 @@ describe('resolveGeneratorConfigValues', () => {
           $schema: 'https://vovk.dev/api/schema/v3/meta.json',
           config: {
             $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            generatorConfig: {
+            outputConfig: {
               origin: null,
             },
           },

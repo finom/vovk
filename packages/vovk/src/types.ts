@@ -438,7 +438,7 @@ type BundleConfig = {
   keepPrebundleDir?: boolean;
   outDir?: string;
   build: (options: { outDir: string; prebundleDir: string; entry: string }) => Promise<void>;
-  generatorConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
+  outputConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
 } & (
   | {
       excludeSegments?: never;
@@ -477,7 +477,7 @@ export type ClientTemplateDef = {
   composedClient?: Omit<ClientConfigComposed, 'fromTemplates' | 'enabled'>;
   segmentedClient?: Omit<ClientConfigSegmented, 'fromTemplates' | 'enabled'>;
   requires?: Record<string, string>;
-  generatorConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
+  outputConfig?: VovkGeneratorConfig<GeneratorConfigImports>;
 };
 
 export type GetOpenAPINameFn = (config: {
@@ -552,7 +552,7 @@ type VovkUserConfig = {
     controller?: string;
     [key: string]: string | undefined;
   };
-  generatorConfig?: VovkGeneratorConfig<GeneratorConfigImports> & {
+  outputConfig?: VovkGeneratorConfig<GeneratorConfigImports> & {
     segments?: Record<string, VovkSegmentConfig>;
   };
 };
@@ -567,7 +567,7 @@ export type VovkStrictConfig = Required<
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
-  generatorConfig: VovkGeneratorConfig<GeneratorConfigImports> & {
+  outputConfig: VovkGeneratorConfig<GeneratorConfigImports> & {
     segments?: Record<string, Omit<VovkSegmentConfig, 'openAPIMixin'> & { openAPIMixin?: VovkOpenAPIMixinNormalized }>;
   };
 };

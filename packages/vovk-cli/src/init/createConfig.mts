@@ -52,9 +52,9 @@ export default async function createConfig({
     }[validationLibrary ?? 'type'],
   };
 
-  config.generatorConfig ??= {};
-  config.generatorConfig.imports ??= {};
-  config.generatorConfig.imports.validateOnClient =
+  config.outputConfig ??= {};
+  config.outputConfig.imports ??= {};
+  config.outputConfig.imports.validateOnClient =
     validationLibrary === 'class-validator' ? 'vovk-dto/validateOnClient' : 'vovk-ajv';
 
   if (validationLibrary && !moduleTemplates) {

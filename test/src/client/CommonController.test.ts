@@ -106,7 +106,7 @@ describe('Client with vovk-client', () => {
     deepStrictEqual(result, { 'x-vovk-test': 'world' });
   });
 
-  it(`Should handle headers, response transform at different fetcher`, async () => {
+  it(`Should handle headers, response transform and extra options at a different fetcher`, async () => {
     const result = await CommonControllerDifferentFetcherRPC.getHelloWorldHeaders<
       VovkBody<typeof CommonController.getHelloWorldHeaders> & {
         successMessage: string;

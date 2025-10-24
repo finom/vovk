@@ -182,7 +182,7 @@ export async function generate({
   };
   const { config, cwd, log, srcRoot, vovkCliPackage, packageJson: projectPackageJson } = projectInfo;
 
-  Object.entries(config.generatorConfig.segments ?? {})
+  Object.entries(config.outputConfig.segments ?? {})
     .filter(([, segmentConfig]) => segmentConfig.openAPIMixin)
     .forEach(([segmentName, segmentConfig]) => {
       fullSchema.segments = {
@@ -258,7 +258,7 @@ export async function generate({
           reExports,
         } = resolveGeneratorConfigValues({
           schema: fullSchema,
-          configs: [{ origin: cliGenerateOptions?.origin }, templateDef.generatorConfig ?? {}],
+          configs: [{ origin: cliGenerateOptions?.origin }, templateDef.outputConfig ?? {}],
           projectPackageJson,
           isBundle,
           segmentName: null,
@@ -367,7 +367,7 @@ export async function generate({
               reExports,
             } = resolveGeneratorConfigValues({
               schema: fullSchema,
-              configs: [{ origin: cliGenerateOptions?.origin }, templateDef.generatorConfig ?? {}],
+              configs: [{ origin: cliGenerateOptions?.origin }, templateDef.outputConfig ?? {}],
               projectPackageJson,
               segmentName,
               isBundle,

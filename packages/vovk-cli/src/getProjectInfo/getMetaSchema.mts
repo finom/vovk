@@ -12,12 +12,12 @@ export default function getMetaSchema({ config, useEmitConfig }: { config: VovkS
             ? pick(
                 {
                   ...config,
-                  generatorConfig: config.generatorConfig
+                  outputConfig: config.outputConfig
                     ? {
-                        ...config.generatorConfig,
+                        ...config.outputConfig,
                         // TODO: Dirty fix! Need to think of a better way to avoid emission of mixins.
-                        segments: config.generatorConfig.segments
-                          ? mapValues(config.generatorConfig.segments, (segment) => omit(segment, ['openAPIMixin']))
+                        segments: config.outputConfig.segments
+                          ? mapValues(config.outputConfig.segments, (segment) => omit(segment, ['openAPIMixin']))
                           : undefined,
                       }
                     : undefined,

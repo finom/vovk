@@ -44,7 +44,7 @@ Also offers `validateOnClient` function that can be set at [imports config](http
 ```ts
 /** @type {import('vovk').VovkConfig} */
 const config = {
-  generatorConfig: {
+  outputConfig: {
     imports: {
       validateOnClient: 'vovk-dto/validateOnClient',
     },
