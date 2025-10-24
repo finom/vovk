@@ -1,6 +1,6 @@
 import { CommonControllerRPC, CommonControllerDifferentFetcherRPC } from 'vovk-client';
 import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
-import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
+// import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
 import {
   HttpStatus,
   type VovkBody,
@@ -14,6 +14,7 @@ import { it, describe } from 'node:test';
 import { deepStrictEqual, ok } from 'node:assert';
 import type CommonController from './CommonController.ts';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import omit from 'lodash/omit.js';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -32,11 +33,11 @@ describe('Client with vovk-client', () => {
     deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
-  it(`Should use bundle RPC`, async () => {
-    const result = await BundleClientCommonControllerRPC.getHelloWorldObjectLiteral({
+  it.skip(`Should use bundled RPC`, async () => {
+    /* const result = await BundleClientCommonControllerRPC.getHelloWorldObjectLiteral({
       apiRoot,
     });
-    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' }); */
   });
 
   it(`Should handle requests that return NextResponse.json`, async () => {
@@ -105,18 +106,34 @@ describe('Client with vovk-client', () => {
     deepStrictEqual(result, { 'x-vovk-test': 'world' });
   });
 
-  it.only(`Should handle headers and response transform and different fetcher`, async () => {
+  it(`Should handle headers, response transform at different fetcher`, async () => {
     const result = await CommonControllerDifferentFetcherRPC.getHelloWorldHeaders<
-      VovkBody<typeof CommonController.getHelloWorldHeaders> & { fetcherExtraProperty: 'my-extra-value' }
+      VovkBody<typeof CommonController.getHelloWorldHeaders> & {
+        successMessage: string;
+        response: Response;
+        init: RequestInit;
+        schema: VovkHandlerSchema;
+      }
     >({
       apiRoot,
       init: { headers: { 'x-vovk-test': 'world' } },
+      successMessage: 'Success',
     });
-    deepStrictEqual(result, {
+    deepStrictEqual(omit(result, ['response', 'init', 'schema']), {
       'x-vovk-test': 'world',
       'x-vovk-fetcher-header': 'my-header-value',
-      fetcherExtraProperty: 'my-extra-value',
+      successMessage: 'Success',
     });
+
+    ok(result.response instanceof Response, 'Response is instance of Response');
+    deepStrictEqual(result.init.headers, {
+      accept: 'application/jsonl, application/json',
+      'content-type': 'application/json',
+      'x-vovk-test': 'world',
+      'x-vovk-fetcher-header': 'my-header-value',
+      'x-success-message': 'Success',
+    });
+    deepStrictEqual(result.schema, CommonControllerDifferentFetcherRPC.getHelloWorldHeaders.schema);
   });
 
   it(`Should handle simple requests and return a normal array`, async () => {

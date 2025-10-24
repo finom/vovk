@@ -1,19 +1,25 @@
 import { createFetcher } from 'vovk';
 
-export const fetcher = createFetcher({
-  prepareRequestInit: (init) => {
+export const fetcher = createFetcher<{
+  successMessage: string;
+}>({
+  prepareRequestInit: (init, { successMessage }) => {
     return {
       ...init,
       headers: {
         ...init.headers,
         'x-vovk-fetcher-header': 'my-header-value',
+        'x-success-message': successMessage,
       },
     };
   },
-  transformResponse: (responseData) => {
+  transformResponse: (responseData, { successMessage }, { response, init, schema }) => {
     return {
       ...(responseData as object),
-      fetcherExtraProperty: 'my-extra-value',
+      successMessage,
+      response,
+      init,
+      schema,
     };
   },
 });

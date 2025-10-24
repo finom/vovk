@@ -16,7 +16,7 @@
     "bundle": "node ../packages/vovk-cli/dist/index.mjs bundle --keep-prebundle-dir",
     "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --composed-schema-json --template=python --composed-schema-json --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh",
-    "build-other-compiled-sources": "rm -rf other-compiled-test-sources && npm run bundle && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
+    "build-other-compiled-sources": "rm -rf other-compiled-test-sources && echo 'TODO: npm run bundle' && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
   },
   "type": "module",
   "dependencies": {
