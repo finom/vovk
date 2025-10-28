@@ -11,11 +11,8 @@ export default class ArktypeControllerAndServiceEntityController {
   })
   @get()
   static getArktypeControllerAndServiceEntities = withArk({
-    query: type({ search: type('string') }),
-    handle(req) {
-      const search = req.nextUrl.searchParams.get('search');
-
-      return ArktypeControllerAndServiceEntityService.getArktypeControllerAndServiceEntities(search);
+    handle() {
+      return ArktypeControllerAndServiceEntityService.getArktypeControllerAndServiceEntities();
     },
   });
 
@@ -24,27 +21,33 @@ export default class ArktypeControllerAndServiceEntityController {
   })
   @put('{id}')
   static updateArktypeControllerAndServiceEntity = withArk({
-    body: type({
-      foo: type('"bar" | "baz"'),
-    }),
-    query: type({ q: type('string') }),
+    body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
     async handle(req, params) {
       const { id } = params;
       const body = await req.json();
-      const q = req.nextUrl.searchParams.get('q');
 
-      return ArktypeControllerAndServiceEntityService.updateArktypeControllerAndServiceEntity(id, q, body);
+      return ArktypeControllerAndServiceEntityService.updateArktypeControllerAndServiceEntity(id, body);
     },
   });
 
   @post()
-  static createArktypeControllerAndServiceEntity = () => {
-    // ...
-  };
+  static createArktypeControllerAndServiceEntity = withArk({
+    body: type({ todo: type('true') }),
+    async handle(req) {
+      const body = await req.json();
 
-  @del(':id')
-  static deleteArktypeControllerAndServiceEntity = () => {
-    // ...
-  };
+      return ArktypeControllerAndServiceEntityService.createArktypeControllerAndServiceEntity(body);
+    },
+  });
+
+  @del('{id}')
+  static deleteArktypeControllerAndServiceEntity = withArk({
+    params: type({ id: type('string') }),
+    handle(_req, params) {
+      const { id } = params;
+
+      return ArktypeControllerAndServiceEntityService.deleteArktypeControllerAndServiceEntity(id);
+    },
+  });
 }

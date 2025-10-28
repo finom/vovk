@@ -2,19 +2,14 @@ import { prefix, get, put, post, del, operation } from 'vovk';
 import { withDto } from 'vovk-dto';
 import { IsString, IsIn } from 'class-validator';
 
-class GetDtoControllerOnlyEntitiesQueryDto {
-  @IsString()
-  search: string;
+class DtoControllerOnlyEntityBodyDto {
+  @IsIn([true])
+  todo: true;
 }
 
-class UpdateDtoControllerOnlyEntityBodyDto {
-  @IsIn(['bar', 'baz'])
-  foo: 'bar' | 'baz';
-}
-
-class UpdateDtoControllerOnlyEntityQueryDto {
+class DtoControllerOnlyEntityParamsDto {
   @IsString()
-  q: string;
+  id: string;
 }
 
 @prefix('dto-controller-only-entities')
@@ -24,11 +19,8 @@ export default class DtoControllerOnlyEntityController {
   })
   @get()
   static getDtoControllerOnlyEntities = withDto({
-    query: GetDtoControllerOnlyEntitiesQueryDto,
-    handle(req) {
-      const { search } = req.vovk.query();
-
-      return { results: [], search };
+    handle() {
+      return { message: 'TODO: get dtoControllerOnlyEntities' };
     },
   });
 
@@ -37,24 +29,33 @@ export default class DtoControllerOnlyEntityController {
   })
   @put('{id}')
   static updateDtoControllerOnlyEntity = withDto({
-    body: UpdateDtoControllerOnlyEntityBodyDto,
-    query: UpdateDtoControllerOnlyEntityQueryDto,
+    body: DtoControllerOnlyEntityBodyDto,
+    params: DtoControllerOnlyEntityParamsDto,
     async handle(req, params: { id: string }) {
-      const { id } = params;
+      const { id } = req.vovk.params();
       const body = await req.vovk.body();
-      const { q } = req.vovk.query();
 
-      return { id, body, q };
+      return { message: `TODO: update dtoControllerOnlyEntity`, id, body };
     },
   });
 
   @post()
-  static createDtoControllerOnlyEntity = () => {
-    // ...
-  };
+  static createDtoControllerOnlyEntity = withDto({
+    body: DtoControllerOnlyEntityBodyDto,
+    async handle(req) {
+      const body = await req.vovk.body();
 
-  @del(':id')
-  static deleteDtoControllerOnlyEntity = () => {
-    // ...
-  };
+      return { message: `TODO: create dtoControllerOnlyEntity`, body };
+    },
+  });
+
+  @del('{id}')
+  static deleteDtoControllerOnlyEntity = withDto({
+    params: DtoControllerOnlyEntityParamsDto,
+    handle(req, params) {
+      const { id } = req.vovk.params();
+
+      return { message: `TODO: delete dtoControllerOnlyEntity`, id };
+    },
+  });
 }

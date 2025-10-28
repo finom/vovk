@@ -8,10 +8,8 @@ export default class NoValidationControllerAndServiceEntityController {
     summary: 'Get NoValidationControllerAndServiceEntities',
   })
   @get()
-  static getNoValidationControllerAndServiceEntities = async (req: VovkRequest<null, { search: string }>) => {
-    const search = req.nextUrl.searchParams.get('search');
-
-    return NoValidationControllerAndServiceEntityService.getNoValidationControllerAndServiceEntities(search);
+  static getNoValidationControllerAndServiceEntities = () => {
+    return NoValidationControllerAndServiceEntityService.getNoValidationControllerAndServiceEntities();
   };
 
   @operation({
@@ -19,23 +17,26 @@ export default class NoValidationControllerAndServiceEntityController {
   })
   @put('{id}')
   static updateNoValidationControllerAndServiceEntity = async (
-    req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>,
+    req: VovkRequest<{ todo: true }>,
     params: { id: string }
   ) => {
     const { id } = params;
     const body = await req.json();
-    const q = req.nextUrl.searchParams.get('q');
 
-    return NoValidationControllerAndServiceEntityService.updateNoValidationControllerAndServiceEntity(id, q, body);
+    return NoValidationControllerAndServiceEntityService.updateNoValidationControllerAndServiceEntity(id, body);
   };
 
   @post()
-  static createNoValidationControllerAndServiceEntity = () => {
-    // ...
+  static createNoValidationControllerAndServiceEntity = async (req: VovkRequest<{ todo: true }>) => {
+    const body = await req.json();
+
+    return NoValidationControllerAndServiceEntityService.createNoValidationControllerAndServiceEntity(body);
   };
 
-  @del(':id')
-  static deleteNoValidationControllerAndServiceEntity = () => {
-    // ...
+  @del('{id}')
+  static deleteNoValidationControllerAndServiceEntity = (_req: VovkRequest<unknown>, params: { id: string }) => {
+    const { id } = params;
+
+    return NoValidationControllerAndServiceEntityService.deleteNoValidationControllerAndServiceEntity(id);
   };
 }

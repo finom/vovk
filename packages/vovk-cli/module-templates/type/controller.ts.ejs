@@ -20,12 +20,11 @@ export default class <%= vars.ControllerName %> {
         summary: 'Get <%= t.TheThings %>',
     })
     @get()
-    static get<%= t.TheThings %> = async (req: VovkRequest<null, { search: string }>) => {
-        const search = req.nextUrl.searchParams.get('search');
+    static get<%= t.TheThings %> = () => {
         <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
+        return <%= vars.ServiceName %>.get<%= t.TheThings %>();
         <% } else { %>
-        return { results: [], search };
+        return { message: 'TODO: get <%= t.theThings %>' };
         <% } %>
     }
 
@@ -33,24 +32,33 @@ export default class <%= vars.ControllerName %> {
         summary: 'Update <%= t.TheThing %>',
     })
     @put('{id}')
-    static update<%= t.TheThing %> = async (req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>, params: { id: string }) => {
+    static update<%= t.TheThing %> = async (req: VovkRequest<{ todo: true }>, params: { id: string }) => {
         const { id } = params;
         const body = await req.json();
-        const q = req.nextUrl.searchParams.get('q');
         <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
+        return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
         <% } else { %>
-        return { id, body, q };
+        return { message: `TODO: update <%= t.theThing %>`, id, body };
         <% } %>
     };
 
     @post()
-    static create<%= t.TheThing %> = () => {
-        // ...
+    static create<%= t.TheThing %> = async (req: VovkRequest<{ todo: true }>) => {
+        const body = await req.json();
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
+        <% } else { %>
+        return { message: `TODO: create <%= t.theThing %>`, body };
+        <% } %>
     };
 
-    @del(':id')
-    static delete<%= t.TheThing %> = () => {
-        // ...
+    @del('{id}')
+    static delete<%= t.TheThing %> = (_req: VovkRequest<unknown>, params: { id: string }) => {
+        const { id } = params;
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
+        <% } else { %>
+        return { message: `TODO: delete <%= t.theThing %>`, id };
+        <% } %>
     };
 }

@@ -1,20 +1,27 @@
-import type { VovkBody, VovkQuery } from 'vovk';
+import type { VovkBody, VovkParams } from 'vovk';
 import type YupControllerAndServiceEntityController from './YupControllerAndServiceEntityController.ts';
 
 export default class YupControllerAndServiceEntityService {
-  static getYupControllerAndServiceEntities = (
-    search: VovkQuery<typeof YupControllerAndServiceEntityController.getYupControllerAndServiceEntities>['search']
-  ) => {
-    return { results: [], search };
+  static getYupControllerAndServiceEntities = () => {
+    return { message: 'TODO: get yupControllerAndServiceEntities' };
   };
 
   static updateYupControllerAndServiceEntity = (
-    id: string,
-    q: VovkQuery<typeof YupControllerAndServiceEntityController.updateYupControllerAndServiceEntity>['q'],
+    id: VovkParams<typeof YupControllerAndServiceEntityController.updateYupControllerAndServiceEntity>['id'],
     body: VovkBody<typeof YupControllerAndServiceEntityController.updateYupControllerAndServiceEntity>
   ) => {
-    return { id, q, body };
+    return { message: `TODO: update yupControllerAndServiceEntity`, id, body };
   };
 
-  // ...
+  static createYupControllerAndServiceEntity = (
+    body: VovkBody<typeof YupControllerAndServiceEntityController.createYupControllerAndServiceEntity>
+  ) => {
+    return { message: `TODO: create yupControllerAndServiceEntity`, body };
+  };
+
+  static deleteYupControllerAndServiceEntity = (
+    id: VovkParams<typeof YupControllerAndServiceEntityController.deleteYupControllerAndServiceEntity>['id']
+  ) => {
+    return { message: `TODO: delete yupControllerAndServiceEntity`, id };
+  };
 }

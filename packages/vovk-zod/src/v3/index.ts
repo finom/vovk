@@ -26,7 +26,7 @@ function withZod<
     ZOD_QUERY extends ZodSchema ? z.infer<ZOD_QUERY> : undefined,
     ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : undefined
   >,
-  IS_FORM extends boolean = false,
+  TIsForm extends boolean = false,
 >({
   isForm,
   body,
@@ -41,7 +41,7 @@ function withZod<
   preferTransformed,
   operationObject,
 }: {
-  isForm?: IS_FORM;
+  isForm?: TIsForm;
   body?: ZOD_BODY;
   query?: ZOD_QUERY;
   params?: ZOD_PARAMS;
@@ -71,7 +71,7 @@ function withZod<
       ZOD_PARAMS extends ZodSchema ? z.infer<ZOD_PARAMS> : Record<string, string>,
       ZOD_OUTPUT extends ZodSchema ? z.infer<ZOD_OUTPUT> : KnownAny,
       ZOD_ITERATION extends ZodSchema ? z.infer<ZOD_ITERATION> : KnownAny,
-      IS_FORM
+      TIsForm
     >,
     toJSONSchema: (model) => zodToJsonSchema(model, { errorMessages: true }),
     validate: async (data, model, { type, i }) => {

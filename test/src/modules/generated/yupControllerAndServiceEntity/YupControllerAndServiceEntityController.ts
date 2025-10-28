@@ -11,11 +11,8 @@ export default class YupControllerAndServiceEntityController {
   })
   @get()
   static getYupControllerAndServiceEntities = withYup({
-    query: yup.object({ search: yup.string() }),
-    handle(req) {
-      const search = req.nextUrl.searchParams.get('search');
-
-      return YupControllerAndServiceEntityService.getYupControllerAndServiceEntities(search);
+    handle() {
+      return YupControllerAndServiceEntityService.getYupControllerAndServiceEntities();
     },
   });
 
@@ -25,25 +22,40 @@ export default class YupControllerAndServiceEntityController {
   @put('{id}')
   static updateYupControllerAndServiceEntity = withYup({
     body: yup.object({
-      foo: yup.mixed().oneOf(['bar', 'baz']).required(),
+      todo: yup.boolean().required(),
     }),
-    query: yup.object({ q: yup.string() }),
+    params: yup.object({
+      id: yup.string().required(),
+    }),
     async handle(req, params: { id: string }) {
       const { id } = params;
       const body = await req.json();
-      const q = req.nextUrl.searchParams.get('q');
 
-      return YupControllerAndServiceEntityService.updateYupControllerAndServiceEntity(id, q, body);
+      return YupControllerAndServiceEntityService.updateYupControllerAndServiceEntity(id, body);
     },
   });
 
   @post()
-  static createYupControllerAndServiceEntity = () => {
-    // ...
-  };
+  static createYupControllerAndServiceEntity = withYup({
+    body: yup.object({
+      todo: yup.boolean().required(),
+    }),
+    async handle(req) {
+      const body = await req.json();
 
-  @del(':id')
-  static deleteYupControllerAndServiceEntity = () => {
-    // ...
-  };
+      return YupControllerAndServiceEntityService.createYupControllerAndServiceEntity(body);
+    },
+  });
+
+  @del('{id}')
+  static deleteYupControllerAndServiceEntity = withYup({
+    params: yup.object({
+      id: yup.string().required(),
+    }),
+    async handle(_req, params) {
+      const { id } = params;
+
+      return YupControllerAndServiceEntityService.deleteYupControllerAndServiceEntity(id);
+    },
+  });
 }

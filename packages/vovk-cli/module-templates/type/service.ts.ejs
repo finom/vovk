@@ -8,21 +8,30 @@ fileName: <%= vars.ServiceName + '.ts' %>
 sourceName: <%= vars.ServiceName %>
 ---
 
-import type { VovkBody, VovkQuery } from 'vovk';
+import type { VovkBody, VovkParams } from 'vovk';
 import type <%= vars.ControllerName %> from './<%= vars.ControllerName %><%= t.nodeNextResolutionExt.ts %>';
 
 export default class <%= vars.ServiceName %> {
-  static get<%= t.TheThings %> = (search: VovkQuery<typeof <%= vars.ControllerName %>.get<%= t.TheThings %>>['search']) => {
-    return { results: [], search };
+  static get<%= t.TheThings %> = () => {
+    return { message: 'TODO: get <%= t.theThings %>' };
   };
 
   static update<%= t.TheThing %> = (
-    id: string,
-    q: VovkQuery<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>['q'],
+    id: VovkParams<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>['id'],
     body: VovkBody<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>
   ) => {
-    return { id, q, body };
+    return { message: `TODO: update <%= t.theThing %>`, id, body };
   };
 
-  // ...
+  static create<%= t.TheThing %> = (
+    body: VovkBody<typeof <%= vars.ControllerName %>.create<%= t.TheThing %>>
+  ) => {
+    return { message: `TODO: create <%= t.theThing %>`, body };
+  };
+
+  static delete<%= t.TheThing %> = (
+    id: VovkParams<typeof <%= vars.ControllerName %>.delete<%= t.TheThing %>>['id']
+  ) => {
+    return { message: `TODO: delete <%= t.theThing %>`, id };
+  };
 }

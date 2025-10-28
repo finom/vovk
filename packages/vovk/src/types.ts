@@ -164,7 +164,7 @@ export type VovkTypedMethod<
   P = KnownAny,
   O = KnownAny,
   I = KnownAny,
-  IS_FORM extends boolean = false,
+  TIsForm extends boolean = false,
 > = T & {
   __types: {
     body: B;
@@ -172,7 +172,7 @@ export type VovkTypedMethod<
     params: P;
     output: O;
     iteration: I;
-    isForm: IS_FORM;
+    isForm: TIsForm;
   };
   isRPC?: boolean;
 };

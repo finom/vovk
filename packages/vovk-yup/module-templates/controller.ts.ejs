@@ -23,13 +23,11 @@ export default class <%= vars.ModuleName %> {
     })
     @get()
     static get<%= t.TheThings %> = withYup({
-       query: yup.object({ search: yup.string() }), 
-       handle(req) {
-        const search = req.nextUrl.searchParams.get('search');
+       handle() {
         <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
+        return <%= vars.ServiceName %>.get<%= t.TheThings %>();
         <% } else { %>
-        return { results: [], search };
+        return { message: 'TODO: get <%= t.theThings %>' };
         <% } %>
        }
     });
@@ -40,28 +38,49 @@ export default class <%= vars.ModuleName %> {
     @put('{id}')
     static update<%= t.TheThing %> = withYup({
         body: yup.object({
-            foo: yup.mixed().oneOf(['bar', 'baz']).required(),
+            todo: yup.boolean().required(),
         }),
-        query: yup.object({ q: yup.string() }),
+        params: yup.object({
+            id: yup.string().required(),
+        }),
         async handle(req, params: { id: string }) {
             const { id } = params;
             const body = await req.json();
-            const q = req.nextUrl.searchParams.get('q');
             <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
+            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
             <% } else { %>
-            return { id, body, q };
+            return { message: `TODO: update <%= t.theThing %>`, id, body };
             <% } %>
         }
     });
 
     @post()
-    static create<%= t.TheThing %> = () => {
-        // ...
-    };
+    static create<%= t.TheThing %> = withYup({
+        body: yup.object({
+            todo: yup.boolean().required(),
+        }),
+        async handle(req) {
+            const body = await req.json();
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
+            <% } else { %>
+            return { message: `TODO: create <%= t.theThing %>`, body };
+            <% } %>
+        }
+    });
 
-    @del(':id')
-    static delete<%= t.TheThing %> = () => {
-        // ...
-    };
+    @del('{id}')
+    static delete<%= t.TheThing %> = withYup({
+        params: yup.object({
+            id: yup.string().required(),
+        }),
+        async handle(_req, params) {
+            const { id } = params;
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
+            <% } else { %>
+            return { message: `TODO: delete <%= t.theThing %>`, id };
+            <% } %>
+        }
+    });
 }

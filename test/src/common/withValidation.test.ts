@@ -18,15 +18,15 @@ describe('Controller handler with validation', async () => {
   });
 
   it('Should be callable', async () => {
-    assert.deepEqual(
-      await handler.fn({
-        body: { foo: 'foo1' },
-        query: { bar: 'bar2' },
-        params: { baz: 'baz3' },
-        meta: { inputMeta: 'metaValue' },
-      }),
-      { foo: 'foo1', bar: 'bar2', baz: 'baz3', inputMeta: 'metaValue' }
-    );
+    const result = await handler.fn({
+      body: { foo: 'foo1' },
+      query: { bar: 'bar2' },
+      params: { baz: 'baz3' },
+      meta: { inputMeta: 'metaValue' },
+    });
+
+    result satisfies { foo: string; bar: string; baz: string; inputMeta?: string };
+    assert.deepEqual(result, { foo: 'foo1', bar: 'bar2', baz: 'baz3', inputMeta: 'metaValue' });
   });
 
   it('Should validate', async () => {

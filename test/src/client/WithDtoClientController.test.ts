@@ -92,7 +92,7 @@ describe('Validation with with vovk-dto', () => {
     deepStrictEqual(result satisfies ExpectedType, expected);
   });
 
-  it.only('Should be OK with preferTransformed: false', async () => {
+  it('Should be OK with preferTransformed: false', async () => {
     const result = await WithDtoClientControllerRPC.handleAllpreferTransformedFalse({
       body: { hello: 'world' },
       query: { search: 'value' },

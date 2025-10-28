@@ -6,34 +6,32 @@ export default class NoValidationControllerOnlyEntityController {
     summary: 'Get NoValidationControllerOnlyEntities',
   })
   @get()
-  static getNoValidationControllerOnlyEntities = async (req: VovkRequest<null, { search: string }>) => {
-    const search = req.nextUrl.searchParams.get('search');
-
-    return { results: [], search };
+  static getNoValidationControllerOnlyEntities = () => {
+    return { message: 'TODO: get noValidationControllerOnlyEntities' };
   };
 
   @operation({
     summary: 'Update NoValidationControllerOnlyEntity',
   })
   @put('{id}')
-  static updateNoValidationControllerOnlyEntity = async (
-    req: VovkRequest<{ foo: 'bar' | 'baz' }, { q: string }>,
-    params: { id: string }
-  ) => {
+  static updateNoValidationControllerOnlyEntity = async (req: VovkRequest<{ todo: true }>, params: { id: string }) => {
     const { id } = params;
     const body = await req.json();
-    const q = req.nextUrl.searchParams.get('q');
 
-    return { id, body, q };
+    return { message: `TODO: update noValidationControllerOnlyEntity`, id, body };
   };
 
   @post()
-  static createNoValidationControllerOnlyEntity = () => {
-    // ...
+  static createNoValidationControllerOnlyEntity = async (req: VovkRequest<{ todo: true }>) => {
+    const body = await req.json();
+
+    return { message: `TODO: create noValidationControllerOnlyEntity`, body };
   };
 
-  @del(':id')
-  static deleteNoValidationControllerOnlyEntity = () => {
-    // ...
+  @del('{id}')
+  static deleteNoValidationControllerOnlyEntity = (_req: VovkRequest<unknown>, params: { id: string }) => {
+    const { id } = params;
+
+    return { message: `TODO: delete noValidationControllerOnlyEntity`, id };
   };
 }

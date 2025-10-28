@@ -96,7 +96,7 @@ function withDto<
     QUERY_DTO extends ClassConstructor<infer U> ? U : undefined,
     PARAMS_DTO extends ClassConstructor<infer U> ? U : Record<string, string>
   >,
-  IS_FORM extends boolean = false,
+  TIsForm extends boolean = false,
 >({
   isForm,
   body,
@@ -112,7 +112,7 @@ function withDto<
   preferTransformed,
   operationObject,
 }: {
-  isForm?: IS_FORM;
+  isForm?: TIsForm;
   body?: BODY_DTO;
   query?: QUERY_DTO;
   params?: PARAMS_DTO;
@@ -148,7 +148,7 @@ function withDto<
       PARAMS_DTO extends ClassConstructor<infer U> ? U : KnownAny,
       OUTPUT_DTO extends ClassConstructor<infer U> ? U : KnownAny,
       ITERATION_DTO extends ClassConstructor<infer U> ? U : KnownAny,
-      IS_FORM
+      TIsForm
     >,
     toJSONSchema: (dto) => {
       const schema = {

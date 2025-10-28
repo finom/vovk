@@ -9,11 +9,8 @@ export default class ZodControllerOnlyEntityController {
   })
   @get()
   static getZodControllerOnlyEntities = withZod({
-    query: z.object({ search: z.string() }),
-    handle(req) {
-      const search = req.nextUrl.searchParams.get('search');
-
-      return { results: [], search };
+    handle() {
+      return { message: 'TODO: get zodControllerOnlyEntities' };
     },
   });
 
@@ -23,26 +20,38 @@ export default class ZodControllerOnlyEntityController {
   @put('{id}')
   static updateZodControllerOnlyEntity = withZod({
     body: z.object({
-      foo: z.union([z.literal('bar'), z.literal('baz')]),
+      todo: z.literal(true),
     }),
-    query: z.object({ q: z.string() }),
     params: z.object({ id: z.string() }),
     async handle(req, params) {
       const { id } = params;
       const body = await req.json();
-      const q = req.nextUrl.searchParams.get('q');
 
-      return { id, body, q };
+      return { message: `TODO: update zodControllerOnlyEntity`, id, body };
     },
   });
 
   @post()
-  static createZodControllerOnlyEntity = () => {
-    // ...
-  };
+  static createZodControllerOnlyEntity = withZod({
+    body: z.object({
+      todo: z.literal(true),
+    }),
+    async handle(req) {
+      const body = await req.json();
 
-  @del(':id')
-  static deleteZodControllerOnlyEntity = () => {
-    // ...
-  };
+      return { message: `TODO: create zodControllerOnlyEntity`, body };
+    },
+  });
+
+  @del('{id}')
+  static deleteZodControllerOnlyEntity = withZod({
+    params: z.object({
+      id: z.string(),
+    }),
+    handle(req, params) {
+      const { id } = params;
+
+      return { message: `TODO: delete zodControllerOnlyEntity`, id };
+    },
+  });
 }

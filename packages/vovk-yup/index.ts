@@ -94,18 +94,18 @@ const applySchemaFixes = (schema: KnownAny): KnownAny => {
 };
 
 function withYup<
-  T extends (req: REQ, params: YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>) => KnownAny,
-  YUP_BODY extends Yup.Schema<KnownAny>,
-  YUP_QUERY extends Yup.Schema<KnownAny>,
-  YUP_PARAMS extends Yup.Schema<KnownAny>,
-  YUP_OUTPUT extends Yup.Schema<KnownAny>,
-  YUP_ITERATION extends Yup.Schema<KnownAny>,
-  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-    YUP_BODY extends Yup.Schema<infer U> ? U : never,
-    YUP_QUERY extends Yup.Schema<infer U> ? U : undefined,
-    YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>
+  T extends (req: TReq, params: TYupParams extends Yup.Schema<infer U> ? U : Record<string, string>) => KnownAny,
+  TYupBody extends Yup.Schema<KnownAny>,
+  TYupQuery extends Yup.Schema<KnownAny>,
+  TYupParams extends Yup.Schema<KnownAny>,
+  TYupOutput extends Yup.Schema<KnownAny>,
+  TYupIteration extends Yup.Schema<KnownAny>,
+  TReq extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
+    TYupBody extends Yup.Schema<infer U> ? U : never,
+    TYupQuery extends Yup.Schema<infer U> ? U : undefined,
+    TYupParams extends Yup.Schema<infer U> ? U : Record<string, string>
   >,
-  IS_FORM extends boolean = false,
+  TIsForm extends boolean = false,
 >({
   isForm,
   body,
@@ -121,12 +121,12 @@ function withYup<
   preferTransformed,
   operationObject,
 }: {
-  isForm?: IS_FORM;
-  body?: YUP_BODY;
-  query?: YUP_QUERY;
-  params?: YUP_PARAMS;
-  output?: YUP_OUTPUT;
-  iteration?: YUP_ITERATION;
+  isForm?: TIsForm;
+  body?: TYupBody;
+  query?: TYupQuery;
+  params?: TYupParams;
+  output?: TYupOutput;
+  iteration?: TYupIteration;
   handle: T;
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
@@ -149,12 +149,12 @@ function withYup<
     validateEachIteration,
     handle: handle as VovkTypedMethod<
       T,
-      YUP_BODY extends Yup.Schema<infer U> ? U : KnownAny,
-      YUP_QUERY extends Yup.Schema<infer U> ? U : KnownAny,
-      YUP_PARAMS extends Yup.Schema<infer U> ? U : Record<string, string>,
-      YUP_OUTPUT extends Yup.Schema<infer U> ? U : KnownAny,
-      YUP_ITERATION extends Yup.Schema<infer U> ? U : KnownAny,
-      IS_FORM
+      TYupBody extends Yup.Schema<infer U> ? U : KnownAny,
+      TYupQuery extends Yup.Schema<infer U> ? U : KnownAny,
+      TYupParams extends Yup.Schema<infer U> ? U : Record<string, string>,
+      TYupOutput extends Yup.Schema<infer U> ? U : KnownAny,
+      TYupIteration extends Yup.Schema<infer U> ? U : KnownAny,
+      TIsForm
     >,
     toJSONSchema: (model) => {
       return enrichWithDescriptions(applySchemaFixes(convertSchema(model)), model.describe());

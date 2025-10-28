@@ -4,19 +4,14 @@ import { IsString, IsIn } from 'class-validator';
 
 import DtoControllerAndServiceEntityService from './DtoControllerAndServiceEntityService.ts';
 
-class GetDtoControllerAndServiceEntitiesQueryDto {
-  @IsString()
-  search: string;
+class DtoControllerAndServiceEntityBodyDto {
+  @IsIn([true])
+  todo: true;
 }
 
-class UpdateDtoControllerAndServiceEntityBodyDto {
-  @IsIn(['bar', 'baz'])
-  foo: 'bar' | 'baz';
-}
-
-class UpdateDtoControllerAndServiceEntityQueryDto {
+class DtoControllerAndServiceEntityParamsDto {
   @IsString()
-  q: string;
+  id: string;
 }
 
 @prefix('dto-controller-and-service-entities')
@@ -26,11 +21,8 @@ export default class DtoControllerAndServiceEntityController {
   })
   @get()
   static getDtoControllerAndServiceEntities = withDto({
-    query: GetDtoControllerAndServiceEntitiesQueryDto,
-    handle(req) {
-      const { search } = req.vovk.query();
-
-      return DtoControllerAndServiceEntityService.getDtoControllerAndServiceEntities(search);
+    handle() {
+      return DtoControllerAndServiceEntityService.getDtoControllerAndServiceEntities();
     },
   });
 
@@ -39,24 +31,33 @@ export default class DtoControllerAndServiceEntityController {
   })
   @put('{id}')
   static updateDtoControllerAndServiceEntity = withDto({
-    body: UpdateDtoControllerAndServiceEntityBodyDto,
-    query: UpdateDtoControllerAndServiceEntityQueryDto,
+    body: DtoControllerAndServiceEntityBodyDto,
+    params: DtoControllerAndServiceEntityParamsDto,
     async handle(req, params: { id: string }) {
-      const { id } = params;
+      const { id } = req.vovk.params();
       const body = await req.vovk.body();
-      const { q } = req.vovk.query();
 
-      return DtoControllerAndServiceEntityService.updateDtoControllerAndServiceEntity(id, q, body);
+      return DtoControllerAndServiceEntityService.updateDtoControllerAndServiceEntity(id, body);
     },
   });
 
   @post()
-  static createDtoControllerAndServiceEntity = () => {
-    // ...
-  };
+  static createDtoControllerAndServiceEntity = withDto({
+    body: DtoControllerAndServiceEntityBodyDto,
+    async handle(req) {
+      const body = await req.vovk.body();
 
-  @del(':id')
-  static deleteDtoControllerAndServiceEntity = () => {
-    // ...
-  };
+      return DtoControllerAndServiceEntityService.createDtoControllerAndServiceEntity(body);
+    },
+  });
+
+  @del('{id}')
+  static deleteDtoControllerAndServiceEntity = withDto({
+    params: DtoControllerAndServiceEntityParamsDto,
+    handle(req, params) {
+      const { id } = req.vovk.params();
+
+      return DtoControllerAndServiceEntityService.deleteDtoControllerAndServiceEntity(id);
+    },
+  });
 }

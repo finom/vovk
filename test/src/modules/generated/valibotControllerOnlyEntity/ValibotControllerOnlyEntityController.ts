@@ -9,11 +9,8 @@ export default class ValibotControllerOnlyEntityController {
   })
   @get()
   static getValibotControllerOnlyEntities = withValibot({
-    query: v.object({ search: v.string() }),
-    handle(req) {
-      const search = req.nextUrl.searchParams.get('search');
-
-      return { results: [], search };
+    handle() {
+      return { message: 'TODO: get valibotControllerOnlyEntities' };
     },
   });
 
@@ -22,27 +19,33 @@ export default class ValibotControllerOnlyEntityController {
   })
   @put('{id}')
   static updateValibotControllerOnlyEntity = withValibot({
-    body: v.object({
-      foo: v.union([v.literal('bar'), v.literal('baz')]),
-    }),
-    query: v.object({ q: v.string() }),
+    body: v.object({ todo: v.literal(true) }),
     params: v.object({ id: v.string() }),
     async handle(req, params) {
       const { id } = params;
       const body = await req.json();
-      const q = req.nextUrl.searchParams.get('q');
 
-      return { id, body, q };
+      return { message: `TODO: update valibotControllerOnlyEntity`, id, body };
     },
   });
 
   @post()
-  static createValibotControllerOnlyEntity = () => {
-    // ...
-  };
+  static createValibotControllerOnlyEntity = withValibot({
+    body: v.object({ todo: v.literal(true) }),
+    async handle(req) {
+      const body = await req.json();
 
-  @del(':id')
-  static deleteValibotControllerOnlyEntity = () => {
-    // ...
-  };
+      return { message: `TODO: create valibotControllerOnlyEntity`, body };
+    },
+  });
+
+  @del('{id}')
+  static deleteValibotControllerOnlyEntity = withValibot({
+    params: v.object({ id: v.string() }),
+    handle(_req, params) {
+      const { id } = params;
+
+      return { message: `TODO: delete valibotControllerOnlyEntity`, id };
+    },
+  });
 }

@@ -15,19 +15,14 @@ import { IsString, IsIn } from 'class-validator';
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>
 
-class Get<%= t.TheThings %>QueryDto {
-  @IsString()
-  search: string;
+class <%= t.TheThing %>BodyDto {
+  @IsIn([true])
+  todo: true;
 }
 
-class Update<%= t.TheThing %>BodyDto {
-  @IsIn(['bar', 'baz'])
-  foo: 'bar' | 'baz';
-}
-
-class Update<%= t.TheThing %>QueryDto {
+class <%= t.TheThing %>ParamsDto {
   @IsString()
-  q: string;
+  id: string;
 }
 
 @prefix('<%= t['the-things'] %>')
@@ -37,13 +32,11 @@ export default class <%= vars.ModuleName %> {
     })
     @get()
     static get<%= t.TheThings %> = withDto({
-      query: Get<%= t.TheThings %>QueryDto, 
-      handle(req) {
-        const { search } = req.vovk.query();
+      handle() {
         <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
+        return <%= vars.ServiceName %>.get<%= t.TheThings %>();
         <% } else { %>
-        return { results: [], search };
+        return { message: 'TODO: get <%= t.theThings %>' };
         <% } %>
       }
     });
@@ -53,27 +46,42 @@ export default class <%= vars.ModuleName %> {
     })
     @put('{id}')
     static update<%= t.TheThing %> = withDto({
-        body: Update<%= t.TheThing %>BodyDto,
-        query: Update<%= t.TheThing %>QueryDto,
+        body: <%= t.TheThing %>BodyDto,
+        params: <%= t.TheThing %>ParamsDto,
         async handle(req, params: { id: string }) {
-            const { id } = params;
+            const { id } = req.vovk.params();
             const body = await req.vovk.body();
-            const { q } = req.vovk.query();
             <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
+            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
             <% } else { %>
-            return { id, body, q };
+            return { message: `TODO: update <%= t.theThing %>`, id, body };
             <% } %>
         }
     });
 
     @post()
-    static create<%= t.TheThing %> = () => {
-        // ...
-    };
+    static create<%= t.TheThing %> = withDto({
+        body: <%= t.TheThing %>BodyDto,
+        async handle(req) {
+            const body = await req.vovk.body();
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
+            <% } else { %>
+            return { message: `TODO: create <%= t.theThing %>`, body };
+            <% } %>
+        }
+    });
 
-    @del(':id')
-    static delete<%= t.TheThing %> = () => {
-        // ...
-    };
+    @del('{id}')
+    static delete<%= t.TheThing %> = withDto({
+        params: <%= t.TheThing %>ParamsDto,
+        handle(req, params) {
+            const { id } = req.vovk.params();
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
+            <% } else { %>
+            return { message: `TODO: delete <%= t.theThing %>`, id };
+            <% } %>
+        }
+    });
 }

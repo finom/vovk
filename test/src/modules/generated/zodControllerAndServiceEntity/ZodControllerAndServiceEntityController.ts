@@ -11,11 +11,8 @@ export default class ZodControllerAndServiceEntityController {
   })
   @get()
   static getZodControllerAndServiceEntities = withZod({
-    query: z.object({ search: z.string() }),
-    handle(req) {
-      const search = req.nextUrl.searchParams.get('search');
-
-      return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities(search);
+    handle() {
+      return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities();
     },
   });
 
@@ -25,26 +22,38 @@ export default class ZodControllerAndServiceEntityController {
   @put('{id}')
   static updateZodControllerAndServiceEntity = withZod({
     body: z.object({
-      foo: z.union([z.literal('bar'), z.literal('baz')]),
+      todo: z.literal(true),
     }),
-    query: z.object({ q: z.string() }),
     params: z.object({ id: z.string() }),
     async handle(req, params) {
       const { id } = params;
       const body = await req.json();
-      const q = req.nextUrl.searchParams.get('q');
 
-      return ZodControllerAndServiceEntityService.updateZodControllerAndServiceEntity(id, q, body);
+      return ZodControllerAndServiceEntityService.updateZodControllerAndServiceEntity(id, body);
     },
   });
 
   @post()
-  static createZodControllerAndServiceEntity = () => {
-    // ...
-  };
+  static createZodControllerAndServiceEntity = withZod({
+    body: z.object({
+      todo: z.literal(true),
+    }),
+    async handle(req) {
+      const body = await req.json();
 
-  @del(':id')
-  static deleteZodControllerAndServiceEntity = () => {
-    // ...
-  };
+      return ZodControllerAndServiceEntityService.createZodControllerAndServiceEntity(body);
+    },
+  });
+
+  @del('{id}')
+  static deleteZodControllerAndServiceEntity = withZod({
+    params: z.object({
+      id: z.string(),
+    }),
+    handle(req, params) {
+      const { id } = params;
+
+      return ZodControllerAndServiceEntityService.deleteZodControllerAndServiceEntity(id);
+    },
+  });
 }

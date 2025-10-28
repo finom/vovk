@@ -533,7 +533,7 @@ describe('Validation with with vovk-zod and validateOnClient defined at settings
     await rejects.toThrowError(HttpException);
   });
 
-  it.only('Should store schema at handler.schema, handler.controllerSchema, handler.segmentSchema and handler.fullSchema', async () => {
+  it('Should store schema at handler.schema, handler.controllerSchema, handler.segmentSchema and handler.fullSchema', async () => {
     strictEqual(WithZodClientControllerRPC.handleAll.schema.httpMethod, 'POST');
     strictEqual(WithZodClientControllerRPC.handleAll.schema.path, 'all/{foo}/{bar}');
     strictEqual(WithZodClientControllerRPC.handleAll.controllerSchema.prefix, 'with-zod');

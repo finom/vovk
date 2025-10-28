@@ -17,20 +17,20 @@ export function createStandardValidation({
 }) {
   function withStandard<
     T extends (
-      req: REQ,
+      req: TReq,
       params: TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : Record<string, string>
     ) => KnownAny,
     TBody extends StandardSchemaV1,
     TQuery extends StandardSchemaV1,
     TParams extends StandardSchemaV1,
-    OUTPUT extends StandardSchemaV1,
-    ITERATION extends StandardSchemaV1,
-    REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
+    TOutput extends StandardSchemaV1,
+    TIteration extends StandardSchemaV1,
+    TReq extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
       TBody extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TBody> : undefined,
       TQuery extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TQuery> : undefined,
       TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : undefined
     >,
-    IS_FORM extends boolean = false,
+    TIsForm extends boolean = false,
   >({
     isForm,
     body,
@@ -45,12 +45,12 @@ export function createStandardValidation({
     preferTransformed,
     operationObject,
   }: {
-    isForm?: IS_FORM;
+    isForm?: TIsForm;
     body?: TBody;
     query?: TQuery;
     params?: TParams;
-    output?: OUTPUT;
-    iteration?: ITERATION;
+    output?: TOutput;
+    iteration?: TIteration;
     handle: T;
     disableServerSideValidation?: boolean | VovkValidationType[];
     skipSchemaEmission?: boolean | VovkValidationType[];
@@ -73,9 +73,9 @@ export function createStandardValidation({
         TBody extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TBody> : KnownAny,
         TQuery extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TQuery> : KnownAny,
         TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : KnownAny,
-        OUTPUT extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<OUTPUT> : KnownAny,
-        ITERATION extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<ITERATION> : KnownAny,
-        IS_FORM
+        TOutput extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TOutput> : KnownAny,
+        TIteration extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TIteration> : KnownAny,
+        TIsForm
       >,
       toJSONSchema,
       validate: async (data, model, { type, i }) => {

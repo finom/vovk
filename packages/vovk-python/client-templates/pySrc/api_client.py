@@ -122,7 +122,7 @@ class ApiClient:
             raise ValueError("URL is required for making an API request")
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
-        is_form = False
+        TIsForm = False
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
             # Always use format checker by default
@@ -146,7 +146,7 @@ class ApiClient:
                 jsonschema.validate(instance=params, schema=validation['params'], format_checker=format_checker)
 
         if validation and validation.get('body') and validation['body'].get('x-isForm', False):
-            is_form = True
+            TIsForm = True
 
         # Process URL and substitute path parameters
         processed_url = url
@@ -173,7 +173,7 @@ class ApiClient:
             request_headers.update(headers)
         
         response: Response
-        if is_form:
+        if TIsForm:
             response = requests.request(
                 method=http_method.upper(),
                 url=processed_url,

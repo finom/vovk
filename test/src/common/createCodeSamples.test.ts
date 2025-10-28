@@ -2,7 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { createCodeSamples, type VovkControllerSchema, type VovkHandlerSchema } from 'vovk';
 
-describe.only('createCodeSamples', () => {
+describe('createCodeSamples', () => {
   describe('JSON body with query and params', () => {
     const controllerSchema: VovkControllerSchema = {
       rpcModuleName: 'UserZodRPC',

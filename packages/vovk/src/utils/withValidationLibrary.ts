@@ -27,12 +27,12 @@ export function withValidationLibrary<
     KnownAny,
     boolean
   >,
-  TBody_MODEL,
-  TQuery_MODEL,
-  TParams_MODEL,
-  OUTPUT_MODEL,
-  ITERATION_MODEL,
-  IS_FORM extends boolean = false,
+  TBodyModel,
+  TQueryModel,
+  TParamsModel,
+  TOutputModel,
+  TIterationModel,
+  TIsForm extends boolean = false,
 >({
   isForm,
   disableServerSideValidation,
@@ -49,15 +49,15 @@ export function withValidationLibrary<
   preferTransformed,
   operationObject,
 }: {
-  isForm: IS_FORM | undefined;
+  isForm: TIsForm | undefined;
   disableServerSideValidation: boolean | VovkValidationType[] | undefined;
   skipSchemaEmission: boolean | VovkValidationType[] | undefined;
   validateEachIteration: boolean | undefined;
-  body: TBody_MODEL | undefined;
-  query: TQuery_MODEL | undefined;
-  params: TParams_MODEL | undefined;
-  output: OUTPUT_MODEL | undefined;
-  iteration: ITERATION_MODEL | undefined;
+  body: TBodyModel | undefined;
+  query: TQueryModel | undefined;
+  params: TParamsModel | undefined;
+  output: TOutputModel | undefined;
+  iteration: TIterationModel | undefined;
   handle: T;
   toJSONSchema:
     | ((
@@ -67,7 +67,7 @@ export function withValidationLibrary<
     | undefined;
   validate: (
     data: KnownAny,
-    model: NonNullable<TBody_MODEL | TQuery_MODEL | TParams_MODEL | OUTPUT_MODEL | ITERATION_MODEL>,
+    model: NonNullable<TBodyModel | TQueryModel | TParamsModel | TOutputModel | TIterationModel>,
     meta: {
       type: VovkValidationType | 'form';
       req: VovkRequestAny;
@@ -195,11 +195,11 @@ export function withValidationLibrary<
       : false
     : false;
 
-  function fn<RETURN_TYPE = ReturnType<T>>(
+  function fn<TReturnType = ReturnType<T>>(
     input?: IsInputOptional extends true ? FnInput : never
-  ): IsInputOptional extends true ? RETURN_TYPE : never;
-  function fn<RETURN_TYPE = ReturnType<T>>(input: FnInput): RETURN_TYPE;
-  function fn<RETURN_TYPE = ReturnType<T>>(input?: FnInput): RETURN_TYPE {
+  ): IsInputOptional extends true ? TReturnType : never;
+  function fn<TReturnType = ReturnType<T>>(input: FnInput): TReturnType;
+  function fn<TReturnType = ReturnType<T>>(input?: FnInput): TReturnType {
     const fakeReq: Pick<VovkRequest<T['__types']['body'], T['__types']['query'], T['__types']['params']>, 'vovk'> = {
       vovk: {
         body: () => Promise.resolve((input?.body ?? {}) as T['__types']['body']),
@@ -217,7 +217,7 @@ export function withValidationLibrary<
     return (resultHandler.wrapper ?? resultHandler)(
       fakeReq as VovkRequestAny,
       (input?.params ?? {}) as Parameters<T>[1]
-    ) as RETURN_TYPE;
+    ) as TReturnType;
   }
 
   const models = {

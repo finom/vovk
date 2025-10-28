@@ -1,22 +1,27 @@
-import type { VovkBody, VovkQuery } from 'vovk';
+import type { VovkBody, VovkParams } from 'vovk';
 import type ValibotControllerAndServiceEntityController from './ValibotControllerAndServiceEntityController.ts';
 
 export default class ValibotControllerAndServiceEntityService {
-  static getValibotControllerAndServiceEntities = (
-    search: VovkQuery<
-      typeof ValibotControllerAndServiceEntityController.getValibotControllerAndServiceEntities
-    >['search']
-  ) => {
-    return { results: [], search };
+  static getValibotControllerAndServiceEntities = () => {
+    return { message: 'TODO: get valibotControllerAndServiceEntities' };
   };
 
   static updateValibotControllerAndServiceEntity = (
-    id: string,
-    q: VovkQuery<typeof ValibotControllerAndServiceEntityController.updateValibotControllerAndServiceEntity>['q'],
+    id: VovkParams<typeof ValibotControllerAndServiceEntityController.updateValibotControllerAndServiceEntity>['id'],
     body: VovkBody<typeof ValibotControllerAndServiceEntityController.updateValibotControllerAndServiceEntity>
   ) => {
-    return { id, q, body };
+    return { message: `TODO: update valibotControllerAndServiceEntity`, id, body };
   };
 
-  // ...
+  static createValibotControllerAndServiceEntity = (
+    body: VovkBody<typeof ValibotControllerAndServiceEntityController.createValibotControllerAndServiceEntity>
+  ) => {
+    return { message: `TODO: create valibotControllerAndServiceEntity`, body };
+  };
+
+  static deleteValibotControllerAndServiceEntity = (
+    id: VovkParams<typeof ValibotControllerAndServiceEntityController.deleteValibotControllerAndServiceEntity>['id']
+  ) => {
+    return { message: `TODO: delete valibotControllerAndServiceEntity`, id };
+  };
 }

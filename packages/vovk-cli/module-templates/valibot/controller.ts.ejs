@@ -23,13 +23,11 @@ export default class <%= vars.ModuleName %> {
     })
     @get()
     static get<%= t.TheThings %> = withValibot({
-        query: v.object({ search: v.string() }), 
-        handle(req) {
-            const search = req.nextUrl.searchParams.get('search');
+        handle() {
             <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
+            return <%= vars.ServiceName %>.get<%= t.TheThings %>();
             <% } else { %>
-            return { results: [], search };
+            return { message: 'TODO: get <%= t.theThings %>' };
             <% } %>
         }
     });
@@ -39,30 +37,42 @@ export default class <%= vars.ModuleName %> {
     })
     @put('{id}')
     static update<%= t.TheThing %> = withValibot({
-        body: v.object({
-          foo: v.union([v.literal('bar'), v.literal('baz')]),
-        }),
-        query: v.object({ q: v.string() }),
+        body: v.object({ todo: v.literal(true) }),
         params: v.object({ id: v.string() }),
         async handle(req, params) {
             const { id } = params;
             const body = await req.json();
-            const q = req.nextUrl.searchParams.get('q');
             <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
+            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
             <% } else { %>
-            return { id, body, q };
+            return { message: `TODO: update <%= t.theThing %>`, id, body };
             <% } %>
         }
     });
 
     @post()
-    static create<%= t.TheThing %> = () => {
-        // ...
-    };
+    static create<%= t.TheThing %> = withValibot({
+        body: v.object({ todo: v.literal(true) }),
+        async handle(req) {
+            const body = await req.json();
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
+            <% } else { %>
+            return { message: `TODO: create <%= t.theThing %>`, body };
+            <% } %>
+        }
+    });
 
-    @del(':id')
-    static delete<%= t.TheThing %> = () => {
-        // ...
-    };
+    @del('{id}')
+    static delete<%= t.TheThing %> = withValibot({
+        params: v.object({ id: v.string() }),
+        handle(_req, params) {
+            const { id } = params;
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
+            <% } else { %>
+            return { message: `TODO: delete <%= t.theThing %>`, id };
+            <% } %>
+        }
+    });
 }

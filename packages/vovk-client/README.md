@@ -14,14 +14,14 @@
 
 ## vovk-client [![npm version](https://badge.fury.io/js/vovk-client.svg)](https://www.npmjs.com/package/vovk-client)
 
-The module that re-exports generated client from **node_modules/.vovk-client**.
+A module that re-exports generated client from **node_modules/.vovk-client**.
 
 ```sh
 npm install vovk-client
 ```
 
 ```ts
-import { UserRPC } from 'vovk-client'
+import { UserRPC } from 'vovk-client';
 
 await UserRPC.updateUser({ body, query, params });
 ```

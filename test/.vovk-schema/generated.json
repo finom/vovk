@@ -28,7 +28,7 @@
           "httpMethod": "POST"
         },
         "deleteNoValidationControllerOnlyEntity": {
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -57,7 +57,7 @@
           "httpMethod": "POST"
         },
         "deleteNoValidationControllerAndServiceEntity": {
-          "path": ":id",
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -68,21 +68,7 @@
       "prefix": "zod-controller-only-entities",
       "handlers": {
         "getZodControllerOnlyEntities": {
-          "validation": {
-            "query": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "object",
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "search"
-              ],
-              "additionalProperties": false
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get ZodControllerOnlyEntities"
           },
@@ -95,34 +81,13 @@
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
-                "foo": {
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "const": "bar"
-                    },
-                    {
-                      "type": "string",
-                      "const": "baz"
-                    }
-                  ]
+                "todo": {
+                  "type": "boolean",
+                  "const": true
                 }
               },
               "required": [
-                "foo"
-              ],
-              "additionalProperties": false
-            },
-            "query": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "object",
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "q"
+                "todo"
               ],
               "additionalProperties": false
             },
@@ -147,11 +112,42 @@
           "httpMethod": "PUT"
         },
         "createZodControllerOnlyEntity": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "todo"
+              ],
+              "additionalProperties": false
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteZodControllerOnlyEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -162,21 +158,7 @@
       "prefix": "zod-controller-and-service-entities",
       "handlers": {
         "getZodControllerAndServiceEntities": {
-          "validation": {
-            "query": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "object",
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "search"
-              ],
-              "additionalProperties": false
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get ZodControllerAndServiceEntities"
           },
@@ -189,34 +171,13 @@
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
-                "foo": {
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "const": "bar"
-                    },
-                    {
-                      "type": "string",
-                      "const": "baz"
-                    }
-                  ]
+                "todo": {
+                  "type": "boolean",
+                  "const": true
                 }
               },
               "required": [
-                "foo"
-              ],
-              "additionalProperties": false
-            },
-            "query": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "object",
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "q"
+                "todo"
               ],
               "additionalProperties": false
             },
@@ -241,11 +202,42 @@
           "httpMethod": "PUT"
         },
         "createZodControllerAndServiceEntity": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "todo"
+              ],
+              "additionalProperties": false
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteZodControllerAndServiceEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -256,17 +248,7 @@
       "prefix": "yup-controller-only-entities",
       "handlers": {
         "getYupControllerOnlyEntities": {
-          "validation": {
-            "query": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              }
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get YupControllerOnlyEntities"
           },
@@ -278,28 +260,24 @@
             "body": {
               "type": "object",
               "properties": {
-                "foo": {
-                  "type": [
-                    "string"
-                  ],
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                "todo": {
+                  "type": "boolean"
                 }
               },
               "required": [
-                "foo"
+                "todo"
               ]
             },
-            "query": {
+            "params": {
               "type": "object",
-              "default": {},
               "properties": {
-                "q": {
+                "id": {
                   "type": "string"
                 }
-              }
+              },
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -309,11 +287,37 @@
           "httpMethod": "PUT"
         },
         "createYupControllerOnlyEntity": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "todo"
+              ]
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteYupControllerOnlyEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -324,17 +328,7 @@
       "prefix": "yup-controller-and-service-entities",
       "handlers": {
         "getYupControllerAndServiceEntities": {
-          "validation": {
-            "query": {
-              "type": "object",
-              "default": {},
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              }
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get YupControllerAndServiceEntities"
           },
@@ -346,28 +340,24 @@
             "body": {
               "type": "object",
               "properties": {
-                "foo": {
-                  "type": [
-                    "string"
-                  ],
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                "todo": {
+                  "type": "boolean"
                 }
               },
               "required": [
-                "foo"
+                "todo"
               ]
             },
-            "query": {
+            "params": {
               "type": "object",
-              "default": {},
               "properties": {
-                "q": {
+                "id": {
                   "type": "string"
                 }
-              }
+              },
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -377,11 +367,37 @@
           "httpMethod": "PUT"
         },
         "createYupControllerAndServiceEntity": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "todo"
+              ]
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteYupControllerAndServiceEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -392,21 +408,7 @@
       "prefix": "dto-controller-only-entities",
       "handlers": {
         "getDtoControllerOnlyEntities": {
-          "validation": {
-            "query": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": [
-                "search"
-              ]
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get DtoControllerOnlyEntities"
           },
@@ -419,30 +421,29 @@
               "x-isDto": true,
               "definitions": {},
               "properties": {
-                "foo": {
-                  "type": "string",
+                "todo": {
+                  "type": "boolean",
                   "enum": [
-                    "bar",
-                    "baz"
+                    true
                   ]
                 }
               },
               "type": "object",
               "required": [
-                "foo"
+                "todo"
               ]
             },
-            "query": {
+            "params": {
               "x-isDto": true,
               "definitions": {},
               "properties": {
-                "q": {
+                "id": {
                   "type": "string"
                 }
               },
               "type": "object",
               "required": [
-                "q"
+                "id"
               ]
             }
           },
@@ -453,11 +454,44 @@
           "httpMethod": "PUT"
         },
         "createDtoControllerOnlyEntity": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "todo": {
+                  "type": "boolean",
+                  "enum": [
+                    true
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "todo"
+              ]
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteDtoControllerOnlyEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -468,21 +502,7 @@
       "prefix": "dto-controller-and-service-entities",
       "handlers": {
         "getDtoControllerAndServiceEntities": {
-          "validation": {
-            "query": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": [
-                "search"
-              ]
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get DtoControllerAndServiceEntities"
           },
@@ -495,30 +515,29 @@
               "x-isDto": true,
               "definitions": {},
               "properties": {
-                "foo": {
-                  "type": "string",
+                "todo": {
+                  "type": "boolean",
                   "enum": [
-                    "bar",
-                    "baz"
+                    true
                   ]
                 }
               },
               "type": "object",
               "required": [
-                "foo"
+                "todo"
               ]
             },
-            "query": {
+            "params": {
               "x-isDto": true,
               "definitions": {},
               "properties": {
-                "q": {
+                "id": {
                   "type": "string"
                 }
               },
               "type": "object",
               "required": [
-                "q"
+                "id"
               ]
             }
           },
@@ -529,11 +548,44 @@
           "httpMethod": "PUT"
         },
         "createDtoControllerAndServiceEntity": {
+          "validation": {
+            "body": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "todo": {
+                  "type": "boolean",
+                  "enum": [
+                    true
+                  ]
+                }
+              },
+              "type": "object",
+              "required": [
+                "todo"
+              ]
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteDtoControllerAndServiceEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -544,20 +596,7 @@
       "prefix": "valibot-controller-only-entities",
       "handlers": {
         "getValibotControllerOnlyEntities": {
-          "validation": {
-            "query": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
-              "type": "object",
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "search"
-              ]
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get ValibotControllerOnlyEntities"
           },
@@ -570,31 +609,12 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
-                "foo": {
-                  "anyOf": [
-                    {
-                      "const": "bar"
-                    },
-                    {
-                      "const": "baz"
-                    }
-                  ]
+                "todo": {
+                  "const": true
                 }
               },
               "required": [
-                "foo"
-              ]
-            },
-            "query": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
-              "type": "object",
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "q"
+                "todo"
               ]
             },
             "params": {
@@ -617,11 +637,39 @@
           "httpMethod": "PUT"
         },
         "createValibotControllerOnlyEntity": {
+          "validation": {
+            "body": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "const": true
+                }
+              },
+              "required": [
+                "todo"
+              ]
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteValibotControllerOnlyEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -632,20 +680,7 @@
       "prefix": "valibot-controller-and-service-entities",
       "handlers": {
         "getValibotControllerAndServiceEntities": {
-          "validation": {
-            "query": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
-              "type": "object",
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "search"
-              ]
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get ValibotControllerAndServiceEntities"
           },
@@ -658,31 +693,12 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
-                "foo": {
-                  "anyOf": [
-                    {
-                      "const": "bar"
-                    },
-                    {
-                      "const": "baz"
-                    }
-                  ]
+                "todo": {
+                  "const": true
                 }
               },
               "required": [
-                "foo"
-              ]
-            },
-            "query": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
-              "type": "object",
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "q"
+                "todo"
               ]
             },
             "params": {
@@ -705,11 +721,39 @@
           "httpMethod": "PUT"
         },
         "createValibotControllerAndServiceEntity": {
+          "validation": {
+            "body": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "const": true
+                }
+              },
+              "required": [
+                "todo"
+              ]
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteValibotControllerAndServiceEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -720,20 +764,7 @@
       "prefix": "arktype-controller-only-entities",
       "handlers": {
         "getArktypeControllerOnlyEntities": {
-          "validation": {
-            "query": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "object",
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "search"
-              ]
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get ArktypeControllerOnlyEntities"
           },
@@ -746,27 +777,12 @@
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
-                "foo": {
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                "todo": {
+                  "const": true
                 }
               },
               "required": [
-                "foo"
-              ]
-            },
-            "query": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "object",
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "q"
+                "todo"
               ]
             },
             "params": {
@@ -789,11 +805,39 @@
           "httpMethod": "PUT"
         },
         "createArktypeControllerOnlyEntity": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "const": true
+                }
+              },
+              "required": [
+                "todo"
+              ]
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteArktypeControllerOnlyEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }
@@ -804,20 +848,7 @@
       "prefix": "arktype-controller-and-service-entities",
       "handlers": {
         "getArktypeControllerAndServiceEntities": {
-          "validation": {
-            "query": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "object",
-              "properties": {
-                "search": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "search"
-              ]
-            }
-          },
+          "validation": {},
           "operationObject": {
             "summary": "Get ArktypeControllerAndServiceEntities"
           },
@@ -830,27 +861,12 @@
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
               "properties": {
-                "foo": {
-                  "enum": [
-                    "bar",
-                    "baz"
-                  ]
+                "todo": {
+                  "const": true
                 }
               },
               "required": [
-                "foo"
-              ]
-            },
-            "query": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "object",
-              "properties": {
-                "q": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "q"
+                "todo"
               ]
             },
             "params": {
@@ -873,11 +889,39 @@
           "httpMethod": "PUT"
         },
         "createArktypeControllerAndServiceEntity": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "const": true
+                }
+              },
+              "required": [
+                "todo"
+              ]
+            }
+          },
           "path": "",
           "httpMethod": "POST"
         },
         "deleteArktypeControllerAndServiceEntity": {
-          "path": ":id",
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "{id}",
           "httpMethod": "DELETE"
         }
       }

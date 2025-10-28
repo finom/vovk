@@ -1,22 +1,27 @@
-import type { VovkBody, VovkQuery } from 'vovk';
+import type { VovkBody, VovkParams } from 'vovk';
 import type ArktypeControllerAndServiceEntityController from './ArktypeControllerAndServiceEntityController.ts';
 
 export default class ArktypeControllerAndServiceEntityService {
-  static getArktypeControllerAndServiceEntities = (
-    search: VovkQuery<
-      typeof ArktypeControllerAndServiceEntityController.getArktypeControllerAndServiceEntities
-    >['search']
-  ) => {
-    return { results: [], search };
+  static getArktypeControllerAndServiceEntities = () => {
+    return { message: 'TODO: get arktypeControllerAndServiceEntities' };
   };
 
   static updateArktypeControllerAndServiceEntity = (
-    id: string,
-    q: VovkQuery<typeof ArktypeControllerAndServiceEntityController.updateArktypeControllerAndServiceEntity>['q'],
+    id: VovkParams<typeof ArktypeControllerAndServiceEntityController.updateArktypeControllerAndServiceEntity>['id'],
     body: VovkBody<typeof ArktypeControllerAndServiceEntityController.updateArktypeControllerAndServiceEntity>
   ) => {
-    return { id, q, body };
+    return { message: `TODO: update arktypeControllerAndServiceEntity`, id, body };
   };
 
-  // ...
+  static createArktypeControllerAndServiceEntity = (
+    body: VovkBody<typeof ArktypeControllerAndServiceEntityController.createArktypeControllerAndServiceEntity>
+  ) => {
+    return { message: `TODO: create arktypeControllerAndServiceEntity`, body };
+  };
+
+  static deleteArktypeControllerAndServiceEntity = (
+    id: VovkParams<typeof ArktypeControllerAndServiceEntityController.deleteArktypeControllerAndServiceEntity>['id']
+  ) => {
+    return { message: `TODO: delete arktypeControllerAndServiceEntity`, id };
+  };
 }

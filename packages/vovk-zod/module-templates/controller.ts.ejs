@@ -23,13 +23,11 @@ export default class <%= vars.ModuleName %> {
     })
     @get()
     static get<%= t.TheThings %> = withZod({
-        query: z.object({ search: z.string() }), 
-        handle(req) {
-            const search = req.nextUrl.searchParams.get('search');
+        handle() {
             <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.get<%= t.TheThings %>(search);
+            return <%= vars.ServiceName %>.get<%= t.TheThings %>();
             <% } else { %>
-            return { results: [], search };
+            return { message: 'TODO: get <%= t.theThings %>' };
             <% } %>
         }
     });
@@ -40,29 +38,47 @@ export default class <%= vars.ModuleName %> {
     @put('{id}')
     static update<%= t.TheThing %> = withZod({
         body: z.object({
-          foo: z.union([z.literal('bar'), z.literal('baz')]),
+          todo: z.literal(true),
         }),
-        query: z.object({ q: z.string() }),
         params: z.object({ id: z.string() }),
         async handle(req, params) {
             const { id } = params;
             const body = await req.json();
-            const q = req.nextUrl.searchParams.get('q');
             <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, q, body);
+            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
             <% } else { %>
-            return { id, body, q };
+            return { message: `TODO: update <%= t.theThing %>`, id, body };
             <% } %>
         }
     });
 
     @post()
-    static create<%= t.TheThing %> = () => {
-        // ...
-    };
+    static create<%= t.TheThing %> = withZod({
+        body: z.object({
+            todo: z.literal(true),
+        }),
+        async handle(req) {
+            const body = await req.json();
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
+            <% } else { %>
+            return { message: `TODO: create <%= t.theThing %>`, body };
+            <% } %>
+        }
+    });
 
-    @del(':id')
-    static delete<%= t.TheThing %> = () => {
-        // ...
-    };
+    @del('{id}')
+    static delete<%= t.TheThing %> = withZod({
+        params: z.object({
+            id: z.string(),
+        }),
+        handle(req, params) {
+            const { id } = params;
+            <% if(t.withService) { %>
+            return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
+            <% } else { %>
+            return { message: `TODO: delete <%= t.theThing %>`, id };
+            <% } %>
+        }
+    });
 }

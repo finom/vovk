@@ -380,7 +380,7 @@ describe('Validation with with vovk-yup and validateOnClient defined at settings
     await rejects.toThrowError(HttpException);
   });
 
-  it.only('Should store schema at handler.schema, handler.controllerSchema, handler.segmentSchema and handler.fullSchema', async () => {
+  it('Should store schema at handler.schema, handler.controllerSchema, handler.segmentSchema and handler.fullSchema', async () => {
     strictEqual(WithYupClientControllerRPC.handleAll.schema.httpMethod, 'POST');
     strictEqual(WithYupClientControllerRPC.handleAll.schema.path, 'all/{foo}/{bar}');
     strictEqual(WithYupClientControllerRPC.handleAll.controllerSchema.prefix, 'with-yup');

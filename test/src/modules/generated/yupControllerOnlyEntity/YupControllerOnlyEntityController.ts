@@ -9,11 +9,8 @@ export default class YupControllerOnlyEntityController {
   })
   @get()
   static getYupControllerOnlyEntities = withYup({
-    query: yup.object({ search: yup.string() }),
-    handle(req) {
-      const search = req.nextUrl.searchParams.get('search');
-
-      return { results: [], search };
+    handle() {
+      return { message: 'TODO: get yupControllerOnlyEntities' };
     },
   });
 
@@ -23,25 +20,40 @@ export default class YupControllerOnlyEntityController {
   @put('{id}')
   static updateYupControllerOnlyEntity = withYup({
     body: yup.object({
-      foo: yup.mixed().oneOf(['bar', 'baz']).required(),
+      todo: yup.boolean().required(),
     }),
-    query: yup.object({ q: yup.string() }),
+    params: yup.object({
+      id: yup.string().required(),
+    }),
     async handle(req, params: { id: string }) {
       const { id } = params;
       const body = await req.json();
-      const q = req.nextUrl.searchParams.get('q');
 
-      return { id, body, q };
+      return { message: `TODO: update yupControllerOnlyEntity`, id, body };
     },
   });
 
   @post()
-  static createYupControllerOnlyEntity = () => {
-    // ...
-  };
+  static createYupControllerOnlyEntity = withYup({
+    body: yup.object({
+      todo: yup.boolean().required(),
+    }),
+    async handle(req) {
+      const body = await req.json();
 
-  @del(':id')
-  static deleteYupControllerOnlyEntity = () => {
-    // ...
-  };
+      return { message: `TODO: create yupControllerOnlyEntity`, body };
+    },
+  });
+
+  @del('{id}')
+  static deleteYupControllerOnlyEntity = withYup({
+    params: yup.object({
+      id: yup.string().required(),
+    }),
+    async handle(_req, params) {
+      const { id } = params;
+
+      return { message: `TODO: delete yupControllerOnlyEntity`, id };
+    },
+  });
 }

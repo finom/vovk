@@ -1,24 +1,31 @@
-import type { VovkBody, VovkQuery } from 'vovk';
+import type { VovkBody, VovkParams } from 'vovk';
 import type NoValidationControllerAndServiceEntityController from './NoValidationControllerAndServiceEntityController.ts';
 
 export default class NoValidationControllerAndServiceEntityService {
-  static getNoValidationControllerAndServiceEntities = (
-    search: VovkQuery<
-      typeof NoValidationControllerAndServiceEntityController.getNoValidationControllerAndServiceEntities
-    >['search']
-  ) => {
-    return { results: [], search };
+  static getNoValidationControllerAndServiceEntities = () => {
+    return { message: 'TODO: get noValidationControllerAndServiceEntities' };
   };
 
   static updateNoValidationControllerAndServiceEntity = (
-    id: string,
-    q: VovkQuery<
+    id: VovkParams<
       typeof NoValidationControllerAndServiceEntityController.updateNoValidationControllerAndServiceEntity
-    >['q'],
+    >['id'],
     body: VovkBody<typeof NoValidationControllerAndServiceEntityController.updateNoValidationControllerAndServiceEntity>
   ) => {
-    return { id, q, body };
+    return { message: `TODO: update noValidationControllerAndServiceEntity`, id, body };
   };
 
-  // ...
+  static createNoValidationControllerAndServiceEntity = (
+    body: VovkBody<typeof NoValidationControllerAndServiceEntityController.createNoValidationControllerAndServiceEntity>
+  ) => {
+    return { message: `TODO: create noValidationControllerAndServiceEntity`, body };
+  };
+
+  static deleteNoValidationControllerAndServiceEntity = (
+    id: VovkParams<
+      typeof NoValidationControllerAndServiceEntityController.deleteNoValidationControllerAndServiceEntity
+    >['id']
+  ) => {
+    return { message: `TODO: delete noValidationControllerAndServiceEntity`, id };
+  };
 }

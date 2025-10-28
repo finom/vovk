@@ -11,11 +11,8 @@ export default class ValibotControllerAndServiceEntityController {
   })
   @get()
   static getValibotControllerAndServiceEntities = withValibot({
-    query: v.object({ search: v.string() }),
-    handle(req) {
-      const search = req.nextUrl.searchParams.get('search');
-
-      return ValibotControllerAndServiceEntityService.getValibotControllerAndServiceEntities(search);
+    handle() {
+      return ValibotControllerAndServiceEntityService.getValibotControllerAndServiceEntities();
     },
   });
 
@@ -24,27 +21,33 @@ export default class ValibotControllerAndServiceEntityController {
   })
   @put('{id}')
   static updateValibotControllerAndServiceEntity = withValibot({
-    body: v.object({
-      foo: v.union([v.literal('bar'), v.literal('baz')]),
-    }),
-    query: v.object({ q: v.string() }),
+    body: v.object({ todo: v.literal(true) }),
     params: v.object({ id: v.string() }),
     async handle(req, params) {
       const { id } = params;
       const body = await req.json();
-      const q = req.nextUrl.searchParams.get('q');
 
-      return ValibotControllerAndServiceEntityService.updateValibotControllerAndServiceEntity(id, q, body);
+      return ValibotControllerAndServiceEntityService.updateValibotControllerAndServiceEntity(id, body);
     },
   });
 
   @post()
-  static createValibotControllerAndServiceEntity = () => {
-    // ...
-  };
+  static createValibotControllerAndServiceEntity = withValibot({
+    body: v.object({ todo: v.literal(true) }),
+    async handle(req) {
+      const body = await req.json();
 
-  @del(':id')
-  static deleteValibotControllerAndServiceEntity = () => {
-    // ...
-  };
+      return ValibotControllerAndServiceEntityService.createValibotControllerAndServiceEntity(body);
+    },
+  });
+
+  @del('{id}')
+  static deleteValibotControllerAndServiceEntity = withValibot({
+    params: v.object({ id: v.string() }),
+    handle(_req, params) {
+      const { id } = params;
+
+      return ValibotControllerAndServiceEntityService.deleteValibotControllerAndServiceEntity(id);
+    },
+  });
 }
