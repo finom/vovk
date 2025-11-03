@@ -31,7 +31,7 @@ export default class DtoControllerOnlyEntityController {
   static updateDtoControllerOnlyEntity = withDto({
     body: DtoControllerOnlyEntityBodyDto,
     params: DtoControllerOnlyEntityParamsDto,
-    async handle(req, params: { id: string }) {
+    async handle(req) {
       const { id } = req.vovk.params();
       const body = await req.vovk.body();
 
@@ -52,7 +52,7 @@ export default class DtoControllerOnlyEntityController {
   @del('{id}')
   static deleteDtoControllerOnlyEntity = withDto({
     params: DtoControllerOnlyEntityParamsDto,
-    handle(req, params) {
+    handle(req) {
       const { id } = req.vovk.params();
 
       return { message: `TODO: delete dtoControllerOnlyEntity`, id };
