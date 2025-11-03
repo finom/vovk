@@ -33,7 +33,7 @@ export default class DtoControllerAndServiceEntityController {
   static updateDtoControllerAndServiceEntity = withDto({
     body: DtoControllerAndServiceEntityBodyDto,
     params: DtoControllerAndServiceEntityParamsDto,
-    async handle(req, params: { id: string }) {
+    async handle(req) {
       const { id } = req.vovk.params();
       const body = await req.vovk.body();
 
@@ -54,7 +54,7 @@ export default class DtoControllerAndServiceEntityController {
   @del('{id}')
   static deleteDtoControllerAndServiceEntity = withDto({
     params: DtoControllerAndServiceEntityParamsDto,
-    handle(req, params) {
+    handle(req) {
       const { id } = req.vovk.params();
 
       return DtoControllerAndServiceEntityService.deleteDtoControllerAndServiceEntity(id);
