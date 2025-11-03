@@ -6,6 +6,12 @@ export default class DtoControllerAndServiceEntityService {
     return { message: 'TODO: get dtoControllerAndServiceEntities' };
   };
 
+  static getSingleDtoControllerAndServiceEntity = (
+    id: VovkParams<typeof DtoControllerAndServiceEntityController.getSingleDtoControllerAndServiceEntity>['id']
+  ) => {
+    return { message: 'TODO: get single dtoControllerAndServiceEntity', id };
+  };
+
   static updateDtoControllerAndServiceEntity = (
     id: VovkParams<typeof DtoControllerAndServiceEntityController.updateDtoControllerAndServiceEntity>['id'],
     body: VovkBody<typeof DtoControllerAndServiceEntityController.updateDtoControllerAndServiceEntity>

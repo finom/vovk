@@ -6,6 +6,12 @@ export default class ArktypeControllerAndServiceEntityService {
     return { message: 'TODO: get arktypeControllerAndServiceEntities' };
   };
 
+  static getSingleArktypeControllerAndServiceEntity = (
+    id: VovkParams<typeof ArktypeControllerAndServiceEntityController.getSingleArktypeControllerAndServiceEntity>['id']
+  ) => {
+    return { message: 'TODO: get single arktypeControllerAndServiceEntity', id };
+  };
+
   static updateArktypeControllerAndServiceEntity = (
     id: VovkParams<typeof ArktypeControllerAndServiceEntityController.updateArktypeControllerAndServiceEntity>['id'],
     body: VovkBody<typeof ArktypeControllerAndServiceEntityController.updateArktypeControllerAndServiceEntity>

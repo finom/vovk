@@ -17,14 +17,24 @@ export default class ArktypeControllerAndServiceEntityController {
   });
 
   @operation({
+    summary: 'Get single ArktypeControllerAndServiceEntity',
+  })
+  @get('{id}')
+  static getSingleArktypeControllerAndServiceEntity = withArk({
+    params: type({ id: type('string') }),
+    handle(_req, { id }) {
+      return ArktypeControllerAndServiceEntityService.getSingleArktypeControllerAndServiceEntity(id);
+    },
+  });
+
+  @operation({
     summary: 'Update ArktypeControllerAndServiceEntity',
   })
   @put('{id}')
   static updateArktypeControllerAndServiceEntity = withArk({
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
-    async handle(req, params) {
-      const { id } = params;
+    async handle(req, { id }) {
       const body = await req.json();
 
       return ArktypeControllerAndServiceEntityService.updateArktypeControllerAndServiceEntity(id, body);

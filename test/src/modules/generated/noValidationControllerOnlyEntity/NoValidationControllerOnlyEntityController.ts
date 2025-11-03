@@ -11,6 +11,14 @@ export default class NoValidationControllerOnlyEntityController {
   };
 
   @operation({
+    summary: 'Get single NoValidationControllerOnlyEntity',
+  })
+  @get('{id}')
+  static getSingleNoValidationControllerOnlyEntity = (_req: VovkRequest, { id }: { id: string }) => {
+    return { message: 'TODO: get single noValidationControllerOnlyEntity', id };
+  };
+
+  @operation({
     summary: 'Update NoValidationControllerOnlyEntity',
   })
   @put('{id}')

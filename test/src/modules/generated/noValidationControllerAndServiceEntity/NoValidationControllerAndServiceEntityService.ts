@@ -6,6 +6,14 @@ export default class NoValidationControllerAndServiceEntityService {
     return { message: 'TODO: get noValidationControllerAndServiceEntities' };
   };
 
+  static getSingleNoValidationControllerAndServiceEntity = (
+    id: VovkParams<
+      typeof NoValidationControllerAndServiceEntityController.getSingleNoValidationControllerAndServiceEntity
+    >['id']
+  ) => {
+    return { message: 'TODO: get single noValidationControllerAndServiceEntity', id };
+  };
+
   static updateNoValidationControllerAndServiceEntity = (
     id: VovkParams<
       typeof NoValidationControllerAndServiceEntityController.updateNoValidationControllerAndServiceEntity

@@ -17,6 +17,19 @@ export default class YupControllerAndServiceEntityController {
   });
 
   @operation({
+    summary: 'Get single YupControllerAndServiceEntity',
+  })
+  @get('{id}')
+  static getSingleYupControllerAndServiceEntity = withYup({
+    params: yup.object({
+      id: yup.string().required(),
+    }),
+    handle(_req, { id }) {
+      return YupControllerAndServiceEntityService.getSingleYupControllerAndServiceEntity(id);
+    },
+  });
+
+  @operation({
     summary: 'Update YupControllerAndServiceEntity',
   })
   @put('{id}')
@@ -27,8 +40,7 @@ export default class YupControllerAndServiceEntityController {
     params: yup.object({
       id: yup.string().required(),
     }),
-    async handle(req, params: { id: string }) {
-      const { id } = params;
+    async handle(req, { id }) {
       const body = await req.json();
 
       return YupControllerAndServiceEntityService.updateYupControllerAndServiceEntity(id, body);
@@ -52,9 +64,7 @@ export default class YupControllerAndServiceEntityController {
     params: yup.object({
       id: yup.string().required(),
     }),
-    async handle(_req, params) {
-      const { id } = params;
-
+    async handle(_req, { id }) {
       return YupControllerAndServiceEntityService.deleteYupControllerAndServiceEntity(id);
     },
   });

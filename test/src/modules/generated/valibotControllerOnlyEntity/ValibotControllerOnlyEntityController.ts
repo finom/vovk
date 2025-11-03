@@ -15,14 +15,24 @@ export default class ValibotControllerOnlyEntityController {
   });
 
   @operation({
+    summary: 'Get single ValibotControllerOnlyEntity',
+  })
+  @get('{id}')
+  static getSingleValibotControllerOnlyEntity = withValibot({
+    params: v.object({ id: v.string() }),
+    handle(_req, { id }) {
+      return { message: `TODO: get single valibotControllerOnlyEntity`, id };
+    },
+  });
+
+  @operation({
     summary: 'Update ValibotControllerOnlyEntity',
   })
   @put('{id}')
   static updateValibotControllerOnlyEntity = withValibot({
     body: v.object({ todo: v.literal(true) }),
     params: v.object({ id: v.string() }),
-    async handle(req, params) {
-      const { id } = params;
+    async handle(req, { id }) {
       const body = await req.json();
 
       return { message: `TODO: update valibotControllerOnlyEntity`, id, body };
@@ -42,9 +52,7 @@ export default class ValibotControllerOnlyEntityController {
   @del('{id}')
   static deleteValibotControllerOnlyEntity = withValibot({
     params: v.object({ id: v.string() }),
-    handle(_req, params) {
-      const { id } = params;
-
+    handle(_req, { id }) {
       return { message: `TODO: delete valibotControllerOnlyEntity`, id };
     },
   });

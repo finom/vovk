@@ -42,6 +42,22 @@ export default class <%= vars.ModuleName %> {
     });
 
     @operation({
+      summary: 'Get single <%= t.TheThing %>',
+    })
+    @get('{id}')
+    static getSingle<%= t.TheThing %> = withDto({
+      params: <%= t.TheThing %>ParamsDto,
+      handle(req) {
+        const { id } = req.vovk.params();
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.getSingle<%= t.TheThing %>(id);
+        <% } else { %>
+        return { message: `TODO: get single <%= t.theThing %>`, id };
+        <% } %>
+      }
+    });
+
+    @operation({
       summary: 'Update <%= t.TheThing %>',
     })
     @put('{id}')

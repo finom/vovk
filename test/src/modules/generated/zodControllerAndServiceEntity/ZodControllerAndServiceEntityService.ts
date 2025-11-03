@@ -6,6 +6,12 @@ export default class ZodControllerAndServiceEntityService {
     return { message: 'TODO: get zodControllerAndServiceEntities' };
   };
 
+  static getSingleZodControllerAndServiceEntity = (
+    id: VovkParams<typeof ZodControllerAndServiceEntityController.getSingleZodControllerAndServiceEntity>['id']
+  ) => {
+    return { message: 'TODO: get single zodControllerAndServiceEntity', id };
+  };
+
   static updateZodControllerAndServiceEntity = (
     id: VovkParams<typeof ZodControllerAndServiceEntityController.updateZodControllerAndServiceEntity>['id'],
     body: VovkBody<typeof ZodControllerAndServiceEntityController.updateZodControllerAndServiceEntity>

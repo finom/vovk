@@ -17,6 +17,19 @@ export default class ZodControllerAndServiceEntityController {
   });
 
   @operation({
+    summary: 'Get single ZodControllerAndServiceEntity',
+  })
+  @get('{id}')
+  static getSingleZodControllerAndServiceEntity = withZod({
+    params: z.object({
+      id: z.string(),
+    }),
+    handle(_req, { id }) {
+      return ZodControllerAndServiceEntityService.getSingleZodControllerAndServiceEntity(id);
+    },
+  });
+
+  @operation({
     summary: 'Update ZodControllerAndServiceEntity',
   })
   @put('{id}')
@@ -25,8 +38,7 @@ export default class ZodControllerAndServiceEntityController {
       todo: z.literal(true),
     }),
     params: z.object({ id: z.string() }),
-    async handle(req, params) {
-      const { id } = params;
+    async handle(req, { id }) {
       const body = await req.json();
 
       return ZodControllerAndServiceEntityService.updateZodControllerAndServiceEntity(id, body);
@@ -50,9 +62,7 @@ export default class ZodControllerAndServiceEntityController {
     params: z.object({
       id: z.string(),
     }),
-    handle(req, params) {
-      const { id } = params;
-
+    handle(req, { id }) {
       return ZodControllerAndServiceEntityService.deleteZodControllerAndServiceEntity(id);
     },
   });

@@ -16,6 +16,12 @@ export default class <%= vars.ServiceName %> {
     return { message: 'TODO: get <%= t.theThings %>' };
   };
 
+  static getSingle<%= t.TheThing %> = (
+    id: VovkParams<typeof <%= vars.ControllerName %>.getSingle<%= t.TheThing %>>['id']
+  ) => {
+    return { message: 'TODO: get single <%= t.theThing %>', id };
+  }
+
   static update<%= t.TheThing %> = (
     id: VovkParams<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>['id'],
     body: VovkBody<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>

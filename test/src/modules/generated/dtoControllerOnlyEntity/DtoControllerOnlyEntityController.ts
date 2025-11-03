@@ -25,6 +25,19 @@ export default class DtoControllerOnlyEntityController {
   });
 
   @operation({
+    summary: 'Get single DtoControllerOnlyEntity',
+  })
+  @get('{id}')
+  static getSingleDtoControllerOnlyEntity = withDto({
+    params: DtoControllerOnlyEntityParamsDto,
+    handle(req) {
+      const { id } = req.vovk.params();
+
+      return { message: `TODO: get single dtoControllerOnlyEntity`, id };
+    },
+  });
+
+  @operation({
     summary: 'Update DtoControllerOnlyEntity',
   })
   @put('{id}')

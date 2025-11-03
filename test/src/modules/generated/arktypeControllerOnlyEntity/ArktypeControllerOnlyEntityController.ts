@@ -15,14 +15,24 @@ export default class ArktypeControllerOnlyEntityController {
   });
 
   @operation({
+    summary: 'Get single ArktypeControllerOnlyEntity',
+  })
+  @get('{id}')
+  static getSingleArktypeControllerOnlyEntity = withArk({
+    params: type({ id: type('string') }),
+    handle(_req, { id }) {
+      return { message: 'TODO: get single arktypeControllerOnlyEntity', id };
+    },
+  });
+
+  @operation({
     summary: 'Update ArktypeControllerOnlyEntity',
   })
   @put('{id}')
   static updateArktypeControllerOnlyEntity = withArk({
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
-    async handle(req, params) {
-      const { id } = params;
+    async handle(req, { id }) {
       const body = await req.json();
 
       return { message: `TODO: update arktypeControllerOnlyEntity`, id, body };

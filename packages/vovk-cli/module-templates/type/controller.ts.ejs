@@ -26,7 +26,19 @@ export default class <%= vars.ControllerName %> {
         <% } else { %>
         return { message: 'TODO: get <%= t.theThings %>' };
         <% } %>
-    }
+    };
+
+    @operation({
+        summary: 'Get single <%= t.TheThing %>',
+    })
+    @get('{id}')
+    static getSingle<%= t.TheThing %> = (_req: VovkRequest, { id }: { id: string }) => {
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.getSingle<%= t.TheThing %>(id);
+        <% } else { %>
+        return { message: 'TODO: get single <%= t.theThing %>', id };
+        <% } %>
+    };
 
     @operation({
         summary: 'Update <%= t.TheThing %>',

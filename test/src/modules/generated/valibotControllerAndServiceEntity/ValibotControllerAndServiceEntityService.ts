@@ -6,6 +6,12 @@ export default class ValibotControllerAndServiceEntityService {
     return { message: 'TODO: get valibotControllerAndServiceEntities' };
   };
 
+  static getSingleValibotControllerAndServiceEntity = (
+    id: VovkParams<typeof ValibotControllerAndServiceEntityController.getSingleValibotControllerAndServiceEntity>['id']
+  ) => {
+    return { message: 'TODO: get single valibotControllerAndServiceEntity', id };
+  };
+
   static updateValibotControllerAndServiceEntity = (
     id: VovkParams<typeof ValibotControllerAndServiceEntityController.updateValibotControllerAndServiceEntity>['id'],
     body: VovkBody<typeof ValibotControllerAndServiceEntityController.updateValibotControllerAndServiceEntity>

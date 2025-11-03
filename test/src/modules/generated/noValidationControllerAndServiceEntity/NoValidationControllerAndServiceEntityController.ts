@@ -13,6 +13,14 @@ export default class NoValidationControllerAndServiceEntityController {
   };
 
   @operation({
+    summary: 'Get single NoValidationControllerAndServiceEntity',
+  })
+  @get('{id}')
+  static getSingleNoValidationControllerAndServiceEntity = (_req: VovkRequest, { id }: { id: string }) => {
+    return NoValidationControllerAndServiceEntityService.getSingleNoValidationControllerAndServiceEntity(id);
+  };
+
+  @operation({
     summary: 'Update NoValidationControllerAndServiceEntity',
   })
   @put('{id}')

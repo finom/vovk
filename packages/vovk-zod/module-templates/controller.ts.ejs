@@ -33,6 +33,23 @@ export default class <%= vars.ModuleName %> {
     });
 
     @operation({
+      summary: 'Get single <%= t.TheThing %>',
+    })
+    @get('{id}')
+    static getSingle<%= t.TheThing %> = withZod({
+      params: z.object({
+        id: z.string(),
+      }),
+      handle(_req, { id }) {
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.getSingle<%= t.TheThing %>(id);
+        <% } else { %>
+        return { message: `TODO: get single <%= t.theThing %>`, id };
+        <% } %>
+      }
+    });
+
+    @operation({
         summary: 'Update <%= t.TheThing %>',
     })
     @put('{id}')
@@ -41,8 +58,7 @@ export default class <%= vars.ModuleName %> {
           todo: z.literal(true),
         }),
         params: z.object({ id: z.string() }),
-        async handle(req, params) {
-            const { id } = params;
+        async handle(req, { id }) {
             const body = await req.json();
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
@@ -72,8 +88,7 @@ export default class <%= vars.ModuleName %> {
         params: z.object({
             id: z.string(),
         }),
-        handle(req, params) {
-            const { id } = params;
+        handle(req, { id }) {
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
             <% } else { %>

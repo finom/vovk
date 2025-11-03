@@ -27,6 +27,19 @@ export default class DtoControllerAndServiceEntityController {
   });
 
   @operation({
+    summary: 'Get single DtoControllerAndServiceEntity',
+  })
+  @get('{id}')
+  static getSingleDtoControllerAndServiceEntity = withDto({
+    params: DtoControllerAndServiceEntityParamsDto,
+    handle(req) {
+      const { id } = req.vovk.params();
+
+      return DtoControllerAndServiceEntityService.getSingleDtoControllerAndServiceEntity(id);
+    },
+  });
+
+  @operation({
     summary: 'Update DtoControllerAndServiceEntity',
   })
   @put('{id}')

@@ -6,6 +6,12 @@ export default class YupControllerAndServiceEntityService {
     return { message: 'TODO: get yupControllerAndServiceEntities' };
   };
 
+  static getSingleYupControllerAndServiceEntity = (
+    id: VovkParams<typeof YupControllerAndServiceEntityController.getSingleYupControllerAndServiceEntity>['id']
+  ) => {
+    return { message: 'TODO: get single yupControllerAndServiceEntity', id };
+  };
+
   static updateYupControllerAndServiceEntity = (
     id: VovkParams<typeof YupControllerAndServiceEntityController.updateYupControllerAndServiceEntity>['id'],
     body: VovkBody<typeof YupControllerAndServiceEntityController.updateYupControllerAndServiceEntity>

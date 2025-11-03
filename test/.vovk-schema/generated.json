@@ -16,6 +16,13 @@
             "summary": "Get NoValidationControllerOnlyEntities"
           }
         },
+        "getSingleNoValidationControllerOnlyEntity": {
+          "path": "{id}",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "Get single NoValidationControllerOnlyEntity"
+          }
+        },
         "updateNoValidationControllerOnlyEntity": {
           "path": "{id}",
           "httpMethod": "PUT",
@@ -43,6 +50,13 @@
           "httpMethod": "GET",
           "operationObject": {
             "summary": "Get NoValidationControllerAndServiceEntities"
+          }
+        },
+        "getSingleNoValidationControllerAndServiceEntity": {
+          "path": "{id}",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "Get single NoValidationControllerAndServiceEntity"
           }
         },
         "updateNoValidationControllerAndServiceEntity": {
@@ -73,6 +87,28 @@
             "summary": "Get ZodControllerOnlyEntities"
           },
           "path": "",
+          "httpMethod": "GET"
+        },
+        "getSingleZodControllerOnlyEntity": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "operationObject": {
+            "summary": "Get single ZodControllerOnlyEntity"
+          },
+          "path": "{id}",
           "httpMethod": "GET"
         },
         "updateZodControllerOnlyEntity": {
@@ -165,6 +201,28 @@
           "path": "",
           "httpMethod": "GET"
         },
+        "getSingleZodControllerAndServiceEntity": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "operationObject": {
+            "summary": "Get single ZodControllerAndServiceEntity"
+          },
+          "path": "{id}",
+          "httpMethod": "GET"
+        },
         "updateZodControllerAndServiceEntity": {
           "validation": {
             "body": {
@@ -255,6 +313,26 @@
           "path": "",
           "httpMethod": "GET"
         },
+        "getSingleYupControllerOnlyEntity": {
+          "validation": {
+            "params": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Get single YupControllerOnlyEntity"
+          },
+          "path": "{id}",
+          "httpMethod": "GET"
+        },
         "updateYupControllerOnlyEntity": {
           "validation": {
             "body": {
@@ -335,6 +413,26 @@
           "path": "",
           "httpMethod": "GET"
         },
+        "getSingleYupControllerAndServiceEntity": {
+          "validation": {
+            "params": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Get single YupControllerAndServiceEntity"
+          },
+          "path": "{id}",
+          "httpMethod": "GET"
+        },
         "updateYupControllerAndServiceEntity": {
           "validation": {
             "body": {
@@ -413,6 +511,28 @@
             "summary": "Get DtoControllerOnlyEntities"
           },
           "path": "",
+          "httpMethod": "GET"
+        },
+        "getSingleDtoControllerOnlyEntity": {
+          "validation": {
+            "params": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Get single DtoControllerOnlyEntity"
+          },
+          "path": "{id}",
           "httpMethod": "GET"
         },
         "updateDtoControllerOnlyEntity": {
@@ -509,6 +629,28 @@
           "path": "",
           "httpMethod": "GET"
         },
+        "getSingleDtoControllerAndServiceEntity": {
+          "validation": {
+            "params": {
+              "x-isDto": true,
+              "definitions": {},
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Get single DtoControllerAndServiceEntity"
+          },
+          "path": "{id}",
+          "httpMethod": "GET"
+        },
         "updateDtoControllerAndServiceEntity": {
           "validation": {
             "body": {
@@ -603,6 +745,27 @@
           "path": "",
           "httpMethod": "GET"
         },
+        "getSingleValibotControllerOnlyEntity": {
+          "validation": {
+            "params": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Get single ValibotControllerOnlyEntity"
+          },
+          "path": "{id}",
+          "httpMethod": "GET"
+        },
         "updateValibotControllerOnlyEntity": {
           "validation": {
             "body": {
@@ -685,6 +848,27 @@
             "summary": "Get ValibotControllerAndServiceEntities"
           },
           "path": "",
+          "httpMethod": "GET"
+        },
+        "getSingleValibotControllerAndServiceEntity": {
+          "validation": {
+            "params": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Get single ValibotControllerAndServiceEntity"
+          },
+          "path": "{id}",
           "httpMethod": "GET"
         },
         "updateValibotControllerAndServiceEntity": {
@@ -771,6 +955,27 @@
           "path": "",
           "httpMethod": "GET"
         },
+        "getSingleArktypeControllerOnlyEntity": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Get single ArktypeControllerOnlyEntity"
+          },
+          "path": "{id}",
+          "httpMethod": "GET"
+        },
         "updateArktypeControllerOnlyEntity": {
           "validation": {
             "body": {
@@ -853,6 +1058,27 @@
             "summary": "Get ArktypeControllerAndServiceEntities"
           },
           "path": "",
+          "httpMethod": "GET"
+        },
+        "getSingleArktypeControllerAndServiceEntity": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Get single ArktypeControllerAndServiceEntity"
+          },
+          "path": "{id}",
           "httpMethod": "GET"
         },
         "updateArktypeControllerAndServiceEntity": {
