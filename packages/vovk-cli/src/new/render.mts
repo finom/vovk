@@ -29,10 +29,13 @@ export default async function render(
     isNodeNextResolution: boolean;
   }
 ): Promise<VovkModuleRenderResult> {
-  const getModuleDirName = (givenSegmentName: string, givenModuleName: string) =>
-    [config.modulesDir, givenSegmentName || config.rootSegmentModulesDirName, _.camelCase(givenModuleName)]
-      .filter(Boolean)
-      .join('/');
+  const defaultOutDir = [config.modulesDir, segmentName || config.rootSegmentModulesDirName, _.camelCase(moduleName)]
+    .filter(Boolean)
+    .join('/');
+  const relativePathToSourceRoot = _.times(
+    (segmentName || config.rootSegmentModulesDirName).split('/').length + 1,
+    () => '..'
+  ).join('/');
 
   const theThing = _.camelCase(moduleName);
   const TheThing = _.upperFirst(theThing);
@@ -64,7 +67,8 @@ export default async function render(
       cjs: isNodeNextResolution ? '.cjs' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },
-    defaultOutDir: getModuleDirName(segmentName, theThing),
+    defaultOutDir,
+    relativePathToSourceRoot,
 
     // libraries
     _, // lodash
