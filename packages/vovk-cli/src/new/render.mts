@@ -5,12 +5,14 @@ import pluralize from 'pluralize';
 import type { VovkStrictConfig } from 'vovk';
 import addCommonTerms from './addCommonTerms.mjs';
 import type { VovkModuleRenderResult } from '../types.mjs';
+import path from 'node:path';
 
 addCommonTerms();
 
 export default async function render(
   codeTemplate: string,
   {
+    cwd,
     config,
     withService,
     segmentName,
@@ -18,6 +20,7 @@ export default async function render(
     empty,
     templateFileName,
     isNodeNextResolution,
+    srcRoot,
   }: {
     cwd: string;
     config: VovkStrictConfig;
@@ -27,15 +30,15 @@ export default async function render(
     empty?: boolean;
     templateFileName: string;
     isNodeNextResolution: boolean;
+    srcRoot: string | null;
   }
 ): Promise<VovkModuleRenderResult> {
   const defaultOutDir = [config.modulesDir, segmentName || config.rootSegmentModulesDirName, _.camelCase(moduleName)]
     .filter(Boolean)
     .join('/');
-  const relativePathToSourceRoot = _.times(
-    (segmentName || config.rootSegmentModulesDirName).split('/').length + 1,
-    () => '..'
-  ).join('/');
+
+  const relativePathToSourceRoot =
+    path.relative(path.resolve(cwd, defaultOutDir), path.join(cwd, srcRoot ?? '.')) || '.';
 
   const theThing = _.camelCase(moduleName);
   const TheThing = _.upperFirst(theThing);

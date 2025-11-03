@@ -11,7 +11,7 @@ compiledName: <%= t.TheThing + 'RPC' %>
 
 import { prefix, get, put, post, del, operation } from 'vovk';
 import * as v from 'valibot';
-import withValibot from '<%= t.pathToSourceRoot %>/lib/withValibot<%= t.nodeNextResolutionExt.ts %>';
+import withValibot from '<%= t.relativePathToSourceRoot %>/lib/withValibot<%= t.nodeNextResolutionExt.ts %>';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>

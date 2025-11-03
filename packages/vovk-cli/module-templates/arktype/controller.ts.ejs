@@ -11,7 +11,7 @@ compiledName: <%= t.TheThing + 'RPC' %>
 
 import { prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
-import withArk from '<%= t.pathToSourceRoot %>/lib/withArk<%= t.nodeNextResolutionExt.ts %>';
+import withArk from '<%= t.relativePathToSourceRoot %>/lib/withArk<%= t.nodeNextResolutionExt.ts %>';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>

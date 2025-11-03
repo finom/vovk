@@ -1,6 +1,6 @@
 import { prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
-import withArk from '@/lib/withArk.ts';
+import withArk from '../../../lib/withArk.ts';
 
 import ArktypeControllerAndServiceEntityService from './ArktypeControllerAndServiceEntityService.ts';
 
