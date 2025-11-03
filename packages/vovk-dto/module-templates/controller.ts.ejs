@@ -48,7 +48,7 @@ export default class <%= vars.ModuleName %> {
     static update<%= t.TheThing %> = withDto({
         body: <%= t.TheThing %>BodyDto,
         params: <%= t.TheThing %>ParamsDto,
-        async handle(req, params: { id: string }) {
+        async handle(req) {
             const { id } = req.vovk.params();
             const body = await req.vovk.body();
             <% if(t.withService) { %>
@@ -75,7 +75,7 @@ export default class <%= vars.ModuleName %> {
     @del('{id}')
     static delete<%= t.TheThing %> = withDto({
         params: <%= t.TheThing %>ParamsDto,
-        handle(req, params) {
+        handle(req) {
             const { id } = req.vovk.params();
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
