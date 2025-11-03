@@ -38,7 +38,6 @@ export async function getProjectFullSchema({
   } catch {
     isEmptyLogOrWarn(`${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
   }
-
   // Handle segments directory
   const segmentsDir = path.join(schemaOutAbsolutePath);
   try {

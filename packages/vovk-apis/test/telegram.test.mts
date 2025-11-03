@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import { test, describe } from 'node:test';
-import { type Mixins, TelegramRPC, schema, openapi } from '../dist/telegram/index.mjs';
+import { type Mixins, TelegramAPI, schema, openapi } from '../dist/telegram/index.mjs';
 
 describe('Telegram', () => {
-  test('TelegramRPC and Mixins', async () => {
-    assert(TelegramRPC.sendMessage); // TODO: there is no known way to test the RPC module without a token
+  test('TelegramAPI and Mixins', async () => {
+    assert(TelegramAPI.sendMessage); // TODO: there is no known way to test the RPC module without a token
     ({
       latitude: 10,
       longitude: 20,

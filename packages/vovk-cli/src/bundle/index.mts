@@ -9,28 +9,6 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type { BundleOptions } from '../types.mjs';
 import { locateSegments } from '../locateSegments.mjs';
 
-/*
-async function tsdownBundle({
-  outDirAbsolute,
-  tsFullClientOutAbsoluteDirInput,
-}: {
-  outDirAbsolute: string;
-  tsFullClientOutAbsoluteDirInput: string;
-}) {
-  const { build } = await import('tsdown');
-
-  await build({
-    entry: path.join(tsFullClientOutAbsoluteDirInput, './index.ts'),
-    dts: true,
-    format: ['cjs', 'esm'],
-    hash: false,
-    fixedExtension: true,
-    clean: true,
-    ...tsdownBuildOptions,
-    outDir: outDirAbsolute,
-  });
-} */
-
 export async function bundle({
   projectInfo,
   fullSchema,
@@ -92,6 +70,7 @@ export async function bundle({
   for (const [relativePath, group] of Object.entries(requiresGroup)) {
     await generate({
       isEnsuringClient: false,
+      isBundle: true,
       projectInfo,
       forceNothingWrittenLog: true,
       fullSchema,

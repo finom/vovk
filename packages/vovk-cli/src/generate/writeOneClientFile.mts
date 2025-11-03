@@ -37,14 +37,14 @@ export default async function writeOneClientFile({
   // imports,
   templateContent,
   matterResult: { data, content },
-  openapi,
+  openAPIObject,
   package: packageJson,
   readme,
   samples,
   reExports,
   isEnsuringClient,
   outCwdRelativeDir,
-  // templateDef,
+  templateDef,
   locatedSegments,
   isNodeNextResolution,
   hasMixins,
@@ -70,7 +70,7 @@ export default async function writeOneClientFile({
     };
     content: string;
   };
-  openapi: OpenAPIObject;
+  openAPIObject: OpenAPIObject;
   package: PackageJson;
   readme: VovkReadmeConfig;
   samples: VovkSamplesConfig;
@@ -89,7 +89,7 @@ export default async function writeOneClientFile({
   cliSchemaPath: string | null;
   projectConfig: VovkStrictConfig;
 }) {
-  const { config, apiRoot } = projectInfo;
+  const { config } = projectInfo;
 
   const { templateFilePath, relativeDir } = clientTemplateFile;
   const locatedSegmentsByName = _.keyBy(locatedSegments, 'segmentName');
@@ -143,9 +143,9 @@ export default async function writeOneClientFile({
     readme,
     samples,
     reExports,
-    openapi,
+    openapi: openAPIObject,
     ROOT_SEGMENT_FILE_NAME,
-    apiRoot: origin ? `${origin}/${config.rootEntry}` : apiRoot,
+    apiRoot: origin ? `${origin}/${config.rootEntry}` : undefined,
     imports: {},
     schema: fullSchema,
     config: projectConfig,
@@ -169,10 +169,24 @@ export default async function writeOneClientFile({
             cliSchemaPath ?? config.schemaOutDir
           )
         : path.relative(outCwdRelativeDir, cliSchemaPath ?? config.schemaOutDir),
-    commonImports: getTemplateClientImports({ fullSchema, isBundle, outCwdRelativeDir, segmentName })['composedClient'],
+    commonImports: getTemplateClientImports({
+      config: projectConfig,
+      fullSchema,
+      isBundle,
+      outCwdRelativeDir,
+      segmentName,
+      outputConfigs: [templateDef.outputConfig ?? {}],
+    })['composedClient'],
     segmentImports: Object.fromEntries(
       Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
-        const clientImports = getTemplateClientImports({ fullSchema, segmentName: sName, isBundle, outCwdRelativeDir });
+        const clientImports = getTemplateClientImports({
+          config: projectConfig,
+          fullSchema,
+          segmentName: sName,
+          isBundle,
+          outCwdRelativeDir,
+          outputConfigs: [templateDef.outputConfig ?? {}],
+        });
         const imports =
           configKey === 'composedClient' ? clientImports['composedClient'] : clientImports['segmentedClient'][sName];
 

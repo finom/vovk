@@ -7,6 +7,10 @@ import {
   type VovkSchema,
   type KnownAny,
   type VovkOutputConfig,
+  VovkStrictConfig,
+  VovkReadmeConfig,
+  VovkSamplesConfig,
+  VovkPackageJson,
 } from '../types';
 import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
 import { resolveGeneratorConfigValues } from '../utils/resolveGeneratorConfigValues';
@@ -59,27 +63,49 @@ function extractComponents(
   return [processedSchema, components];
 }
 
+// returns OpenAPIObject along with resolved configs
 export function vovkSchemaToOpenAPI({
+  config,
   rootEntry = 'api',
   schema: fullSchema,
-  configs,
+  outputConfigs,
+  isBundle,
   segmentName: givenSegmentName,
+  projectPackageJson,
 }: {
+  config: VovkStrictConfig | undefined;
   rootEntry?: string;
   schema: VovkSchema;
-  configs?: VovkOutputConfig[];
-  segmentName?: string;
-}): OpenAPIObject {
+  outputConfigs: VovkOutputConfig[];
+  isBundle: boolean;
+  segmentName: string | null;
+  projectPackageJson: VovkPackageJson | undefined;
+}): {
+  readme: VovkReadmeConfig;
+  openAPIObject: OpenAPIObject;
+  samples: VovkSamplesConfig;
+  origin: string;
+  package: VovkPackageJson;
+  imports: VovkOutputConfig['imports'];
+  reExports: VovkOutputConfig['reExports'];
+} {
   const paths: PathsObject = {};
   const components: { [key: string]: VovkBasicJSONSchema } = {};
   const {
     openAPIObject,
     samples: samplesConfig,
     package: packageJson,
+    readme: readmeConfig,
+    origin,
+    imports,
+    reExports,
   } = resolveGeneratorConfigValues({
+    config,
     schema: fullSchema,
-    configs,
+    outputConfigs,
+    isBundle,
     segmentName: givenSegmentName ?? null,
+    projectPackageJson,
   });
   for (const [segmentName, segmentSchema] of givenSegmentName
     ? ([[givenSegmentName, fullSchema.segments[givenSegmentName]]] as const)
@@ -174,7 +200,7 @@ export function vovkSchemaToOpenAPI({
                     200: {
                       description: 'description' in outputValidation ? outputValidation.description : 'Success',
                       content: {
-                        'application/json': {
+                        [outputValidation['x-isForm'] ? 'multipart/form-data' : 'application/json']: {
                           schema: outputValidation,
                         },
                       },
@@ -239,45 +265,53 @@ export function vovkSchemaToOpenAPI({
   }
 
   return {
-    ...openAPIObject,
-    components: {
-      ...openAPIObject?.components,
-      schemas: {
-        ...(openAPIObject?.components?.schemas ?? components),
-        HttpStatus: {
-          type: 'integer',
-          description: 'HTTP status code',
-          enum: Object.keys(HttpStatus)
-            .map((k) => HttpStatus[k as unknown as HttpStatus])
-            .filter(Boolean)
-            .filter((v) => typeof v === 'number'),
-        },
-        VovkErrorResponse: {
-          type: 'object',
-          description: 'Vovk error response',
-          properties: {
-            cause: {
-              description: 'Error cause of any shape',
-            },
-            statusCode: {
-              $ref: '#/components/schemas/HttpStatus',
-            },
-            message: {
-              type: 'string',
-              description: 'Error message',
-            },
-            isError: {
-              type: 'boolean',
-              const: true,
-              description: 'Indicates that this object represents an error',
-            },
+    readme: readmeConfig,
+    samples: samplesConfig,
+    package: packageJson,
+    imports,
+    reExports,
+    origin,
+    openAPIObject: {
+      ...openAPIObject,
+      components: {
+        ...openAPIObject?.components,
+        schemas: {
+          ...(openAPIObject?.components?.schemas ?? components),
+          HttpStatus: {
+            type: 'integer',
+            description: 'HTTP status code',
+            enum: Object.keys(HttpStatus)
+              .map((k) => HttpStatus[k as unknown as HttpStatus])
+              .filter(Boolean)
+              .filter((v) => typeof v === 'number'),
           },
-          required: ['statusCode', 'message', 'isError'],
-          additionalProperties: false,
+          VovkErrorResponse: {
+            type: 'object',
+            description: 'Vovk error response',
+            properties: {
+              cause: {
+                description: 'Error cause of any shape',
+              },
+              statusCode: {
+                $ref: '#/components/schemas/HttpStatus',
+              },
+              message: {
+                type: 'string',
+                description: 'Error message',
+              },
+              isError: {
+                type: 'boolean',
+                const: true,
+                description: 'Indicates that this object represents an error',
+              },
+            },
+            required: ['statusCode', 'message', 'isError'],
+            additionalProperties: false,
+          },
+          ...openAPIObject?.components?.schemas,
         },
-        ...openAPIObject?.components?.schemas,
       },
+      paths,
     },
-    paths,
   };
 }

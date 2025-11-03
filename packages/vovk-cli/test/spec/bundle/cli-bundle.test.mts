@@ -14,138 +14,7 @@ await describe('TypeScript bundle', async () => {
     dir: 'tmp_test_dir',
   });
 
-  beforeEach(async () => {
-    await createNextApp();
-    await vovkInit('--yes');
-    await runAtProjectDir('../dist/index.mjs new segment');
-    await runAtProjectDir('../dist/index.mjs new controller user');
-    await runAtProjectDir('../dist/index.mjs new segment foo');
-    await runAtProjectDir('../dist/index.mjs new controller foo/cucumber');
-    await runAtProjectDir('../dist/index.mjs new controller foo/tomato');
-    await runAtProjectDir('../dist/index.mjs new segment bar/baz');
-    await runAtProjectDir('../dist/index.mjs new controller bar/baz/pineapple');
-    await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi');
-    await runAtProjectDir('../dist/index.mjs new segment a/b/c/d/e');
-    await runAtProjectDir('../dist/index.mjs new controller a/b/c/d/e/post');
-  });
-
-  await it('Bundles composed client', async () => {
-    await vovkDevAndKill();
-    await runAtProjectDir(`../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug`);
-
-    await assertDirFileList('./dist', [
-      'index.mjs',
-      'index.d.mts',
-      'index.cjs',
-      'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.cjs',
-      'openapi.mjs', // index.mjs's chunk created automatically by tsdown
-      'openapi.d.cts',
-      'package.json',
-      'README.md',
-    ]);
-  });
-
-  await it('Bundles composed client from custom schema dir using --schema-out for dev and --schema for bundle', async () => {
-    await vovkDevAndKill('--schema-out ./custom-schema-dir');
-    await runAtProjectDir(
-      `../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug --schema ./custom-schema-dir`
-    );
-
-    await assertDirFileList('./dist', [
-      'index.mjs',
-      'index.d.mts',
-      'index.cjs',
-      'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.d.cts',
-      'openapi.cjs',
-      'openapi.mjs',
-      'package.json',
-      'README.md',
-    ]);
-  });
-
-  await it('Bundles composed client to an --out dir', async () => {
-    await vovkDevAndKill();
-    await runAtProjectDir(`../dist/index.mjs bundle --out my_dist --tsconfig ../tsconfig.test.json --log-level debug`);
-
-    await assertDirFileList('./my_dist', [
-      'index.mjs',
-      'index.d.mts',
-      'index.cjs',
-      'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.d.cts',
-      'openapi.cjs',
-      'openapi.mjs',
-      'package.json',
-      'README.md',
-    ]);
-  });
-
-  await it('Builds composed bundle with included segments', async () => {
-    await vovkDevAndKill();
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
-      ...config,
-      bundle: {
-        tsdownBuildOptions: { outDir: './composed-bundle' },
-        includeSegments: ['foo', 'bar/baz'],
-      },
-    }));
-    await runAtProjectDir(`../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug`);
-    await assertDirFileList('./composed-bundle', [
-      'index.mjs',
-      'index.cjs',
-      'index.d.mts',
-      'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.d.cts',
-      'openapi.cjs',
-      'openapi.mjs',
-      'package.json',
-      'README.md',
-    ]);
-    let { schema }: { schema: VovkSchema } = await importFresh<{ schema: VovkSchema }>(
-      path.join(projectDir, 'composed-bundle', 'schema.cjs'),
-      ['schema']
-    );
-    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
-
-    ({ schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), [
-      'schema',
-    ]));
-    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
-  });
-
-  await it.only('Builds composed bundle with excluded segments', async () => {
-    await vovkDevAndKill();
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
-      ...config,
-      bundle: {
-        // tsdownBuildOptions: { outDir: './composed-bundle' },
-        excludeSegments: ['', 'bar/baz'],
-        build: () => {
-          throw new Error('Not implemented');
-        },
-      },
-    }));
-    await fs.writeFile(
-      path.join(projectDir, 'tsconfig.build.json'),
-      JSON.stringify({
-        compilerOptions: {
-          moduleResolution: 'bundler',
-          paths: {
-            'vovk/*': ['./node_modules/vovk/*'],
-          },
-        },
-      })
-    );
+  const setupBuildConfig = async () => {
     await updateConfigProperty(
       path.join(projectDir, 'vovk.config.js'),
       ['bundle', 'build'],
@@ -163,89 +32,162 @@ await describe('TypeScript bundle', async () => {
         });
       }
     );
+  };
+
+  beforeEach(async () => {
+    await createNextApp();
+    await vovkInit('--yes');
+    await fs.writeFile(
+      path.join(projectDir, 'tsconfig.build.json'),
+      JSON.stringify({
+        compilerOptions: {
+          moduleResolution: 'bundler',
+          paths: {
+            'vovk/*': ['./node_modules/vovk/*'],
+          },
+        },
+      })
+    );
+    await setupBuildConfig();
+    await runAtProjectDir('../dist/index.mjs new segment');
+    await runAtProjectDir('../dist/index.mjs new controller user');
+    await runAtProjectDir('../dist/index.mjs new segment foo');
+    await runAtProjectDir('../dist/index.mjs new controller foo/cucumber');
+    await runAtProjectDir('../dist/index.mjs new controller foo/tomato');
+    await runAtProjectDir('../dist/index.mjs new segment bar/baz');
+    await runAtProjectDir('../dist/index.mjs new controller bar/baz/pineapple');
+    await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi');
+    await runAtProjectDir('../dist/index.mjs new segment a/b/c/d/e');
+    await runAtProjectDir('../dist/index.mjs new controller a/b/c/d/e/post');
+  });
+
+  await it('Bundles composed client', async () => {
+    await vovkDevAndKill();
+    await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
+
+    await assertDirFileList('./dist', [
+      'index.mjs',
+      'index.d.mts',
+      'index.cjs',
+      'index.d.cts',
+      'package.json',
+      'README.md',
+    ]);
+  });
+
+  await it('Bundles composed client from custom schema dir using --schema-out for dev and --schema for bundle', async () => {
+    await vovkDevAndKill('--schema-out ./custom-schema-dir');
+    await runAtProjectDir(`../dist/index.mjs bundle --log-level debug --schema ./custom-schema-dir`);
+
+    await assertDirFileList('./dist', [
+      'index.mjs',
+      'index.d.mts',
+      'index.cjs',
+      'index.d.cts',
+      'package.json',
+      'README.md',
+    ]);
+  });
+
+  await it('Bundles composed client to an --out dir', async () => {
+    await vovkDevAndKill();
+    await runAtProjectDir(`../dist/index.mjs bundle --out my_dist --log-level debug`);
+
+    await assertDirFileList('./my_dist', [
+      'index.mjs',
+      'index.d.mts',
+      'index.cjs',
+      'index.d.cts',
+      'package.json',
+      'README.md',
+    ]);
+  });
+
+  await it('Builds composed bundle with included segments', async () => {
+    await vovkDevAndKill();
+    await updateConfigProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
+    await updateConfigProperty(
+      path.join(projectDir, 'vovk.config.js'),
+      ['bundle', 'includeSegments'],
+      ['foo', 'bar/baz']
+    );
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',
       'index.d.mts',
       'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.d.cts',
-      'openapi.cjs',
-      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
-    let { schema }: { schema: VovkSchema } = await importFresh<{ schema: VovkSchema }>(
-      path.join(projectDir, 'composed-bundle', 'schema.cjs'),
+
+    const { schema } = await importFresh<{ schema: VovkSchema }>(
+      path.join(projectDir, 'composed-bundle', 'index.cjs'),
       ['schema']
     );
-    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
+    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
+  });
 
-    ({ schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), [
-      'schema',
-    ]));
+  await it('Builds composed bundle with excluded segments', async () => {
+    await vovkDevAndKill();
+    await updateConfigProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
+    await updateConfigProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'excludeSegments'], ['', 'bar/baz']);
+    await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
+    await assertDirFileList('./composed-bundle', [
+      'index.mjs',
+      'index.cjs',
+      'index.d.mts',
+      'index.d.cts',
+      'package.json',
+      'README.md',
+    ]);
+
+    const { schema } = await importFresh<{ schema: VovkSchema }>(
+      path.join(projectDir, 'composed-bundle', 'index.cjs'),
+      ['schema']
+    );
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
   await it('Builds composed bundle with included segments using --include flag', async () => {
     await vovkDevAndKill();
     await runAtProjectDir(
-      `../dist/index.mjs bundle --include foo --include bar/baz --out ./composed-bundle --tsconfig ../tsconfig.test.json --log-level debug`
+      `../dist/index.mjs bundle --include foo --include bar/baz --out ./composed-bundle --log-level debug`
     );
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',
       'index.d.mts',
       'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.d.cts',
-      'openapi.cjs',
-      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
-    let { schema }: { schema: VovkSchema } = await importFresh<{ schema: VovkSchema }>(
-      path.join(projectDir, 'composed-bundle', 'schema.cjs'),
+
+    const { schema } = await importFresh<{ schema: VovkSchema }>(
+      path.join(projectDir, 'composed-bundle', 'index.cjs'),
       ['schema']
     );
-    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
-
-    ({ schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), [
-      'schema',
-    ]));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 
   await it('Builds composed bundle with excluded segments using --exclude flag', async () => {
     await vovkDevAndKill();
     await runAtProjectDir(
-      `../dist/index.mjs bundle --exclude "" --exclude bar/baz --out ./composed-bundle --tsconfig ../tsconfig.test.json --log-level debug`
+      `../dist/index.mjs bundle --exclude "" --exclude bar/baz --out ./composed-bundle --log-level debug`
     );
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',
       'index.d.mts',
       'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.d.cts',
-      'openapi.cjs',
-      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
-    let { schema }: { schema: VovkSchema } = await importFresh<{ schema: VovkSchema }>(
-      path.join(projectDir, 'composed-bundle', 'schema.cjs'),
+
+    const { schema } = await importFresh<{ schema: VovkSchema }>(
+      path.join(projectDir, 'composed-bundle', 'index.cjs'),
       ['schema']
     );
-    deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
-
-    ({ schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), [
-      'schema',
-    ]));
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
@@ -254,7 +196,8 @@ await describe('TypeScript bundle', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
-        tsdownBuildOptions: { outDir: './composed-bundle' },
+        build: () => Promise.resolve(),
+        outDir: './composed-bundle',
         includeSegments: ['foo', 'bar/baz'],
         outputConfig: {
           reExports: {
@@ -281,21 +224,17 @@ await describe('TypeScript bundle', async () => {
         },
       },
     }));
+    await setupBuildConfig();
     await fs.writeFile(path.join(projectDir, 'x.ts'), 'export const x = 1;');
     await fs.writeFile(path.join(projectDir, 'a.ts'), 'export const a = 2;');
     await fs.writeFile(path.join(projectDir, 'foo.ts'), 'export const foo = 3;');
     await fs.writeFile(path.join(projectDir, 'bar.ts'), 'export const bar = 4;');
-    await runAtProjectDir(`../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug`);
+    await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
     await assertDirFileList('./composed-bundle', [
       'index.mjs',
       'index.cjs',
       'index.d.mts',
       'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.d.cts',
-      'openapi.cjs',
-      'openapi.mjs',
       'package.json',
       'README.md',
     ]);
@@ -313,16 +252,17 @@ await describe('TypeScript bundle', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
+        build: () => Promise.resolve(),
         outputConfig: {
           origin: 'https://example.com/',
         },
       },
     }));
 
+    await setupBuildConfig();
+
     await vovkDevAndKill();
-    await runAtProjectDir(
-      `../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug --out ./dist-origin-1`
-    );
+    await runAtProjectDir(`../dist/index.mjs bundle --log-level debug --out ./dist-origin-1`);
     const { UserRPC } = await import(path.join(projectDir, 'dist-origin-1', 'index.mjs'));
 
     strictEqual(UserRPC.createUser.apiRoot, 'https://example.com/api');
@@ -332,15 +272,17 @@ await describe('TypeScript bundle', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
       ...config,
       bundle: {
+        build: () => Promise.resolve(),
         outputConfig: {
           origin: 'https://example.com/', // should be overridden by --origin
         },
       },
     }));
 
+    await setupBuildConfig();
     await vovkDevAndKill();
     await runAtProjectDir(
-      `../dist/index.mjs bundle --tsconfig ../tsconfig.test.json --log-level debug --out ./dist-origin-2 --origin https://example.org/`
+      `../dist/index.mjs bundle --log-level debug --out ./dist-origin-2 --origin https://example.org/`
     );
     const { UserRPC } = await import(path.join(projectDir, 'dist-origin-2', 'index.mjs'));
 

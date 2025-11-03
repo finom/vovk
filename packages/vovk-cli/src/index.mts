@@ -165,7 +165,7 @@ program
     });
     const { cwd, config, log, isNextInstalled } = projectInfo;
     const fullSchema = await getProjectFullSchema({
-      schemaOutAbsolutePath: path.resolve(cwd, cliBundleOptions?.schema ?? config.schemaOutDir),
+      schemaOutAbsolutePath: path.resolve(cwd, cliBundleOptions?.schemaPath ?? config.schemaOutDir),
       log,
       isNextInstalled,
       config,

@@ -8,10 +8,11 @@ exports['<%= reExportWhat.split(/\s+as\s+/)[1] ?? reExportWhat %>'] = require('<
   <% })
 }) %>
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment) => { %>
-  <% Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+  <% Object.keys(segment.controllers).forEach((rpcModuleName) => { 
+    const apiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot; %>
 exports.<%= rpcModuleName %> = createRPC(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', require('<%= t.segmentImports[segment.segmentName].fetcher %>').fetcher,
-  { validateOnClient: <%- t.segmentImports[segment.segmentName].validateOnClient ? `require('${t.segmentImports[segment.segmentName].validateOnClient}').validateOnClient` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
+  { validateOnClient: <%- t.segmentImports[segment.segmentName].validateOnClient ? `require('${t.segmentImports[segment.segmentName].validateOnClient}').validateOnClient` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : apiRoot ? `apiRoot: '${apiRoot}'` : '' %> }
 );
   <% })
 }) %>

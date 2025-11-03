@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { resolveGeneratorConfigValues, type VovkSchema } from 'vovk';
+import { resolveGeneratorConfigValues, VovkStrictConfig, type VovkSchema } from 'vovk';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 export type ClientImports = {
@@ -9,17 +9,28 @@ export type ClientImports = {
 };
 
 export default function getTemplateClientImports({
+  config,
   fullSchema,
   outCwdRelativeDir,
   segmentName,
   isBundle,
+  outputConfigs,
 }: {
+  config: VovkStrictConfig;
   fullSchema: VovkSchema;
   outCwdRelativeDir: string;
   segmentName: string | null;
   isBundle: boolean;
+  outputConfigs: VovkStrictConfig['outputConfig'][];
 }) {
-  const { imports: configImports } = resolveGeneratorConfigValues({ schema: fullSchema, segmentName, isBundle });
+  const { imports: configImports } = resolveGeneratorConfigValues({
+    config,
+    schema: fullSchema,
+    segmentName,
+    isBundle,
+    projectPackageJson: undefined,
+    outputConfigs,
+  });
 
   const validateOnClientImport = configImports?.validateOnClient ?? null;
   const fetcherImport = configImports?.fetcher ?? 'vovk';

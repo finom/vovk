@@ -51,7 +51,6 @@ export interface BundleOptions
   bundler?: 'tsdown' | 'ncc';
   configPath?: string;
   schemaPath?: string;
-  schema?: string;
   outDir?: string;
   origin?: string;
   openapiSpec?: string[];

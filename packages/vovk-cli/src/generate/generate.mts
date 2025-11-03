@@ -3,7 +3,6 @@ import fs from 'node:fs/promises';
 import matter from 'gray-matter';
 import _ from 'lodash';
 import {
-  resolveGeneratorConfigValues,
   openAPIToVovkSchema,
   vovkSchemaToOpenAPI,
   type VovkOpenAPIMixin,
@@ -250,25 +249,22 @@ export async function generate({
               content: string;
             })
           : { data: { imports: [] }, content: templateContent };
+
         const {
           package: packageJson,
           readme,
           origin,
           samples,
           reExports,
-        } = resolveGeneratorConfigValues({
+          openAPIObject,
+        } = vovkSchemaToOpenAPI({
+          config: projectInfo.config,
+          rootEntry: config.rootEntry,
           schema: fullSchema,
-          configs: [{ origin: cliGenerateOptions?.origin }, templateDef.outputConfig ?? {}],
+          outputConfigs: [templateDef.outputConfig ?? {}, { origin: cliGenerateOptions?.origin }],
           projectPackageJson,
           isBundle,
           segmentName: null,
-        });
-
-        // console.log('reExports', fullSchema.meta)
-
-        const openapi = vovkSchemaToOpenAPI({
-          schema: fullSchema,
-          rootEntry: config.rootEntry,
         });
 
         const composedFullSchema = pickSegmentFullSchema(fullSchema, segmentNames);
@@ -286,7 +282,7 @@ export async function generate({
           segmentName: null,
           templateContent,
           matterResult,
-          openapi,
+          openAPIObject,
           package: packageJson,
           readme,
           samples,
@@ -359,20 +355,6 @@ export async function generate({
 
         const results = await Promise.all(
           segmentNames.map(async (segmentName) => {
-            const {
-              package: packageJson,
-              readme,
-              origin,
-              samples,
-              reExports,
-            } = resolveGeneratorConfigValues({
-              schema: fullSchema,
-              configs: [{ origin: cliGenerateOptions?.origin }, templateDef.outputConfig ?? {}],
-              projectPackageJson,
-              segmentName,
-              isBundle,
-            });
-
             const segmentedFullSchema = pickSegmentFullSchema(fullSchema, [segmentName]);
             const hasMixins = Object.values(segmentedFullSchema.segments).some(
               (segment) => segment.segmentType === 'mixin'
@@ -381,10 +363,21 @@ export async function generate({
               return null;
             }
 
-            const openapi = vovkSchemaToOpenAPI({
+            const {
+              package: packageJson,
+              readme,
+              origin,
+              samples,
+              reExports,
+              openAPIObject,
+            } = vovkSchemaToOpenAPI({
+              config: projectInfo.config,
               schema: fullSchema,
               rootEntry: config.rootEntry,
               segmentName,
+              outputConfigs: [templateDef.outputConfig ?? {}, { origin: cliGenerateOptions?.origin }],
+              isBundle,
+              projectPackageJson,
             });
 
             const { written } = await writeOneClientFile({
@@ -396,7 +389,7 @@ export async function generate({
               segmentName,
               templateContent,
               matterResult,
-              openapi,
+              openAPIObject,
               package: packageJson,
               readme,
               samples,

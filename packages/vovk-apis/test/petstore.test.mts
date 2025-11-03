@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import { test, describe } from 'node:test';
-import { type Mixins, PetstoreRPC, schema, openapi } from '../dist/petstore/index.mjs';
+import { type Mixins, PetstoreAPI, schema, openapi } from '../dist/petstore/index.mjs';
 
 describe('Petstore', () => {
-  test('PetstoreRPC and Mixins', async () => {
-    const pet = await PetstoreRPC.addPet({
+  test('PetstoreAPI and Mixins', async () => {
+    const pet = await PetstoreAPI.addPet({
       body: {
         id: 123,
         name: 'Doggie',

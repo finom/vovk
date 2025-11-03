@@ -2,7 +2,12 @@
 import type { VovkFetcher } from 'vovk';
 import { createRPC } from '<%= t.commonImports.module.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
+<% if(t.isBundle) { %>
 import { openapi } from './openapi<%= t.nodeNextResolutionExt.ts %>';
+<% } else { %>
+// TODO: This is a temporary fix https://github.com/rolldown/tsdown/issues/528#issuecomment-3476284358
+import openapi from './openapi.json' with { type: "json" };
+<% } %>
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
 <% }
@@ -14,10 +19,11 @@ import type { Controllers as MixinControllers, Mixins } from "./mixins.d.ts";
 export { <%= reExportWhat %> } from '<%= reExportFrom %>';
 <% }) %>   
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {  
-  Object.keys(segment.controllers).forEach((rpcModuleName) => { %>
+  Object.keys(segment.controllers).forEach((rpcModuleName) => { 
+    const apiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot; %>
 export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].module.fetcher %>').fetcher extends VovkFetcher<infer U> ? U : never>(
   schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', import('<%- t.segmentImports[segment.segmentName].module.fetcher %>'),
-  { validateOnClient: <%- t.segmentImports[segment.segmentName].module.validateOnClient ? `import('${t.segmentImports[segment.segmentName].validateOnClient}')` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : `apiRoot: '${t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot}'` %> }
+  { validateOnClient: <%- t.segmentImports[segment.segmentName].module.validateOnClient ? `import('${t.segmentImports[segment.segmentName].validateOnClient}')` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : apiRoot ? `apiRoot: '${apiRoot}'` : '' %> }
 );
 <% }) 
 }) %>

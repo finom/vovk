@@ -44,7 +44,7 @@ const config = {
             url: 'https://petstore3.swagger.io/api/v3/openapi.json',
             fallback: './.openapi-cache/petstore.json',
           },
-          getModuleName: 'PetstoreRPC',
+          getModuleName: 'PetstoreAPI',
           getMethodName: 'auto',
           apiRoot: 'https://petstore3.swagger.io/api/v3',
         },
@@ -58,7 +58,7 @@ const config = {
           },
           getModuleName: ({ operationObject }) => {
             const [operationNs] = operationObject.operationId?.split('/') ?? ['unknown'];
-            return `Github${startCase(camelCase(operationNs)).replace(/ /g, '')}RPC`;
+            return `Github${startCase(camelCase(operationNs)).replace(/ /g, '')}API`;
           },
           getMethodName: ({ operationObject }) => {
             const [, operationName] = operationObject.operationId?.split('/') ?? ['', 'ERROR'];
@@ -79,7 +79,7 @@ const config = {
             url: 'https://raw.githubusercontent.com/sys-001/telegram-bot-api-versions/refs/heads/main/files/openapi/yaml/v183.yaml',
             fallback: './.openapi-cache/telegram.yaml',
           },
-          getModuleName: 'TelegramRPC',
+          getModuleName: 'TelegramAPI',
           getMethodName: ({ path }) => path.replace(/^\//, ''),
           errorMessageKey: 'description',
         },
