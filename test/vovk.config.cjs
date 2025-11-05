@@ -39,11 +39,20 @@ const vovkConfig = {
     },
   },
   bundle: {
+    build: async ({ entry, outDir }) => {
+      const { build } = await import('tsdown');
+      await build({
+        entry,
+        dts: true,
+        format: ['cjs', 'esm'],
+        hash: false,
+        fixedExtension: true,
+        clean: true,
+        outDir,
+        tsconfig: './tsconfig.tsdown-bundle.json',
+      });
+    },
     outDir: './other-compiled-test-sources/bundle',
-    /* tsdownBuildOptions: {
-      outDir: './other-compiled-test-sources/bundle',
-      tsconfig: './tsconfig.tsdown-bundle.json',
-    }, */
   },
   clientTemplateDefs: {
     py: {

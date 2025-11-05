@@ -78,10 +78,10 @@ describe('resolveGeneratorConfigValues', () => {
             package: { name: 'base-name', version: '1.0.0' },
             segments: {
               users: {
-                package: { version: '2.0.0' },
+                package: { version: '2.0.0', name: 'users-segment' },
               },
               posts: {
-                package: { version: '3.0.0' },
+                package: { version: '3.0.0', name: 'posts-segment' },
               },
             },
           },

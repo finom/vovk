@@ -16,7 +16,7 @@
     "bundle": "node ../packages/vovk-cli/dist/index.mjs bundle --keep-prebundle-dir",
     "generate:py": "node ../packages/vovk-cli/dist/index.mjs generate --composed-schema-json --template=python --composed-schema-json --out ./python",
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh",
-    "build-other-compiled-sources": "rm -rf other-compiled-test-sources && echo 'TODO: npm run bundle' && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
+    "build-other-compiled-sources": "rm -rf other-compiled-test-sources && npm run bundle && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
   },
   "type": "module",
   "dependencies": {
@@ -30,9 +30,10 @@
     "react": "^19",
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
+    "tsdown": "^0.16.0",
     "valibot": "^1.1.0",
     "vovk-client": "^0.0.4-draft.127",
-    "zod": "^4.1.11"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
@@ -45,5 +46,8 @@
     "postcss": "^8",
     "tailwind": "^4.0.0",
     "tailwindcss": "^4"
+  },
+  "overrides": {
+    "rolldown-plugin-dts": "0.17.3"
   }
 }

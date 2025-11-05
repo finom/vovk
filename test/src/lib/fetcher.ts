@@ -1,7 +1,7 @@
 import { createFetcher } from 'vovk';
 
 export const fetcher = createFetcher<{
-  successMessage: string;
+  successMessage?: string;
 }>({
   prepareRequestInit: (init, { successMessage }) => {
     return {
@@ -9,7 +9,7 @@ export const fetcher = createFetcher<{
       headers: {
         ...init.headers,
         'x-vovk-fetcher-header': 'my-header-value',
-        'x-success-message': successMessage,
+        ...(successMessage ? { 'x-success-message': successMessage } : {}),
       },
     };
   },

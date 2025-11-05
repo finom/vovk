@@ -39,6 +39,6 @@
     "@finom/zod-to-json-schema": "^3.24.12"
   },
   "devDependencies": {
-    "zod": "^4.1.11"
+    "zod": "^4.1.12"
   }
 }

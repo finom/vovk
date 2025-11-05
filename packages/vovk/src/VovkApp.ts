@@ -322,7 +322,7 @@ export class VovkApp {
       return this.#respondWithError({
         req,
         statusCode: HttpStatus.NOT_FOUND,
-        message: `${Object.keys(handlers)} - Route ${path.join('/')} is not found`,
+        message: `Route ${path.join('/')} is not found`,
       });
     }
 
