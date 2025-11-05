@@ -24,7 +24,7 @@ await describe('CLI new controller only', async () => {
     await assertFile('src/modules/user/UserController.ts', [
       `export default class UserController {`,
       `@get()
-        static getUsers = async (`,
+        static getUsers = (`,
       `static createUser = `,
       `static updateUser = `,
     ]);
@@ -43,7 +43,7 @@ await describe('CLI new controller only', async () => {
     await assertFile('src/modules/post/PostController.ts', [
       `export default class PostController {`,
       `@get()
-        static getPosts = async (`,
+        static getPosts = (`,
       `static createPost = `,
       `static updatePost = `,
     ]);
@@ -97,7 +97,7 @@ await describe('CLI new controller only', async () => {
     await assertFile('src/modules/foo/user/UserController.ts', [
       `export default class UserController {`,
       `@get()
-        static getUsers = async (`,
+        static getUsers = (`,
       `static createUser = `,
       `static updateUser = `,
     ]);
@@ -228,8 +228,8 @@ await describe('CLI new controller only', async () => {
     await runAtProjectDir('../dist/index.mjs new controller user');
 
     await assertFile('src/modules/user/UserController.ts', [
-      `import { s } from 'valibot';`,
-      `import { withValibot } from 'vovk-valibot';`,
+      `import * as v from 'valibot';`,
+      `import withValibot from '../../lib/withValibot';`,
       `export default class UserController {`,
       `@get()
         static getUsers = withValibot(`,
@@ -262,11 +262,11 @@ await describe('CLI new controller only', async () => {
     await runAtProjectDir('../dist/index.mjs new controller user');
 
     await assertFile('src/modules/user/UserController.ts', [
-      `import { a } from 'arktype';`,
-      `import { withArktype } from 'vovk-arktype';`,
+      `import { type } from 'arktype';`,
+      `import withArk from '../../lib/withArk';`,
       `export default class UserController {`,
       `@get()
-        static getUsers = withArktype(`,
+        static getUsers = withArk(`,
       `static createUser = `,
       `static updateUser = `,
     ]);
