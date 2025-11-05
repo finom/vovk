@@ -140,7 +140,7 @@ export class Init {
       }
 
       if (depsUpdated) {
-        const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun });
+        const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun, pkgJson });
         if (skipInstall) {
           log.info(
             `Installation skipped. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`
@@ -150,12 +150,7 @@ export class Init {
             await installDependencies({
               log,
               cwd: root,
-              options: {
-                useNpm,
-                useYarn,
-                usePnpm,
-                useBun,
-              },
+              packageManager,
             });
 
             log.info('Dependencies installed successfully');

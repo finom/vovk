@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import NPMCliPackageJson from '@npmcli/package-json';
 import getLogger from '../utils/getLogger.mjs';
 import type { InitOptions } from '../types.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
@@ -6,26 +7,25 @@ import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
 
 export function getPackageManager(
-  options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'>
+  options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'> & { pkgJson: NPMCliPackageJson }
 ): PackageManager {
   if (options.useNpm) return 'npm';
   if (options.useYarn) return 'yarn';
   if (options.usePnpm) return 'pnpm';
   if (options.useBun) return 'bun';
-  return 'npm'; // Default to npm if no options are true
+  const packageManager = options.pkgJson.content?.['packageManager'];
+  return packageManager ? (packageManager.split('@')[0] as PackageManager) : 'npm'; // Default to npm if no options are true
 }
 
 export default async function installDependencies({
   log,
   cwd,
-  options,
+  packageManager,
 }: {
   log: ReturnType<typeof getLogger>;
   cwd: string;
-  options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'>;
+  packageManager: PackageManager;
 }): Promise<void> {
-  const packageManager = getPackageManager(options);
-
   log.info(`Installing dependencies at ${chalkHighlightThing(cwd)} using ${chalkHighlightThing(packageManager)}...`);
 
   await new Promise<void>((resolve, reject) => {
