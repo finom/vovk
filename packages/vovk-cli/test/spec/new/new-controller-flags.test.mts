@@ -82,7 +82,7 @@ await describe('CLI new controller and flags', async () => {
     await assertFile('custom-dir/VeryComplexEntityController.ts', [
       `export default class VeryComplexEntityController {`,
       `@get()
-        static getVeryComplexEntities = async (`,
+        static getVeryComplexEntities = (`,
       `static createVeryComplexEntity = `,
       `static updateVeryComplexEntity = `,
     ]);
@@ -114,7 +114,7 @@ await describe('CLI new controller and flags', async () => {
     await assertFile('src/modules/coolRedChair/CoolRedChairController.ts', [
       `export default class CoolRedChairController {`,
       `@get()
-        static getCoolRedChairs = async (`,
+        static getCoolRedChairs = (`,
       `static createCoolRedChair = `,
       `static updateCoolRedChair = `,
     ]);
