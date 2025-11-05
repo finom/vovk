@@ -26,7 +26,7 @@ export const validateOnClient = createValidateOnClient({
         const err = errors.map((e) => Object.values(e.constraints || {}).join(', ')).join(', ');
         throw new HttpException(HttpStatus.NULL, `DTO validation failed. Invalid ${meta.type} on client: ${err}`, {
           [meta.type]: input,
-          validationErrors: errors,
+          errors,
           endpoint: meta.endpoint,
         });
       }

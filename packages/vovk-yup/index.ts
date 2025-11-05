@@ -166,7 +166,7 @@ function withYup<
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
           `Yup validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${getErrorText(e)}`,
-          { [type]: data }
+          { errors: (e as Yup.ValidationError).errors }
         );
       }
     },

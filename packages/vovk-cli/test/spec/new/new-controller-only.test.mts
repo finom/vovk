@@ -3,7 +3,7 @@ import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 
 await describe('CLI new controller only', async () => {
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
+  const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir',
   });
@@ -52,6 +52,26 @@ await describe('CLI new controller only', async () => {
       `const controllers = {
         UserRPC: UserController,
         PostRPC: PostController,
+      };`,
+      `initSegment({
+        emitSchema: true,
+        controllers, 
+      });`,
+    ]);
+  });
+
+  await it('New --empty controller only', async () => {
+    await createNextApp();
+    await vovkInit('--yes');
+    await runAtProjectDir('../dist/index.mjs new segment');
+    await runAtProjectDir('../dist/index.mjs new controller user --empty');
+
+    await assertFile('src/modules/user/UserController.ts', [`export default class UserController {}`]);
+    await assertNotExists('src/modules/user/UserService.ts');
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `import UserController from '../../../modules/user/UserController';`,
+      `const controllers = {
+        UserRPC: UserController,
       };`,
       `initSegment({
         emitSchema: true,
@@ -179,6 +199,74 @@ await describe('CLI new controller only', async () => {
       `export default class UserController {`,
       `@get()
         static getUsers = withDto(`,
+      `static createUser = `,
+      `static updateUser = `,
+    ]);
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `import UserController from '../../../modules/user/UserController';`,
+      `const controllers = {
+        UserRPC: UserController,
+      };`,
+      `initSegment({
+        emitSchema: true,
+        controllers, 
+      });`,
+    ]);
+  });
+
+  await it('New controller with valibot validation library', async () => {
+    await createNextApp();
+    await vovkInit('--yes --validation-library=valibot');
+    await runAtProjectDir('../dist/index.mjs new segment');
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `const controllers = {};`,
+      `initSegment({
+        emitSchema: true,
+        controllers, 
+      });`,
+    ]);
+    await runAtProjectDir('../dist/index.mjs new controller user');
+
+    await assertFile('src/modules/user/UserController.ts', [
+      `import { s } from 'valibot';`,
+      `import { withValibot } from 'vovk-valibot';`,
+      `export default class UserController {`,
+      `@get()
+        static getUsers = withValibot(`,
+      `static createUser = `,
+      `static updateUser = `,
+    ]);
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `import UserController from '../../../modules/user/UserController';`,
+      `const controllers = {
+        UserRPC: UserController,
+      };`,
+      `initSegment({
+        emitSchema: true,
+        controllers, 
+      });`,
+    ]);
+  });
+
+  await it('New controller with arktype validation library', async () => {
+    await createNextApp();
+    await vovkInit('--yes --validation-library=arktype');
+    await runAtProjectDir('../dist/index.mjs new segment');
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [
+      `const controllers = {};`,
+      `initSegment({
+        emitSchema: true,
+        controllers, 
+      });`,
+    ]);
+    await runAtProjectDir('../dist/index.mjs new controller user');
+
+    await assertFile('src/modules/user/UserController.ts', [
+      `import { a } from 'arktype';`,
+      `import { withArktype } from 'vovk-arktype';`,
+      `export default class UserController {`,
+      `@get()
+        static getUsers = withArktype(`,
       `static createUser = `,
       `static updateUser = `,
     ]);

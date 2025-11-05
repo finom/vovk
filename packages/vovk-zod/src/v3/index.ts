@@ -81,7 +81,7 @@ function withZod<
         throw new HttpException(
           HttpStatus.BAD_REQUEST,
           `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${getErrorText(e)}`,
-          { [type]: data }
+          { errors: (e as z.ZodError).errors }
         );
       }
     },

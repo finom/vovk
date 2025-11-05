@@ -173,7 +173,7 @@ function withDto<
         throw new HttpException(
           status ?? HttpStatus.BAD_REQUEST,
           `DTO validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${err}`,
-          { errorStr: errors.toString() }
+          { errors }
         );
       }
 

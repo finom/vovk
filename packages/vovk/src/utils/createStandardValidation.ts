@@ -86,7 +86,7 @@ export function createStandardValidation({
             `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${result.issues
               .map(({ message, path }) => `${message}${path ? ` at ${path.join('.')}` : ''}`)
               .join(', ')}`,
-            { [type]: data, result }
+            { issues: result.issues }
           );
         }
 
