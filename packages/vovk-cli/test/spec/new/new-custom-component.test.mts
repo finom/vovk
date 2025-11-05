@@ -34,7 +34,7 @@ await describe('Custom components', async () => {
     await assertFile('src/modules/user/UserController.ts', [
       `export default class UserController {`,
       `@get()
-          static getUsers = async (`,
+          static getUsers = (`,
       `static createUser = `,
       `static updateUser = `,
     ]);
