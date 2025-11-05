@@ -114,6 +114,7 @@ export class Init {
 
     if (!dryRun && pkgJson) {
       let depsUpdated = false;
+      const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun, pkgJson });
       try {
         await updateDependenciesWithoutInstalling({
           log,
@@ -129,10 +130,7 @@ export class Init {
         logUpdateDependenciesError({
           log,
           error,
-          useNpm,
-          useYarn,
-          usePnpm,
-          useBun,
+          packageManager,
           dependencies,
           devDependencies,
           channel,
@@ -140,7 +138,6 @@ export class Init {
       }
 
       if (depsUpdated) {
-        const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun, pkgJson });
         if (skipInstall) {
           log.info(
             `Installation skipped. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`

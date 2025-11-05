@@ -1,30 +1,23 @@
 import type { InitOptions } from '../types.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 import type getLogger from '../utils/getLogger.mjs';
-import { getPackageManager } from './installDependencies.mjs';
+import type { PackageManager } from './installDependencies.mjs';
 
 export default function logUpdateDependenciesError({
-  useNpm,
-  useYarn,
-  usePnpm,
-  useBun,
+  packageManager,
   log,
   dependencies,
   devDependencies,
   error,
   channel,
 }: {
-  useNpm?: boolean;
-  useYarn?: boolean;
-  usePnpm?: boolean;
-  useBun?: boolean;
+  packageManager: PackageManager;
   log: ReturnType<typeof getLogger>;
   dependencies: string[];
   devDependencies: string[];
   error: Error;
   channel: InitOptions['channel'];
 }) {
-  const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun });
   const installCommands: string[] = [];
 
   const addChannel = (packageName: string) => {

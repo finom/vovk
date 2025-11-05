@@ -41,7 +41,7 @@ await describe.only('CLI new controller and service', async () => {
       `import UserService from './UserService';`,
       `export default class UserController {`,
       `@get()
-      static getUsers = async (`,
+      static getUsers = (`,
       `static createUser = `,
       `static updateUser = `,
     ]);

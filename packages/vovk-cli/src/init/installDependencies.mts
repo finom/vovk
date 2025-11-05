@@ -4,7 +4,7 @@ import getLogger from '../utils/getLogger.mjs';
 import type { InitOptions } from '../types.mjs';
 import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
 
-type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
+export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
 
 export function getPackageManager(
   options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'> & { pkgJson: NPMCliPackageJson }
