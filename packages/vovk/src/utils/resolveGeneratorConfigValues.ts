@@ -1,25 +1,16 @@
 import type { PackageJson } from 'type-fest';
-import type {
-  VovkOutputConfig,
-  VovkPackageJson,
-  VovkReadmeConfig,
-  VovkSamplesConfig,
-  VovkSchema,
-  VovkStrictConfig,
-} from '../types';
+import type { VovkConfig, VovkOutputConfig, VovkPackageJson, VovkReadmeConfig, VovkSamplesConfig } from '../types';
 import deepExtend from './deepExtend';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
 export function resolveGeneratorConfigValues({
   config,
-  schema,
   outputConfigs,
   segmentName,
   isBundle,
   projectPackageJson,
 }: {
-  config: VovkStrictConfig | undefined;
-  schema: VovkSchema;
+  config: VovkConfig | undefined;
   outputConfigs: VovkOutputConfig[];
   segmentName: string | null;
   isBundle: boolean;
@@ -56,7 +47,6 @@ export function resolveGeneratorConfigValues({
     ) as PackageJson,
     config?.outputConfig?.package,
     isBundle ? config?.bundle?.outputConfig?.package : undefined,
-    typeof segmentName === 'string' ? schema.segments?.[segmentName]?.meta?.package : undefined,
     typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.package : undefined,
     outputConfigs?.reduce((acc, config) => deepExtend(acc, config.package), {} as PackageJson)
   );
@@ -75,7 +65,6 @@ export function resolveGeneratorConfigValues({
       },
       config?.outputConfig?.openAPIObject,
       isBundle ? config?.bundle?.outputConfig?.openAPIObject : undefined,
-      typeof segmentName === 'string' ? schema?.segments?.[segmentName]?.meta?.openAPIObject : undefined,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.openAPIObject : undefined,
       outputConfigs?.reduce((acc, config) => deepExtend(acc, config.openAPIObject), {} as OpenAPIObject)
     ),

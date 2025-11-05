@@ -35,7 +35,7 @@ export default async function getConfig({
   const config: VovkStrictConfig = {
     $schema: VovkSchemaIdEnum.CONFIG,
     clientTemplateDefs,
-    emitConfig: [],
+    exposeConfigKeys: [],
     composedClient: {
       ...conf.composedClient,
       enabled: conf.composedClient?.enabled ?? true,
@@ -97,13 +97,13 @@ export default async function getConfig({
     },
   };
 
-  if (typeof conf.emitConfig === 'undefined') {
-    config.emitConfig = ['libs'] satisfies (keyof VovkStrictConfig)[];
-  } else if (conf.emitConfig === true) {
-    config.emitConfig = Object.keys(config) as (keyof VovkStrictConfig)[];
-  } else if (Array.isArray(conf.emitConfig)) {
-    config.emitConfig = conf.emitConfig;
-  } // else it's false and emitConfig already is []
+  if (typeof conf.exposeConfigKeys === 'undefined') {
+    config.exposeConfigKeys = ['libs'] satisfies (keyof VovkStrictConfig)[];
+  } else if (conf.exposeConfigKeys === true) {
+    config.exposeConfigKeys = Object.keys(config) as (keyof VovkStrictConfig)[];
+  } else if (Array.isArray(conf.exposeConfigKeys)) {
+    config.exposeConfigKeys = conf.exposeConfigKeys;
+  } // else it's false and exposeConfigKeys already is []
 
   if (!userConfig) {
     log.warn(`Unable to load config at ${chalkHighlightThing(cwd)}. Using default values. ${error ?? ''}`);

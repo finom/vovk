@@ -25,7 +25,6 @@ export default function getTemplateClientImports({
 }) {
   const { imports: configImports } = resolveGeneratorConfigValues({
     config,
-    schema: fullSchema,
     segmentName,
     isBundle,
     projectPackageJson: undefined,

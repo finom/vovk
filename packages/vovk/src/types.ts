@@ -412,12 +412,7 @@ export type VovkSamplesConfig = {
   headers?: Record<string, string>;
 };
 
-type ClientConfigCommon = {
-  enabled?: boolean;
-  outDir?: string;
-  fromTemplates?: string[];
-  prettifyClient?: boolean;
-} & (
+type IncludeExcludeSegments =
   | {
       excludeSegments?: never;
       includeSegments?: string[];
@@ -425,8 +420,14 @@ type ClientConfigCommon = {
   | {
       excludeSegments?: string[];
       includeSegments?: never;
-    }
-);
+    };
+
+type ClientConfigCommon = {
+  enabled?: boolean;
+  outDir?: string;
+  fromTemplates?: string[];
+  prettifyClient?: boolean;
+} & IncludeExcludeSegments;
 
 type ClientConfigComposed = ClientConfigCommon;
 
@@ -439,16 +440,7 @@ type BundleConfig = {
   outDir?: string;
   build: (options: { outDir: string; prebundleDir: string; entry: string }) => Promise<void>;
   outputConfig?: VovkOutputConfig<GeneratorConfigImports>;
-} & (
-  | {
-      excludeSegments?: never;
-      includeSegments?: string[];
-    }
-  | {
-      excludeSegments?: string[];
-      includeSegments?: never;
-    }
-);
+} & IncludeExcludeSegments;
 
 type GeneratorConfigImports = {
   fetcher?: string | [string, string] | [string];
@@ -532,13 +524,13 @@ export interface VovkSegmentConfig extends VovkOutputConfig<SegmentConfigImports
 
 type VovkUserConfig = {
   $schema?: typeof VovkSchemaIdEnum.CONFIG | (string & {});
-  emitConfig?: boolean | (keyof VovkStrictConfig | (string & {}))[];
+  exposeConfigKeys?: boolean | (keyof VovkStrictConfig | (string & {}))[];
   schemaOutDir?: string;
   modulesDir?: string;
   rootEntry?: string;
   logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn' | (string & {});
   libs?: {
-    ajv: KnownAny; // set by providing the typedoc comment in config
+    ajv?: KnownAny; // set by providing the typedoc comment in config
     [key: string]: KnownAny;
   };
   devHttps?: boolean;
@@ -560,10 +552,11 @@ type VovkUserConfig = {
 export type VovkConfig = VovkUserConfig;
 
 export type VovkStrictConfig = Required<
-  Omit<VovkUserConfig, 'emitConfig' | 'libs' | 'composedClient' | 'segmentedClient' | 'bundle'>
+  Omit<VovkUserConfig, 'exposeConfigKeys' | 'libs' | 'composedClient' | 'segmentedClient' | 'bundle'>
 > & {
-  emitConfig: (keyof VovkStrictConfig | string)[];
-  bundle: RequireAllExcept<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>;
+  exposeConfigKeys: (keyof VovkStrictConfig | string)[];
+  bundle: Required<Omit<NonNullable<VovkUserConfig['bundle']>, 'includeSegments' | 'excludeSegments'>> &
+    IncludeExcludeSegments;
   libs: Record<string, KnownAny>;
   composedClient: RequireFields<ClientConfigComposed, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
   segmentedClient: RequireFields<ClientConfigSegmented, 'enabled' | 'fromTemplates' | 'outDir' | 'prettifyClient'>;
@@ -574,7 +567,6 @@ export type VovkStrictConfig = Required<
 
 // utils
 export type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
-export type RequireAllExcept<T, K extends keyof T> = Required<Omit<T, K>> & Pick<T, K>;
 export type IsEmptyObject<T> = T extends object
   ? keyof T extends never
     ? true // Empty object

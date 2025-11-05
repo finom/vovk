@@ -155,7 +155,7 @@ export default async function writeOneClientFile({
     YAML,
     TOML,
     getFirstLineBanner,
-    publicMeta: getMetaSchema({ config: projectConfig, useEmitConfig: true }),
+    publicMeta: getMetaSchema({ config: projectConfig, useexposeConfigKeys: true }),
     nodeNextResolutionExt: {
       ts: isNodeNextResolution ? '.ts' : '',
       js: isNodeNextResolution ? '.js' : '',

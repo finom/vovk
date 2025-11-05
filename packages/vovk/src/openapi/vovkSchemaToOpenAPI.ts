@@ -101,7 +101,6 @@ export function vovkSchemaToOpenAPI({
     reExports,
   } = resolveGeneratorConfigValues({
     config,
-    schema: fullSchema,
     outputConfigs,
     isBundle,
     segmentName: givenSegmentName ?? null,

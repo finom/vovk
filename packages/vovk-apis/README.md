@@ -7,11 +7,11 @@
     </picture>
   </a>
   <br>
-  <strong>Back-end for <a href="https://nextjs.org/">Next.js</a></strong>
+  <strong>Back-end for Next.js</strong>
 </p>
 
 ---
 
-## vovk [![npm version](https://badge.fury.io/js/vovk-apis.svg)](https://www.npmjs.com/package/vovk-apis) (WIP)
+## vovk [![npm version](https://badge.fury.io/js/vovk-apis.svg)](https://www.npmjs.com/package/vovk-apis) (to be deleted)
 
 Alternative clients for most common APIs.

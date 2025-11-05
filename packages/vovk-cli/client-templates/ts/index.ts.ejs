@@ -5,7 +5,8 @@ import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
 <% if(t.isBundle) { %>
 import { openapi } from './openapi<%= t.nodeNextResolutionExt.ts %>';
 <% } else { %>
-// TODO: This is a temporary fix https://github.com/rolldown/tsdown/issues/528#issuecomment-3476284358
+// import { openapi } from './openapi<%= t.nodeNextResolutionExt.ts %>';
+// TODO: This is a temporary fix for https://github.com/rolldown/tsdown/issues/528#issuecomment-3476284358
 import openapi from './openapi.json' with { type: "json" };
 <% } %>
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
@@ -17,7 +18,7 @@ import type { Controllers as MixinControllers, Mixins } from "./mixins.d.ts";
 <% } %>
 <% Object.entries(t.reExports).forEach(([reExportWhat, reExportFrom]) => { %>
 export { <%= reExportWhat %> } from '<%= reExportFrom %>';
-<% }) %>   
+<% }) %>
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {  
   Object.keys(segment.controllers).forEach((rpcModuleName) => { 
     const apiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot; %>

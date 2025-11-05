@@ -3,11 +3,11 @@ import pick from 'lodash/pick.js';
 import mapValues from 'lodash/mapValues.js';
 import omit from 'lodash/omit.js';
 
-export default function getMetaSchema({ config, useEmitConfig }: { config: VovkStrictConfig; useEmitConfig: boolean }) {
+export default function getMetaSchema({ config, useexposeConfigKeys }: { config: VovkStrictConfig; useexposeConfigKeys: boolean }) {
   return {
     $schema: VovkSchemaIdEnum.META,
     ...{
-      config: useEmitConfig
+      config: useexposeConfigKeys
         ? ((config
             ? pick(
                 {
@@ -22,7 +22,7 @@ export default function getMetaSchema({ config, useEmitConfig }: { config: VovkS
                       }
                     : undefined,
                 },
-                [...(config.emitConfig as (keyof VovkConfig)[]), '$schema']
+                [...(config.exposeConfigKeys as (keyof VovkConfig)[]), '$schema']
               )
             : {}) as VovkStrictConfig)
         : config,

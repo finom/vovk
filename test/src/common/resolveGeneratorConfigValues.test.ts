@@ -1,29 +1,32 @@
 import { describe, it } from 'node:test';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import type { PackageJson } from 'type-fest';
-import {
-  type VovkSchema,
-  type VovkOutputConfigCommon,
-  resolveGeneratorConfigValues,
-  type KnownAny,
-  type VovkStrictConfig,
-} from 'vovk';
+import { resolveGeneratorConfigValues, type VovkOutputConfig, type KnownAny, type VovkStrictConfig } from 'vovk';
 
 describe('resolveGeneratorConfigValues', () => {
   describe('Basic Configuration Resolution', () => {
     it('should handle minimal schema with only required fields', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-      };
-
       const result = resolveGeneratorConfigValues({
-        schema,
+        config: undefined,
+        outputConfigs: [],
         segmentName: null,
+        isBundle: false,
+        projectPackageJson: undefined,
       });
 
       // Check defaults
-      deepStrictEqual(result.package, {});
+      deepStrictEqual(result.package, {
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
+      });
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
         fetcher: ['vovk'],
@@ -35,140 +38,73 @@ describe('resolveGeneratorConfigValues', () => {
       deepStrictEqual(result.samples, {});
     });
 
-    it('should handle empty configs array', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              origin: 'https://api.example.com',
-            },
-          },
-        },
-      };
-
-      const result = resolveGeneratorConfigValues({
-        schema,
-        configs: [],
-        segmentName: null,
-      });
-
-      strictEqual(result.origin, 'https://api.example.com');
-    });
-
-    it('should handle null segmentName (composed client)', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {
-          users: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'users',
-            segmentType: 'segment',
-            controllers: {},
-          },
-          posts: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'posts',
-            segmentType: 'segment',
-            controllers: {},
-          },
-        },
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              segments: {
-                users: { reExports: { User: './types/User' } },
-                posts: { reExports: { Post: './types/Post' } },
-              },
-            },
-          },
-        },
-      };
-
-      const result = resolveGeneratorConfigValues({
-        schema,
-        segmentName: null,
-      });
-
-      // Should aggregate reExports from all segments
-      deepStrictEqual(result.reExports, {
-        User: './types/User',
-        Post: './types/Post',
-      });
-    });
-
     it('should handle empty string segmentName (root segment)', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {
-          '': {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: '',
-            segmentType: 'segment',
-            controllers: {},
-            meta: {
-              package: { name: 'root-segment' },
-            },
-          },
-        },
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              segments: {
-                '': {
-                  package: { version: '1.0.0' },
-                },
+      const result = resolveGeneratorConfigValues({
+        config: {
+          outputConfig: {
+            segments: {
+              '': {
+                package: { version: '1.0.0' },
               },
             },
           },
         },
-      };
-
-      const result = resolveGeneratorConfigValues({
-        schema,
+        outputConfigs: [{ package: { name: 'root-segment' } }],
         segmentName: '',
+        isBundle: false,
+        projectPackageJson: undefined,
       });
 
       deepStrictEqual(result.package, {
         name: 'root-segment',
         version: '1.0.0',
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
       });
     });
 
     it('should handle specific segment name', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {
-          users: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'users',
-            segmentType: 'segment',
-            controllers: {},
-            meta: {
-              package: { name: 'users-segment' },
+      const result = resolveGeneratorConfigValues({
+        config: {
+          outputConfig: {
+            package: { name: 'base-name', version: '1.0.0' },
+            segments: {
+              users: {
+                package: { version: '2.0.0' },
+              },
+              posts: {
+                package: { version: '3.0.0' },
+              },
             },
           },
         },
-      };
-
-      const result = resolveGeneratorConfigValues({
-        schema,
+        outputConfigs: [],
         segmentName: 'users',
+        isBundle: false,
+        projectPackageJson: undefined,
       });
 
       deepStrictEqual(result.package, {
+        version: '2.0.0',
         name: 'users-segment',
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
       });
     });
   });
@@ -181,62 +117,41 @@ describe('resolveGeneratorConfigValues', () => {
         description: 'project description',
       };
 
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {
-          test: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'test',
-            segmentType: 'segment',
-            controllers: {},
-            meta: {
-              package: {
-                name: 'segment-package',
-                version: '0.3.0',
-              },
-            },
-          },
-        },
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              package: {
-                name: 'schema-package',
-                version: '0.2.0',
-                license: 'MIT',
-              },
-              segments: {
-                test: {
-                  package: {
-                    version: '0.4.0',
-                    authors: ['test-author'],
-                  },
-                },
-              },
-            },
-            bundle: {
-              outputConfig: {
-                package: {
-                  version: '0.5.0',
-                  homepage: 'https://bundle.example.com',
-                },
-              },
-            } as VovkStrictConfig['bundle'],
-          },
-        },
-      };
-
-      const configs: VovkOutputConfigCommon[] = [
+      const outputConfigs: VovkOutputConfig[] = [
         { package: { version: '0.6.0' } },
         { package: { keywords: ['api', 'vovk'] } },
       ];
 
       const result = resolveGeneratorConfigValues({
-        schema,
-        configs,
+        config: {
+          $schema: 'https://vovk.dev/api/schema/v3/config.json',
+          outputConfig: {
+            package: {
+              name: 'schema-package',
+              version: '0.2.0',
+              license: 'NONE',
+            },
+            segments: {
+              test: {
+                package: {
+                  version: '0.4.0',
+                  authors: ['test-author'],
+                  name: 'segment-package',
+                },
+              },
+            },
+          },
+          bundle: {
+            build: () => Promise.resolve(),
+            outputConfig: {
+              package: {
+                version: '0.5.0',
+                homepage: 'https://bundle.example.com',
+              },
+            },
+          },
+        },
+        outputConfigs,
         segmentName: 'test',
         isBundle: true,
         projectPackageJson,
@@ -244,39 +159,28 @@ describe('resolveGeneratorConfigValues', () => {
 
       // Final merged result should follow precedence
       deepStrictEqual(result.package, {
-        name: 'segment-package', // from segment meta
+        name: 'segment-package', // from segment outputConfig
         version: '0.6.0', // from configs array (last override)
         description: 'project description', // from projectPackageJson
-        license: 'MIT', // from schema outputConfig
+        license: 'NONE', // from schema outputConfig
         authors: ['test-author'], // from segment outputConfig
         homepage: 'https://bundle.example.com', // from bundle
         keywords: ['api', 'vovk'], // from configs array
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
       });
     });
 
     it('should apply correct merge order for openAPIObject', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              openAPIObject: {
-                info: {
-                  title: 'Base API',
-                  version: '1.0.0',
-                  description: 'Base description',
-                },
-                servers: [{ url: 'https://api.example.com' }],
-              },
-            },
-          },
-        },
-      };
-
-      const configs: VovkOutputConfigCommon[] = [
+      const outputConfigs: VovkOutputConfig[] = [
         {
           openAPIObject: {
             info: {
@@ -289,9 +193,22 @@ describe('resolveGeneratorConfigValues', () => {
       ];
 
       const result = resolveGeneratorConfigValues({
-        schema,
-        configs,
+        config: {
+          outputConfig: {
+            openAPIObject: {
+              info: {
+                title: 'Base API',
+                version: '1.0.0',
+                description: 'Base description',
+              },
+              servers: [{ url: 'https://api.example.com' }],
+            },
+          },
+        },
+        outputConfigs,
         segmentName: null,
+        isBundle: false,
+        projectPackageJson: undefined,
       });
 
       deepStrictEqual(result.openAPIObject.info, {
@@ -303,41 +220,33 @@ describe('resolveGeneratorConfigValues', () => {
     });
 
     it('should handle origin field with last wins behavior', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              origin: 'https://first.example.com',
-              segments: {
-                test: {
-                  origin: 'https://segment.example.com',
-                },
-              },
-            },
-            bundle: {
-              outputConfig: {
-                origin: 'https://bundle.example.com',
-              },
-            } as VovkStrictConfig['bundle'],
-          },
-        },
-      };
-
-      const configs: VovkOutputConfigCommon[] = [
+      const outputConfigs: VovkOutputConfig[] = [
         { origin: 'https://config1.example.com' },
         { origin: null },
         { origin: 'https://config2.example.com' },
       ];
 
       const result = resolveGeneratorConfigValues({
-        schema,
-        configs,
+        config: {
+          $schema: 'https://vovk.dev/api/schema/v3/config.json',
+          outputConfig: {
+            origin: 'https://first.example.com',
+            segments: {
+              test: {
+                origin: 'https://segment.example.com',
+              },
+            },
+          },
+          bundle: {
+            outputConfig: {
+              origin: 'https://bundle.example.com',
+            },
+          } as VovkStrictConfig['bundle'],
+        },
+        outputConfigs,
         segmentName: 'test',
         isBundle: true,
+        projectPackageJson: undefined,
       });
 
       // Should take the last non-null value
@@ -345,150 +254,142 @@ describe('resolveGeneratorConfigValues', () => {
     });
 
     it('should merge imports with defaults', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              imports: {
-                fetcher: '@custom/fetcher',
-                validateOnClient: '@custom/validator',
-              },
-            },
-          },
-        },
-      };
-
-      const configs: VovkOutputConfigCommon[] = [
+      const outputConfigs: VovkOutputConfig[] = [
         {
           imports: {
-            createRPC: ['@custom/rpc', 'createCustomRPC'],
+            createRPC: ['createRPCCommon', 'createRPCESM'],
           },
         },
       ];
 
       const result = resolveGeneratorConfigValues({
-        schema,
-        configs,
+        config: {
+          $schema: 'https://vovk.dev/api/schema/v3/config.json',
+          outputConfig: {
+            imports: {
+              fetcher: '@custom/fetcher',
+              validateOnClient: '@custom/validator',
+            },
+          },
+        },
+        outputConfigs,
         segmentName: null,
+        isBundle: false,
+        projectPackageJson: undefined,
       });
 
       deepStrictEqual(result.imports, {
         fetcher: '@custom/fetcher',
         validateOnClient: '@custom/validator',
-        createRPC: ['@custom/rpc', 'createCustomRPC'],
+        createRPC: ['createRPCCommon', 'createRPCESM'],
       });
     });
   });
 
   describe('Bundle-Specific Tests', () => {
     it('should include bundle configs when isBundle is true', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
+      const result = resolveGeneratorConfigValues({
+        config: {
+          outputConfig: {
+            package: { name: 'base' },
+          },
+          bundle: {
+            build: () => Promise.resolve(),
             outputConfig: {
-              package: { name: 'base' },
+              package: { name: 'bundled' },
+              origin: 'https://bundle.example.com',
             },
-            bundle: {
-              outputConfig: {
-                package: { name: 'bundled' },
-                origin: 'https://bundle.example.com',
-              },
-            } as VovkStrictConfig['bundle'],
           },
         },
-      };
-
-      const result = resolveGeneratorConfigValues({
-        schema,
         segmentName: null,
         isBundle: true,
+        projectPackageJson: undefined,
+        outputConfigs: [],
       });
 
-      deepStrictEqual(result.package, { name: 'bundled' });
+      deepStrictEqual(result.package, {
+        name: 'bundled',
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
+      });
       strictEqual(result.origin, 'https://bundle.example.com');
     });
 
     it('should ignore bundle configs when isBundle is false', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              package: { name: 'base' },
-            },
-            bundle: {
-              outputConfig: {
-                package: { name: 'bundled' },
-                origin: 'https://bundle.example.com',
-              },
-            } as VovkStrictConfig['bundle'],
-          },
-        },
-      };
-
       const result = resolveGeneratorConfigValues({
-        schema,
+        config: {
+          $schema: 'https://vovk.dev/api/schema/v3/config.json',
+          outputConfig: {
+            package: { name: 'base' },
+          },
+          bundle: {
+            outputConfig: {
+              package: { name: 'bundled' },
+              origin: 'https://bundle.example.com',
+            },
+          } as VovkStrictConfig['bundle'],
+        },
         segmentName: null,
         isBundle: false,
+        projectPackageJson: undefined,
+        outputConfigs: [],
       });
 
-      deepStrictEqual(result.package, { name: 'base' });
+      deepStrictEqual(result.package, {
+        name: 'base',
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
+      });
       strictEqual(result.origin, '');
     });
   });
 
   describe('Segment-Specific Tests', () => {
     it('should handle valid segment name', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {
-          users: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'users',
-            segmentType: 'segment',
-            controllers: {},
-            meta: {
-              package: { name: 'users-api' },
-              openAPIObject: {
-                info: { title: 'Users API', version: '1.0.0' },
-              },
-            },
-          },
-        },
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              segments: {
-                users: {
-                  origin: 'https://users.example.com',
-                  reExports: { User: './models/User' },
+      const result = resolveGeneratorConfigValues({
+        config: {
+          outputConfig: {
+            segments: {
+              users: {
+                origin: 'https://users.example.com',
+                reExports: { User: './models/User' },
+                package: { name: 'users-api' },
+                openAPIObject: {
+                  info: { title: 'Users API', version: '1.0.0' },
                 },
               },
             },
           },
         },
-      };
-
-      const result = resolveGeneratorConfigValues({
-        schema,
         segmentName: 'users',
+        isBundle: false,
+        projectPackageJson: undefined,
+        outputConfigs: [],
       });
 
-      deepStrictEqual(result.package, { name: 'users-api' });
+      deepStrictEqual(result.package, {
+        name: 'users-api',
+        exports: { '.': { import: './index.mjs', require: './index.cjs', types: './index.d.mts' } },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
+      });
       strictEqual(result.origin, 'https://users.example.com');
       deepStrictEqual(result.reExports, { User: './models/User' });
       deepStrictEqual(result.openAPIObject.info, {
@@ -499,76 +400,47 @@ describe('resolveGeneratorConfigValues', () => {
     });
 
     it('should ignore non-existent segment name', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {
-          users: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'users',
-            segmentType: 'segment',
-            controllers: {},
-            meta: {
-              package: { name: 'users-api' },
-            },
-          },
-        },
-      };
-
       const result = resolveGeneratorConfigValues({
-        schema,
-        segmentName: 'nonexistent',
-      });
-
-      // Should not include segment-specific configs
-      deepStrictEqual(result.package, {});
-    });
-
-    it('should aggregate reExports for composed client', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {
-          users: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'users',
-            segmentType: 'segment',
-            controllers: {},
-          },
-          posts: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'posts',
-            segmentType: 'segment',
-            controllers: {},
-          },
-          comments: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'comments',
-            segmentType: 'segment',
-            controllers: {},
-          },
-        },
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              reExports: { Base: './base' },
-              segments: {
-                users: { reExports: { User: './User', Profile: './Profile' } },
-                posts: { reExports: { Post: './Post' } },
-                comments: { reExports: { Comment: './Comment' } },
+        config: {
+          outputConfig: {
+            segments: {
+              users: {
+                package: { name: 'users-api' },
               },
             },
           },
         },
-      };
+        segmentName: 'nonexistent',
+        isBundle: false,
+        projectPackageJson: undefined,
+        outputConfigs: [],
+      });
 
+      // Should not include segment-specific configs
+      deepStrictEqual(result.package, {
+        exports: { '.': { import: './index.mjs', require: './index.cjs', types: './index.d.mts' } },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
+      });
+    });
+
+    it('should aggregate reExports for composed client', () => {
       const result = resolveGeneratorConfigValues({
-        schema,
+        config: {
+          outputConfig: {
+            reExports: { Base: './base' },
+            segments: {
+              users: { reExports: { User: './User', Profile: './Profile' } },
+              posts: { reExports: { Post: './Post' } },
+              comments: { reExports: { Comment: './Comment' } },
+            },
+          },
+        },
         segmentName: null, // composed client
+        isBundle: false,
+        projectPackageJson: undefined,
+        outputConfigs: [],
       });
 
       // Should merge base reExports with all segments' reExports
@@ -595,9 +467,9 @@ describe('resolveGeneratorConfigValues', () => {
         bugs: { url: 'https://github.com/test/repo/issues' },
         keywords: ['test', 'api'],
         // These should be filtered out
-        main: './src/index.js',
-        module: './dist/index.mjs',
-        types: './dist/index.d.ts',
+        main: './src/xxx.js',
+        module: './dist/xxx.mjs',
+        types: './dist/xxx.d.ts',
         scripts: { test: 'jest' },
         dependencies: { vovk: '^1.0.0' },
         devDependencies: { jest: '^29.0.0' },
@@ -607,10 +479,9 @@ describe('resolveGeneratorConfigValues', () => {
       };
 
       const result = resolveGeneratorConfigValues({
-        schema: {
-          $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-          segments: {},
-        },
+        config: undefined,
+        outputConfigs: [],
+        isBundle: false,
         segmentName: null,
         projectPackageJson,
       });
@@ -626,61 +497,50 @@ describe('resolveGeneratorConfigValues', () => {
         homepage: 'https://example.com',
         bugs: { url: 'https://github.com/test/repo/issues' },
         keywords: ['test', 'api'],
-      });
 
-      // Verify excluded fields are not present
-      strictEqual('main' in result.package, false);
-      strictEqual('scripts' in result.package, false);
-      strictEqual('dependencies' in result.package, false);
-    });
-
-    it('should handle missing allowed fields gracefully', () => {
-      const projectPackageJson: PackageJson = {
-        name: 'minimal-project',
-        // Only name is provided
-        scripts: { test: 'jest' }, // Should be filtered out
-      };
-
-      const result = resolveGeneratorConfigValues({
-        schema: {
-          $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-          segments: {},
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
         },
-        segmentName: null,
-        projectPackageJson,
-      });
-
-      deepStrictEqual(result.package, {
-        name: 'minimal-project',
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
       });
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle null and undefined values in configuration paths', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              package: null as KnownAny,
-              origin: null,
-              imports: null as KnownAny,
-            },
+      const result = resolveGeneratorConfigValues({
+        config: {
+          outputConfig: {
+            package: null as KnownAny,
+            origin: null,
+            imports: null as KnownAny,
           },
         },
-      };
-
-      const result = resolveGeneratorConfigValues({
-        schema,
         segmentName: null,
+        isBundle: false,
+        projectPackageJson: undefined,
+        outputConfigs: [],
       });
 
       // Should handle null/undefined gracefully
-      deepStrictEqual(result.package, {});
+      deepStrictEqual(result.package, {
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
+      });
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
         fetcher: ['vovk'],
@@ -689,35 +549,8 @@ describe('resolveGeneratorConfigValues', () => {
       });
     });
 
-    it('should handle empty objects at various levels', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {},
-          },
-        },
-      };
-
-      const configs: VovkOutputConfigCommon[] = [{}, {}, {}];
-
-      const result = resolveGeneratorConfigValues({
-        schema,
-        configs,
-        segmentName: null,
-      });
-
-      // Should return defaults
-      deepStrictEqual(result.package, {});
-      strictEqual(result.origin, '');
-      deepStrictEqual(result.reExports, {});
-    });
-
-    it('should handle configs array with sequential merging', () => {
-      const configs: VovkOutputConfigCommon[] = [
+    it('should handle outputConfigs array with sequential merging', () => {
+      const outputConfigs: VovkOutputConfig[] = [
         {
           package: { name: 'first', version: '1.0.0' },
           readme: { banner: 'First banner' },
@@ -733,18 +566,27 @@ describe('resolveGeneratorConfigValues', () => {
       ];
 
       const result = resolveGeneratorConfigValues({
-        schema: {
-          $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-          segments: {},
-        },
-        configs,
+        config: undefined,
+        outputConfigs,
         segmentName: null,
+        isBundle: false,
+        projectPackageJson: undefined,
       });
 
       // Should merge sequentially
       deepStrictEqual(result.package, {
         name: 'second', // overridden by second config
         version: '3.0.0', // overridden by third config
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
       });
       deepStrictEqual(result.readme, {
         banner: 'Third banner', // overridden by third config
@@ -760,46 +602,7 @@ describe('resolveGeneratorConfigValues', () => {
         version: '0.0.1',
       };
 
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {
-          api: {
-            $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-            emitSchema: true,
-            segmentName: 'api',
-            segmentType: 'segment',
-            controllers: {},
-            meta: {
-              package: { description: 'API segment' },
-            },
-          },
-        },
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              package: { license: 'MIT' },
-              origin: 'https://base.example.com',
-              segments: {
-                api: {
-                  package: { keywords: ['api'] },
-                  origin: 'https://api.example.com',
-                },
-              },
-            },
-            bundle: {
-              outputConfig: {
-                package: { homepage: 'https://bundle.example.com' },
-                origin: 'https://bundle.example.com',
-                samples: { apiRoot: '/api/v2' },
-              },
-            } as VovkStrictConfig['bundle'],
-          },
-        },
-      };
-
-      const configs: VovkOutputConfigCommon[] = [
+      const outputConfigs: VovkOutputConfig[] = [
         {
           package: { repository: 'https://github.com/test/repo' },
           origin: 'https://config.example.com',
@@ -807,8 +610,28 @@ describe('resolveGeneratorConfigValues', () => {
       ];
 
       const result = resolveGeneratorConfigValues({
-        schema,
-        configs,
+        config: {
+          $schema: 'https://vovk.dev/api/schema/v3/config.json',
+          outputConfig: {
+            package: { license: 'MIT' },
+            origin: 'https://base.example.com',
+            segments: {
+              api: {
+                package: { keywords: ['api'], description: 'API segment' },
+                origin: 'https://api.example.com',
+              },
+            },
+          },
+          bundle: {
+            build: () => Promise.resolve(),
+            outputConfig: {
+              package: { homepage: 'https://bundle.example.com' },
+              origin: 'https://bundle.example.com',
+              samples: { apiRoot: '/api/v2' },
+            },
+          },
+        },
+        outputConfigs,
         segmentName: 'api',
         isBundle: true,
         projectPackageJson,
@@ -823,6 +646,16 @@ describe('resolveGeneratorConfigValues', () => {
         keywords: ['api'],
         homepage: 'https://bundle.example.com',
         repository: 'https://github.com/test/repo',
+        exports: {
+          '.': {
+            import: './index.mjs',
+            require: './index.cjs',
+            types: './index.d.mts',
+          },
+        },
+        main: './index.cjs',
+        module: './index.mjs',
+        types: './index.d.mts',
       });
 
       strictEqual(result.origin, 'https://config.example.com');
@@ -830,26 +663,18 @@ describe('resolveGeneratorConfigValues', () => {
     });
 
     it('should handle origin field with all null values', () => {
-      const schema: VovkSchema = {
-        $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-        segments: {},
-        meta: {
-          $schema: 'https://vovk.dev/api/schema/v3/meta.json',
-          config: {
-            $schema: 'https://vovk.dev/api/schema/v3/config.json',
-            outputConfig: {
-              origin: null,
-            },
-          },
-        },
-      };
-
-      const configs: VovkOutputConfigCommon[] = [{ origin: null }, { origin: null }];
+      const outputConfigs: VovkOutputConfig[] = [{ origin: null }, { origin: null }];
 
       const result = resolveGeneratorConfigValues({
-        schema,
-        configs,
+        config: {
+          outputConfig: {
+            origin: null,
+          },
+        },
+        outputConfigs,
         segmentName: null,
+        isBundle: false,
+        projectPackageJson: undefined,
       });
 
       // Should return empty string when all are null
@@ -864,10 +689,9 @@ describe('resolveGeneratorConfigValues', () => {
       };
 
       const result = resolveGeneratorConfigValues({
-        schema: {
-          $schema: 'https://vovk.dev/api/schema/v3/schema.json',
-          segments: {},
-        },
+        config: undefined,
+        outputConfigs: [],
+        isBundle: false,
         segmentName: null,
         projectPackageJson: packageJson,
       });

@@ -26,7 +26,7 @@ export default async function ensureClient(projectInfo: ProjectInfo, locatedSegm
     fullSchema: {
       $schema: VovkSchemaIdEnum.SCHEMA,
       segments: getEmptySegmentRecordSchema(locatedSegments.map(({ segmentName }) => segmentName)),
-      meta: getMetaSchema({ config: projectInfo.config, useEmitConfig: false }),
+      meta: getMetaSchema({ config: projectInfo.config, useexposeConfigKeys: false }),
     },
     locatedSegments,
   });
