@@ -56,7 +56,7 @@ await describe('CLI dev', async () => {
         await assertFile('src/modules/user/UserController.ts', [
           `export default class UserController {`,
           `@get()`,
-          `static getUsers = async (`,
+          `static getUsers = (`,
         ]);
 
         await assertFile('src/app/api/[[...vovk]]/route.ts', [
