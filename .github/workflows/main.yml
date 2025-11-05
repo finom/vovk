@@ -39,7 +39,6 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm --prefix test ci
 
       - name: Run tests
         run: NODE_OPTIONS="--max-old-space-size=4096" npm t
