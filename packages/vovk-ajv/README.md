@@ -20,7 +20,6 @@
 npm install vovk-ajv
 ```
 
-
 ```ts
 /** @type {import('vovk').VovkConfig} */
 const config = {
@@ -39,6 +38,6 @@ const config = {
     },
   },
 };
- 
+
 export default config;
 ```

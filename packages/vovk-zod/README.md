@@ -41,8 +41,8 @@ export default class UserController {
     }),
     handle: (req) => {
       // ...
-    } 
-  })
+    },
+  });
 }
 ```
 

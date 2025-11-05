@@ -19,4 +19,3 @@ The main library with [100% self-composition](https://bundlephobia.com/result?p=
 ```sh
 npm install vovk
 ```
-

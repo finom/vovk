@@ -34,8 +34,8 @@ export default class UserController {
     params: UserParamsDto,
     handle: (req) => {
       // ...
-    } 
-  })
+    },
+  });
 }
 ```
 
@@ -50,7 +50,7 @@ const config = {
     },
   },
 };
- 
+
 export default config;
 ```
 
