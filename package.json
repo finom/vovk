@@ -3,8 +3,7 @@
   "version": "1.0.0-monorepo",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "test"
+    "packages/*"
   ],
   "type": "module",
   "packageManager": "npm@11.6.1",
