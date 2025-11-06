@@ -427,6 +427,7 @@ type ClientConfigCommon = {
   outDir?: string;
   fromTemplates?: string[];
   prettifyClient?: boolean;
+  outputConfig?: VovkOutputConfig<GeneratorConfigImports>;
 } & IncludeExcludeSegments;
 
 type ClientConfigComposed = ClientConfigCommon;

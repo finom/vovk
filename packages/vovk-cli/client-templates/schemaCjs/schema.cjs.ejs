@@ -2,7 +2,7 @@
 <% if(t.isVovkProject) { %>
 const meta = require('./<%= t.schemaOutDir %>/_meta.json');
 <% } else { %>
-const meta = <%- JSON.stringify(t.publicMeta, null, 2) %>;
+const meta = <%- JSON.stringify(t.schema.meta, null, 2) %>;
 <% } %>
 
 <% if(t.hasMixins) { %>

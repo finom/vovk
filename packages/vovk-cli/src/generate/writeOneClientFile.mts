@@ -183,7 +183,7 @@ export default async function writeOneClientFile({
           segmentName: sName,
           isBundle,
           outCwdRelativeDir,
-          outputConfigs: [templateDef.outputConfig ?? {}],
+          outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
         });
         const imports =
           configKey === 'composedClient' ? clientImports['composedClient'] : clientImports['segmentedClient'][sName];

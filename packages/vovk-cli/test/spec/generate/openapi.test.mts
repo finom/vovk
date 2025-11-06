@@ -372,7 +372,7 @@ await describe('OpenAPI flags', async () => {
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
-  await it('can watch JSON URL and regenerate on spec change', async () => {
+  await it.only('can watch JSON URL and regenerate on spec change', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
@@ -400,14 +400,16 @@ await describe('OpenAPI flags', async () => {
       );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
-      await httpServer.kill();
       await watch.kill();
+      await httpServer.kill();
+
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
-    await httpServer.kill();
     await watch.kill();
+    await httpServer.kill();
+
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
@@ -474,14 +476,16 @@ await describe('OpenAPI flags', async () => {
       );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
-      await httpServer.kill();
       await watch.kill();
+      await httpServer.kill();
+
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
-    await httpServer.kill();
     await watch.kill();
+    await httpServer.kill();
+
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 

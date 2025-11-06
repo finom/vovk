@@ -261,7 +261,11 @@ export async function generate({
           config: projectInfo.config,
           rootEntry: config.rootEntry,
           schema: fullSchema,
-          outputConfigs: [templateDef.outputConfig ?? {}, { origin: cliGenerateOptions?.origin }],
+          outputConfigs: [
+            config.composedClient.outputConfig ?? {},
+            templateDef.outputConfig ?? {},
+            { origin: cliGenerateOptions?.origin },
+          ],
           projectPackageJson,
           isBundle,
           segmentName: null,
@@ -375,7 +379,11 @@ export async function generate({
               schema: fullSchema,
               rootEntry: config.rootEntry,
               segmentName,
-              outputConfigs: [templateDef.outputConfig ?? {}, { origin: cliGenerateOptions?.origin }],
+              outputConfigs: [
+                config.segmentedClient.outputConfig ?? {},
+                templateDef.outputConfig ?? {},
+                { origin: cliGenerateOptions?.origin },
+              ],
               isBundle,
               projectPackageJson,
             });
