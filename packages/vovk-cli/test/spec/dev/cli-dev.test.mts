@@ -97,7 +97,7 @@ await describe('CLI dev', async () => {
         const resp = await (await fetch(`${protocol}://localhost:${PORT}/api/users/123`)).json();
 
         assert.deepStrictEqual(resp, {
-          message: 'TODO: get users',
+          message: 'TODO: get single user',
           id: '123',
         });
         dev.kill();
