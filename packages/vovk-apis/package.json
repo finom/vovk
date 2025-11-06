@@ -1,6 +1,6 @@
 {
   "name": "vovk-apis",
-  "version": "0.0.1-draft.14",
+  "version": "0.0.1-draft.15",
   "description": "3rd party APIs",
   "exports": {
     "./petstore": {
@@ -59,11 +59,11 @@
     "unit": "node --experimental-strip-types --test --test-concurrency=1 test/*.mts"
   },
   "dependencies": {
-    "vovk": "^3.0.0-draft.469",
-    "vovk-ajv": "^0.0.0-draft.112",
+    "vovk": "^3.0.0-draft.470",
+    "vovk-ajv": "^0.0.0-draft.113",
     "ajv": "^8.17.1"
   },
   "devDependencies": {
-    "vovk-cli": "^0.0.1-draft.393"
+    "vovk-cli": "^0.0.1-draft.394"
   }
 }

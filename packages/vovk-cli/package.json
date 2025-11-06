@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-draft.393",
+  "version": "0.0.1-draft.394",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,11 +35,11 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.469",
-    "vovk-ajv": "^0.0.0-draft.112",
-    "vovk-client": "^0.0.4-draft.139",
-    "vovk-python": "^0.0.1-draft.81",
-    "vovk-rust": "^0.0.1-draft.67"
+    "vovk": "^3.0.0-draft.470",
+    "vovk-ajv": "^0.0.0-draft.113",
+    "vovk-client": "^0.0.4-draft.140",
+    "vovk-python": "^0.0.1-draft.82",
+    "vovk-rust": "^0.0.1-draft.68"
   },
   "optionalDependencies": {
     "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.44"
@@ -83,10 +83,7 @@
     "create-next-app": "^15.5.4",
     "http-server": "^14.1.1",
     "node-pty": "^1.0.0",
-    "tsdown": "^0.15.12",
+    "tsdown": "^0.16.0",
     "zod": "^4.1.11"
-  },
-  "overrides": {
-    "rolldown-plugin-dts": "0.17.3"
   }
 }
