@@ -94,11 +94,11 @@ await describe('CLI dev', async () => {
 
         assert.ok((await getSchema()).controllers.CustomUserRPC.handlers.getPeople);
         const protocol = name.includes('--https') ? 'https' : 'http';
-        const resp = await (await fetch(`${protocol}://localhost:${PORT}/api/users?search=hello1`)).json();
+        const resp = await (await fetch(`${protocol}://localhost:${PORT}/api/users/123`)).json();
 
         assert.deepStrictEqual(resp, {
-          results: [],
-          search: 'hello1',
+          message: 'TODO: get users',
+          id: '123',
         });
         dev.kill();
       } catch (error) {
