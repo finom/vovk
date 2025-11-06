@@ -283,6 +283,7 @@ await describe('OpenAPI flags', async () => {
 
   await it('can use JSON URL and write fallback', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     try {
@@ -310,6 +311,7 @@ await describe('OpenAPI flags', async () => {
 
   await it('can use YAML URL and write fallback', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     try {
@@ -372,6 +374,7 @@ await describe('OpenAPI flags', async () => {
 
   await it('can watch JSON URL and regenerate on spec change', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     const watch = runAtProjectDir(
@@ -445,6 +448,7 @@ await describe('OpenAPI flags', async () => {
 
   await it('can watch YAML URL and regenerate on spec change', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     const watch = runAtProjectDir(
