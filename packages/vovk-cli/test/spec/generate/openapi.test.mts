@@ -299,12 +299,12 @@ await describe('OpenAPI flags', async () => {
       strictEqual(fallback.openapi, '3.1.0');
       strictEqual(fallback.paths['/test']?.post?.operationId, 'postTest');
     } catch (e) {
-      httpServer.kill();
+      await httpServer.kill();
       await fs.rm(generatedClientDir, { recursive: true });
       throw e;
     }
 
-    httpServer.kill();
+    await httpServer.kill();
     await fs.rm(generatedClientDir, { recursive: true });
   });
 
@@ -326,12 +326,12 @@ await describe('OpenAPI flags', async () => {
       strictEqual(fallback.openapi, '3.1.0');
       strictEqual(fallback.paths['/test']?.post?.operationId, 'postTest');
     } catch (e) {
-      httpServer.kill();
+      await httpServer.kill();
       await fs.rm(generatedClientDir, { recursive: true });
       throw e;
     }
 
-    httpServer.kill();
+    await httpServer.kill();
     await fs.rm(generatedClientDir, { recursive: true });
   });
 
@@ -361,12 +361,12 @@ await describe('OpenAPI flags', async () => {
       );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
-      watch.kill();
+      await watch.kill();
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
-    watch.kill();
+    await watch.kill();
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
@@ -397,14 +397,14 @@ await describe('OpenAPI flags', async () => {
       );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
-      httpServer.kill();
-      watch.kill();
+      await httpServer.kill();
+      await watch.kill();
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
-    httpServer.kill();
-    watch.kill();
+    await httpServer.kill();
+    await watch.kill();
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
@@ -434,12 +434,12 @@ await describe('OpenAPI flags', async () => {
       );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
-      watch.kill();
+      await watch.kill();
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
-    watch.kill();
+    await watch.kill();
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
@@ -470,14 +470,14 @@ await describe('OpenAPI flags', async () => {
       );
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
-      httpServer.kill();
-      watch.kill();
+      await httpServer.kill();
+      await watch.kill();
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
-    httpServer.kill();
-    watch.kill();
+    await httpServer.kill();
+    await watch.kill();
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 

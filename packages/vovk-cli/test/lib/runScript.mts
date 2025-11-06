@@ -60,9 +60,12 @@ export function runScript(
         );
       }
     });
-  }) as Promise<string> & { kill: () => void };
+  }) as Promise<string> & { kill: () => Promise<void> };
 
-  promise.kill = () => child.kill('SIGKILL');
+  promise.kill = async () => {
+    child.kill('SIGKILL');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
 
   return promise;
 }
