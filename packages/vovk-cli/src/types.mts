@@ -58,6 +58,7 @@ export interface BundleOptions
   openapiGetMethodName?: string[];
   openapiRootUrl?: string[];
   openapiMixinName?: string[];
+  openapiFallback?: string[];
   logLevel?: LogLevelNames;
 }
 

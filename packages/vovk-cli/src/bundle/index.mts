@@ -47,6 +47,8 @@ export async function bundle({
       openapiGetModuleName: cliBundleOptions?.openapiGetModuleName,
       openapiGetMethodName: cliBundleOptions?.openapiGetMethodName,
       openapiRootUrl: cliBundleOptions?.openapiRootUrl,
+      openapiMixinName: cliBundleOptions?.openapiMixinName,
+      openapiFallback: cliBundleOptions?.openapiFallback,
       composedFrom: [BuiltInTemplateName.ts],
       composedOut: prebundleOutDirAbsolute,
       composedOnly: true,

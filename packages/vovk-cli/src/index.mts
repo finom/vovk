@@ -111,20 +111,23 @@ program
   .option('--origin <url>', 'set the origin URL for the generated client')
   .option(
     '--watch [s]',
-    'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URL'
+    'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URLs'
   )
-  .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema for client generation')
+  .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI mixins for client generation')
   .option(
     '--openapi-module-name, --openapi-get-module-name <names...>',
-    'module names corresponding to the index of --openapi option'
+    'module name strategies corresponding to the index of --openapi option'
   )
   .option(
     '--openapi-method-name, --openapi-get-method-name <names...>',
-    'method names corresponding to the index of --openapi option'
+    'method name strategies corresponding to the index of --openapi option'
   )
   .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
   .option('--openapi-mixin-name <names...>', 'mixin names corresponding to the index of --openapi option')
-  .option('--openapi-fallback <paths...>', 'save OpenAPI spec and use it as a fallback if URL is not available')
+  .option(
+    '--openapi-fallback <paths...>',
+    'save OpenAPI spec corresponding to the index of --openapi option to a local file and use it as a fallback if URL is not available'
+  )
   .option('--log-level <level>', 'set the log level')
   .action(async (cliGenerateOptions: GenerateOptions) => {
     const projectInfo = await getProjectInfo({
@@ -152,10 +155,21 @@ program
   .option('--schema, --schema-path <path>', 'path to schema folder (default: .vovk-schema)')
   .option('--config, --config-path <config>', 'path to config file')
   .option('--origin <url>', 'set the origin URL for the generated client')
-  .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI schema instead of Vovk schema')
-  .option('--openapi-get-module-name <names...>', 'module names corresponding to the index of --openapi option')
-  .option('--openapi-get-method-name <names...>', 'method names corresponding to the index of --openapi option')
+  .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI mixins for client generation')
+  .option(
+    '--openapi-module-name, --openapi-get-module-name <names...>',
+    'module name strategies corresponding to the index of --openapi option'
+  )
+  .option(
+    '--openapi-method-name, --openapi-get-method-name <names...>',
+    'method name strategies corresponding to the index of --openapi option'
+  )
   .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
+  .option('--openapi-mixin-name <names...>', 'mixin names corresponding to the index of --openapi option')
+  .option(
+    '--openapi-fallback <paths...>',
+    'save OpenAPI spec corresponding to the index of --openapi option to a local file and use it as a fallback if URL is not available'
+  )
   .option('--log-level <level>', 'set the log level')
   .action(async (cliBundleOptions: BundleOptions) => {
     const projectInfo = await getProjectInfo({

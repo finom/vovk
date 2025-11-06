@@ -32,7 +32,7 @@
   "author": "Andrey Gubanov",
   "license": "MIT",
   "peerDependencies": {
-    "vovk": "^3.0.0-draft.470",
+    "vovk": "^3.0.0-draft.471",
     "zod": "^3.25.0 || ^4.0.0"
   },
   "dependencies": {

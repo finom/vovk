@@ -106,7 +106,7 @@ export default async function getConfig({
   } // else it's false and exposeConfigKeys already is []
 
   if (!userConfig) {
-    log.warn(`Unable to load config at ${chalkHighlightThing(cwd)}. Using default values. ${error ?? ''}`);
+    log.warn(`Unable to load config at ${chalkHighlightThing(cwd + '/')}. Using default values. ${error ?? ''}`);
   }
 
   return { config, srcRoot, configAbsolutePaths, userConfig, log };

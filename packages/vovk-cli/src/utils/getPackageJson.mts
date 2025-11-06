@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PackageJson } from 'type-fest';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
+import chalkHighlightThing from './chalkHighlightThing.mjs';
 
 let cachedPromise: Promise<PackageJson> | undefined;
 
@@ -18,7 +19,7 @@ export function getPackageJson(cwd: string, log: ProjectInfo['log']): Promise<Pa
     .then((content) => JSON.parse(content) as PackageJson)
     .catch(() => {
       cachedPromise = undefined;
-      log.warn(`Failed to read package.json at ${pkgPath}. Using a fallback.`);
+      log.warn(`Unable to load package.json at ${chalkHighlightThing(pkgPath)}. Using an empty fallback.`);
       return {
         name: 'unknown',
       };

@@ -8,7 +8,7 @@ import { HttpMethod, type VovkSchema } from 'vovk';
 import * as YAML from 'yaml';
 import { importFresh } from '../../lib/importFresh.mts';
 
-const PORT = 3020;
+const PORT = 3021;
 
 const artifactsDir = path.join(path.resolve(import.meta.dirname, '../../..'), 'tmp_artifacts_dir');
 
