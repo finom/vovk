@@ -9,7 +9,7 @@ import segment<%= i %> from './<%= t.schemaOutDir %>/<%= segment.segmentName || 
 <% if(t.isVovkProject) { %>
 import meta from './<%= t.schemaOutDir %>/_meta.json' with { type: "json" };
 <% } else { %>
-const meta = <%- JSON.stringify(t.publicMeta, null, 2) %>;
+const meta = <%- JSON.stringify(t.schema.meta, null, 2) %>;
 <% } %>
 const segments = {<% Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType !== 'mixin').forEach((segment, i) => { %>
   '<%= segment.segmentName %>': segment<%= i %>,<% }) %>

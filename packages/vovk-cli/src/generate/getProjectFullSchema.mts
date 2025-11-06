@@ -23,7 +23,6 @@ export async function getProjectFullSchema({
     segments: {},
     meta: getMetaSchema({
       config,
-      useexposeConfigKeys: false,
     }),
   };
 

@@ -347,7 +347,6 @@ export class VovkDev {
       segments: this.#schemaSegments,
       meta: getMetaSchema({
         config: this.#projectInfo.config,
-        useexposeConfigKeys: false,
       }),
     };
     return generate({

@@ -21,7 +21,6 @@ import type { Segment } from '../locateSegments.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compileJSONSchemaToTypeScriptType.mjs';
 import { OpenAPIObject } from 'openapi3-ts/oas31';
 import getTemplateClientImports from './getTemplateClientImports.mjs';
-import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
 
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
   return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');
@@ -155,7 +154,6 @@ export default async function writeOneClientFile({
     YAML,
     TOML,
     getFirstLineBanner,
-    publicMeta: getMetaSchema({ config: projectConfig, useexposeConfigKeys: true }),
     nodeNextResolutionExt: {
       ts: isNodeNextResolution ? '.ts' : '',
       js: isNodeNextResolution ? '.js' : '',
