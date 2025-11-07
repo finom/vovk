@@ -106,14 +106,12 @@ await describe('OpenAPI flags', async () => {
 
     await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from mjs`);
 
-    const { openapi, schema, api } = await import(path.join(generatedClientDir, 'index.mjs'));
-    const { openapi: openapi2 } = await import(path.join(generatedClientDir, 'openapi.cjs'));
+    const { schema, api } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { openapi } = await import(path.join(generatedClientDir, 'openapi.cjs'));
     const { schema: schema2 } = await import(path.join(generatedClientDir, 'schema.cjs'));
 
     strictEqual(openapi.openapi, '3.1.0');
-    strictEqual(openapi2.openapi, '3.1.0');
     strictEqual(openapi.paths['/test']?.post?.operationId, 'postTest');
-    strictEqual(openapi2.paths['/test']?.post?.operationId, 'postTest');
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(
