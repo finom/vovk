@@ -46,9 +46,9 @@ export function resolveGeneratorConfigValues({
       )
     ) as PackageJson,
     config?.outputConfig?.package,
-    isBundle ? config?.bundle?.outputConfig?.package : undefined,
     typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.package : undefined,
-    outputConfigs?.reduce((acc, config) => deepExtend(acc, config.package), {} as PackageJson)
+    outputConfigs?.reduce((acc, config) => deepExtend(acc, config.package), {} as PackageJson),
+    isBundle ? config?.bundle?.outputConfig?.package : undefined
   );
 
   return {
@@ -64,30 +64,30 @@ export function resolveGeneratorConfigValues({
         },
       },
       config?.outputConfig?.openAPIObject,
-      isBundle ? config?.bundle?.outputConfig?.openAPIObject : undefined,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.openAPIObject : undefined,
-      outputConfigs?.reduce((acc, config) => deepExtend(acc, config.openAPIObject), {} as OpenAPIObject)
+      outputConfigs?.reduce((acc, config) => deepExtend(acc, config.openAPIObject), {} as OpenAPIObject),
+      isBundle ? config?.bundle?.outputConfig?.openAPIObject : undefined
     ),
     samples: deepExtend(
       {},
       config?.outputConfig?.samples,
-      isBundle ? config?.bundle?.outputConfig?.samples : undefined,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.samples : undefined,
-      outputConfigs?.reduce((acc, config) => deepExtend(acc, config.samples), {} as VovkSamplesConfig)
+      outputConfigs?.reduce((acc, config) => deepExtend(acc, config.samples), {} as VovkSamplesConfig),
+      isBundle ? config?.bundle?.outputConfig?.samples : undefined
     ),
     readme: deepExtend(
       {},
       config?.outputConfig?.readme,
-      isBundle ? config?.bundle?.outputConfig?.readme : undefined,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.readme : undefined,
-      outputConfigs?.reduce((acc, config) => deepExtend(acc, config.readme), {} as VovkReadmeConfig)
+      outputConfigs?.reduce((acc, config) => deepExtend(acc, config.readme), {} as VovkReadmeConfig),
+      isBundle ? config?.bundle?.outputConfig?.readme : undefined
     ),
     origin:
       [
         config?.outputConfig?.origin,
-        isBundle ? config?.bundle?.outputConfig?.origin : undefined,
         typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.origin : undefined,
         ...(outputConfigs?.map((config) => config.origin) ?? []),
+        isBundle ? config?.bundle?.outputConfig?.origin : undefined,
       ]
         .filter(Boolean)
         .at(-1)
@@ -100,19 +100,18 @@ export function resolveGeneratorConfigValues({
         createRPC: ['vovk'] as const,
       } as NonNullable<VovkOutputConfig['imports']>,
       config?.outputConfig?.imports,
-      isBundle ? config?.bundle?.outputConfig?.imports : undefined,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.imports : undefined,
       outputConfigs?.reduce(
         (acc, config) => deepExtend(acc, config.imports),
         {} as NonNullable<VovkOutputConfig['imports']>
-      )
+      ),
+      isBundle ? config?.bundle?.outputConfig?.imports : undefined
     ),
     reExports: deepExtend(
       // segmentName can be an empty string (for the root segment) and null (for composed clients)
       // therefore, !segmentName indicates that this either a composed client or a root segment of a segmented client
       {} as NonNullable<VovkOutputConfig['reExports']>,
       !segmentName && config?.outputConfig?.reExports,
-      !segmentName && isBundle ? config?.bundle?.outputConfig?.reExports : undefined,
       // for segmented client, apply all reExports from all segments
       typeof segmentName !== 'string' &&
         Object.values(config?.outputConfig?.segments ?? {}).reduce(
@@ -124,7 +123,8 @@ export function resolveGeneratorConfigValues({
       outputConfigs?.reduce(
         (acc, config) => deepExtend(acc, config.reExports),
         {} as NonNullable<VovkOutputConfig['reExports']>
-      )
+      ),
+      isBundle ? config?.bundle?.outputConfig?.reExports : undefined
     ),
   };
 }
