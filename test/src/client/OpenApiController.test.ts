@@ -5,13 +5,7 @@ import { HttpStatus } from 'vovk';
 
 describe('OpenAPI', () => {
   it(`Should work`, async () => {
-    const { openapi, openapiModule } = await OpenApiControllerRPC.openapi();
-
-    deepStrictEqual(openapiModule.info, {
-      description: 'Vovk test app',
-      title: 'Hello, OpenAPI!',
-      version: '1.0.0',
-    });
+    const { openapi } = await OpenApiControllerRPC.openapi();
 
     deepStrictEqual(openapi.info, {
       description: 'Vovk test app',

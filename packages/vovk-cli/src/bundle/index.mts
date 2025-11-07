@@ -49,7 +49,7 @@ export async function bundle({
       openapiRootUrl: cliBundleOptions?.openapiRootUrl,
       openapiMixinName: cliBundleOptions?.openapiMixinName,
       openapiFallback: cliBundleOptions?.openapiFallback,
-      composedFrom: [BuiltInTemplateName.ts],
+      composedFrom: [BuiltInTemplateName.tsBase],
       composedOut: prebundleOutDirAbsolute,
       composedOnly: true,
       composedIncludeSegments: cliBundleOptions.includeSegments ?? bundleConfig.includeSegments,

@@ -2,13 +2,6 @@
 import type { VovkFetcher } from 'vovk';
 import { createRPC } from '<%= t.commonImports.module.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
-<% if(t.isBundle) { %>
-import { openapi } from './openapi<%= t.nodeNextResolutionExt.ts %>';
-<% } else { %>
-// import { openapi } from './openapi<%= t.nodeNextResolutionExt.ts %>';
-// TODO: This is a temporary fix for https://github.com/rolldown/tsdown/issues/528#issuecomment-3476284358
-import openapi from './openapi.json' with { type: "json" };
-<% } %>
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
 <% }
@@ -28,7 +21,7 @@ export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin
 );
 <% }) 
 }) %>
-export { schema, openapi };
+export { schema };
 <% if (t.hasMixins) { %>
 export { Mixins };
 <% } %>

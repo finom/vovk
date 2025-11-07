@@ -1,7 +1,6 @@
 <%- t.getFirstLineBanner() %>
 import { createRPC } from '<%= t.commonImports.module.createRPC %>';
 import { schema } from './schema.cjs';
-import { openapi } from './openapi.cjs';
 <% Object.entries(t.reExports).forEach(([reExportWhat, reExportFrom]) => { %>
 export { <%= reExportWhat %> } from '<%= reExportFrom %>';
 <% }) %>
@@ -16,4 +15,4 @@ export const <%= rpcModuleName %> = createRPC(
   }); 
 });
 %>
-export { schema, openapi };
+export { schema };

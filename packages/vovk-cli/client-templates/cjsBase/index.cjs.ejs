@@ -1,7 +1,6 @@
 <%- t.getFirstLineBanner() %>
 const { createRPC } = require('<%= t.commonImports.createRPC %>');
 const { schema } = require('./schema.cjs');
-const { openapi } = require('./openapi.cjs');
 <% Object.entries(t.reExports).forEach(([reExportWhatCommaDivisible, reExportFrom]) => {
     reExportWhatCommaDivisible.split(/\s*,\s*/).forEach((reExportWhat) => { %>
 exports['<%= reExportWhat.split(/\s+as\s+/)[1] ?? reExportWhat %>'] = require('<%= reExportFrom %>')['<%= reExportWhat.split(/\s+as\s+/)[0] %>'];
@@ -17,4 +16,3 @@ exports.<%= rpcModuleName %> = createRPC(
   <% })
 }) %>
 exports.schema = schema;
-exports.openapi = openapi;
