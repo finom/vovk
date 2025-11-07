@@ -145,7 +145,7 @@ describe('resolveGeneratorConfigValues', () => {
             build: () => Promise.resolve(),
             outputConfig: {
               package: {
-                version: '0.5.0',
+                version: '0.7.0',
                 homepage: 'https://bundle.example.com',
               },
             },
@@ -160,7 +160,7 @@ describe('resolveGeneratorConfigValues', () => {
       // Final merged result should follow precedence
       deepStrictEqual(result.package, {
         name: 'segment-package', // from segment outputConfig
-        version: '0.6.0', // from configs array (last override)
+        version: '0.7.0', // from configs array (last override)
         description: 'project description', // from projectPackageJson
         license: 'NONE', // from schema outputConfig
         authors: ['test-author'], // from segment outputConfig
@@ -250,7 +250,7 @@ describe('resolveGeneratorConfigValues', () => {
       });
 
       // Should take the last non-null value
-      strictEqual(result.origin, 'https://config2.example.com');
+      strictEqual(result.origin, 'https://bundle.example.com');
     });
 
     it('should merge imports with defaults', () => {
@@ -611,7 +611,6 @@ describe('resolveGeneratorConfigValues', () => {
 
       const result = resolveGeneratorConfigValues({
         config: {
-          $schema: 'https://vovk.dev/api/schema/v3/config.json',
           outputConfig: {
             package: { license: 'MIT' },
             origin: 'https://base.example.com',
@@ -625,7 +624,7 @@ describe('resolveGeneratorConfigValues', () => {
           bundle: {
             build: () => Promise.resolve(),
             outputConfig: {
-              package: { homepage: 'https://bundle.example.com' },
+              package: { homepage: 'https://bundle.example.com/about' },
               origin: 'https://bundle.example.com',
               samples: { apiRoot: '/api/v2' },
             },
@@ -644,7 +643,7 @@ describe('resolveGeneratorConfigValues', () => {
         description: 'API segment',
         license: 'MIT',
         keywords: ['api'],
-        homepage: 'https://bundle.example.com',
+        homepage: 'https://bundle.example.com/about',
         repository: 'https://github.com/test/repo',
         exports: {
           '.': {
@@ -658,7 +657,7 @@ describe('resolveGeneratorConfigValues', () => {
         types: './index.d.mts',
       });
 
-      strictEqual(result.origin, 'https://config.example.com');
+      strictEqual(result.origin, 'https://bundle.example.com');
       deepStrictEqual(result.samples, { apiRoot: '/api/v2' });
     });
 

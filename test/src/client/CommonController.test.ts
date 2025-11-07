@@ -1,6 +1,6 @@
 import { CommonControllerRPC, CommonControllerDifferentFetcherRPC } from 'vovk-client';
 import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
-// import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
+import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
 import {
   HttpStatus,
   type VovkBody,
@@ -33,11 +33,11 @@ describe('Client with vovk-client', () => {
     deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
-  it.skip(`Should use bundled RPC`, async () => {
-    /* const result = await BundleClientCommonControllerRPC.getHelloWorldObjectLiteral({
+  it(`Should use bundled RPC`, async () => {
+    const result = await BundleClientCommonControllerRPC.getHelloWorldObjectLiteral({
       apiRoot,
     });
-    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' }); */
+    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
   it(`Should handle requests that return NextResponse.json`, async () => {
