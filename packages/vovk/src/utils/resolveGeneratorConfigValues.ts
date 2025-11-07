@@ -6,12 +6,14 @@ import type { OpenAPIObject } from 'openapi3-ts/oas31';
 export function resolveGeneratorConfigValues({
   config,
   outputConfigs,
+  forceOutputConfigs,
   segmentName,
   isBundle,
   projectPackageJson,
 }: {
   config: VovkConfig | undefined;
   outputConfigs: VovkOutputConfig[];
+  forceOutputConfigs?: VovkOutputConfig[];
   segmentName: string | null;
   isBundle: boolean;
   projectPackageJson: PackageJson | undefined;
@@ -66,21 +68,24 @@ export function resolveGeneratorConfigValues({
       config?.outputConfig?.openAPIObject,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.openAPIObject : undefined,
       outputConfigs?.reduce((acc, config) => deepExtend(acc, config.openAPIObject), {} as OpenAPIObject),
-      isBundle ? config?.bundle?.outputConfig?.openAPIObject : undefined
+      isBundle ? config?.bundle?.outputConfig?.openAPIObject : undefined,
+      forceOutputConfigs?.reduce((acc, config) => deepExtend(acc, config.openAPIObject), {} as OpenAPIObject)
     ),
     samples: deepExtend(
       {},
       config?.outputConfig?.samples,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.samples : undefined,
       outputConfigs?.reduce((acc, config) => deepExtend(acc, config.samples), {} as VovkSamplesConfig),
-      isBundle ? config?.bundle?.outputConfig?.samples : undefined
+      isBundle ? config?.bundle?.outputConfig?.samples : undefined,
+      forceOutputConfigs?.reduce((acc, config) => deepExtend(acc, config.samples), {} as VovkSamplesConfig)
     ),
     readme: deepExtend(
       {},
       config?.outputConfig?.readme,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.readme : undefined,
       outputConfigs?.reduce((acc, config) => deepExtend(acc, config.readme), {} as VovkReadmeConfig),
-      isBundle ? config?.bundle?.outputConfig?.readme : undefined
+      isBundle ? config?.bundle?.outputConfig?.readme : undefined,
+      forceOutputConfigs?.reduce((acc, config) => deepExtend(acc, config.readme), {} as VovkReadmeConfig)
     ),
     origin:
       [
@@ -88,6 +93,7 @@ export function resolveGeneratorConfigValues({
         typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.origin : undefined,
         ...(outputConfigs?.map((config) => config.origin) ?? []),
         isBundle ? config?.bundle?.outputConfig?.origin : undefined,
+        ...(forceOutputConfigs?.map((config) => config.origin) ?? []),
       ]
         .filter(Boolean)
         .at(-1)
@@ -105,7 +111,11 @@ export function resolveGeneratorConfigValues({
         (acc, config) => deepExtend(acc, config.imports),
         {} as NonNullable<VovkOutputConfig['imports']>
       ),
-      isBundle ? config?.bundle?.outputConfig?.imports : undefined
+      isBundle ? config?.bundle?.outputConfig?.imports : undefined,
+      forceOutputConfigs?.reduce(
+        (acc, config) => deepExtend(acc, config.imports),
+        {} as NonNullable<VovkOutputConfig['imports']>
+      )
     ),
     reExports: deepExtend(
       // segmentName can be an empty string (for the root segment) and null (for composed clients)
@@ -124,7 +134,11 @@ export function resolveGeneratorConfigValues({
         (acc, config) => deepExtend(acc, config.reExports),
         {} as NonNullable<VovkOutputConfig['reExports']>
       ),
-      isBundle ? config?.bundle?.outputConfig?.reExports : undefined
+      isBundle ? config?.bundle?.outputConfig?.reExports : undefined,
+      forceOutputConfigs?.reduce(
+        (acc, config) => deepExtend(acc, config.reExports),
+        {} as NonNullable<VovkOutputConfig['reExports']>
+      )
     ),
   };
 }

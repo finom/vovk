@@ -69,6 +69,7 @@ export function vovkSchemaToOpenAPI({
   rootEntry = 'api',
   schema: fullSchema,
   outputConfigs,
+  forceOutputConfigs,
   isBundle,
   segmentName: givenSegmentName,
   projectPackageJson,
@@ -77,6 +78,7 @@ export function vovkSchemaToOpenAPI({
   rootEntry?: string;
   schema: VovkSchema;
   outputConfigs: VovkOutputConfig[];
+  forceOutputConfigs?: VovkOutputConfig[];
   isBundle: boolean;
   segmentName: string | null;
   projectPackageJson: VovkPackageJson | undefined;
@@ -102,6 +104,7 @@ export function vovkSchemaToOpenAPI({
   } = resolveGeneratorConfigValues({
     config,
     outputConfigs,
+    forceOutputConfigs,
     isBundle,
     segmentName: givenSegmentName ?? null,
     projectPackageJson,
