@@ -64,6 +64,7 @@ function extractComponents(
 }
 
 // returns OpenAPIObject along with resolved configs
+// TODO: Refactor and decompose
 export function vovkSchemaToOpenAPI({
   config,
   rootEntry = 'api',

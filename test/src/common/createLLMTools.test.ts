@@ -57,22 +57,37 @@ describe('createLLMTools', async () => {
     },
   });
 
+  const handlerWithToolName = withZod({
+    operationObject: {
+      'x-tool-name': 'customToolName',
+    },
+    query: z.object({ bar: z.string().max(5) }),
+    async handle() {
+      // ...
+    },
+  });
+
   describe('Common', () => {
     const { tools, toolsByName } = createLLMTools({
       meta: { inputMeta: 'hello' },
       modules: {
-        MyModule1: { handlerWithBody, handlerWithNoDescription, handlerWithToolDescription, handlerWithExcluded },
+        MyModule1: {
+          handlerWithBody,
+          handlerWithNoDescription,
+          handlerWithToolDescription,
+          handlerWithExcluded,
+          handlerWithToolName,
+        },
         MyModule2: { handlerWithQuery },
       },
     });
 
     it('Should return tools', async () => {
-      assert.ok(tools);
-      assert.ok(toolsByName);
-      assert.equal(tools.length, 3);
+      assert.equal(tools.length, 4);
       assert.deepStrictEqual(Object.keys(toolsByName), [
         'MyModule1_handlerWithBody',
         'MyModule1_handlerWithToolDescription',
+        'customToolName',
         'MyModule2_handlerWithQuery',
       ]);
     });

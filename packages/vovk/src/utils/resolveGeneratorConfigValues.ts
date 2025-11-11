@@ -3,6 +3,7 @@ import type { VovkConfig, VovkOutputConfig, VovkPackageJson, VovkReadmeConfig, V
 import deepExtend from './deepExtend';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
+// TODO: Refactor
 export function resolveGeneratorConfigValues({
   config,
   outputConfigs,

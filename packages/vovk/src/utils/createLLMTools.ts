@@ -127,7 +127,7 @@ const createLLMTool = ({
   return {
     type: 'function',
     execute,
-    name: `${moduleName}_${handlerName}`,
+    name: schema.operationObject?.['x-tool-name'] ?? `${moduleName}_${handlerName}`,
     description:
       schema.operationObject?.['x-tool-description'] ??
       ([schema.operationObject?.summary ?? '', schema.operationObject?.description ?? ''].filter(Boolean).join('\n') ||

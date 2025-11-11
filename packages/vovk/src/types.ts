@@ -383,6 +383,7 @@ export type VovkBasicJSONSchema = {
 };
 
 export type VovkOperationObject = OperationObject & {
+  'x-tool-name'?: string;
   'x-tool-disable'?: boolean;
   'x-tool-description'?: string;
   'x-tool-successMessage'?: string;
