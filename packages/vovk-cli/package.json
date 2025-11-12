@@ -37,7 +37,7 @@
   "peerDependencies": {
     "vovk": "^3.0.0-beta.1",
     "vovk-ajv": "^0.0.0-beta.0",
-    "vovk-client": "^0.0.4-beta.0",
+    "vovk-client": "^0.0.4-beta.1",
     "vovk-python": "^0.0.1-beta.0",
     "vovk-rust": "^0.0.1-beta.0"
   },
