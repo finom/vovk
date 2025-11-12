@@ -11,7 +11,6 @@ import { bundle } from './bundle/index.mjs';
 import { VovkDev } from './dev/index.mjs';
 import { newComponents } from './new/index.mjs';
 import type { BundleOptions, DevOptions, GenerateOptions, NewOptions, InitOptions } from './types.mjs';
-import { initProgram } from './initProgram.mjs';
 import { getProjectFullSchema } from './generate/getProjectFullSchema.mjs';
 import type { VovkEnv } from './types.mjs';
 export type { VovkEnv };
@@ -24,8 +23,6 @@ const vovkCliPackage = JSON.parse(readFileSync(path.join(import.meta.dirname, '.
 };
 
 program.name('vovk').description('Vovk CLI').version(vovkCliPackage.version);
-
-initProgram(program.command('init'));
 
 program
   .command('dev')
@@ -224,6 +221,7 @@ program
   );
 
 program
+  .command('init')
   .description('Initialize Vovk.ts at existing Next.js project')
   .option('--prefix <prefix>', 'directory to initialize project in')
   .option('-y, --yes', 'skip all prompts and use default values')

@@ -5,7 +5,7 @@ import updateConfigProperty from '../../lib/updateConfigProperty.mts';
 
 await describe('CLI new controller and flags', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
-  const dir = 'tmp_test_dir';
+  const dir = 'tmp_test_dir_new_controller_flags';
   const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
     cwd,
     dir,

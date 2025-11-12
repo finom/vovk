@@ -5,7 +5,7 @@ import updateConfig from '../../lib/updateConfig.mts';
 
 await describe('Custom components', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
-  const dir = 'tmp_test_dir';
+  const dir = 'tmp_test_dir_new_custom_component';
   const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
     cwd,
     dir,

@@ -5,7 +5,7 @@ import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 await describe('CLI new controller and service', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
-    dir: 'tmp_test_dir',
+    dir: 'tmp_test_dir_new_controller_and_service',
   });
 
   await it('New service only', async () => {

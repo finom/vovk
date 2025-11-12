@@ -9,7 +9,7 @@ await describe('Client templates', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, assertFile, vovkDevAndKill, assertDirFileList } =
     getCLIAssertions({
       cwd: path.resolve(import.meta.dirname, '../../..'),
-      dir: 'tmp_test_dir',
+      dir: 'tmp_test_dir_client_templates',
     });
   const customTemplatesDir = path.join(import.meta.dirname, '../../data/client-templates');
 
@@ -176,16 +176,16 @@ await describe('Client templates', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --from=readme --from=packageJson --out ${compiledClientFolderName}`
     );
-    await assertFile(`${compiledClientFolderName}/README.md`, ['tmp_test_dir']);
-    await assertFile(`${compiledClientFolderName}/package.json`, ['"name": "tmp_test_dir"']);
+    await assertFile(`${compiledClientFolderName}/README.md`, ['tmp_test_dir_client_templates']);
+    await assertFile(`${compiledClientFolderName}/package.json`, ['"name": "tmp_test_dir_client_templates"']);
   });
 
   await it('Generates Python client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --from=py --out ${compiledClientFolderName}`);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await assertDirFileList(compiledClientFolderName, ['src', 'README.md', 'setup.cfg', 'pyproject.toml']);
-    await assertDirFileList(`${compiledClientFolderName}/src`, ['tmp_test_dir']);
-    await assertDirFileList(`${compiledClientFolderName}/src/tmp_test_dir`, [
+    await assertDirFileList(`${compiledClientFolderName}/src`, ['tmp_test_dir_client_templates']);
+    await assertDirFileList(`${compiledClientFolderName}/src/tmp_test_dir_client_templates`, [
       '__init__.py',
       'api_client.py',
       'py.typed',

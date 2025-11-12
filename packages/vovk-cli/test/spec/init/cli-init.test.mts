@@ -21,7 +21,7 @@ const combos = {
 };
 
 await describe('CLI init', async () => {
-  const dir = 'tmp_test_dir';
+  const dir = 'tmp_test_dir_init';
   const cwd = path.resolve(import.meta.dirname, '../../..');
 
   const {

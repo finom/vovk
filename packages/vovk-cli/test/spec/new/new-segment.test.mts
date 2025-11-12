@@ -6,7 +6,7 @@ import assert from 'node:assert';
 await describe('CLI new segment', async () => {
   const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
-    dir: 'tmp_test_dir',
+    dir: 'tmp_test_dir_new_segment',
   });
 
   await it('New root segment', async () => {

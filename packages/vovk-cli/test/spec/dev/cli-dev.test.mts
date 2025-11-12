@@ -12,7 +12,7 @@ let dev: Promise<string> & {
 
 await describe('CLI dev', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
-  const dir = 'tmp_test_dir';
+  const dir = 'tmp_test_dir_dev';
   const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({ cwd, dir });
   const getSchema = async () =>
     JSON.parse(await fs.readFile(path.join(cwd, dir, '.vovk-schema/root.json'), 'utf8')) as VovkSegmentSchema;

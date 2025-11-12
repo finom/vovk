@@ -11,7 +11,7 @@ import updateConfigProperty from '../../lib/updateConfigProperty.mts';
 await describe('TypeScript bundle', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, vovkDevAndKill, assertDirFileList } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
-    dir: 'tmp_test_dir',
+    dir: 'tmp_test_dir_bundle',
   });
 
   const setupBuildConfig = async () => {

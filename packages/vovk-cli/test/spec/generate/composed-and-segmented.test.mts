@@ -10,7 +10,7 @@ await describe('Composed & Segmented client', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, assertNotExists, vovkDevAndKill, assertDirFileList } =
     getCLIAssertions({
       cwd: path.resolve(import.meta.dirname, '../../..'),
-      dir: 'tmp_test_dir',
+      dir: 'tmp_test_dir_composed_and_segmented',
     });
 
   beforeEach(async () => {
