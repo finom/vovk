@@ -1,6 +1,6 @@
 {
   "name": "vovk-zod",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "description": "Zod validation for Vovk.ts",
   "main": "./esm/index.js",
   "module": "./cjs/index.js",
