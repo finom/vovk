@@ -27,7 +27,7 @@
     "vpub:version": "npm version --prefix ./packages/$PACKAGE $VERSION_TYPE --no-git-tag-version",
     "vpub:bump-deps": "node --experimental-strip-types ./scripts/bump-dependencies.ts",
     "vpub:build": "npm run build",
-    "vpub:commit": "if [ \"$NPM_TAG\" != \"draft\" ]; then git commit -am \"$TAG\"; fi",
+    "vpub:commit": "if [ \"$NPM_TAG\" != \"draft\" ]; then git commit -am \"$NPM_TAG\"; fi",
     "vpub:commit-and-publish": "TAG=$PACKAGE-v$(node -p \"require('./packages/$PACKAGE/package.json').version\") && npm run vpub:commit && npm run --prefix ./packages/$PACKAGE npm-publish -- --tag=$NPM_TAG && git push && git push --tags",
     "vpub": "npm run vpub-check-vars && npm t && npm-run-all -s vpub:*",
     "vpub-notest": "npm run vpub-check-vars && npm-run-all -s vpub:*",
