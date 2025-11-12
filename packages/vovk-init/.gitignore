@@ -1,3 +1,0 @@
-*.d.mts
-*.mjs
-!eslint.config.js
