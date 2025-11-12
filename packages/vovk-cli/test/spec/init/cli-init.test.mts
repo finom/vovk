@@ -72,7 +72,7 @@ await describe('CLI init', async () => {
   });
 
   await it('Works with --yes and --dry-run', async () => {
-    await createNextApp('--turbopack');
+    await createNextApp();
     await vovkInit('--yes --dry-run');
     await assertConfig([], null);
 
@@ -83,7 +83,7 @@ await describe('CLI init', async () => {
     });
 
     await assertScripts({
-      dev: 'next dev --turbopack',
+      dev: 'next dev',
     });
 
     await assertTsConfig(true);
@@ -131,20 +131,20 @@ await describe('CLI init', async () => {
   });
 
   await it('Preserves next dev flags with --update-scripts=implicit', async () => {
-    await createNextApp('--turbopack');
+    await createNextApp();
     await vovkInit('--yes --update-scripts=implicit');
 
     await assertScripts({
-      dev: 'vovk dev --next-dev -- --turbopack',
+      dev: 'vovk dev --next-dev',
     });
   });
 
   await it('Preserves next dev flags with --update-scripts=explicit', async () => {
-    await createNextApp('--turbopack');
+    await createNextApp();
     await vovkInit('--yes --update-scripts=explicit');
 
     await assertScripts({
-      dev: "PORT=3000 concurrently 'next dev --turbopack' 'vovk dev' --kill-others",
+      dev: "PORT=3000 concurrently 'next dev' 'vovk dev' --kill-others",
     });
   });
 
