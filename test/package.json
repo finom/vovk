@@ -7,8 +7,8 @@
   "author": "Andrey Gubanov",
   "scripts": {
     "ncu": "npm-check-updates -u && npm i",
-    "dev": "npm run generate-modules-from-templates && npm run build-other-compiled-sources && node ../packages/vovk-cli/dist/index.mjs dev --next-dev",
-    "dev-exit": "npm run generate-modules-from-templates && npm run build-other-compiled-sources && node ../packages/vovk-cli/dist/index.mjs dev --next-dev --exit",
+    "dev": "npm run generate-modules-from-templates && npm run build-other-compiled-sources && node ../packages/vovk-cli/dist/index.mjs dev --next-dev -- --webpack",
+    "dev-exit": "npm run generate-modules-from-templates && npm run build-other-compiled-sources && node ../packages/vovk-cli/dist/index.mjs dev --next-dev --exit -- --webpack",
     "build": "NODE_ENV=test next build",
     "start": "NODE_ENV=test next start",
     "lint": "next lint",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
     "@types/node": "^24.10.1",
-    "@types/react": "^19",
+    "@types/react": "19.2.3",
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint-config-next": "16.0.1",

@@ -28,19 +28,7 @@
     ],
     "baseUrl": ".",
     "paths": {
-      /* "vovk/*": ["../packages/vovk/*"],
-      "vovk-cli/*": ["../packages/vovk-cli/*"],
-      "vovk-validate-client-ajv/*": ["../packages/vovk-ajv/*"],
-      "vovk-python/*": ["../packages/vovk-python/*"], */
-      "next/*": [
-        "./node_modules/next/*"
-      ],
-      "react/*": [
-        "../node_modules/react/*"
-      ],
-      "vovk/*": [
-        "../node_modules/vovk/mjs/*"
-      ]
+      "vovk": ["../packages/vovk/src/index.ts"],
     },
     "target": "ES2017",
     "lib": [
