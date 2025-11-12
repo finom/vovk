@@ -39,7 +39,7 @@
     "vovk-ajv": "^0.0.0-beta.1",
     "vovk-client": "^0.0.4-beta.1",
     "vovk-python": "^0.0.1-beta.1",
-    "vovk-rust": "^0.0.1-beta.0"
+    "vovk-rust": "^0.0.1-beta.1"
   },
   "optionalDependencies": {
     "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.44"
