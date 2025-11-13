@@ -50,15 +50,17 @@ export function runScript(
     });
 
     child.onExit((exitCode) => {
-      if (exitCode.exitCode === 0) {
-        resolve(result); // Resolve with the accumulated result
-      } else {
-        reject(
-          new Error(
-            `Command "${commandWithArgs}" (cwd=${options.cwd}) exited with code ${exitCode.exitCode}\nOutput:\n${result || 'no output'}`
-          )
-        );
-      }
+      setTimeout(() => {
+        if (exitCode.exitCode === 0) {
+          resolve(result); // Resolve with the accumulated result
+        } else {
+          reject(
+            new Error(
+              `Command "${commandWithArgs}" (cwd=${options.cwd}) exited with code ${exitCode.exitCode}\nOutput:\n${result || 'no output'}`
+            )
+          );
+        }
+      }, 500);
     });
   }) as Promise<string> & { kill: () => Promise<void> };
 

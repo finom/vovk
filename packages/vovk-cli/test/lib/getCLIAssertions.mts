@@ -15,9 +15,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     return runScript(command, { cwd, ...options });
   }
 
-  async function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
-    await runScript(command, { cwd: projectDir, ...options });
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
+    return runScript(command, { cwd: projectDir, ...options });
   }
 
   async function createNextApp(extraParams?: string) {
