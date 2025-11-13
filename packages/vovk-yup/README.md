@@ -8,6 +8,12 @@
   </a>
   <br>
   <strong>Back-end for Next.js</strong>
+  <br />
+  <a href="https://vovk.dev/about">About Vovk.ts</a>
+  &nbsp;
+  <a href="https://vovk.dev/quick-install">Quick Start</a>
+  &nbsp;
+  <a href="https://github.com/finom/vovk">Github Repo</a>
 </p>
 
 ---

@@ -8,13 +8,17 @@
   </a>
   <br>
   <strong>Back-end for Next.js</strong>
+  <br />
+  <a href="https://vovk.dev/about">About Vovk.ts</a>
+  &nbsp;
+  <a href="https://vovk.dev/quick-install">Quick Start</a>
+  &nbsp;
+  <a href="https://github.com/finom/vovk">Github Repo</a>
 </p>
 
 ---
 
-## Vovk.ts (draft version)
-
-(beta is coming soon)
+## Vovk.ts (beta)
 
 Vovk.ts is a conceptual back-end meta-framework built on top of the Next.js App Router, designed for efficiency and an unprecedented developer experience.
 
