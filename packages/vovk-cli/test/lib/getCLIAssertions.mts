@@ -15,8 +15,9 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     return runScript(command, { cwd, ...options });
   }
 
-  function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
-    return runScript(command, { cwd: projectDir, ...options });
+  async function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
+    await runScript(command, { cwd: projectDir, ...options });
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
   async function createNextApp(extraParams?: string) {
@@ -30,7 +31,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function vovkInit(extraParams?: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
-    const script = `./dist/index.mjs init --prefix ${dir} --channel=draft --log-level=debug ${extraParams}`;
+    // Use --channel=draft for draft features
+    const script = `./dist/index.mjs init --prefix ${dir} --log-level=debug ${extraParams}`;
     return runScript(script, {
       ...options,
       cwd,
