@@ -7,7 +7,7 @@
     </picture>
   </a>
   <br>
-  <strong>Back-end for Next.js</strong>
+  <strong>Back-end for Next.js (beta)</strong>
   <br />
   <a href="https://vovk.dev/about">About Vovk.ts</a>
   &nbsp;
