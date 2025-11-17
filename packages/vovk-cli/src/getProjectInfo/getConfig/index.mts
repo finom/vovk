@@ -98,7 +98,7 @@ export default async function getConfig({
   };
 
   if (typeof conf.exposeConfigKeys === 'undefined') {
-    config.exposeConfigKeys = ['libs'] satisfies (keyof VovkStrictConfig)[];
+    config.exposeConfigKeys = ['libs', 'rootEntry'] satisfies (keyof VovkStrictConfig)[];
   } else if (conf.exposeConfigKeys === true) {
     config.exposeConfigKeys = Object.keys(config) as (keyof VovkStrictConfig)[];
   } else if (Array.isArray(conf.exposeConfigKeys)) {

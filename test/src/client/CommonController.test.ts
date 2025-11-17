@@ -308,4 +308,33 @@ describe('Client with vovk-client', () => {
     const expected = { hello: 'world' };
     deepStrictEqual(result, expected);
   });
+
+  it('Should extract URL using getURL method with apiRoot parameter', async () => {
+    const someApiRoot = 'http://example.com/api';
+    const url = CommonControllerRPC.postWithAll.getURL({
+      apiRoot: someApiRoot,
+      params: { hello: 'world' },
+      query: { simpleQueryParam: 'queryValue' },
+    });
+    deepStrictEqual(url, `${someApiRoot}/foo/client/common/with-all/world?simpleQueryParam=queryValue`);
+  });
+
+  it('Should extract URL using getURL method without apiRoot parameter', async () => {
+    const url = CommonControllerRPC.postWithAll.getURL({
+      params: { hello: 'world' },
+      query: { simpleQueryParam: 'queryValue' },
+    });
+    deepStrictEqual(url, `${apiRoot}/foo/client/common/with-all/world?simpleQueryParam=queryValue`);
+  });
+
+  it('Should extract URL using getURL method without parameters with apiRoot parameter', async () => {
+    const someApiRoot = 'http://example.com/api';
+    const url = CommonControllerRPC.getHelloWorldObjectLiteral.getURL({ apiRoot: someApiRoot });
+    deepStrictEqual(url, `${someApiRoot}/foo/client/common/get-hello-world-object-literal`);
+  });
+
+  it('Should extract URL using getURL method without parameters and without apiRoot parameter', async () => {
+    const url = CommonControllerRPC.getHelloWorldObjectLiteral.getURL();
+    deepStrictEqual(url, `${apiRoot}/foo/client/common/get-hello-world-object-literal`);
+  });
 });

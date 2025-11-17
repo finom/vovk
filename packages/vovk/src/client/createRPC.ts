@@ -25,7 +25,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   for (const [key, value] of Object.entries(params ?? {})) {
     result = result.replace(`{${key}}`, value as string);
   }
-  return `${result}${queryStr ? '?' : ''}${queryStr}`;
+  return `${result}${queryStr ? `?${queryStr}` : ''}`;
 };
 
 export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
@@ -58,11 +58,12 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
 
   const forceApiRoot = controllerSchema.forceApiRoot ?? segmentSchema.forceApiRoot;
-  const originalApiRoot = forceApiRoot ?? options?.apiRoot ?? '/api';
+  const configRootEntry = schema.meta?.config?.rootEntry;
+  const originalApiRoot = forceApiRoot ?? options?.apiRoot ?? (configRootEntry ? `/${configRootEntry}` : '/api');
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
-    const getURL = ({ apiRoot, params, query }: { apiRoot?: string; params: unknown; query: unknown }) => {
+    const getURL = ({ apiRoot, params, query }: { apiRoot?: string; params?: unknown; query?: unknown } = {}) => {
       apiRoot = apiRoot ?? originalApiRoot;
       const endpoint = [
         apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
@@ -147,7 +148,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
     handler.fullSchema = schema;
     handler.isRPC = true;
     handler.apiRoot = originalApiRoot;
-    handler.path = [segmentNamePath, controllerPrefix, path].filter(Boolean).join('/');
+    handler.getURL = getURL as KnownAny; // TODO fix typing
     handler.queryKey = (key?: unknown[]) => [
       handler.segmentSchema.segmentName,
       handler.controllerSchema.prefix ?? '',
