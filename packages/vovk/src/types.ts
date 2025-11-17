@@ -327,15 +327,15 @@ export interface VovkLLMTool {
   ) => Promise<KnownAny>;
   name: string;
   description: string;
-  parameters?: {
+  parameters: {
     type: 'object';
-    properties?: {
+    properties: {
       body?: VovkBasicJSONSchema;
       query?: VovkBasicJSONSchema;
       params?: VovkBasicJSONSchema;
     };
     required?: ('body' | 'query' | 'params')[];
-    additionalProperties?: boolean;
+    additionalProperties: false;
   };
   models:
     | {
@@ -350,8 +350,8 @@ export interface VovkLLMTool {
 }
 
 export type VovkBasicJSONSchema = {
-  $schema?: string;
-  type?: string | string[];
+  $schema?: 'https://json-schema.org/draft/2020-12/schema' | 'http://json-schema.org/draft-07/schema#';
+  type?: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'integer';
   format?: string;
   $ref?: string;
   items?: VovkBasicJSONSchema;

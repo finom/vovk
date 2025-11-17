@@ -1,15 +1,15 @@
-import type { KnownAny, VovkHandlerSchema, VovkLLMTool, VovkBasicJSONSchema } from '../types';
+import type { KnownAny, VovkHandlerSchema, VovkLLMTool } from '../types';
 
 type Handler = ((...args: KnownAny[]) => KnownAny) & {
   fn?: (input: KnownAny) => KnownAny;
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
   models?: {
-    body?: VovkBasicJSONSchema;
-    query?: VovkBasicJSONSchema;
-    params?: VovkBasicJSONSchema;
-    output?: VovkBasicJSONSchema;
-    iteration?: VovkBasicJSONSchema;
+    body?: KnownAny;
+    query?: KnownAny;
+    params?: KnownAny;
+    output?: KnownAny;
+    iteration?: KnownAny;
   };
 };
 
