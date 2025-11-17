@@ -132,7 +132,9 @@ export type ClientMethod<
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkSchema;
-  getURL: IsEmptyObject<StaticMethodInput<T>> extends true
+  getURL: IsEmptyObject<
+    Pick<Prettify<StaticMethodInput<T>>, Extract<'params' | 'query', keyof Prettify<StaticMethodInput<T>>>>
+  > extends true
     ? (urlInput?: { apiRoot?: string }) => string
     : (
         urlInput: Pick<
