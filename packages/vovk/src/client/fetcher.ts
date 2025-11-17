@@ -35,7 +35,7 @@ export function createFetcher<T>({
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
   const newFetcher: VovkFetcher<VovkFetcherOptions<T>> = async (
-    { httpMethod, getEndpoint, validate, defaultHandler, defaultStreamHandler, schema },
+    { httpMethod, getURL, validate, defaultHandler, defaultStreamHandler, schema },
     inputOptions
   ) => {
     let response: Response | null = null;
@@ -45,7 +45,7 @@ export function createFetcher<T>({
     try {
       const { meta, apiRoot, disableClientValidation, init, interpretAs } = inputOptions;
       let { body, query, params } = inputOptions;
-      const endpoint = getEndpoint({ apiRoot, params, query });
+      const endpoint = getURL({ apiRoot, params, query });
       const unusedParams = Array.from(
         new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname.matchAll(/\{([^}]+)\}/g)
       ).map((m) => m[1]);

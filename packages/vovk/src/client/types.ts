@@ -154,7 +154,7 @@ export type VovkFetcher<TFetcherOptions> = (
   options: {
     name: string;
     httpMethod: HttpMethod;
-    getEndpoint: (data: { apiRoot: string | undefined; params: unknown; query: unknown }) => string;
+    getURL: (data: { apiRoot: string | undefined; params: unknown; query: unknown }) => string;
     validate: (
       inputOptions: {
         body?: unknown;

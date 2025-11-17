@@ -62,7 +62,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
-    const getEndpoint = ({ apiRoot, params, query }: { apiRoot?: string; params: unknown; query: unknown }) => {
+    const getURL = ({ apiRoot, params, query }: { apiRoot?: string; params: unknown; query: unknown }) => {
       apiRoot = apiRoot ?? originalApiRoot;
       const endpoint = [
         apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
@@ -119,7 +119,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       const internalOptions: Parameters<typeof fetcher>[0] = {
         name: staticMethodName,
         httpMethod: httpMethod as HttpMethod,
-        getEndpoint,
+        getURL,
         validate,
         defaultHandler,
         defaultStreamHandler,
