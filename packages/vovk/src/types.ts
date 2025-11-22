@@ -324,7 +324,7 @@ export interface VovkLLMTool {
       params?: KnownAny;
     },
     options?: KnownAny
-  ) => Promise<KnownAny>;
+  ) => KnownAny;
   name: string;
   description: string;
   parameters: {
