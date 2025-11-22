@@ -95,7 +95,7 @@ export type ClientMethodReturn<
   R,
 > =
   ReturnType<T> extends
-    | Awaited<JSONLinesResponse<infer U>>
+    | Promise<JSONLinesResponse<infer U>>
     | JSONLinesResponse<infer U>
     | Iterator<infer U>
     | AsyncIterator<infer U>
