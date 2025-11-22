@@ -60,7 +60,7 @@ export function runScript(
             )
           );
         }
-      }, 500);
+      }, 1000);
     });
   }) as Promise<string> & { kill: () => Promise<void> };
 
