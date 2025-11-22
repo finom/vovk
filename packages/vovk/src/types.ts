@@ -328,14 +328,14 @@ export interface VovkLLMTool {
   name: string;
   description: string;
   parameters: {
-    type: 'object';
-    properties: {
+    type?: 'object';
+    properties?: {
       body?: VovkBasicJSONSchema;
       query?: VovkBasicJSONSchema;
       params?: VovkBasicJSONSchema;
     };
     required?: ('body' | 'query' | 'params')[];
-    additionalProperties: false;
+    additionalProperties?: false;
   };
   models:
     | {
