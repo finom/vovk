@@ -337,15 +337,13 @@ export interface VovkLLMTool {
     required?: ('body' | 'query' | 'params')[];
     additionalProperties?: false;
   };
-  models:
-    | {
-        body?: KnownAny;
-        query?: KnownAny;
-        params?: KnownAny;
-        output?: KnownAny;
-        iteration?: KnownAny;
-      }
-    | undefined;
+  models?: {
+    body?: KnownAny;
+    query?: KnownAny;
+    params?: KnownAny;
+    output?: KnownAny;
+    iteration?: KnownAny;
+  };
   type: 'function';
 }
 
