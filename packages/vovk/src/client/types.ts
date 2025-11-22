@@ -94,7 +94,11 @@ export type ClientMethodReturn<
   TStreamIteration,
   R,
 > =
-  ReturnType<T> extends Awaited<JSONLinesResponse<infer U>> | Iterator<infer U> | AsyncIterator<infer U>
+  ReturnType<T> extends
+    | Awaited<JSONLinesResponse<infer U>>
+    | JSONLinesResponse<infer U>
+    | Iterator<infer U>
+    | AsyncIterator<infer U>
     ? Promise<VovkStreamAsyncIterable<U>>
     : R extends object
       ? Promise<Awaited<R>>
