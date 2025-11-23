@@ -5,7 +5,7 @@ import NoValidationControllerAndServiceEntityService from './NoValidationControl
 @prefix('no-validation-controller-and-service-entities')
 export default class NoValidationControllerAndServiceEntityController {
   @operation({
-    summary: 'Get NoValidationControllerAndServiceEntities',
+    summary: 'Get noValidationControllerAndServiceEntities',
   })
   @get()
   static getNoValidationControllerAndServiceEntities = () => {
@@ -13,7 +13,7 @@ export default class NoValidationControllerAndServiceEntityController {
   };
 
   @operation({
-    summary: 'Get single NoValidationControllerAndServiceEntity',
+    summary: 'Get single noValidationControllerAndServiceEntity',
   })
   @get('{id}')
   static getSingleNoValidationControllerAndServiceEntity = (_req: VovkRequest, { id }: { id: string }) => {
@@ -21,7 +21,7 @@ export default class NoValidationControllerAndServiceEntityController {
   };
 
   @operation({
-    summary: 'Update NoValidationControllerAndServiceEntity',
+    summary: 'Update noValidationControllerAndServiceEntity',
   })
   @put('{id}')
   static updateNoValidationControllerAndServiceEntity = async (
@@ -34,6 +34,9 @@ export default class NoValidationControllerAndServiceEntityController {
     return NoValidationControllerAndServiceEntityService.updateNoValidationControllerAndServiceEntity(id, body);
   };
 
+  @operation({
+    summary: 'Create noValidationControllerAndServiceEntity',
+  })
   @post()
   static createNoValidationControllerAndServiceEntity = async (req: VovkRequest<{ todo: true }>) => {
     const body = await req.json();
@@ -41,8 +44,11 @@ export default class NoValidationControllerAndServiceEntityController {
     return NoValidationControllerAndServiceEntityService.createNoValidationControllerAndServiceEntity(body);
   };
 
+  @operation({
+    summary: 'Delete noValidationControllerAndServiceEntity',
+  })
   @del('{id}')
-  static deleteNoValidationControllerAndServiceEntity = (_req: VovkRequest<unknown>, params: { id: string }) => {
+  static deleteNoValidationControllerAndServiceEntity = (_req: VovkRequest, params: { id: string }) => {
     const { id } = params;
 
     return NoValidationControllerAndServiceEntityService.deleteNoValidationControllerAndServiceEntity(id);

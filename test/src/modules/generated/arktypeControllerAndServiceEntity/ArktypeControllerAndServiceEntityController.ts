@@ -7,7 +7,7 @@ import ArktypeControllerAndServiceEntityService from './ArktypeControllerAndServ
 @prefix('arktype-controller-and-service-entities')
 export default class ArktypeControllerAndServiceEntityController {
   @operation({
-    summary: 'Get ArktypeControllerAndServiceEntities',
+    summary: 'Get arktypeControllerAndServiceEntities',
   })
   @get()
   static getArktypeControllerAndServiceEntities = withArk({
@@ -17,7 +17,7 @@ export default class ArktypeControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Get single ArktypeControllerAndServiceEntity',
+    summary: 'Get single arktypeControllerAndServiceEntity',
   })
   @get('{id}')
   static getSingleArktypeControllerAndServiceEntity = withArk({
@@ -28,7 +28,7 @@ export default class ArktypeControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Update ArktypeControllerAndServiceEntity',
+    summary: 'Update arktypeControllerAndServiceEntity',
   })
   @put('{id}')
   static updateArktypeControllerAndServiceEntity = withArk({
@@ -41,6 +41,9 @@ export default class ArktypeControllerAndServiceEntityController {
     },
   });
 
+  @operation({
+    summary: 'Create arktypeControllerAndServiceEntity',
+  })
   @post()
   static createArktypeControllerAndServiceEntity = withArk({
     body: type({ todo: type('true') }),
@@ -51,6 +54,9 @@ export default class ArktypeControllerAndServiceEntityController {
     },
   });
 
+  @operation({
+    summary: 'Delete arktypeControllerAndServiceEntity',
+  })
   @del('{id}')
   static deleteArktypeControllerAndServiceEntity = withArk({
     params: type({ id: type('string') }),

@@ -7,7 +7,7 @@ import YupControllerAndServiceEntityService from './YupControllerAndServiceEntit
 @prefix('yup-controller-and-service-entities')
 export default class YupControllerAndServiceEntityController {
   @operation({
-    summary: 'Get YupControllerAndServiceEntities',
+    summary: 'Get yupControllerAndServiceEntities',
   })
   @get()
   static getYupControllerAndServiceEntities = withYup({
@@ -17,7 +17,7 @@ export default class YupControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Get single YupControllerAndServiceEntity',
+    summary: 'Get single yupControllerAndServiceEntity',
   })
   @get('{id}')
   static getSingleYupControllerAndServiceEntity = withYup({
@@ -30,7 +30,7 @@ export default class YupControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Update YupControllerAndServiceEntity',
+    summary: 'Update yupControllerAndServiceEntity',
   })
   @put('{id}')
   static updateYupControllerAndServiceEntity = withYup({

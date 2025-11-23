@@ -7,7 +7,7 @@ import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntit
 @prefix('zod-controller-and-service-entities')
 export default class ZodControllerAndServiceEntityController {
   @operation({
-    summary: 'Get ZodControllerAndServiceEntities',
+    summary: 'Get zodControllerAndServiceEntities',
   })
   @get()
   static getZodControllerAndServiceEntities = withZod({
@@ -17,7 +17,7 @@ export default class ZodControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Get single ZodControllerAndServiceEntity',
+    summary: 'Get single zodControllerAndServiceEntity',
   })
   @get('{id}')
   static getSingleZodControllerAndServiceEntity = withZod({
@@ -30,7 +30,7 @@ export default class ZodControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Update ZodControllerAndServiceEntity',
+    summary: 'Update zodControllerAndServiceEntity',
   })
   @put('{id}')
   static updateZodControllerAndServiceEntity = withZod({
@@ -45,6 +45,9 @@ export default class ZodControllerAndServiceEntityController {
     },
   });
 
+  @operation({
+    summary: 'Create zodControllerAndServiceEntity',
+  })
   @post()
   static createZodControllerAndServiceEntity = withZod({
     body: z.object({
@@ -57,6 +60,9 @@ export default class ZodControllerAndServiceEntityController {
     },
   });
 
+  @operation({
+    summary: 'Delete zodControllerAndServiceEntity',
+  })
   @del('{id}')
   static deleteZodControllerAndServiceEntity = withZod({
     params: z.object({

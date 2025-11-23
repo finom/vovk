@@ -5,7 +5,7 @@ import withArk from '../../../lib/withArk.ts';
 @prefix('arktype-controller-only-entities')
 export default class ArktypeControllerOnlyEntityController {
   @operation({
-    summary: 'Get ArktypeControllerOnlyEntities',
+    summary: 'Get arktypeControllerOnlyEntities',
   })
   @get()
   static getArktypeControllerOnlyEntities = withArk({
@@ -15,7 +15,7 @@ export default class ArktypeControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Get single ArktypeControllerOnlyEntity',
+    summary: 'Get single arktypeControllerOnlyEntity',
   })
   @get('{id}')
   static getSingleArktypeControllerOnlyEntity = withArk({
@@ -26,7 +26,7 @@ export default class ArktypeControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Update ArktypeControllerOnlyEntity',
+    summary: 'Update arktypeControllerOnlyEntity',
   })
   @put('{id}')
   static updateArktypeControllerOnlyEntity = withArk({
@@ -39,6 +39,9 @@ export default class ArktypeControllerOnlyEntityController {
     },
   });
 
+  @operation({
+    summary: 'Create arktypeControllerOnlyEntity',
+  })
   @post()
   static createArktypeControllerOnlyEntity = withArk({
     body: type({ todo: type('true') }),
@@ -49,6 +52,9 @@ export default class ArktypeControllerOnlyEntityController {
     },
   });
 
+  @operation({
+    summary: 'Delete arktypeControllerOnlyEntity',
+  })
   @del('{id}')
   static deleteArktypeControllerOnlyEntity = withArk({
     params: type({ id: type('string') }),

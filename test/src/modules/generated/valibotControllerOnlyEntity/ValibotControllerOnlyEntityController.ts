@@ -5,7 +5,7 @@ import withValibot from '../../../lib/withValibot.ts';
 @prefix('valibot-controller-only-entities')
 export default class ValibotControllerOnlyEntityController {
   @operation({
-    summary: 'Get ValibotControllerOnlyEntities',
+    summary: 'Get valibotControllerOnlyEntities',
   })
   @get()
   static getValibotControllerOnlyEntities = withValibot({
@@ -15,7 +15,7 @@ export default class ValibotControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Get single ValibotControllerOnlyEntity',
+    summary: 'Get single valibotControllerOnlyEntity',
   })
   @get('{id}')
   static getSingleValibotControllerOnlyEntity = withValibot({
@@ -26,7 +26,7 @@ export default class ValibotControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Update ValibotControllerOnlyEntity',
+    summary: 'Update valibotControllerOnlyEntity',
   })
   @put('{id}')
   static updateValibotControllerOnlyEntity = withValibot({
@@ -39,6 +39,9 @@ export default class ValibotControllerOnlyEntityController {
     },
   });
 
+  @operation({
+    summary: 'Create valibotControllerOnlyEntity',
+  })
   @post()
   static createValibotControllerOnlyEntity = withValibot({
     body: v.object({ todo: v.literal(true) }),
@@ -49,6 +52,9 @@ export default class ValibotControllerOnlyEntityController {
     },
   });
 
+  @operation({
+    summary: 'Delete valibotControllerOnlyEntity',
+  })
   @del('{id}')
   static deleteValibotControllerOnlyEntity = withValibot({
     params: v.object({ id: v.string() }),

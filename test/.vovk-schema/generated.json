@@ -13,30 +13,36 @@
           "path": "",
           "httpMethod": "GET",
           "operationObject": {
-            "summary": "Get NoValidationControllerOnlyEntities"
+            "summary": "Get noValidationControllerOnlyEntities"
           }
         },
         "getSingleNoValidationControllerOnlyEntity": {
           "path": "{id}",
           "httpMethod": "GET",
           "operationObject": {
-            "summary": "Get single NoValidationControllerOnlyEntity"
+            "summary": "Get single noValidationControllerOnlyEntity"
           }
         },
         "updateNoValidationControllerOnlyEntity": {
           "path": "{id}",
           "httpMethod": "PUT",
           "operationObject": {
-            "summary": "Update NoValidationControllerOnlyEntity"
+            "summary": "Update noValidationControllerOnlyEntity"
           }
         },
         "createNoValidationControllerOnlyEntity": {
           "path": "",
-          "httpMethod": "POST"
+          "httpMethod": "POST",
+          "operationObject": {
+            "summary": "Create noValidationControllerOnlyEntity"
+          }
         },
         "deleteNoValidationControllerOnlyEntity": {
           "path": "{id}",
-          "httpMethod": "DELETE"
+          "httpMethod": "DELETE",
+          "operationObject": {
+            "summary": "Delete noValidationControllerOnlyEntity"
+          }
         }
       }
     },
@@ -49,30 +55,36 @@
           "path": "",
           "httpMethod": "GET",
           "operationObject": {
-            "summary": "Get NoValidationControllerAndServiceEntities"
+            "summary": "Get noValidationControllerAndServiceEntities"
           }
         },
         "getSingleNoValidationControllerAndServiceEntity": {
           "path": "{id}",
           "httpMethod": "GET",
           "operationObject": {
-            "summary": "Get single NoValidationControllerAndServiceEntity"
+            "summary": "Get single noValidationControllerAndServiceEntity"
           }
         },
         "updateNoValidationControllerAndServiceEntity": {
           "path": "{id}",
           "httpMethod": "PUT",
           "operationObject": {
-            "summary": "Update NoValidationControllerAndServiceEntity"
+            "summary": "Update noValidationControllerAndServiceEntity"
           }
         },
         "createNoValidationControllerAndServiceEntity": {
           "path": "",
-          "httpMethod": "POST"
+          "httpMethod": "POST",
+          "operationObject": {
+            "summary": "Create noValidationControllerAndServiceEntity"
+          }
         },
         "deleteNoValidationControllerAndServiceEntity": {
           "path": "{id}",
-          "httpMethod": "DELETE"
+          "httpMethod": "DELETE",
+          "operationObject": {
+            "summary": "Delete noValidationControllerAndServiceEntity"
+          }
         }
       }
     },
@@ -84,7 +96,7 @@
         "getZodControllerOnlyEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get ZodControllerOnlyEntities"
+            "summary": "Get zodControllerOnlyEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -106,7 +118,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single ZodControllerOnlyEntity"
+            "summary": "Get single zodControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -142,7 +154,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update ZodControllerOnlyEntity"
+            "summary": "Update zodControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -164,6 +176,9 @@
               "additionalProperties": false
             }
           },
+          "operationObject": {
+            "summary": "Create zodControllerOnlyEntity"
+          },
           "path": "",
           "httpMethod": "POST"
         },
@@ -183,6 +198,9 @@
               "additionalProperties": false
             }
           },
+          "operationObject": {
+            "summary": "Delete zodControllerOnlyEntity"
+          },
           "path": "{id}",
           "httpMethod": "DELETE"
         }
@@ -196,7 +214,7 @@
         "getZodControllerAndServiceEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get ZodControllerAndServiceEntities"
+            "summary": "Get zodControllerAndServiceEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -218,7 +236,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single ZodControllerAndServiceEntity"
+            "summary": "Get single zodControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -254,7 +272,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update ZodControllerAndServiceEntity"
+            "summary": "Update zodControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -276,6 +294,9 @@
               "additionalProperties": false
             }
           },
+          "operationObject": {
+            "summary": "Create zodControllerAndServiceEntity"
+          },
           "path": "",
           "httpMethod": "POST"
         },
@@ -295,6 +316,9 @@
               "additionalProperties": false
             }
           },
+          "operationObject": {
+            "summary": "Delete zodControllerAndServiceEntity"
+          },
           "path": "{id}",
           "httpMethod": "DELETE"
         }
@@ -308,7 +332,7 @@
         "getYupControllerOnlyEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get YupControllerOnlyEntities"
+            "summary": "Get yupControllerOnlyEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -328,7 +352,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single YupControllerOnlyEntity"
+            "summary": "Get single yupControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -359,7 +383,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update YupControllerOnlyEntity"
+            "summary": "Update yupControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -408,7 +432,7 @@
         "getYupControllerAndServiceEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get YupControllerAndServiceEntities"
+            "summary": "Get yupControllerAndServiceEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -428,7 +452,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single YupControllerAndServiceEntity"
+            "summary": "Get single yupControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -459,7 +483,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update YupControllerAndServiceEntity"
+            "summary": "Update yupControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -508,7 +532,7 @@
         "getDtoControllerOnlyEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get DtoControllerOnlyEntities"
+            "summary": "Get dtoControllerOnlyEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -530,7 +554,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single DtoControllerOnlyEntity"
+            "summary": "Get single dtoControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -568,7 +592,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update DtoControllerOnlyEntity"
+            "summary": "Update dtoControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -592,6 +616,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Create dtoControllerOnlyEntity"
+          },
           "path": "",
           "httpMethod": "POST"
         },
@@ -611,6 +638,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Delete dtoControllerOnlyEntity"
+          },
           "path": "{id}",
           "httpMethod": "DELETE"
         }
@@ -624,7 +654,7 @@
         "getDtoControllerAndServiceEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get DtoControllerAndServiceEntities"
+            "summary": "Get dtoControllerAndServiceEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -646,7 +676,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single DtoControllerAndServiceEntity"
+            "summary": "Get single dtoControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -684,7 +714,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update DtoControllerAndServiceEntity"
+            "summary": "Update dtoControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -708,6 +738,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Create dtoControllerAndServiceEntity"
+          },
           "path": "",
           "httpMethod": "POST"
         },
@@ -727,6 +760,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Delete dtoControllerAndServiceEntity"
+          },
           "path": "{id}",
           "httpMethod": "DELETE"
         }
@@ -740,7 +776,7 @@
         "getValibotControllerOnlyEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get ValibotControllerOnlyEntities"
+            "summary": "Get valibotControllerOnlyEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -761,7 +797,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single ValibotControllerOnlyEntity"
+            "summary": "Get single valibotControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -794,7 +830,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update ValibotControllerOnlyEntity"
+            "summary": "Update valibotControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -814,6 +850,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Create valibotControllerOnlyEntity"
+          },
           "path": "",
           "httpMethod": "POST"
         },
@@ -832,6 +871,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Delete valibotControllerOnlyEntity"
+          },
           "path": "{id}",
           "httpMethod": "DELETE"
         }
@@ -845,7 +887,7 @@
         "getValibotControllerAndServiceEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get ValibotControllerAndServiceEntities"
+            "summary": "Get valibotControllerAndServiceEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -866,7 +908,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single ValibotControllerAndServiceEntity"
+            "summary": "Get single valibotControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -899,7 +941,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update ValibotControllerAndServiceEntity"
+            "summary": "Update valibotControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -919,6 +961,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Create valibotControllerAndServiceEntity"
+          },
           "path": "",
           "httpMethod": "POST"
         },
@@ -937,6 +982,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Delete valibotControllerAndServiceEntity"
+          },
           "path": "{id}",
           "httpMethod": "DELETE"
         }
@@ -950,7 +998,7 @@
         "getArktypeControllerOnlyEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get ArktypeControllerOnlyEntities"
+            "summary": "Get arktypeControllerOnlyEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -971,7 +1019,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single ArktypeControllerOnlyEntity"
+            "summary": "Get single arktypeControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -1004,7 +1052,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update ArktypeControllerOnlyEntity"
+            "summary": "Update arktypeControllerOnlyEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -1024,6 +1072,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Create arktypeControllerOnlyEntity"
+          },
           "path": "",
           "httpMethod": "POST"
         },
@@ -1042,6 +1093,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Delete arktypeControllerOnlyEntity"
+          },
           "path": "{id}",
           "httpMethod": "DELETE"
         }
@@ -1055,7 +1109,7 @@
         "getArktypeControllerAndServiceEntities": {
           "validation": {},
           "operationObject": {
-            "summary": "Get ArktypeControllerAndServiceEntities"
+            "summary": "Get arktypeControllerAndServiceEntities"
           },
           "path": "",
           "httpMethod": "GET"
@@ -1076,7 +1130,7 @@
             }
           },
           "operationObject": {
-            "summary": "Get single ArktypeControllerAndServiceEntity"
+            "summary": "Get single arktypeControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "GET"
@@ -1109,7 +1163,7 @@
             }
           },
           "operationObject": {
-            "summary": "Update ArktypeControllerAndServiceEntity"
+            "summary": "Update arktypeControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "PUT"
@@ -1129,6 +1183,9 @@
               ]
             }
           },
+          "operationObject": {
+            "summary": "Create arktypeControllerAndServiceEntity"
+          },
           "path": "",
           "httpMethod": "POST"
         },
@@ -1146,6 +1203,9 @@
                 "id"
               ]
             }
+          },
+          "operationObject": {
+            "summary": "Delete arktypeControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "DELETE"

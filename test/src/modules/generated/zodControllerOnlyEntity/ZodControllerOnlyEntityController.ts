@@ -5,7 +5,7 @@ import { z } from 'zod';
 @prefix('zod-controller-only-entities')
 export default class ZodControllerOnlyEntityController {
   @operation({
-    summary: 'Get ZodControllerOnlyEntities',
+    summary: 'Get zodControllerOnlyEntities',
   })
   @get()
   static getZodControllerOnlyEntities = withZod({
@@ -15,7 +15,7 @@ export default class ZodControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Get single ZodControllerOnlyEntity',
+    summary: 'Get single zodControllerOnlyEntity',
   })
   @get('{id}')
   static getSingleZodControllerOnlyEntity = withZod({
@@ -28,7 +28,7 @@ export default class ZodControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Update ZodControllerOnlyEntity',
+    summary: 'Update zodControllerOnlyEntity',
   })
   @put('{id}')
   static updateZodControllerOnlyEntity = withZod({
@@ -43,6 +43,9 @@ export default class ZodControllerOnlyEntityController {
     },
   });
 
+  @operation({
+    summary: 'Create zodControllerOnlyEntity',
+  })
   @post()
   static createZodControllerOnlyEntity = withZod({
     body: z.object({
@@ -55,6 +58,9 @@ export default class ZodControllerOnlyEntityController {
     },
   });
 
+  @operation({
+    summary: 'Delete zodControllerOnlyEntity',
+  })
   @del('{id}')
   static deleteZodControllerOnlyEntity = withZod({
     params: z.object({

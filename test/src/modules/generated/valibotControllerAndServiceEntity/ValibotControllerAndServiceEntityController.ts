@@ -7,7 +7,7 @@ import ValibotControllerAndServiceEntityService from './ValibotControllerAndServ
 @prefix('valibot-controller-and-service-entities')
 export default class ValibotControllerAndServiceEntityController {
   @operation({
-    summary: 'Get ValibotControllerAndServiceEntities',
+    summary: 'Get valibotControllerAndServiceEntities',
   })
   @get()
   static getValibotControllerAndServiceEntities = withValibot({
@@ -17,7 +17,7 @@ export default class ValibotControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Get single ValibotControllerAndServiceEntity',
+    summary: 'Get single valibotControllerAndServiceEntity',
   })
   @get('{id}')
   static getSingleValibotControllerAndServiceEntity = withValibot({
@@ -28,7 +28,7 @@ export default class ValibotControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Update ValibotControllerAndServiceEntity',
+    summary: 'Update valibotControllerAndServiceEntity',
   })
   @put('{id}')
   static updateValibotControllerAndServiceEntity = withValibot({
@@ -41,6 +41,9 @@ export default class ValibotControllerAndServiceEntityController {
     },
   });
 
+  @operation({
+    summary: 'Create valibotControllerAndServiceEntity',
+  })
   @post()
   static createValibotControllerAndServiceEntity = withValibot({
     body: v.object({ todo: v.literal(true) }),
@@ -51,6 +54,9 @@ export default class ValibotControllerAndServiceEntityController {
     },
   });
 
+  @operation({
+    summary: 'Delete valibotControllerAndServiceEntity',
+  })
   @del('{id}')
   static deleteValibotControllerAndServiceEntity = withValibot({
     params: v.object({ id: v.string() }),

@@ -5,7 +5,7 @@ import * as yup from 'yup';
 @prefix('yup-controller-only-entities')
 export default class YupControllerOnlyEntityController {
   @operation({
-    summary: 'Get YupControllerOnlyEntities',
+    summary: 'Get yupControllerOnlyEntities',
   })
   @get()
   static getYupControllerOnlyEntities = withYup({
@@ -15,7 +15,7 @@ export default class YupControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Get single YupControllerOnlyEntity',
+    summary: 'Get single yupControllerOnlyEntity',
   })
   @get('{id}')
   static getSingleYupControllerOnlyEntity = withYup({
@@ -28,7 +28,7 @@ export default class YupControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Update YupControllerOnlyEntity',
+    summary: 'Update yupControllerOnlyEntity',
   })
   @put('{id}')
   static updateYupControllerOnlyEntity = withYup({

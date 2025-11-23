@@ -4,18 +4,18 @@ import { IsString, IsIn } from 'class-validator';
 
 class DtoControllerOnlyEntityBodyDto {
   @IsIn([true])
-  todo: true;
+  todo!: true;
 }
 
 class DtoControllerOnlyEntityParamsDto {
   @IsString()
-  id: string;
+  id!: string;
 }
 
 @prefix('dto-controller-only-entities')
 export default class DtoControllerOnlyEntityController {
   @operation({
-    summary: 'Get DtoControllerOnlyEntities',
+    summary: 'Get dtoControllerOnlyEntities',
   })
   @get()
   static getDtoControllerOnlyEntities = withDto({
@@ -25,7 +25,7 @@ export default class DtoControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Get single DtoControllerOnlyEntity',
+    summary: 'Get single dtoControllerOnlyEntity',
   })
   @get('{id}')
   static getSingleDtoControllerOnlyEntity = withDto({
@@ -38,7 +38,7 @@ export default class DtoControllerOnlyEntityController {
   });
 
   @operation({
-    summary: 'Update DtoControllerOnlyEntity',
+    summary: 'Update dtoControllerOnlyEntity',
   })
   @put('{id}')
   static updateDtoControllerOnlyEntity = withDto({
@@ -52,6 +52,9 @@ export default class DtoControllerOnlyEntityController {
     },
   });
 
+  @operation({
+    summary: 'Create dtoControllerOnlyEntity',
+  })
   @post()
   static createDtoControllerOnlyEntity = withDto({
     body: DtoControllerOnlyEntityBodyDto,
@@ -62,6 +65,9 @@ export default class DtoControllerOnlyEntityController {
     },
   });
 
+  @operation({
+    summary: 'Delete dtoControllerOnlyEntity',
+  })
   @del('{id}')
   static deleteDtoControllerOnlyEntity = withDto({
     params: DtoControllerOnlyEntityParamsDto,

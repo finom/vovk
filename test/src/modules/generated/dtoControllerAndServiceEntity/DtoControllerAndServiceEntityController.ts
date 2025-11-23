@@ -6,18 +6,18 @@ import DtoControllerAndServiceEntityService from './DtoControllerAndServiceEntit
 
 class DtoControllerAndServiceEntityBodyDto {
   @IsIn([true])
-  todo: true;
+  todo!: true;
 }
 
 class DtoControllerAndServiceEntityParamsDto {
   @IsString()
-  id: string;
+  id!: string;
 }
 
 @prefix('dto-controller-and-service-entities')
 export default class DtoControllerAndServiceEntityController {
   @operation({
-    summary: 'Get DtoControllerAndServiceEntities',
+    summary: 'Get dtoControllerAndServiceEntities',
   })
   @get()
   static getDtoControllerAndServiceEntities = withDto({
@@ -27,7 +27,7 @@ export default class DtoControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Get single DtoControllerAndServiceEntity',
+    summary: 'Get single dtoControllerAndServiceEntity',
   })
   @get('{id}')
   static getSingleDtoControllerAndServiceEntity = withDto({
@@ -40,7 +40,7 @@ export default class DtoControllerAndServiceEntityController {
   });
 
   @operation({
-    summary: 'Update DtoControllerAndServiceEntity',
+    summary: 'Update dtoControllerAndServiceEntity',
   })
   @put('{id}')
   static updateDtoControllerAndServiceEntity = withDto({
@@ -54,6 +54,9 @@ export default class DtoControllerAndServiceEntityController {
     },
   });
 
+  @operation({
+    summary: 'Create dtoControllerAndServiceEntity',
+  })
   @post()
   static createDtoControllerAndServiceEntity = withDto({
     body: DtoControllerAndServiceEntityBodyDto,
@@ -64,6 +67,9 @@ export default class DtoControllerAndServiceEntityController {
     },
   });
 
+  @operation({
+    summary: 'Delete dtoControllerAndServiceEntity',
+  })
   @del('{id}')
   static deleteDtoControllerAndServiceEntity = withDto({
     params: DtoControllerAndServiceEntityParamsDto,

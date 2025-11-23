@@ -3,7 +3,7 @@ import { prefix, get, put, post, del, operation, type VovkRequest } from 'vovk';
 @prefix('no-validation-controller-only-entities')
 export default class NoValidationControllerOnlyEntityController {
   @operation({
-    summary: 'Get NoValidationControllerOnlyEntities',
+    summary: 'Get noValidationControllerOnlyEntities',
   })
   @get()
   static getNoValidationControllerOnlyEntities = () => {
@@ -11,7 +11,7 @@ export default class NoValidationControllerOnlyEntityController {
   };
 
   @operation({
-    summary: 'Get single NoValidationControllerOnlyEntity',
+    summary: 'Get single noValidationControllerOnlyEntity',
   })
   @get('{id}')
   static getSingleNoValidationControllerOnlyEntity = (_req: VovkRequest, { id }: { id: string }) => {
@@ -19,7 +19,7 @@ export default class NoValidationControllerOnlyEntityController {
   };
 
   @operation({
-    summary: 'Update NoValidationControllerOnlyEntity',
+    summary: 'Update noValidationControllerOnlyEntity',
   })
   @put('{id}')
   static updateNoValidationControllerOnlyEntity = async (req: VovkRequest<{ todo: true }>, params: { id: string }) => {
@@ -29,6 +29,9 @@ export default class NoValidationControllerOnlyEntityController {
     return { message: `TODO: update noValidationControllerOnlyEntity`, id, body };
   };
 
+  @operation({
+    summary: 'Create noValidationControllerOnlyEntity',
+  })
   @post()
   static createNoValidationControllerOnlyEntity = async (req: VovkRequest<{ todo: true }>) => {
     const body = await req.json();
@@ -36,8 +39,11 @@ export default class NoValidationControllerOnlyEntityController {
     return { message: `TODO: create noValidationControllerOnlyEntity`, body };
   };
 
+  @operation({
+    summary: 'Delete noValidationControllerOnlyEntity',
+  })
   @del('{id}')
-  static deleteNoValidationControllerOnlyEntity = (_req: VovkRequest<unknown>, params: { id: string }) => {
+  static deleteNoValidationControllerOnlyEntity = (_req: VovkRequest, params: { id: string }) => {
     const { id } = params;
 
     return { message: `TODO: delete noValidationControllerOnlyEntity`, id };
