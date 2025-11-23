@@ -88,9 +88,11 @@ export default async function newModule({
   const segment = segments.find((s) => s.segmentName === segmentName);
 
   if (!segment) {
-    throw new Error(
-      `Unable to create module. Segment "${segmentName}" not found. Run "vovk new segment ${segmentName}" to create it`
+    log.error(
+      `Unable to create module: ${formatLoggedSegmentName(segmentName)} not found. Run ${chalkHighlightThing(`npx vovk new segment${segmentName ? ` ${segmentName}` : ''}`)} to create it`
     );
+
+    return process.exit(1);
   }
 
   for (const type of what) {
@@ -131,9 +133,11 @@ export default async function newModule({
 
     if (!dryRun) {
       if (!overwrite && (await getFileSystemEntryType(absoluteModulePath))) {
-        log.warn(
+        log.error(
           `File ${chalkHighlightThing(absoluteModulePath)} already exists, skipping this "${chalkHighlightThing(type)}". You can use --overwrite flag to overwrite it.`
         );
+
+        return process.exit(1);
       } else {
         await fs.mkdir(absoluteModuleDir, { recursive: true });
         await fs.writeFile(absoluteModulePath, prettiedCode);

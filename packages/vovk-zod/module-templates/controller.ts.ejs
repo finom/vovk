@@ -19,7 +19,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextReso
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.ModuleName %> {
     @operation({
-      summary: 'Get <%= t.TheThings %>',
+      summary: 'Get <%= t.theThings %>',
     })
     @get()
     static get<%= t.TheThings %> = withZod({
@@ -33,7 +33,7 @@ export default class <%= vars.ModuleName %> {
     });
 
     @operation({
-      summary: 'Get single <%= t.TheThing %>',
+      summary: 'Get single <%= t.theThing %>',
     })
     @get('{id}')
     static getSingle<%= t.TheThing %> = withZod({
@@ -50,7 +50,7 @@ export default class <%= vars.ModuleName %> {
     });
 
     @operation({
-        summary: 'Update <%= t.TheThing %>',
+        summary: 'Update <%= t.theThing %>',
     })
     @put('{id}')
     static update<%= t.TheThing %> = withZod({
@@ -68,6 +68,9 @@ export default class <%= vars.ModuleName %> {
         }
     });
 
+    @operation({
+        summary: 'Create <%= t.theThing %>',
+    })
     @post()
     static create<%= t.TheThing %> = withZod({
         body: z.object({
@@ -83,6 +86,9 @@ export default class <%= vars.ModuleName %> {
         }
     });
 
+    @operation({
+        summary: 'Delete <%= t.theThing %>',
+    })
     @del('{id}')
     static delete<%= t.TheThing %> = withZod({
         params: z.object({

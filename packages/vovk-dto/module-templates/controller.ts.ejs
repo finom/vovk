@@ -17,18 +17,18 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextReso
 
 class <%= t.TheThing %>BodyDto {
   @IsIn([true])
-  todo: true;
+  todo!: true;
 }
 
 class <%= t.TheThing %>ParamsDto {
   @IsString()
-  id: string;
+  id!: string;
 }
 
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.ModuleName %> {
     @operation({
-      summary: 'Get <%= t.TheThings %>',
+      summary: 'Get <%= t.theThings %>',
     })
     @get()
     static get<%= t.TheThings %> = withDto({
@@ -42,7 +42,7 @@ export default class <%= vars.ModuleName %> {
     });
 
     @operation({
-      summary: 'Get single <%= t.TheThing %>',
+      summary: 'Get single <%= t.theThing %>',
     })
     @get('{id}')
     static getSingle<%= t.TheThing %> = withDto({
@@ -58,7 +58,7 @@ export default class <%= vars.ModuleName %> {
     });
 
     @operation({
-      summary: 'Update <%= t.TheThing %>',
+      summary: 'Update <%= t.theThing %>',
     })
     @put('{id}')
     static update<%= t.TheThing %> = withDto({
@@ -75,6 +75,9 @@ export default class <%= vars.ModuleName %> {
         }
     });
 
+    @operation({
+      summary: 'Create <%= t.theThing %>',
+    })
     @post()
     static create<%= t.TheThing %> = withDto({
         body: <%= t.TheThing %>BodyDto,
@@ -88,6 +91,9 @@ export default class <%= vars.ModuleName %> {
         }
     });
 
+    @operation({
+      summary: 'Delete <%= t.theThing %>',
+    })
     @del('{id}')
     static delete<%= t.TheThing %> = withDto({
         params: <%= t.TheThing %>ParamsDto,

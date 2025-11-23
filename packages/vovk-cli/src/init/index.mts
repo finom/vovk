@@ -209,7 +209,7 @@ export class Init {
     if (yes) {
       return this.#init({ configPaths, pkgJson, cwd }, {
         prefix: prefix ?? '.',
-        useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
+        useNpm: useNpm ?? false,
         useYarn: useYarn ?? false,
         usePnpm: usePnpm ?? false,
         useBun: useBun ?? false,
@@ -278,18 +278,18 @@ export class Init {
     updateScripts ??= !pkgJson
       ? undefined
       : await select({
-          message: 'Do you want to update "dev" and add "prebuild" NPM scripts at package.json?',
+          message: 'Do you want to update "dev" and add "prebuild" NPM scripts at package.json (recommended)?',
           default: 'implicit',
           choices: [
             {
               name: 'Yes, use "concurrently" implicitly',
               value: 'implicit' as const,
-              description: `The "dev" script will use "concurrently" API to run "next dev" and "vovk dev" commands together and automatically find an available port ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)} and the "prebuild" script will run "vovk generate"`,
+              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use concurrently API to run "next dev" and "vovk dev" commands at the same time. It will automatically find an available port, running ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will be set to ${chalk.cyanBright.bold(`"vovk generate"`)}`,
             },
             {
               name: 'Yes, use "concurrently" explicitly',
               value: 'explicit' as const,
-              description: `The "dev" script will use pre-defined PORT variable and run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.whiteBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)} and the "prebuild" script will run "vovk generate"`,
+              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use pre-defined PORT variable to run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will be set to ${chalk.cyanBright.bold(`"vovk generate"`)}`,
             },
             {
               name: 'No',
@@ -330,7 +330,7 @@ export class Init {
     await this.#init(
       { configPaths, pkgJson, cwd },
       {
-        useNpm: useNpm ?? (!useYarn && !usePnpm && !useBun),
+        useNpm: useNpm ?? false,
         useYarn: useYarn ?? false,
         usePnpm: usePnpm ?? false,
         useBun: useBun ?? false,

@@ -18,7 +18,7 @@
 
 ---
 
-## Vovk.ts (beta)
+## Vovk.ts (beta) [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml)
 
 Vovk.ts is a conceptual back-end meta-framework built on top of the Next.js App Router, designed for efficiency and an unprecedented developer experience.
 

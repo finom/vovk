@@ -17,7 +17,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextReso
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.ControllerName %> {
     @operation({
-        summary: 'Get <%= t.TheThings %>',
+        summary: 'Get <%= t.theThings %>',
     })
     @get()
     static get<%= t.TheThings %> = () => {
@@ -29,7 +29,7 @@ export default class <%= vars.ControllerName %> {
     };
 
     @operation({
-        summary: 'Get single <%= t.TheThing %>',
+        summary: 'Get single <%= t.theThing %>',
     })
     @get('{id}')
     static getSingle<%= t.TheThing %> = (_req: VovkRequest, { id }: { id: string }) => {
@@ -41,7 +41,7 @@ export default class <%= vars.ControllerName %> {
     };
 
     @operation({
-        summary: 'Update <%= t.TheThing %>',
+        summary: 'Update <%= t.theThing %>',
     })
     @put('{id}')
     static update<%= t.TheThing %> = async (req: VovkRequest<{ todo: true }>, params: { id: string }) => {
@@ -54,6 +54,9 @@ export default class <%= vars.ControllerName %> {
         <% } %>
     };
 
+    @operation({
+        summary: 'Create <%= t.theThing %>',
+    })
     @post()
     static create<%= t.TheThing %> = async (req: VovkRequest<{ todo: true }>) => {
         const body = await req.json();
@@ -64,8 +67,11 @@ export default class <%= vars.ControllerName %> {
         <% } %>
     };
 
+    @operation({
+        summary: 'Delete <%= t.theThing %>',
+    })
     @del('{id}')
-    static delete<%= t.TheThing %> = (_req: VovkRequest<unknown>, params: { id: string }) => {
+    static delete<%= t.TheThing %> = (_req: VovkRequest, params: { id: string }) => {
         const { id } = params;
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);

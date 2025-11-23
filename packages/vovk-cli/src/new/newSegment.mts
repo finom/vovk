@@ -22,15 +22,17 @@ export default async function newSegment({
 }) {
   const { apiDirAbsolutePath, log, config } = projectInfo;
   if (!apiDirAbsolutePath) {
-    throw new Error('No API directory found. Please ensure you are in a Nest.js project.');
+    throw new Error('No API directory found. Please ensure you are in a Next.js project.');
   }
 
   const absoluteSegmentRoutePath = path.join(apiDirAbsolutePath, segmentName, '[[...vovk]]/route.ts');
 
   if (!overwrite && (await getFileSystemEntryType(absoluteSegmentRoutePath))) {
-    throw new Error(
+    log.error(
       `Unable to create new segment. ${formatLoggedSegmentName(segmentName, { upperFirst: true })} already exists. You can use --overwrite flag to overwrite it.`
     );
+
+    return process.exit(1);
   }
 
   const code = await prettify(
@@ -67,6 +69,6 @@ ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
 
   const dir = chalk.cyanBright([segmentName, 'thing'].filter(Boolean).join('/'));
   log.info(
-    `Run ${chalkHighlightThing(`npx vovk new service controller ${dir}`)} to create a new controller with a service at ${path.join(config.modulesDir, dir)} folder for this segment`
+    `Run ${chalkHighlightThing(`npx vovk new service controller ${dir}`)} to create a new controller with a service at ./${path.join(config.modulesDir, dir)}/ directory for this segment`
   );
 }

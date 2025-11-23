@@ -29,7 +29,7 @@ export default async function installDependencies({
   log.info(`Installing dependencies at ${chalkHighlightThing(cwd)} using ${chalkHighlightThing(packageManager)}...`);
 
   await new Promise<void>((resolve, reject) => {
-    const args = packageManager === 'yarn' ? ['install', '--non-interactive'] : ['install'];
+    const args = ['install'];
     const child = spawn(packageManager, args, { cwd, stdio: 'inherit' });
 
     child.on('close', (code) => {

@@ -19,7 +19,7 @@ import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextReso
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.ModuleName %> {
     @operation({
-      summary: 'Get <%= t.TheThings %>',
+      summary: 'Get <%= t.theThings %>',
     })
     @get()
     static get<%= t.TheThings %> = withYup({
@@ -33,7 +33,7 @@ export default class <%= vars.ModuleName %> {
     });
 
     @operation({
-      summary: 'Get single <%= t.TheThing %>',
+      summary: 'Get single <%= t.theThing %>',
     })
     @get('{id}')
     static getSingle<%= t.TheThing %> = withYup({
@@ -50,7 +50,7 @@ export default class <%= vars.ModuleName %> {
     });
 
     @operation({
-        summary: 'Update <%= t.TheThing %>',
+        summary: 'Update <%= t.theThing %>',
     })
     @put('{id}')
     static update<%= t.TheThing %> = withYup({

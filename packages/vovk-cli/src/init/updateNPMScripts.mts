@@ -1,10 +1,13 @@
 import NPMCliPackageJson from '@npmcli/package-json';
 
 export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'implicit' | 'explicit') {
-  const nextDev = pkgJson.content.scripts?.dev ?? 'next dev';
-  const nextDevFlags = nextDev.replace('next dev', '').trim();
+  const dev = pkgJson.content.scripts?.dev ?? 'next dev';
+  if (dev.includes('vovk dev')) {
+    return dev; // Already has vovk dev
+  }
+  const nextDevFlags = dev.replace('next dev', '').trim();
   return updateScriptsMode === 'explicit'
-    ? `PORT=3000 concurrently '${nextDev}' 'vovk dev' --kill-others`
+    ? `PORT=3000 concurrently '${dev}' 'vovk dev' --kill-others`
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
 }
 
