@@ -1,4 +1,4 @@
-import { KnownAny, VovkBasicJSONSchema } from '../types';
+import { KnownAny, VovkJSONSchemaBase } from '../types';
 
 interface SamplerOptions {
   comment?: '//' | '#';
@@ -9,9 +9,9 @@ interface SamplerOptions {
 }
 
 export function getJSONSchemaExample(
-  schema: VovkBasicJSONSchema,
+  schema: VovkJSONSchemaBase,
   options: SamplerOptions,
-  rootSchema?: VovkBasicJSONSchema
+  rootSchema?: VovkJSONSchemaBase
 ): string {
   const { comment = '//', stripQuotes = false, indent = 0, nestingIndent = 4, ignoreBinary = false } = options;
 
@@ -38,8 +38,8 @@ export function getJSONSchemaExample(
 }
 
 export function getSampleValue(
-  schema: VovkBasicJSONSchema,
-  rootSchema?: VovkBasicJSONSchema,
+  schema: VovkJSONSchemaBase,
+  rootSchema?: VovkJSONSchemaBase,
   ignoreBinary?: boolean
 ): KnownAny {
   if (!schema || typeof schema !== 'object') return null;
@@ -122,7 +122,7 @@ export function getSampleValue(
 
 function formatWithDescriptions(
   value: KnownAny,
-  schema: VovkBasicJSONSchema,
+  schema: VovkJSONSchemaBase,
   rootSchema: KnownAny,
   comment: string,
   stripQuotes: boolean,
@@ -154,7 +154,7 @@ function formatWithDescriptions(
     if (value.length === 0) return '[]';
 
     const items = value.map((item) => {
-      const itemSchema = schema.items || ({} as VovkBasicJSONSchema);
+      const itemSchema = schema.items || ({} as VovkJSONSchemaBase);
       const formattedItem = formatWithDescriptions(
         item,
         itemSchema,
@@ -190,7 +190,7 @@ function formatWithDescriptions(
     }
 
     entries.forEach(([key, val], index) => {
-      const propSchema = schema.properties?.[key] ?? ({} as VovkBasicJSONSchema);
+      const propSchema = schema.properties?.[key] ?? ({} as VovkJSONSchemaBase);
 
       // Handle $ref in property schema
       let resolvedPropSchema = propSchema;

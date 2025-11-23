@@ -8,7 +8,7 @@ import type {
 import {
   HttpMethod,
   VovkOpenAPIMixinNormalized,
-  VovkBasicJSONSchema,
+  VovkJSONSchemaBase,
   type VovkSchema,
   VovkSchemaIdEnum,
 } from '../../types';
@@ -78,17 +78,17 @@ export function openAPIToVovkSchema({
         const parameters = inlineRefs<ParameterObject[]>(operation.parameters ?? [], openAPIObject);
         const queryProperties = parameters.filter((p) => p.in === 'query') ?? null;
         const pathProperties = parameters.filter((p) => p.in === 'path') ?? null;
-        const query: VovkBasicJSONSchema | null = queryProperties?.length
+        const query: VovkJSONSchemaBase | null = queryProperties?.length
           ? {
               type: 'object',
-              properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema as VovkBasicJSONSchema])),
+              properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema as VovkJSONSchemaBase])),
               required: queryProperties.filter((p) => p.required).map((p) => p.name),
             }
           : null;
-        const params: VovkBasicJSONSchema | null = pathProperties?.length
+        const params: VovkJSONSchemaBase | null = pathProperties?.length
           ? {
               type: 'object',
-              properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema as VovkBasicJSONSchema])),
+              properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema as VovkJSONSchemaBase])),
               required: pathProperties.filter((p) => p.required).map((p) => p.name),
             }
           : null;
@@ -114,13 +114,13 @@ export function openAPIToVovkSchema({
           });
         }
         const bodySchemas = [jsonBody, formDataBody, urlEncodedBody].filter(Boolean) as SchemaObject[];
-        const body: VovkBasicJSONSchema | null = !bodySchemas.length
+        const body: VovkJSONSchemaBase | null = !bodySchemas.length
           ? null
           : bodySchemas.length === 1
-            ? (bodySchemas[0] as VovkBasicJSONSchema)
+            ? (bodySchemas[0] as VovkJSONSchemaBase)
             : ({
                 anyOf: bodySchemas,
-              } as VovkBasicJSONSchema);
+              } as VovkJSONSchemaBase);
         const output =
           operation.responses?.['200']?.content?.['application/json']?.schema ??
           operation.responses?.['201']?.content?.['application/json']?.schema ??

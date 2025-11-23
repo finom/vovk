@@ -29,7 +29,7 @@ import {
   type VovkValidationType,
   type VovkLLMTool,
   type VovkTypedMethod,
-  type VovkBasicJSONSchema,
+  type VovkJSONSchemaBase,
   type VovkOperationObject,
 } from './types';
 import {
@@ -88,7 +88,7 @@ export {
   type VovkValidationType,
   type VovkLLMTool,
   type VovkTypedMethod,
-  type VovkBasicJSONSchema,
+  type VovkJSONSchemaBase,
   type VovkOperationObject,
   VovkSchemaIdEnum,
   JSONLinesResponse,

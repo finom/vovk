@@ -20,11 +20,11 @@ export type VovkHandlerSchema = {
   path: string;
   httpMethod: string; // HttpMethod type makes JSON incompatible with VovkHandlerSchema type
   validation?: {
-    query?: VovkBasicJSONSchema;
-    body?: VovkBasicJSONSchema;
-    params?: VovkBasicJSONSchema;
-    output?: VovkBasicJSONSchema;
-    iteration?: VovkBasicJSONSchema;
+    query?: VovkJSONSchemaBase;
+    body?: VovkJSONSchemaBase;
+    params?: VovkJSONSchemaBase;
+    output?: VovkJSONSchemaBase;
+    iteration?: VovkJSONSchemaBase;
   };
   operationObject?: VovkOperationObject;
   misc?: Record<string, KnownAny>;
@@ -330,9 +330,9 @@ export interface VovkLLMTool {
   parameters: {
     type?: 'object';
     properties?: {
-      body?: VovkBasicJSONSchema;
-      query?: VovkBasicJSONSchema;
-      params?: VovkBasicJSONSchema;
+      body?: VovkJSONSchemaBase;
+      query?: VovkJSONSchemaBase;
+      params?: VovkJSONSchemaBase;
     };
     required?: ('body' | 'query' | 'params')[];
     additionalProperties?: false;
@@ -347,27 +347,27 @@ export interface VovkLLMTool {
   type: 'function';
 }
 
-export type VovkBasicJSONSchema = {
+export type VovkJSONSchemaBase = {
   $schema?: 'https://json-schema.org/draft/2020-12/schema' | 'http://json-schema.org/draft-07/schema#';
   type?: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'integer';
   format?: string;
   $ref?: string;
-  items?: VovkBasicJSONSchema;
+  items?: VovkJSONSchemaBase;
   enum?: KnownAny[];
   minimum?: number;
   maximum?: number;
   title?: string;
   description?: string;
-  properties?: { [key: string]: VovkBasicJSONSchema };
+  properties?: { [key: string]: VovkJSONSchemaBase };
   required?: string[];
   examples?: KnownAny[];
   // support both $defs and definitions
-  $defs?: { [key: string]: VovkBasicJSONSchema };
-  definitions?: { [key: string]: VovkBasicJSONSchema };
+  $defs?: { [key: string]: VovkJSONSchemaBase };
+  definitions?: { [key: string]: VovkJSONSchemaBase };
   additionalProperties?: boolean;
-  anyOf?: VovkBasicJSONSchema[];
-  oneOf?: VovkBasicJSONSchema[];
-  allOf?: VovkBasicJSONSchema[];
+  anyOf?: VovkJSONSchemaBase[];
+  oneOf?: VovkJSONSchemaBase[];
+  allOf?: VovkJSONSchemaBase[];
   // older schema
   const?: KnownAny;
   example?: KnownAny;

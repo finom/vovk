@@ -1,5 +1,5 @@
 import type {
-  VovkBasicJSONSchema,
+  VovkJSONSchemaBase,
   KnownAny,
   VovkControllerSchema,
   VovkHandlerSchema,
@@ -54,11 +54,11 @@ type CodeGenerationParams = {
   handlerName: string;
   rpcName: string;
   packageName: string;
-  queryValidation?: VovkBasicJSONSchema;
-  bodyValidation?: VovkBasicJSONSchema;
-  paramsValidation?: VovkBasicJSONSchema;
-  outputValidation?: VovkBasicJSONSchema;
-  iterationValidation?: VovkBasicJSONSchema;
+  queryValidation?: VovkJSONSchemaBase;
+  bodyValidation?: VovkJSONSchemaBase;
+  paramsValidation?: VovkJSONSchemaBase;
+  outputValidation?: VovkJSONSchemaBase;
+  iterationValidation?: VovkJSONSchemaBase;
   hasArg: boolean;
   config: VovkSamplesConfig;
 };
@@ -75,10 +75,10 @@ function generateTypeScriptCode({
   hasArg,
   config,
 }: CodeGenerationParams): string {
-  const getTsSample = (schema: VovkBasicJSONSchema, indent?: number) =>
+  const getTsSample = (schema: VovkJSONSchemaBase, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
 
-  const getTsFormSample = (schema: VovkBasicJSONSchema) => {
+  const getTsFormSample = (schema: VovkJSONSchemaBase) => {
     let formSample = '\nconst formData = new FormData();';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
@@ -93,7 +93,7 @@ function generateTypeScriptCode({
     return formSample;
   };
 
-  const getTsFormAppend = (schema: VovkBasicJSONSchema, key: string, description?: string) => {
+  const getTsFormAppend = (schema: VovkJSONSchemaBase, key: string, description?: string) => {
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
       sampleValue = `new Blob(${isTextFormat(schema.contentMediaType) ? '["text_content"]' : '[binary_data]'}${
@@ -166,7 +166,7 @@ function generatePythonCode({
   hasArg,
   config,
 }: CodeGenerationParams): string {
-  const getPySample = (schema: VovkBasicJSONSchema, indent?: number) =>
+  const getPySample = (schema: VovkJSONSchemaBase, indent?: number) =>
     getJSONSchemaExample(schema, {
       stripQuotes: false,
       indent: indent ?? 4,
@@ -177,10 +177,10 @@ function generatePythonCode({
 
   const handlerNameSnake = toSnakeCase(handlerName);
 
-  const getFileTouple = (schema: VovkBasicJSONSchema) => {
+  const getFileTouple = (schema: VovkJSONSchemaBase) => {
     return `('name.ext', BytesIO(${isTextFormat(schema.contentMediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${schema.contentMediaType ? `, "${schema.contentMediaType}"` : ''})`;
   };
-  const getPyFiles = (schema: VovkBasicJSONSchema) => {
+  const getPyFiles = (schema: VovkJSONSchemaBase) => {
     return Object.entries(schema.properties ?? {}).reduce((acc, [key, prop]) => {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
       const desc = target.description ?? prop.description ?? undefined;
@@ -247,12 +247,12 @@ function generateRustCode({
   iterationValidation,
   config,
 }: CodeGenerationParams): string {
-  const getRsJSONSample = (schema: VovkBasicJSONSchema, indent?: number) =>
+  const getRsJSONSample = (schema: VovkJSONSchemaBase, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
-  const getRsOutputSample = (schema: VovkBasicJSONSchema, indent?: number) =>
+  const getRsOutputSample = (schema: VovkJSONSchemaBase, indent?: number) =>
     getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
 
-  const getRsFormSample = (schema: VovkBasicJSONSchema) => {
+  const getRsFormSample = (schema: VovkJSONSchemaBase) => {
     let formSample = 'let form = multipart::Form::new()';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
@@ -267,7 +267,7 @@ function generateRustCode({
     return formSample;
   };
 
-  const getRsFormPart = (schema: VovkBasicJSONSchema, key: string, description?: string) => {
+  const getRsFormPart = (schema: VovkJSONSchemaBase, key: string, description?: string) => {
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
       sampleValue = isTextFormat(schema.contentMediaType)
@@ -297,7 +297,7 @@ function generateRustCode({
     return `Some(&HashMap::from([\n${entries}\n${getIndentSpaces(4)}]))`;
   };
 
-  const getBody = (schema: VovkBasicJSONSchema) => {
+  const getBody = (schema: VovkJSONSchemaBase) => {
     if (schema['x-isForm']) {
       return 'form';
     }
@@ -366,11 +366,11 @@ export function createCodeSamples({
   package?: CodeSamplePackageJson;
   config: VovkSamplesConfig;
 }) {
-  const queryValidation = handlerSchema?.validation?.query as VovkBasicJSONSchema | undefined;
-  const bodyValidation = handlerSchema?.validation?.body as VovkBasicJSONSchema | undefined;
-  const paramsValidation = handlerSchema?.validation?.params as VovkBasicJSONSchema | undefined;
-  const outputValidation = handlerSchema?.validation?.output as VovkBasicJSONSchema | undefined;
-  const iterationValidation = handlerSchema?.validation?.iteration as VovkBasicJSONSchema | undefined;
+  const queryValidation = handlerSchema?.validation?.query as VovkJSONSchemaBase | undefined;
+  const bodyValidation = handlerSchema?.validation?.body as VovkJSONSchemaBase | undefined;
+  const paramsValidation = handlerSchema?.validation?.params as VovkJSONSchemaBase | undefined;
+  const outputValidation = handlerSchema?.validation?.output as VovkJSONSchemaBase | undefined;
+  const iterationValidation = handlerSchema?.validation?.iteration as VovkJSONSchemaBase | undefined;
 
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;

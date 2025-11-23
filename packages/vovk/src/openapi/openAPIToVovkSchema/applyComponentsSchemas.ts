@@ -1,7 +1,7 @@
 import { ComponentsObject } from 'openapi3-ts/oas31';
 import { camelCase } from '../../utils/camelCase';
 import { upperFirst } from '../../utils/upperFirst';
-import { KnownAny, VovkBasicJSONSchema } from '../../types';
+import { KnownAny, VovkJSONSchemaBase } from '../../types';
 
 // fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: KnownAny): KnownAny {
@@ -16,10 +16,10 @@ function cloneJSON(obj: KnownAny): KnownAny {
 }
 
 export function applyComponentsSchemas(
-  schema: VovkBasicJSONSchema,
+  schema: VovkJSONSchemaBase,
   components: ComponentsObject['schemas'],
   mixinName: string
-): VovkBasicJSONSchema | VovkBasicJSONSchema[] {
+): VovkJSONSchemaBase | VovkJSONSchemaBase[] {
   const key = 'components/schemas';
   if (!components || !Object.keys(components).length) return schema;
 
@@ -33,12 +33,12 @@ export function applyComponentsSchemas(
   const addedComponents = new Set<string>();
 
   // Process a schema object and replace $refs
-  function processSchema(obj: VovkBasicJSONSchema): VovkBasicJSONSchema | VovkBasicJSONSchema[] {
+  function processSchema(obj: VovkJSONSchemaBase): VovkJSONSchemaBase | VovkJSONSchemaBase[] {
     if (!obj || typeof obj !== 'object') return obj;
 
     // Handle arrays first - they don't have $ref
     if (Array.isArray(obj)) {
-      return obj.map((item) => processSchema(item)) as VovkBasicJSONSchema[];
+      return obj.map((item) => processSchema(item)) as VovkJSONSchemaBase[];
     }
 
     // Now we know it's an object, so we can safely access $ref
@@ -65,9 +65,9 @@ export function applyComponentsSchemas(
     // Process properties recursively
     for (const key in newObj) {
       if (Object.prototype.hasOwnProperty.call(newObj, key)) {
-        newObj[key as keyof VovkBasicJSONSchema] = processSchema(
-          newObj[key as keyof VovkBasicJSONSchema]
-        ) as VovkBasicJSONSchema;
+        newObj[key as keyof VovkJSONSchemaBase] = processSchema(
+          newObj[key as keyof VovkJSONSchemaBase]
+        ) as VovkJSONSchemaBase;
       }
     }
 
