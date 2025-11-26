@@ -1,4 +1,4 @@
-import { HttpStatus, VovkHandlerSchema, type VovkErrorResponse } from '../types';
+import { HttpStatus, KnownAny, VovkHandlerSchema, type VovkErrorResponse } from '../types';
 import type { VovkStreamAsyncIterable } from './types';
 import { HttpException } from '../HttpException';
 import '../utils/shim';
@@ -103,14 +103,16 @@ export const defaultStreamHandler = ({
     abortController,
     [Symbol.asyncIterator]: asyncIterator,
     [Symbol.dispose]: () => {
+      isAbortedWithoutError = true;
       abortController.abort('Stream disposed');
     },
     [Symbol.asyncDispose]: () => {
+      isAbortedWithoutError = true;
       abortController.abort('Stream async disposed');
     },
-    abortWithoutError: () => {
+    abortWithoutError: (reason?: KnownAny) => {
       isAbortedWithoutError = true;
-      abortController.abort();
+      abortController.abort(reason);
     },
     onIterate: (cb) => {
       if (abortController.signal.aborted) return () => {};

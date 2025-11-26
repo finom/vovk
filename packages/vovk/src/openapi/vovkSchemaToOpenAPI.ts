@@ -115,7 +115,7 @@ export function vovkSchemaToOpenAPI({
     : Object.entries(fullSchema.segments ?? {})) {
     for (const c of Object.values(segmentSchema.controllers)) {
       for (const [handlerName, h] of Object.entries(c.handlers ?? {})) {
-        if (h.operationObject) {
+        if (h.operationObject && !h.misc?.isOpenAPIMixin) {
           const [queryValidation, queryComponents] = extractComponents(h?.validation?.query);
           const [bodyValidation, bodyComponents] = extractComponents(h?.validation?.body);
           const [paramsValidation, paramsComponents] = extractComponents(h?.validation?.params);

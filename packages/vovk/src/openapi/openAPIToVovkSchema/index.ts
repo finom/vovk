@@ -145,6 +145,7 @@ export function openAPIToVovkSchema({
           path,
           operationObject: operation,
           misc: {
+            isOpenAPIMixin: true,
             originalPath: path,
           },
           validation: {
