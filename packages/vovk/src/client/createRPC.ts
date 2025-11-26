@@ -148,7 +148,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
     handler.fullSchema = schema;
     handler.isRPC = true;
     handler.apiRoot = originalApiRoot;
-    handler.getURL = getURL as KnownAny; // TODO fix typing
+    handler.getURL = getURL;
     handler.queryKey = (key?: unknown[]) => [
       handler.segmentSchema.segmentName,
       handler.controllerSchema.prefix ?? '',

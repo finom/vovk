@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "3.0.0-beta.49",
+  "version": "3.0.0-beta.50",
   "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "types": "./mjs/index.d.ts",
@@ -14,7 +14,7 @@
       "types": "./mjs/index.d.ts"
     }
   },
-  "description": "RESTful RPC for Next.js",
+  "description": "Back-end for Next.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git"

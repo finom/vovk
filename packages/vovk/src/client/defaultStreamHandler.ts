@@ -31,6 +31,8 @@ export const defaultStreamHandler = ({
 
   const subscribers = new Set<(data: unknown, i: number) => void>();
 
+  let isAbortedWithoutError = false;
+
   async function* asyncIterator() {
     let prepend = '';
     let i = 0;
@@ -44,6 +46,7 @@ export const defaultStreamHandler = ({
         ({ value, done } = await reader.read());
         if (done) break;
       } catch (error) {
+        if ((error as Error)?.name === 'AbortError' && isAbortedWithoutError) break;
         // await reader.cancel(); // TODO in which cases it needs to be canceled?
         const err = new Error('JSONLines stream error. ' + String(error));
         err.cause = error;
@@ -104,6 +107,10 @@ export const defaultStreamHandler = ({
     },
     [Symbol.asyncDispose]: () => {
       abortController.abort('Stream async disposed');
+    },
+    abortWithoutError: () => {
+      isAbortedWithoutError = true;
+      abortController.abort();
     },
     onIterate: (cb) => {
       if (abortController.signal.aborted) return () => {};

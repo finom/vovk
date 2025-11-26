@@ -27,7 +27,7 @@
   "peerDependencies": {
     "class-transformer": "0.5.1",
     "class-validator": "0.14.2",
-    "vovk": "^3.0.0-beta.49"
+    "vovk": "^3.0.0-beta.50"
   },
   "dependencies": {
     "class-validator-jsonschema": "^5.1.0"
