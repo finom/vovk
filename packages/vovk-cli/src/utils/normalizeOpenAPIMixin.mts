@@ -35,7 +35,7 @@ const getNamesNestJS = (operationObject: VovkOperationObject): [string, string] 
     throw new Error(`Invalid operationId format for NestJS: ${operationId}`);
   }
   const [controllerName, handlerName] = controllerHandlerMatch.slice(1, 3) as [string, string];
-  return [controllerName.replace(/Controller$/, 'RPC'), handlerName];
+  return [controllerName.replace(/Controller$/, 'API'), handlerName];
 };
 
 const normalizeGetModuleName = (getModuleName: OpenAPIMixin['getModuleName']): OpenAPIMixinStrict['getMethodName'] => {
