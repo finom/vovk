@@ -129,7 +129,7 @@ await describe('CLI new controller only', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `import { z } from 'zod';`,
-      `import { withZod } from 'vovk-zod';`,
+      `import withZod from '../../withZod';`,
       `export default class UserController {`,
       `@get()
         static getUsers = withZod(`,
