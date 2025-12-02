@@ -34,14 +34,14 @@ export default async function createConfig({
     ...typeTemplates,
     ...{
       type: typeTemplates,
-      zod: {
-        controller: 'vovk-zod/module-templates/controller.ts.ejs',
-      },
       yup: {
         controller: 'vovk-yup/module-templates/controller.ts.ejs',
       },
       'class-validator': {
         controller: 'vovk-dto/module-templates/controller.ts.ejs',
+      },
+      zod: {
+        controller: 'vovk-cli/module-templates/zod/controller.ts.ejs',
       },
       valibot: {
         controller: 'vovk-cli/module-templates/valibot/controller.ts.ejs',

@@ -1,5 +1,5 @@
 import { prefix, get, put, post, del, operation } from 'vovk';
-import { withZod } from 'vovk-zod';
+import { withZod } from '../../../lib/withZod.ts';
 import { z } from 'zod';
 
 import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntityService.ts';

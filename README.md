@@ -18,7 +18,8 @@
 
 ---
 
-## Vovk.ts (beta) [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml)
+## Vovk.ts (beta) [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/omar-dulaimi/prisma-zod-generator/blob/master/LICENSE)
+
 
 Vovk.ts is a conceptual back-end meta-framework built on top of the Next.js App Router, designed for efficiency and an unprecedented developer experience.
 

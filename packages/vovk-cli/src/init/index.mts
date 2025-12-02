@@ -65,7 +65,7 @@ export class Init {
     if (validationLibrary) {
       dependencies.push(
         ...({
-          zod: ['zod', 'vovk-zod'],
+          zod: ['zod'],
           'class-validator': [
             'class-validator',
             'class-transformer',
@@ -160,7 +160,7 @@ export class Init {
       }
     }
 
-    if (validationLibrary === 'valibot' || validationLibrary === 'arktype') {
+    if (validationLibrary === 'valibot' || validationLibrary === 'arktype' || validationLibrary === 'zod') {
       createStandardSchemaValidatorFile({
         root,
         validationLibrary,

@@ -446,6 +446,34 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
+  await it('Works with prompting and down arrow selection for Zod', async () => {
+    await createNextApp();
+    await vovkInit('', { combo: combos.YES });
+    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+
+    await assertDeps({
+      dependencies: ['vovk', 'vovk-client', 'zod'],
+      devDependencies: ['vovk-cli'],
+    });
+
+    await assertScripts({
+      dev: 'vovk dev --next-dev',
+      build: 'next build',
+      prebuild: 'vovk generate',
+    });
+
+    await assertTsConfig();
+
+    await assertFile(`src/lib/withZod.ts`, [
+      `import { z } from 'zod/v4';
+import { createStandardValidation } from 'vovk';
+
+export const withZod = createStandardValidation({
+  toJSONSchema: (model: z.core.$ZodType) => z.toJSONSchema(model),
+});`,
+    ]);
+  });
+
   await it('Works with prompting and down arrow selection for Arktype', async () => {
     await createNextApp();
     await vovkInit('', { combo: combos.ARKTYPE });
@@ -600,7 +628,7 @@ export default withValibot;`,
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
-        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod', 'vovk-client'],
+        dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
         devDependencies: ['vovk-cli'],
       });
 
@@ -631,7 +659,7 @@ export default withValibot;`,
       await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
-        dependencies: ['vovk', 'vovk-zod', 'vovk-ajv', 'zod'],
+        dependencies: ['vovk', 'vovk-ajv', 'zod'],
         devDependencies: ['vovk-cli'],
       });
 
