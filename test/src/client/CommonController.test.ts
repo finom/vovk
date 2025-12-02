@@ -144,6 +144,22 @@ describe('Client with vovk-client', () => {
     deepStrictEqual(result satisfies { hello: string }[], [{ hello: 'world' }]);
   });
 
+  it('should instantiate RPC with default options', async () => {
+    const rpcWithDefaults = CommonControllerRPC.withDefaults({
+      apiRoot,
+      init: { headers: { 'x-vovk-test': 'world' } },
+    });
+
+    const result = await rpcWithDefaults.getHelloWorldHeaders({
+      init: { headers: { 'x-vovk-another-header': 'another-value' } },
+    });
+
+    deepStrictEqual(result, {
+      'x-vovk-test': 'world',
+      'x-vovk-another-header': 'another-value',
+    });
+  });
+
   it(`Should handle simple requests and use empty generic`, async () => {
     const result = await CommonControllerRPC.getHelloWorldAndEmptyGeneric();
     deepStrictEqual(result satisfies { hello: string | null }, { hello: 'world' });

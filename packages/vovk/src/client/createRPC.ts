@@ -12,6 +12,7 @@ import { fetcher as defaultFetcher } from './fetcher';
 import { defaultHandler } from './defaultHandler';
 import { defaultStreamHandler } from './defaultStreamHandler';
 import serializeQuery from '../utils/serializeQuery';
+import deepExtend from '../utils/deepExtend';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -87,6 +88,10 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         transform?: (respData: unknown, resp: Response) => unknown;
       } & OPTS = {} as OPTS
     ) => {
+      const optionsResolvedValidateOnClient =
+        options?.validateOnClient instanceof Promise
+          ? ((await options?.validateOnClient)?.validateOnClient as VovkValidateOnClient<OPTS>)
+          : options?.validateOnClient;
       const fetcher =
         givenFetcher instanceof Promise
           ? (await givenFetcher).fetcher
@@ -99,11 +104,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
           endpoint: string;
         }
       ) => {
-        const validateOnClient =
-          input.validateOnClient ??
-          (options?.validateOnClient instanceof Promise
-            ? ((await options?.validateOnClient)?.validateOnClient as VovkValidateOnClient<OPTS>)
-            : options?.validateOnClient);
+        const validateOnClient = input.validateOnClient ?? optionsResolvedValidateOnClient;
         if (validateOnClient && validation) {
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');
@@ -127,8 +128,14 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         schema: handlerSchema,
       };
       const internalInput = {
-        ...options,
-        ...input,
+        ...(deepExtend(
+          {},
+          options,
+          {
+            validateOnClient: optionsResolvedValidateOnClient,
+          },
+          input
+        ) as OPTS),
         body: input.body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
@@ -161,6 +168,13 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
     // @ts-expect-error TODO
     client[staticMethodName] = handler;
   }
+
+  client.withDefaults = (newOptions?: VovkFetcherOptions<OPTS>) => {
+    return createRPC<T, OPTS>(schema, segmentName, rpcModuleName, givenFetcher, {
+      ...options,
+      ...newOptions,
+    } as VovkFetcherOptions<OPTS>);
+  };
 
   return client;
 };

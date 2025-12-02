@@ -160,7 +160,9 @@ type VovkClientWithNever<T, TFetcherOptions extends { [key: string]: KnownAny }>
 
 export type VovkRPCModule<T, TFetcherOptions extends { [key: string]: KnownAny }> = OmitNever<
   VovkClientWithNever<T, TFetcherOptions>
->;
+> & {
+  withDefaults: (newOptions?: VovkFetcherOptions<TFetcherOptions>) => VovkRPCModule<T, TFetcherOptions>;
+};
 
 export type VovkFetcher<TFetcherOptions> = (
   options: {
