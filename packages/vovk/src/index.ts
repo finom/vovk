@@ -51,7 +51,7 @@ import { generateStaticAPI } from './utils/generateStaticAPI';
 import { withValidationLibrary } from './utils/withValidationLibrary';
 import { createStandardValidation } from './utils/createStandardValidation';
 import { multitenant } from './utils/multitenant';
-import { createLLMTools } from './utils/createLLMTools';
+import { deriveLLMTools } from './utils/deriveLLMTools';
 import { createCodeSamples } from './utils/createCodeSamples';
 import { createValidateOnClient } from './utils/createValidateOnClient';
 import { resolveGeneratorConfigValues } from './utils/resolveGeneratorConfigValues';
@@ -104,7 +104,7 @@ export {
   withValidationLibrary,
   createStandardValidation,
   multitenant,
-  createLLMTools,
+  deriveLLMTools,
   createCodeSamples,
   createValidateOnClient,
   progressive,

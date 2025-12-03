@@ -36,7 +36,7 @@ type CallerInput = {
   resultFormatter: typeof defaultResultFormatter;
 };
 
-const createLLMTool = ({
+const makeLLMTool = ({
   moduleName,
   handlerName,
   caller,
@@ -100,7 +100,7 @@ const createLLMTool = ({
 
     const [result, error] = await caller(callerInput, options);
     if (error) {
-      onError?.(error, callerInput, options);
+      onError(error, callerInput, options);
     } else {
       onExecute(result, callerInput, options);
     }
@@ -143,7 +143,7 @@ const createLLMTool = ({
 };
 
 async function defaultCaller(
-  { handler, body, query, params, init, meta, resultFormatter, schema }: CallerInput,
+  { handler, handlerName, body, query, params, init, meta, resultFormatter, schema }: CallerInput,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _options: KnownAny
 ) {
@@ -161,14 +161,17 @@ async function defaultCaller(
         init,
         meta,
       });
-    }
-    if (handler.fn) {
+    } else if (handler.fn) {
       result = await handler.fn({
         body,
         query,
         params,
         meta,
       });
+    } else {
+      throw new Error(
+        `Unable to call handler "${handlerName}". It's neither RPC nor controller method with "fn" interface.`
+      );
     }
 
     return [resultFormatter(result, schema), null] as [KnownAny, null];
@@ -205,7 +208,7 @@ async function defaultResultFormatter(result: KnownAny, _schema: VovkHandlerSche
   return result;
 }
 
-export function createLLMTools({
+export function deriveLLMTools({
   modules,
   caller = defaultCaller,
   meta,
@@ -241,7 +244,7 @@ export function createLLMTools({
           ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool-disable']
         )
         .map(([handlerName]) =>
-          createLLMTool({
+          makeLLMTool({
             moduleName,
             handlerName,
             caller,

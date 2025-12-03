@@ -2,9 +2,9 @@ import { it, describe } from 'node:test';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod';
 import assert from 'node:assert';
-import { createLLMTools, HttpException } from 'vovk';
+import { deriveLLMTools, HttpException } from 'vovk';
 
-describe('createLLMTools', async () => {
+describe('deriveLLMTools', async () => {
   const handlerWithBody = withZod({
     operationObject: {
       description: 'handlerWithBody description',
@@ -68,7 +68,7 @@ describe('createLLMTools', async () => {
   });
 
   describe('Common', () => {
-    const { tools, toolsByName } = createLLMTools({
+    const { tools, toolsByName } = deriveLLMTools({
       meta: { inputMeta: 'hello' },
       modules: {
         MyModule1: {
@@ -110,7 +110,7 @@ describe('createLLMTools', async () => {
   });
 
   describe('MCP', () => {
-    const { toolsByName } = createLLMTools({
+    const { toolsByName } = deriveLLMTools({
       meta: { inputMeta: 'hello' },
       resultFormatter: 'mcp',
       modules: {
@@ -157,7 +157,7 @@ describe('createLLMTools', async () => {
         return { foo, inputMeta };
       },
     });
-    const { toolsByName } = createLLMTools({
+    const { toolsByName } = deriveLLMTools({
       meta: { inputMeta: 'hello' },
       resultFormatter: 'mcp',
       modules: {
