@@ -127,9 +127,9 @@ const makeLLMTool = ({
   return {
     type: 'function',
     execute,
-    name: schema.operationObject?.['x-tool-name'] ?? `${moduleName}_${handlerName}`,
+    name: schema.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`,
     description:
-      schema.operationObject?.['x-tool-description'] ??
+      schema.operationObject?.['x-tool']?.description ??
       ([schema.operationObject?.summary ?? '', schema.operationObject?.description ?? ''].filter(Boolean).join('\n') ||
         handlerName),
     parameters: {
@@ -181,10 +181,10 @@ async function defaultCaller(
 }
 
 async function mcpResultFormatter(result: KnownAny, schema: VovkHandlerSchema) {
-  const successMessage = schema?.operationObject?.['x-tool-successMessage'] ?? 'Tool executed successfully.';
+  const successMessage = schema?.operationObject?.['x-tool']?.mcp?.successMessage ?? 'Tool executed successfully.';
   const errorMessage =
-    schema?.operationObject?.['x-tool-errorMessage'] ?? 'An error occurred while executing the tool.';
-  const includeResponse = schema?.operationObject?.['x-tool-includeResponse'] ?? true;
+    schema?.operationObject?.['x-tool']?.mcp?.errorMessage ?? 'An error occurred while executing the tool.';
+  const includeResponse = schema?.operationObject?.['x-tool']?.mcp?.includeResponse ?? true;
 
   return {
     content: [
@@ -241,7 +241,7 @@ export function deriveLLMTools({
       }
       return Object.entries(module ?? {})
         .filter(
-          ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool-disable']
+          ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.disable
         )
         .map(([handlerName]) =>
           makeLLMTool({

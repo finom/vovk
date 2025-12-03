@@ -38,7 +38,7 @@ describe('deriveLLMTools', async () => {
 
   const handlerWithExcluded = withZod({
     operationObject: {
-      'x-tool-disable': true,
+      'x-tool': { disable: true },
     },
     query: z.object({ bar: z.string().max(5) }),
     async handle() {
@@ -48,7 +48,7 @@ describe('deriveLLMTools', async () => {
 
   const handlerWithToolDescription = withZod({
     operationObject: {
-      'x-tool-description': 'handlerWithToolDescription x-tool-description',
+      'x-tool': { description: 'handlerWithToolDescription x-tool-description' },
       description: 'handlerWithToolDescription description',
     },
     query: z.object({ bar: z.string().max(5) }),
@@ -59,7 +59,7 @@ describe('deriveLLMTools', async () => {
 
   const handlerWithToolName = withZod({
     operationObject: {
-      'x-tool-name': 'customToolName',
+      'x-tool': { name: 'customToolName' },
     },
     query: z.object({ bar: z.string().max(5) }),
     async handle() {
@@ -146,9 +146,13 @@ describe('deriveLLMTools', async () => {
     const handlerWithAttributes = withZod({
       operationObject: {
         description: 'handlerWithAttributes description',
-        'x-tool-successMessage': 'Custom success message.',
-        'x-tool-errorMessage': 'Custom error message.',
-        'x-tool-includeResponse': false,
+        'x-tool': {
+          mcp: {
+            successMessage: 'Custom success message.',
+            errorMessage: 'Custom error message.',
+            includeResponse: false,
+          },
+        },
       },
       body: z.object({ foo: z.string().max(5) }),
       async handle({ vovk }) {

@@ -380,13 +380,19 @@ export type VovkJSONSchemaBase = {
   [key: `x-${string}`]: KnownAny;
 };
 
+export type VovkLLMToolOptions = {
+  disable?: boolean;
+  name?: string;
+  description?: string;
+  mcp?: {
+    successMessage?: string;
+    errorMessage?: string;
+    includeResponse?: boolean;
+  };
+};
+
 export type VovkOperationObject = OperationObject & {
-  'x-tool-name'?: string;
-  'x-tool-disable'?: boolean;
-  'x-tool-description'?: string;
-  'x-tool-successMessage'?: string;
-  'x-tool-errorMessage'?: string;
-  'x-tool-includeResponse'?: boolean;
+  'x-tool'?: VovkLLMToolOptions;
 };
 
 // -----

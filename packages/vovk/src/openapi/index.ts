@@ -1,7 +1,8 @@
 import { vovkSchemaToOpenAPI } from './vovkSchemaToOpenAPI';
-import { openAPIToVovkSchema } from './openAPIToVovkSchema/index';
-import { error } from './error';
+import { openAPIToVovkSchema } from './openAPIToVovkSchema';
 import { createDecorator } from '../utils/createDecorator';
+import { error } from './error';
+import { tool } from './tool';
 import type { VovkOperationObject } from '../types';
 
 export const operationDecorator = createDecorator(null, (openAPIOperationObject: VovkOperationObject = {}) => {
@@ -16,6 +17,6 @@ export const operationDecorator = createDecorator(null, (openAPIOperationObject:
   };
 });
 
-export const operation = Object.assign(operationDecorator, { error });
+export const operation = Object.assign(operationDecorator, { error, tool });
 
 export { vovkSchemaToOpenAPI, openAPIToVovkSchema };

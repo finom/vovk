@@ -31,6 +31,7 @@ import {
   type VovkTypedMethod,
   type VovkJSONSchemaBase,
   type VovkOperationObject,
+  type VovkLLMToolOptions,
 } from './types';
 import {
   type VovkRPCModule,
@@ -90,6 +91,7 @@ export {
   type VovkTypedMethod,
   type VovkJSONSchemaBase,
   type VovkOperationObject,
+  type VovkLLMToolOptions,
   VovkSchemaIdEnum,
   JSONLinesResponse,
   HttpException,

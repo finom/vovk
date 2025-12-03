@@ -1,4 +1,4 @@
-import { HttpStatus, type VovkHandlerSchema } from '../types';
+import { HttpStatus } from '../types';
 import { createDecorator } from '../utils/createDecorator';
 
 const statusDisplayText = {
@@ -53,7 +53,7 @@ const statusDisplayText = {
   [HttpStatus.HTTP_VERSION_NOT_SUPPORTED]: 'HTTP Version Not Supported',
 };
 export const error = createDecorator(null, (status: HttpStatus, message: string) => {
-  return (handlerSchema: VovkHandlerSchema | null) => {
+  return (handlerSchema) => {
     return {
       ...handlerSchema,
       operationObject: {
