@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import { z } from 'zod';
 import assert from 'node:assert';
-import { ToModelOutput, type VovkLLMTool, createStandardValidation } from 'vovk';
+import { ToModelOutput, type VovkTool, createStandardValidation } from 'vovk';
 import type { MCPModelOutput } from 'vovk/internal';
 
 const withZod = createStandardValidation({
@@ -11,7 +11,7 @@ const withZod = createStandardValidation({
 describe('createTool', () => {
   describe('Common, no toModelOutput', () => {
     it('No input schema, no output schema', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_world',
         description: 'Hello World Tool',
         execute: () => {
@@ -19,7 +19,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<null, { message: string }, unknown, false>;
+      tool satisfies VovkTool<null, { message: string }, unknown, false>;
 
       const result = (await tool.execute(null)) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_world');
@@ -27,7 +27,7 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { message: 'Hello, World!' });
     });
     it('With input schema, no output schema', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_name',
         description: 'Hello Name Tool',
         inputSchema: z.object({
@@ -38,7 +38,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<{ name: string }, { message: string }, unknown, false>;
+      tool satisfies VovkTool<{ name: string }, { message: string }, unknown, false>;
 
       const result = (await tool.execute({ name: 'Alice' })) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_name');
@@ -46,7 +46,7 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { message: 'Hello, Alice!' });
     });
     it('No input schema, with output schema', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_output',
         description: 'Output Tool',
         outputSchema: z.object({
@@ -57,7 +57,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<null, { message: string }, unknown, false>;
+      tool satisfies VovkTool<null, { message: string }, unknown, false>;
 
       const result = (await tool.execute(null)) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_output');
@@ -65,7 +65,7 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { message: 'Hello from output schema!' });
     });
     it('With input schema, with output schema', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_full',
         description: 'Full Tool',
         inputSchema: z.object({
@@ -79,7 +79,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<{ name: string }, { message: string }, unknown, false>;
+      tool satisfies VovkTool<{ name: string }, { message: string }, unknown, false>;
 
       const result = (await tool.execute({ name: 'Bob' })) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_full');
@@ -88,7 +88,7 @@ describe('createTool', () => {
     });
 
     it('With input validation error', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'validate_input',
         description: 'Input Validation Tool',
         inputSchema: z.object({
@@ -99,7 +99,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<{ age: number }, { message: string }, unknown, false>;
+      tool satisfies VovkTool<{ age: number }, { message: string }, unknown, false>;
 
       const result = await tool.execute({ age: -5 });
 
@@ -109,7 +109,7 @@ describe('createTool', () => {
     });
 
     it('With output validation error', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'validate_output',
         description: 'Output Validation Tool',
         outputSchema: z.object({
@@ -120,7 +120,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<null, { score: number }, unknown, false>;
+      tool satisfies VovkTool<null, { score: number }, unknown, false>;
 
       const result = await tool.execute(null);
 
@@ -130,7 +130,7 @@ describe('createTool', () => {
     });
 
     it('With error output (throwing Error)', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'error_tool',
         description: 'Error Tool',
         inputSchema: z.number(),
@@ -142,7 +142,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<number, unknown, unknown, false>;
+      tool satisfies VovkTool<number, unknown, unknown, false>;
 
       const result = await tool.execute(-1);
 
@@ -153,7 +153,7 @@ describe('createTool', () => {
   });
   describe('With toModelOutput', () => {
     it('With toModelOutput = ToModelOutput.DEFAULT', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_default',
         description: 'Default Output Tool',
         toModelOutput: ToModelOutput.DEFAULT,
@@ -165,7 +165,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<null, { message: string }, { message: string } | { error: string }, false>;
+      tool satisfies VovkTool<null, { message: string }, { message: string } | { error: string }, false>;
 
       const result = (await tool.execute(null)) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_default');
@@ -174,7 +174,7 @@ describe('createTool', () => {
     });
 
     it('With toModelOutput = ToModelOutput.DEFAULT and error', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_default_error',
         description: 'Default Output Tool with Error',
         toModelOutput: ToModelOutput.DEFAULT,
@@ -190,7 +190,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<number, { message: string }, { message: string } | { error: string }, false>;
+      tool satisfies VovkTool<number, { message: string }, { message: string } | { error: string }, false>;
 
       const result = (await tool.execute(-5)) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_default_error');
@@ -198,7 +198,7 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { error: 'Default output error!' });
     });
     it('With toModelOutput = ToModelOutput.MCP (text)', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_mcp_text',
         description: 'MCP Text Output Tool',
         toModelOutput: ToModelOutput.MCP,
@@ -210,7 +210,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<null, { message: string }, MCPModelOutput, false>;
+      tool satisfies VovkTool<null, { message: string }, MCPModelOutput, false>;
 
       const result = (await tool.execute(null)) satisfies MCPModelOutput;
       assert.strictEqual(tool.name, 'hello_mcp_text');
@@ -226,7 +226,7 @@ describe('createTool', () => {
       });
     });
     it('With toModelOutput = ToModelOutput.MCP (image response)', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_mcp_image',
         description: 'MCP Image Output Tool',
         toModelOutput: ToModelOutput.MCP,
@@ -238,7 +238,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<number[], unknown, MCPModelOutput, false>;
+      tool satisfies VovkTool<number[], unknown, MCPModelOutput, false>;
 
       const result = (await tool.execute([137, 80, 78, 71])) satisfies MCPModelOutput;
       assert.strictEqual(tool.name, 'hello_mcp_image');
@@ -255,7 +255,7 @@ describe('createTool', () => {
     });
 
     it('With toModelOutput = ToModelOutput.MCP and error', async () => {
-      const tool = withZod.createLLMTool({
+      const tool = withZod.createTool({
         name: 'hello_mcp_error',
         description: 'MCP Output Tool with Error',
         toModelOutput: ToModelOutput.MCP,
@@ -271,7 +271,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkLLMTool<number, { message: string }, MCPModelOutput, false>;
+      tool satisfies VovkTool<number, { message: string }, MCPModelOutput, false>;
 
       const result = (await tool.execute(-10)) satisfies MCPModelOutput;
       assert.strictEqual(tool.name, 'hello_mcp_error');

@@ -1,6 +1,6 @@
-import type { VovkHandlerSchema, VovkLLMToolOptions } from '../types';
+import type { VovkHandlerSchema, VovkToolOptions } from '../types';
 
 export type ToModelOutputFn<TOutput, TFormattedOutput> = (
   result: TOutput | Error,
-  options: { toolOptions: VovkLLMToolOptions; handlerSchema: VovkHandlerSchema | null; request: Request | null }
+  options: { toolOptions: VovkToolOptions; handlerSchema: VovkHandlerSchema | null; request: Request | null }
 ) => TFormattedOutput | Promise<TFormattedOutput>;

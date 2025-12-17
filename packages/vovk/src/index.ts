@@ -27,11 +27,11 @@ import {
   type VovkOpenAPIMixinNormalized,
   type VovkStrictConfig,
   type VovkValidationType,
-  type VovkLLMTool,
+  type VovkTool,
   type VovkTypedMethod,
   type VovkJSONSchemaBase,
   type VovkOperationObject,
-  type VovkLLMToolOptions,
+  type VovkToolOptions,
 } from './types';
 import {
   type VovkRPCModule,
@@ -52,7 +52,7 @@ import { generateStaticAPI } from './utils/generateStaticAPI';
 import { withValidationLibrary } from './utils/withValidationLibrary';
 import { createStandardValidation } from './utils/createStandardValidation';
 import { multitenant } from './utils/multitenant';
-import { deriveLLMTools } from './tools/deriveLLMTools';
+import { deriveTools } from './tools/deriveTools';
 import { createCodeSamples } from './utils/createCodeSamples';
 import { createValidateOnClient } from './utils/createValidateOnClient';
 import { resolveGeneratorConfigValues } from './utils/resolveGeneratorConfigValues';
@@ -89,11 +89,11 @@ export {
   type VovkOpenAPIMixin,
   type VovkOpenAPIMixinNormalized,
   type VovkValidationType,
-  type VovkLLMTool,
+  type VovkTool,
   type VovkTypedMethod,
   type VovkJSONSchemaBase,
   type VovkOperationObject,
-  type VovkLLMToolOptions,
+  type VovkToolOptions,
   VovkSchemaIdEnum,
   JSONLinesResponse,
   HttpException,
@@ -108,7 +108,7 @@ export {
   withValidationLibrary,
   createStandardValidation,
   multitenant,
-  deriveLLMTools,
+  deriveTools,
   createCodeSamples,
   createValidateOnClient,
   progressive,

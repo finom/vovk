@@ -98,5 +98,5 @@ export function createStandardValidation({
     });
   }
 
-  return Object.assign(withStandard, { createLLMTool: createToolFactory({ toJSONSchema }) });
+  return Object.assign(withStandard, { createTool: createToolFactory({ toJSONSchema }) });
 }

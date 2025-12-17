@@ -1,5 +1,5 @@
 import { StandardSchemaV1 } from '@standard-schema/spec';
-import type { KnownAny, VovkErrorResponse, VovkLLMTool, VovkLLMToolOptions, VovkValidationType } from '../types';
+import type { KnownAny, VovkErrorResponse, VovkTool, VovkToolOptions, VovkValidationType } from '../types';
 import { ToModelOutput } from './ToModelOutput';
 import type { ToModelOutputFn } from './types';
 import type { DefaultModelOutput } from './toModelOutputDefault';
@@ -14,8 +14,8 @@ export function createToolFactory({
     name: string;
     title?: string;
     description: string;
-    onExecute?: (result: unknown, options: { toolOptions: VovkLLMToolOptions; processingMeta: unknown }) => void;
-    onError?: (error: Error, options: { toolOptions: VovkLLMToolOptions; processingMeta: unknown }) => void;
+    onExecute?: (result: unknown, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+    onError?: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
     toModelOutput?: ToModelOutputFn<TOutput, TFormattedOutput>;
   };
 
@@ -39,90 +39,90 @@ export function createToolFactory({
     outputSchema?: undefined;
   };
 
-  type CreateLLMToolResult<TInput, TOutput, TFormattedOutput> = VovkLLMTool<TInput, TOutput, TFormattedOutput, false>;
+  type CreateToolResult<TInput, TOutput, TFormattedOutput> = VovkTool<TInput, TOutput, TFormattedOutput, false>;
 
   // Overload 1: with inputSchema, with outputSchema, with toModelOutput
-  function createLLMTool<TInput, TOutput, TFormattedOutput>(
+  function createTool<TInput, TOutput, TFormattedOutput>(
     options: CreateToolBaseOptions<TOutput, TFormattedOutput> &
       WithInputSchema<TInput> &
       WithOutputSchema<TOutput> & {
         execute: (input: TInput, processingMeta?: unknown) => TOutput | Promise<TOutput>;
         toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
       }
-  ): CreateLLMToolResult<TInput, TOutput, TFormattedOutput>;
+  ): CreateToolResult<TInput, TOutput, TFormattedOutput>;
 
   // Overload 2: with inputSchema, with outputSchema, without toModelOutput
-  function createLLMTool<TInput, TOutput>(
+  function createTool<TInput, TOutput>(
     options: CreateToolBaseOptions<TOutput, DefaultModelOutput<TOutput>> &
       WithInputSchema<TInput> &
       WithOutputSchema<TOutput> & {
         execute: (input: TInput, processingMeta?: unknown) => TOutput | Promise<TOutput>;
         toModelOutput?: undefined;
       }
-  ): CreateLLMToolResult<TInput, TOutput, DefaultModelOutput<TOutput>>;
+  ): CreateToolResult<TInput, TOutput, DefaultModelOutput<TOutput>>;
 
   // Overload 3: with inputSchema, without outputSchema, with toModelOutput
-  function createLLMTool<TInput, TOutput, TFormattedOutput>(
+  function createTool<TInput, TOutput, TFormattedOutput>(
     options: CreateToolBaseOptions<TOutput, TFormattedOutput> &
       WithInputSchema<TInput> &
       WithoutOutputSchema & {
         execute: (input: TInput, processingMeta?: unknown) => TOutput | Promise<TOutput>;
         toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
       }
-  ): CreateLLMToolResult<TInput, TOutput, TFormattedOutput>;
+  ): CreateToolResult<TInput, TOutput, TFormattedOutput>;
 
   // Overload 4: with inputSchema, without outputSchema, without toModelOutput
-  function createLLMTool<TInput, TOutput>(
+  function createTool<TInput, TOutput>(
     options: CreateToolBaseOptions<TOutput, DefaultModelOutput<TOutput>> &
       WithInputSchema<TInput> &
       WithoutOutputSchema & {
         execute: (input: TInput, processingMeta?: unknown) => TOutput | Promise<TOutput>;
         toModelOutput?: undefined;
       }
-  ): CreateLLMToolResult<TInput, TOutput, DefaultModelOutput<TOutput>>;
+  ): CreateToolResult<TInput, TOutput, DefaultModelOutput<TOutput>>;
 
   // Overload 5: without inputSchema, with outputSchema, with toModelOutput
-  function createLLMTool<TOutput, TFormattedOutput>(
+  function createTool<TOutput, TFormattedOutput>(
     options: CreateToolBaseOptions<TOutput, TFormattedOutput> &
       WithoutInputSchema &
       WithOutputSchema<TOutput> & {
         execute: (input: null, processingMeta?: unknown) => TOutput | Promise<TOutput>;
         toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
       }
-  ): CreateLLMToolResult<null, TOutput, TFormattedOutput>;
+  ): CreateToolResult<null, TOutput, TFormattedOutput>;
 
   // Overload 6: without inputSchema, with outputSchema, without toModelOutput
-  function createLLMTool<TOutput>(
+  function createTool<TOutput>(
     options: CreateToolBaseOptions<TOutput, DefaultModelOutput<TOutput>> &
       WithoutInputSchema &
       WithOutputSchema<TOutput> & {
         execute: (input: null, processingMeta?: unknown) => TOutput | Promise<TOutput>;
         toModelOutput?: undefined;
       }
-  ): CreateLLMToolResult<null, TOutput, DefaultModelOutput<TOutput>>;
+  ): CreateToolResult<null, TOutput, DefaultModelOutput<TOutput>>;
 
   // Overload 7: without inputSchema, without outputSchema, with toModelOutput
-  function createLLMTool<TOutput, TFormattedOutput>(
+  function createTool<TOutput, TFormattedOutput>(
     options: CreateToolBaseOptions<TOutput, TFormattedOutput> &
       WithoutInputSchema &
       WithoutOutputSchema & {
         execute: (input: null, processingMeta?: unknown) => TOutput | Promise<TOutput>;
         toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
       }
-  ): CreateLLMToolResult<null, TOutput, TFormattedOutput>;
+  ): CreateToolResult<null, TOutput, TFormattedOutput>;
 
   // Overload 8: without inputSchema, without outputSchema, without toModelOutput
-  function createLLMTool<TOutput>(
+  function createTool<TOutput>(
     options: CreateToolBaseOptions<TOutput, DefaultModelOutput<TOutput>> &
       WithoutInputSchema &
       WithoutOutputSchema & {
         execute: (input: null, processingMeta?: unknown) => TOutput | Promise<TOutput>;
         toModelOutput?: undefined;
       }
-  ): CreateLLMToolResult<null, TOutput, DefaultModelOutput<TOutput>>;
+  ): CreateToolResult<null, TOutput, DefaultModelOutput<TOutput>>;
 
   // Implementation
-  function createLLMTool<TInput, TOutput, TFormattedOutput = DefaultModelOutput<TOutput>>({
+  function createTool<TInput, TOutput, TFormattedOutput = DefaultModelOutput<TOutput>>({
     name,
     title,
     description,
@@ -136,7 +136,7 @@ export function createToolFactory({
     inputSchema?: StandardSchemaV1<TInput>;
     outputSchema?: StandardSchemaV1<TOutput>;
     execute: (input: KnownAny, processingMeta?: unknown) => TOutput | Promise<TOutput>;
-  }): VovkLLMTool<TInput, TOutput, TFormattedOutput, false> {
+  }): VovkTool<TInput, TOutput, TFormattedOutput, false> {
     let parameters;
     return {
       type: 'function',
@@ -150,7 +150,7 @@ export function createToolFactory({
       outputSchema: outputSchema as TOutput extends undefined ? undefined : StandardSchemaV1<TOutput>,
       inputSchemas: undefined,
       async execute(input, processingMeta) {
-        const toolOptions: VovkLLMToolOptions = { name, title, description };
+        const toolOptions: VovkToolOptions = { name, title, description };
         let result: TOutput | Error;
         try {
           let validatedInput;
@@ -205,5 +205,5 @@ export function createToolFactory({
     };
   }
 
-  return createLLMTool;
+  return createTool;
 }
