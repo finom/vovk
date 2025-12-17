@@ -1,9 +1,9 @@
-import type { KnownAny, VovkRequest } from '../types';
+import type { VovkRequest } from '../types';
 
 const metaMap = new WeakMap();
 
-export function reqMeta<T = Record<KnownAny, KnownAny>>(
-  req: VovkRequest<KnownAny, KnownAny, KnownAny>,
+export function reqMeta<T = Record<'mcpOutput' | (string & {}), unknown>>(
+  req: Partial<VovkRequest>,
   meta?: T | null
 ): T {
   if (meta) {

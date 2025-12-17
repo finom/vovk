@@ -267,7 +267,7 @@ describe('deriveTools', () => {
         },
       });
 
-      it('Should return audio MCPModelOutput', async () => {
+      it('Should return audio output', async () => {
         const result: MCPModelOutput = await toolsByName.withAudioResponse.execute({});
         assert.deepStrictEqual(result, {
           content: [
@@ -312,7 +312,7 @@ describe('deriveTools', () => {
         },
       });
 
-      it('Should return image MCPModelOutput', async () => {
+      it('Should return image output', async () => {
         const result: MCPModelOutput = await toolsByName.withImageResponse.execute({});
         assert.deepStrictEqual(result, {
           content: [
@@ -344,7 +344,7 @@ describe('deriveTools', () => {
         },
       });
 
-      it('Should return fetched image MCPModelOutput', async () => {
+      it('Should return fetched image output', async () => {
         const result: MCPModelOutput = await toolsByName.withImageResponse.execute({});
         assert.deepStrictEqual(result.content[0].type, 'image');
         assert.deepStrictEqual(result.content[0].mimeType, 'image/jpeg');
@@ -375,7 +375,7 @@ describe('deriveTools', () => {
         },
       });
 
-      it('Should return CSV MCPModelOutput', async () => {
+      it('Should return CSV output', async () => {
         const result: MCPModelOutput = await toolsByName.withCSVResponse.execute({});
         assert.deepStrictEqual(result, {
           content: [
@@ -408,7 +408,7 @@ describe('deriveTools', () => {
         },
       });
 
-      it('Should return text MCPModelOutput', async () => {
+      it('Should return text output', async () => {
         const result: MCPModelOutput = await toolsByName.withTextResponse.execute({});
         assert.deepStrictEqual(result, {
           content: [
@@ -452,6 +452,45 @@ describe('deriveTools', () => {
           ],
           structuredContent: { message: 'Hello, this is a JSON response.' },
         });
+      });
+    });
+
+    it('Should support MCP annotations', async () => {
+      const handlerWithAnnotations = withZod({
+        operationObject: {
+          'x-tool': {
+            name: 'handlerWithAnnotations',
+          },
+          description: 'handlerWithAnnotations description',
+        },
+        body: z.object({ foo: z.string().max(5) }),
+        async handle({ vovk }) {
+          const { foo } = await vovk.body();
+          vovk.meta({ mcpOutput: { annotations: { audience: ['user'], priority: 5 } } });
+
+          return { foo };
+        },
+      });
+
+      const { toolsByName } = deriveTools({
+        toModelOutput: ToModelOutput.MCP,
+        modules: {
+          MyModule: {
+            handlerWithAnnotations,
+          },
+        },
+      });
+
+      const result: MCPModelOutput = await toolsByName.handlerWithAnnotations.execute({ body: { foo: 'bar' } });
+      assert.deepStrictEqual(result, {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ foo: 'bar' }),
+          },
+        ],
+        structuredContent: { foo: 'bar' },
+        annotations: { audience: ['user'], priority: 5 },
       });
     });
   });

@@ -181,11 +181,16 @@ export function withValidationLibrary<
 
   type FnInput = {
     disableClientValidation?: boolean;
+    transform?: undefined;
   } & (undefined extends typeof body ? { body?: T['__types']['body'] } : { body: T['__types']['body'] }) &
     (undefined extends typeof query ? { query?: T['__types']['query'] } : { query: T['__types']['query'] }) &
     (undefined extends typeof params ? { params?: T['__types']['params'] } : { params: T['__types']['params'] }) & {
       meta?: Meta;
     };
+
+  type FnInputWithTransform<TTransformed> = Omit<FnInput, 'transform'> & {
+    transform: (result: Awaited<ReturnType<T>>, fakeReq: Pick<VovkRequestAny, 'vovk'>) => TTransformed;
+  };
 
   type IsInputOptional = undefined extends typeof body
     ? undefined extends typeof query
@@ -195,17 +200,20 @@ export function withValidationLibrary<
       : false
     : false;
 
+  function fn<TTransformed>(input: FnInputWithTransform<TTransformed>): Promise<TTransformed>;
   function fn<TReturnType = ReturnType<T>>(
     input?: IsInputOptional extends true ? FnInput : never
   ): IsInputOptional extends true ? TReturnType : never;
   function fn<TReturnType = ReturnType<T>>(input: FnInput): TReturnType;
-  function fn<TReturnType = ReturnType<T>>(input?: FnInput): TReturnType {
+  function fn<TReturnType = ReturnType<T>, TTransformed = never>(
+    input?: FnInput | FnInputWithTransform<TTransformed>
+  ): TReturnType | Promise<TTransformed> {
     const fakeReq: Pick<VovkRequest<T['__types']['body'], T['__types']['query'], T['__types']['params']>, 'vovk'> = {
       vovk: {
         body: () => Promise.resolve((input?.body ?? {}) as T['__types']['body']),
         query: () => (input?.query ?? {}) as T['__types']['query'],
         params: () => (input?.params ?? {}) as T['__types']['params'],
-        meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq as VovkRequestAny, meta),
+        meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
         form: () => {
           throw new Error('Form data is not supported in this context.');
         },
@@ -214,10 +222,18 @@ export function withValidationLibrary<
 
     fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
 
-    return (resultHandler.wrapper ?? resultHandler)(
+    const result = (resultHandler.wrapper ?? resultHandler)(
       fakeReq as VovkRequestAny,
       (input?.params ?? {}) as Parameters<T>[1]
-    ) as TReturnType;
+    );
+
+    if (input && 'transform' in input && typeof input.transform === 'function') {
+      return Promise.resolve(result).then((resolvedResult) =>
+        input.transform(resolvedResult, fakeReq)
+      ) as Promise<TTransformed>;
+    }
+
+    return result as TReturnType;
   }
 
   const models = {

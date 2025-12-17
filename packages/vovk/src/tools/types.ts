@@ -1,9 +1,13 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { VovkHandlerSchema, VovkJSONSchemaBase } from '../types';
+import type { VovkHandlerSchema, VovkJSONSchemaBase, VovkRequest } from '../types';
 
 export type ToModelOutputFn<TOutput, TFormattedOutput> = (
   result: TOutput | Error,
-  options: { toolOptions: VovkToolOptions; handlerSchema: VovkHandlerSchema | null; request: Request | null }
+  options: {
+    toolOptions: VovkToolOptions;
+    handlerSchema: VovkHandlerSchema | null;
+    req: Pick<VovkRequest, 'vovk'> | null;
+  }
 ) => TFormattedOutput | Promise<TFormattedOutput>;
 
 export interface VovkTool<

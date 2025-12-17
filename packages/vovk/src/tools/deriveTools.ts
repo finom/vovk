@@ -9,7 +9,7 @@ import { DefaultModelOutput } from './toModelOutputDefault';
 type DerivedToolInput = { body?: KnownAny; query?: KnownAny; params?: KnownAny };
 
 type Handler = ((...args: KnownAny[]) => KnownAny) & {
-  fn?: (input: KnownAny) => KnownAny;
+  fn?: (input: unknown) => KnownAny;
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
   models?: {
@@ -58,12 +58,13 @@ async function caller<TOutput, TFormattedOutput>(
   }: CallerInput<TOutput, TFormattedOutput>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _processingMeta: KnownAny
-): Promise<[TFormattedOutput]> {
+): Promise<TFormattedOutput> {
   if (!handler.isRPC && !handler.fn) {
     throw new Error('Handler is not a valid RPC or controller method');
   }
   try {
     let result;
+    let req;
     if (handler.isRPC) {
       result = await handler({
         handler,
@@ -74,11 +75,12 @@ async function caller<TOutput, TFormattedOutput>(
         meta,
       });
     } else if (handler.fn) {
-      result = await handler.fn({
+      [result, req] = await handler.fn({
         body,
         query,
         params,
         meta,
+        transform: (result: unknown, req: unknown) => [result, req],
       });
     } else {
       throw new Error(
@@ -86,9 +88,9 @@ async function caller<TOutput, TFormattedOutput>(
       );
     }
 
-    return [await toModelOutput(result, { toolOptions, handlerSchema: schema, request: null })];
+    return toModelOutput(result, { toolOptions, handlerSchema: schema, req });
   } catch (e) {
-    return [await toModelOutput(e as Error, { toolOptions, handlerSchema: schema, request: null })];
+    return toModelOutput(e as Error, { toolOptions, handlerSchema: schema, req: null });
   }
 }
 
@@ -110,8 +112,11 @@ const makeTool = <TOutput, TFormattedOutput>({
   apiRoot: string | undefined;
   meta: Record<string, KnownAny> | undefined;
   toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
-  onExecute: (result: KnownAny, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
-  onError: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+  onExecute: (
+    result: KnownAny,
+    options: { toolOptions: VovkToolOptions; processingMeta: unknown; req: unknown }
+  ) => void;
+  onError: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown; req: unknown }) => void;
 }): VovkTool<DerivedToolInput, TOutput, TFormattedOutput, true> => {
   if (!module) {
     throw new Error(`Module "${moduleName}" not found.`);
@@ -159,11 +164,11 @@ const makeTool = <TOutput, TFormattedOutput>({
       toModelOutput,
     };
 
-    const [result] = await caller(callerInput, processingMeta);
+    const result = await caller(callerInput, processingMeta);
     if (result instanceof Error) {
-      onError(result, { toolOptions, processingMeta });
+      onError(result, { toolOptions, processingMeta, req: null });
     } else {
-      onExecute(result, { toolOptions, processingMeta });
+      onExecute(result, { toolOptions, processingMeta, req: null });
     }
 
     return result;
@@ -239,8 +244,11 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
   modules: Record<string, object | [object, { init?: RequestInit; apiRoot?: string }]>;
   meta?: Record<string, unknown>;
   toModelOutput?: ToModelOutputFn<TOutput, TFormattedOutput>;
-  onExecute?: (result: unknown, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
-  onError?: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+  onExecute?: (
+    result: unknown,
+    options: { toolOptions: VovkToolOptions; processingMeta: unknown; req: unknown }
+  ) => void;
+  onError?: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown; req: unknown }) => void;
 }): DeriveToolsResult<TOutput, TFormattedOutput> {
   const {
     modules,

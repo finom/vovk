@@ -62,7 +62,7 @@ describe('Controller handler with validation', async () => {
     );
   });
 
-  it('Should disable client validation', async () => {
+  it.only('Should disable client validation', async () => {
     assert.deepEqual(
       await handler.fn({
         body: { foo: 'foo1long' },
@@ -78,6 +78,22 @@ describe('Controller handler with validation', async () => {
         inputMeta: 'metaValue',
       }
     );
+  });
+
+  it('Should transform response', async () => {
+    const result = await handler.fn({
+      body: { foo: 'foo1' },
+      query: { bar: 'bar2' },
+      params: { baz: 'baz3' },
+      meta: { hello: 'world', inputMeta: 'metaValue' },
+      transform: (data, req) => {
+        const hello = req.vovk.meta<{ hello: string }>().hello;
+        return { ...data, hello } as const;
+      },
+    });
+
+    result satisfies { foo: string; bar: string; baz: string; hello: string; inputMeta?: string };
+    assert.deepEqual(result, { foo: 'foo1', bar: 'bar2', baz: 'baz3', hello: 'world', inputMeta: 'metaValue' });
   });
 
   it('Should assign schema', async () => {

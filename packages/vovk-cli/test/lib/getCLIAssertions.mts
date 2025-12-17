@@ -29,6 +29,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
       await runScript(
         `npx create-next-app ${tmpNextjsProjectDir} --ts --app --src-dir --no-eslint --no-tailwind --no-react-compiler --no-import-alias ${extraParams}`
       );
+      // create .npmrc with prefer-offline=true
+      await fs.writeFile(path.join(tmpNextjsProjectDir, '.npmrc'), 'prefer-offline=true\n');
     }
 
     await runScript(`cp -R ${tmpNextjsProjectDir} ${projectDir}`);

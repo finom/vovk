@@ -1,3 +1,7 @@
+import { VovkHandlerSchema, VovkRequest } from '../types';
+import { reqMeta } from '../utils/reqMeta';
+import { VovkToolOptions } from './types';
+
 export type MCPModelOutput = {
   content: [
     | { type: 'audio'; mimeType: string; data: string }
@@ -47,11 +51,19 @@ async function responseToMCP(res: Response): Promise<MCPModelOutput> {
   };
 }
 
-type ToModelOutputMCPFn = <TOutput>(result: TOutput | Error) => Promise<MCPModelOutput>;
+type ToModelOutputMCPFn = <TOutput>(
+  result: TOutput | Error,
+  options: {
+    toolOptions: VovkToolOptions;
+    handlerSchema: VovkHandlerSchema | null;
+    req: Pick<VovkRequest, 'vovk'> | null;
+  }
+) => Promise<MCPModelOutput>;
 
-export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown): Promise<MCPModelOutput> => {
+export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown, { req }): Promise<MCPModelOutput> => {
+  const mcpOutputMeta = req ? (reqMeta(req).mcpOutput as MCPModelOutput) : null;
   if (result instanceof Response) {
-    return await responseToMCP(result);
+    return { ...responseToMCP(result), ...(mcpOutputMeta || {}) };
   }
 
   const isError = result instanceof Error;
@@ -64,5 +76,6 @@ export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown): Pro
     ],
     ...(isError ? { isError: true } : {}),
     ...(!isError && typeof result === 'object' && result !== null ? { structuredContent: result } : {}),
+    ...(mcpOutputMeta || {}),
   };
 };

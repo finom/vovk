@@ -201,7 +201,7 @@ export function createToolFactory({
           });
         }
 
-        return toModelOutput(result, { toolOptions, handlerSchema: null, request: null });
+        return toModelOutput(result, { toolOptions, handlerSchema: null, req: null });
       },
     };
   }
