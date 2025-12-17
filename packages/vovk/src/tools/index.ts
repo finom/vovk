@@ -11,15 +11,15 @@ MCP additions:
 - image/audio via Response
 - req.vovk.fileToResponse(file, opts)
 - resource/resource_link ??? NO
-- outputSchema - createLLMTool outputSchema + deriveLLMTools output
+- outputSchema - createTool outputSchema + deriveTools output
 - annotations - add to req.vovk.meta({ mcpOutput: ... }) - how to get req?
 - isError: boolean
-- create createLLMTool fabric
+- create createTool fabric
 - remove mcp option from tool
 - x-tool-disable => hidden
-- rename createLLMTool to createTool
-- rename deriveLLMTools to deriveTools
-- Rename VovkLLMTool to VovkTool
+- rename createTool to createTool
+- rename deriveTools to deriveTools
+- Rename VovkTool to VovkTool
 - Think of https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling#preliminary-tool-results
 - Think of https://ai-sdk.dev/docs/ai-sdk-core/mcp-tools
 

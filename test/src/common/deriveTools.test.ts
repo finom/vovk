@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import { withZod } from 'vovk-zod';
 import { z } from 'zod';
 import assert from 'node:assert';
-import { deriveLLMTools, toDownloadResponse, ToModelOutput, type VovkLLMTool } from 'vovk';
+import { deriveTools, toDownloadResponse, ToModelOutput, type VovkTool } from 'vovk';
 import type { MCPModelOutput } from 'vovk/internal';
 
 describe('deriveTools', () => {
@@ -69,7 +69,7 @@ describe('deriveTools', () => {
       },
     });
 
-    const { tools, toolsByName } = deriveLLMTools({
+    const { tools, toolsByName } = deriveTools({
       meta: { inputMeta: 'hello' },
       modules: {
         MyModule: {
@@ -83,7 +83,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkLLMTool<
+    tools satisfies VovkTool<
       {
         body?: unknown;
         query?: unknown;
@@ -95,7 +95,7 @@ describe('deriveTools', () => {
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkLLMTool<
+      [key: string]: VovkTool<
         {
           body?: unknown;
           query?: unknown;
@@ -137,7 +137,7 @@ describe('deriveTools', () => {
   });
 
   describe('Common, explicit default toModelOutput = ToModelOutput.DEFAULT', () => {
-    const { tools, toolsByName } = deriveLLMTools({
+    const { tools, toolsByName } = deriveTools({
       meta: { inputMeta: 'hello' },
       toModelOutput: ToModelOutput.DEFAULT,
       modules: {
@@ -147,7 +147,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkLLMTool<
+    tools satisfies VovkTool<
       {
         body?: unknown;
         query?: unknown;
@@ -159,7 +159,7 @@ describe('deriveTools', () => {
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkLLMTool<
+      [key: string]: VovkTool<
         {
           body?: unknown;
           query?: unknown;
@@ -189,7 +189,7 @@ describe('deriveTools', () => {
 
   describe('toModelOutput = ToModelOutput.MCP', () => {
     describe('Common, normal JSON output', () => {
-      const { tools, toolsByName } = deriveLLMTools({
+      const { tools, toolsByName } = deriveTools({
         meta: { inputMeta: 'hello' },
         toModelOutput: ToModelOutput.MCP,
         modules: {
@@ -197,7 +197,7 @@ describe('deriveTools', () => {
         },
       });
 
-      tools satisfies VovkLLMTool<
+      tools satisfies VovkTool<
         {
           body?: unknown;
           query?: unknown;
@@ -209,7 +209,7 @@ describe('deriveTools', () => {
       >[];
 
       toolsByName satisfies {
-        [key: string]: VovkLLMTool<
+        [key: string]: VovkTool<
           {
             body?: unknown;
             query?: unknown;
@@ -247,7 +247,7 @@ describe('deriveTools', () => {
     });
 
     describe('Audio Response instance', () => {
-      const { toolsByName } = deriveLLMTools({
+      const { toolsByName } = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -283,7 +283,7 @@ describe('deriveTools', () => {
 
     describe('Image Response instance', () => {
       // 2x2 red PNG image
-      const { toolsByName } = deriveLLMTools({
+      const { toolsByName } = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -327,7 +327,7 @@ describe('deriveTools', () => {
     });
 
     describe('Image Response instance (fetch)', () => {
-      const { toolsByName } = deriveLLMTools({
+      const { toolsByName } = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -354,7 +354,7 @@ describe('deriveTools', () => {
     });
 
     describe('CSV Response instance', () => {
-      const { toolsByName } = deriveLLMTools({
+      const { toolsByName } = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -389,7 +389,7 @@ describe('deriveTools', () => {
     });
 
     describe('Text Response instance', () => {
-      const { toolsByName } = deriveLLMTools({
+      const { toolsByName } = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -422,7 +422,7 @@ describe('deriveTools', () => {
     });
 
     describe('JSON Response instance', () => {
-      const { toolsByName } = deriveLLMTools({
+      const { toolsByName } = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -457,7 +457,7 @@ describe('deriveTools', () => {
   });
 
   describe('Custom Result Formatter', () => {
-    const { tools, toolsByName } = deriveLLMTools({
+    const { tools, toolsByName } = deriveTools({
       meta: { inputMeta: 'hello' },
       toModelOutput: async (result) => {
         if (result instanceof Error) {
@@ -470,7 +470,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkLLMTool<
+    tools satisfies VovkTool<
       {
         body?: unknown;
         query?: unknown;
@@ -482,7 +482,7 @@ describe('deriveTools', () => {
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkLLMTool<
+      [key: string]: VovkTool<
         {
           body?: unknown;
           query?: unknown;

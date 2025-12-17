@@ -9,3 +9,4 @@ tmp_*
 .next
 .vscode
 .mypy_cache
+config.bat

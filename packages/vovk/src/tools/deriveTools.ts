@@ -1,5 +1,5 @@
 import { StandardSchemaV1 } from '@standard-schema/spec';
-import type { KnownAny, VovkHandlerSchema, VovkLLMTool, VovkLLMToolOptions } from '../types';
+import type { KnownAny, VovkHandlerSchema, VovkTool, VovkToolOptions } from '../types';
 import { ToModelOutput } from './ToModelOutput';
 import type { ToModelOutputFn } from './types';
 import { DefaultModelOutput } from './toModelOutputDefault';
@@ -26,7 +26,7 @@ type CallerInput<TOutput, TFormattedOutput> = {
   query: KnownAny;
   params: KnownAny;
   schema: VovkHandlerSchema;
-  toolOptions: VovkLLMToolOptions;
+  toolOptions: VovkToolOptions;
   inputSchemas:
     | {
         body?: StandardSchemaV1;
@@ -91,7 +91,7 @@ async function caller<TOutput, TFormattedOutput>(
   }
 }
 
-const makeLLMTool = <TOutput, TFormattedOutput>({
+const makeTool = <TOutput, TFormattedOutput>({
   moduleName,
   handlerName,
   module,
@@ -109,9 +109,9 @@ const makeLLMTool = <TOutput, TFormattedOutput>({
   apiRoot: string | undefined;
   meta: Record<string, KnownAny> | undefined;
   toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
-  onExecute: (result: KnownAny, options: { toolOptions: VovkLLMToolOptions; processingMeta: unknown }) => void;
-  onError: (error: Error, options: { toolOptions: VovkLLMToolOptions; processingMeta: unknown }) => void;
-}): VovkLLMTool<DerivedToolInput, TOutput, TFormattedOutput, true> => {
+  onExecute: (result: KnownAny, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+  onError: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+}): VovkTool<DerivedToolInput, TOutput, TFormattedOutput, true> => {
   if (!module) {
     throw new Error(`Module "${moduleName}" not found.`);
   }
@@ -140,7 +140,7 @@ const makeLLMTool = <TOutput, TFormattedOutput>({
     processingMeta?: KnownAny
   ): Promise<TFormattedOutput> => {
     const { body, query, params } = input;
-    const toolOptions: VovkLLMToolOptions = schema.operationObject?.['x-tool'] ?? {};
+    const toolOptions: VovkToolOptions = schema.operationObject?.['x-tool'] ?? {};
 
     const callerInput: CallerInput<TOutput, TFormattedOutput> = {
       schema,
@@ -202,45 +202,45 @@ const makeLLMTool = <TOutput, TFormattedOutput>({
       additionalProperties: false,
     },
     inputSchemas,
-  } satisfies VovkLLMTool<DerivedToolInput, unknown, TFormattedOutput, true>;
+  } satisfies VovkTool<DerivedToolInput, unknown, TFormattedOutput, true>;
 };
 
 // Base options type without toModelOutput
-type DeriveLLMToolsBaseOptions = {
+type DeriveToolsBaseOptions = {
   modules: Record<string, object | [object, { init?: RequestInit; apiRoot?: string }]>;
   meta?: Record<string, KnownAny>;
-  onExecute?: (result: KnownAny, options: { toolOptions: VovkLLMToolOptions; processingMeta: unknown }) => void;
-  onError?: (error: Error, options: { toolOptions: VovkLLMToolOptions; processingMeta: unknown }) => void;
+  onExecute?: (result: KnownAny, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+  onError?: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
 };
 
 // Return type helper
-type DeriveLLMToolsResult<TOutput, TFormattedOutput> = {
-  tools: VovkLLMTool<DerivedToolInput, TOutput, TFormattedOutput, true>[];
-  toolsByName: Record<string, VovkLLMTool<DerivedToolInput, TOutput, TFormattedOutput, true>>;
+type DeriveToolsResult<TOutput, TFormattedOutput> = {
+  tools: VovkTool<DerivedToolInput, TOutput, TFormattedOutput, true>[];
+  toolsByName: Record<string, VovkTool<DerivedToolInput, TOutput, TFormattedOutput, true>>;
 };
 
 // Overload: without toModelOutput - returns DefaultModelOutput
-export function deriveLLMTools<TOutput = unknown, TFormattedOutput = DefaultModelOutput<TOutput>>(
-  options: DeriveLLMToolsBaseOptions & {
+export function deriveTools<TOutput = unknown, TFormattedOutput = DefaultModelOutput<TOutput>>(
+  options: DeriveToolsBaseOptions & {
     toModelOutput?: never;
   }
-): DeriveLLMToolsResult<TOutput, TFormattedOutput>;
+): DeriveToolsResult<TOutput, TFormattedOutput>;
 
 // Overload: with toModelOutput - infers TFormattedOutput from the function
-export function deriveLLMTools<TOutput = unknown, TFormattedOutput = unknown>(
-  options: DeriveLLMToolsBaseOptions & {
+export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
+  options: DeriveToolsBaseOptions & {
     toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
   }
-): DeriveLLMToolsResult<TOutput, TFormattedOutput>;
+): DeriveToolsResult<TOutput, TFormattedOutput>;
 
 // Implementation
-export function deriveLLMTools<TOutput = unknown, TFormattedOutput = unknown>(options: {
+export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(options: {
   modules: Record<string, object | [object, { init?: RequestInit; apiRoot?: string }]>;
   meta?: Record<string, unknown>;
   toModelOutput?: ToModelOutputFn<TOutput, TFormattedOutput>;
-  onExecute?: (result: unknown, options: { toolOptions: VovkLLMToolOptions; processingMeta: unknown }) => void;
-  onError?: (error: Error, options: { toolOptions: VovkLLMToolOptions; processingMeta: unknown }) => void;
-}): DeriveLLMToolsResult<TOutput, TFormattedOutput> {
+  onExecute?: (result: unknown, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+  onError?: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+}): DeriveToolsResult<TOutput, TFormattedOutput> {
   const {
     modules,
     meta,
@@ -269,7 +269,7 @@ export function deriveLLMTools<TOutput = unknown, TFormattedOutput = unknown>(op
           ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.disable
         )
         .map(([handlerName]) =>
-          makeLLMTool<TOutput, TFormattedOutput>({
+          makeTool<TOutput, TFormattedOutput>({
             moduleName,
             handlerName,
             module,

@@ -317,7 +317,7 @@ export enum HttpStatus {
 
 // -----
 
-export interface VovkLLMTool<
+export interface VovkTool<
   TInput = unknown,
   TOutput = unknown,
   TFormattedOutput = unknown,
@@ -389,7 +389,7 @@ export type VovkJSONSchemaBase = {
   [key: `x-${string}`]: KnownAny;
 };
 
-export type VovkLLMToolOptions = {
+export type VovkToolOptions = {
   disable?: boolean;
   name?: string;
   title?: string;
@@ -397,7 +397,7 @@ export type VovkLLMToolOptions = {
 };
 
 export type VovkOperationObject = OperationObject & {
-  'x-tool'?: VovkLLMToolOptions;
+  'x-tool'?: VovkToolOptions;
 };
 
 // -----
