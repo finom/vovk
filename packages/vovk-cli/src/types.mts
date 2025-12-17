@@ -72,7 +72,7 @@ export interface InitOptions {
   skipInstall?: boolean;
   updateTsConfig?: boolean;
   updateScripts?: 'implicit' | 'explicit';
-  validationLibrary?: 'zod' | 'yup' | 'class-validator' | 'valibot' | 'arktype' | null;
+  validationLibrary?: 'zod' | 'valibot' | 'arktype' | null;
   dryRun?: boolean;
   lang?: string[];
   channel?: 'latest' | 'beta' | 'draft';

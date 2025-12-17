@@ -1,5 +1,5 @@
 import { it, describe } from 'node:test';
-import { withZod } from 'vovk-zod';
+import { withZod } from '../lib/withZod.ts';
 import { z } from 'zod';
 import assert from 'node:assert';
 import { deriveTools, toDownloadResponse, ToModelOutput, type VovkTool } from 'vovk';

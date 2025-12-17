@@ -64,12 +64,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
       ...typeTemplates,
       ...{
         type: typeTemplates,
-        yup: {
-          controller: 'vovk-yup/module-templates/controller.ts.ejs',
-        },
-        'class-validator': {
-          controller: 'vovk-dto/module-templates/controller.ts.ejs',
-        },
         zod: {
           controller: 'vovk-cli/module-templates/zod/controller.ts.ejs',
         },
@@ -87,8 +81,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     };
     config.outputConfig ??= {};
     config.outputConfig.imports ??= {};
-    config.outputConfig.imports.validateOnClient =
-      validationLibrary === 'class-validator' ? 'vovk-dto/validateOnClient' : 'vovk-ajv';
+    config.outputConfig.imports.validateOnClient = 'vovk-ajv';
 
     return { ...config, ...extras };
   };

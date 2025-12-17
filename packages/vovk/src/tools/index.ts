@@ -1,25 +1,11 @@
 // WTF https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling toModelOutput
 
 /*
-ToModelOutput.MCP DONE
-ToModelOutput.CLAUDE
-ToModelOutput.DEFAULT DONE
-
-MCP additions:
-
-- structuredContent DONE
-- image/audio via Response
+- ToModelOutput.CLAUDE
 - req.vovk.fileToResponse(file, opts)
-- resource/resource_link ??? NO
-- outputSchema - createTool outputSchema + deriveTools output
+- outputSchema - createTool outputSchema + deriveTools output (TEST?)
 - annotations - add to req.vovk.meta({ mcpOutput: ... }) - how to get req?
-- isError: boolean
-- create createTool fabric
-- remove mcp option from tool
 - x-tool-disable => hidden
-- rename createTool to createTool
-- rename deriveTools to deriveTools
-- Rename VovkTool to VovkTool
 - Think of https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling#preliminary-tool-results
 - Think of https://ai-sdk.dev/docs/ai-sdk-core/mcp-tools
 

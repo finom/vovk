@@ -21,7 +21,7 @@ export default function logUpdateDependenciesError({
   const installCommands: string[] = [];
 
   const addChannel = (packageName: string) => {
-    const isVovk = packageName.startsWith('vovk') && packageName !== 'dto-mapped-types';
+    const isVovk = packageName.startsWith('vovk');
     return isVovk ? (!channel || channel !== 'latest' ? `${packageName}@${channel}` : packageName) : packageName;
   };
 

@@ -1,7 +1,7 @@
 {
   "name": "vovk-ajv",
   "version": "0.0.0-beta.4",
-  "description": "Local validation for JSON schemas for vovk-zod and other validation libraries for Vovk.ts",
+  "description": "Client-side JSON validation library for Vovk.ts",
   "main": "index.js",
   "scripts": {
     "build": "tsc",

@@ -12,7 +12,6 @@ const combos = {
   NO_VALIDATION: ['N', ENTER, ENTER, 'Y', ENTER, ENTER, ENTER],
   NO_TS_CONFIG_UPDATE: [ENTER, ENTER, 'N', ENTER, ENTER],
   ONE_FLAG_PASSED: [ENTER, ENTER, ENTER],
-  DTO: [DOWN, ENTER, ENTER, ENTER, ENTER],
   YES: [ENTER, ENTER, ENTER, ENTER, ENTER],
   RUST: [ENTER, ENTER, ENTER, DOWN, SPACE, ENTER],
   PYTHON_AND_RUST: [ENTER, ENTER, ENTER, SPACE, DOWN, SPACE, ENTER],
@@ -202,48 +201,6 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await it('Works with --yes and --validation-library=yup', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=yup');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('yup'));
-
-    await assertDeps({
-      dependencies: ['vovk', 'vovk-yup', 'yup', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-    });
-
-    await assertTsConfig();
-  });
-
-  await it('Works with --yes and --validation-library=class-validator', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=class-validator');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('class-validator'));
-
-    await assertDeps({
-      dependencies: [
-        'vovk',
-        'vovk-dto',
-        'class-validator',
-        'class-transformer',
-        'dto-mapped-types',
-        'reflect-metadata',
-        'vovk-client',
-      ],
-      devDependencies: ['vovk-cli'],
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-    });
-
-    await assertTsConfig();
-  });
-
   await it('Utilizes .config folder', async () => {
     await createNextApp();
     await runAtProjectDir('mkdir .config');
@@ -344,33 +301,6 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await it('Works with prompting and --validation-library', async () => {
-    await createNextApp();
-    await vovkInit('--validation-library=class-validator', { combo: combos.ONE_FLAG_PASSED });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('class-validator'));
-
-    await assertDeps({
-      dependencies: [
-        'vovk',
-        'vovk-dto',
-        'class-validator',
-        'class-transformer',
-        'dto-mapped-types',
-        'reflect-metadata',
-        'vovk-client',
-      ],
-      devDependencies: ['vovk-cli'],
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-      build: 'next build',
-      prebuild: 'vovk generate',
-    });
-
-    await assertTsConfig();
-  });
-
   await it('Works with prompting and --validation-library=none', async () => {
     await createNextApp();
     await vovkInit('--validation-library=none', { combo: combos.ONE_FLAG_PASSED });
@@ -382,7 +312,7 @@ await describe('CLI init', async () => {
     });
 
     await assertDeps({
-      dependencies: ['vovk-dto', 'vovk-yup', 'zod', 'class-validator', 'class-transformer'],
+      dependencies: ['zod'],
       opposite: true,
     });
 
@@ -408,33 +338,6 @@ await describe('CLI init', async () => {
     await assertDeps({
       dependencies: ['zod'],
       opposite: true,
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-      build: 'next build',
-      prebuild: 'vovk generate',
-    });
-
-    await assertTsConfig();
-  });
-
-  await it('Works with prompting and down arrow selection for DTO', async () => {
-    await createNextApp();
-    await vovkInit('', { combo: combos.DTO });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('class-validator'));
-
-    await assertDeps({
-      dependencies: [
-        'vovk',
-        'vovk-dto',
-        'vovk-client',
-        'class-validator',
-        'class-transformer',
-        'dto-mapped-types',
-        'reflect-metadata',
-      ],
-      devDependencies: ['vovk-cli'],
     });
 
     await assertScripts({

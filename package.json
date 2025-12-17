@@ -35,12 +35,12 @@
     "minor": "NPM_TAG=latest VERSION_TYPE=minor npm run vpub",
     "BREAKING-major": "NPM_TAG=latest VERSION_TYPE=major npm run vpub",
     "beta": "NPM_TAG=latest VERSION_TYPE=\"prerelease --preid=beta\" npm run vpub",
-    "beta-all": "npm t && for PACKAGE in vovk vovk-cli vovk-client vovk-ajv vovk-zod vovk-yup vovk-dto vovk-python vovk-rust; do PACKAGE=$PACKAGE npm run beta-notest-IAMSURE; done",
+    "beta-all": "npm t && for PACKAGE in vovk vovk-cli vovk-client vovk-ajv vovk-python vovk-rust; do PACKAGE=$PACKAGE npm run beta-notest-IAMSURE; done",
     "beta-notest-IAMSURE": "NPM_TAG=latest VERSION_TYPE=\"prerelease --preid=beta\" npm run vpub-notest",
     "BREAKING-beta-major": "NPM_TAG=beta VERSION_TYPE=\"premajor --preid=beta\" npm run vpub",
     "draft": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub",
     "draft-notest": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub-notest",
-    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-client vovk-ajv vovk-zod vovk-yup vovk-dto vovk-python vovk-rust; do PACKAGE=$PACKAGE npm run draft-notest; done"
+    "draft-notest-all": "for PACKAGE in vovk vovk-cli vovk-client vovk-ajv vovk-python vovk-rust; do PACKAGE=$PACKAGE npm run draft-notest; done"
   },
   "engines": {
     "node": ">=23.0.0"

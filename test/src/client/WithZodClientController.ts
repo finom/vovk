@@ -10,10 +10,8 @@ import {
   type VovkParams,
   type VovkOutput,
 } from 'vovk';
-import { withZod } from 'vovk-zod';
-import { withZod as withZod3 } from 'vovk-zod/v3';
+import { withZod } from '../lib/withZod.ts';
 import { z } from 'zod';
-import { z as z3 } from 'zod/v3';
 
 const HandleAllInput = {
   body: z.object({ hello: z.string() }),
@@ -117,14 +115,6 @@ export default class WithZodClientController {
   @post.auto()
   static handleBody = withZod({
     body: z.object({ hello: z.string().max(5) }),
-    handle: async (req) => {
-      return req.vovk.body();
-    },
-  });
-
-  @post.auto()
-  static handleBodyZod3 = withZod3({
-    body: z3.object({ hello: z3.string().max(5) }),
     handle: async (req) => {
       return req.vovk.body();
     },

@@ -54,7 +54,7 @@ async function updateDeps({
         log.error(`Failed to fetch metadata for package ${name}@${channel ?? 'latest'}: ${error}`);
         return;
       }
-      const isVovk = name.startsWith('vovk') && name !== 'dto-mapped-types';
+      const isVovk = name.startsWith('vovk');
 
       const latestVersion = metadata['dist-tags'][isVovk ? (channel ?? 'latest') : 'latest'];
       packageJson[key] ??= {};

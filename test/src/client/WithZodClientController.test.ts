@@ -68,7 +68,7 @@ describe('Zod-to-JSONchema constraints', async () => {
   }
 });
 
-describe('Validation with with vovk-zod and validateOnClient defined at settings', () => {
+describe('Validation with with zod and validateOnClient defined at settings', () => {
   it('Should be OK', async () => {
     const result = await WithZodClientControllerRPC.handleAll({
       body: { hello: 'world' },
@@ -603,38 +603,5 @@ describe('Controller method as function with func', () => {
     null as unknown as VovkOutput<typeof WithZodClientController.handleAllNoHttpAsFunction> satisfies null;
 
     deepStrictEqual(result satisfies typeof expected, expected);
-  });
-});
-
-describe('Zod 3', () => {
-  it('Should handle body validation on server and client', async () => {
-    const result = await WithZodClientControllerRPC.handleBodyZod3({
-      body: { hello: 'world' },
-    });
-
-    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
-
-    let { rejects } = expectPromise(async () => {
-      await WithZodClientControllerRPC.handleBodyZod3({
-        body: {
-          hello: 'wrong_length',
-        },
-        disableClientValidation: true,
-      });
-    });
-
-    await rejects.toThrow(/Validation failed. Invalid body on server: .*hello.*/);
-    await rejects.toThrowError(HttpException);
-
-    ({ rejects } = expectPromise(async () => {
-      await WithZodClientControllerRPC.handleBodyZod3({
-        body: {
-          hello: 'wrong_length',
-        },
-      });
-    }));
-
-    await rejects.toThrow(/Ajv validation failed. Invalid body on client: data\/hello.*/);
-    await rejects.toThrowError(HttpException);
   });
 });

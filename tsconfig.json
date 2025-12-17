@@ -31,7 +31,6 @@
     "test/vovk.config.cjs",
     "test/next.config.mjs",
     "test/postcss.config.cjs",
-    "packages/vovk-dto/index.cts",
     "test/webpack.config.mjs",
     "test/src/etc/useQuery.test.mts",
     "test/src/etc/useMutation.test.mts"

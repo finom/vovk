@@ -66,14 +66,6 @@ export class Init {
       dependencies.push(
         ...({
           zod: ['zod'],
-          'class-validator': [
-            'class-validator',
-            'class-transformer',
-            'dto-mapped-types',
-            'reflect-metadata',
-            'vovk-dto',
-          ],
-          yup: ['yup', 'vovk-yup'],
           valibot: ['valibot', '@valibot/to-json-schema'],
           arktype: ['arktype'],
         }[validationLibrary] ?? [])
@@ -98,9 +90,6 @@ export class Init {
           experimentalDecorators: true,
         };
 
-        if (validationLibrary === 'class-validator') {
-          compilerOptions.emitDecoratorMetadata = true;
-        }
         if (!dryRun) await updateTypeScriptConfig(root, compilerOptions);
         log.info(
           `Added ${Object.keys(compilerOptions)
@@ -257,11 +246,6 @@ export class Init {
                 description: 'Use Zod for data validation',
               },
               {
-                name: 'class-validator',
-                value: 'class-validator',
-                description: 'Use class-validator for data validation',
-              },
-              {
                 name: 'ArkType',
                 value: 'arktype',
                 description: 'Use ArkType for data validation.',
@@ -303,16 +287,13 @@ export class Init {
       let shouldAsk = false;
 
       try {
-        shouldAsk = !(await checkTSConfigForExperimentalDecorators(root)); // TODO also check for emitDecoratorMetadata when vovk-dto is used
+        shouldAsk = !(await checkTSConfigForExperimentalDecorators(root));
       } catch (error) {
         log.error(`Failed to check tsconfig.json for "experimentalDecorators": ${(error as Error).message}`);
       }
 
       if (shouldAsk) {
         const keys = ['experimentalDecorators'];
-        if (validationLibrary === 'class-validator') {
-          keys.push('emitDecoratorMetadata');
-        }
         updateTsConfig = await confirm({
           message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')} to tsconfig.json? (recommended)`,
         });
