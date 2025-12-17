@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import diffSchema from '../../../dist/dev/diffSegmentSchema.mjs';
+import { diffSegmentSchema } from '../../../dist/dev/diffSegmentSchema.mjs';
 import { VovkSchemaIdEnum, type HttpMethod as VovkHttpMethod, type VovkSegmentSchema } from 'vovk';
 
 // got some problems importing it from "vovk"
@@ -16,7 +16,7 @@ enum _HttpMethod {
 
 const HttpMethod = _HttpMethod as unknown as typeof VovkHttpMethod;
 
-await describe('diffSchema', async () => {
+await describe('diffSegmentSchema', async () => {
   await it('Test case 1: No changes', () => {
     const oldJson: VovkSegmentSchema = {
       $schema: VovkSchemaIdEnum.SEGMENT,
@@ -39,7 +39,7 @@ await describe('diffSchema', async () => {
 
     const newJson: VovkSegmentSchema = { ...oldJson };
 
-    const diff = diffSchema(oldJson, newJson);
+    const diff = diffSegmentSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
       controllers: {
@@ -89,7 +89,7 @@ await describe('diffSchema', async () => {
       },
     };
 
-    const diff = diffSchema(oldJson, newJson);
+    const diff = diffSegmentSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
       controllers: {
@@ -151,7 +151,7 @@ await describe('diffSchema', async () => {
       },
     };
 
-    const diff = diffSchema(oldJson, newJson);
+    const diff = diffSegmentSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
       controllers: {
@@ -222,7 +222,7 @@ await describe('diffSchema', async () => {
       },
     };
 
-    const diff = diffSchema(oldJson, newJson);
+    const diff = diffSegmentSchema(oldJson, newJson);
 
     assert.deepStrictEqual(diff, {
       controllers: {

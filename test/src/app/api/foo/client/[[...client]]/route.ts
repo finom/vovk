@@ -5,8 +5,6 @@ import StreamingController from '../../../../../client/StreamingController.ts';
 import StreamingGeneratorController from '../../../../../client/StreamingGeneratorController.ts';
 import CustomSchemaController from '../../../../../client/CustomSchemaController.ts';
 import WithZodClientController from '../../../../../client/WithZodClientController.ts';
-import WithYupClientController from '../../../../../client/WithYupClientController.ts';
-import WithDtoClientController from '../../../../../client/WithDtoClientController.ts';
 import OpenApiController from '../../../../../client/OpenApiController.ts';
 
 const controllers = {
@@ -15,8 +13,6 @@ const controllers = {
   StreamingGeneratorControllerRPC: StreamingGeneratorController,
   CustomSchemaControllerRPC: CustomSchemaController,
   WithZodClientControllerRPC: WithZodClientController,
-  WithYupClientControllerRPC: WithYupClientController,
-  WithDtoClientControllerRPC: WithDtoClientController,
   OpenApiControllerRPC: OpenApiController,
 };
 

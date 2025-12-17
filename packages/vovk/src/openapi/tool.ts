@@ -1,4 +1,4 @@
-import type { VovkToolOptions } from '../types';
+import type { VovkToolOptions } from '../tools/types';
 import { createDecorator } from '../utils/createDecorator';
 
 export const tool = createDecorator(null, (toolOptions: VovkToolOptions) => {

@@ -27,12 +27,11 @@ import {
   type VovkOpenAPIMixinNormalized,
   type VovkStrictConfig,
   type VovkValidationType,
-  type VovkTool,
   type VovkTypedMethod,
   type VovkJSONSchemaBase,
   type VovkOperationObject,
-  type VovkToolOptions,
 } from './types';
+import type { VovkTool, VovkToolOptions } from './tools/types';
 import {
   type VovkRPCModule,
   type VovkFetcher,

@@ -111,7 +111,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
@@ -132,7 +134,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"],
+              "required": [
+                "todo"
+              ],
               "additionalProperties": false
             },
             "params": {
@@ -143,7 +147,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
@@ -164,7 +170,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"],
+              "required": [
+                "todo"
+              ],
               "additionalProperties": false
             }
           },
@@ -184,7 +192,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
@@ -219,7 +229,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
@@ -240,7 +252,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"],
+              "required": [
+                "todo"
+              ],
               "additionalProperties": false
             },
             "params": {
@@ -251,7 +265,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
@@ -272,7 +288,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"],
+              "required": [
+                "todo"
+              ],
               "additionalProperties": false
             }
           },
@@ -292,408 +310,14 @@
                   "type": "string"
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
           "operationObject": {
             "summary": "Delete zodControllerAndServiceEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "DELETE"
-        }
-      }
-    },
-    "YupControllerOnlyEntityRPC": {
-      "rpcModuleName": "YupControllerOnlyEntityRPC",
-      "originalControllerName": "YupControllerOnlyEntityController",
-      "prefix": "yup-controller-only-entities",
-      "handlers": {
-        "getYupControllerOnlyEntities": {
-          "validation": {},
-          "operationObject": {
-            "summary": "Get yupControllerOnlyEntities"
-          },
-          "path": "",
-          "httpMethod": "GET"
-        },
-        "getSingleYupControllerOnlyEntity": {
-          "validation": {
-            "params": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Get single yupControllerOnlyEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "GET"
-        },
-        "updateYupControllerOnlyEntity": {
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "todo": {
-                  "type": "boolean"
-                }
-              },
-              "required": ["todo"]
-            },
-            "params": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Update yupControllerOnlyEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "PUT"
-        },
-        "createYupControllerOnlyEntity": {
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "todo": {
-                  "type": "boolean"
-                }
-              },
-              "required": ["todo"]
-            }
-          },
-          "path": "",
-          "httpMethod": "POST"
-        },
-        "deleteYupControllerOnlyEntity": {
-          "validation": {
-            "params": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": ["id"]
-            }
-          },
-          "path": "{id}",
-          "httpMethod": "DELETE"
-        }
-      }
-    },
-    "YupControllerAndServiceEntityRPC": {
-      "rpcModuleName": "YupControllerAndServiceEntityRPC",
-      "originalControllerName": "YupControllerAndServiceEntityController",
-      "prefix": "yup-controller-and-service-entities",
-      "handlers": {
-        "getYupControllerAndServiceEntities": {
-          "validation": {},
-          "operationObject": {
-            "summary": "Get yupControllerAndServiceEntities"
-          },
-          "path": "",
-          "httpMethod": "GET"
-        },
-        "getSingleYupControllerAndServiceEntity": {
-          "validation": {
-            "params": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Get single yupControllerAndServiceEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "GET"
-        },
-        "updateYupControllerAndServiceEntity": {
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "todo": {
-                  "type": "boolean"
-                }
-              },
-              "required": ["todo"]
-            },
-            "params": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Update yupControllerAndServiceEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "PUT"
-        },
-        "createYupControllerAndServiceEntity": {
-          "validation": {
-            "body": {
-              "type": "object",
-              "properties": {
-                "todo": {
-                  "type": "boolean"
-                }
-              },
-              "required": ["todo"]
-            }
-          },
-          "path": "",
-          "httpMethod": "POST"
-        },
-        "deleteYupControllerAndServiceEntity": {
-          "validation": {
-            "params": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": ["id"]
-            }
-          },
-          "path": "{id}",
-          "httpMethod": "DELETE"
-        }
-      }
-    },
-    "DtoControllerOnlyEntityRPC": {
-      "rpcModuleName": "DtoControllerOnlyEntityRPC",
-      "originalControllerName": "DtoControllerOnlyEntityController",
-      "prefix": "dto-controller-only-entities",
-      "handlers": {
-        "getDtoControllerOnlyEntities": {
-          "validation": {},
-          "operationObject": {
-            "summary": "Get dtoControllerOnlyEntities"
-          },
-          "path": "",
-          "httpMethod": "GET"
-        },
-        "getSingleDtoControllerOnlyEntity": {
-          "validation": {
-            "params": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Get single dtoControllerOnlyEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "GET"
-        },
-        "updateDtoControllerOnlyEntity": {
-          "validation": {
-            "body": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "todo": {
-                  "type": "boolean",
-                  "enum": [true]
-                }
-              },
-              "type": "object",
-              "required": ["todo"]
-            },
-            "params": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Update dtoControllerOnlyEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "PUT"
-        },
-        "createDtoControllerOnlyEntity": {
-          "validation": {
-            "body": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "todo": {
-                  "type": "boolean",
-                  "enum": [true]
-                }
-              },
-              "type": "object",
-              "required": ["todo"]
-            }
-          },
-          "operationObject": {
-            "summary": "Create dtoControllerOnlyEntity"
-          },
-          "path": "",
-          "httpMethod": "POST"
-        },
-        "deleteDtoControllerOnlyEntity": {
-          "validation": {
-            "params": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Delete dtoControllerOnlyEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "DELETE"
-        }
-      }
-    },
-    "DtoControllerAndServiceEntityRPC": {
-      "rpcModuleName": "DtoControllerAndServiceEntityRPC",
-      "originalControllerName": "DtoControllerAndServiceEntityController",
-      "prefix": "dto-controller-and-service-entities",
-      "handlers": {
-        "getDtoControllerAndServiceEntities": {
-          "validation": {},
-          "operationObject": {
-            "summary": "Get dtoControllerAndServiceEntities"
-          },
-          "path": "",
-          "httpMethod": "GET"
-        },
-        "getSingleDtoControllerAndServiceEntity": {
-          "validation": {
-            "params": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Get single dtoControllerAndServiceEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "GET"
-        },
-        "updateDtoControllerAndServiceEntity": {
-          "validation": {
-            "body": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "todo": {
-                  "type": "boolean",
-                  "enum": [true]
-                }
-              },
-              "type": "object",
-              "required": ["todo"]
-            },
-            "params": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Update dtoControllerAndServiceEntity"
-          },
-          "path": "{id}",
-          "httpMethod": "PUT"
-        },
-        "createDtoControllerAndServiceEntity": {
-          "validation": {
-            "body": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "todo": {
-                  "type": "boolean",
-                  "enum": [true]
-                }
-              },
-              "type": "object",
-              "required": ["todo"]
-            }
-          },
-          "operationObject": {
-            "summary": "Create dtoControllerAndServiceEntity"
-          },
-          "path": "",
-          "httpMethod": "POST"
-        },
-        "deleteDtoControllerAndServiceEntity": {
-          "validation": {
-            "params": {
-              "x-isDto": true,
-              "definitions": {},
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": ["id"]
-            }
-          },
-          "operationObject": {
-            "summary": "Delete dtoControllerAndServiceEntity"
           },
           "path": "{id}",
           "httpMethod": "DELETE"
@@ -723,7 +347,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -742,7 +368,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"]
+              "required": [
+                "todo"
+              ]
             },
             "params": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -752,7 +380,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -771,7 +401,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"]
+              "required": [
+                "todo"
+              ]
             }
           },
           "operationObject": {
@@ -790,7 +422,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -824,7 +458,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -843,7 +479,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"]
+              "required": [
+                "todo"
+              ]
             },
             "params": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -853,7 +491,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -872,7 +512,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"]
+              "required": [
+                "todo"
+              ]
             }
           },
           "operationObject": {
@@ -891,7 +533,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -925,7 +569,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -944,7 +590,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"]
+              "required": [
+                "todo"
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -954,7 +602,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -973,7 +623,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"]
+              "required": [
+                "todo"
+              ]
             }
           },
           "operationObject": {
@@ -992,7 +644,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -1026,7 +680,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -1045,7 +701,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"]
+              "required": [
+                "todo"
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1055,7 +713,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {
@@ -1074,7 +734,9 @@
                   "const": true
                 }
               },
-              "required": ["todo"]
+              "required": [
+                "todo"
+              ]
             }
           },
           "operationObject": {
@@ -1093,7 +755,9 @@
                   "type": "string"
                 }
               },
-              "required": ["id"]
+              "required": [
+                "id"
+              ]
             }
           },
           "operationObject": {

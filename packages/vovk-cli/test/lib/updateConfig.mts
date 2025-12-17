@@ -1,5 +1,5 @@
 import type { VovkConfig } from 'vovk';
-import prettify from '../../src/utils/prettify.mts';
+import { prettify } from '../../src/utils/prettify.mts';
 import fs from 'node:fs/promises';
 
 export default async function updateConfig(configAbsolutePath: string, update: (config: VovkConfig) => VovkConfig) {
