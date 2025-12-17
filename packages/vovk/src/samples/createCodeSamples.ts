@@ -5,8 +5,8 @@ import type {
   VovkHandlerSchema,
   VovkSamplesConfig,
 } from '../types';
-import { getJSONSchemaExample, getSampleValue } from './getJSONSchemaExample';
-import { getSampleFromObject } from './getSampleFromObject';
+import { JSONSchemaToCode, getSampleValue } from './JSONSchemaToCode';
+import { objectToCode } from './objectToCode';
 
 const toSnakeCase = (str: string) =>
   str
@@ -76,7 +76,7 @@ function generateTypeScriptCode({
   config,
 }: CodeGenerationParams): string {
   const getTsSample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
+    JSONSchemaToCode(schema, { stripQuotes: true, indent: indent ?? 4 });
 
   const getTsFormSample = (schema: VovkJSONSchemaBase) => {
     let formSample = '\nconst formData = new FormData();';
@@ -119,7 +119,7 @@ ${[
   config?.apiRoot ? `    apiRoot: '${config.apiRoot}',` : null,
   config?.headers
     ? `    init: {
-      headers: ${getSampleFromObject(config.headers, { stripQuotes: true, indent: 6, nestingIndent: 4 })}
+      headers: ${objectToCode(config.headers, { stripQuotes: true, indent: 6, nestingIndent: 4 })}
     },`
     : null,
 ]
@@ -167,7 +167,7 @@ function generatePythonCode({
   config,
 }: CodeGenerationParams): string {
   const getPySample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    getJSONSchemaExample(schema, {
+    JSONSchemaToCode(schema, {
       stripQuotes: false,
       indent: indent ?? 4,
       comment: '#',
@@ -215,7 +215,7 @@ response = ${rpcName}.${handlerNameSnake}(${
           paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
           config?.apiRoot ? `    api_root="${config.apiRoot}",` : null,
           config?.headers
-            ? `    headers=${getSampleFromObject(config.headers, { stripQuotes: false, indent: 4, nestingIndent: 4 })},`
+            ? `    headers=${objectToCode(config.headers, { stripQuotes: false, indent: 4, nestingIndent: 4 })},`
             : null,
         ]
           .filter(Boolean)
@@ -248,9 +248,9 @@ function generateRustCode({
   config,
 }: CodeGenerationParams): string {
   const getRsJSONSample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    getJSONSchemaExample(schema, { stripQuotes: false, indent: indent ?? 4 });
+    JSONSchemaToCode(schema, { stripQuotes: false, indent: indent ?? 4 });
   const getRsOutputSample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    getJSONSchemaExample(schema, { stripQuotes: true, indent: indent ?? 4 });
+    JSONSchemaToCode(schema, { stripQuotes: true, indent: indent ?? 4 });
 
   const getRsFormSample = (schema: VovkJSONSchemaBase) => {
     let formSample = 'let form = multipart::Form::new()';

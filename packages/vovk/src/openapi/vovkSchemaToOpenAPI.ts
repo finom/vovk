@@ -1,5 +1,5 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
-import { createCodeSamples } from '../utils/createCodeSamples';
+import { createCodeSamples } from '../samples/createCodeSamples';
 import {
   HttpStatus,
   type VovkJSONSchemaBase,
@@ -12,8 +12,8 @@ import {
   VovkSamplesConfig,
   VovkPackageJson,
 } from '../types';
-import { getJSONSchemaSample } from '../utils/getJSONSchemaSample';
-import { resolveGeneratorConfigValues } from '../utils/resolveGeneratorConfigValues';
+import { JSONSchemaToObject } from '../samples/JSONSchemaToObject';
+import { resolveGeneratorConfigValues } from '../core/resolveGeneratorConfigValues';
 
 function extractComponents(
   schema: VovkJSONSchemaBase | undefined
@@ -224,9 +224,9 @@ export function vovkSchemaToOpenAPI({
                             ...iterationValidation,
                             examples: iterationValidation.examples ?? [
                               [
-                                JSON.stringify(getJSONSchemaSample(iterationValidation)),
-                                JSON.stringify(getJSONSchemaSample(iterationValidation)),
-                                JSON.stringify(getJSONSchemaSample(iterationValidation)),
+                                JSON.stringify(JSONSchemaToObject(iterationValidation)),
+                                JSON.stringify(JSONSchemaToObject(iterationValidation)),
+                                JSON.stringify(JSONSchemaToObject(iterationValidation)),
                               ].join('\n'),
                             ],
                           },

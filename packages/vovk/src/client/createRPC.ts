@@ -11,7 +11,7 @@ import type { ClientMethod, VovkRPCModule, VovkFetcher, VovkFetcherOptions, Vovk
 import { fetcher as defaultFetcher } from './fetcher';
 import { defaultHandler } from './defaultHandler';
 import { defaultStreamHandler } from './defaultStreamHandler';
-import { serializeQuery } from '../utils/serializeQuery';
+import { serializeQuery } from './serializeQuery';
 import { deepExtend } from '../utils/deepExtend';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');

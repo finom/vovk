@@ -1,5 +1,5 @@
 import { VovkHandlerSchema, VovkRequest } from '../types';
-import { reqMeta } from '../utils/reqMeta';
+import { reqMeta } from '../req/reqMeta';
 import { VovkToolOptions } from './types';
 
 export type MCPModelOutput = {

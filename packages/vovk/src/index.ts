@@ -45,18 +45,18 @@ import {
 } from './client';
 import { operation, openAPIToVovkSchema, vovkSchemaToOpenAPI } from './openapi';
 import { HttpException } from './HttpException';
-import { createDecorator } from './utils/createDecorator';
+import { createDecorator } from './core/createDecorator';
 import { JSONLinesResponse } from './JSONLinesResponse';
-import { generateStaticAPI } from './utils/generateStaticAPI';
-import { withValidationLibrary } from './utils/withValidationLibrary';
-import { createStandardValidation } from './utils/createStandardValidation';
-import { multitenant } from './utils/multitenant';
+import { generateStaticAPI } from './core/generateStaticAPI';
+import { withValidationLibrary } from './validation/withValidationLibrary';
+import { createStandardValidation } from './validation/createStandardValidation';
+import { multitenant } from './core/multitenant';
 import { deriveTools } from './tools/deriveTools';
-import { createCodeSamples } from './utils/createCodeSamples';
-import { createValidateOnClient } from './utils/createValidateOnClient';
-import { resolveGeneratorConfigValues } from './utils/resolveGeneratorConfigValues';
+import { createCodeSamples } from './samples/createCodeSamples';
+import { createValidateOnClient } from './validation/createValidateOnClient';
+import { resolveGeneratorConfigValues } from './core/resolveGeneratorConfigValues';
 import { ToModelOutput } from './tools/ToModelOutput';
-import { toDownloadResponse } from './utils/toDownloadResponse';
+import { toDownloadResponse } from './core/toDownloadResponse';
 
 export {
   type KnownAny,

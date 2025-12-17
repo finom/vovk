@@ -8,8 +8,8 @@ import {
   type VovkRequest,
   type VovkOperationObject,
 } from '../types';
-import { reqMeta } from './reqMeta';
-import { setHandlerSchema } from './setHandlerSchema';
+import { reqMeta } from '../req/reqMeta';
+import { setHandlerSchema } from '../core/setHandlerSchema';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 

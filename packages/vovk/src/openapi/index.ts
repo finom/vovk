@@ -1,6 +1,6 @@
 import { vovkSchemaToOpenAPI } from './vovkSchemaToOpenAPI';
 import { openAPIToVovkSchema } from './openAPIToVovkSchema';
-import { createDecorator } from '../utils/createDecorator';
+import { createDecorator } from '../core/createDecorator';
 import { error } from './error';
 import { tool } from './tool';
 import type { VovkOperationObject } from '../types';

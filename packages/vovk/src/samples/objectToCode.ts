@@ -5,7 +5,7 @@ interface SamplerOptions {
   quote?: '"' | "'";
 }
 
-export function getSampleFromObject(obj: unknown, options?: SamplerOptions): string {
+export function objectToCode(obj: unknown, options?: SamplerOptions): string {
   const { stripQuotes = false, indent = 0, nestingIndent = 2, quote = '"' } = options || {};
 
   // Use JSON.stringify with the nesting indent

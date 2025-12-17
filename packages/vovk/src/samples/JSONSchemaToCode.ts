@@ -1,4 +1,4 @@
-import { KnownAny, VovkJSONSchemaBase } from '../types';
+import type { KnownAny, VovkJSONSchemaBase } from '../types';
 
 interface SamplerOptions {
   comment?: '//' | '#';
@@ -8,7 +8,7 @@ interface SamplerOptions {
   ignoreBinary?: boolean;
 }
 
-export function getJSONSchemaExample(
+export function JSONSchemaToCode(
   schema: VovkJSONSchemaBase,
   options: SamplerOptions,
   rootSchema?: VovkJSONSchemaBase

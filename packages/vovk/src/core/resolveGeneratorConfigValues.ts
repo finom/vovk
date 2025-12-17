@@ -1,6 +1,6 @@
 import type { PackageJson } from 'type-fest';
 import type { VovkConfig, VovkOutputConfig, VovkPackageJson, VovkReadmeConfig, VovkSamplesConfig } from '../types';
-import { deepExtend } from './deepExtend';
+import { deepExtend } from '../utils/deepExtend';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
 // TODO: Refactor

@@ -1,6 +1,6 @@
-import { KnownAny } from '../types';
+import { KnownAny, VovkJSONSchemaBase } from '../types';
 
-export function getJSONSchemaSample(schema: KnownAny, rootSchema?: KnownAny): KnownAny {
+export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: KnownAny): KnownAny {
   if (!schema || typeof schema !== 'object') return null;
   // Use the input schema as the root if not provided
   rootSchema = rootSchema || schema;
@@ -32,17 +32,17 @@ export function getJSONSchemaSample(schema: KnownAny, rootSchema?: KnownAny): Kn
 
   // Handle oneOf, anyOf, allOf
   if (schema.oneOf && schema.oneOf.length > 0) {
-    return getJSONSchemaSample(schema.oneOf[0], rootSchema);
+    return JSONSchemaToObject(schema.oneOf[0], rootSchema);
   }
 
   if (schema.anyOf && schema.anyOf.length > 0) {
-    return getJSONSchemaSample(schema.anyOf[0], rootSchema);
+    return JSONSchemaToObject(schema.anyOf[0], rootSchema);
   }
 
   if (schema.allOf && schema.allOf.length > 0) {
     // Merge all schemas in allOf
     const mergedSchema = schema.allOf.reduce((acc: KnownAny, s: KnownAny) => ({ ...acc, ...s }), {});
-    return getJSONSchemaSample(mergedSchema, rootSchema);
+    return JSONSchemaToObject(mergedSchema, rootSchema);
   }
 
   // Handle different types
@@ -89,7 +89,7 @@ function handleRef(ref: string, rootSchema: KnownAny): KnownAny {
   }
 
   // Process the referenced schema
-  return getJSONSchemaSample(current, rootSchema);
+  return JSONSchemaToObject(current, rootSchema);
 }
 
 function handleString(schema: KnownAny): string {
@@ -163,14 +163,14 @@ function handleObject(schema: KnownAny, rootSchema: KnownAny): object {
     for (const [key, propSchema] of Object.entries<KnownAny>(schema.properties)) {
       // Only include required properties or as a basic example
       if (required.includes(key) || required.length === 0) {
-        result[key] = getJSONSchemaSample(propSchema, rootSchema);
+        result[key] = JSONSchemaToObject(propSchema, rootSchema);
       }
     }
   }
 
   // Handle additionalProperties
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-    result['additionalProp'] = getJSONSchemaSample(schema.additionalProperties, rootSchema);
+    result['additionalProp'] = JSONSchemaToObject(schema.additionalProperties, rootSchema);
   }
 
   return result;
@@ -184,7 +184,7 @@ function handleArray(schema: KnownAny, rootSchema: KnownAny) {
     // Create minimum number of items (capped at a reasonable max for examples)
     const numItems = Math.min(minItems, 3);
 
-    return Array.from({ length: numItems }, () => getJSONSchemaSample(itemSchema, rootSchema));
+    return Array.from({ length: numItems }, () => JSONSchemaToObject(itemSchema, rootSchema));
   }
 
   return [];
