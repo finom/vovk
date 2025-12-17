@@ -52,10 +52,12 @@ import { generateStaticAPI } from './utils/generateStaticAPI';
 import { withValidationLibrary } from './utils/withValidationLibrary';
 import { createStandardValidation } from './utils/createStandardValidation';
 import { multitenant } from './utils/multitenant';
-import { deriveLLMTools } from './utils/deriveLLMTools';
+import { deriveLLMTools } from './tools/deriveLLMTools';
 import { createCodeSamples } from './utils/createCodeSamples';
 import { createValidateOnClient } from './utils/createValidateOnClient';
 import { resolveGeneratorConfigValues } from './utils/resolveGeneratorConfigValues';
+import { ToModelOutput } from './tools/ToModelOutput';
+import { toDownloadResponse } from './utils/toDownloadResponse';
 
 export {
   type KnownAny,
@@ -114,6 +116,8 @@ export {
   openAPIToVovkSchema,
   vovkSchemaToOpenAPI,
   resolveGeneratorConfigValues,
+  ToModelOutput,
+  toDownloadResponse,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initSegment } = createVovkApp();

@@ -3,6 +3,7 @@ import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
 import type { JSONLinesResponse } from './JSONLinesResponse';
 import type { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
+import { StandardSchemaV1 } from '@standard-schema/spec';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -248,7 +249,7 @@ export type StreamAbortMessage = {
   reason: KnownAny;
 };
 
-export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration';
+export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'iteration' | 'tool-input';
 
 // Enums
 
@@ -316,16 +317,15 @@ export enum HttpStatus {
 
 // -----
 
-export interface VovkLLMTool {
-  execute: (
-    input: {
-      body?: KnownAny;
-      query?: KnownAny;
-      params?: KnownAny;
-    },
-    options?: KnownAny
-  ) => KnownAny;
+export interface VovkLLMTool<
+  TInput = unknown,
+  TOutput = unknown,
+  TFormattedOutput = unknown,
+  TIsDerived extends boolean = false,
+> {
+  execute: (input: TInput, options?: KnownAny) => TFormattedOutput | Promise<TFormattedOutput>;
   name: string;
+  title: string | undefined;
   description: string;
   parameters: {
     type?: 'object';
@@ -337,13 +337,22 @@ export interface VovkLLMTool {
     required?: ('body' | 'query' | 'params')[];
     additionalProperties?: false;
   };
-  models?: {
-    body?: KnownAny;
-    query?: KnownAny;
-    params?: KnownAny;
-    output?: KnownAny;
-    iteration?: KnownAny;
-  };
+  // if derived, input schema is undefined
+  inputSchema: TIsDerived extends true ? undefined : TInput extends undefined ? undefined : StandardSchemaV1<TInput>;
+  // if derived, output schema is output metod validation or undefined
+  outputSchema: TIsDerived extends true
+    ? StandardSchemaV1 | undefined
+    : TOutput extends undefined
+      ? undefined
+      : StandardSchemaV1<TOutput>;
+  // set only if derived
+  inputSchemas: TIsDerived extends true
+    ? {
+        body?: StandardSchemaV1;
+        query?: StandardSchemaV1;
+        params?: StandardSchemaV1;
+      }
+    : undefined;
   type: 'function';
 }
 
@@ -383,12 +392,8 @@ export type VovkJSONSchemaBase = {
 export type VovkLLMToolOptions = {
   disable?: boolean;
   name?: string;
+  title?: string;
   description?: string;
-  mcp?: {
-    successMessage?: string;
-    errorMessage?: string;
-    includeResponse?: boolean;
-  };
 };
 
 export type VovkOperationObject = OperationObject & {
@@ -534,7 +539,7 @@ type VovkUserConfig = {
   schemaOutDir?: string;
   modulesDir?: string;
   rootEntry?: string;
-  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn' | (string & {});
+  logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn';
   libs?: {
     ajv?: KnownAny; // set by providing the typedoc comment in config
     [key: string]: KnownAny;

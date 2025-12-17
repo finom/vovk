@@ -35,7 +35,7 @@ function parseKey(key: string): string[] {
  * - If segment is empty "" => push to array
  * - Else => object property
  */
-function setValue(obj: Record<string, KnownAny>, path: string[], value: KnownAny): void {
+function setValue(obj: Record<string, unknown>, path: string[], value: unknown): void {
   let current: KnownAny = obj;
 
   for (let i = 0; i < path.length; i++) {

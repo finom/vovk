@@ -9,6 +9,7 @@ import {
 } from '../types';
 import { withValidationLibrary } from './withValidationLibrary';
 import { HttpException } from '../HttpException';
+import { createToolFactory } from '../tools/createToolFactory';
 
 export function createStandardValidation({
   toJSONSchema,
@@ -97,5 +98,5 @@ export function createStandardValidation({
     });
   }
 
-  return withStandard;
+  return Object.assign(withStandard, { createLLMTool: createToolFactory({ toJSONSchema }) });
 }

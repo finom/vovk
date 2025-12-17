@@ -12,6 +12,11 @@
       "import": "./mjs/index.js",
       "require": "./cjs/index.js",
       "types": "./mjs/index.d.ts"
+    },
+    "./internal": {
+      "import": "./mjs/internal.js",
+      "require": "./cjs/internal.js",
+      "types": "./mjs/internal.d.ts"
     }
   },
   "description": "Back-end for Next.js",

@@ -28,14 +28,10 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "vovk": ["../packages/vovk/src/index.ts"],
+      "vovk": ["../packages/vovk/src/index.ts"]
     },
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     // "allowJs": true,
     "skipLibCheck": true,
     "incremental": true,
@@ -46,7 +42,5 @@
     "jsx": "react-jsx",
     "allowJs": true
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

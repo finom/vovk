@@ -1,5 +1,3 @@
-import { KnownAny } from '../types';
-
 interface SamplerOptions {
   stripQuotes?: boolean;
   indent?: number;
@@ -7,7 +5,7 @@ interface SamplerOptions {
   quote?: '"' | "'";
 }
 
-export function getSampleFromObject(obj: KnownAny, options?: SamplerOptions): string {
+export function getSampleFromObject(obj: unknown, options?: SamplerOptions): string {
   const { stripQuotes = false, indent = 0, nestingIndent = 2, quote = '"' } = options || {};
 
   // Use JSON.stringify with the nesting indent
