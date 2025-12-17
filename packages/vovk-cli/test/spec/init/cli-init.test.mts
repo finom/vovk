@@ -35,7 +35,6 @@ await describe('CLI init', async () => {
     assertFileExists,
     assertNotExists,
     assertTsConfig,
-    assertFile,
   } = getCLIAssertions({ cwd, dir });
 
   await it('Works with --yes and does not change other scripts', async () => {
@@ -366,15 +365,6 @@ await describe('CLI init', async () => {
     });
 
     await assertTsConfig();
-
-    await assertFile(`src/lib/withZod.ts`, [
-      `import { z } from 'zod';
-import { createStandardValidation } from 'vovk';
-
-export const withZod = createStandardValidation({
-  toJSONSchema: (model: z.core.$ZodType) => z.toJSONSchema(model),
-});`,
-    ]);
   });
 
   await it('Works with prompting and down arrow selection for Arktype', async () => {
@@ -394,23 +384,6 @@ export const withZod = createStandardValidation({
     });
 
     await assertTsConfig();
-
-    await assertFile(`src/lib/withArk.ts`, [
-      `import { createStandardValidation } from 'vovk';
-import type { type } from 'arktype';
-
-export const withArk = createStandardValidation({
-  toJSONSchema: (model: type) => model.toJsonSchema({
-    fallback: { 
-      proto: (ctx) => ctx.proto === File ? {
-        type: "string",
-        format: "binary",
-      } : ctx.base,
-      default: (ctx) => ctx.base
-    }
-  })
-});`,
-    ]);
   });
 
   await it('Works with prompting and down arrow selection for Valibot', async () => {
@@ -430,20 +403,6 @@ export const withArk = createStandardValidation({
     });
 
     await assertTsConfig();
-    await assertFile(`src/lib/withValibot.ts`, [
-      `import { createStandardValidation } from 'vovk';
-import { toJsonSchema } from '@valibot/to-json-schema';
-
-export const withValibot = createStandardValidation({
-  toJSONSchema: (model) => toJsonSchema(model, {
-    overrideSchema(context) {
-      if (context.valibotSchema.type === 'file') {
-        return { type: 'string', format: 'binary' };
-      }
-    },
-  }),
-});`,
-    ]);
   });
 
   await it('Uses Rust template', async () => {

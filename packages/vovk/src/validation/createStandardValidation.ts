@@ -1,4 +1,4 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type { StandardSchemaV1, StandardJSONSchemaV1 } from '@standard-schema/spec';
 import {
   HttpStatus,
   type KnownAny,
@@ -14,7 +14,10 @@ import { createToolFactory } from '../tools/createToolFactory';
 export function createStandardValidation({
   toJSONSchema,
 }: {
-  toJSONSchema: (model: KnownAny, meta: { type: VovkValidationType }) => KnownAny;
+  toJSONSchema: (
+    model: KnownAny,
+    meta: { validationType: VovkValidationType; target: StandardJSONSchemaV1.Target | undefined }
+  ) => KnownAny;
 }) {
   function withStandard<
     T extends (
@@ -45,6 +48,7 @@ export function createStandardValidation({
     validateEachIteration,
     preferTransformed,
     operationObject,
+    target,
   }: {
     isForm?: TIsForm;
     body?: TBody;
@@ -58,6 +62,7 @@ export function createStandardValidation({
     validateEachIteration?: boolean;
     preferTransformed?: boolean;
     operationObject?: VovkOperationObject;
+    target?: StandardJSONSchemaV1.Target;
   }) {
     return withValidationLibrary({
       isForm,
@@ -78,13 +83,13 @@ export function createStandardValidation({
         TIteration extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TIteration> : KnownAny,
         TIsForm
       >,
-      toJSONSchema,
-      validate: async (data, model, { type, i }) => {
+      toJSONSchema: (model, options) => toJSONSchema(model, { validationType: options.validationType, target }),
+      validate: async (data, model, { validationType, i }) => {
         const result = await model['~standard'].validate(data);
         if (result.issues?.length) {
           throw new HttpException(
             HttpStatus.BAD_REQUEST,
-            `Validation failed. Invalid ${type === 'iteration' ? `${type} #${i}` : type} on server: ${result.issues
+            `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType} on server: ${result.issues
               .map(({ message, path }) => `${message}${path ? ` at ${path.join('.')}` : ''}`)
               .join(', ')}`,
             { issues: result.issues }

@@ -62,14 +62,14 @@ export function withValidationLibrary<
   toJSONSchema:
     | ((
         model: KnownAny, // performance concern
-        meta: { type: VovkValidationType }
+        meta: { validationType: VovkValidationType }
       ) => KnownAny)
     | undefined;
   validate: (
     data: KnownAny,
     model: NonNullable<TBodyModel | TQueryModel | TParamsModel | TOutputModel | TIterationModel>,
     meta: {
-      type: VovkValidationType | 'form';
+      validationType: VovkValidationType | 'form';
       req: VovkRequestAny;
       status?: number;
       i?: number;
@@ -108,7 +108,7 @@ export function withValidationLibrary<
         );
       }
 
-      const parsed = (await validate(data, output, { type: 'output', req })) ?? data;
+      const parsed = (await validate(data, output, { validationType: 'output', req })) ?? data;
       return preferTransformed ? parsed : data;
     }
 
@@ -127,7 +127,7 @@ export function withValidationLibrary<
         for await (const item of data) {
           let parsed;
           if (validateEachIteration || i === 0) {
-            parsed = (await validate(item, iteration, { type: 'iteration', req, status: 200, i })) ?? item;
+            parsed = (await validate(item, iteration, { validationType: 'iteration', req, status: 200, i })) ?? item;
           } else {
             parsed = item;
           }
@@ -150,7 +150,7 @@ export function withValidationLibrary<
     if (!__disableClientValidation) {
       if (body && !disableServerSideValidationKeys.includes('body')) {
         const data = await req.vovk[isForm ? 'form' : 'body']();
-        const parsed = (await validate(data, body, { type: isForm ? 'form' : 'body', req })) ?? data;
+        const parsed = (await validate(data, body, { validationType: isForm ? 'form' : 'body', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
 
         // redeclare to add ability to call req.json() and req.vovk.body() again
@@ -160,14 +160,14 @@ export function withValidationLibrary<
 
       if (query && !disableServerSideValidationKeys.includes('query')) {
         const data = req.vovk.query();
-        const parsed = (await validate(data, query, { type: 'query', req })) ?? data;
+        const parsed = (await validate(data, query, { validationType: 'query', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
         req.vovk.query = () => instance;
       }
 
       if (params && !disableServerSideValidationKeys.includes('params')) {
         const data = req.vovk.params();
-        const parsed = (await validate(data, params, { type: 'params', req })) ?? data;
+        const parsed = (await validate(data, params, { validationType: 'params', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
         req.vovk.params = () => instance;
       }
@@ -247,8 +247,11 @@ export function withValidationLibrary<
   const resultHandlerEnhanced = Object.assign(resultHandler, { fn, models });
 
   if (toJSONSchema) {
-    const getJSONSchema = (model: KnownAny, type: VovkValidationType) =>
-      Object.assign(toJSONSchema(model, { type }), type === 'body' && isForm ? { 'x-isForm': isForm } : {});
+    const getJSONSchema = (model: KnownAny, validationType: VovkValidationType) =>
+      Object.assign(
+        toJSONSchema(model, { validationType }),
+        validationType === 'body' && isForm ? { 'x-isForm': isForm } : {}
+      );
 
     const validation: VovkHandlerSchema['validation'] = {};
     if (body && !skipSchemaEmissionKeys.includes('body')) {

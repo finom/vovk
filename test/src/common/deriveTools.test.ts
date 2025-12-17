@@ -1,13 +1,12 @@
 import { it, describe } from 'node:test';
-import { withZod } from '../lib/withZod.ts';
 import { z } from 'zod';
 import assert from 'node:assert';
-import { deriveTools, toDownloadResponse, ToModelOutput, type VovkTool } from 'vovk';
+import { deriveTools, toDownloadResponse, ToModelOutput, endpoint, type VovkTool } from 'vovk';
 import type { MCPModelOutput } from 'vovk/internal';
 
 describe('deriveTools', () => {
   // used for multiple tests
-  const handlerWithBody = withZod({
+  const handlerWithBody = endpoint({
     operationObject: {
       description: 'handlerWithBody description',
     },
@@ -20,7 +19,7 @@ describe('deriveTools', () => {
   });
 
   describe('Common tests, implicit default toFormatOutput', () => {
-    const handlerWithQuery = withZod({
+    const handlerWithQuery = endpoint({
       operationObject: {
         description: 'handlerWithQuery description',
       },
@@ -31,14 +30,14 @@ describe('deriveTools', () => {
         return { bar, inputMeta };
       },
     });
-    const handlerWithNoDescription = withZod({
+    const handlerWithNoDescription = endpoint({
       query: z.object({ bar: z.string().max(5) }),
       async handle() {
         // ...
       },
     });
 
-    const handlerWithExcluded = withZod({
+    const handlerWithExcluded = endpoint({
       operationObject: {
         'x-tool': { hidden: true },
       },
@@ -48,7 +47,7 @@ describe('deriveTools', () => {
       },
     });
 
-    const handlerWithToolDescription = withZod({
+    const handlerWithToolDescription = endpoint({
       operationObject: {
         'x-tool': { description: 'handlerWithToolDescription x-tool-description' },
         description: 'handlerWithToolDescription description',
@@ -59,7 +58,7 @@ describe('deriveTools', () => {
       },
     });
 
-    const handlerWithToolName = withZod({
+    const handlerWithToolName = endpoint({
       operationObject: {
         'x-tool': { name: 'customToolName' },
       },
@@ -251,7 +250,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withAudioResponse: withZod({
+            withAudioResponse: endpoint({
               operationObject: {
                 summary: 'Returns an audio response',
                 'x-tool': { name: 'withAudioResponse' },
@@ -287,7 +286,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withImageResponse: withZod({
+            withImageResponse: endpoint({
               operationObject: {
                 summary: 'Returns an image response',
                 'x-tool': { name: 'withImageResponse' },
@@ -331,7 +330,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withImageResponse: withZod({
+            withImageResponse: endpoint({
               operationObject: {
                 summary: 'Returns an image response',
                 'x-tool': { name: 'withImageResponse' },
@@ -358,7 +357,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withCSVResponse: withZod({
+            withCSVResponse: endpoint({
               operationObject: {
                 summary: 'Returns a CSV response',
                 'x-tool': { name: 'withCSVResponse' },
@@ -393,7 +392,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withTextResponse: withZod({
+            withTextResponse: endpoint({
               operationObject: {
                 summary: 'Returns a text response',
                 'x-tool': { name: 'withTextResponse' },
@@ -426,7 +425,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withJSONResponse: withZod({
+            withJSONResponse: endpoint({
               operationObject: {
                 summary: 'Returns a JSON response',
                 'x-tool': { name: 'withJSONResponse' },
@@ -456,7 +455,7 @@ describe('deriveTools', () => {
     });
 
     it('Should support MCP annotations', async () => {
-      const handlerWithAnnotations = withZod({
+      const handlerWithAnnotations = endpoint({
         operationObject: {
           'x-tool': {
             name: 'handlerWithAnnotations',

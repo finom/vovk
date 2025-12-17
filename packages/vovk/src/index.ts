@@ -54,9 +54,11 @@ import { multitenant } from './core/multitenant';
 import { deriveTools } from './tools/deriveTools';
 import { createCodeSamples } from './samples/createCodeSamples';
 import { createValidateOnClient } from './validation/createValidateOnClient';
+import { endpoint } from './validation/endpoint';
 import { resolveGeneratorConfigValues } from './core/resolveGeneratorConfigValues';
 import { ToModelOutput } from './tools/ToModelOutput';
 import { toDownloadResponse } from './core/toDownloadResponse';
+import { createTool } from './tools/createTool';
 
 export {
   type KnownAny,
@@ -117,6 +119,8 @@ export {
   resolveGeneratorConfigValues,
   ToModelOutput,
   toDownloadResponse,
+  endpoint,
+  createTool,
 };
 
 export const { get, post, put, patch, del, head, options, prefix, initSegment } = createVovkApp();

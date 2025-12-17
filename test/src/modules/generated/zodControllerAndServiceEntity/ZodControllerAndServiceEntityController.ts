@@ -1,5 +1,4 @@
-import { prefix, get, put, post, del, operation } from 'vovk';
-import { withZod } from '../../../lib/withZod.ts';
+import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
 import { z } from 'zod';
 
 import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntityService.ts';
@@ -10,7 +9,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Get zodControllerAndServiceEntities',
   })
   @get()
-  static getZodControllerAndServiceEntities = withZod({
+  static getZodControllerAndServiceEntities = endpoint({
     handle() {
       return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities();
     },
@@ -20,7 +19,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Get single zodControllerAndServiceEntity',
   })
   @get('{id}')
-  static getSingleZodControllerAndServiceEntity = withZod({
+  static getSingleZodControllerAndServiceEntity = endpoint({
     params: z.object({
       id: z.string(),
     }),
@@ -33,7 +32,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Update zodControllerAndServiceEntity',
   })
   @put('{id}')
-  static updateZodControllerAndServiceEntity = withZod({
+  static updateZodControllerAndServiceEntity = endpoint({
     body: z.object({
       todo: z.literal(true),
     }),
@@ -49,7 +48,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Create zodControllerAndServiceEntity',
   })
   @post()
-  static createZodControllerAndServiceEntity = withZod({
+  static createZodControllerAndServiceEntity = endpoint({
     body: z.object({
       todo: z.literal(true),
     }),
@@ -64,7 +63,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Delete zodControllerAndServiceEntity',
   })
   @del('{id}')
-  static deleteZodControllerAndServiceEntity = withZod({
+  static deleteZodControllerAndServiceEntity = endpoint({
     params: z.object({
       id: z.string(),
     }),

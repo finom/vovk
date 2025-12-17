@@ -176,8 +176,7 @@
               },
               "required": [
                 "hello"
-              ],
-              "additionalProperties": false
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -189,8 +188,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -206,8 +204,7 @@
               "required": [
                 "foo",
                 "bar"
-              ],
-              "additionalProperties": false
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -222,8 +219,7 @@
                   },
                   "required": [
                     "hello"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "query": {
                   "type": "object",
@@ -234,8 +230,7 @@
                   },
                   "required": [
                     "search"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "params": {
                   "type": "object",
@@ -250,8 +245,7 @@
                   "required": [
                     "foo",
                     "bar"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -266,8 +260,7 @@
                   "required": [
                     "foo",
                     "bar"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               },
               "required": [
@@ -275,8 +268,7 @@
                 "query",
                 "params",
                 "vovkParams"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "operationObject": {
@@ -332,8 +324,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "GET",
@@ -352,8 +343,7 @@
               },
               "required": [
                 "hello"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -377,8 +367,7 @@
               "required": [
                 "foo",
                 "bar"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "path": "x/{foo}/{bar}/y",
@@ -441,38 +430,33 @@
                                 },
                                 "required": [
                                   "deepKey"
-                                ],
-                                "additionalProperties": false
+                                ]
                               }
                             },
                             "required": [
                               "foo"
-                            ],
-                            "additionalProperties": false
+                            ]
                           }
                         }
                       },
                       "required": [
                         "x",
                         "arrOfObjects"
-                      ],
-                      "additionalProperties": false
+                      ]
                     }
                   },
                   "required": [
                     "f",
                     "u",
                     "d"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               },
               "required": [
                 "x",
                 "y",
                 "z"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "GET",
@@ -490,8 +474,7 @@
               },
               "required": [
                 "helloOutput"
-              ],
-              "additionalProperties": false
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -504,8 +487,7 @@
               },
               "required": [
                 "hello"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "GET",
@@ -526,8 +508,7 @@
               },
               "required": [
                 "values"
-              ],
-              "additionalProperties": false
+              ]
             },
             "iteration": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -540,8 +521,7 @@
               },
               "required": [
                 "value"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "GET",
@@ -648,8 +628,7 @@
                   },
                   "required": [
                     "requiredField"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "obj_strict": {
                   "type": "object",
@@ -728,8 +707,7 @@
                 "obj_strict",
                 "logical_anyOf",
                 "logical_allOf"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -754,7 +732,6 @@
               "required": [
                 "hello"
               ],
-              "additionalProperties": false,
               "x-isForm": true
             },
             "query": {
@@ -767,8 +744,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -785,8 +761,7 @@
               "required": [
                 "hello",
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -812,7 +787,6 @@
                 "hello",
                 "file"
               ],
-              "additionalProperties": false,
               "x-isForm": true
             },
             "query": {
@@ -825,8 +799,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -847,8 +820,7 @@
                 "hello",
                 "file",
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -877,7 +849,6 @@
                 "hello",
                 "files"
               ],
-              "additionalProperties": false,
               "x-isForm": true
             },
             "query": {
@@ -890,8 +861,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -915,8 +885,7 @@
                 "hello",
                 "files",
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -935,8 +904,7 @@
               },
               "required": [
                 "hello"
-              ],
-              "additionalProperties": false
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -948,8 +916,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -968,8 +935,7 @@
               },
               "required": [
                 "hello"
-              ],
-              "additionalProperties": false
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -982,8 +948,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -1006,8 +971,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -1028,8 +992,7 @@
               },
               "required": [
                 "values"
-              ],
-              "additionalProperties": false
+              ]
             },
             "iteration": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1042,8 +1005,7 @@
               },
               "required": [
                 "value"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "POST",
@@ -1061,8 +1023,7 @@
               },
               "required": [
                 "hello"
-              ],
-              "additionalProperties": false
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1074,8 +1035,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1091,8 +1051,7 @@
               "required": [
                 "foo",
                 "bar"
-              ],
-              "additionalProperties": false
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1107,8 +1066,7 @@
                   },
                   "required": [
                     "hello"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "query": {
                   "type": "object",
@@ -1119,8 +1077,7 @@
                   },
                   "required": [
                     "search"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "params": {
                   "type": "object",
@@ -1135,8 +1092,7 @@
                   "required": [
                     "foo",
                     "bar"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -1151,8 +1107,7 @@
                   "required": [
                     "foo",
                     "bar"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               },
               "required": [
@@ -1160,8 +1115,7 @@
                 "query",
                 "params",
                 "vovkParams"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "path": "all-as-func/{foo}/{bar}",
@@ -1179,8 +1133,7 @@
               },
               "required": [
                 "hello"
-              ],
-              "additionalProperties": false
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1192,8 +1145,7 @@
               },
               "required": [
                 "search"
-              ],
-              "additionalProperties": false
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1209,8 +1161,7 @@
               "required": [
                 "foo",
                 "bar"
-              ],
-              "additionalProperties": false
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1225,8 +1176,7 @@
                   },
                   "required": [
                     "hello"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "query": {
                   "type": "object",
@@ -1237,8 +1187,7 @@
                   },
                   "required": [
                     "search"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "params": {
                   "type": "object",
@@ -1253,8 +1202,7 @@
                   "required": [
                     "foo",
                     "bar"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -1269,8 +1217,7 @@
                   "required": [
                     "foo",
                     "bar"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               },
               "required": [
@@ -1278,8 +1225,7 @@
                 "query",
                 "params",
                 "vovkParams"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "path": "all-no-http-as-func/{foo}/{bar}",
@@ -1301,8 +1247,7 @@
               "required": [
                 "page",
                 "limit"
-              ],
-              "additionalProperties": false
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1323,8 +1268,7 @@
                     "required": [
                       "id",
                       "name"
-                    ],
-                    "additionalProperties": false
+                    ]
                   }
                 },
                 "hasNextPage": {
@@ -1337,8 +1281,7 @@
               "required": [
                 "items",
                 "hasNextPage"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "httpMethod": "GET",

@@ -26,7 +26,6 @@ const createAjv = (options: NonNullable<Options>, target: NonNullable<VovkAjvCon
   const ajv = new AjvClass({ allErrors: true, ...options });
   ajvFormats(ajv);
   ajvErrors(ajv);
-  ajv.addKeyword('x-isDto');
   ajv.addKeyword('x-isForm');
   ajv.addKeyword('x-tsType');
   return ajv;

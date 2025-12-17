@@ -9,8 +9,8 @@ import {
   type VovkQuery,
   type VovkParams,
   type VovkOutput,
+  endpoint,
 } from 'vovk';
-import { withZod } from '../lib/withZod.ts';
 import { z } from 'zod';
 
 const HandleAllInput = {
@@ -89,7 +89,7 @@ export default class WithZodClientController {
   })
   @operation.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
   @post('all/{foo}/{bar}')
-  static handleAll = withZod({
+  static handleAll = endpoint({
     ...HandleAllInput,
     handle: async ({ vovk }, params) => {
       const body = await vovk.body();
@@ -105,7 +105,7 @@ export default class WithZodClientController {
   });
 
   @get.auto()
-  static handleQuery = withZod({
+  static handleQuery = endpoint({
     query: z.object({ search: z.string().max(5) }),
     handle: (req) => {
       return req.vovk.query();
@@ -113,7 +113,7 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static handleBody = withZod({
+  static handleBody = endpoint({
     body: z.object({ hello: z.string().max(5) }),
     handle: async (req) => {
       return req.vovk.body();
@@ -121,7 +121,7 @@ export default class WithZodClientController {
   });
 
   @put('x/{foo}/{bar}/y')
-  static handleParams = withZod({
+  static handleParams = endpoint({
     params: z.object({ foo: z.string().max(5), bar: z.string().max(5) }),
     handle: async (req) => {
       return req.vovk.params();
@@ -129,7 +129,7 @@ export default class WithZodClientController {
   });
 
   @get.auto()
-  static handleNestedQuery = withZod({
+  static handleNestedQuery = endpoint({
     query: z.object({
       x: z.string().max(5),
       y: z.array(z.string()),
@@ -158,7 +158,7 @@ export default class WithZodClientController {
   });
 
   @get.auto()
-  static handleOutput = withZod({
+  static handleOutput = endpoint({
     query: z.object({ helloOutput: z.string() }),
     output: z.object({ hello: z.string().max(5) }),
     handle: async (req) => {
@@ -167,7 +167,7 @@ export default class WithZodClientController {
   });
 
   @get.auto()
-  static handleStream = withZod({
+  static handleStream = endpoint({
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.string().max(5) }),
     async *handle(req) {
@@ -178,7 +178,7 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static handleSchemaConstraints = withZod({
+  static handleSchemaConstraints = endpoint({
     body: ConstrainingModel,
     handle: async (req) => {
       return req.json();
@@ -186,14 +186,14 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static handleNothitng = withZod({
+  static handleNothitng = endpoint({
     handle: async () => {
       return { nothing: 'here' } as const;
     },
   });
 
   @post.auto()
-  static handleFormData = withZod({
+  static handleFormData = endpoint({
     isForm: true,
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
@@ -206,7 +206,7 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static handleFormDataWithFile = withZod({
+  static handleFormDataWithFile = endpoint({
     isForm: true,
     body: z.object({ hello: z.string().max(5), file: z.file() }),
     query: z.object({ search: z.string() }),
@@ -219,7 +219,7 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static handleFormDataWithMultipleFiles = withZod({
+  static handleFormDataWithMultipleFiles = endpoint({
     isForm: true,
     body: z.object({ hello: z.string().max(5), files: z.array(z.file()) }),
     query: z.object({ search: z.string() }),
@@ -232,7 +232,7 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static disableServerSideValidationBool = withZod({
+  static disableServerSideValidationBool = endpoint({
     disableServerSideValidation: true,
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
@@ -244,7 +244,7 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static disableServerSideValidationStrings = withZod({
+  static disableServerSideValidationStrings = endpoint({
     disableServerSideValidation: ['body'],
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string().max(5) }),
@@ -257,7 +257,7 @@ export default class WithZodClientController {
 
   // skipSchemaEmission
   @post.auto()
-  static skipSchemaEmissionBool = withZod({
+  static skipSchemaEmissionBool = endpoint({
     skipSchemaEmission: true,
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
@@ -268,7 +268,7 @@ export default class WithZodClientController {
     },
   });
   @post.auto()
-  static skipSchemaEmissionStrings = withZod({
+  static skipSchemaEmissionStrings = endpoint({
     skipSchemaEmission: ['body'],
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
@@ -281,7 +281,7 @@ export default class WithZodClientController {
 
   // validateEachIteration
   @post.auto()
-  static validateEachIteration = withZod({
+  static validateEachIteration = endpoint({
     validateEachIteration: true,
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.string().max(5) }),
@@ -292,7 +292,7 @@ export default class WithZodClientController {
     },
   });
 
-  static handleAllNoHTTP = withZod({
+  static handleAllNoHTTP = endpoint({
     ...HandleAllInput,
     handle: async ({ vovk }, params) => {
       const body = await vovk.body();
@@ -308,7 +308,7 @@ export default class WithZodClientController {
   });
 
   @post('all-as-func/{foo}/{bar}')
-  static handleAllAsFunction = withZod({
+  static handleAllAsFunction = endpoint({
     ...HandleAllInput,
     disableServerSideValidation: true,
     async handle(req, params) {
@@ -323,7 +323,7 @@ export default class WithZodClientController {
   });
 
   @post('all-no-http-as-func/{foo}/{bar}')
-  static handleAllNoHttpAsFunction = withZod({
+  static handleAllNoHttpAsFunction = endpoint({
     ...HandleAllInput,
     disableServerSideValidation: true,
     async handle(req, params) {
@@ -338,7 +338,7 @@ export default class WithZodClientController {
   });
 
   @get.auto()
-  static handlePagination = withZod({
+  static handlePagination = endpoint({
     query: z.object({
       page: z.string(),
       limit: z.string(),

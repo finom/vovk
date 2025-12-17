@@ -1,6 +1,5 @@
-import { prefix, get, put, post, del, operation } from 'vovk';
+import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
-import withArk from '../../../lib/withArk.ts';
 
 import ArktypeControllerAndServiceEntityService from './ArktypeControllerAndServiceEntityService.ts';
 
@@ -10,7 +9,7 @@ export default class ArktypeControllerAndServiceEntityController {
     summary: 'Get arktypeControllerAndServiceEntities',
   })
   @get()
-  static getArktypeControllerAndServiceEntities = withArk({
+  static getArktypeControllerAndServiceEntities = endpoint({
     handle() {
       return ArktypeControllerAndServiceEntityService.getArktypeControllerAndServiceEntities();
     },
@@ -20,7 +19,7 @@ export default class ArktypeControllerAndServiceEntityController {
     summary: 'Get single arktypeControllerAndServiceEntity',
   })
   @get('{id}')
-  static getSingleArktypeControllerAndServiceEntity = withArk({
+  static getSingleArktypeControllerAndServiceEntity = endpoint({
     params: type({ id: type('string') }),
     handle(_req, { id }) {
       return ArktypeControllerAndServiceEntityService.getSingleArktypeControllerAndServiceEntity(id);
@@ -31,7 +30,7 @@ export default class ArktypeControllerAndServiceEntityController {
     summary: 'Update arktypeControllerAndServiceEntity',
   })
   @put('{id}')
-  static updateArktypeControllerAndServiceEntity = withArk({
+  static updateArktypeControllerAndServiceEntity = endpoint({
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
     async handle(req, { id }) {
@@ -45,7 +44,7 @@ export default class ArktypeControllerAndServiceEntityController {
     summary: 'Create arktypeControllerAndServiceEntity',
   })
   @post()
-  static createArktypeControllerAndServiceEntity = withArk({
+  static createArktypeControllerAndServiceEntity = endpoint({
     body: type({ todo: type('true') }),
     async handle(req) {
       const body = await req.json();
@@ -58,7 +57,7 @@ export default class ArktypeControllerAndServiceEntityController {
     summary: 'Delete arktypeControllerAndServiceEntity',
   })
   @del('{id}')
-  static deleteArktypeControllerAndServiceEntity = withArk({
+  static deleteArktypeControllerAndServiceEntity = endpoint({
     params: type({ id: type('string') }),
     handle(_req, params) {
       const { id } = params;

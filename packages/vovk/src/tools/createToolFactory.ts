@@ -1,4 +1,4 @@
-import { StandardSchemaV1 } from '@standard-schema/spec';
+import { StandardSchemaV1, StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type { KnownAny, VovkErrorResponse, VovkValidationType } from '../types';
 import type { VovkTool, VovkToolOptions } from './types';
 import { ToModelOutput } from './ToModelOutput';
@@ -8,7 +8,10 @@ import type { DefaultModelOutput } from './toModelOutputDefault';
 export function createToolFactory({
   toJSONSchema,
 }: {
-  toJSONSchema: (model: KnownAny, meta: { type: VovkValidationType }) => KnownAny;
+  toJSONSchema: (
+    model: KnownAny,
+    meta: { validationType: VovkValidationType; target: StandardJSONSchemaV1.Target | undefined }
+  ) => KnownAny;
 }) {
   // Base options without input/output schemas
   type CreateToolBaseOptions<TOutput, TFormattedOutput> = {
@@ -18,6 +21,7 @@ export function createToolFactory({
     onExecute?: (result: unknown, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
     onError?: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
     toModelOutput?: ToModelOutputFn<TOutput, TFormattedOutput>;
+    target?: StandardJSONSchemaV1.Target;
   };
 
   // Options with input schema
@@ -133,6 +137,7 @@ export function createToolFactory({
     inputSchema,
     outputSchema,
     execute,
+    target,
   }: CreateToolBaseOptions<TOutput, TFormattedOutput> & {
     inputSchema?: StandardSchemaV1<TInput>;
     outputSchema?: StandardSchemaV1<TOutput>;
@@ -145,7 +150,7 @@ export function createToolFactory({
       title,
       description,
       get parameters() {
-        return (parameters ??= inputSchema ? toJSONSchema(inputSchema, { type: 'tool-input' }) : {});
+        return (parameters ??= inputSchema ? toJSONSchema(inputSchema, { validationType: 'tool-input', target }) : {});
       },
       inputSchema: inputSchema as TInput extends undefined ? undefined : StandardSchemaV1<TInput>,
       outputSchema: outputSchema as TOutput extends undefined ? undefined : StandardSchemaV1<TOutput>,

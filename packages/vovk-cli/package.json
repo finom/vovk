@@ -42,22 +42,22 @@
     "vovk-rust": "^0.0.1-beta.4"
   },
   "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.50"
+    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.55"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
-    "@inquirer/prompts": "^7.10.0",
-    "@npmcli/package-json": "^7.0.2",
+    "@inquirer/prompts": "^8.1.0",
+    "@npmcli/package-json": "^7.0.4",
     "@types/json-schema": "^7.0.15",
     "chalk": "^5.6.2",
-    "chokidar": "^4.0.3",
+    "chokidar": "^5.0.0",
     "clone-deep": "^4.0.1",
     "commander": "^13.1.0",
     "concurrently": "^9.2.1",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "get-tsconfig": "^4.13.0",
-    "glob": "^11.0.3",
+    "glob": "^13.0.0",
     "gray-matter": "^4.0.3",
     "inflection": "^3.0.2",
     "jsonc-parser": "^3.3.1",
@@ -65,12 +65,12 @@
     "loglevel": "^1.9.2",
     "openapi3-ts": "^4.5.0",
     "pluralize": "^8.0.0",
-    "prettier": "^3.6.2",
+    "prettier": "^3.7.4",
     "tar-stream": "^3.1.7",
     "ts-morph": "^27.0.2",
-    "type-fest": "^5.2.0",
+    "type-fest": "^5.3.1",
     "undici": "^7.16.0",
-    "yaml": "^2.8.1"
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@types/concat-stream": "^2.0.3",
@@ -83,7 +83,7 @@
     "create-next-app": "^16.0.10",
     "http-server": "^14.1.1",
     "node-pty": "^1.0.0",
-    "tsdown": "^0.16.3",
-    "zod": "^4.1.12"
+    "tsdown": "^0.18.1",
+    "zod": "^4.2.1"
   }
 }

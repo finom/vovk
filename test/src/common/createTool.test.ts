@@ -1,17 +1,13 @@
 import { it, describe } from 'node:test';
 import { z } from 'zod';
 import assert from 'node:assert';
-import { ToModelOutput, type VovkTool, createStandardValidation } from 'vovk';
+import { ToModelOutput, type VovkTool, createTool } from 'vovk';
 import type { MCPModelOutput } from 'vovk/internal';
-
-const withZod = createStandardValidation({
-  toJSONSchema: (model: z.core.$ZodType) => z.toJSONSchema(model),
-});
 
 describe('createTool', () => {
   describe('Common, no toModelOutput', () => {
     it('No input schema, no output schema', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_world',
         description: 'Hello World Tool',
         execute: () => {
@@ -27,7 +23,7 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { message: 'Hello, World!' });
     });
     it('With input schema, no output schema', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_name',
         description: 'Hello Name Tool',
         inputSchema: z.object({
@@ -46,7 +42,7 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { message: 'Hello, Alice!' });
     });
     it('No input schema, with output schema', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_output',
         description: 'Output Tool',
         outputSchema: z.object({
@@ -65,7 +61,7 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { message: 'Hello from output schema!' });
     });
     it('With input schema, with output schema', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_full',
         description: 'Full Tool',
         inputSchema: z.object({
@@ -88,7 +84,7 @@ describe('createTool', () => {
     });
 
     it('With input validation error', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'validate_input',
         description: 'Input Validation Tool',
         inputSchema: z.object({
@@ -109,7 +105,7 @@ describe('createTool', () => {
     });
 
     it('With output validation error', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'validate_output',
         description: 'Output Validation Tool',
         outputSchema: z.object({
@@ -130,7 +126,7 @@ describe('createTool', () => {
     });
 
     it('With error output (throwing Error)', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'error_tool',
         description: 'Error Tool',
         inputSchema: z.number(),
@@ -153,7 +149,7 @@ describe('createTool', () => {
   });
   describe('With toModelOutput', () => {
     it('With toModelOutput = ToModelOutput.DEFAULT', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_default',
         description: 'Default Output Tool',
         toModelOutput: ToModelOutput.DEFAULT,
@@ -174,7 +170,7 @@ describe('createTool', () => {
     });
 
     it('With toModelOutput = ToModelOutput.DEFAULT and error', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_default_error',
         description: 'Default Output Tool with Error',
         toModelOutput: ToModelOutput.DEFAULT,
@@ -198,7 +194,7 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { error: 'Default output error!' });
     });
     it('With toModelOutput = ToModelOutput.MCP (text)', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_mcp_text',
         description: 'MCP Text Output Tool',
         toModelOutput: ToModelOutput.MCP,
@@ -226,7 +222,7 @@ describe('createTool', () => {
       });
     });
     it('With toModelOutput = ToModelOutput.MCP (image response)', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_mcp_image',
         description: 'MCP Image Output Tool',
         toModelOutput: ToModelOutput.MCP,
@@ -255,7 +251,7 @@ describe('createTool', () => {
     });
 
     it('With toModelOutput = ToModelOutput.MCP and error', async () => {
-      const tool = withZod.createTool({
+      const tool = createTool({
         name: 'hello_mcp_error',
         description: 'MCP Output Tool with Error',
         toModelOutput: ToModelOutput.MCP,

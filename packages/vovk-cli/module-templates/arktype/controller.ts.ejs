@@ -9,9 +9,8 @@ sourceName: <%= vars.ModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { prefix, get, put, post, del, operation } from 'vovk';
+import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
-import withArk from '<%= t.relativePathToSourceRoot %>/lib/withArk<%= t.nodeNextResolutionExt.ts %>';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>
@@ -22,7 +21,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Get <%= t.theThings %>',
     })
     @get()
-    static get<%= t.TheThings %> = withArk({
+    static get<%= t.TheThings %> = endpoint({
         handle() {
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.get<%= t.TheThings %>();
@@ -36,7 +35,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Get single <%= t.theThing %>',
     })
     @get('{id}')
-    static getSingle<%= t.TheThing %> = withArk({
+    static getSingle<%= t.TheThing %> = endpoint({
         params: type({ id: type('string') }),
         handle(_req, { id }) {
             <% if(t.withService) { %>
@@ -51,7 +50,7 @@ export default class <%= vars.ModuleName %> {
         summary: 'Update <%= t.theThing %>',
     })
     @put('{id}')
-    static update<%= t.TheThing %> = withArk({
+    static update<%= t.TheThing %> = endpoint({
         body: type({ todo: type('true') }),
         params: type({ id: type('string') }),
         async handle(req, { id }) {
@@ -68,7 +67,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Create <%= t.theThing %>',
     })
     @post()
-    static create<%= t.TheThing %> = withArk({
+    static create<%= t.TheThing %> = endpoint({
         body: type({ todo: type('true') }),
         async handle(req) {
             const body = await req.json();
@@ -84,7 +83,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Delete <%= t.theThing %>',
     })
     @del('{id}')
-    static delete<%= t.TheThing %> = withArk({
+    static delete<%= t.TheThing %> = endpoint({
         params: type({ id: type('string') }),
         handle(_req, params) {
             const { id } = params;

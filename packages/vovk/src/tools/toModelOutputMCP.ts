@@ -63,7 +63,7 @@ type ToModelOutputMCPFn = <TOutput>(
 export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown, { req }): Promise<MCPModelOutput> => {
   const mcpOutputMeta = req ? (reqMeta(req).mcpOutput as MCPModelOutput) : null;
   if (result instanceof Response) {
-    return { ...responseToMCP(result), ...(mcpOutputMeta || {}) };
+    return { ...(await responseToMCP(result)), ...(mcpOutputMeta || {}) };
   }
 
   const isError = result instanceof Error;

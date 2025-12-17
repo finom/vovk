@@ -9,8 +9,7 @@ sourceName: <%= vars.ModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { prefix, get, put, post, del, operation } from 'vovk';
-import { withZod } from '<%= t.relativePathToSourceRoot %>/lib/withZod<%= t.nodeNextResolutionExt.ts %>';
+import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
 import { z } from 'zod';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
@@ -22,7 +21,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Get <%= t.theThings %>',
     })
     @get()
-    static get<%= t.TheThings %> = withZod({
+    static get<%= t.TheThings %> = endpoint({
         handle() {
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.get<%= t.TheThings %>();
@@ -36,7 +35,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Get single <%= t.theThing %>',
     })
     @get('{id}')
-    static getSingle<%= t.TheThing %> = withZod({
+    static getSingle<%= t.TheThing %> = endpoint({
       params: z.object({
         id: z.string(),
       }),
@@ -53,7 +52,7 @@ export default class <%= vars.ModuleName %> {
         summary: 'Update <%= t.theThing %>',
     })
     @put('{id}')
-    static update<%= t.TheThing %> = withZod({
+    static update<%= t.TheThing %> = endpoint({
         body: z.object({
           todo: z.literal(true),
         }),
@@ -72,7 +71,7 @@ export default class <%= vars.ModuleName %> {
         summary: 'Create <%= t.theThing %>',
     })
     @post()
-    static create<%= t.TheThing %> = withZod({
+    static create<%= t.TheThing %> = endpoint({
         body: z.object({
             todo: z.literal(true),
         }),
@@ -90,7 +89,7 @@ export default class <%= vars.ModuleName %> {
         summary: 'Delete <%= t.theThing %>',
     })
     @del('{id}')
-    static delete<%= t.TheThing %> = withZod({
+    static delete<%= t.TheThing %> = endpoint({
         params: z.object({
             id: z.string(),
         }),

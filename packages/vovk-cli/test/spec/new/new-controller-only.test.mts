@@ -129,10 +129,9 @@ await describe('CLI new controller only', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `import { z } from 'zod';`,
-      `import { withZod } from '../../withZod';`,
       `export default class UserController {`,
       `@get()
-        static getUsers = withZod(`,
+        static getUsers = endpoint(`,
       `static createUser = `,
       `static updateUser = `,
     ]);
@@ -163,10 +162,9 @@ await describe('CLI new controller only', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `import * as v from 'valibot';`,
-      `import { withValibot } from '../../lib/withValibot';`,
       `export default class UserController {`,
       `@get()
-        static getUsers = withValibot(`,
+        static getUsers = endpoint(`,
       `static createUser = `,
       `static updateUser = `,
     ]);
@@ -197,10 +195,9 @@ await describe('CLI new controller only', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `import { type } from 'arktype';`,
-      `import { withArk } from '../../lib/withArk';`,
       `export default class UserController {`,
       `@get()
-        static getUsers = withArk(`,
+        static getUsers = endpoint(`,
       `static createUser = `,
       `static updateUser = `,
     ]);

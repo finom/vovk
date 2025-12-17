@@ -1,10 +1,10 @@
 import { it, describe } from 'node:test';
-import { withZod } from '../lib/withZod.ts';
+import { endpoint } from 'vovk';
 import { z } from 'zod';
 import assert from 'node:assert';
 
-describe('Controller handler with validation', async () => {
-  const handler = withZod({
+describe('endpoint features', async () => {
+  const handler = endpoint({
     body: z.object({ foo: z.string().max(5) }),
     query: z.object({ bar: z.string().max(5) }),
     params: z.object({ baz: z.string().max(5) }),

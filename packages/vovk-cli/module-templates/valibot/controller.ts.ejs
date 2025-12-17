@@ -9,9 +9,9 @@ sourceName: <%= vars.ModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { prefix, get, put, post, del, operation } from 'vovk';
+import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
 import * as v from 'valibot';
-import withValibot from '<%= t.relativePathToSourceRoot %>/lib/withValibot<%= t.nodeNextResolutionExt.ts %>';
+import { toStandardJsonSchema } from '@valibot/to-json-schema';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
 <% } %>
@@ -22,7 +22,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Get <%= t.theThings %>',
     })
     @get()
-    static get<%= t.TheThings %> = withValibot({
+    static get<%= t.TheThings %> = endpoint({
         handle() {
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.get<%= t.TheThings %>();
@@ -36,8 +36,8 @@ export default class <%= vars.ModuleName %> {
         summary: 'Get single <%= t.theThing %>',
     })
     @get('{id}')
-    static getSingle<%= t.TheThing %> = withValibot({
-        params: v.object({ id: v.string() }),
+    static getSingle<%= t.TheThing %> = endpoint({
+        params: toStandardJsonSchema(v.object({ id: v.string() })),
         handle(_req, { id }) {
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.getSingle<%= t.TheThing %>(id);
@@ -51,9 +51,9 @@ export default class <%= vars.ModuleName %> {
         summary: 'Update <%= t.theThing %>',
     })
     @put('{id}')
-    static update<%= t.TheThing %> = withValibot({
-        body: v.object({ todo: v.literal(true) }),
-        params: v.object({ id: v.string() }),
+    static update<%= t.TheThing %> = endpoint({
+        body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
+        params: toStandardJsonSchema(v.object({ id: v.string() })),
         async handle(req, { id }) {
             const body = await req.json();
             <% if(t.withService) { %>
@@ -68,8 +68,8 @@ export default class <%= vars.ModuleName %> {
         summary: 'Create <%= t.theThing %>',
     })
     @post()
-    static create<%= t.TheThing %> = withValibot({
-        body: v.object({ todo: v.literal(true) }),
+    static create<%= t.TheThing %> = endpoint({
+        body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
         async handle(req) {
             const body = await req.json();
             <% if(t.withService) { %>
@@ -84,8 +84,8 @@ export default class <%= vars.ModuleName %> {
         summary: 'Delete <%= t.theThing %>',
     })
     @del('{id}')
-    static delete<%= t.TheThing %> = withValibot({
-        params: v.object({ id: v.string() }),
+    static delete<%= t.TheThing %> = endpoint({
+        params: toStandardJsonSchema(v.object({ id: v.string() })),
         handle(_req, { id }) {
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
