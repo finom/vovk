@@ -246,39 +246,6 @@ await describe('OpenAPI flags', async () => {
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
-  await it('works with nextjs-operation-id', async () => {
-    await writeSpec({
-      operationId: 'MyController_postTest2',
-    });
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
-
-    await runAtProjectDir(
-      `../dist/index.mjs generate --openapi spec.json --openapi-module-name nestjs-operation-id --openapi-method-name nestjs-operation-id --openapi-mixin-name myMixin --out ${generatedClientDir} --from mjs`
-    );
-
-    const { schema, MyRPC } = await import(path.join(generatedClientDir, 'index.mjs'));
-
-    strictEqual(schema.segments.myMixin.controllers.MyRPC.handlers.postTest2.httpMethod, HttpMethod.POST);
-    strictEqual(
-      schema.segments.myMixin.controllers.MyRPC.handlers.postTest2.validation.body.properties.message.type,
-      'string'
-    );
-    strictEqual(
-      schema.segments.myMixin.controllers.MyRPC.handlers.postTest2.validation.params.properties.id.type,
-      'string'
-    );
-    strictEqual(
-      schema.segments.myMixin.controllers.MyRPC.handlers.postTest2.validation.query.properties.search.type,
-      'string'
-    );
-    strictEqual(
-      schema.segments.myMixin.controllers.MyRPC.handlers.postTest2.validation.output.properties.success.type,
-      'boolean'
-    );
-    ok(typeof MyRPC.postTest2 === 'function', 'api.postTest2 should be a function');
-    await fs.rm(generatedClientDir, { recursive: true, force: true });
-  });
-
   await it('can use JSON URL and write fallback', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
     await new Promise((resolve) => setTimeout(resolve, 2000));

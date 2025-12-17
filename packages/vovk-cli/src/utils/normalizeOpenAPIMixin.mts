@@ -23,26 +23,8 @@ export type GetOpenAPINameFn = (config: {
   openAPIObject: OpenAPIObject;
 }) => string;
 
-const getNamesNestJS = (operationObject: VovkOperationObject): [string, string] => {
-  const operationId = operationObject.operationId;
-  if (!operationId) {
-    throw new Error('Operation ID is required for NestJS module name generation');
-  }
-
-  const controllerHandlerMatch = operationId?.match(/^([A-Z][a-zA-Z0-9]*)_([a-zA-Z0-9_]+)/);
-
-  if (!controllerHandlerMatch) {
-    throw new Error(`Invalid operationId format for NestJS: ${operationId}`);
-  }
-  const [controllerName, handlerName] = controllerHandlerMatch.slice(1, 3) as [string, string];
-  return [controllerName.replace(/Controller$/, 'API'), handlerName];
-};
-
 const normalizeGetModuleName = (getModuleName: OpenAPIMixin['getModuleName']): OpenAPIMixinStrict['getMethodName'] => {
-  if (getModuleName === 'nestjs-operation-id') {
-    getModuleName = ({ operationObject }: { operationObject: VovkOperationObject }) =>
-      getNamesNestJS(operationObject)[0];
-  } else if (typeof getModuleName === 'string') {
+  if (typeof getModuleName === 'string') {
     const moduleName = getModuleName;
     getModuleName = () => moduleName;
   } else if (typeof getModuleName !== 'function') {
@@ -53,10 +35,7 @@ const normalizeGetModuleName = (getModuleName: OpenAPIMixin['getModuleName']): O
 };
 
 const normalizeGetMethodName = (getMethodName: OpenAPIMixin['getMethodName']) => {
-  if (getMethodName === 'nestjs-operation-id') {
-    getMethodName = ({ operationObject }: { operationObject: VovkOperationObject }) =>
-      getNamesNestJS(operationObject)[1];
-  } else if (getMethodName === 'camel-case-operation-id') {
+  if (getMethodName === 'camel-case-operation-id') {
     getMethodName = ({ operationObject }: Parameters<GetOpenAPINameFn>[0]) => {
       const operationId = operationObject.operationId;
       if (!operationId) {
