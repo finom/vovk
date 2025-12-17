@@ -80,7 +80,7 @@
     "@types/pluralize": "^0.0.33",
     "@types/tar-stream": "^3.1.4",
     "concat-stream": "^2.0.0",
-    "create-next-app": "^16.0.1",
+    "create-next-app": "^16.0.10",
     "http-server": "^14.1.1",
     "node-pty": "^1.0.0",
     "tsdown": "^0.16.3",

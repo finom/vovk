@@ -20,13 +20,18 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function createNextApp(extraParams?: string) {
-    await runScript(`rm -rf ${projectDir}`);
-    await runScript(
-      `npx create-next-app ${dir} --ts --app --src-dir --no-eslint --no-tailwind --no-react-compiler --no-import-alias ${extraParams ? (extraParams.includes('--turbopack') ? extraParams : `${extraParams} --no-turbopack`) : '--no-turbopack'}`,
-      {
-        cwd,
-      }
+    const tmpNextjsProjectDir = path.join(
+      cwd,
+      `tmp_nextjs_projects_cache${extraParams ? '_' + extraParams.replace(/\s+/g, '_') : ''}`
     );
+    await runScript(`rm -rf ${projectDir}`);
+    if (!(await getFileSystemEntryType(tmpNextjsProjectDir))) {
+      await runScript(
+        `npx create-next-app ${tmpNextjsProjectDir} --ts --app --src-dir --no-eslint --no-tailwind --no-react-compiler --no-import-alias ${extraParams}`
+      );
+    }
+
+    await runScript(`cp -R ${tmpNextjsProjectDir} ${projectDir}`);
   }
 
   async function vovkInit(extraParams?: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
