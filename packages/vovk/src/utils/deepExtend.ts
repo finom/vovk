@@ -156,6 +156,5 @@ function deepExtend(...args: any[]): any {
   return target;
 }
 
-export default deepExtend;
 export { deepExtend, deepCloneArray, isSpecificValue, cloneSpecificValue, safeGetProperty };
 export type { DeepPartial, SpecificValue };

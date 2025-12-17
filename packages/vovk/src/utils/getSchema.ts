@@ -20,7 +20,7 @@ export async function getControllerSchema(
   };
 }
 
-export default async function getSchema(options: {
+export async function getSchema(options: {
   emitSchema?: boolean;
   segmentName?: string;
   controllers: Record<string, StaticClass>;

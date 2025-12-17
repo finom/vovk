@@ -1,5 +1,5 @@
-import newModule from './newModule.mjs';
-import newSegment from './newSegment.mjs';
+import { newModule } from './newModule.mjs';
+import { newSegment } from './newSegment.mjs';
 import type { NewOptions } from '../types.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mts';
 

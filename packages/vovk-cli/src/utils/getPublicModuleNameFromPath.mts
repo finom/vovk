@@ -1,4 +1,4 @@
-export default function getPublicModuleNameFromPath(modulePath: string): {
+export function getPublicModuleNameFromPath(modulePath: string): {
   moduleName: string | null;
   restPath: string;
 } {

@@ -2,14 +2,14 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import chalk from 'chalk';
 import { getTsconfig } from 'get-tsconfig';
-import render from './render.mjs';
-import addClassToSegmentCode from './addClassToSegmentCode.mjs';
+import { render } from './render.mjs';
+import { addClassToSegmentCode } from './addClassToSegmentCode.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
-import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
-import prettify from '../utils/prettify.mjs';
-import resolveAbsoluteModulePath from '../utils/resolveAbsoluteModulePath.mjs';
+import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
+import { formatLoggedSegmentName } from '../utils/formatLoggedSegmentName.mjs';
+import { getFileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
+import { prettify } from '../utils/prettify.mjs';
+import { resolveAbsoluteModulePath } from '../utils/resolveAbsoluteModulePath.mjs';
 import { locateSegments } from '../locateSegments.mjs';
 
 function splitByLast(str: string, delimiter: string = '/'): [string, string] {
@@ -26,7 +26,7 @@ function splitByLast(str: string, delimiter: string = '/'): [string, string] {
   return [before, after];
 }
 
-export default async function newModule({
+export async function newModule({
   projectInfo,
   what,
   moduleNameWithOptionalSegment,

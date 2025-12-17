@@ -86,7 +86,7 @@ const terms = [
   ['scarf', 'scarves'],
 ];
 
-export default function addCommonTerms() {
+export function addCommonTerms() {
   terms.forEach(([singular, plural]) => {
     const regex = new RegExp(`${singular}$`, 'i');
     pluralize.addPluralRule(regex, plural);

@@ -1,6 +1,6 @@
 import { Project, QuoteKind, SyntaxKind } from 'ts-morph';
 
-export default function addClassToSegmentCode(
+export function addClassToSegmentCode(
   segmentSourceCode: string,
   {
     sourceName,

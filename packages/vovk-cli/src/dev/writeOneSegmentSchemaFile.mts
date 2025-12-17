@@ -1,13 +1,13 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { VovkSegmentSchema } from 'vovk';
-import diffSegmentSchema, { type DiffResult } from './diffSegmentSchema.mjs';
-import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
+import { diffSegmentSchema, type DiffResult } from './diffSegmentSchema.mjs';
+import { getFileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 
 export const ROOT_SEGMENT_FILE_NAME = 'root';
 export const META_FILE_NAME = '_meta';
 
-export default async function writeOneSegmentSchemaFile({
+export async function writeOneSegmentSchemaFile({
   schemaOutAbsolutePath,
   segmentSchema,
   skipIfExists = false,

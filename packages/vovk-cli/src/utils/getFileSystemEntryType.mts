@@ -5,7 +5,7 @@ export enum FileSystemEntryType {
   DIRECTORY = 'DIRECTORY',
 }
 
-export default async function getFileSystemEntryType(filePath: string): Promise<FileSystemEntryType | null> {
+export async function getFileSystemEntryType(filePath: string): Promise<FileSystemEntryType | null> {
   try {
     const stats = await fs.stat(filePath);
 

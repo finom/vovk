@@ -28,7 +28,7 @@ function checkPort(port: number, callback: (isAvailable: boolean) => void): void
  * @param {(failedPort: number, tryingPort: number) => void} onWarning - The callback function for warnings.
  * @returns {Promise<string>}
  */
-function getAvailablePort(
+export function getAvailablePort(
   startPort: number,
   maxAttempts: number,
   attempt: number,
@@ -47,5 +47,3 @@ function getAvailablePort(
     });
   });
 }
-
-export default getAvailablePort;

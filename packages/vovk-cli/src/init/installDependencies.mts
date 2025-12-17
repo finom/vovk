@@ -1,8 +1,8 @@
 import { spawn } from 'node:child_process';
 import NPMCliPackageJson from '@npmcli/package-json';
-import getLogger from '../utils/getLogger.mjs';
+import { getLogger } from '../utils/getLogger.mjs';
 import type { InitOptions } from '../types.mjs';
-import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
 
@@ -17,7 +17,7 @@ export function getPackageManager(
   return packageManager ? (packageManager.split('@')[0] as PackageManager) : 'npm'; // Default to npm if no options are true
 }
 
-export default async function installDependencies({
+export async function installDependencies({
   log,
   cwd,
   packageManager,

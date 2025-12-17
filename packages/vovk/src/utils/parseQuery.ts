@@ -133,7 +133,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
  * @param queryString - The raw query string (e.g. location.search.slice(1))
  * @returns           - A nested object representing the query params
  */
-export default function parseQuery(queryString: string): Record<string, KnownAny> {
+export function parseQuery(queryString: string): Record<string, KnownAny> {
   const result: Record<string, KnownAny> = {};
 
   if (!queryString) return result;

@@ -13,20 +13,20 @@ import {
 import * as YAML from 'yaml';
 import TOML from '@iarna/toml';
 import type { PackageJson } from 'type-fest';
-import prettify from '../utils/prettify.mjs';
+import { prettify } from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compileJSONSchemaToTypeScriptType.mjs';
 import { OpenAPIObject } from 'openapi3-ts/oas31';
-import getTemplateClientImports from './getTemplateClientImports.mjs';
+import { getTemplateClientImports } from './getTemplateClientImports.mjs';
 
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
   return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');
 }
 
-export default async function writeOneClientFile({
+export async function writeOneClientFile({
   cwd,
   projectInfo,
   clientTemplateFile,

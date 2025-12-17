@@ -2,11 +2,11 @@ import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
 import { runScript } from './runScript.mts';
 import path from 'node:path';
-import getUserConfig from '../../dist/getProjectInfo/getConfig/getUserConfig.mjs';
+import { getUserConfig } from '../../dist/getProjectInfo/getConfig/getUserConfig.mjs';
 import type { VovkConfig } from 'vovk';
-import getFileSystemEntryType, { FileSystemEntryType } from '../../dist/utils/getFileSystemEntryType.mjs';
-import checkTSConfigForExperimentalDecorators from '../../dist/init/checkTSConfigForExperimentalDecorators.mjs';
-import getConfig from '../../dist/getProjectInfo/getConfig/index.mjs';
+import { getFileSystemEntryType, FileSystemEntryType } from '../../dist/utils/getFileSystemEntryType.mjs';
+import { checkTSConfigForExperimentalDecorators } from '../../dist/init/checkTSConfigForExperimentalDecorators.mjs';
+import { getConfig } from '../../dist/getProjectInfo/getConfig/index.mjs';
 
 export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);

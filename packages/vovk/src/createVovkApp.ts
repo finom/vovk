@@ -10,7 +10,7 @@ import {
   type StaticClass,
   type VovkHandlerSchema,
 } from './types';
-import getSchema from './utils/getSchema';
+import { getSchema } from './utils/getSchema';
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());

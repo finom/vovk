@@ -1,9 +1,9 @@
 import { pathToFileURL } from 'node:url';
 import type { VovkConfig } from 'vovk';
-import getConfigAbsolutePaths from './getConfigAbsolutePaths.mjs';
-import importUncachedModule from './importUncachedModule.mjs';
+import { getConfigAbsolutePaths } from './getConfigAbsolutePaths.mjs';
+import { importUncachedModule } from './importUncachedModule.mjs';
 
-async function getUserConfig({
+export async function getUserConfig({
   configPath: givenConfigPath,
   cwd,
 }: {
@@ -33,5 +33,3 @@ async function getUserConfig({
 
   return { userConfig, configAbsolutePaths };
 }
-
-export default getUserConfig;

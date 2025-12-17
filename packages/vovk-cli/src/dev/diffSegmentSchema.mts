@@ -86,7 +86,7 @@ example output:
   }
 }
 */
-export default function diffSegmentSchema(oldJson: VovkSegmentSchema, newJson: VovkSegmentSchema): DiffResult {
+export function diffSegmentSchema(oldJson: VovkSegmentSchema, newJson: VovkSegmentSchema): DiffResult {
   return {
     controllers: diffControllers<VovkSegmentSchema['controllers']>(
       oldJson.controllers ?? {},

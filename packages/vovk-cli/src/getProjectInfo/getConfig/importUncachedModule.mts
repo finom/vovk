@@ -3,7 +3,7 @@ import { Worker } from 'node:worker_threads';
 import path from 'node:path';
 import './importUncachedModuleWorker.mjs'; // required for TS compilation
 
-function importUncachedModule<T>(modulePath: string): Promise<T> {
+export function importUncachedModule<T>(modulePath: string): Promise<T> {
   return new Promise((resolve, reject) => {
     // Resolve the path to the worker script
     const workerPath = path.resolve(import.meta.dirname, 'importUncachedModuleWorker.mjs');
@@ -38,5 +38,3 @@ function importUncachedModule<T>(modulePath: string): Promise<T> {
     });
   });
 }
-
-export default importUncachedModule;

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import loglevel, { type LogLevelNames } from 'loglevel';
-export default function getLogger(level: LogLevelNames) {
+export function getLogger(level: LogLevelNames) {
   const log = {
     info: (msg: string) => loglevel.info(chalk.white(`🐺 ${msg}`)),
     warn: (msg: string) => loglevel.warn(chalk.yellowBright(`🐺 ${msg}`)),

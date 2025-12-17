@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { VovkStrictConfig } from 'vovk';
-import getFileSystemEntryType from './utils/getFileSystemEntryType.mjs';
+import { getFileSystemEntryType } from './utils/getFileSystemEntryType.mjs';
 import type { ProjectInfo } from './getProjectInfo/index.mjs';
 
 export type Segment = {

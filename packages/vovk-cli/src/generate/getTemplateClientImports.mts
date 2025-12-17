@@ -8,7 +8,7 @@ export type ClientImports = {
   createRPC: string;
 };
 
-export default function getTemplateClientImports({
+export function getTemplateClientImports({
   config,
   fullSchema,
   outCwdRelativeDir,

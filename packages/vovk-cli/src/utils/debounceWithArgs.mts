@@ -1,6 +1,6 @@
 import type { KnownAny } from 'vovk';
 
-export default function debounceWithArgs<Callback extends (...args: KnownAny[]) => KnownAny>(
+export function debounceWithArgs<Callback extends (...args: KnownAny[]) => KnownAny>(
   callback: Callback,
   wait: number
 ): (...args: Parameters<Callback>) => Promise<Awaited<ReturnType<Callback>>> {

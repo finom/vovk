@@ -35,7 +35,7 @@ export enum BuiltInTemplateName {
   py = 'py',
 }
 
-export default function getTemplateDefs(
+export function getTemplateDefs(
   userTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {}
 ): VovkStrictConfig['clientTemplateDefs'] {
   const defs: VovkStrictConfig['clientTemplateDefs'] = {};

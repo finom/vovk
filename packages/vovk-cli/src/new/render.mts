@@ -3,13 +3,13 @@ import matter from 'gray-matter';
 import _ from 'lodash';
 import pluralize from 'pluralize';
 import type { VovkStrictConfig } from 'vovk';
-import addCommonTerms from './addCommonTerms.mjs';
+import { addCommonTerms } from './addCommonTerms.mjs';
 import type { VovkModuleRenderResult } from '../types.mjs';
 import path from 'node:path';
 
 addCommonTerms();
 
-export default async function render(
+export async function render(
   codeTemplate: string,
   {
     cwd,
@@ -80,7 +80,7 @@ export default async function render(
 
   const parsed = matter((await ejs.render(codeTemplate, { t }, { async: true, filename: templateFileName })).trim());
   const { outDir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
-  const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;
+  const code = empty ? (sourceName ? `export class ${sourceName} {}` : '') : parsed.content;
 
   return {
     outDir,

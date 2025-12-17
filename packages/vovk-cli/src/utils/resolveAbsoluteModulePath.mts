@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import getPublicModuleNameFromPath from './getPublicModuleNameFromPath.mjs';
+import { getPublicModuleNameFromPath } from './getPublicModuleNameFromPath.mjs';
 
 // Returns the path up to and including the last occurrence of the given module name
 export function getPathUpToModule(moduleName: string, fullPath: string) {
@@ -9,7 +9,7 @@ export function getPathUpToModule(moduleName: string, fullPath: string) {
   return fullPath.slice(0, idx + moduleName.length);
 }
 
-export default function resolveAbsoluteModulePath(modulePath: string, cwd: string) {
+export function resolveAbsoluteModulePath(modulePath: string, cwd: string) {
   // If it's an absolute path or starts with '.' (relative), resolve it directly
   if (modulePath.startsWith('/') || modulePath.startsWith('.')) {
     return path.resolve(cwd, modulePath);

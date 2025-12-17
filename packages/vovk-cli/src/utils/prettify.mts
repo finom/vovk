@@ -1,6 +1,6 @@
 import prettier from 'prettier';
 
-export default async function prettify(code: string, absoluteFilePath: string) {
+export async function prettify(code: string, absoluteFilePath: string) {
   const options = await prettier.resolveConfig(absoluteFilePath);
 
   const finalOptions = {

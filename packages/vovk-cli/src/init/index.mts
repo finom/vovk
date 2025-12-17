@@ -3,17 +3,17 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import chalk from 'chalk';
 import NPMCliPackageJson from '@npmcli/package-json';
-import getConfigPaths from '../getProjectInfo/getConfig/getConfigAbsolutePaths.mjs';
-import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
-import installDependencies, { getPackageManager } from './installDependencies.mjs';
-import getLogger from '../utils/getLogger.mjs';
-import createConfig from './createConfig.mjs';
-import updateNPMScripts, { getDevScript } from './updateNPMScripts.mjs';
-import checkTSConfigForExperimentalDecorators from './checkTSConfigForExperimentalDecorators.mjs';
-import updateTypeScriptConfig from './updateTypeScriptConfig.mjs';
-import updateDependenciesWithoutInstalling from './updateDependenciesWithoutInstalling.mjs';
-import logUpdateDependenciesError from './logUpdateDependenciesError.mjs';
-import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import { getConfigAbsolutePaths } from '../getProjectInfo/getConfig/getConfigAbsolutePaths.mjs';
+import { getFileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
+import { installDependencies, getPackageManager } from './installDependencies.mjs';
+import { getLogger } from '../utils/getLogger.mjs';
+import { createConfig } from './createConfig.mjs';
+import { updateNPMScripts, getDevScript } from './updateNPMScripts.mjs';
+import { checkTSConfigForExperimentalDecorators } from './checkTSConfigForExperimentalDecorators.mjs';
+import { updateTypeScriptConfig } from './updateTypeScriptConfig.mjs';
+import { updateDependenciesWithoutInstalling } from './updateDependenciesWithoutInstalling.mjs';
+import { logUpdateDependenciesError } from './logUpdateDependenciesError.mjs';
+import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 import type { InitOptions } from '../types.mjs';
 import { createStandardSchemaValidatorFile } from './createStandardSchemaValidatorFile.mjs';
 
@@ -193,7 +193,7 @@ export class Init {
     this.root = root;
     this.log = log;
 
-    const configPaths = await getConfigPaths({ cwd, relativePath: prefix });
+    const configPaths = await getConfigAbsolutePaths({ cwd, relativePath: prefix });
 
     if (yes) {
       return this.#init({ configPaths, pkgJson, cwd }, {

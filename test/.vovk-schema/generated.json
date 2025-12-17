@@ -111,9 +111,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "additionalProperties": false
             }
           },
@@ -134,9 +132,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ],
+              "required": ["todo"],
               "additionalProperties": false
             },
             "params": {
@@ -147,9 +143,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "additionalProperties": false
             }
           },
@@ -170,9 +164,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ],
+              "required": ["todo"],
               "additionalProperties": false
             }
           },
@@ -192,9 +184,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "additionalProperties": false
             }
           },
@@ -229,9 +219,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "additionalProperties": false
             }
           },
@@ -252,9 +240,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ],
+              "required": ["todo"],
               "additionalProperties": false
             },
             "params": {
@@ -265,9 +251,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "additionalProperties": false
             }
           },
@@ -288,9 +272,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ],
+              "required": ["todo"],
               "additionalProperties": false
             }
           },
@@ -310,9 +292,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "additionalProperties": false
             }
           },
@@ -346,9 +326,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -366,9 +344,7 @@
                   "type": "boolean"
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "type": "object",
@@ -377,9 +353,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -397,9 +371,7 @@
                   "type": "boolean"
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "path": "",
@@ -414,9 +386,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "path": "{id}",
@@ -446,9 +416,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -466,9 +434,7 @@
                   "type": "boolean"
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "type": "object",
@@ -477,9 +443,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -497,9 +461,7 @@
                   "type": "boolean"
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "path": "",
@@ -514,9 +476,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "path": "{id}",
@@ -548,9 +508,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -567,15 +525,11 @@
               "properties": {
                 "todo": {
                   "type": "boolean",
-                  "enum": [
-                    true
-                  ]
+                  "enum": [true]
                 }
               },
               "type": "object",
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "x-isDto": true,
@@ -586,9 +540,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -605,15 +557,11 @@
               "properties": {
                 "todo": {
                   "type": "boolean",
-                  "enum": [
-                    true
-                  ]
+                  "enum": [true]
                 }
               },
               "type": "object",
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -633,9 +581,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -670,9 +616,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -689,15 +633,11 @@
               "properties": {
                 "todo": {
                   "type": "boolean",
-                  "enum": [
-                    true
-                  ]
+                  "enum": [true]
                 }
               },
               "type": "object",
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "x-isDto": true,
@@ -708,9 +648,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -727,15 +665,11 @@
               "properties": {
                 "todo": {
                   "type": "boolean",
-                  "enum": [
-                    true
-                  ]
+                  "enum": [true]
                 }
               },
               "type": "object",
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -755,9 +689,7 @@
                 }
               },
               "type": "object",
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -791,9 +723,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -812,9 +742,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -824,9 +752,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -845,9 +771,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -866,9 +790,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -902,9 +824,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -923,9 +843,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -935,9 +853,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -956,9 +872,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -977,9 +891,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -1013,9 +925,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -1034,9 +944,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1046,9 +954,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -1067,9 +973,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -1088,9 +992,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -1124,9 +1026,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -1145,9 +1045,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1157,9 +1055,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -1178,9 +1074,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -1199,9 +1093,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {

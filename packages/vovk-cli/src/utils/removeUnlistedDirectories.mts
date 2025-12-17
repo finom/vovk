@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import getFileSystemEntryType, { FileSystemEntryType } from './getFileSystemEntryType.mjs';
+import { getFileSystemEntryType, FileSystemEntryType } from './getFileSystemEntryType.mjs';
 
 /**
  * Removes all directories in a folder that aren't in the provided allowlist
@@ -10,7 +10,7 @@ import getFileSystemEntryType, { FileSystemEntryType } from './getFileSystemEntr
  * @param allowedDirs - Array of relative directory paths to keep
  * @returns Promise that resolves when all operations are complete
  */
-async function removeUnlistedDirectories(folderPath: string, allowedDirs: string[]): Promise<void> {
+export async function removeUnlistedDirectories(folderPath: string, allowedDirs: string[]): Promise<void> {
   // Normalize all allowed paths to use the system-specific separator
   const normalizedAllowedDirs = allowedDirs.map((dir) => dir.split('/').join(path.sep));
 
@@ -66,5 +66,3 @@ async function processDirectory(basePath: string, relativePath: string, allowedD
     }
   }
 }
-
-export default removeUnlistedDirectories;

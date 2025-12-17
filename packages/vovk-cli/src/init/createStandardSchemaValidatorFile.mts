@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import getRelativeSrcRoot from '../getProjectInfo/getConfig/getRelativeSrcRoot.mjs';
+import { getRelativeSrcRoot } from '../getProjectInfo/getConfig/getRelativeSrcRoot.mjs';
 
 const CODE_BY_LIBRARY = {
   zod: `import { z } from 'zod/v4';
@@ -12,7 +12,7 @@ export const withZod = createStandardValidation({
   valibot: `import { createStandardValidation } from 'vovk';
 import { toJsonSchema } from '@valibot/to-json-schema';
 
-const withValibot = createStandardValidation({
+export const withValibot = createStandardValidation({
   toJSONSchema: (model) => toJsonSchema(model, {
     overrideSchema(context) {
       if (context.valibotSchema.type === 'file') {
@@ -20,13 +20,11 @@ const withValibot = createStandardValidation({
       }
     },
   }),
-});
-
-export default withValibot;`,
+});`,
   arktype: `import { createStandardValidation } from 'vovk';
 import type { type } from 'arktype';
 
-const withArk = createStandardValidation({
+export const withArk = createStandardValidation({
   toJSONSchema: (model: type) => model.toJsonSchema({
     fallback: { 
       proto: (ctx) => ctx.proto === File ? {
@@ -36,9 +34,7 @@ const withArk = createStandardValidation({
       default: (ctx) => ctx.base
     }
   })
-});
-
-export default withArk;`,
+});`,
 } satisfies Record<'arktype' | 'valibot' | 'zod', string>;
 
 function getCode(validationLibrary: keyof typeof CODE_BY_LIBRARY) {

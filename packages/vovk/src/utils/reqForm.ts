@@ -2,7 +2,7 @@ import type { KnownAny, VovkRequest } from '../types';
 
 const formMap = new WeakMap();
 
-export default async function reqForm<T = KnownAny>(req: VovkRequest<KnownAny, KnownAny, KnownAny>): Promise<T> {
+export async function reqForm<T = KnownAny>(req: VovkRequest<KnownAny, KnownAny, KnownAny>): Promise<T> {
   if (formMap.has(req)) {
     return formMap.get(req) as T;
   }

@@ -53,7 +53,7 @@ function buildParams(key: string, value: KnownAny): string[] {
  * @param obj - The input object to be serialized
  * @returns   - A bracket-based query string (without leading "?")
  */
-export default function serializeQuery(obj: Record<string, KnownAny>): string {
+export function serializeQuery(obj: Record<string, KnownAny>): string {
   if (!obj || typeof obj !== 'object') return '';
 
   // Collect query segments

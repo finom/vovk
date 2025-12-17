@@ -1,13 +1,13 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import getFileSystemEntryType from '../utils/getFileSystemEntryType.mjs';
-import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
-import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import prettify from '../utils/prettify.mjs';
+import { getFileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
+import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
+import { formatLoggedSegmentName } from '../utils/formatLoggedSegmentName.mjs';
+import { prettify } from '../utils/prettify.mjs';
 import chalk from 'chalk';
 
-export default async function newSegment({
+export async function newSegment({
   projectInfo,
   segmentName,
   isStaticSegment,

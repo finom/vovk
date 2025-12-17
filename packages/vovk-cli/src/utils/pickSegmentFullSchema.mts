@@ -1,6 +1,6 @@
 import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
 
-export default function pickSegmentFullSchema(schema: VovkSchema, segmentNames: string[]): VovkSchema {
+export function pickSegmentFullSchema(schema: VovkSchema, segmentNames: string[]): VovkSchema {
   return {
     $schema: VovkSchemaIdEnum.SCHEMA,
     meta: schema.meta,

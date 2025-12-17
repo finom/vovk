@@ -129,7 +129,7 @@ await describe('CLI new controller only', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `import { z } from 'zod';`,
-      `import withZod from '../../withZod';`,
+      `import { withZod } from '../../withZod';`,
       `export default class UserController {`,
       `@get()
         static getUsers = withZod(`,
@@ -163,7 +163,7 @@ await describe('CLI new controller only', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `import * as v from 'valibot';`,
-      `import withValibot from '../../lib/withValibot';`,
+      `import { withValibot } from '../../lib/withValibot';`,
       `export default class UserController {`,
       `@get()
         static getUsers = withValibot(`,
@@ -197,7 +197,7 @@ await describe('CLI new controller only', async () => {
 
     await assertFile('src/modules/user/UserController.ts', [
       `import { type } from 'arktype';`,
-      `import withArk from '../../lib/withArk';`,
+      `import { withArk } from '../../lib/withArk';`,
       `export default class UserController {`,
       `@get()
         static getUsers = withArk(`,

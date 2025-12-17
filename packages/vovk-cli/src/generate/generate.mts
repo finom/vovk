@@ -10,13 +10,13 @@ import {
   type VovkStrictConfig,
 } from 'vovk';
 import type { PackageJson } from 'type-fest';
-import getClientTemplateFiles from './getClientTemplateFiles.mjs';
-import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import { getClientTemplateFiles } from './getClientTemplateFiles.mjs';
+import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
-import pickSegmentFullSchema from '../utils/pickSegmentFullSchema.mjs';
-import removeUnlistedDirectories from '../utils/removeUnlistedDirectories.mjs';
-import writeOneClientFile, { normalizeOutTemplatePath } from './writeOneClientFile.mjs';
+import { pickSegmentFullSchema } from '../utils/pickSegmentFullSchema.mjs';
+import { removeUnlistedDirectories } from '../utils/removeUnlistedDirectories.mjs';
+import { writeOneClientFile, normalizeOutTemplatePath } from './writeOneClientFile.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../locateSegments.mjs';
 import { getTsconfig } from 'get-tsconfig';

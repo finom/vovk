@@ -14,7 +14,7 @@ interface NpmPackageMetadata {
   };
 }
 
-export default async function getNPMPackageMetadata(packageName: string): Promise<NpmPackageMetadata> {
+export async function getNPMPackageMetadata(packageName: string): Promise<NpmPackageMetadata> {
   // Fetch package metadata from the npm registry
   const metadataResponse = await fetch(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`);
   if (!metadataResponse.ok) {

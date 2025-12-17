@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 import type { DiffResult } from './diffSegmentSchema.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import formatLoggedSegmentName from '../utils/formatLoggedSegmentName.mjs';
-import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
+import { formatLoggedSegmentName } from '../utils/formatLoggedSegmentName.mjs';
+import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 
-export default function logDiffResult(segmentName: string, diffResult: DiffResult, projectInfo: ProjectInfo) {
+export function logDiffResult(segmentName: string, diffResult: DiffResult, projectInfo: ProjectInfo) {
   const diffNormalized: {
     what: 'controller' | 'controllerHandler';
     type: 'added' | 'removed' | 'changed';

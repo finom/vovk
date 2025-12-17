@@ -11,7 +11,7 @@ export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'imp
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
 }
 
-export default async function updateNPMScripts(
+export async function updateNPMScripts(
   pkgJson: NPMCliPackageJson,
   root: string,
   updateScriptsMode: 'implicit' | 'explicit'

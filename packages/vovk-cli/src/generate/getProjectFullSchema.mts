@@ -4,8 +4,8 @@ import { glob } from 'glob';
 import { KnownAny, VovkSchemaIdEnum, VovkStrictConfig, type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
-import getMetaSchema from '../getProjectInfo/getMetaSchema.mjs';
-import deepExtend from '../utils/deepExtend.mjs';
+import { getMetaSchema } from '../getProjectInfo/getMetaSchema.mjs';
+import { deepExtend } from 'vovk/internal';
 
 export async function getProjectFullSchema({
   schemaOutAbsolutePath,

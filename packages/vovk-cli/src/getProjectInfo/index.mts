@@ -1,12 +1,12 @@
 import path from 'node:path';
-import getConfig from './getConfig/index.mjs';
+import { getConfig } from './getConfig/index.mjs';
 import { getPackageJson } from '../utils/getPackageJson.mjs';
 import { readFile } from 'node:fs/promises';
 import { LogLevelNames } from 'loglevel';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
-export default async function getProjectInfo(
+export async function getProjectInfo(
   {
     port: givenPort,
     cwd = process.cwd(),

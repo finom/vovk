@@ -2,8 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PackageJson } from 'type-fest';
 import chalk from 'chalk';
-import type getLogger from '../utils/getLogger.mjs';
-import getNPMPackageMetadata from '../utils/getNPMPackageMetadata.mjs';
+import type { getLogger } from '../utils/getLogger.mjs';
+import { getNPMPackageMetadata } from '../utils/getNPMPackageMetadata.mjs';
 import { InitOptions } from '../types.mjs';
 
 async function updateDeps({
@@ -63,7 +63,7 @@ async function updateDeps({
   );
 }
 
-export default async function updateDependenciesWithoutInstalling({
+export async function updateDependenciesWithoutInstalling({
   log,
   dir,
   dependencyNames,

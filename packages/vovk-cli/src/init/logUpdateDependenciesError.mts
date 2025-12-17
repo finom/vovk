@@ -1,9 +1,9 @@
 import type { InitOptions } from '../types.mjs';
-import chalkHighlightThing from '../utils/chalkHighlightThing.mjs';
-import type getLogger from '../utils/getLogger.mjs';
+import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
+import type { getLogger } from '../utils/getLogger.mjs';
 import type { PackageManager } from './installDependencies.mjs';
 
-export default function logUpdateDependenciesError({
+export function logUpdateDependenciesError({
   packageManager,
   log,
   dependencies,

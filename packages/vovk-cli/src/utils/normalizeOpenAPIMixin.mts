@@ -4,7 +4,7 @@ import { HttpMethod, VovkOperationObject, VovkStrictConfig, type VovkConfig } fr
 import { OpenAPIObject } from 'openapi3-ts/oas31';
 import * as YAML from 'yaml';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
-import chalkHighlightThing from './chalkHighlightThing.mjs';
+import { chalkHighlightThing } from './chalkHighlightThing.mjs';
 import camelCase from 'lodash/camelCase.js';
 import { generateFnName } from './generateFnName.mjs';
 

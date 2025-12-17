@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import * as jsonc from 'jsonc-parser';
 import type { TsConfigJson } from 'type-fest';
 
-export default async function checkTSConfigForExperimentalDecorators(root: string) {
+export async function checkTSConfigForExperimentalDecorators(root: string) {
   const tsconfigPath = path.resolve(root, 'tsconfig.json');
   let tsconfigContent: string;
   try {
