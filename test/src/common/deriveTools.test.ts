@@ -40,7 +40,7 @@ describe('deriveTools', () => {
 
     const handlerWithExcluded = withZod({
       operationObject: {
-        'x-tool': { disable: true },
+        'x-tool': { hidden: true },
       },
       query: z.object({ bar: z.string().max(5) }),
       async handle() {

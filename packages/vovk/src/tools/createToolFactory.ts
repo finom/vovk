@@ -1,5 +1,6 @@
 import { StandardSchemaV1 } from '@standard-schema/spec';
-import type { KnownAny, VovkErrorResponse, VovkTool, VovkToolOptions, VovkValidationType } from '../types';
+import type { KnownAny, VovkErrorResponse, VovkValidationType } from '../types';
+import type { VovkTool, VovkToolOptions } from './types';
 import { ToModelOutput } from './ToModelOutput';
 import type { ToModelOutputFn } from './types';
 import type { DefaultModelOutput } from './toModelOutputDefault';

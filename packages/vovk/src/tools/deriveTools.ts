@@ -1,5 +1,6 @@
 import { StandardSchemaV1 } from '@standard-schema/spec';
-import type { KnownAny, VovkHandlerSchema, VovkTool, VovkToolOptions } from '../types';
+import type { KnownAny, VovkHandlerSchema } from '../types';
+import type { VovkTool, VovkToolOptions } from './types';
 import { ToModelOutput } from './ToModelOutput';
 import type { ToModelOutputFn } from './types';
 import { DefaultModelOutput } from './toModelOutputDefault';
@@ -266,7 +267,7 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
       }
       return Object.entries(module ?? {})
         .filter(
-          ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.disable
+          ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.hidden
         )
         .map(([handlerName]) =>
           makeTool<TOutput, TFormattedOutput>({

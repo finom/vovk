@@ -3,7 +3,7 @@ import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
 import type { JSONLinesResponse } from './JSONLinesResponse';
 import type { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
-import { StandardSchemaV1 } from '@standard-schema/spec';
+import type { VovkToolOptions } from './tools/types';
 
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -317,45 +317,6 @@ export enum HttpStatus {
 
 // -----
 
-export interface VovkTool<
-  TInput = unknown,
-  TOutput = unknown,
-  TFormattedOutput = unknown,
-  TIsDerived extends boolean = false,
-> {
-  execute: (input: TInput, options?: KnownAny) => TFormattedOutput | Promise<TFormattedOutput>;
-  name: string;
-  title: string | undefined;
-  description: string;
-  parameters: {
-    type?: 'object';
-    properties?: {
-      body?: VovkJSONSchemaBase;
-      query?: VovkJSONSchemaBase;
-      params?: VovkJSONSchemaBase;
-    };
-    required?: ('body' | 'query' | 'params')[];
-    additionalProperties?: false;
-  };
-  // if derived, input schema is undefined
-  inputSchema: TIsDerived extends true ? undefined : TInput extends undefined ? undefined : StandardSchemaV1<TInput>;
-  // if derived, output schema is output metod validation or undefined
-  outputSchema: TIsDerived extends true
-    ? StandardSchemaV1 | undefined
-    : TOutput extends undefined
-      ? undefined
-      : StandardSchemaV1<TOutput>;
-  // set only if derived
-  inputSchemas: TIsDerived extends true
-    ? {
-        body?: StandardSchemaV1;
-        query?: StandardSchemaV1;
-        params?: StandardSchemaV1;
-      }
-    : undefined;
-  type: 'function';
-}
-
 export type VovkJSONSchemaBase = {
   $schema?: 'https://json-schema.org/draft/2020-12/schema' | 'http://json-schema.org/draft-07/schema#';
   type?: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'integer';
@@ -387,13 +348,6 @@ export type VovkJSONSchemaBase = {
   maxLength?: number;
   // 'x-foo' extensions
   [key: `x-${string}`]: KnownAny;
-};
-
-export type VovkToolOptions = {
-  disable?: boolean;
-  name?: string;
-  title?: string;
-  description?: string;
 };
 
 export type VovkOperationObject = OperationObject & {
