@@ -61,15 +61,17 @@ describe('createTool', () => {
       assert.deepStrictEqual(result, { message: 'Hello from output schema!' });
     });
     it('With input schema, with output schema', async () => {
+      const inputSchema = z.object({
+        name: z.string(),
+      });
+      const outputSchema = z.object({
+        message: z.string(),
+      });
       const tool = createTool({
         name: 'hello_full',
         description: 'Full Tool',
-        inputSchema: z.object({
-          name: z.string(),
-        }),
-        outputSchema: z.object({
-          message: z.string(),
-        }),
+        inputSchema,
+        outputSchema,
         execute: (input) => {
           return { message: `Hello, ${input.name}, from full tool!` };
         },
@@ -81,6 +83,9 @@ describe('createTool', () => {
       assert.strictEqual(tool.name, 'hello_full');
       assert.strictEqual(tool.description, 'Full Tool');
       assert.deepStrictEqual(result, { message: 'Hello, Bob, from full tool!' });
+      assert.strictEqual(tool.inputSchema, inputSchema);
+      assert.strictEqual(tool.outputSchema, outputSchema);
+      assert.strictEqual(tool.inputSchemas, undefined);
     });
 
     it('With input validation error', async () => {

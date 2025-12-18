@@ -1,20 +1,24 @@
 import { it, describe } from 'node:test';
 import { z } from 'zod';
 import assert from 'node:assert';
-import { deriveTools, toDownloadResponse, ToModelOutput, procedure, type VovkTool } from 'vovk';
+import { deriveTools, toDownloadResponse, ToModelOutput, procedure, type VovkTool, type VovkOutput } from 'vovk';
 import type { MCPModelOutput } from 'vovk/internal';
 
 describe('deriveTools', () => {
+  const outputSchema = z.object({ foo: z.string().max(5), inputMeta: z.string().optional() });
+  const bodySchema = z.object({ foo: z.string().max(5) });
+  const querySchema = z.object({ bar: z.string().max(5) });
   // used for multiple tests
   const procedureWithBody = procedure({
     operationObject: {
       description: 'procedureWithBody description',
     },
-    body: z.object({ foo: z.string().max(5) }),
+    body: bodySchema,
+    output: outputSchema,
     async handle({ vovk }) {
       const { foo } = await vovk.body();
       const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
-      return { foo, inputMeta };
+      return { foo, inputMeta } satisfies VovkOutput<typeof procedureWithBody>;
     },
   });
 
@@ -23,7 +27,7 @@ describe('deriveTools', () => {
       operationObject: {
         description: 'procedureWithQuery description',
       },
-      query: z.object({ bar: z.string().max(5) }),
+      query: querySchema,
       async handle({ vovk }) {
         const { bar } = vovk.query();
         const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
@@ -31,7 +35,7 @@ describe('deriveTools', () => {
       },
     });
     const procedureWithNoDescription = procedure({
-      query: z.object({ bar: z.string().max(5) }),
+      query: querySchema,
       async handle() {
         // ...
       },
@@ -41,7 +45,7 @@ describe('deriveTools', () => {
       operationObject: {
         'x-tool': { hidden: true },
       },
-      query: z.object({ bar: z.string().max(5) }),
+      query: querySchema,
       async handle() {
         // ...
       },
@@ -116,6 +120,28 @@ describe('deriveTools', () => {
       ]);
     });
 
+    it('Should provide outputSchema', async () => {
+      const tool = toolsByName['MyModule_procedureWithBody'];
+      assert.deepStrictEqual(tool.outputSchema, outputSchema);
+    });
+
+    it('Should provide inputSchemas', async () => {
+      const toolProcedureWithBody = toolsByName['MyModule_procedureWithBody'];
+      const toolProcedureWithQuery = toolsByName['MyModule2_procedureWithQuery'];
+      assert.deepStrictEqual(toolProcedureWithBody.inputSchemas, {
+        body: bodySchema,
+      });
+
+      assert.deepStrictEqual(toolProcedureWithQuery.inputSchemas, {
+        query: querySchema,
+      });
+    });
+
+    it('Should NOT provide inputSchema', async () => {
+      const tool = toolsByName['MyModule_procedureWithBody'];
+      assert.strictEqual(tool.inputSchema, undefined);
+    });
+
     it('Should validate input', async () => {
       const tool = toolsByName['MyModule_procedureWithBody'];
       let result = await tool.execute({ body: { foo: 'foo1' } });
@@ -135,7 +161,56 @@ describe('deriveTools', () => {
     });
   });
 
-  describe('Common, explicit default toModelOutput = ToModelOutput.DEFAULT', () => {
+  describe('Explicit custom toModelOutput', () => {
+    const { tools, toolsByName } = deriveTools({
+      meta: { inputMeta: 'hello' },
+      toModelOutput: async (result) => {
+        if (result instanceof Error) {
+          return { myError: String(result) };
+        }
+        return { myResult: result };
+      },
+      modules: {
+        MyModule: { procedureWithBody },
+      },
+    });
+
+    tools satisfies VovkTool<
+      {
+        body?: unknown;
+        query?: unknown;
+        params?: unknown;
+      },
+      unknown,
+      { myResult?: unknown; myError?: string },
+      true
+    >[];
+    toolsByName satisfies {
+      [key: string]: VovkTool<
+        {
+          body?: unknown;
+          query?: unknown;
+          params?: unknown;
+        },
+        unknown,
+        { myResult?: unknown; myError?: string },
+        true
+      >;
+    };
+
+    it('Should validate input', async () => {
+      const tool = toolsByName['MyModule_procedureWithBody'];
+      let result = await tool.execute({ body: { foo: 'foo1' } });
+      assert.deepStrictEqual(result, { myResult: { foo: 'foo1', inputMeta: 'hello' } });
+      result = await tool.execute({ body: { foo: 'foo1long' } });
+      assert.deepStrictEqual(result, {
+        myError:
+          'Error: Validation failed. Invalid body on server: Too big: expected string to have <=5 characters at foo',
+      });
+    });
+  });
+
+  describe('Explicit default toModelOutput = ToModelOutput.DEFAULT', () => {
     const { tools, toolsByName } = deriveTools({
       meta: { inputMeta: 'hello' },
       toModelOutput: ToModelOutput.DEFAULT,

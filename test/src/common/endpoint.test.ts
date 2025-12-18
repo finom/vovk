@@ -87,13 +87,13 @@ describe('procedure features', async () => {
       params: { baz: 'baz3' },
       meta: { hello: 'world', inputMeta: 'metaValue' },
       transform: (data, req) => {
-        const hello = req.vovk.meta<{ hello: string }>().hello;
-        return { ...data, hello } as const;
+        const hello1 = req.vovk.meta<{ hello: string }>().hello;
+        return { ...data, hello1 } as const;
       },
     });
 
-    result satisfies { foo: string; bar: string; baz: string; hello: string; inputMeta?: string };
-    assert.deepEqual(result, { foo: 'foo1', bar: 'bar2', baz: 'baz3', hello: 'world', inputMeta: 'metaValue' });
+    result satisfies { foo: string; bar: string; baz: string; hello1: string; inputMeta?: string };
+    assert.deepEqual(result, { foo: 'foo1', bar: 'bar2', baz: 'baz3', hello1: 'world', inputMeta: 'metaValue' });
   });
 
   it('Should assign schema', async () => {
