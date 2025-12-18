@@ -1,10 +1,10 @@
 import { it, describe } from 'node:test';
-import { endpoint } from 'vovk';
+import { procedure } from 'vovk';
 import { z } from 'zod';
 import assert from 'node:assert';
 
-describe('endpoint features', async () => {
-  const handler = endpoint({
+describe('procedure features', async () => {
+  const handler = procedure({
     body: z.object({ foo: z.string().max(5) }),
     query: z.object({ bar: z.string().max(5) }),
     params: z.object({ baz: z.string().max(5) }),
@@ -62,7 +62,7 @@ describe('endpoint features', async () => {
     );
   });
 
-  it.only('Should disable client validation', async () => {
+  it('Should disable client validation', async () => {
     assert.deepEqual(
       await handler.fn({
         body: { foo: 'foo1long' },

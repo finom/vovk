@@ -1,4 +1,4 @@
-import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import { z } from 'zod';
 
 import ZodControllerAndServiceEntityService from './ZodControllerAndServiceEntityService.ts';
@@ -9,7 +9,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Get zodControllerAndServiceEntities',
   })
   @get()
-  static getZodControllerAndServiceEntities = endpoint({
+  static getZodControllerAndServiceEntities = procedure({
     handle() {
       return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities();
     },
@@ -19,7 +19,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Get single zodControllerAndServiceEntity',
   })
   @get('{id}')
-  static getSingleZodControllerAndServiceEntity = endpoint({
+  static getSingleZodControllerAndServiceEntity = procedure({
     params: z.object({
       id: z.string(),
     }),
@@ -32,7 +32,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Update zodControllerAndServiceEntity',
   })
   @put('{id}')
-  static updateZodControllerAndServiceEntity = endpoint({
+  static updateZodControllerAndServiceEntity = procedure({
     body: z.object({
       todo: z.literal(true),
     }),
@@ -48,7 +48,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Create zodControllerAndServiceEntity',
   })
   @post()
-  static createZodControllerAndServiceEntity = endpoint({
+  static createZodControllerAndServiceEntity = procedure({
     body: z.object({
       todo: z.literal(true),
     }),
@@ -63,7 +63,7 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Delete zodControllerAndServiceEntity',
   })
   @del('{id}')
-  static deleteZodControllerAndServiceEntity = endpoint({
+  static deleteZodControllerAndServiceEntity = procedure({
     params: z.object({
       id: z.string(),
     }),

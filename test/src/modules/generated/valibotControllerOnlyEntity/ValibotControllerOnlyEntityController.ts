@@ -1,4 +1,4 @@
-import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import * as v from 'valibot';
 import { toStandardJsonSchema } from '@valibot/to-json-schema';
 
@@ -8,7 +8,7 @@ export default class ValibotControllerOnlyEntityController {
     summary: 'Get valibotControllerOnlyEntities',
   })
   @get()
-  static getValibotControllerOnlyEntities = endpoint({
+  static getValibotControllerOnlyEntities = procedure({
     handle() {
       return { message: 'TODO: get valibotControllerOnlyEntities' };
     },
@@ -18,7 +18,7 @@ export default class ValibotControllerOnlyEntityController {
     summary: 'Get single valibotControllerOnlyEntity',
   })
   @get('{id}')
-  static getSingleValibotControllerOnlyEntity = endpoint({
+  static getSingleValibotControllerOnlyEntity = procedure({
     params: toStandardJsonSchema(v.object({ id: v.string() })),
     handle(_req, { id }) {
       return { message: `TODO: get single valibotControllerOnlyEntity`, id };
@@ -29,7 +29,7 @@ export default class ValibotControllerOnlyEntityController {
     summary: 'Update valibotControllerOnlyEntity',
   })
   @put('{id}')
-  static updateValibotControllerOnlyEntity = endpoint({
+  static updateValibotControllerOnlyEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
     params: toStandardJsonSchema(v.object({ id: v.string() })),
     async handle(req, { id }) {
@@ -43,7 +43,7 @@ export default class ValibotControllerOnlyEntityController {
     summary: 'Create valibotControllerOnlyEntity',
   })
   @post()
-  static createValibotControllerOnlyEntity = endpoint({
+  static createValibotControllerOnlyEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
     async handle(req) {
       const body = await req.json();
@@ -56,7 +56,7 @@ export default class ValibotControllerOnlyEntityController {
     summary: 'Delete valibotControllerOnlyEntity',
   })
   @del('{id}')
-  static deleteValibotControllerOnlyEntity = endpoint({
+  static deleteValibotControllerOnlyEntity = procedure({
     params: toStandardJsonSchema(v.object({ id: v.string() })),
     handle(_req, { id }) {
       return { message: `TODO: delete valibotControllerOnlyEntity`, id };

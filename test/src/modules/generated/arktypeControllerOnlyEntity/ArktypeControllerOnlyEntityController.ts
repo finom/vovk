@@ -1,4 +1,4 @@
-import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
 
 @prefix('arktype-controller-only-entities')
@@ -7,7 +7,7 @@ export default class ArktypeControllerOnlyEntityController {
     summary: 'Get arktypeControllerOnlyEntities',
   })
   @get()
-  static getArktypeControllerOnlyEntities = endpoint({
+  static getArktypeControllerOnlyEntities = procedure({
     handle() {
       return { message: 'TODO: get arktypeControllerOnlyEntities' };
     },
@@ -17,7 +17,7 @@ export default class ArktypeControllerOnlyEntityController {
     summary: 'Get single arktypeControllerOnlyEntity',
   })
   @get('{id}')
-  static getSingleArktypeControllerOnlyEntity = endpoint({
+  static getSingleArktypeControllerOnlyEntity = procedure({
     params: type({ id: type('string') }),
     handle(_req, { id }) {
       return { message: 'TODO: get single arktypeControllerOnlyEntity', id };
@@ -28,7 +28,7 @@ export default class ArktypeControllerOnlyEntityController {
     summary: 'Update arktypeControllerOnlyEntity',
   })
   @put('{id}')
-  static updateArktypeControllerOnlyEntity = endpoint({
+  static updateArktypeControllerOnlyEntity = procedure({
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
     async handle(req, { id }) {
@@ -42,7 +42,7 @@ export default class ArktypeControllerOnlyEntityController {
     summary: 'Create arktypeControllerOnlyEntity',
   })
   @post()
-  static createArktypeControllerOnlyEntity = endpoint({
+  static createArktypeControllerOnlyEntity = procedure({
     body: type({ todo: type('true') }),
     async handle(req) {
       const body = await req.json();
@@ -55,7 +55,7 @@ export default class ArktypeControllerOnlyEntityController {
     summary: 'Delete arktypeControllerOnlyEntity',
   })
   @del('{id}')
-  static deleteArktypeControllerOnlyEntity = endpoint({
+  static deleteArktypeControllerOnlyEntity = procedure({
     params: type({ id: type('string') }),
     handle(_req, params) {
       const { id } = params;

@@ -1,4 +1,4 @@
-import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import { z } from 'zod';
 
 @prefix('zod-controller-only-entities')
@@ -7,7 +7,7 @@ export default class ZodControllerOnlyEntityController {
     summary: 'Get zodControllerOnlyEntities',
   })
   @get()
-  static getZodControllerOnlyEntities = endpoint({
+  static getZodControllerOnlyEntities = procedure({
     handle() {
       return { message: 'TODO: get zodControllerOnlyEntities' };
     },
@@ -17,7 +17,7 @@ export default class ZodControllerOnlyEntityController {
     summary: 'Get single zodControllerOnlyEntity',
   })
   @get('{id}')
-  static getSingleZodControllerOnlyEntity = endpoint({
+  static getSingleZodControllerOnlyEntity = procedure({
     params: z.object({
       id: z.string(),
     }),
@@ -30,7 +30,7 @@ export default class ZodControllerOnlyEntityController {
     summary: 'Update zodControllerOnlyEntity',
   })
   @put('{id}')
-  static updateZodControllerOnlyEntity = endpoint({
+  static updateZodControllerOnlyEntity = procedure({
     body: z.object({
       todo: z.literal(true),
     }),
@@ -46,7 +46,7 @@ export default class ZodControllerOnlyEntityController {
     summary: 'Create zodControllerOnlyEntity',
   })
   @post()
-  static createZodControllerOnlyEntity = endpoint({
+  static createZodControllerOnlyEntity = procedure({
     body: z.object({
       todo: z.literal(true),
     }),
@@ -61,7 +61,7 @@ export default class ZodControllerOnlyEntityController {
     summary: 'Delete zodControllerOnlyEntity',
   })
   @del('{id}')
-  static deleteZodControllerOnlyEntity = endpoint({
+  static deleteZodControllerOnlyEntity = procedure({
     params: z.object({
       id: z.string(),
     }),

@@ -1,3 +1,3 @@
-import { endpoint } from '../validation/endpoint';
+import { procedure } from '../validation/procedure';
 
-export const createTool = endpoint.createTool;
+export const createTool = procedure.createTool;

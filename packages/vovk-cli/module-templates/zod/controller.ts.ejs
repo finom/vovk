@@ -9,7 +9,7 @@ sourceName: <%= vars.ModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
-import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import { z } from 'zod';
 <% if(t.withService) { %>
 import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
@@ -21,7 +21,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Get <%= t.theThings %>',
     })
     @get()
-    static get<%= t.TheThings %> = endpoint({
+    static get<%= t.TheThings %> = procedure({
         handle() {
             <% if(t.withService) { %>
             return <%= vars.ServiceName %>.get<%= t.TheThings %>();
@@ -35,7 +35,7 @@ export default class <%= vars.ModuleName %> {
       summary: 'Get single <%= t.theThing %>',
     })
     @get('{id}')
-    static getSingle<%= t.TheThing %> = endpoint({
+    static getSingle<%= t.TheThing %> = procedure({
       params: z.object({
         id: z.string(),
       }),
@@ -52,7 +52,7 @@ export default class <%= vars.ModuleName %> {
         summary: 'Update <%= t.theThing %>',
     })
     @put('{id}')
-    static update<%= t.TheThing %> = endpoint({
+    static update<%= t.TheThing %> = procedure({
         body: z.object({
           todo: z.literal(true),
         }),
@@ -71,7 +71,7 @@ export default class <%= vars.ModuleName %> {
         summary: 'Create <%= t.theThing %>',
     })
     @post()
-    static create<%= t.TheThing %> = endpoint({
+    static create<%= t.TheThing %> = procedure({
         body: z.object({
             todo: z.literal(true),
         }),
@@ -89,7 +89,7 @@ export default class <%= vars.ModuleName %> {
         summary: 'Delete <%= t.theThing %>',
     })
     @del('{id}')
-    static delete<%= t.TheThing %> = endpoint({
+    static delete<%= t.TheThing %> = procedure({
         params: z.object({
             id: z.string(),
         }),

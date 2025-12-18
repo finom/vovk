@@ -2,13 +2,13 @@ import type { NextRequest } from 'next/server';
 import { VovkApp } from './VovkApp';
 import {
   HttpMethod,
-  type KnownAny,
   type RouteHandler,
   type VovkController,
   type DecoratorOptions,
   type VovkRequest,
   type StaticClass,
   type VovkHandlerSchema,
+  KnownAny,
 } from './types';
 import { getSchema } from './core/getSchema';
 
@@ -61,16 +61,16 @@ const assignSchema = ({
     vovkApp.routes.OPTIONS.set(controller, optionsMethods);
   }
 
-  const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
+  const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
     _controller: VovkController;
-    fn?: (req: KnownAny, params: KnownAny) => KnownAny;
-    models?: Record<string, KnownAny>;
+    fn?: (req: unknown, params: unknown) => unknown;
+    models?: Record<string, unknown>;
     schema?: VovkHandlerSchema;
-    _sourceMethod?: ((...args: KnownAny) => KnownAny) & {
+    _sourceMethod?: ((...args: unknown[]) => unknown) & {
       _getSchema?: (controller: VovkController) => VovkHandlerSchema;
-      wrapper?: (...args: KnownAny) => KnownAny;
-      fn?: (req: KnownAny, params: KnownAny) => KnownAny;
-      models?: Record<string, KnownAny>;
+      wrapper?: (...args: unknown[]) => unknown;
+      fn?: (req: unknown, params: unknown) => unknown;
+      models?: Record<string, unknown>;
       schema?: VovkHandlerSchema;
     };
   };
@@ -115,7 +115,7 @@ export function createVovkApp() {
     ) {
       const path = trimPath(givenPath);
 
-      function decorator(givenTarget: KnownAny, propertyKey: string) {
+      function decorator(givenTarget: unknown, propertyKey: string) {
         const controller = givenTarget as VovkController;
         assignSchema({ controller, propertyKey, path, options, httpMethod, vovkApp });
       }
@@ -124,7 +124,7 @@ export function createVovkApp() {
     }
 
     const auto = (options?: DecoratorOptions) => {
-      function decorator(givenTarget: KnownAny, propertyKey: string) {
+      function decorator(givenTarget: unknown, propertyKey: string) {
         const controller = givenTarget as VovkController;
         const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
         vovkApp.routes[httpMethod].set(controller, methods);

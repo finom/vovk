@@ -54,7 +54,7 @@ import { multitenant } from './core/multitenant';
 import { deriveTools } from './tools/deriveTools';
 import { createCodeSamples } from './samples/createCodeSamples';
 import { createValidateOnClient } from './validation/createValidateOnClient';
-import { endpoint } from './validation/endpoint';
+import { procedure } from './validation/procedure';
 import { resolveGeneratorConfigValues } from './core/resolveGeneratorConfigValues';
 import { ToModelOutput } from './tools/ToModelOutput';
 import { toDownloadResponse } from './core/toDownloadResponse';
@@ -119,7 +119,7 @@ export {
   resolveGeneratorConfigValues,
   ToModelOutput,
   toDownloadResponse,
-  endpoint,
+  procedure,
   createTool,
 };
 

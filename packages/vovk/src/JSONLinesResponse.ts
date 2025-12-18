@@ -1,4 +1,4 @@
-import type { KnownAny, StreamAbortMessage } from './types';
+import type { StreamAbortMessage } from './types';
 import './utils/shim';
 
 export class JSONLinesResponse<T> extends Response {
@@ -80,7 +80,7 @@ export class JSONLinesResponse<T> extends Response {
     }
   };
 
-  public throw = (e: KnownAny) => {
+  public throw = (e: unknown) => {
     this.send({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
     return this.close();
   };

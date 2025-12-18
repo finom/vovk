@@ -1,4 +1,4 @@
-import { endpoint, prefix, get, put, post, del, operation } from 'vovk';
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import * as v from 'valibot';
 import { toStandardJsonSchema } from '@valibot/to-json-schema';
 
@@ -10,7 +10,7 @@ export default class ValibotControllerAndServiceEntityController {
     summary: 'Get valibotControllerAndServiceEntities',
   })
   @get()
-  static getValibotControllerAndServiceEntities = endpoint({
+  static getValibotControllerAndServiceEntities = procedure({
     handle() {
       return ValibotControllerAndServiceEntityService.getValibotControllerAndServiceEntities();
     },
@@ -20,7 +20,7 @@ export default class ValibotControllerAndServiceEntityController {
     summary: 'Get single valibotControllerAndServiceEntity',
   })
   @get('{id}')
-  static getSingleValibotControllerAndServiceEntity = endpoint({
+  static getSingleValibotControllerAndServiceEntity = procedure({
     params: toStandardJsonSchema(v.object({ id: v.string() })),
     handle(_req, { id }) {
       return ValibotControllerAndServiceEntityService.getSingleValibotControllerAndServiceEntity(id);
@@ -31,7 +31,7 @@ export default class ValibotControllerAndServiceEntityController {
     summary: 'Update valibotControllerAndServiceEntity',
   })
   @put('{id}')
-  static updateValibotControllerAndServiceEntity = endpoint({
+  static updateValibotControllerAndServiceEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
     params: toStandardJsonSchema(v.object({ id: v.string() })),
     async handle(req, { id }) {
@@ -45,7 +45,7 @@ export default class ValibotControllerAndServiceEntityController {
     summary: 'Create valibotControllerAndServiceEntity',
   })
   @post()
-  static createValibotControllerAndServiceEntity = endpoint({
+  static createValibotControllerAndServiceEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
     async handle(req) {
       const body = await req.json();
@@ -58,7 +58,7 @@ export default class ValibotControllerAndServiceEntityController {
     summary: 'Delete valibotControllerAndServiceEntity',
   })
   @del('{id}')
-  static deleteValibotControllerAndServiceEntity = endpoint({
+  static deleteValibotControllerAndServiceEntity = procedure({
     params: toStandardJsonSchema(v.object({ id: v.string() })),
     handle(_req, { id }) {
       return ValibotControllerAndServiceEntityService.deleteValibotControllerAndServiceEntity(id);

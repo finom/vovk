@@ -59,14 +59,9 @@ export function withValidationLibrary<
   output: TOutputModel | undefined;
   iteration: TIterationModel | undefined;
   handle: T;
-  toJSONSchema:
-    | ((
-        model: KnownAny, // performance concern
-        meta: { validationType: VovkValidationType }
-      ) => KnownAny)
-    | undefined;
+  toJSONSchema: ((model: KnownAny, meta: { validationType: VovkValidationType }) => KnownAny) | undefined;
   validate: (
-    data: KnownAny,
+    data: unknown,
     model: NonNullable<TBodyModel | TQueryModel | TParamsModel | TOutputModel | TIterationModel>,
     meta: {
       validationType: VovkValidationType | 'form';
@@ -74,7 +69,7 @@ export function withValidationLibrary<
       status?: number;
       i?: number;
     }
-  ) => KnownAny;
+  ) => unknown;
   preferTransformed: boolean | undefined;
   operationObject: VovkOperationObject | undefined;
 }) {

@@ -15,7 +15,6 @@ import { updateDependenciesWithoutInstalling } from './updateDependenciesWithout
 import { logUpdateDependenciesError } from './logUpdateDependenciesError.mjs';
 import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 import type { InitOptions } from '../types.mjs';
-import { createStandardSchemaValidatorFile } from './createStandardSchemaValidatorFile.mjs';
 
 export class Init {
   root: string;
@@ -147,13 +146,6 @@ export class Init {
           }
         }
       }
-    }
-
-    if (validationLibrary === 'valibot' || validationLibrary === 'arktype' || validationLibrary === 'zod') {
-      createStandardSchemaValidatorFile({
-        root,
-        validationLibrary,
-      });
     }
 
     try {

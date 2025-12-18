@@ -20,7 +20,7 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
     return function decorator(target: KnownAny, propertyKey: string) {
       const controller = target as VovkController;
 
-      const originalMethod = controller[propertyKey] as ((...args: KnownAny) => KnownAny) & {
+      const originalMethod = controller[propertyKey] as ((...args: KnownAny[]) => KnownAny) & {
         _sourceMethod?: ((...args: KnownAny) => KnownAny) & { wrapper?: (...args: KnownAny) => KnownAny };
         fn?: (req: KnownAny, params: KnownAny) => KnownAny;
         schema?: VovkHandlerSchema;

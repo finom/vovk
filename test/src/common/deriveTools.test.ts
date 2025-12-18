@@ -1,14 +1,14 @@
 import { it, describe } from 'node:test';
 import { z } from 'zod';
 import assert from 'node:assert';
-import { deriveTools, toDownloadResponse, ToModelOutput, endpoint, type VovkTool } from 'vovk';
+import { deriveTools, toDownloadResponse, ToModelOutput, procedure, type VovkTool } from 'vovk';
 import type { MCPModelOutput } from 'vovk/internal';
 
 describe('deriveTools', () => {
   // used for multiple tests
-  const handlerWithBody = endpoint({
+  const procedureWithBody = procedure({
     operationObject: {
-      description: 'handlerWithBody description',
+      description: 'procedureWithBody description',
     },
     body: z.object({ foo: z.string().max(5) }),
     async handle({ vovk }) {
@@ -19,9 +19,9 @@ describe('deriveTools', () => {
   });
 
   describe('Common tests, implicit default toFormatOutput', () => {
-    const handlerWithQuery = endpoint({
+    const procedureWithQuery = procedure({
       operationObject: {
-        description: 'handlerWithQuery description',
+        description: 'procedureWithQuery description',
       },
       query: z.object({ bar: z.string().max(5) }),
       async handle({ vovk }) {
@@ -30,14 +30,14 @@ describe('deriveTools', () => {
         return { bar, inputMeta };
       },
     });
-    const handlerWithNoDescription = endpoint({
+    const procedureWithNoDescription = procedure({
       query: z.object({ bar: z.string().max(5) }),
       async handle() {
         // ...
       },
     });
 
-    const handlerWithExcluded = endpoint({
+    const procedureWithExcluded = procedure({
       operationObject: {
         'x-tool': { hidden: true },
       },
@@ -47,10 +47,10 @@ describe('deriveTools', () => {
       },
     });
 
-    const handlerWithToolDescription = endpoint({
+    const procedureWithToolDescription = procedure({
       operationObject: {
-        'x-tool': { description: 'handlerWithToolDescription x-tool-description' },
-        description: 'handlerWithToolDescription description',
+        'x-tool': { description: 'procedureWithToolDescription x-tool-description' },
+        description: 'procedureWithToolDescription description',
       },
       query: z.object({ bar: z.string().max(5) }),
       async handle() {
@@ -58,7 +58,7 @@ describe('deriveTools', () => {
       },
     });
 
-    const handlerWithToolName = endpoint({
+    const procedureWithToolName = procedure({
       operationObject: {
         'x-tool': { name: 'customToolName' },
       },
@@ -72,13 +72,13 @@ describe('deriveTools', () => {
       meta: { inputMeta: 'hello' },
       modules: {
         MyModule: {
-          handlerWithBody,
-          handlerWithNoDescription,
-          handlerWithToolDescription,
-          handlerWithExcluded,
-          handlerWithToolName,
+          procedureWithBody,
+          procedureWithNoDescription,
+          procedureWithToolDescription,
+          procedureWithExcluded,
+          procedureWithToolName,
         },
-        MyModule2: { handlerWithQuery },
+        MyModule2: { procedureWithQuery },
       },
     });
 
@@ -109,15 +109,15 @@ describe('deriveTools', () => {
     it('Should return tools', async () => {
       assert.equal(tools.length, 4);
       assert.deepStrictEqual(Object.keys(toolsByName), [
-        'MyModule_handlerWithBody',
-        'MyModule_handlerWithToolDescription',
+        'MyModule_procedureWithBody',
+        'MyModule_procedureWithToolDescription',
         'customToolName',
-        'MyModule2_handlerWithQuery',
+        'MyModule2_procedureWithQuery',
       ]);
     });
 
     it('Should validate input', async () => {
-      const tool = toolsByName['MyModule_handlerWithBody'];
+      const tool = toolsByName['MyModule_procedureWithBody'];
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { foo: 'foo1', inputMeta: 'hello' });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -127,10 +127,10 @@ describe('deriveTools', () => {
     });
 
     it('Should use proper description', async () => {
-      assert.strictEqual(toolsByName['MyModule_handlerWithBody'].description, 'handlerWithBody description');
+      assert.strictEqual(toolsByName['MyModule_procedureWithBody'].description, 'procedureWithBody description');
       assert.strictEqual(
-        toolsByName['MyModule_handlerWithToolDescription'].description,
-        'handlerWithToolDescription x-tool-description'
+        toolsByName['MyModule_procedureWithToolDescription'].description,
+        'procedureWithToolDescription x-tool-description'
       );
     });
   });
@@ -141,7 +141,7 @@ describe('deriveTools', () => {
       toModelOutput: ToModelOutput.DEFAULT,
       modules: {
         MyModule: {
-          handlerWithBody,
+          procedureWithBody,
         },
       },
     });
@@ -172,11 +172,11 @@ describe('deriveTools', () => {
 
     it('Should return tools', async () => {
       assert.equal(tools.length, 1);
-      assert.deepStrictEqual(Object.keys(toolsByName), ['MyModule_handlerWithBody']);
+      assert.deepStrictEqual(Object.keys(toolsByName), ['MyModule_procedureWithBody']);
     });
 
     it('Should validate input', async () => {
-      const tool = toolsByName['MyModule_handlerWithBody'];
+      const tool = toolsByName['MyModule_procedureWithBody'];
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { foo: 'foo1', inputMeta: 'hello' });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -192,7 +192,7 @@ describe('deriveTools', () => {
         meta: { inputMeta: 'hello' },
         toModelOutput: ToModelOutput.MCP,
         modules: {
-          MyModule: { handlerWithBody },
+          MyModule: { procedureWithBody },
         },
       });
 
@@ -221,7 +221,7 @@ describe('deriveTools', () => {
       };
 
       it('Should validate input', async () => {
-        const tool = toolsByName['MyModule_handlerWithBody'];
+        const tool = toolsByName['MyModule_procedureWithBody'];
         let result: MCPModelOutput = await tool.execute({ body: { foo: 'foo1' } });
         assert.deepStrictEqual(result, {
           content: [
@@ -250,7 +250,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withAudioResponse: endpoint({
+            withAudioResponse: procedure({
               operationObject: {
                 summary: 'Returns an audio response',
                 'x-tool': { name: 'withAudioResponse' },
@@ -286,7 +286,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withImageResponse: endpoint({
+            withImageResponse: procedure({
               operationObject: {
                 summary: 'Returns an image response',
                 'x-tool': { name: 'withImageResponse' },
@@ -330,7 +330,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withImageResponse: endpoint({
+            withImageResponse: procedure({
               operationObject: {
                 summary: 'Returns an image response',
                 'x-tool': { name: 'withImageResponse' },
@@ -357,7 +357,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withCSVResponse: endpoint({
+            withCSVResponse: procedure({
               operationObject: {
                 summary: 'Returns a CSV response',
                 'x-tool': { name: 'withCSVResponse' },
@@ -392,7 +392,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withTextResponse: endpoint({
+            withTextResponse: procedure({
               operationObject: {
                 summary: 'Returns a text response',
                 'x-tool': { name: 'withTextResponse' },
@@ -425,7 +425,7 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            withJSONResponse: endpoint({
+            withJSONResponse: procedure({
               operationObject: {
                 summary: 'Returns a JSON response',
                 'x-tool': { name: 'withJSONResponse' },
@@ -455,12 +455,12 @@ describe('deriveTools', () => {
     });
 
     it('Should support MCP annotations', async () => {
-      const handlerWithAnnotations = endpoint({
+      const procedureWithAnnotations = procedure({
         operationObject: {
           'x-tool': {
-            name: 'handlerWithAnnotations',
+            name: 'procedureWithAnnotations',
           },
-          description: 'handlerWithAnnotations description',
+          description: 'procedureWithAnnotations description',
         },
         body: z.object({ foo: z.string().max(5) }),
         async handle({ vovk }) {
@@ -475,12 +475,12 @@ describe('deriveTools', () => {
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
-            handlerWithAnnotations,
+            procedureWithAnnotations,
           },
         },
       });
 
-      const result: MCPModelOutput = await toolsByName.handlerWithAnnotations.execute({ body: { foo: 'bar' } });
+      const result: MCPModelOutput = await toolsByName.procedureWithAnnotations.execute({ body: { foo: 'bar' } });
       assert.deepStrictEqual(result, {
         content: [
           {
@@ -504,7 +504,7 @@ describe('deriveTools', () => {
         return { myResult: result };
       },
       modules: {
-        MyModule: { handlerWithBody },
+        MyModule: { procedureWithBody },
       },
     });
 
@@ -533,7 +533,7 @@ describe('deriveTools', () => {
     };
 
     it('Should validate input', async () => {
-      const tool = toolsByName['MyModule_handlerWithBody'];
+      const tool = toolsByName['MyModule_procedureWithBody'];
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { myResult: { foo: 'foo1', inputMeta: 'hello' } });
       result = await tool.execute({ body: { foo: 'foo1long' } });

@@ -28,7 +28,7 @@ export type VovkHandlerSchema = {
     iteration?: VovkJSONSchemaBase;
   };
   operationObject?: VovkOperationObject;
-  misc?: Record<string, KnownAny>;
+  misc?: Record<string, unknown>;
 };
 
 /**
@@ -55,7 +55,6 @@ export type VovkSegmentSchema = {
   meta?: {
     openAPIObject?: Partial<Omit<OpenAPIObject, 'paths'>>;
     package?: VovkPackageJson;
-    // [key: string]: KnownAny; // additional metadata can be added here
   };
 };
 
@@ -66,7 +65,6 @@ export type VovkMetaSchema = {
   $schema: typeof VovkSchemaIdEnum.META | (string & {});
   config: RequireFields<Partial<VovkStrictConfig>, '$schema'>;
   openAPIObject?: Partial<OpenAPIObject>;
-  // [key: string]: KnownAny;
 };
 
 /**
@@ -117,11 +115,10 @@ export type RouteHandler = ((
   _options?: DecoratorOptions;
 };
 
-export interface VovkRequest<
-  TBody extends KnownAny = unknown,
-  TQuery extends KnownAny = unknown,
-  TParams extends KnownAny = unknown,
-> extends Omit<NextRequest, 'json' | 'nextUrl'> {
+export interface VovkRequest<TBody = unknown, TQuery = unknown, TParams = unknown> extends Omit<
+  NextRequest,
+  'json' | 'nextUrl'
+> {
   json: () => Promise<TBody>;
   nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
     searchParams: Omit<
@@ -152,19 +149,19 @@ export interface VovkRequest<
 }
 
 export type ControllerStaticMethod<
-  REQ extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest,
+  REQ extends VovkRequest = VovkRequest,
   TParams extends { [key: string]: string } = KnownAny,
 > = ((req: REQ, params: TParams) => unknown) & {
   _controller?: VovkController;
 };
 
 export type VovkTypedMethod<
-  T extends (...args: KnownAny[]) => KnownAny,
-  B = KnownAny,
-  Q = KnownAny,
-  P = KnownAny,
-  O = KnownAny,
-  I = KnownAny,
+  T extends (...args: KnownAny[]) => unknown,
+  B = unknown,
+  Q = unknown,
+  P = unknown,
+  O = unknown,
+  I = unknown,
   TIsForm extends boolean = false,
 > = T & {
   __types: {
@@ -178,45 +175,45 @@ export type VovkTypedMethod<
   isRPC?: boolean;
 };
 
-export type VovkControllerBody<T extends (...args: KnownAny) => KnownAny> = Awaited<
+export type VovkControllerBody<T extends (...args: KnownAny[]) => unknown> = Awaited<
   ReturnType<Parameters<T>[0]['vovk']['body']>
 >;
 
-export type VovkControllerQuery<T extends (...args: KnownAny) => KnownAny> = ReturnType<
+export type VovkControllerQuery<T extends (...args: KnownAny[]) => unknown> = ReturnType<
   Parameters<T>[0]['vovk']['query']
 >;
 
-export type VovkControllerParams<T extends (...args: KnownAny) => KnownAny> = Parameters<T>[1] extends object
+export type VovkControllerParams<T extends (...args: KnownAny[]) => unknown> = Parameters<T>[1] extends object
   ? Parameters<T>[1]
   : ReturnType<Parameters<T>[0]['vovk']['params']>;
 
-export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownAny>) => KnownAny> = T extends (
+export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownAny>) => unknown> = T extends (
   ...args: KnownAny[]
-) => AsyncGenerator<infer Y, KnownAny, KnownAny>
+) => AsyncGenerator<infer Y, unknown, unknown>
   ? Y
-  : T extends (...args: KnownAny[]) => Generator<infer Y, KnownAny, KnownAny>
+  : T extends (...args: KnownAny[]) => Generator<infer Y, unknown, unknown>
     ? Y
     : T extends (...args: KnownAny[]) => Promise<JSONLinesResponse<infer Y>> | JSONLinesResponse<infer Y>
       ? Y
       : never;
 
-export type VovkOutput<T> = T extends { __types?: { output?: infer O } } ? O : KnownAny;
+export type VovkOutput<T> = T extends { __types?: { output?: infer O } } ? O : unknown;
 
 export type VovkIteration<T> = T extends {
   __types?: { iteration?: infer I };
 }
   ? I
-  : KnownAny;
+  : unknown;
 
-export type VovkClientBody<T extends (opts: KnownAny) => KnownAny> = Parameters<T>[0] extends { body: infer B }
+export type VovkClientBody<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends { body: infer B }
   ? B
   : undefined;
 
-export type VovkClientQuery<T extends (opts: KnownAny) => KnownAny> = Parameters<T>[0] extends { query: infer Q }
+export type VovkClientQuery<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends { query: infer Q }
   ? Q
   : undefined;
 
-export type VovkClientParams<T extends (opts: KnownAny) => KnownAny> = Parameters<T>[0] extends { params: infer P }
+export type VovkClientParams<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends { params: infer P }
   ? P
   : undefined;
 

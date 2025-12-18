@@ -35,8 +35,6 @@ type CallerInput<TOutput, TFormattedOutput> = {
         params?: StandardSchemaV1;
       }
     | undefined;
-  init: RequestInit | undefined;
-  apiRoot: string | undefined;
   meta: Record<string, KnownAny> | undefined;
   handlerName: string;
   moduleName: string;
@@ -50,7 +48,6 @@ async function caller<TOutput, TFormattedOutput>(
     body,
     query,
     params,
-    init,
     meta,
     toModelOutput,
     schema,
@@ -71,7 +68,6 @@ async function caller<TOutput, TFormattedOutput>(
         body,
         query,
         params,
-        init,
         meta,
       });
     } else if (handler.fn) {
@@ -98,8 +94,6 @@ const makeTool = <TOutput, TFormattedOutput>({
   moduleName,
   handlerName,
   module,
-  init,
-  apiRoot,
   meta,
   toModelOutput,
   onExecute,
@@ -108,12 +102,10 @@ const makeTool = <TOutput, TFormattedOutput>({
   moduleName: string;
   handlerName: string;
   module: Record<string, Handler>;
-  init: RequestInit | undefined;
-  apiRoot: string | undefined;
   meta: Record<string, KnownAny> | undefined;
   toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
   onExecute: (
-    result: KnownAny,
+    result: unknown,
     options: { toolOptions: VovkToolOptions; processingMeta: unknown; req: unknown }
   ) => void;
   onError: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown; req: unknown }) => void;
@@ -156,8 +148,6 @@ const makeTool = <TOutput, TFormattedOutput>({
       body,
       query,
       params,
-      init,
-      apiRoot,
       meta,
       handlerName,
       moduleName,
@@ -213,7 +203,7 @@ const makeTool = <TOutput, TFormattedOutput>({
 
 // Base options type without toModelOutput
 type DeriveToolsBaseOptions = {
-  modules: Record<string, object | [object, { init?: RequestInit; apiRoot?: string }]>;
+  modules: Record<string, object>;
   meta?: Record<string, KnownAny>;
   onExecute?: (result: KnownAny, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
   onError?: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
@@ -241,7 +231,7 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
 
 // Implementation
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(options: {
-  modules: Record<string, object | [object, { init?: RequestInit; apiRoot?: string }]>;
+  modules: Record<string, object>;
   meta?: Record<string, unknown>;
   toModelOutput?: ToModelOutputFn<TOutput, TFormattedOutput>;
   onExecute?: (
@@ -257,22 +247,11 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
     onExecute = (result) => result,
     onError = () => {},
   } = options;
-  const moduleWithConfig = modules as
-    | Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>
-    | Record<
-        string,
-        [Record<string, Handler & { schema?: VovkHandlerSchema }>, { init?: RequestInit; apiRoot?: string }]
-      >;
-  const tools = Object.entries(moduleWithConfig ?? {})
-    .map(([moduleName, moduleWithconfig]) => {
-      let init: RequestInit | undefined;
-      let apiRoot: string | undefined;
-      let module: Record<string, Handler>;
-      if (Array.isArray(moduleWithconfig)) {
-        [module, { init, apiRoot }] = moduleWithconfig;
-      } else {
-        module = moduleWithconfig;
-      }
+
+  const tools = Object.entries(
+    (modules as Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>) ?? {}
+  )
+    .map(([moduleName, module]) => {
       return Object.entries(module ?? {})
         .filter(
           ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.hidden
@@ -282,8 +261,6 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
             moduleName,
             handlerName,
             module,
-            init,
-            apiRoot,
             meta,
             toModelOutput,
             onExecute,
