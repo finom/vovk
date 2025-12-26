@@ -16,8 +16,6 @@ import { reqMeta } from './req/reqMeta';
 import { reqForm } from './req/reqForm';
 
 export class VovkApp {
-  segmentName: string | undefined;
-
   private static getHeadersFromOptions(options?: DecoratorOptions) {
     if (!options) return {};
 
@@ -45,26 +43,25 @@ export class VovkApp {
     OPTIONS: new Map(),
   };
 
-  GET = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod({ httpMethod: HttpMethod.GET, req, params: await data.params });
+  GET = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+    this.#callMethod({ httpMethod: HttpMethod.GET, req, params: await data.params, segmentName });
 
-  POST = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod({ httpMethod: HttpMethod.POST, req, params: await data.params });
+  POST = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+    this.#callMethod({ httpMethod: HttpMethod.POST, req, params: await data.params, segmentName });
+  PUT = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+    this.#callMethod({ httpMethod: HttpMethod.PUT, req, params: await data.params, segmentName });
 
-  PUT = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod({ httpMethod: HttpMethod.PUT, req, params: await data.params });
+  PATCH = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+    this.#callMethod({ httpMethod: HttpMethod.PATCH, req, params: await data.params, segmentName });
 
-  PATCH = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod({ httpMethod: HttpMethod.PATCH, req, params: await data.params });
+  DELETE = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+    this.#callMethod({ httpMethod: HttpMethod.DELETE, req, params: await data.params, segmentName });
 
-  DELETE = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod({ httpMethod: HttpMethod.DELETE, req, params: await data.params });
+  HEAD = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+    this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params, segmentName });
 
-  HEAD = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params });
-
-  OPTIONS = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) =>
-    this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params });
+  OPTIONS = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+    this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params, segmentName });
 
   respond = async ({
     statusCode,
@@ -273,15 +270,18 @@ export class VovkApp {
     return { handler: null, methodParams };
   };
 
-  #allHandlers: Partial<
-    Record<HttpMethod, Record<string, { staticMethod: RouteHandler; controller: VovkController }>>
+  #allHandlers: Record<
+    string,
+    Partial<Record<HttpMethod, Record<string, { staticMethod: RouteHandler; controller: VovkController }>>>
   > = {};
 
-  #collectHandlers = (httpMethod: HttpMethod) => {
+  #collectHandlers = (httpMethod: HttpMethod, segmentName: string) => {
     const controllers = this.routes[httpMethod];
 
     const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
+
     controllers.forEach((staticMethods, controller) => {
+      if (segmentName !== controller._segmentName) return;
       const prefix = controller._prefix ?? '';
 
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
@@ -297,15 +297,18 @@ export class VovkApp {
     httpMethod,
     req: nextReq,
     params,
+    segmentName,
   }: {
     httpMethod: HttpMethod;
     req: NextRequest;
     params: Record<string, string[]>;
+    segmentName: string;
   }) => {
     const req = nextReq as unknown as VovkRequest;
     const path = params[Object.keys(params)[0]];
-    const handlers = this.#allHandlers[httpMethod] ?? this.#collectHandlers(httpMethod);
-    this.#allHandlers[httpMethod] = handlers;
+    const handlers = this.#allHandlers[segmentName]?.[httpMethod] ?? this.#collectHandlers(httpMethod, segmentName);
+    this.#allHandlers[segmentName] ??= {};
+    this.#allHandlers[segmentName][httpMethod] = handlers;
     let headerList: typeof nextReq.headers | null;
     try {
       headerList = nextReq.headers;
@@ -321,11 +324,10 @@ export class VovkApp {
     const { handler, methodParams } = this.#getHandler({ handlers, path, params });
 
     if (!handler) {
-      console.log(this.segmentName, { handlers, path, params });
       return this.#respondWithError({
         req,
         statusCode: HttpStatus.NOT_FOUND,
-        message: `Route "${path.join('/')}" is not found at ${this.segmentName || 'the root'} segment.`,
+        message: `Route '${path.join('/')}' is not found for ${httpMethod} method at ${segmentName === '' ? 'the root segment' : `segment '${segmentName}'`}`,
       });
     }
 

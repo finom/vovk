@@ -87,6 +87,7 @@ export type VovkErrorResponse = {
 };
 
 export type VovkControllerInternal = {
+  _segmentName: string;
   _rpcModuleName?: VovkControllerSchema['rpcModuleName'];
   _prefix?: VovkControllerSchema['prefix'];
   _handlers: VovkControllerSchema['handlers'];

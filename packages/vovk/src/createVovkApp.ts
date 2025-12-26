@@ -12,6 +12,8 @@ import {
 } from './types';
 import { getSchema } from './core/getSchema';
 
+const vovkApp = new VovkApp();
+
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 const toKebabCase = (str: string) =>
@@ -27,14 +29,12 @@ const assignSchema = ({
   path,
   options,
   httpMethod,
-  vovkApp,
 }: {
   controller: VovkController;
   propertyKey: string;
   path: string;
   options?: DecoratorOptions;
   httpMethod: HttpMethod;
-  vovkApp: VovkApp;
 }) => {
   if (typeof window !== 'undefined') {
     throw new Error(
@@ -105,124 +105,125 @@ const assignSchema = ({
   };
 };
 
-const vovkApp = new VovkApp();
-
-export function createVovkApp() {
-  function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
-    function decoratorCreator(
-      givenPath = '',
-      options?: T extends HttpMethod.GET ? DecoratorOptions : Omit<DecoratorOptions, 'staticParams'>
-    ) {
-      const path = trimPath(givenPath);
-
-      function decorator(givenTarget: unknown, propertyKey: string) {
-        const controller = givenTarget as VovkController;
-        assignSchema({ controller, propertyKey, path, options, httpMethod, vovkApp });
-      }
-
-      return decorator;
-    }
-
-    const auto = (options?: DecoratorOptions) => {
-      function decorator(givenTarget: unknown, propertyKey: string) {
-        const controller = givenTarget as VovkController;
-        const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
-        vovkApp.routes[httpMethod].set(controller, methods);
-
-        controller._handlers = {
-          ...controller._handlers,
-          [propertyKey]: {
-            ...(controller._handlers ?? {})[propertyKey],
-            httpMethod,
-          },
-        };
-
-        const properties = Object.keys(controller._handlers[propertyKey]?.validation?.params?.properties ?? {});
-        const kebab = toKebabCase(propertyKey); // 🥙
-        const path = properties.length ? `${kebab}/${properties.map((prop) => `{${prop}}`).join('/')}` : kebab;
-
-        assignSchema({ controller, propertyKey, path, options, httpMethod, vovkApp });
-      }
-
-      return decorator;
-    };
-
-    const enhancedDecoratorCreator = decoratorCreator as {
-      (...args: Parameters<typeof decoratorCreator>): ReturnType<typeof decoratorCreator>;
-      auto: typeof auto;
-    };
-
-    enhancedDecoratorCreator.auto = auto;
-
-    return enhancedDecoratorCreator;
-  }
-
-  const prefix = (givenPath = '') => {
+function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
+  function decoratorFactory(
+    givenPath = '',
+    options?: T extends HttpMethod.GET ? DecoratorOptions : Omit<DecoratorOptions, 'staticParams'>
+  ) {
     const path = trimPath(givenPath);
 
-    return (givenTarget: KnownAny) => {
+    function decorator(givenTarget: unknown, propertyKey: string) {
       const controller = givenTarget as VovkController;
-      controller._prefix = path;
-
-      return givenTarget;
-    };
-  };
-
-  const initSegment = (options: {
-    segmentName?: string;
-    controllers: Record<string, StaticClass>;
-    exposeValidation?: boolean;
-    emitSchema?: boolean;
-    forceApiRoot?: string;
-    onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
-    onSuccess?: (resp: unknown, req: VovkRequest) => void | Promise<void>;
-    onBefore?: (req: VovkRequest) => void | Promise<void>;
-  }) => {
-    options.segmentName = trimPath(options.segmentName ?? '');
-    vovkApp.segmentName = options.segmentName;
-    for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}) as [string, VovkController][]) {
-      controller._rpcModuleName = rpcModuleName;
-      controller._onError = options?.onError;
-      controller._onSuccess = options?.onSuccess;
-      controller._onBefore = options?.onBefore;
+      assignSchema({ controller, propertyKey, path, options, httpMethod });
     }
 
-    async function GET_DEV(req: NextRequest, data: { params: Promise<Record<string, string[]>> }) {
-      const params = await data.params;
-      if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
-        const schema = await getSchema(options);
-        return vovkApp.respond({
-          req: req as unknown as VovkRequest,
-          statusCode: 200,
-          responseBody: { schema },
-        });
-      }
-      return vovkApp.GET(req, data);
+    return decorator;
+  }
+
+  const auto = (options?: DecoratorOptions) => {
+    function decorator(givenTarget: unknown, propertyKey: string) {
+      const controller = givenTarget as VovkController;
+      // validation is already assigned at procedure function
+      const properties = Object.keys((controller._handlers ?? {})[propertyKey]?.validation?.params?.properties ?? {});
+      const kebabCasePath = toKebabCase(propertyKey);
+      const path = properties.length
+        ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`
+        : kebabCasePath;
+
+      assignSchema({ controller, propertyKey, path, options, httpMethod });
     }
 
-    return {
-      GET: process.env.NODE_ENV === 'development' ? GET_DEV : vovkApp.GET,
-      POST: vovkApp.POST,
-      PUT: vovkApp.PUT,
-      PATCH: vovkApp.PATCH,
-      DELETE: vovkApp.DELETE,
-      HEAD: vovkApp.HEAD,
-      OPTIONS: vovkApp.OPTIONS,
-    } satisfies Record<
-      HttpMethod,
-      (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) => Promise<unknown>
-    >;
+    return decorator;
   };
+
+  const decoratorFactoryWithAuto = decoratorFactory as {
+    (...args: Parameters<typeof decoratorFactory>): ReturnType<typeof decoratorFactory>;
+    auto: typeof auto;
+  };
+
+  decoratorFactoryWithAuto.auto = auto;
+
+  return decoratorFactoryWithAuto;
+}
+
+const prefix = (givenPath = '') => {
+  const path = trimPath(givenPath);
+
+  return (givenTarget: KnownAny) => {
+    const controller = givenTarget as VovkController;
+    controller._prefix = path;
+
+    return givenTarget;
+  };
+};
+
+const initSegment = (options: {
+  segmentName?: string;
+  controllers: Record<string, StaticClass>;
+  exposeValidation?: boolean;
+  emitSchema?: boolean;
+  onError?: (err: Error, req: VovkRequest) => void | Promise<void>;
+  onSuccess?: (resp: unknown, req: VovkRequest) => void | Promise<void>;
+  onBefore?: (req: VovkRequest) => void | Promise<void>;
+}) => {
+  const segmentName = trimPath(options.segmentName ?? '');
+  options.segmentName = segmentName;
+  for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}) as [string, VovkController][]) {
+    controller._segmentName = segmentName;
+    controller._rpcModuleName = rpcModuleName;
+    controller._onError = options?.onError;
+    controller._onSuccess = options?.onSuccess;
+    controller._onBefore = options?.onBefore;
+  }
+
+  async function GET_DEV(req: NextRequest, data: { params: Promise<Record<string, string[]>> }) {
+    const params = await data.params;
+    if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
+      const schema = await getSchema(options);
+      return vovkApp.respond({
+        req: req as unknown as VovkRequest,
+        statusCode: 200,
+        responseBody: { schema },
+      });
+    }
+    return vovkApp.GET(req, data, segmentName);
+  }
 
   return {
-    get: createHTTPDecorator(HttpMethod.GET),
-    post: createHTTPDecorator(HttpMethod.POST),
-    put: createHTTPDecorator(HttpMethod.PUT),
-    patch: createHTTPDecorator(HttpMethod.PATCH),
-    del: createHTTPDecorator(HttpMethod.DELETE),
-    head: createHTTPDecorator(HttpMethod.HEAD),
-    options: createHTTPDecorator(HttpMethod.OPTIONS),
-    prefix,
-    initSegment,
+    GET: process.env.NODE_ENV === 'development' ? GET_DEV : (req, data) => vovkApp.GET(req, data, segmentName),
+    POST: (req, data) => vovkApp.POST(req, data, segmentName),
+    PUT: (req, data) => vovkApp.PUT(req, data, segmentName),
+    PATCH: (req, data) => vovkApp.PATCH(req, data, segmentName),
+    DELETE: (req, data) => vovkApp.DELETE(req, data, segmentName),
+    HEAD: (req, data) => vovkApp.HEAD(req, data, segmentName),
+    OPTIONS: (req, data) => vovkApp.OPTIONS(req, data, segmentName),
+  } satisfies Record<
+    HttpMethod,
+    (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) => Promise<unknown>
+  >;
+};
+
+function cloneControllerMetadata() {
+  return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T) {
+    const parent = Object.getPrototypeOf(c) as VovkController;
+    const constructor = c as unknown as VovkController;
+    constructor._handlers = { ...parent._handlers, ...constructor._handlers };
+    constructor._handlersMetadata = { ...parent._handlersMetadata, ...constructor._handlersMetadata };
+
+    Object.values(vovkApp.routes).forEach((methods) => {
+      const parentMethods = methods.get(parent) ?? {};
+      methods.set(constructor, { ...parentMethods, ...methods.get(constructor) });
+    });
+
+    return constructor as unknown as T;
   };
 }
+
+export const get = createHTTPDecorator(HttpMethod.GET);
+export const post = createHTTPDecorator(HttpMethod.POST);
+export const put = createHTTPDecorator(HttpMethod.PUT);
+export const patch = createHTTPDecorator(HttpMethod.PATCH);
+export const del = createHTTPDecorator(HttpMethod.DELETE);
+export const head = createHTTPDecorator(HttpMethod.HEAD);
+export const options = createHTTPDecorator(HttpMethod.OPTIONS);
+export { prefix, initSegment, cloneControllerMetadata };

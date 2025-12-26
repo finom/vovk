@@ -1,4 +1,4 @@
-import { createVovkApp } from './createVovkApp';
+import { get, post, put, patch, del, head, options, prefix, initSegment, cloneControllerMetadata } from './createVovkApp';
 import {
   HttpStatus,
   HttpMethod,
@@ -100,7 +100,6 @@ export {
   HttpException,
   HttpStatus,
   HttpMethod,
-  createVovkApp,
   createDecorator,
   createRPC,
   fetcher,
@@ -121,6 +120,14 @@ export {
   toDownloadResponse,
   procedure,
   createTool,
+  get,
+  post,
+  put,
+  patch,
+  del,
+  head,
+  options,
+  prefix,
+  cloneControllerMetadata,
+  initSegment,
 };
-
-export const { get, post, put, patch, del, head, options, prefix, initSegment } = createVovkApp();

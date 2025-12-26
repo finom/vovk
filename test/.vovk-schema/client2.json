@@ -6,40 +6,40 @@
   "controllers": {
     "CommonControllerDifferentFetcherRPC": {
       "rpcModuleName": "CommonControllerDifferentFetcherRPC",
-      "originalControllerName": "CommonController",
-      "prefix": "common",
+      "originalControllerName": "ClonedCommonController",
+      "prefix": "common2",
       "handlers": {
         "getHelloWorldResponseObject": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-response-object"
+          "path": "get-hello-world-response-object",
+          "httpMethod": "GET"
         },
         "getHelloWorldObjectLiteral": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-object-literal"
+          "path": "get-hello-world-object-literal",
+          "httpMethod": "GET"
         },
         "getHelloWorldNextResponseObjectPromise": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-next-response-object-promise"
+          "path": "get-hello-world-next-response-object-promise",
+          "httpMethod": "GET"
         },
         "getHelloWorldRawResponseObjectPromise": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-raw-response-object-promise"
+          "path": "get-hello-world-raw-response-object-promise",
+          "httpMethod": "GET"
         },
         "getHelloWorldObjectLiteralPromise": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-object-literal-promise"
+          "path": "get-hello-world-object-literal-promise",
+          "httpMethod": "GET"
         },
         "getHelloWorldHeaders": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-headers"
+          "path": "get-hello-world-headers",
+          "httpMethod": "GET"
         },
         "getHelloWorldArray": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-array"
+          "path": "get-hello-world-array",
+          "httpMethod": "GET"
         },
         "getHelloWorldAndEmptyGeneric": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-and-empty-generic"
+          "path": "get-hello-world-and-empty-generic",
+          "httpMethod": "GET"
         },
         "getWithParams": {
           "path": "with-params/{hello}",
@@ -75,6 +75,10 @@
         },
         "getJsonlTextResponse": {
           "path": "jsonl-text",
+          "httpMethod": "GET"
+        },
+        "extraClonedControllerMethod": {
+          "path": "extra-cloned-controller-method",
           "httpMethod": "GET"
         }
       }

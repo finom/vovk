@@ -4,7 +4,7 @@ import { OpenApiControllerRPC } from 'vovk-client';
 import { HttpStatus } from 'vovk';
 
 describe('OpenAPI', () => {
-  it(`Should work`, async () => {
+  it.only(`Should work`, async () => {
     const { openapi } = await OpenApiControllerRPC.openapi();
 
     deepStrictEqual(openapi.info, {

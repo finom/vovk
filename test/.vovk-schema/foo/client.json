@@ -10,36 +10,36 @@
       "prefix": "common",
       "handlers": {
         "getHelloWorldResponseObject": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-response-object"
+          "path": "get-hello-world-response-object",
+          "httpMethod": "GET"
         },
         "getHelloWorldObjectLiteral": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-object-literal"
+          "path": "get-hello-world-object-literal",
+          "httpMethod": "GET"
         },
         "getHelloWorldNextResponseObjectPromise": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-next-response-object-promise"
+          "path": "get-hello-world-next-response-object-promise",
+          "httpMethod": "GET"
         },
         "getHelloWorldRawResponseObjectPromise": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-raw-response-object-promise"
+          "path": "get-hello-world-raw-response-object-promise",
+          "httpMethod": "GET"
         },
         "getHelloWorldObjectLiteralPromise": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-object-literal-promise"
+          "path": "get-hello-world-object-literal-promise",
+          "httpMethod": "GET"
         },
         "getHelloWorldHeaders": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-headers"
+          "path": "get-hello-world-headers",
+          "httpMethod": "GET"
         },
         "getHelloWorldArray": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-array"
+          "path": "get-hello-world-array",
+          "httpMethod": "GET"
         },
         "getHelloWorldAndEmptyGeneric": {
-          "httpMethod": "GET",
-          "path": "get-hello-world-and-empty-generic"
+          "path": "get-hello-world-and-empty-generic",
+          "httpMethod": "GET"
         },
         "getWithParams": {
           "path": "with-params/{hello}",
@@ -85,28 +85,28 @@
       "prefix": "streaming",
       "handlers": {
         "postWithStreaming": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming"
+          "path": "post-with-streaming",
+          "httpMethod": "POST"
         },
         "postWithStreamingAndImmediateError": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming-and-immediate-error"
+          "path": "post-with-streaming-and-immediate-error",
+          "httpMethod": "POST"
         },
         "postWithStreamingAndDelayedError": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming-and-delayed-error"
+          "path": "post-with-streaming-and-delayed-error",
+          "httpMethod": "POST"
         },
         "postWithStreamingAndDelayedCustomError": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming-and-delayed-custom-error"
+          "path": "post-with-streaming-and-delayed-custom-error",
+          "httpMethod": "POST"
         },
         "postWithStreamingAndDelayedUnhandledError": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming-and-delayed-unhandled-error"
+          "path": "post-with-streaming-and-delayed-unhandled-error",
+          "httpMethod": "POST"
         },
         "progressiveResponse": {
-          "httpMethod": "POST",
-          "path": "progressive-response"
+          "path": "progressive-response",
+          "httpMethod": "POST"
         }
       }
     },
@@ -116,32 +116,32 @@
       "prefix": "streaming-generator",
       "handlers": {
         "getWithStreaming": {
-          "httpMethod": "GET",
-          "path": "get-with-streaming"
+          "path": "get-with-streaming",
+          "httpMethod": "GET"
         },
         "postWithAsyncStreaming": {
-          "httpMethod": "POST",
-          "path": "post-with-async-streaming"
+          "path": "post-with-async-streaming",
+          "httpMethod": "POST"
         },
         "postWithStreaming": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming"
+          "path": "post-with-streaming",
+          "httpMethod": "POST"
         },
         "postWithStreamingAndImmediateError": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming-and-immediate-error"
+          "path": "post-with-streaming-and-immediate-error",
+          "httpMethod": "POST"
         },
         "postWithStreamingAndDelayedError": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming-and-delayed-error"
+          "path": "post-with-streaming-and-delayed-error",
+          "httpMethod": "POST"
         },
         "postWithStreamingAndDelayedCustomError": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming-and-delayed-custom-error"
+          "path": "post-with-streaming-and-delayed-custom-error",
+          "httpMethod": "POST"
         },
         "postWithStreamingAndDelayedUnhandledError": {
-          "httpMethod": "POST",
-          "path": "post-with-streaming-and-delayed-unhandled-error"
+          "path": "post-with-streaming-and-delayed-unhandled-error",
+          "httpMethod": "POST"
         }
       }
     },
@@ -154,8 +154,8 @@
           "misc": {
             "hello": "world"
           },
-          "httpMethod": "GET",
-          "path": "get-with-custom-schema"
+          "path": "get-with-custom-schema",
+          "httpMethod": "GET"
         }
       }
     },
@@ -327,8 +327,8 @@
               ]
             }
           },
-          "httpMethod": "GET",
-          "path": "handle-query"
+          "path": "handle-query",
+          "httpMethod": "GET"
         },
         "handleBody": {
           "validation": {
@@ -346,8 +346,8 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "handle-body"
+          "path": "handle-body",
+          "httpMethod": "POST"
         },
         "handleParams": {
           "validation": {
@@ -459,8 +459,8 @@
               ]
             }
           },
-          "httpMethod": "GET",
-          "path": "handle-nested-query"
+          "path": "handle-nested-query",
+          "httpMethod": "GET"
         },
         "handleOutput": {
           "validation": {
@@ -490,8 +490,8 @@
               ]
             }
           },
-          "httpMethod": "GET",
-          "path": "handle-output"
+          "path": "handle-output",
+          "httpMethod": "GET"
         },
         "handleStream": {
           "validation": {
@@ -524,8 +524,8 @@
               ]
             }
           },
-          "httpMethod": "GET",
-          "path": "handle-stream"
+          "path": "handle-stream",
+          "httpMethod": "GET"
         },
         "handleSchemaConstraints": {
           "validation": {
@@ -710,13 +710,13 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "handle-schema-constraints"
+          "path": "handle-schema-constraints",
+          "httpMethod": "POST"
         },
         "handleNothitng": {
           "validation": {},
-          "httpMethod": "POST",
-          "path": "handle-nothitng"
+          "path": "handle-nothitng",
+          "httpMethod": "POST"
         },
         "handleFormData": {
           "validation": {
@@ -764,8 +764,8 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "handle-form-data"
+          "path": "handle-form-data",
+          "httpMethod": "POST"
         },
         "handleFormDataWithFile": {
           "validation": {
@@ -823,8 +823,8 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "handle-form-data-with-file"
+          "path": "handle-form-data-with-file",
+          "httpMethod": "POST"
         },
         "handleFormDataWithMultipleFiles": {
           "validation": {
@@ -888,8 +888,8 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "handle-form-data-with-multiple-files"
+          "path": "handle-form-data-with-multiple-files",
+          "httpMethod": "POST"
         },
         "disableServerSideValidationBool": {
           "validation": {
@@ -919,8 +919,8 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "disable-server-side-validation-bool"
+          "path": "disable-server-side-validation-bool",
+          "httpMethod": "POST"
         },
         "disableServerSideValidationStrings": {
           "validation": {
@@ -951,13 +951,13 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "disable-server-side-validation-strings"
+          "path": "disable-server-side-validation-strings",
+          "httpMethod": "POST"
         },
         "skipSchemaEmissionBool": {
           "validation": {},
-          "httpMethod": "POST",
-          "path": "skip-schema-emission-bool"
+          "path": "skip-schema-emission-bool",
+          "httpMethod": "POST"
         },
         "skipSchemaEmissionStrings": {
           "validation": {
@@ -974,8 +974,8 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "skip-schema-emission-strings"
+          "path": "skip-schema-emission-strings",
+          "httpMethod": "POST"
         },
         "validateEachIteration": {
           "validation": {
@@ -1008,8 +1008,8 @@
               ]
             }
           },
-          "httpMethod": "POST",
-          "path": "validate-each-iteration"
+          "path": "validate-each-iteration",
+          "httpMethod": "POST"
         },
         "handleAllAsFunction": {
           "validation": {
@@ -1284,8 +1284,8 @@
               ]
             }
           },
-          "httpMethod": "GET",
-          "path": "handle-pagination"
+          "path": "handle-pagination",
+          "httpMethod": "GET"
         }
       }
     },

@@ -25,7 +25,6 @@ export async function getSchema(options: {
   segmentName?: string;
   controllers: Record<string, StaticClass>;
   exposeValidation?: boolean;
-  forceApiRoot?: string;
 }) {
   const exposeValidation = options?.exposeValidation ?? true;
   const emitSchema = options.emitSchema ?? true;
@@ -36,10 +35,6 @@ export async function getSchema(options: {
     segmentType: 'segment',
     controllers: {},
   };
-
-  if (options.forceApiRoot) {
-    schema.forceApiRoot = options.forceApiRoot;
-  }
 
   if (!emitSchema) return schema;
 

@@ -1,8 +1,17 @@
-import { initSegment } from 'vovk';
+import { initSegment, cloneControllerMetadata, prefix, get } from 'vovk';
 import CommonController from '../../../../client/CommonController.ts';
 
+@cloneControllerMetadata()
+@prefix('common2')
+class ClonedCommonController extends CommonController {
+  @get.auto()
+  static extraClonedControllerMethod() {
+    return { hello: 'world from client2' };
+  }
+}
+
 const controllers = {
-  CommonControllerDifferentFetcherRPC: CommonController,
+  CommonControllerDifferentFetcherRPC: ClonedCommonController,
 };
 
 export type Controllers = typeof controllers;

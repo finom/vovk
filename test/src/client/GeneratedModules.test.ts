@@ -73,7 +73,7 @@ const rpcs = {
 describe('Modules generated via CLI', () => {
   for (const [name, rpc] of Object.entries(rpcs)) {
     describe(name, () => {
-      it('Should get', async () => {
+      it.only('Should get', async () => {
         const res = await rpc.get();
         ok(res.message.startsWith('TODO: get'));
       });

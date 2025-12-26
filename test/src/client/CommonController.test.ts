@@ -11,7 +11,7 @@ import {
   type VovkHandlerSchema,
 } from 'vovk';
 import { it, describe } from 'node:test';
-import { deepStrictEqual, ok } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import type CommonController from './CommonController.ts';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import omit from 'lodash/omit.js';
@@ -106,7 +106,18 @@ describe('Client with vovk-client', () => {
     deepStrictEqual(result, { 'x-vovk-test': 'world' });
   });
 
-  it(`Should handle headers, response transform and extra options at a different fetcher`, async () => {
+  it('Works correctly with a cloned controller and extra method', async () => {
+    const result = await CommonControllerDifferentFetcherRPC.extraClonedControllerMethod({
+      apiRoot,
+    });
+    strictEqual(
+      CommonControllerDifferentFetcherRPC.extraClonedControllerMethod.getURL({ apiRoot }),
+      apiRoot + '/client2/common2/extra-cloned-controller-method'
+    );
+    strictEqual(result.hello satisfies string, 'world from client2');
+  });
+
+  it(`Should handle headers, response transform and extra options at a different fetcher in a cloned controller`, async () => {
     const result = await CommonControllerDifferentFetcherRPC.getHelloWorldHeaders<
       VovkBody<typeof CommonController.getHelloWorldHeaders> & {
         successMessage: string;
@@ -133,6 +144,10 @@ describe('Client with vovk-client', () => {
       'x-vovk-fetcher-header': 'my-header-value',
       'x-success-message': 'Success',
     });
+    strictEqual(
+      CommonControllerDifferentFetcherRPC.getHelloWorldHeaders.getURL({ apiRoot }),
+      apiRoot + '/client2/common2/get-hello-world-headers'
+    );
     deepStrictEqual(result.schema, CommonControllerDifferentFetcherRPC.getHelloWorldHeaders.schema);
   });
 
