@@ -1,4 +1,15 @@
-import { get, post, put, patch, del, head, options, prefix, initSegment, cloneControllerMetadata } from './createVovkApp';
+import {
+  get,
+  post,
+  put,
+  patch,
+  del,
+  head,
+  options,
+  prefix,
+  initSegment,
+  cloneControllerMetadata,
+} from './createVovkApp';
 import {
   HttpStatus,
   HttpMethod,
