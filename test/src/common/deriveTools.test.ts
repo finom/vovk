@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import { z } from 'zod';
 import assert from 'node:assert';
 import { deriveTools, toDownloadResponse, ToModelOutput, procedure, type VovkTool, type VovkOutput } from 'vovk';
-import type { MCPModelOutput } from 'vovk/internal';
+import type { MCPModelOutput, VovkToolDerived } from 'vovk/internal';
 
 describe('deriveTools', () => {
   const outputSchema = z.object({ foo: z.string().max(5), inputMeta: z.string().optional() });
@@ -84,6 +84,7 @@ describe('deriveTools', () => {
         },
         MyModule2: { procedureWithQuery },
       },
+      onExecute: (result) => console.log('onExecute', result),
     });
 
     tools satisfies VovkTool<
@@ -93,20 +94,28 @@ describe('deriveTools', () => {
         params?: unknown;
       },
       unknown,
+      unknown
+    >[];
+
+    tools satisfies VovkToolDerived<
+      {
+        body?: unknown;
+        query?: unknown;
+        params?: unknown;
+      },
       unknown,
-      true
+      unknown
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkTool<
+      [key: string]: VovkToolDerived<
         {
           body?: unknown;
           query?: unknown;
           params?: unknown;
         },
         unknown,
-        unknown,
-        true
+        unknown
       >;
     };
 
@@ -175,26 +184,24 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies VovkToolDerived<
       {
         body?: unknown;
         query?: unknown;
         params?: unknown;
       },
       unknown,
-      { myResult?: unknown; myError?: string },
-      true
+      { myResult?: unknown; myError?: string }
     >[];
     toolsByName satisfies {
-      [key: string]: VovkTool<
+      [key: string]: VovkToolDerived<
         {
           body?: unknown;
           query?: unknown;
           params?: unknown;
         },
         unknown,
-        { myResult?: unknown; myError?: string },
-        true
+        { myResult?: unknown; myError?: string }
       >;
     };
 
@@ -221,27 +228,25 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies VovkToolDerived<
       {
         body?: unknown;
         query?: unknown;
         params?: unknown;
       },
       unknown,
-      unknown,
-      true
+      unknown
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkTool<
+      [key: string]: VovkToolDerived<
         {
           body?: unknown;
           query?: unknown;
           params?: unknown;
         },
         unknown,
-        unknown,
-        true
+        unknown
       >;
     };
 
@@ -269,29 +274,28 @@ describe('deriveTools', () => {
         modules: {
           MyModule: { procedureWithBody },
         },
+        onExecute: (result, { name }) => console.log(`${name} executed`, result),
       });
 
-      tools satisfies VovkTool<
+      tools satisfies VovkToolDerived<
         {
           body?: unknown;
           query?: unknown;
           params?: unknown;
         },
         unknown,
-        MCPModelOutput,
-        true
+        MCPModelOutput
       >[];
 
       toolsByName satisfies {
-        [key: string]: VovkTool<
+        [key: string]: VovkToolDerived<
           {
             body?: unknown;
             query?: unknown;
             params?: unknown;
           },
           unknown,
-          MCPModelOutput,
-          true
+          MCPModelOutput
         >;
       };
 
@@ -583,27 +587,25 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies VovkToolDerived<
       {
         body?: unknown;
         query?: unknown;
         params?: unknown;
       },
       unknown,
-      { myResult?: unknown; myError?: string },
-      true
+      { myResult?: unknown; myError?: string }
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkTool<
+      [key: string]: VovkToolDerived<
         {
           body?: unknown;
           query?: unknown;
           params?: unknown;
         },
         unknown,
-        { myResult?: unknown; myError?: string },
-        true
+        { myResult?: unknown; myError?: string }
       >;
     };
 

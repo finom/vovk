@@ -1,6 +1,6 @@
 import { StandardSchemaV1, StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type { KnownAny, VovkErrorResponse, VovkValidationType } from '../types';
-import type { VovkTool, VovkToolOptions } from './types';
+import type { VovkToolNonDerived } from './types';
 import { ToModelOutput } from './ToModelOutput';
 import type { ToModelOutputFn } from './types';
 import type { DefaultModelOutput } from './toModelOutputDefault';
@@ -18,8 +18,8 @@ export function createToolFactory({
     name: string;
     title?: string;
     description: string;
-    onExecute?: (result: unknown, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
-    onError?: (error: Error, options: { toolOptions: VovkToolOptions; processingMeta: unknown }) => void;
+    onExecute?: (result: unknown, tool: VovkToolNonDerived) => void;
+    onError?: (error: Error, tool: VovkToolNonDerived) => void;
     toModelOutput?: ToModelOutputFn<TOutput, TFormattedOutput>;
     target?: StandardJSONSchemaV1.Target;
   };
@@ -44,7 +44,7 @@ export function createToolFactory({
     outputSchema?: undefined;
   };
 
-  type CreateToolResult<TInput, TOutput, TFormattedOutput> = VovkTool<TInput, TOutput, TFormattedOutput, false>;
+  type CreateToolResult<TInput, TOutput, TFormattedOutput> = VovkToolNonDerived<TInput, TOutput, TFormattedOutput>;
 
   // Overload 1: with inputSchema, with outputSchema, with toModelOutput
   function createTool<TInput, TOutput, TFormattedOutput>(
@@ -142,9 +142,9 @@ export function createToolFactory({
     inputSchema?: StandardSchemaV1<TInput>;
     outputSchema?: StandardSchemaV1<TOutput>;
     execute: (input: KnownAny, processingMeta?: unknown) => TOutput | Promise<TOutput>;
-  }): VovkTool<TInput, TOutput, TFormattedOutput, false> {
+  }): VovkToolNonDerived<TInput, TOutput, TFormattedOutput> {
     let parameters;
-    return {
+    const tool: VovkToolNonDerived<TInput, TOutput, TFormattedOutput> = {
       type: 'function',
       name,
       title,
@@ -156,7 +156,6 @@ export function createToolFactory({
       outputSchema: outputSchema as TOutput extends undefined ? undefined : StandardSchemaV1<TOutput>,
       inputSchemas: undefined,
       async execute(input, processingMeta) {
-        const toolOptions: VovkToolOptions = { name, title, description };
         let result: TOutput | Error;
         try {
           let validatedInput;
@@ -190,9 +189,9 @@ export function createToolFactory({
             }
             result = (validatedOutputResult as StandardSchemaV1.SuccessResult<TOutput>).value;
           }
-          onExecute?.(result, { toolOptions, processingMeta });
+          onExecute?.(result, tool);
         } catch (e) {
-          onError?.(e as Error, { toolOptions, processingMeta });
+          onError?.(e as Error, tool);
           result = e as Error;
         }
 
@@ -206,9 +205,10 @@ export function createToolFactory({
           });
         }
 
-        return toModelOutput(result, { toolOptions, handlerSchema: null, req: null });
+        return toModelOutput(result, tool, null);
       },
     };
+    return tool;
   }
 
   return createTool;

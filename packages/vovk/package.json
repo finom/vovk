@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "3.0.0-beta.59",
+  "version": "3.0.0-beta.78",
   "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "types": "./mjs/index.d.ts",
@@ -25,11 +25,11 @@
     "url": "git+https://github.com/finom/vovk.git"
   },
   "scripts": {
-    "postbuild": "shx chmod +x ./bin/index.mjs",
-    "build": "shx rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
+    "postbuild": "chmod +x ./bin/index.mjs",
+    "build": "rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
     "build:esm": "tsc --module NodeNext --outDir mjs --moduleResolution nodenext",
     "build:cjs": "tsc --module commonjs --outDir cjs",
-    "rm-dist": "shx rm -rf mjs cjs",
+    "rm-dist": "rm -rf mjs cjs",
     "lint": "eslint . --fix",
     "tsc": "tsc --noEmit",
     "npm-publish": "if [ -z \"$NPM_TAG\" ]; then echo 'Error: NPM_TAG is not set'; exit 1; fi; npm publish --tag=$NPM_TAG",

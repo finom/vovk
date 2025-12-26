@@ -16,6 +16,8 @@ import { reqMeta } from './req/reqMeta';
 import { reqForm } from './req/reqForm';
 
 export class VovkApp {
+  segmentName: string | undefined;
+
   private static getHeadersFromOptions(options?: DecoratorOptions) {
     if (!options) return {};
 
@@ -319,10 +321,11 @@ export class VovkApp {
     const { handler, methodParams } = this.#getHandler({ handlers, path, params });
 
     if (!handler) {
+      console.log(this.segmentName, { handlers, path, params });
       return this.#respondWithError({
         req,
         statusCode: HttpStatus.NOT_FOUND,
-        message: `Route ${path.join('/')} is not found`,
+        message: `Route "${path.join('/')}" is not found at ${this.segmentName || 'the root'} segment.`,
       });
     }
 
@@ -358,9 +361,7 @@ export class VovkApp {
 
       if (isIterator) {
         const streamResponse = new JSONLinesResponse(req, {
-          headers: {
-            ...VovkApp.getHeadersFromOptions(staticMethod._options),
-          },
+          headers: VovkApp.getHeadersFromOptions(staticMethod._options),
         });
 
         void (async () => {

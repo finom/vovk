@@ -1,6 +1,6 @@
-import { VovkHandlerSchema, VovkRequest } from '../types';
+import type { VovkRequest } from '../types';
+import type { VovkTool } from './types';
 import { reqMeta } from '../req/reqMeta';
-import { VovkToolOptions } from './types';
 
 export type MCPModelOutput = {
   content: [
@@ -13,7 +13,7 @@ export type MCPModelOutput = {
     priority?: number;
     lastModified?: string;
   };
-  structuredContent?: unknown;
+  structuredContent?: { [key: string]: unknown };
   isError?: boolean;
 };
 
@@ -53,14 +53,11 @@ async function responseToMCP(res: Response): Promise<MCPModelOutput> {
 
 type ToModelOutputMCPFn = <TOutput>(
   result: TOutput | Error,
-  options: {
-    toolOptions: VovkToolOptions;
-    handlerSchema: VovkHandlerSchema | null;
-    req: Pick<VovkRequest, 'vovk'> | null;
-  }
+  tool: VovkTool,
+  req: Pick<VovkRequest, 'vovk'> | null
 ) => Promise<MCPModelOutput>;
 
-export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown, { req }): Promise<MCPModelOutput> => {
+export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown, _tool, req): Promise<MCPModelOutput> => {
   const mcpOutputMeta = req ? (reqMeta(req).mcpOutput as MCPModelOutput) : null;
   if (result instanceof Response) {
     return { ...(await responseToMCP(result)), ...(mcpOutputMeta || {}) };
@@ -75,7 +72,9 @@ export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown, { re
       },
     ],
     ...(isError ? { isError: true } : {}),
-    ...(!isError && typeof result === 'object' && result !== null ? { structuredContent: result } : {}),
+    ...(!isError && typeof result === 'object' && result !== null
+      ? { structuredContent: result as { [key: string]: unknown } }
+      : {}),
     ...(mcpOutputMeta || {}),
   };
 };

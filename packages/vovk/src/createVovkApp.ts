@@ -105,9 +105,9 @@ const assignSchema = ({
   };
 };
 
-export function createVovkApp() {
-  const vovkApp = new VovkApp();
+const vovkApp = new VovkApp();
 
+export function createVovkApp() {
   function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
     function decoratorCreator(
       givenPath = '',
@@ -179,6 +179,7 @@ export function createVovkApp() {
     onBefore?: (req: VovkRequest) => void | Promise<void>;
   }) => {
     options.segmentName = trimPath(options.segmentName ?? '');
+    vovkApp.segmentName = options.segmentName;
     for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}) as [string, VovkController][]) {
       controller._rpcModuleName = rpcModuleName;
       controller._onError = options?.onError;

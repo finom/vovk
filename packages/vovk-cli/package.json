@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-beta.51",
+  "version": "0.0.1-beta.56",
   "bin": {
     "vovk": "./dist/index.mjs"
   },
@@ -35,7 +35,7 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-beta.59",
+    "vovk": "^3.0.0-beta.78",
     "vovk-ajv": "^0.0.0-beta.4",
     "vovk-client": "^0.0.4-beta.4",
     "vovk-python": "^0.0.1-beta.4",
@@ -49,6 +49,7 @@
     "@inquirer/prompts": "^8.1.0",
     "@npmcli/package-json": "^7.0.4",
     "@types/json-schema": "^7.0.15",
+    "@types/lodash": "^4.17.21",
     "chalk": "^5.6.2",
     "chokidar": "^5.0.0",
     "clone-deep": "^4.0.1",
