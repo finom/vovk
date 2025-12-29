@@ -1,5 +1,14 @@
 import type { VovkController, StaticClass } from '../types';
 
+/**
+ * Generates static API of the given controllers for a static segment.
+ * @see https://vovk.dev/segment
+ * @example
+ * ```ts
+ * export function generateStaticParams() {
+ *  return generateStaticAPI(controllers);
+ * }
+ */
 export function generateStaticAPI(c: Record<string, StaticClass>, slug = 'vovk') {
   const controllers = c as Record<string, VovkController>;
   return [

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import type { HttpMethod, StaticClass, VovkController, VovkRequest } from '../types';
-import { vovkApp } from './VovkApp';
+import { vovkApp } from './vovkApp';
 import { trimPath } from '../utils/trimPath';
 import { getSchema } from './getSchema';
 

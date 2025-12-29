@@ -31,7 +31,6 @@ export { get, post, put, patch, del, head, options, prefix, cloneControllerMetad
 // openapi
 export { operation } from './openapi/operation';
 // validation
-export { createStandardValidation } from './validation/createStandardValidation';
 export { createValidateOnClient } from './validation/createValidateOnClient';
 export { procedure } from './validation/procedure';
 // tools

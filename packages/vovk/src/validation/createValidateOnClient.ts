@@ -1,6 +1,9 @@
 import type { VovkValidateOnClient } from '../client/types';
 import type { VovkJSONSchemaBase } from '../types';
 
+/**
+ * Creates a validation function for client-side input validation.
+ */
 export function createValidateOnClient<TFetcherOptions>({
   validate,
 }: {

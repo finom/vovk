@@ -11,6 +11,11 @@ type PromisifyProperties<T> = {
 
 type TransformUnionToPromises<T> = PromisifyProperties<UnionToIntersection<T>>;
 
+/**
+ * Implements progressive fetching by returning a proxy object where each property is a promise
+ * that resolves when the corresponding value is available from the stream.
+ * @see https://vovk.dev/jsonlines
+ */
 export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStreamAsyncIterable<KnownAny>>>(
   fn: T,
   ...args: undefined extends Parameters<T>[0] ? [arg?: Parameters<T>[0]] : [arg: Parameters<T>[0]]

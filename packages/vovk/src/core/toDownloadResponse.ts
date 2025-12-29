@@ -1,5 +1,9 @@
 type BinaryData = Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | string;
 
+/**
+ * Creates a Response object for downloading binary data with appropriate headers.
+ * @see https://vovk.dev/response
+ */
 export function toDownloadResponse(
   data: BinaryData,
   { filename, type, headers }: { filename?: string; type?: string; headers?: Record<string, string> } = {}

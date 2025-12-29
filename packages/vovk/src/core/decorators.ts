@@ -1,4 +1,4 @@
-import { vovkApp } from './VovkApp';
+import { vovkApp } from './vovkApp';
 import {
   HttpMethod,
   type RouteHandler,
@@ -141,7 +141,10 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   return decoratorFactoryWithAuto;
 }
 
-const prefix = (givenPath = '') => {
+/**
+ * Prefix for all routes in the controller.
+ */
+export const prefix = (givenPath = '') => {
   const path = trimPath(givenPath);
 
   return (givenTarget: KnownAny) => {
@@ -152,7 +155,10 @@ const prefix = (givenPath = '') => {
   };
 };
 
-function cloneControllerMetadata() {
+/**
+ * Clones metadata from parent controller to child controller.
+ */
+export function cloneControllerMetadata() {
   return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T) {
     const parent = Object.getPrototypeOf(c) as VovkController;
     const constructor = c as unknown as VovkController;
@@ -168,11 +174,31 @@ function cloneControllerMetadata() {
   };
 }
 
+/**
+ * GET HTTP method decorator.
+ */
 export const get = createHTTPDecorator(HttpMethod.GET);
+/**
+ *  POST HTTP method decorator.
+ */
 export const post = createHTTPDecorator(HttpMethod.POST);
+/**
+ *  PUT HTTP method decorator.
+ */
 export const put = createHTTPDecorator(HttpMethod.PUT);
+/**
+ *  PATCH HTTP method decorator.
+ */
 export const patch = createHTTPDecorator(HttpMethod.PATCH);
+/**
+ *  DELETE HTTP method decorator.
+ */
 export const del = createHTTPDecorator(HttpMethod.DELETE);
+/**
+ * HEAD HTTP method decorator.
+ */
 export const head = createHTTPDecorator(HttpMethod.HEAD);
+/**
+ * OPTIONS HTTP method decorator.
+ */
 export const options = createHTTPDecorator(HttpMethod.OPTIONS);
-export { prefix, cloneControllerMetadata };

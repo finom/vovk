@@ -165,6 +165,10 @@ export type VovkRPCModule<T, TFetcherOptions extends { [key: string]: KnownAny }
   withDefaults: (newOptions?: VovkFetcherOptions<TFetcherOptions>) => VovkRPCModule<T, TFetcherOptions>;
 };
 
+/**
+ * Fetcher function type for client requests.
+ * @see https://vovk.dev/imports
+ */
 export type VovkFetcher<TFetcherOptions> = (
   options: {
     name: string;
@@ -199,6 +203,10 @@ export type VovkFetcherOptions<T> = T & {
   init?: RequestInit;
 };
 
+/**
+ * Client-side validation function type.
+ * @see https://vovk.dev/imports
+ */
 export type VovkValidateOnClient<TFetcherOptions> = (
   input: { body?: unknown; query?: unknown; params?: unknown; meta?: unknown } & TFetcherOptions,
   validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>,

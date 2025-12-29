@@ -1,5 +1,12 @@
 import type { HttpStatus, VovkErrorResponse } from '../types';
 
+/**
+ * Represents an HTTP exception with a status code and message.
+ * @example
+ * ```ts
+ * throw new HttpException(HttpStatus.BAD_REQUEST, 'Invalid request data');
+ * ```
+ */
 export class HttpException extends Error {
   statusCode: HttpStatus;
 

@@ -4,6 +4,10 @@ import { HttpException } from '../core/HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
+/**
+ * Creates a customizable fetcher function for client requests.
+ * @see https://vovk.dev/imports
+ */
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
@@ -137,4 +141,8 @@ export function createFetcher<T>({
   return newFetcher;
 }
 
+/**
+ * Default fetcher implementation for client requests.
+ * @see https://vovk.dev/imports
+ */
 export const fetcher = createFetcher();

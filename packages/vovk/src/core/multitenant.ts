@@ -35,6 +35,10 @@ const patternToRegex = (pattern: string): { regex: RegExp; paramNames: string[] 
   };
 };
 
+/**
+ * Multitenant function to handle subdomain and path-based routing overrides.
+ * @see https://vovk.dev/multitenant
+ */
 export function multitenant(config: Config) {
   const { requestUrl, requestHost, targetHost, overrides } = config;
 

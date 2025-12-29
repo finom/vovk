@@ -209,6 +209,27 @@ type DeriveToolsResult<TOutput, TFormattedOutput> = {
   toolsByName: Record<string, VovkToolDerived<DerivedToolInput, TOutput, TFormattedOutput>>;
 };
 
+/**
+ * Derives AI tools from controllers and RPC modules.
+ * @see https://vovk.dev/tools
+ * @example
+ * ```ts
+ * import { deriveTools, ToModelOutput } from 'vovk';
+ * import { UserRPC } from 'vovk-client';
+ *
+ * // Derive AI tools from the UserRPC module
+ * const { tools, toolsByName } = deriveTools({
+ *   modules: { UserRPC },
+ *   toModelOutput: ToModelOutput.MCP,
+ *   onExecute: (result, tool) => {
+ *     console.log(`Tool ${tool.name} executed successfully.`);
+ *   },
+ *   onError: (error, tool) => {
+ *     console.error(`Tool ${tool.name} execution failed:`, error);
+ *   },
+ * });
+ * ```
+ */
 // Overload: without toModelOutput - returns DefaultModelOutput
 export function deriveTools<TOutput = unknown, TFormattedOutput = DefaultModelOutput<TOutput>>(
   options: DeriveToolsBaseOptions & {
@@ -223,7 +244,6 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
   }
 ): DeriveToolsResult<TOutput, TFormattedOutput>;
 
-// Implementation
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(options: {
   modules: Record<string, object>;
   meta?: Record<string, unknown>;

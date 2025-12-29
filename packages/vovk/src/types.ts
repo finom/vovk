@@ -69,6 +69,7 @@ export type VovkMetaSchema = {
 
 /**
  * Represents the full schema of composed client or a segment in segmented client.
+ * @see https://vovk.dev/schema
  */
 export type VovkSchema = {
   $schema: typeof VovkSchemaIdEnum.SCHEMA | (string & {});
@@ -116,6 +117,14 @@ export type RouteHandler = ((
   _options?: DecoratorOptions;
 };
 
+/**
+ * The Vovk.ts request object, extending Next.js's NextRequest
+ * Accepts three generic parameters:
+ * - TBody: the expected shape of the request body (default: unknown)
+ * - TQuery: the expected shape of the query parameters (default: unknown)
+ * - TParams: the expected shape of the route parameters (default: unknown)
+ * @see https://vovk.dev/procedure
+ */
 export interface VovkRequest<TBody = unknown, TQuery = unknown, TParams = unknown> extends Omit<
   NextRequest,
   'json' | 'nextUrl'
@@ -198,8 +207,24 @@ export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownA
       ? Y
       : never;
 
+/**
+ * Utility type to extract output from controller methods
+ * @see https://vovk.dev/inference
+ * @example
+ * ```ts
+ * type MyControllerOutput = VovkOutput<typeof MyController.myMethod>;
+ * ```
+ */
 export type VovkOutput<T> = T extends { __types?: { output?: infer O } } ? O : unknown;
 
+/**
+ * Utility type to extract iteration (JSONLines output) from controller methods
+ * @see https://vovk.dev/inference
+ * @example
+ * ```ts
+ * type MyControllerIteration = VovkIteration<typeof MyController.myMethod>;
+ * ```
+ */
 export type VovkIteration<T> = T extends {
   __types?: { iteration?: infer I };
 }
@@ -224,22 +249,62 @@ export type VovkClientYieldType<T extends (...args: KnownAny[]) => unknown> = T 
   ? Y
   : never;
 
+/**
+ * Utility type to extract body from both controller and client methods
+ * @see https://vovk.dev/inference
+ * @example
+ * ```ts
+ * type MyControllerBody = VovkBody<typeof MyController.myMethod>;
+ * ```
+ */
 export type VovkBody<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
   ? VovkClientBody<T>
   : VovkControllerBody<T>;
 
+/**
+ * Utility type to extract query from both controller and client methods
+ * @see https://vovk.dev/inference
+ * @example
+ * ```ts
+ * type MyControllerQuery = VovkQuery<typeof MyController.myMethod>;
+ * ```
+ */
 export type VovkQuery<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
   ? VovkClientQuery<T>
   : VovkControllerQuery<T>;
 
+/**
+ * Utility type to extract params from both controller and client methods
+ * @see https://vovk.dev/inference
+ * @example
+ * ```ts
+ * type MyControllerParams = VovkParams<typeof MyController.myMethod>;
+ * ```
+ */
 export type VovkParams<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
   ? VovkClientParams<T>
   : VovkControllerParams<T>;
 
+/**
+ * Utility type to extract yield type from both controller and client methods
+ * @see https://vovk.dev/inference
+ * @example
+ * ```ts
+ * type MyControllerYieldType = VovkYieldType<typeof MyController.myMethod>;
+ * ```
+ */
 export type VovkYieldType<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
   ? VovkClientYieldType<T>
   : VovkControllerYieldType<T>;
 
+/**
+ * Utility type to extract return type from both controller and client methods
+ * @see https://vovk.dev/inference
+ * @example
+ * ```ts
+ * type MyControllerReturnType = VovkReturnType<typeof MyController.myMethod>;
+ * ```
+ */
 export type VovkReturnType<T extends (...args: KnownAny) => unknown> = Awaited<ReturnType<T>>;
 
 export type StreamAbortMessage = {
@@ -251,6 +316,9 @@ export type VovkValidationType = 'body' | 'query' | 'params' | 'output' | 'itera
 
 // Enums
 
+/**
+ * HTTP methods
+ */
 export enum HttpMethod {
   GET = 'GET',
   POST = 'POST',
@@ -261,6 +329,9 @@ export enum HttpMethod {
   OPTIONS = 'OPTIONS',
 }
 
+/**
+ * HTTP status codes
+ */
 export enum HttpStatus {
   NULL = 0,
   CONTINUE = 100,
@@ -315,6 +386,10 @@ export enum HttpStatus {
 
 // -----
 
+/**
+ * Base JSON Schema type used in Vovk.ts for validation and code generation.
+ * @see https://vovk.dev/schema
+ */
 export type VovkJSONSchemaBase = {
   $schema?: 'https://json-schema.org/draft/2020-12/schema' | 'http://json-schema.org/draft-07/schema#';
   type?: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'integer';
@@ -519,6 +594,10 @@ type VovkUserConfig = {
   };
 };
 
+/**
+ * The user configuration for Vovk.ts
+ * @see https://vovk.dev/config
+ */
 export type VovkConfig = VovkUserConfig;
 
 export type VovkStrictConfig = Required<

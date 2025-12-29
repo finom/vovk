@@ -15,4 +15,8 @@ export const operationDecorator = createDecorator(null, (openAPIOperationObject:
   };
 });
 
+/**
+ * OpenAPI operation decorator to add metadata to API operations. Also includes `error` and `tool` utilities.
+ * @see https://vovk.dev/openapi
+ */
 export const operation = Object.assign(operationDecorator, { error, tool });

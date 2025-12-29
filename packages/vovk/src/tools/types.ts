@@ -59,6 +59,10 @@ export type VovkToolNonDerived<TInput, TOutput, TFormattedOutput> = VovkToolComm
   false
 >;
 
+/**
+ * Vovk tool type, which can be either derived or non-derived.
+ * @see https://vovk.dev/tools
+ */
 export type VovkTool<TInput = unknown, TOutput = unknown, TFormattedOutput = unknown> =
   | VovkToolDerived<TInput, TOutput, TFormattedOutput>
   | VovkToolNonDerived<TInput, TOutput, TFormattedOutput>;

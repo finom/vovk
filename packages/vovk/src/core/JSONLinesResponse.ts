@@ -1,6 +1,10 @@
 import type { StreamAbortMessage } from '../types';
 import '../utils/shim';
 
+/**
+ * A Response subclass for streaming JSON Lines (JSONL) data.
+ * @see https://vovk.dev/jsonlines
+ */
 export class JSONLinesResponse<T> extends Response {
   public isClosed = false;
 

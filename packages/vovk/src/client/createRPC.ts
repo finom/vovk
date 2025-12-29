@@ -30,6 +30,10 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+/**
+ * Creates a client-side RPC module for interacting with server-side controllers.
+ * @see https://vovk.dev/typescript
+ */
 export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
   givenSchema: unknown,
   segmentName: string,

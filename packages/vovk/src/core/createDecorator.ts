@@ -3,6 +3,10 @@ import type { VovkHandlerSchema, VovkController, VovkRequest } from '../types';
 type Next = () => Promise<unknown>;
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+/**
+ * Creates a custom decorator for Vovk controllers.
+ * @see https://vovk.dev/decorator
+ */
 export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>(
   handler: null | ((this: VovkController, req: TRequest, next: Next, ...args: TArgs) => unknown),
   initHandler?: (
