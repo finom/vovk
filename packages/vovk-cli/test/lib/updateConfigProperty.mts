@@ -1,10 +1,9 @@
 import { Project, QuoteKind, IndentationText, NewLineKind, SyntaxKind, CodeBlockWriter, Node } from 'ts-morph';
-import type { KnownAny } from 'vovk';
 
 export default function updateConfigProperty(
   absolutePathToTheFile: string,
   pathToProperty: string[],
-  newValue: KnownAny
+  newValue: unknown
 ) {
   const project = new Project({
     manipulationSettings: {
@@ -92,7 +91,7 @@ export default function updateConfigProperty(
   return sourceFile.getFullText();
 }
 
-function writeInitializer(writer: CodeBlockWriter, value: KnownAny): void {
+function writeInitializer(writer: CodeBlockWriter, value: unknown): void {
   if (typeof value === 'string') {
     writer.quote(value);
   } else if (typeof value === 'number' || typeof value === 'boolean') {

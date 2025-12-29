@@ -1,11 +1,11 @@
 import { readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { glob } from 'glob';
-import { KnownAny, VovkSchemaIdEnum, VovkStrictConfig, type VovkSchema } from 'vovk';
+import { type VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import { getMetaSchema } from '../getProjectInfo/getMetaSchema.mjs';
-import { deepExtend } from 'vovk/internal';
+import { deepExtend, VovkSchemaIdEnum, type VovkMetaSchema, type VovkStrictConfig } from 'vovk/internal';
 
 export async function getProjectFullSchema({
   schemaOutAbsolutePath,
@@ -33,7 +33,7 @@ export async function getProjectFullSchema({
   try {
     const metaContent = await readFile(metaPath, 'utf-8');
     const fromFileMeta = JSON.parse(metaContent);
-    result.meta = deepExtend({} as KnownAny, result.meta, fromFileMeta);
+    result.meta = deepExtend({} as VovkMetaSchema, result.meta, fromFileMeta);
   } catch {
     isEmptyLogOrWarn(`${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
   }

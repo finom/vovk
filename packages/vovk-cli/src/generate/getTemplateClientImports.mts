@@ -1,5 +1,6 @@
 import path from 'node:path';
-import { resolveGeneratorConfigValues, VovkStrictConfig, type VovkSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
+import { resolveGeneratorConfigValues, type VovkStrictConfig } from 'vovk/internal';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 
 export type ClientImports = {

@@ -7,10 +7,9 @@ import {
   createValidateOnClient,
   HttpException,
   HttpStatus,
-  KnownAny,
-  VovkJSONSchemaBase,
-  type VovkSchema,
+  type VovkJSONSchemaBase,
   type VovkValidateOnClient,
+  type VovkSchema,
 } from 'vovk';
 
 type Lang = keyof typeof ajvLocalize;
@@ -54,11 +53,11 @@ const validate = ({
     const isFormData = input instanceof FormData;
     if (input instanceof FormData) {
       const formDataEntries = Array.from(input.entries());
-      const result: Record<string, KnownAny> = {};
+      const result: Record<string, unknown> = {};
 
       formDataEntries.forEach(([key, value]) => {
         // Process the value (handle Blobs/Files)
-        let processedValue: KnownAny;
+        let processedValue: unknown;
         if (value instanceof Blob) {
           processedValue = '<binary>';
         } else if (Array.isArray(value)) {

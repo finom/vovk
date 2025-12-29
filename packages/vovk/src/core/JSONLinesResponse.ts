@@ -1,5 +1,5 @@
-import type { StreamAbortMessage } from './types';
-import './utils/shim';
+import type { StreamAbortMessage } from '../types';
+import '../utils/shim';
 
 export class JSONLinesResponse<T> extends Response {
   public isClosed = false;

@@ -1,10 +1,12 @@
-import { KnownAny, VovkHandlerSchema } from '../types';
-import { HttpException } from '../HttpException';
+import { VovkHandlerSchema } from '../types';
+import { HttpException } from '../core/HttpException';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultHandler';
 
+type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
 // Helper function to get a value from an object using dot notation path
-const getNestedValue = (obj: KnownAny, path: string): unknown => {
+const getNestedValue = (obj: Record<string, KnownAny>, path: string): unknown => {
   return path.split('.').reduce((o, key) => (o && typeof o === 'object' ? o[key] : undefined), obj);
 };
 
@@ -24,7 +26,7 @@ export const defaultHandler = async ({ response, schema }: { response: Response;
         ? (schema.operationObject['x-errorMessageKey'] as string)
         : 'message';
     // handle server errors
-    const errorResponse = result as KnownAny;
+    const errorResponse = result as unknown as Record<string, unknown>;
     throw new HttpException(
       response.status,
       (getNestedValue(errorResponse, errorKey) as string) ?? DEFAULT_ERROR_MESSAGE,

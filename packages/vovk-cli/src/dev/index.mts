@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { VovkSchemaIdEnum, type VovkSchema, type VovkSegmentSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
+import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import * as chokidar from 'chokidar';
 import { Agent, setGlobalDispatcher } from 'undici';
 import keyBy from 'lodash/keyBy.js';
@@ -14,7 +15,7 @@ import { logDiffResult } from './logDiffResult.mjs';
 import { ensureClient } from '../generate/ensureClient.mjs';
 import { getProjectInfo, ProjectInfo } from '../getProjectInfo/index.mjs';
 import { generate } from '../generate/generate.mjs';
-import { locateSegments, type Segment } from '../locateSegments.mjs';
+import { locateSegments, type Segment } from '../utils/locateSegments.mjs';
 import { debounceWithArgs } from '../utils/debounceWithArgs.mjs';
 import { formatLoggedSegmentName } from '../utils/formatLoggedSegmentName.mjs';
 import { writeMetaJson } from './writeMetaJson.mjs';

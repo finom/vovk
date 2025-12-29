@@ -1,4 +1,4 @@
-import type { HttpStatus, VovkErrorResponse } from './types';
+import type { HttpStatus, VovkErrorResponse } from '../types';
 
 export class HttpException extends Error {
   statusCode: HttpStatus;

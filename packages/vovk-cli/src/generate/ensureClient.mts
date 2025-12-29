@@ -1,7 +1,8 @@
-import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
+import { type VovkSchema } from 'vovk';
+import { VovkSchemaIdEnum } from 'vovk/internal';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { generate } from './generate.mjs';
-import type { Segment } from '../locateSegments.mjs';
+import type { Segment } from '../utils/locateSegments.mjs';
 import { getMetaSchema } from '../getProjectInfo/getMetaSchema.mjs';
 
 const getEmptySegmentRecordSchema = (segmentNames: string[]) => {

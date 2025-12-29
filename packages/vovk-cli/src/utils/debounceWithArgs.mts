@@ -1,6 +1,5 @@
-import type { KnownAny } from 'vovk';
-
-export function debounceWithArgs<Callback extends (...args: KnownAny[]) => KnownAny>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounceWithArgs<Callback extends (...args: any[]) => any>(
   callback: Callback,
   wait: number
 ): (...args: Parameters<Callback>) => Promise<Awaited<ReturnType<Callback>>> {

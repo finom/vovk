@@ -1,11 +1,11 @@
 import type { NextRequest } from 'next/server';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponse } from './JSONLinesResponse';
+import type { JSONLinesResponse } from './core/JSONLinesResponse';
 import type { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
 import type { VovkToolOptions } from './tools/types';
 
-export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
 
@@ -127,7 +127,7 @@ export interface VovkRequest<TBody = unknown, TQuery = unknown, TParams = unknow
       'get' | 'getAll' | 'entries' | 'forEach' | 'keys' | 'values'
     > & {
       get: <KEY extends keyof TQuery>(key: KEY) => TQuery[KEY] extends readonly (infer ITEM)[] ? ITEM : TQuery[KEY];
-      getAll: <KEY extends keyof TQuery>(key: KEY) => TQuery[KEY] extends KnownAny[] ? TQuery[KEY] : TQuery[KEY][];
+      getAll: <KEY extends keyof TQuery>(key: KEY) => TQuery[KEY] extends unknown[] ? TQuery[KEY] : TQuery[KEY][];
       entries: () => IterableIterator<[keyof TQuery, TQuery[keyof TQuery]]>;
       forEach: (
         callbackfn: (
@@ -319,11 +319,16 @@ export type VovkJSONSchemaBase = {
   $schema?: 'https://json-schema.org/draft/2020-12/schema' | 'http://json-schema.org/draft-07/schema#';
   type?: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'integer';
   format?: string;
+  pattern?: string;
   $ref?: string;
   items?: VovkJSONSchemaBase;
   enum?: KnownAny[];
   minimum?: number;
   maximum?: number;
+  exclusiveMinimum?: number;
+  exclusiveMaximum?: number;
+  minItems?: number;
+  maxItems?: number;
   title?: string;
   description?: string;
   properties?: { [key: string]: VovkJSONSchemaBase };

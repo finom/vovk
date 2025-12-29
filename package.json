@@ -10,7 +10,7 @@
   "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
   "scripts": {
     "ncu": "turbo run ncu --dangerously-disable-package-manager-check && npm run --prefix test ncu && npm-check-updates -u && npm i --legacy-peer-deps",
-    "test:main": "npm --prefix test run generate && npm run lint-nofix && turbo run tsc --dangerously-disable-package-manager-check && tsc --project ./packages/vovk-cli/tsconfig.json --noemit && npm run unit",
+    "test:main": "npm --prefix test run generate && npm run lint-nofix && turbo run tsc --dangerously-disable-package-manager-check && && tsc --project ./test && npm run unit",
     "test:cli": "npm --prefix packages/vovk-cli run test",
     "test:py": "npm --prefix packages/vovk-python run test",
     "test:rs": "npm --prefix packages/vovk-rust run test",

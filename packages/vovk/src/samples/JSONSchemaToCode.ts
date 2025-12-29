@@ -1,4 +1,4 @@
-import type { KnownAny, VovkJSONSchemaBase } from '../types';
+import type { VovkJSONSchemaBase } from '../types';
 
 interface SamplerOptions {
   comment?: '//' | '#';
@@ -41,7 +41,7 @@ export function getSampleValue(
   schema: VovkJSONSchemaBase,
   rootSchema?: VovkJSONSchemaBase,
   ignoreBinary?: boolean
-): KnownAny {
+): unknown {
   if (!schema || typeof schema !== 'object') return null;
   rootSchema = rootSchema || schema;
 
@@ -86,7 +86,10 @@ export function getSampleValue(
 
   if (schema.allOf && schema.allOf.length > 0) {
     // Merge all schemas in allOf
-    const mergedSchema = schema.allOf.reduce((acc: KnownAny, s: KnownAny) => ({ ...acc, ...s }), {});
+    const mergedSchema = schema.allOf.reduce(
+      (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => ({ ...acc, ...s }),
+      {}
+    );
     return getSampleValue(mergedSchema, rootSchema, ignoreBinary);
   }
 
@@ -121,9 +124,9 @@ export function getSampleValue(
 }
 
 function formatWithDescriptions(
-  value: KnownAny,
+  value: unknown,
   schema: VovkJSONSchemaBase,
-  rootSchema: KnownAny,
+  rootSchema: VovkJSONSchemaBase,
   comment: string,
   stripQuotes: boolean,
   indent: number,
@@ -233,8 +236,8 @@ function formatWithDescriptions(
   return JSON.stringify(value);
 }
 
-function resolveRef(ref: string, rootSchema: KnownAny): KnownAny {
-  const path = ref.split('/').slice(1);
+function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSONSchemaBase {
+  const path = ref.split('/').slice(1) as (keyof VovkJSONSchemaBase)[]; // Remove the initial '#'
   let current = rootSchema;
   for (const segment of path) {
     current = current[segment];
@@ -245,12 +248,12 @@ function resolveRef(ref: string, rootSchema: KnownAny): KnownAny {
   return current;
 }
 
-function handleRef(ref: string, rootSchema: KnownAny, ignoreBinary?: boolean): KnownAny {
+function handleRef(ref: string, rootSchema: VovkJSONSchemaBase, ignoreBinary?: boolean): unknown {
   const resolved = resolveRef(ref, rootSchema);
   return getSampleValue(resolved, rootSchema, ignoreBinary);
 }
 
-function handleString(schema: KnownAny): string {
+function handleString(schema: VovkJSONSchemaBase): string {
   if (schema.format) {
     switch (schema.format) {
       case 'email':
@@ -298,7 +301,7 @@ function handleString(schema: KnownAny): string {
   return 'string';
 }
 
-function handleNumber(schema: KnownAny): number {
+function handleNumber(schema: VovkJSONSchemaBase): number {
   if (schema.minimum !== undefined && schema.maximum !== undefined) {
     return schema.minimum;
   } else if (schema.minimum !== undefined) {
@@ -313,13 +316,13 @@ function handleBoolean(): boolean {
   return true;
 }
 
-function handleObject(schema: KnownAny, rootSchema: KnownAny, ignoreBinary?: boolean): object {
-  const result: Record<string, KnownAny> = {};
+function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase, ignoreBinary?: boolean): object {
+  const result: Record<string, unknown> = {};
 
   if (schema.properties) {
     const required = schema.required || [];
 
-    for (const [key, propSchema] of Object.entries<KnownAny>(schema.properties)) {
+    for (const [key, propSchema] of Object.entries<VovkJSONSchemaBase>(schema.properties)) {
       if (required.includes(key) || required.length === 0) {
         const value = getSampleValue(propSchema, rootSchema, ignoreBinary);
         // Only add the property if it's not undefined (which happens when ignoreBinary is true and it's a binary field)
@@ -340,7 +343,7 @@ function handleObject(schema: KnownAny, rootSchema: KnownAny, ignoreBinary?: boo
   return result;
 }
 
-function handleArray(schema: KnownAny, rootSchema: KnownAny, ignoreBinary?: boolean) {
+function handleArray(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase, ignoreBinary?: boolean) {
   if (schema.items) {
     const itemSchema = schema.items;
 

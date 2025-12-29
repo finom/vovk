@@ -1,5 +1,4 @@
 import { OpenAPIObject } from 'openapi3-ts/oas31';
-import { KnownAny } from '../../types';
 
 /**
  * Resolves $ref references at the first level only (except for components/schemas references)
@@ -8,10 +7,10 @@ import { KnownAny } from '../../types';
  * @param openAPIObject - The complete OpenAPI document containing definitions
  * @returns The object with resolved references (except components/schemas)
  */
-export function inlineRefs<T extends object>(obj: KnownAny, openAPIObject: OpenAPIObject): T {
+export function inlineRefs<T extends object>(obj: unknown, openAPIObject: OpenAPIObject): T | null {
   // Handle null or undefined
   if (obj === null || obj === undefined) {
-    return obj as T;
+    return null;
   }
 
   // Handle arrays - check each item for $ref at first level only

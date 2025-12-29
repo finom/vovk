@@ -5,7 +5,7 @@ import type { GenerateOptions } from '../types.mjs';
 import { getProjectFullSchema } from './getProjectFullSchema.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { generate } from './generate.mjs';
-import { locateSegments } from '../locateSegments.mjs';
+import { locateSegments } from '../utils/locateSegments.mjs';
 import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 
 const THROTTLE_DELAY = 5000;

@@ -2,13 +2,8 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import matter from 'gray-matter';
 import _ from 'lodash';
-import {
-  openAPIToVovkSchema,
-  vovkSchemaToOpenAPI,
-  type VovkOpenAPIMixin,
-  type VovkSchema,
-  type VovkStrictConfig,
-} from 'vovk';
+import type { VovkSchema } from 'vovk';
+import { openAPIToVovkSchema, vovkSchemaToOpenAPI, type VovkOpenAPIMixin, type VovkStrictConfig } from 'vovk/internal';
 import type { PackageJson } from 'type-fest';
 import { getClientTemplateFiles } from './getClientTemplateFiles.mjs';
 import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
@@ -18,7 +13,7 @@ import { pickSegmentFullSchema } from '../utils/pickSegmentFullSchema.mjs';
 import { removeUnlistedDirectories } from '../utils/removeUnlistedDirectories.mjs';
 import { writeOneClientFile, normalizeOutTemplatePath } from './writeOneClientFile.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
-import type { Segment } from '../locateSegments.mjs';
+import type { Segment } from '../utils/locateSegments.mjs';
 import { getTsconfig } from 'get-tsconfig';
 import { normalizeOpenAPIMixin } from '../utils/normalizeOpenAPIMixin.mjs';
 import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';

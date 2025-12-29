@@ -1,7 +1,20 @@
+import { VovkRequest } from '../types';
+import type { VovkTool } from './types';
+
 export type DefaultModelOutput<T> = T | { error: string };
 
-type ToModelOutputDefaultFn = <T>(result: T | Error) => Promise<DefaultModelOutput<T>>;
+export type ToModelOutputDefaultFn = <TInput, TOutput>(
+  result: TOutput | Error,
+  tool: VovkTool<TInput, TOutput, unknown>,
+  req: Pick<VovkRequest, 'vovk'> | null
+) => DefaultModelOutput<TOutput>;
 
-export const toModelOutputDefault = ((result) => {
-  return Promise.resolve(result instanceof Error ? { error: result.message } : (result as DefaultModelOutput<unknown>));
-}) as ToModelOutputDefaultFn;
+export const toModelOutputDefault: ToModelOutputDefaultFn = <TInput, TOutput>(
+  result: TOutput | Error,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _tool: VovkTool<TInput, TOutput, unknown>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _req: Pick<VovkRequest, 'vovk'> | null
+): DefaultModelOutput<TOutput> => {
+  return result instanceof Error ? { error: result.message } : result;
+};

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import type { VovkSegmentSchema } from 'vovk';
+import type { VovkSegmentSchema } from 'vovk/internal';
 import { diffSegmentSchema, type DiffResult } from './diffSegmentSchema.mjs';
 import { getFileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 

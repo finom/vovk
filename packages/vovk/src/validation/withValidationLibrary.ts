@@ -1,10 +1,9 @@
-import { HttpException } from '../HttpException';
+import { HttpException } from '../core/HttpException';
 import {
   HttpStatus,
   VovkHandlerSchema,
   VovkTypedMethod,
   VovkValidationType,
-  type KnownAny,
   type VovkRequest,
   type VovkOperationObject,
 } from '../types';
@@ -12,6 +11,8 @@ import { reqMeta } from '../req/reqMeta';
 import { setHandlerSchema } from '../core/setHandlerSchema';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
+
+type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 

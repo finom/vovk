@@ -1,6 +1,5 @@
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { OpenAPIObject } from 'openapi3-ts/oas31';
-import { KnownAny } from 'vovk';
 import upperFirst from 'lodash/upperFirst.js';
 import camelCase from 'lodash/camelCase.js';
 
@@ -232,11 +231,11 @@ function handleOneOf(schemas: JSONSchema7Definition[], name: string, context: Co
   return types.join(' | ');
 }
 
-function handleEnum(enumValues: KnownAny[]): string {
+function handleEnum(enumValues: unknown[]): string {
   return enumValues.map((v) => JSON.stringify(v)).join(' | ');
 }
 
-function handleConst(value: KnownAny): string {
+function handleConst(value: unknown): string {
   return JSON.stringify(value);
 }
 

@@ -1,6 +1,5 @@
 import { ok } from 'node:assert';
 import supertest from 'supertest';
-import type { KnownAny } from 'vovk';
 import { z } from 'zod/v4';
 import type { ConstrainingModel } from './client/WithZodClientController.ts';
 
@@ -36,7 +35,8 @@ export function expectPromise(f: () => Promise<unknown>) {
           `Expected error to match ${reg}, got ${error?.message}`
         );
       },
-      toThrowError: async (cl: KnownAny) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+      toThrowError: async (cl: Function) => {
         const error = await getError();
         ok(cl ? error instanceof cl : error, `Expected error to be instance of ${cl}, got ${error}`);
       },

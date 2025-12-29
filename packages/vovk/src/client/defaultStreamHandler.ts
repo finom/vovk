@@ -1,6 +1,6 @@
 import { HttpStatus, VovkHandlerSchema, type VovkErrorResponse } from '../types';
 import type { VovkStreamAsyncIterable } from './types';
-import { HttpException } from '../HttpException';
+import { HttpException } from '../core/HttpException';
 import '../utils/shim';
 
 export const DEFAULT_ERROR_MESSAGE = 'An unknown error at defaultStreamHandler';

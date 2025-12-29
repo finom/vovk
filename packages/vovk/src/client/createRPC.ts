@@ -2,7 +2,6 @@ import type {
   ControllerStaticMethod,
   VovkControllerParams,
   VovkControllerQuery,
-  KnownAny,
   HttpMethod,
   VovkSchema,
 } from '../types';
@@ -28,6 +27,8 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   }
   return `${result}${queryStr ? `?${queryStr}` : ''}`;
 };
+
+type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
   givenSchema: unknown,

@@ -1,10 +1,4 @@
-import type {
-  VovkJSONSchemaBase,
-  KnownAny,
-  VovkControllerSchema,
-  VovkHandlerSchema,
-  VovkSamplesConfig,
-} from '../types';
+import type { VovkJSONSchemaBase, VovkControllerSchema, VovkHandlerSchema, VovkSamplesConfig } from '../types';
 import { JSONSchemaToCode, getSampleValue } from './JSONSchemaToCode';
 import { objectToCode } from './objectToCode';
 
@@ -47,7 +41,6 @@ export type CodeSamplePackageJson = {
   description?: string;
   rs_name?: string;
   py_name?: string;
-  [key: string]: KnownAny;
 };
 
 type CodeGenerationParams = {
@@ -288,7 +281,7 @@ function generateRustCode({
     return `\n${getIndentSpaces(4)}${desc ? `// ${desc}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
   };
 
-  const getHashMapSample = (map: Record<string, KnownAny>, indent = 4) => {
+  const getHashMapSample = (map: Record<string, unknown>, indent = 4) => {
     const entries = Object.entries(map)
       .map(([key, value]) => {
         return `${getIndentSpaces(indent + 2)}("${key}".to_string(), "${value}".to_string())`;

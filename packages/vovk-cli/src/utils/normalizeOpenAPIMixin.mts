@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { HttpMethod, VovkOperationObject, VovkStrictConfig, type VovkConfig } from 'vovk';
+import { HttpMethod, type VovkConfig } from 'vovk';
+import { VovkOperationObject, VovkStrictConfig } from 'vovk/internal';
 import { OpenAPIObject } from 'openapi3-ts/oas31';
 import * as YAML from 'yaml';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';

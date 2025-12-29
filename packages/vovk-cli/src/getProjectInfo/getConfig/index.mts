@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk';
+import { VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk/internal';
 import { getLogger } from '../../utils/getLogger.mjs';
 import { getUserConfig } from './getUserConfig.mjs';
 import { getRelativeSrcRoot } from './getRelativeSrcRoot.mjs';

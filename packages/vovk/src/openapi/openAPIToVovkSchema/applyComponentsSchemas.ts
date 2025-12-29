@@ -1,13 +1,13 @@
 import { ComponentsObject } from 'openapi3-ts/oas31';
 import { camelCase } from '../../utils/camelCase';
 import { upperFirst } from '../../utils/upperFirst';
-import { KnownAny, VovkJSONSchemaBase } from '../../types';
+import { VovkJSONSchemaBase } from '../../types';
 
 // fast clone JSON object while ignoring Date, RegExp, and Function types
-function cloneJSON(obj: KnownAny): KnownAny {
+function cloneJSON(obj: unknown): unknown {
   if (obj === null || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(cloneJSON);
-  const result: Record<string, KnownAny> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value instanceof Date || value instanceof RegExp || typeof value === 'function') continue;
     result[key] = cloneJSON(value);
@@ -24,7 +24,7 @@ export function applyComponentsSchemas(
   if (!components || !Object.keys(components).length) return schema;
 
   // Create a deep copy of the schema
-  const result = cloneJSON(schema);
+  const result = cloneJSON(schema) as VovkJSONSchemaBase;
 
   // Initialize $defs if it doesn't exist
   result.$defs = result.$defs || {};
@@ -57,8 +57,11 @@ export function applyComponentsSchemas(
       // Add the component to $defs if not already added
       if (!addedComponents.has(componentName) && components![componentName]) {
         addedComponents.add(componentName);
-        // TODO: Optimize
-        result.$defs[componentName] = processSchema(cloneJSON(components![componentName]));
+        if (result.$defs) {
+          result.$defs[componentName] = processSchema(
+            cloneJSON(components![componentName]) as VovkJSONSchemaBase
+          ) as VovkJSONSchemaBase;
+        }
       }
     }
 

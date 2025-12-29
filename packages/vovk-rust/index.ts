@@ -1,4 +1,4 @@
-import type { KnownAny } from 'vovk';
+import type { VovkJSONSchemaBase } from 'vovk';
 
 // Helper function for indentation
 export function indent(level: number, pad: number = 0): string {
@@ -6,7 +6,7 @@ export function indent(level: number, pad: number = 0): string {
 }
 
 // Generate documentation comments from title and description
-export function generateDocComment(schema: KnownAny, level: number, pad: number = 0): string {
+export function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: number = 0): string {
   if (!schema?.title && !schema?.description) return '';
 
   let comment = '';
@@ -33,7 +33,7 @@ export function generateDocComment(schema: KnownAny, level: number, pad: number 
 const processedRefs = new Set<string>();
 
 // Resolve $ref paths in the schema
-export function resolveRef(ref: string, rootSchema: KnownAny): KnownAny | undefined {
+export function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSONSchemaBase | undefined {
   if (processedRefs.has(ref)) {
     // Circular reference detected, return a placeholder
     return { type: 'string' };
@@ -56,7 +56,7 @@ export function resolveRef(ref: string, rootSchema: KnownAny): KnownAny | undefi
       }
       return undefined;
     }
-    current = current[part];
+    current = current[part as keyof VovkJSONSchemaBase];
   }
 
   // If the resolved schema also has a $ref, resolve it recursively
@@ -81,7 +81,11 @@ export function getModulePath(path: string[]): string {
 }
 
 // Convert JSON Schema type to Rust type
-export function toRustType(schema: KnownAny, path: string[], rootSchema: KnownAny = schema): string {
+export function toRustType(
+  schema: VovkJSONSchemaBase,
+  path: string[],
+  rootSchema: VovkJSONSchemaBase = schema
+): string {
   if (!schema) return 'String';
 
   // Handle $ref first
@@ -190,7 +194,7 @@ export function toRustType(schema: KnownAny, path: string[], rootSchema: KnownAn
 }
 
 // Generate enum for string with enum values
-export function generateEnum(schema: KnownAny, name: string, level: number, pad: number = 0): string {
+export function generateEnum(schema: VovkJSONSchemaBase, name: string, level: number, pad: number = 0): string {
   const indentFn = (level: number) => ' '.repeat(pad + level * 2);
   let code = '';
 
@@ -201,15 +205,9 @@ export function generateEnum(schema: KnownAny, name: string, level: number, pad:
   code += `${indentFn(level)}#[allow(non_camel_case_types)]\n`;
   code += `${indentFn(level)}pub enum ${name} {\n`;
 
-  schema.enum.forEach((value: string, index: number) => {
+  schema.enum?.forEach((value: string) => {
     // Create valid Rust enum variant
     const variant = value?.replace(/[^a-zA-Z0-9_]/g, '_');
-
-    // Add documentation if available in enumDescriptions
-    if (schema.enumDescriptions && schema.enumDescriptions[index]) {
-      const description = schema.enumDescriptions[index];
-      code += `${indentFn(level + 1)}/// ${description}\n`;
-    }
 
     code += `${indentFn(level + 1)}#[serde(rename = "${value}")]\n`;
     code += `${indentFn(level + 1)}${variant},\n`;
@@ -221,11 +219,11 @@ export function generateEnum(schema: KnownAny, name: string, level: number, pad:
 
 // Generate enum for anyOf/oneOf/allOf schemas
 export function generateVariantEnum(
-  schema: KnownAny,
+  schema: VovkJSONSchemaBase,
   name: string,
   path: string[],
   level: number,
-  rootSchema: KnownAny,
+  rootSchema: VovkJSONSchemaBase,
   pad: number = 0
 ): string {
   const indentFn = (level: number) => ' '.repeat(pad + level * 2);
@@ -247,7 +245,7 @@ export function generateVariantEnum(
   code += `${indentFn(level)}#[serde(untagged)]\n`;
   code += `${indentFn(level)}pub enum ${name} {\n`;
 
-  variants.forEach((variant: KnownAny, index: number) => {
+  variants.forEach((variant: VovkJSONSchemaBase, index: number) => {
     // Resolve $ref if present
     if (variant.$ref) {
       const resolved = resolveRef(variant.$ref, rootSchema);
@@ -283,21 +281,21 @@ export function generateVariantEnum(
 
 // Handle allOf schema by merging properties
 export function generateAllOfType(
-  schemas: KnownAny[],
+  schemas: VovkJSONSchemaBase[],
   name: string,
   path: string[],
   level: number,
-  rootSchema: KnownAny,
+  rootSchema: VovkJSONSchemaBase,
   pad: number = 0
 ): string {
-  const mergedSchema: KnownAny = {
+  const mergedSchema: VovkJSONSchemaBase = {
     type: 'object',
     properties: {},
     required: [],
   };
 
   // Merge all schemas in allOf
-  schemas.forEach((schema: KnownAny) => {
+  schemas.forEach((schema: VovkJSONSchemaBase) => {
     // Resolve $ref if present
     if (schema.$ref) {
       const resolved = resolveRef(schema.$ref, rootSchema);
@@ -314,7 +312,7 @@ export function generateAllOfType(
     }
 
     if (schema.required) {
-      mergedSchema.required = [...mergedSchema.required, ...schema.required];
+      mergedSchema.required = [...(mergedSchema.required ?? []), ...schema.required];
     }
   });
 
@@ -324,10 +322,10 @@ export function generateAllOfType(
 
 // Process schema objects and generate Rust code
 export function processObject(
-  schema: KnownAny,
+  schema: VovkJSONSchemaBase,
   path: string[],
   level: number,
-  rootSchema: KnownAny = schema,
+  rootSchema: VovkJSONSchemaBase = schema,
   pad: number = 0
 ): string {
   const indentFn = (level: number) => ' '.repeat(pad + level * 2);
@@ -361,7 +359,7 @@ export function processObject(
   code += `${indentFn(level)}#[allow(non_snake_case, non_camel_case_types)]\n`;
   code += `${indentFn(level)}pub struct ${currentName} {\n`;
   // Generate struct fields
-  Object.entries(schema.properties).forEach(([propName, propSchema]: [string, KnownAny]) => {
+  Object.entries(schema.properties).forEach(([propName, propSchema]: [string, VovkJSONSchemaBase]) => {
     const isRequired = schema.required && schema.required.includes(propName);
 
     // Handle $ref in property
@@ -414,7 +412,7 @@ export function processObject(
   code += `${indentFn(level)}}\n\n`;
 
   // Check if any properties require nested types before generating the sub-module
-  const hasNestedTypes = Object.entries(schema.properties).some(([, propSchema]: [string, KnownAny]) => {
+  const hasNestedTypes = Object.entries(schema.properties).some(([, propSchema]: [string, VovkJSONSchemaBase]) => {
     // Resolve $ref if present
     if (propSchema.$ref) {
       const resolved = resolveRef(propSchema.$ref, rootSchema);
@@ -440,7 +438,7 @@ export function processObject(
     code += `${indentFn(level)}pub mod ${currentName}_ {\n`;
     code += `${indentFn(level + 1)}use serde::{Serialize, Deserialize};\n\n`;
 
-    Object.entries(schema.properties).forEach(([propName, propSchema]: [string, KnownAny]) => {
+    Object.entries(schema.properties).forEach(([propName, propSchema]: [string, VovkJSONSchemaBase]) => {
       // Resolve $ref if present
       if (propSchema.$ref) {
         const resolved = resolveRef(propSchema.$ref, rootSchema);
@@ -482,7 +480,7 @@ export function processObject(
 }
 
 // Generate code for primitive types
-export function processPrimitive(schema: KnownAny, name: string, level: number, pad: number = 0): string {
+export function processPrimitive(schema: VovkJSONSchemaBase, name: string, level: number, pad: number = 0): string {
   const indentFn = (level: number) => ' '.repeat(pad + level * 2);
 
   let code = '';
@@ -519,7 +517,7 @@ export function convertJSONSchemasToRustTypes({
   pad = 0,
   rootName,
 }: {
-  schemas: Record<string, KnownAny | undefined>;
+  schemas: Record<string, VovkJSONSchemaBase | undefined>;
   pad?: number;
   rootName: string;
 }): string {
@@ -542,7 +540,7 @@ export function convertJSONSchemasToRustTypes({
 
     // Extract and process types from $defs if present
     if (schemaObj.$defs) {
-      Object.entries(schemaObj.$defs).forEach(([defName, defSchema]: [string, KnownAny]) => {
+      Object.entries(schemaObj.$defs).forEach(([defName, defSchema]: [string, VovkJSONSchemaBase]) => {
         // Create a root object for each definition
         if (defSchema) {
           if (defSchema.type === 'object' || defSchema.properties) {
@@ -553,7 +551,7 @@ export function convertJSONSchemasToRustTypes({
               title: defSchema.title,
               description: defSchema.description,
               'x-isForm': defSchema['x-isForm'],
-            };
+            } as const;
             result += processObject(rootDefObject, [defName], 1, schemaObj, pad);
           } else if (defSchema.type === 'string' && defSchema.enum) {
             result += generateEnum(defSchema, defName, 1, pad);
@@ -577,10 +575,10 @@ export function convertJSONSchemasToRustTypes({
         title: schemaObj.title,
         description: schemaObj.description,
         'x-isForm': schemaObj['x-isForm'],
-      };
+      } as const;
 
       result += processObject(rootObject, [schemaName], 1, schemaObj, pad);
-    } else if (['string', 'number', 'integer', 'boolean', 'null'].includes(schemaObj.type)) {
+    } else if (['string', 'number', 'integer', 'boolean', 'null'].includes(schemaObj.type!)) {
       // Handle primitive schema
       result += processPrimitive(schemaObj, schemaName, 1, pad);
     } else if (schemaObj.enum) {

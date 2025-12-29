@@ -6,16 +6,15 @@ import {
   type VovkErrorResponse,
   type VovkController,
   type DecoratorOptions,
-  type KnownAny,
   type VovkRequest,
-} from './types';
+} from '../types';
 import { HttpException } from './HttpException';
 import { JSONLinesResponse } from './JSONLinesResponse';
-import { reqQuery } from './req/reqQuery';
-import { reqMeta } from './req/reqMeta';
-import { reqForm } from './req/reqForm';
+import { reqQuery } from '../req/reqQuery';
+import { reqMeta } from '../req/reqMeta';
+import { reqForm } from '../req/reqForm';
 
-export class VovkApp {
+class VovkApp {
   private static getHeadersFromOptions(options?: DecoratorOptions) {
     if (!options) return {};
 
@@ -336,8 +335,8 @@ export class VovkApp {
 
     req.vovk = {
       body: () => req.json(),
-      query: () => reqQuery(req as VovkRequest<unknown, KnownAny>),
-      meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(req, meta),
+      query: () => reqQuery(req as VovkRequest<unknown, object>),
+      meta: <T = unknown>(meta?: T | null) => reqMeta<T>(req, meta),
       form: () => reqForm(req),
       params: () => methodParams,
     };
@@ -408,3 +407,7 @@ export class VovkApp {
     }
   };
 }
+
+const vovkApp = new VovkApp();
+
+export { vovkApp };

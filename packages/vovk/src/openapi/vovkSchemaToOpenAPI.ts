@@ -5,7 +5,6 @@ import {
   type VovkJSONSchemaBase,
   type HttpMethod,
   type VovkSchema,
-  type KnownAny,
   type VovkOutputConfig,
   VovkStrictConfig,
   VovkReadmeConfig,
@@ -32,7 +31,7 @@ function extractComponents(
     }
 
     // Create a copy to modify
-    const result: Record<string, KnownAny> = {};
+    const result: Record<string, unknown> = {};
 
     Object.entries({ ...obj.definitions, ...obj.$defs }).forEach(([key, value]) => {
       components[key] = process(value, [...path, key]) as VovkJSONSchemaBase;

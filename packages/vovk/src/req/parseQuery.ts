@@ -1,5 +1,3 @@
-import type { KnownAny } from '../types';
-
 /**
  * Parse a bracket-based key (e.g. "z[d][0][x]" or "arr[]")
  * into an array of path segments (strings or special push-markers).
@@ -36,6 +34,7 @@ function parseKey(key: string): string[] {
  * - Else => object property
  */
 function setValue(obj: Record<string, unknown>, path: string[], value: unknown): void {
+  type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
   let current: KnownAny = obj;
 
   for (let i = 0; i < path.length; i++) {
@@ -133,8 +132,8 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
  * @param queryString - The raw query string (e.g. location.search.slice(1))
  * @returns           - A nested object representing the query params
  */
-export function parseQuery(queryString: string): Record<string, KnownAny> {
-  const result: Record<string, KnownAny> = {};
+export function parseQuery(queryString: string): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
 
   if (!queryString) return result;
 

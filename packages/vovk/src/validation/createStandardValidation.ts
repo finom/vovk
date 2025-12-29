@@ -1,15 +1,16 @@
 import type { StandardSchemaV1, StandardJSONSchemaV1 } from '@standard-schema/spec';
 import {
   HttpStatus,
-  type KnownAny,
   type VovkRequest,
   type VovkTypedMethod,
   type VovkValidationType,
   type VovkOperationObject,
 } from '../types';
 import { withValidationLibrary } from './withValidationLibrary';
-import { HttpException } from '../HttpException';
+import { HttpException } from '../core/HttpException';
 import { createToolFactory } from '../tools/createToolFactory';
+
+type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export function createStandardValidation({
   toJSONSchema,

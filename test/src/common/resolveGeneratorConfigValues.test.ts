@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import type { PackageJson } from 'type-fest';
-import { resolveGeneratorConfigValues, type VovkOutputConfig, type KnownAny, type VovkStrictConfig } from 'vovk';
+import { resolveGeneratorConfigValues, type VovkOutputConfig, type VovkStrictConfig } from 'vovk/internal';
 
 describe('resolveGeneratorConfigValues', () => {
   describe('Basic Configuration Resolution', () => {
@@ -517,9 +517,9 @@ describe('resolveGeneratorConfigValues', () => {
       const result = resolveGeneratorConfigValues({
         config: {
           outputConfig: {
-            package: null as KnownAny,
+            package: undefined,
             origin: null,
-            imports: null as KnownAny,
+            imports: undefined,
           },
         },
         segmentName: null,

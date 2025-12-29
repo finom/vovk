@@ -10,7 +10,7 @@ import { formatLoggedSegmentName } from '../utils/formatLoggedSegmentName.mjs';
 import { getFileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import { prettify } from '../utils/prettify.mjs';
 import { resolveAbsoluteModulePath } from '../utils/resolveAbsoluteModulePath.mjs';
-import { locateSegments } from '../locateSegments.mjs';
+import { locateSegments } from '../utils/locateSegments.mjs';
 
 function splitByLast(str: string, delimiter: string = '/'): [string, string] {
   const index = str.lastIndexOf(delimiter);

@@ -1,4 +1,4 @@
-import type { VovkStrictConfig } from 'vovk';
+import type { VovkStrictConfig } from 'vovk/internal';
 
 export enum BuiltInTemplateName {
   // ts/js

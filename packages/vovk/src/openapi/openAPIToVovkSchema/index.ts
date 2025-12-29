@@ -76,8 +76,8 @@ export function openAPIToVovkSchema({
           handlers: {},
         };
         const parameters = inlineRefs<ParameterObject[]>(operation.parameters ?? [], openAPIObject);
-        const queryProperties = parameters.filter((p) => p.in === 'query') ?? null;
-        const pathProperties = parameters.filter((p) => p.in === 'path') ?? null;
+        const queryProperties = parameters?.filter((p) => p.in === 'query') ?? null;
+        const pathProperties = parameters?.filter((p) => p.in === 'path') ?? null;
         const query: VovkJSONSchemaBase | null = queryProperties?.length
           ? {
               type: 'object',

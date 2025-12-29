@@ -1,14 +1,14 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { KnownAny, VovkJSONSchemaBase, VovkRequest } from '../types';
+import type { VovkJSONSchemaBase, VovkRequest } from '../types';
 
-export type ToModelOutputFn<TOutput, TFormattedOutput> = (
+export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
   result: TOutput | Error,
-  tool: VovkTool,
+  tool: VovkTool<TInput, TOutput, unknown>,
   req: Pick<VovkRequest, 'vovk'> | null
 ) => TFormattedOutput | Promise<TFormattedOutput>;
 
 interface VovkToolCommon<
-  TInput = KnownAny,
+  TInput = unknown,
   TOutput = unknown,
   TFormattedOutput = unknown,
   TIsDerived extends boolean = boolean,
@@ -46,20 +46,20 @@ interface VovkToolCommon<
   type: 'function';
 }
 
-export type VovkToolDerived<TInput = KnownAny, TOutput = unknown, TFormattedOutput = unknown> = VovkToolCommon<
+export type VovkToolDerived<TInput, TOutput, TFormattedOutput> = VovkToolCommon<
   TInput,
   TOutput,
   TFormattedOutput,
   true
 >;
-export type VovkToolNonDerived<TInput = KnownAny, TOutput = unknown, TFormattedOutput = unknown> = VovkToolCommon<
+export type VovkToolNonDerived<TInput, TOutput, TFormattedOutput> = VovkToolCommon<
   TInput,
   TOutput,
   TFormattedOutput,
   false
 >;
 
-export type VovkTool<TInput = KnownAny, TOutput = unknown, TFormattedOutput = unknown> =
+export type VovkTool<TInput = unknown, TOutput = unknown, TFormattedOutput = unknown> =
   | VovkToolDerived<TInput, TOutput, TFormattedOutput>
   | VovkToolNonDerived<TInput, TOutput, TFormattedOutput>;
 

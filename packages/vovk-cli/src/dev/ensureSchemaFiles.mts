@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import debounce from 'lodash/debounce.js';
-import { VovkSchemaIdEnum } from 'vovk';
+import { VovkSchemaIdEnum } from 'vovk/internal';
 import { writeOneSegmentSchemaFile, META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from './writeOneSegmentSchemaFile.mjs';
 import { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { formatLoggedSegmentName } from '../utils/formatLoggedSegmentName.mjs';

@@ -1,9 +1,10 @@
 import { it, describe, beforeEach } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import type { VovkSchema, VovkStrictConfig } from 'vovk';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
+import type { VovkSchema } from 'vovk';
+import type { VovkStrictConfig } from 'vovk/internal';
+import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfig from '../../lib/updateConfig.mts';
 import { importFresh } from '../../lib/importFresh.mts';
 import updateConfigProperty from '../../lib/updateConfigProperty.mts';

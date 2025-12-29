@@ -1,15 +1,14 @@
 import { StandardSchemaV1 } from '@standard-schema/spec';
-import type { KnownAny, VovkHandlerSchema, VovkRequest } from '../types';
-import type { VovkToolDerived } from './types';
+import type { VovkHandlerSchema, VovkRequest } from '../types';
+import type { VovkToolDerived, ToModelOutputFn } from './types';
 import { ToModelOutput } from './ToModelOutput';
-import type { ToModelOutputFn } from './types';
 import { DefaultModelOutput } from './toModelOutputDefault';
 
 // Standard tool input type
-type DerivedToolInput = { body?: KnownAny; query?: KnownAny; params?: KnownAny };
+type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };
 
-type Handler = ((...args: KnownAny[]) => KnownAny) & {
-  fn?: (input: unknown) => KnownAny;
+type Handler = ((...args: unknown[]) => unknown) & {
+  fn?: (input: unknown) => [unknown, Pick<VovkRequest, 'vovk'> | null];
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
   models?: {
@@ -23,9 +22,9 @@ type Handler = ((...args: KnownAny[]) => KnownAny) & {
 
 type CallerInput<TOutput, TFormattedOutput> = {
   handler: Handler;
-  body: KnownAny;
-  query: KnownAny;
-  params: KnownAny;
+  body: unknown;
+  query: unknown;
+  params: unknown;
   schema: VovkHandlerSchema;
   inputSchemas:
     | {
@@ -34,10 +33,10 @@ type CallerInput<TOutput, TFormattedOutput> = {
         params?: StandardSchemaV1;
       }
     | undefined;
-  meta: Record<string, KnownAny> | undefined;
+  meta: Record<string, unknown> | undefined;
   handlerName: string;
   moduleName: string;
-  toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
+  toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
 };
 
 async function caller<TOutput, TFormattedOutput>(
@@ -49,7 +48,7 @@ async function caller<TOutput, TFormattedOutput>(
   }
   try {
     let result;
-    let req;
+    let req = null;
     if (handler.isRPC) {
       result = await handler({
         handler,
@@ -72,9 +71,12 @@ async function caller<TOutput, TFormattedOutput>(
       );
     }
 
-    return [await toModelOutput(result, tool, req), req];
+    return [
+      await toModelOutput(result as TOutput, tool as VovkToolDerived<unknown, TOutput, TFormattedOutput>, req),
+      req,
+    ];
   } catch (e) {
-    return [await toModelOutput(e as Error, tool, null), null];
+    return [await toModelOutput(e as Error, tool as VovkToolDerived<unknown, TOutput, TFormattedOutput>, null), null];
   }
 }
 
@@ -90,8 +92,8 @@ const makeTool = <TOutput, TFormattedOutput>({
   moduleName: string;
   handlerName: string;
   module: Record<string, Handler>;
-  meta: Record<string, KnownAny> | undefined;
-  toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
+  meta: Record<string, unknown> | undefined;
+  toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
   onExecute: (
     result: unknown,
     tool: VovkToolDerived<DerivedToolInput, TOutput, TFormattedOutput>,
@@ -120,11 +122,7 @@ const makeTool = <TOutput, TFormattedOutput>({
     throw new Error(`Handler "${handlerName}" in module "${moduleName}" does not have a valid schema.`);
   }
 
-  const execute = async (input: {
-    body?: KnownAny;
-    query?: KnownAny;
-    params?: KnownAny;
-  }): Promise<TFormattedOutput> => {
+  const execute = async (input: { body?: unknown; query?: unknown; params?: unknown }): Promise<TFormattedOutput> => {
     const { body, query, params } = input;
 
     const callerInput: CallerInput<TOutput, TFormattedOutput> = {
@@ -190,11 +188,19 @@ const makeTool = <TOutput, TFormattedOutput>({
 };
 
 // Base options type without toModelOutput
-type DeriveToolsBaseOptions = {
+type DeriveToolsBaseOptions<TOutput = unknown, TFormattedOutput = unknown> = {
   modules: Record<string, object>;
   meta?: Record<string, unknown>;
-  onExecute?: (result: KnownAny, tool: VovkToolDerived, req: Pick<VovkRequest, 'vovk'> | null) => void;
-  onError?: (error: Error, tool: VovkToolDerived, req: Pick<VovkRequest, 'vovk'> | null) => void;
+  onExecute?: (
+    result: unknown,
+    tool: VovkToolDerived<DerivedToolInput, TOutput, TFormattedOutput>,
+    req: Pick<VovkRequest, 'vovk'> | null
+  ) => void;
+  onError?: (
+    error: Error,
+    tool: VovkToolDerived<DerivedToolInput, TOutput, TFormattedOutput>,
+    req: Pick<VovkRequest, 'vovk'> | null
+  ) => void;
 };
 
 // Return type helper
@@ -213,7 +219,7 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = DefaultModelOu
 // Overload: with toModelOutput - infers TFormattedOutput from the function
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
   options: DeriveToolsBaseOptions & {
-    toModelOutput: ToModelOutputFn<TOutput, TFormattedOutput>;
+    toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
   }
 ): DeriveToolsResult<TOutput, TFormattedOutput>;
 
@@ -221,14 +227,22 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(options: {
   modules: Record<string, object>;
   meta?: Record<string, unknown>;
-  toModelOutput?: ToModelOutputFn<TOutput, TFormattedOutput>;
-  onExecute?: (result: unknown, tool: VovkToolDerived, req: Pick<VovkRequest, 'vovk'> | null) => void;
-  onError?: (error: Error, tool: VovkToolDerived, req: Pick<VovkRequest, 'vovk'> | null) => void;
+  toModelOutput?: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
+  onExecute?: (
+    result: unknown,
+    tool: VovkToolDerived<DerivedToolInput, TOutput, TFormattedOutput>,
+    req: Pick<VovkRequest, 'vovk'> | null
+  ) => void;
+  onError?: (
+    error: Error,
+    tool: VovkToolDerived<DerivedToolInput, TOutput, TFormattedOutput>,
+    req: Pick<VovkRequest, 'vovk'> | null
+  ) => void;
 }): DeriveToolsResult<TOutput, TFormattedOutput> {
   const {
     modules,
     meta,
-    toModelOutput = ToModelOutput.DEFAULT as ToModelOutputFn<TOutput, TFormattedOutput>,
+    toModelOutput = ToModelOutput.DEFAULT as ToModelOutputFn<unknown, TOutput, TFormattedOutput>,
     onExecute = (result) => result,
     onError = () => {},
   } = options;

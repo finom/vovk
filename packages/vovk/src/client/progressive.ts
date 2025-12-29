@@ -1,5 +1,7 @@
 import type { VovkStreamAsyncIterable } from './types';
-import type { KnownAny, VovkYieldType } from '../types';
+import type { VovkYieldType } from '../types';
+
+type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 type UnionToIntersection<U> = (U extends KnownAny ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
@@ -17,9 +19,9 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
   const reg: Record<
     string | symbol,
     {
-      resolve: (value: KnownAny) => void;
-      reject: (reason?: KnownAny) => void;
-      promise: Promise<KnownAny>;
+      resolve: (value: unknown) => void;
+      reject: (reason?: unknown) => void;
+      promise: Promise<unknown>;
       isSettled: boolean;
     }
   > = {};

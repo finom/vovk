@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { it, describe } from 'node:test';
 import path from 'node:path';
-import { locateSegments } from '../../../dist/locateSegments.mjs';
+import { locateSegments } from '../../../dist/utils/locateSegments.mjs';
 import { getLogger } from '../../../dist/utils/getLogger.mjs';
 
 await describe('locateSegment', async () => {

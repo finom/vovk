@@ -1,6 +1,5 @@
 import type { NextResponse } from 'next/server';
 import type {
-  KnownAny,
   HttpMethod,
   ControllerStaticMethod,
   VovkHandlerSchema,
@@ -11,9 +10,11 @@ import type {
   Prettify,
   IsEmptyObject,
 } from '../types';
-import type { JSONLinesResponse } from '../JSONLinesResponse';
+import type { JSONLinesResponse } from '../core/JSONLinesResponse';
 import type { defaultStreamHandler } from './defaultStreamHandler';
 import type { defaultHandler } from './defaultHandler';
+
+type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];

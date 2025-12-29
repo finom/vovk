@@ -1,4 +1,5 @@
-import { VovkSchemaIdEnum, type VovkSchema } from 'vovk';
+import { type VovkSchema } from 'vovk';
+import { VovkSchemaIdEnum } from 'vovk/internal';
 
 export function pickSegmentFullSchema(schema: VovkSchema, segmentNames: string[]): VovkSchema {
   return {

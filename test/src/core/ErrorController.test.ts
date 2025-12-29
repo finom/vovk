@@ -1,6 +1,6 @@
 import { it, describe } from 'node:test';
 import { strictEqual, deepStrictEqual } from 'node:assert';
-import type { VovkErrorResponse } from 'vovk';
+import type { VovkErrorResponse } from 'vovk/internal';
 import { request } from '../lib.ts';
 
 describe('Errors', () => {

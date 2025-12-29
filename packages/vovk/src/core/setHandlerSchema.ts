@@ -1,7 +1,7 @@
-import type { KnownAny, VovkController, VovkHandlerSchema } from '../types';
+import type { VovkController, VovkHandlerSchema } from '../types';
 
 export async function setHandlerSchema(
-  h: ((...args: KnownAny[]) => KnownAny) & {
+  h: ((...args: unknown[]) => unknown) & {
     _getSchema?: (controller: VovkController) => Omit<VovkHandlerSchema, 'httpMethod' | 'path'>;
   },
   schema: Omit<VovkHandlerSchema, 'httpMethod' | 'path'>

@@ -2,14 +2,14 @@ import fs from 'fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
 import _ from 'lodash';
+import type { VovkSchema } from 'vovk';
 import {
   createCodeSamples,
   VovkReadmeConfig,
   VovkSchemaIdEnum,
   VovkSamplesConfig,
-  type VovkSchema,
   type VovkStrictConfig,
-} from 'vovk';
+} from 'vovk/internal';
 import * as YAML from 'yaml';
 import TOML from '@iarna/toml';
 import type { PackageJson } from 'type-fest';
@@ -17,7 +17,7 @@ import { prettify } from '../utils/prettify.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
-import type { Segment } from '../locateSegments.mjs';
+import type { Segment } from '../utils/locateSegments.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compileJSONSchemaToTypeScriptType.mjs';
 import { OpenAPIObject } from 'openapi3-ts/oas31';
 import { getTemplateClientImports } from './getTemplateClientImports.mjs';

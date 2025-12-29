@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
-import { createCodeSamples, type VovkControllerSchema, type VovkHandlerSchema } from 'vovk';
+import { createCodeSamples, type VovkControllerSchema, type VovkHandlerSchema } from 'vovk/internal';
 
 describe('createCodeSamples', () => {
   describe('JSON body with query and params', () => {

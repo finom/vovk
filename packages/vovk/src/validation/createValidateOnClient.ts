@@ -1,5 +1,5 @@
-import type { VovkValidateOnClient } from '../client';
-import type { KnownAny, VovkJSONSchemaBase } from '../types';
+import type { VovkValidateOnClient } from '../client/types';
+import type { VovkJSONSchemaBase } from '../types';
 
 export function createValidateOnClient<TFetcherOptions>({
   validate,
@@ -8,7 +8,7 @@ export function createValidateOnClient<TFetcherOptions>({
     input: unknown,
     schema: VovkJSONSchemaBase,
     meta: Parameters<VovkValidateOnClient<TFetcherOptions>>[2] & { type: 'body' | 'query' | 'params' }
-  ) => KnownAny | Promise<KnownAny>;
+  ) => unknown | Promise<unknown>;
 }): VovkValidateOnClient<TFetcherOptions> {
   const validateOnClient = async function validateOnClient(input, validation, meta) {
     const newInput = { ...input };

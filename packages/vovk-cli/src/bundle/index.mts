@@ -7,7 +7,7 @@ import { generate } from '../generate/generate.mjs';
 import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
 import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 import type { BundleOptions } from '../types.mjs';
-import { locateSegments } from '../locateSegments.mjs';
+import { locateSegments } from '../utils/locateSegments.mjs';
 
 export async function bundle({
   projectInfo,

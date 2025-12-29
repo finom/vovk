@@ -1,15 +1,8 @@
 import { CommonControllerRPC, CommonControllerDifferentFetcherRPC } from 'vovk-client';
 import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
 import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
-import {
-  HttpStatus,
-  type VovkBody,
-  type VovkErrorResponse,
-  type VovkQuery,
-  type VovkReturnType,
-  type VovkParams,
-  type VovkHandlerSchema,
-} from 'vovk';
+import { HttpStatus, type VovkBody, type VovkQuery, type VovkReturnType, type VovkParams } from 'vovk';
+import type { VovkHandlerSchema, VovkErrorResponse } from 'vovk/internal';
 import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import type CommonController from './CommonController.ts';

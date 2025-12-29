@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { glob } from 'glob';
-import type { VovkStrictConfig } from 'vovk';
+import type { VovkStrictConfig } from 'vovk/internal';
 import { resolveAbsoluteModulePath } from '../utils/resolveAbsoluteModulePath.mjs';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { getFileSystemEntryType, FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';

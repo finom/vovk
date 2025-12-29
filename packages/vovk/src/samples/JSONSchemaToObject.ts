@@ -1,6 +1,6 @@
-import { KnownAny, VovkJSONSchemaBase } from '../types';
+import { VovkJSONSchemaBase } from '../types';
 
-export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: KnownAny): KnownAny {
+export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: VovkJSONSchemaBase): unknown {
   if (!schema || typeof schema !== 'object') return null;
   // Use the input schema as the root if not provided
   rootSchema = rootSchema || schema;
@@ -41,7 +41,10 @@ export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: Know
 
   if (schema.allOf && schema.allOf.length > 0) {
     // Merge all schemas in allOf
-    const mergedSchema = schema.allOf.reduce((acc: KnownAny, s: KnownAny) => ({ ...acc, ...s }), {});
+    const mergedSchema = schema.allOf.reduce(
+      (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => ({ ...acc, ...s }),
+      {}
+    );
     return JSONSchemaToObject(mergedSchema, rootSchema);
   }
 
@@ -75,9 +78,9 @@ export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: Know
   return null;
 }
 
-function handleRef(ref: string, rootSchema: KnownAny): KnownAny {
+function handleRef(ref: string, rootSchema: VovkJSONSchemaBase): unknown {
   // Parse the reference path
-  const path = ref.split('/').slice(1); // Remove the initial '#'
+  const path = ref.split('/').slice(1) as (keyof VovkJSONSchemaBase)[]; // Remove the initial '#'
 
   // Navigate through the schema to find the referenced definition
   let current = rootSchema;
@@ -92,7 +95,7 @@ function handleRef(ref: string, rootSchema: KnownAny): KnownAny {
   return JSONSchemaToObject(current, rootSchema);
 }
 
-function handleString(schema: KnownAny): string {
+function handleString(schema: VovkJSONSchemaBase): string {
   if (schema.format) {
     switch (schema.format) {
       case 'email':
@@ -139,7 +142,7 @@ function handleString(schema: KnownAny): string {
   return 'string';
 }
 
-function handleNumber(schema: KnownAny): number {
+function handleNumber(schema: VovkJSONSchemaBase): number {
   if (schema.minimum !== undefined && schema.maximum !== undefined) {
     return schema.minimum;
   } else if (schema.minimum !== undefined) {
@@ -154,13 +157,13 @@ function handleBoolean(): boolean {
   return true;
 }
 
-function handleObject(schema: KnownAny, rootSchema: KnownAny): object {
-  const result: Record<string, KnownAny> = {};
+function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase): object {
+  const result: Record<string, unknown> = {};
 
   if (schema.properties) {
     const required = schema.required || [];
 
-    for (const [key, propSchema] of Object.entries<KnownAny>(schema.properties)) {
+    for (const [key, propSchema] of Object.entries<VovkJSONSchemaBase>(schema.properties)) {
       // Only include required properties or as a basic example
       if (required.includes(key) || required.length === 0) {
         result[key] = JSONSchemaToObject(propSchema, rootSchema);
@@ -176,7 +179,7 @@ function handleObject(schema: KnownAny, rootSchema: KnownAny): object {
   return result;
 }
 
-function handleArray(schema: KnownAny, rootSchema: KnownAny) {
+function handleArray(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase) {
   if (schema.items) {
     const itemSchema = schema.items;
     const minItems = schema.minItems || 1;

@@ -1,6 +1,6 @@
 import type { LogLevelNames } from 'loglevel';
 import type { build } from 'tsdown';
-import type { VovkStrictConfig } from 'vovk';
+import type { VovkStrictConfig } from 'vovk/internal';
 
 export type VovkModuleRenderResult = {
   fileName: string;

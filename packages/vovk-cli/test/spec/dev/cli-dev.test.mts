@@ -2,8 +2,8 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import assert from 'node:assert';
-import type { VovkSegmentSchema } from 'vovk';
 import { Agent, setGlobalDispatcher } from 'undici';
+import type { VovkSegmentSchema } from 'vovk/internal';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 
 let dev: Promise<string> & {

@@ -2,7 +2,7 @@ import type { VovkRequest } from '../types';
 
 const metaMap = new WeakMap();
 
-export function reqMeta<T = Record<'mcpOutput' | (string & {}), unknown>>(
+export function reqMeta<T = Record<'mcpOutput' | 'xMetaHeader' | (string & {}), unknown>>(
   req: Partial<VovkRequest>,
   meta?: T | null
 ): T {

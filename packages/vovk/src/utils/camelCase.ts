@@ -1,7 +1,5 @@
-import type { KnownAny } from '../types';
-
 // Convert any value to string
-function toString(value: KnownAny) {
+function toString(value: unknown): string {
   return value == null ? '' : String(value);
 }
 
