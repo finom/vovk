@@ -1,20 +1,30 @@
 import { Project, QuoteKind, IndentationText, NewLineKind, SyntaxKind, CodeBlockWriter, Node } from 'ts-morph';
 
-export default function updateConfigProperty(
-  absolutePathToTheFile: string,
-  pathToProperty: string[],
-  newValue: unknown
-) {
-  const project = new Project({
+export function updateConfigProperty(sourceCode: string, pathToProperty: string[], newValue: unknown) {
+  const project = createProject();
+  const sourceFile = project.createSourceFile('config-temp.mts', sourceCode, { overwrite: true });
+  return mutateConfig(sourceFile, pathToProperty, newValue);
+}
+
+export function updateConfigFileProperty(absolutePathToTheFile: string, pathToProperty: string[], newValue: unknown) {
+  const project = createProject();
+  const sourceFile = project.addSourceFileAtPath(absolutePathToTheFile);
+  const updated = mutateConfig(sourceFile, pathToProperty, newValue);
+  sourceFile.saveSync();
+  return updated;
+}
+
+function createProject() {
+  return new Project({
     manipulationSettings: {
       quoteKind: QuoteKind.Single,
       indentationText: IndentationText.TwoSpaces,
       newLineKind: NewLineKind.LineFeed,
     },
   });
+}
 
-  const sourceFile = project.addSourceFileAtPath(absolutePathToTheFile);
-
+function mutateConfig(sourceFile: import('ts-morph').SourceFile, pathToProperty: string[], newValue: unknown) {
   const variableDeclaration = sourceFile.getVariableDeclaration('config');
   if (!variableDeclaration) {
     throw new Error('config variable not found in the file.');
@@ -40,7 +50,7 @@ export default function updateConfigProperty(
       // Property does not exist
       if (newValue === undefined) {
         // Nothing to remove
-        return;
+        return sourceFile.getFullText();
       } else {
         // Create property
         if (i === pathToProperty.length - 1) {
@@ -85,8 +95,6 @@ export default function updateConfigProperty(
       }
     }
   }
-
-  sourceFile.saveSync();
 
   return sourceFile.getFullText();
 }

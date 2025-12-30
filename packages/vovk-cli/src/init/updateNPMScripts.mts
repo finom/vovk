@@ -11,16 +11,22 @@ export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'imp
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
 }
 
-export async function updateNPMScripts(
-  pkgJson: NPMCliPackageJson,
-  root: string,
-  updateScriptsMode: 'implicit' | 'explicit'
-) {
+export async function updateNPMScripts({
+  pkgJson,
+  bundle,
+  updateScriptsMode,
+}: {
+  pkgJson: NPMCliPackageJson;
+  root: string;
+  bundle?: boolean;
+  updateScriptsMode: 'implicit' | 'explicit';
+}) {
   pkgJson.update({
     scripts: {
       ...pkgJson.content.scripts,
       dev: getDevScript(pkgJson, updateScriptsMode),
       prebuild: 'vovk generate',
+      ...(bundle ? { bundle: 'vovk bundle' } : {}),
     },
   });
 

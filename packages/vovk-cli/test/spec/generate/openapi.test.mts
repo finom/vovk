@@ -337,7 +337,7 @@ await describe('OpenAPI flags', async () => {
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
-  await it.only('can watch JSON URL and regenerate on spec change', async () => {
+  await it('can watch JSON URL and regenerate on spec change', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());

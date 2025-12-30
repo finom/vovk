@@ -1,18 +1,20 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { VovkConfig } from 'vovk';
+import type { VovkStrictConfig } from 'vovk/internal';
 import type { getLogger } from '../utils/getLogger.mjs';
 import { prettify } from '../utils/prettify.mjs';
 import { getFileSystemEntryType, FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
 import type { InitOptions } from '../types.mjs';
+import { updateConfigProperty } from '../utils/updateConfigProperty.mjs';
 
 export async function createConfig({
   root,
-  options: { validationLibrary, lang, dryRun },
+  options: { validationLibrary, bundle, lang, dryRun },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
-  options: Pick<InitOptions, 'validationLibrary' | 'lang' | 'channel' | 'dryRun'>;
+  options: Pick<InitOptions, 'validationLibrary' | 'bundle' | 'lang' | 'channel' | 'dryRun'>;
 }) {
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
@@ -55,13 +57,33 @@ export async function createConfig({
 
   config.moduleTemplates = moduleTemplates;
 
-  const configStr = await prettify(
+  let configStr = await prettify(
     `// @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = ${JSON.stringify(config, null, 2)};
 ${isModule ? '\nexport config;' : 'module.exports = config;'}`,
     configAbsolutePath
   );
+
+  if (bundle) {
+    configStr = await updateConfigProperty(
+      configStr,
+      ['bundle', 'build'],
+      async ({ entry, outDir }: Parameters<VovkStrictConfig['bundle']['build']>[0]) => {
+        const { build } = await import('tsdown');
+        await build({
+          entry,
+          dts: true,
+          format: ['cjs', 'esm'],
+          hash: false,
+          fixedExtension: true,
+          clean: true,
+          outDir,
+          tsconfig: './tsconfig.bundle.json',
+        });
+      }
+    );
+  }
 
   if (!dryRun) await fs.writeFile(configAbsolutePath, configStr, 'utf-8');
 

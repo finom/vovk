@@ -38,6 +38,7 @@ export class Init {
       updateTsConfig,
       updateScripts,
       validationLibrary,
+      bundle,
       lang,
       dryRun,
       channel,
@@ -71,9 +72,32 @@ export class Init {
       );
     }
 
+    if (bundle) {
+      devDependencies.push('tsdown');
+      if (!dryRun) {
+        const bundleTsconfig = path.join(root, 'tsconfig.bundle.json');
+        const bundleTsconfigContent = {
+          compilerOptions: {
+            moduleResolution: 'bundler',
+            paths: {
+              'vovk/*': ['./node_modules/vovk/*'],
+            },
+          },
+        };
+        try {
+          await fs.writeFile(bundleTsconfig, JSON.stringify(bundleTsconfigContent, null, 2));
+          log.info(`Created bundle tsconfig at ${chalkHighlightThing(bundleTsconfig)}`);
+        } catch (error) {
+          log.error(
+            `Failed to create bundle tsconfig at ${chalkHighlightThing(bundleTsconfig)}: ${(error as Error).message}`
+          );
+        }
+      }
+    }
+
     if (updateScripts) {
       try {
-        if (!dryRun && pkgJson) await updateNPMScripts(pkgJson, root, updateScripts);
+        if (!dryRun && pkgJson) await updateNPMScripts({ pkgJson, root, bundle, updateScriptsMode: updateScripts });
         log.info('Updated scripts at package.json');
       } catch (error) {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
@@ -152,7 +176,7 @@ export class Init {
       const { configAbsolutePath } = await createConfig({
         root,
         log,
-        options: { validationLibrary, channel, lang, dryRun },
+        options: { validationLibrary, channel, bundle, lang, dryRun },
       });
 
       log.info('Config created successfully at ' + chalkHighlightThing(configAbsolutePath));
@@ -173,6 +197,7 @@ export class Init {
     updateTsConfig,
     updateScripts,
     validationLibrary,
+    bundle,
     lang,
     dryRun,
     channel,
@@ -198,6 +223,7 @@ export class Init {
         updateTsConfig: updateTsConfig ?? true,
         updateScripts: updateScripts ?? 'implicit',
         validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'zod'),
+        bundle: bundle ?? true,
         dryRun: dryRun ?? false,
         channel: channel ?? 'latest',
         lang: lang ?? [],
@@ -251,10 +277,32 @@ export class Init {
             ],
           })));
 
+    if (typeof updateTsConfig === 'undefined' && pkgJson) {
+      let shouldAsk = false;
+
+      try {
+        shouldAsk = !(await checkTSConfigForExperimentalDecorators(root));
+      } catch (error) {
+        log.error(`Failed to check tsconfig.json for "experimentalDecorators": ${(error as Error).message}`);
+      }
+
+      if (shouldAsk) {
+        const keys = ['experimentalDecorators'];
+        updateTsConfig = await confirm({
+          message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')} to tsconfig.json? (recommended)`,
+        });
+      }
+    }
+
+    bundle ??= await confirm({
+      message: 'Do you want to set up "tsdown" to bundle TypeScript client?',
+      default: true,
+    });
+
     updateScripts ??= !pkgJson
       ? undefined
       : await select({
-          message: 'Do you want to update "dev" and add "prebuild" NPM scripts at package.json (recommended)?',
+          message: `Do you want to update "dev" and add "prebuild"${bundle ? ' and "bundle"' : ''} NPM scripts at package.json (recommended)?`,
           default: 'implicit',
           choices: [
             {
@@ -275,23 +323,6 @@ export class Init {
           ],
         });
 
-    if (typeof updateTsConfig === 'undefined' && pkgJson) {
-      let shouldAsk = false;
-
-      try {
-        shouldAsk = !(await checkTSConfigForExperimentalDecorators(root));
-      } catch (error) {
-        log.error(`Failed to check tsconfig.json for "experimentalDecorators": ${(error as Error).message}`);
-      }
-
-      if (shouldAsk) {
-        const keys = ['experimentalDecorators'];
-        updateTsConfig = await confirm({
-          message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')} to tsconfig.json? (recommended)`,
-        });
-      }
-    }
-
     lang ??= await checkbox({
       message: 'Do you want to generate RPC client for other languages besides TypeScript (experimental)?',
       choices: [
@@ -311,6 +342,7 @@ export class Init {
         updateTsConfig,
         updateScripts,
         validationLibrary,
+        bundle,
         lang,
         dryRun,
         channel,

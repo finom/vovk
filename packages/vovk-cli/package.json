@@ -15,7 +15,7 @@
     "test-only": "npm run pre-test && node --experimental-transform-types --experimental-strip-types --test --test-only test/spec/**/*.mts",
     "test": "npm run pre-test && node --experimental-transform-types --experimental-strip-types --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u -x commander",
+    "ncu": "npm-check-updates -u -x commander,node-pty",
     "npm-publish": "npm publish"
   },
   "repository": {
@@ -39,7 +39,7 @@
     "vovk-ajv": "^0.0.0-beta.4",
     "vovk-client": "^0.0.4-beta.4",
     "vovk-python": "^0.0.1-beta.4",
-    "vovk-rust": "^0.0.1-beta.4"
+    "vovk-rust": "^0.0.1-beta.6"
   },
   "optionalDependencies": {
     "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.57"
@@ -83,7 +83,7 @@
     "concat-stream": "^2.0.0",
     "create-next-app": "^16.1.1",
     "http-server": "^14.1.1",
-    "node-pty": "^1.1.0",
+    "node-pty": "0.10.1",
     "tsdown": "^0.18.3",
     "zod": "^4.2.1"
   }

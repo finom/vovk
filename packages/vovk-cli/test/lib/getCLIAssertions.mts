@@ -2,11 +2,11 @@ import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
 import { runScript } from './runScript.mts';
 import path from 'node:path';
-import { getUserConfig } from '../../dist/getProjectInfo/getConfig/getUserConfig.mjs';
+import { getUserConfig } from '../../src/getProjectInfo/getConfig/getUserConfig.mjs';
 import type { VovkConfig } from 'vovk';
-import { getFileSystemEntryType, FileSystemEntryType } from '../../dist/utils/getFileSystemEntryType.mjs';
-import { checkTSConfigForExperimentalDecorators } from '../../dist/init/checkTSConfigForExperimentalDecorators.mjs';
-import { getConfig } from '../../dist/getProjectInfo/getConfig/index.mjs';
+import { getFileSystemEntryType, FileSystemEntryType } from '../../src/utils/getFileSystemEntryType.mjs';
+import { checkTSConfigForExperimentalDecorators } from '../../src/init/checkTSConfigForExperimentalDecorators.mjs';
+import { getConfig } from '../../src/getProjectInfo/getConfig/index.mjs';
 
 export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);
@@ -61,7 +61,10 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     );
   }
 
-  assertConfig.makeConfig = (validationLibrary: string | null, extras?: Partial<VovkConfig>) => {
+  assertConfig.makeConfig = (
+    validationLibrary: string | null,
+    extras?: Omit<Partial<VovkConfig>, 'bundle'> & { bundle?: { build: '__TSDOWN__' } }
+  ) => {
     const typeTemplates = {
       controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
       service: 'vovk-cli/module-templates/type/service.ts.ejs',
@@ -90,7 +93,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     config.outputConfig.imports ??= {};
     config.outputConfig.imports.validateOnClient = 'vovk-ajv';
 
-    return { ...config, ...extras };
+    return { ...config, ...(extras as unknown as Partial<VovkConfig>) };
   };
 
   assertConfig.getStrictConfig = () => getConfig({ cwd: projectDir });

@@ -7,7 +7,7 @@ import type { VovkStrictConfig } from 'vovk/internal';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfig from '../../lib/updateConfig.mts';
 import { importFresh } from '../../lib/importFresh.mts';
-import updateConfigProperty from '../../lib/updateConfigProperty.mts';
+import { updateConfigFileProperty } from '../../../src/utils/updateConfigProperty.mts';
 
 await describe('TypeScript bundle', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, vovkDevAndKill, assertDirFileList } = getCLIAssertions({
@@ -16,7 +16,7 @@ await describe('TypeScript bundle', async () => {
   });
 
   const setupBuildConfig = async () => {
-    await updateConfigProperty(
+    await updateConfigFileProperty(
       path.join(projectDir, 'vovk.config.js'),
       ['bundle', 'build'],
       async ({ entry, outDir }: Parameters<VovkStrictConfig['bundle']['build']>[0]) => {
@@ -106,8 +106,8 @@ await describe('TypeScript bundle', async () => {
 
   await it('Builds composed bundle with included segments', async () => {
     await vovkDevAndKill();
-    await updateConfigProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
-    await updateConfigProperty(
+    await updateConfigFileProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
+    await updateConfigFileProperty(
       path.join(projectDir, 'vovk.config.js'),
       ['bundle', 'includeSegments'],
       ['foo', 'bar/baz']
@@ -131,8 +131,12 @@ await describe('TypeScript bundle', async () => {
 
   await it('Builds composed bundle with excluded segments', async () => {
     await vovkDevAndKill();
-    await updateConfigProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
-    await updateConfigProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'excludeSegments'], ['', 'bar/baz']);
+    await updateConfigFileProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
+    await updateConfigFileProperty(
+      path.join(projectDir, 'vovk.config.js'),
+      ['bundle', 'excludeSegments'],
+      ['', 'bar/baz']
+    );
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
     await assertDirFileList('./composed-bundle', [
       'index.mjs',

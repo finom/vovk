@@ -9,17 +9,117 @@ import NPMCliPackageJson from '@npmcli/package-json';
 import { deepStrictEqual } from 'node:assert';
 
 const combos = {
-  NO_VALIDATION: ['N', ENTER, ENTER, 'Y', ENTER, ENTER, ENTER],
-  NO_TS_CONFIG_UPDATE: [ENTER, ENTER, 'N', ENTER, ENTER],
-  ONE_FLAG_PASSED: [ENTER, ENTER, ENTER],
+  /*
+    Answers sequence for prompts:
+    - validationLibrary
+    - updateTsConfig
+    - bundle
+    - updateScripts
+    - langs
+  */
+  NO_VALIDATION: [
+    // Validation library: None
+    'N',
+    ENTER,
+    // Update tsconfig.json: Yes
+    ENTER,
+    // Bundle setup: Yes
+    ENTER,
+    // Update scripts: Yes
+    ENTER,
+    // Languages: None
+    ENTER,
+  ],
+  NO_TS_CONFIG_UPDATE: [
+    // Validation library: Zod
+    ENTER,
+    // Update tsconfig.json: No
+    'N',
+    ENTER,
+    // Bundle setup: Yes
+    ENTER,
+    // Update scripts: Yes
+    ENTER,
+    // Languages: None
+    ENTER,
+  ],
+  ONE_FLAG_PASSED: [ENTER, ENTER, ENTER, ENTER],
   YES: [ENTER, ENTER, ENTER, ENTER, ENTER],
-  RUST: [ENTER, ENTER, ENTER, DOWN, SPACE, ENTER],
-  PYTHON_AND_RUST: [ENTER, ENTER, ENTER, SPACE, DOWN, SPACE, ENTER],
-  VALIBOT: [DOWN, DOWN, DOWN, SPACE, ENTER, ENTER, ENTER, ENTER],
-  ARKTYPE: [DOWN, DOWN, SPACE, ENTER, ENTER, ENTER, ENTER],
+  RUST: [
+    // Validation library: Zod
+    ENTER,
+    // Update tsconfig.json: Yes
+    ENTER,
+    // Bundle setup: Yes
+    ENTER,
+    // Update scripts: Yes
+    ENTER,
+    // Languages: Rust
+    DOWN,
+    SPACE,
+    ENTER,
+  ],
+  PYTHON_AND_RUST: [
+    // Validation library: Zod
+    ENTER,
+    // Update tsconfig.json: Yes
+    ENTER,
+    // Bundle setup: Yes
+    ENTER,
+    // Update scripts: Yes
+    ENTER,
+    // Languages: Python, Rust
+    SPACE,
+    DOWN,
+    SPACE,
+    ENTER,
+  ],
+  NO_BUNDLE: [
+    // Validation library: Zod
+    ENTER,
+    // Update tsconfig.json: Yes
+    ENTER,
+    // Bundle setup: No
+    'N',
+    ENTER,
+    // Update scripts: Yes
+    ENTER,
+    // Languages: None
+    ENTER,
+  ],
+  VALIBOT: [
+    // Validation library: Valibot
+    DOWN,
+    DOWN,
+    DOWN,
+    SPACE,
+    // Update tsconfig.json: Yes
+    ENTER,
+    // Bundle setup: Yes
+    ENTER,
+    // Update scripts: Yes
+    ENTER,
+    // Languages: None
+    ENTER,
+  ],
+  ARKTYPE: [
+    // Validation library: Arktype
+    DOWN,
+    DOWN,
+    SPACE,
+    ENTER,
+    // Update tsconfig.json: Yes
+    ENTER,
+    // Bundle setup: Yes
+    ENTER,
+    // Update scripts: Yes
+    ENTER,
+    // Languages: None
+    ENTER,
+  ],
 };
 
-await describe('CLI init', async () => {
+await describe.only('CLI init', async () => {
   const dir = 'tmp_test_dir_init';
   const cwd = path.resolve(import.meta.dirname, '../../..');
 
@@ -49,7 +149,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -76,7 +176,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
       opposite: true,
     });
 
@@ -99,7 +199,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -116,7 +216,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -153,7 +253,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -173,7 +273,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -190,7 +290,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -208,7 +308,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -231,7 +331,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -250,7 +350,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -269,7 +369,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -288,7 +388,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -307,7 +407,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertDeps({
@@ -331,7 +431,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client', 'vovk-ajv'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertDeps({
@@ -355,7 +455,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client', 'zod'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -374,7 +474,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client', 'arktype'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -393,7 +493,7 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client', 'valibot', '@valibot/to-json-schema'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'tsdown'],
     });
 
     await assertScripts({
@@ -487,7 +587,7 @@ await describe('CLI init', async () => {
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-        devDependencies: ['vovk-cli'],
+        devDependencies: ['vovk-cli', 'tsdown'],
       });
 
       await assertScripts({
@@ -518,7 +618,7 @@ await describe('CLI init', async () => {
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod'],
-        devDependencies: ['vovk-cli'],
+        devDependencies: ['vovk-cli', 'tsdown'],
       });
 
       await assertScripts({
@@ -553,7 +653,7 @@ await describe('CLI init', async () => {
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-        devDependencies: ['vovk-cli'],
+        devDependencies: ['vovk-cli', 'tsdown'],
       });
 
       await assertScripts({
@@ -584,7 +684,7 @@ await describe('CLI init', async () => {
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod'],
-        devDependencies: ['vovk-cli'],
+        devDependencies: ['vovk-cli', 'tsdown'],
       });
 
       await assertScripts({
@@ -619,7 +719,7 @@ await describe('CLI init', async () => {
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-        devDependencies: ['vovk-cli'],
+        devDependencies: ['vovk-cli', 'tsdown'],
       });
 
       await assertScripts({
@@ -650,7 +750,7 @@ await describe('CLI init', async () => {
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod'],
-        devDependencies: ['vovk-cli'],
+        devDependencies: ['vovk-cli', 'tsdown'],
       });
 
       await assertScripts({

@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import updateConfigProperty from '../../lib/updateConfigProperty.mts';
+import { updateConfigFileProperty } from '../../../src/utils/updateConfigProperty.mts';
 
 await describe('CLI new controller and flags', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
@@ -42,7 +42,7 @@ await describe('CLI new controller and flags', async () => {
   await it('New controller with rootSegmentModulesDirName set at config', async () => {
     await createNextApp();
     await vovkInit('--yes --validation-library=none');
-    await updateConfigProperty(path.join(cwd, dir, 'vovk.config.js'), ['rootSegmentModulesDirName'], 'myRoot');
+    await updateConfigFileProperty(path.join(cwd, dir, 'vovk.config.js'), ['rootSegmentModulesDirName'], 'myRoot');
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,

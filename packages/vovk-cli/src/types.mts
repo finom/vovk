@@ -71,6 +71,7 @@ export interface InitOptions {
   skipInstall?: boolean;
   updateTsConfig?: boolean;
   updateScripts?: 'implicit' | 'explicit';
+  bundle?: boolean;
   validationLibrary?: 'zod' | 'valibot' | 'arktype' | null;
   dryRun?: boolean;
   lang?: string[];

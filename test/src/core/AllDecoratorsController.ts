@@ -27,12 +27,12 @@ export default class AllDecoratorsController {
     return {};
   }
 
-  @head()
+  @head('', { headers: { 'x-head-header': 'head' } })
   static headMethod() {
     return {};
   }
 
-  @options()
+  @options('', { headers: { 'x-options-header': 'options' } })
   static optionsMethod() {
     return {};
   }

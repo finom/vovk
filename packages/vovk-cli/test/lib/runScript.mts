@@ -34,7 +34,7 @@ export function runScript(
   };
 
   const child = pty.spawn('sh', ['-c', commandWithArgs], {
-    env: envWithPath,
+    env: envWithPath as { [key: string]: string },
     cwd: options.cwd,
     cols: 80,
     rows: 30,

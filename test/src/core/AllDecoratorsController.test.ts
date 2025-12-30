@@ -33,4 +33,18 @@ describe('All decorators', () => {
     strictEqual(response.status, 200);
     deepStrictEqual(response.body, { before: true });
   });
+
+  it('Should handle head headers', async () => {
+    const response = await request.head(`/all-decorators`);
+
+    strictEqual(response.status, 200);
+    strictEqual(response.headers['x-head-header'], 'head');
+  });
+
+  it('Should handle options headers', async () => {
+    const response = await request.options(`/all-decorators`);
+
+    strictEqual(response.status, 200);
+    strictEqual(response.headers['x-options-header'], 'options');
+  });
 });

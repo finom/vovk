@@ -233,6 +233,7 @@ program
   .option('--skip-install', 'skip installing dependencies')
   .option('--update-ts-config', 'update tsconfig.json')
   .option('--update-scripts <mode>', 'update package.json scripts ("implicit" or "explicit")')
+  .option('--bundle', 'set up "tsdown" bundler')
   .option(
     '--lang <languages...>',
     'generate client for other programming languages by default ("py" for Python and "rs" for Rust are supported)'
