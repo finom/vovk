@@ -15,7 +15,11 @@ pub use crate::http_request::HttpException;
 pub mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %> {
     #[allow(unused_imports)]
     use crate::http_request::{HttpException, http_request, http_request_stream};
+    #[allow(unused_imports)]
+    use futures_util::Stream;
     use std::collections::HashMap;
+    #[allow(unused_imports)]
+    use std::pin::Pin;
 <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => { 
     const { validation, openapi, path, httpMethod } = handlerSchema;
     const handlerName = t._.snakeCase(handlerNameOriginal);
@@ -42,14 +46,14 @@ vars.convertJSONSchemasToRustTypes({
     validation?.query?.description ? `Query: ${validation?.query?.description}`: '',
     validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
 ]).filter(Boolean).map((s) => s.split('\n')).flat().map((s) => ' '.repeat(4) + '/// ' + s).join('\n') %>
-    pub fn <%= handlerName %>( 
-        body: <%- validation?.body ? (validation?.body?.['x-isForm'] ?'reqwest::blocking::multipart::Form' : `${handlerName}_::body`): '()' %>,
+    pub async fn <%= handlerName %>( 
+        body: <%- validation?.body ? (validation?.body?.['x-isForm'] ?'reqwest::multipart::Form' : `${handlerName}_::body`): '()' %>,
         query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
         params: <%- validation?.params ? `${handlerName}_::params` : '()' %>,
         headers: Option<&HashMap<String, String>>,
         api_root: Option<&str>,
         disable_client_validation: bool,
-    ) -> <%- validation?.output ? `Result<${handlerName}_::output, HttpException>` : validation?.iteration ? `Result<Box<dyn Iterator<Item = ${handlerName}_::iteration>>, HttpException>` : 'Result<serde_json::Value, HttpException>' %>{
+    ) -> <%- validation?.output ? `Result<${handlerName}_::output, HttpException>` : validation?.iteration ? `Result<Pin<Box<dyn Stream<Item = Result<${handlerName}_::iteration, HttpException>> + Send>>, HttpException>` : 'Result<serde_json::Value, HttpException>' %>{
         let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
 <%- [
                 validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
@@ -69,7 +73,7 @@ vars.convertJSONSchemasToRustTypes({
             headers,
             api_root,
             disable_client_validation,
-        );
+        ).await;
 
         result
     }

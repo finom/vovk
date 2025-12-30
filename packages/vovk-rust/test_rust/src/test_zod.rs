@@ -1,16 +1,14 @@
 #[cfg(test)]
 pub mod test_zod {
-    use core::panic;
-
     use generated_rust_client::with_zod_client_controller_rpc;
     use crate::get_constraining_object;
-    use generated_rust_client::HttpException;
-    use reqwest::blocking::multipart;
+    use reqwest::multipart;
+    use futures_util::StreamExt;
 
      
     // #[ignore = "needs external database"] | #[should_panic(expected = "Invalid input")]
-    #[test]
-    fn test_ok() {
+    #[tokio::test]
+    async fn test_ok() {
          use with_zod_client_controller_rpc::handle_all_::{ 
             body as Body,
             query as Query,
@@ -37,7 +35,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
         // print data
         println!("data: {}", serde_json::to_string_pretty(&data).unwrap());
 
@@ -64,8 +62,8 @@ pub mod test_zod {
     }
     
     // test body validation
-    #[test]
-    fn test_body() {
+    #[tokio::test]
+    async fn test_body() {
         // Test successful body validation
         let data = with_zod_client_controller_rpc::handle_body(
             with_zod_client_controller_rpc::handle_body_::body {
@@ -76,7 +74,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
 
         assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"hello": "world"}));
 
@@ -88,7 +86,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        );
+        ).await;
         
         assert!(result.is_err());
         let err = result.err().unwrap().to_string();
@@ -101,14 +99,14 @@ pub mod test_zod {
             None,
             None,
             true,
-        );
+        ).await;
         
         assert!(result.is_err());
         assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
     
-    #[test]
-    fn test_query() {
+    #[tokio::test]
+    async fn test_query() {
         // Test successful query validation
         let data = with_zod_client_controller_rpc::handle_query(
             (),
@@ -119,7 +117,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
 
        assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"search": "value"}));
 
@@ -131,7 +129,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        );
+        ).await;
           
         assert!(result.is_err());
         let err = result.err().unwrap().to_string();
@@ -144,14 +142,14 @@ pub mod test_zod {
             None,
             None,
             true,
-        );
+        ).await;
         
         assert!(result.is_err());
         assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
 
-    #[test]
-    fn test_nested_query() {
+    #[tokio::test]
+    async fn test_nested_query() {
         use serde_json::json;
         
         // Create a complex nested query structure
@@ -191,7 +189,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
 
         // Convert both to Value for easy comparison
         let data_value = serde_json::to_value(&data).unwrap();
@@ -210,7 +208,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        );
+        ).await;
         
         assert!(result.is_err());
         let err = result.err().unwrap().to_string();
@@ -224,14 +222,14 @@ pub mod test_zod {
             None,
             None,
             true,
-        );
+        ).await;
         
         assert!(result.is_err());
         assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
 
-    #[test]
-    fn test_params() {
+    #[tokio::test]
+    async fn test_params() {
         // Test successful params validation
         let data = with_zod_client_controller_rpc::handle_params(
             (),
@@ -243,7 +241,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
 
         assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"foo": "foo", "bar": "bar"}));
 
@@ -255,7 +253,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        );
+        ).await;
         
         assert!(result.is_err());
         let err = result.err().unwrap().to_string();
@@ -268,14 +266,14 @@ pub mod test_zod {
             None,
             None,
             true,
-        );
+        ).await;
         
         assert!(result.is_err());
         assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
     
-    #[test]
-    fn test_output() {
+    #[tokio::test]
+    async fn test_output() {
         // Test successful output validation
         let data = with_zod_client_controller_rpc::handle_output(
             (),
@@ -286,7 +284,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
 
         assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"hello": "world"}));
 
@@ -300,14 +298,14 @@ pub mod test_zod {
             None,
             None,
             false,
-        );
+        ).await;
         
         assert!(result.is_err());
         assert!(result.err().unwrap().to_string().contains("Validation failed"));
     }
 
-     #[test]
-    fn test_form() {
+    #[tokio::test]
+    async fn test_form() {
         let form = multipart::Form::new()
             .text("hello", "world");
         // Test successful form data validation
@@ -320,7 +318,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
 
         assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"hello": "world", "search": "value"}));
 
@@ -337,15 +335,15 @@ pub mod test_zod {
             None,
             None,
             false,
-        );
+        ).await;
         
         assert!(result.is_err());
         let err = result.err().unwrap().to_string();
         assert!(err.contains("hello"));
     }
     
-    #[test]
-    fn test_form_with_file() {        
+    #[tokio::test]
+    async fn test_form_with_file() {        
         // Create file content
         let file_content = "file_text_content";
         let file_part = multipart::Part::text(file_content)
@@ -366,7 +364,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
 
         assert_eq!(
             serde_json::to_value(&data).unwrap(), 
@@ -374,8 +372,8 @@ pub mod test_zod {
         );
     }
     
-    #[test]
-    fn test_form_with_multiple_files() {
+    #[tokio::test]
+    async fn test_form_with_multiple_files() {
         let form = multipart::Form::new()
             .text("hello", "world")
             .part("files", multipart::Part::text("file_text_content1")
@@ -394,7 +392,7 @@ pub mod test_zod {
             None,
             None,
             false,
-        ).unwrap();
+        ).await.unwrap();
 
         assert_eq!(
             serde_json::to_value(&data).unwrap(), 
@@ -406,12 +404,12 @@ pub mod test_zod {
         );
     }
     
-    #[test]
-    fn test_stream() {
+    #[tokio::test]
+    async fn test_stream() {
         // Test successful streaming
         let values = vec!["a", "b", "c", "d"];
         
-        let stream_response: Result<Box<dyn Iterator<Item = with_zod_client_controller_rpc::handle_stream_::iteration>>, HttpException> = with_zod_client_controller_rpc::handle_stream(
+        let stream_response = with_zod_client_controller_rpc::handle_stream(
             (),
             with_zod_client_controller_rpc::handle_stream_::query {
                 values: values.iter().map(|s| s.to_string()).collect(),
@@ -420,17 +418,24 @@ pub mod test_zod {
             None,
             None,
             false,
-        );
+        ).await;
 
         match stream_response {
-            Ok(stream) => {
-                // Iterate through the stream and check values
-                for (i, result) in stream.enumerate() {
-                    assert_eq!(
-                        serde_json::to_value(&result).unwrap(), 
-                        serde_json::json!({"value": values[i]})
-                    );
+            Ok(mut stream) => {
+                let mut idx = 0;
+                while let Some(item) = stream.next().await {
+                    match item {
+                        Ok(result) => {
+                            assert_eq!(
+                                serde_json::to_value(&result).unwrap(), 
+                                serde_json::json!({"value": values[idx]})
+                            );
+                            idx += 1;
+                        }
+                        Err(e) => panic!("Error reading from stream: {:?}", e),
+                    }
                 }
+                assert_eq!(idx, values.len());
             },
             Err(e) => panic!("Error initiating stream: {:?}", e),
         }
@@ -445,26 +450,25 @@ pub mod test_zod {
             None,
             None,
             false,
-        );
+        ).await;
         // Iterate through the error_stream and expect it to fail with Zod validation error
         match error_stream_response {
-            Ok(stream) => {
-                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    for (i, _) in stream.enumerate() {
-                        println!("Item {} processed", i);
+            Ok(mut stream) => {
+                let mut saw_err = false;
+                while let Some(item) = stream.next().await {
+                    if item.is_err() {
+                        saw_err = true;
+                        break;
                     }
-                }));
-                assert!(result.is_err(), "Expected an error during stream iteration but none occurred");
-
+                }
+                assert!(saw_err, "Expected an error during stream iteration but none occurred");
             }
-            Err(e) => {
-                panic!("Error initiating stream: {:?}", e);
-            }
+            Err(e) => panic!("Error initiating stream: {:?}", e),
         }        
     }
 
-    #[test]
-    fn test_constraints() {
+    #[tokio::test]
+    async fn test_constraints() {
         // List of keys that are not supported
         let not_supported = vec![
             // JSON validator doesn't support these keys
@@ -493,7 +497,7 @@ pub mod test_zod {
             None,
             None,
             false
-        );
+        ).await;
         assert!(result.is_ok(), "Valid object should pass validation");
         
         // Convert struct to JSON to access its keys
@@ -517,7 +521,7 @@ pub mod test_zod {
                 None,
                 None,
                 true // disable client validation
-            );
+            ).await;
             
             assert!(result_server.is_err(), "Server validation should fail for key {}", key);
             let err_msg = result_server.err().unwrap().to_string();
@@ -534,7 +538,7 @@ pub mod test_zod {
                 None,
                 None,
                 false // enable client validation
-            );
+            ).await;
             
             assert!(result_client.is_err(), "Client validation should fail for key {}", key);
             let err_msg = result_client.err().unwrap().to_string();

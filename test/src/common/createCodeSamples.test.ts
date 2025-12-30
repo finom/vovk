@@ -188,7 +188,8 @@ use serde_json::{
   json 
 };
 
-pub fn main() {
+#[tokio::main]
+async fn main() {
   let response = user_zod_rpc::update_user(
     from_value(json!({
         // -----
@@ -212,7 +213,7 @@ pub fn main() {
     None, /* headers (HashMap) */ 
     None, /* api_root */
     false, /* disable_client_validation */
-  );
+  ).await;
 
 match response {
     Ok(output) => println!("{:?}", output),
@@ -478,18 +479,19 @@ use serde_json::{
   from_value, 
   json 
 };
-use multipart;
+use reqwest::multipart;
 
-pub fn main() {
-  let form = multipart::Form::new()
+#[tokio::main]
+async fn main() {
+  let form = reqwest::multipart::Form::new()
     // User email
     .part("email", "user@example.com");
     // Resume file
-    .part("resume", multipart::Part::bytes(binary_data).mime_str("image/png").unwrap());
+    .part("resume", reqwest::multipart::Part::bytes(binary_data).mime_str("image/png").unwrap());
     // Portfolio samples
-    .part("portfolioSamples", multipart::Part::bytes(binary_data));
+    .part("portfolioSamples", reqwest::multipart::Part::bytes(binary_data));
     // Portfolio samples
-    .part("portfolioSamples", multipart::Part::bytes(binary_data));
+    .part("portfolioSamples", reqwest::multipart::Part::bytes(binary_data));
 
   let response = form_zod_rpc::submit_form(
     form, /* body */ 
@@ -501,7 +503,7 @@ pub fn main() {
     None, /* headers (HashMap) */ 
     None, /* api_root */
     false, /* disable_client_validation */
-  );
+  ).await;
 
 match response {
     Ok(output) => println!("{:?}", output),
@@ -631,8 +633,10 @@ use serde_json::{
   from_value, 
   json 
 };
+use futures_util::StreamExt;
 
-pub fn main() {
+#[tokio::main]
+async fn main() {
   let response = stream_rpc::stream_tokens(
     (), /* body */ 
     (), /* query */ 
@@ -640,18 +644,28 @@ pub fn main() {
     None, /* headers (HashMap) */ 
     None, /* api_root */
     false, /* disable_client_validation */
-  );
+  ).await;
 
 match response {
-    Ok(stream) => {
-      for (i, item) in stream.enumerate() {
-        println!("#{}: {:?}", i, item);
-        /*
-        #0: iteration {
-            // Stream message
-            message: "string"
+    Ok(mut stream) => {
+      let mut i = 0;
+      while let Some(item) = stream.next().await {
+        match item {
+          Ok(value) => {
+            println!("#{}: {:?}", i, value);
+            /*
+            #0: iteration {
+                // Stream message
+                message: "string"
+            }
+            */
+            i += 1;
+          }
+          Err(e) => {
+            eprintln!("stream error: {:?}", e);
+            break;
+          }
         }
-        */
       }
     },
     Err(e) => println!("Error initiating stream: {:?}", e),
@@ -758,7 +772,8 @@ use serde_json::{
   json 
 };
 
-pub fn main() {
+#[tokio::main]
+async fn main() {
   let response = config_rpc::send_data(
     from_value(json!({
         "data": "string"
@@ -769,9 +784,9 @@ pub fn main() {
       ("Authorization".to_string(), "Bearer token123".to_string()),
       ("X-Custom-Header".to_string(), "custom-value".to_string())
     ])), /* headers */
-    "https://api.example.com".to_string(), /* api_root */
+    Some("https://api.example.com"), /* api_root */
     false, /* disable_client_validation */
-  );
+  ).await;
 }`;
 
       assert.strictEqual(result.rs, expected);
@@ -815,7 +830,8 @@ use serde_json::{
   json 
 };
 
-pub fn main() {
+#[tokio::main]
+async fn main() {
   let response = simple_rpc::ping(
     (), /* body */ 
     (), /* query */ 
@@ -823,7 +839,7 @@ pub fn main() {
     None, /* headers (HashMap) */ 
     None, /* api_root */
     false, /* disable_client_validation */
-  );
+  ).await;
 }`;
 
       assert.strictEqual(result.ts, expectedTs);
@@ -1051,8 +1067,8 @@ const response = await MixedFormRPC.uploadProfile({
       // Python should use text encoding for text content types
       assert.ok(result.py.includes('"text_content".encode("utf-8")'));
 
-      // Rust should use multipart::Part::text for text content types
-      assert.ok(result.rs.includes('multipart::Part::text("text_content")'));
+      // Rust should use reqwest::multipart::Part::text for text content types
+      assert.ok(result.rs.includes('reqwest::multipart::Part::text("text_content")'));
     });
   });
 });

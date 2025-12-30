@@ -1,16 +1,18 @@
 use serde::{Serialize, de::DeserializeOwned};
-use reqwest::blocking::Client;
-use reqwest::Method;
-use reqwest::blocking::multipart;
-use core::panic;
+use reqwest::{Client, Method};
+use reqwest::multipart;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
+use std::pin::Pin;
 use jsonschema::JSONSchema;
 use serde_json::Value;
 use urlencoding;
 use crate::read_full_schema;
 use once_cell::sync::Lazy;
+use futures_util::{Stream, StreamExt, TryStreamExt};
+use tokio_util::codec::{FramedRead, LinesCodec};
+use tokio_util::io::StreamReader;
 
 // Custom error type for HTTP exceptions
 #[derive(Debug, Serialize)]
@@ -49,7 +51,7 @@ fn prepare_request<B, Q, P>(
     headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
-) -> Result<(reqwest::blocking::RequestBuilder, String), Box<dyn Error>>
+) -> Result<(reqwest::RequestBuilder, String), Box<dyn Error + Send + Sync>>
 where
     B: Serialize + ?Sized,
     Q: Serialize + ?Sized,
@@ -230,7 +232,7 @@ where
 
 // Main request function for regular (non-streaming) responses
 #[allow(dead_code)]
-pub fn http_request<T, B, Q, P>(
+pub async fn http_request<T, B, Q, P>(
     default_api_root: &str,
     segment_name: &str,
     controller_name: &str,
@@ -249,7 +251,6 @@ where
     Q: Serialize + ?Sized,
     P: Serialize + ?Sized,
 {
-    // Prepare the request using the helper function
     let (request, _) = prepare_request(
         default_api_root,
         segment_name,
@@ -267,67 +268,76 @@ where
         status_code: 0,
         cause: None,
     })?;
-    
-    // Send the request
-    let response = request.send().map_err(|e| HttpException {
+
+    let response = request.send().await.map_err(|e| HttpException {
         message: e.to_string(),
         status_code: 0,
         cause: None,
     })?;
-    
-    // Handle the response based on Content-Type
+
+    let status = response.status();
+    let status_code = status.as_u16() as i32;
+
     let content_type = response
         .headers()
         .get("Content-Type")
-        .and_then(|v| v.to_str().ok());
-    
-    match content_type {
-        Some(ct) if ct.contains("application/json") => {
-            let value: Value = response.json().map_err(|e| HttpException {
-                message: e.to_string(),
-                status_code: 0,
-                cause: None,
-            })?;
-            if value.get("isError").is_some() {
-                let message = value["message"]
-                    .as_str()
-                    .unwrap_or("Unknown error")
-                    .to_string();
-                let status_code = value["statusCode"].as_i64().unwrap_or(0) as i32;
-                let cause = value.get("cause").cloned();
-                return Err(HttpException {
-                    message,
-                    status_code,
-                    cause,
-                });
-            }
-            
-            let typed_value = serde_json::from_value::<T>(value).map_err(|e| HttpException {
-                message: e.to_string(),
-                status_code: 0,
-                cause: None,
-            })?;
-            Ok(typed_value)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .to_string();
+
+    if content_type.contains("application/json") {
+        let value: Value = response.json().await.map_err(|e| HttpException {
+            message: e.to_string(),
+            status_code,
+            cause: None,
+        })?;
+
+        if status.is_client_error() || status.is_server_error() || value.get("isError").is_some() {
+            let message = value
+                .get("message")
+                .and_then(|m| m.as_str())
+                .unwrap_or("Unknown error")
+                .to_string();
+            let cause = value.get("cause").cloned();
+
+            return Err(HttpException {
+                message,
+                status_code,
+                cause,
+            });
         }
-        _ => {
-            let text = response.text().map_err(|e| HttpException {
-                message: e.to_string(),
-                status_code: 0,
+
+        serde_json::from_value::<T>(value).map_err(|e| HttpException {
+            message: e.to_string(),
+            status_code,
+            cause: None,
+        })
+    } else {
+        let text = response.text().await.map_err(|e| HttpException {
+            message: e.to_string(),
+            status_code,
+            cause: None,
+        })?;
+
+        if status.is_client_error() || status.is_server_error() {
+            return Err(HttpException {
+                message: text.clone(),
+                status_code,
                 cause: None,
-            })?;
-            let typed_value = serde_json::from_str::<T>(&text).map_err(|e| HttpException {
-                message: e.to_string(),
-                status_code: 0,
-                cause: None,
-            })?;
-            Ok(typed_value)
+            });
         }
+
+        serde_json::from_str::<T>(&text).map_err(|e| HttpException {
+            message: e.to_string(),
+            status_code,
+            cause: None,
+        })
     }
 }
 
 // Request function specifically for streaming responses
 #[allow(dead_code)]
-pub fn http_request_stream<T, B, Q, P>(
+pub async fn http_request_stream<T, B, Q, P>(
     default_api_root: &str,
     segment_name: &str,
     controller_name: &str,
@@ -339,14 +349,13 @@ pub fn http_request_stream<T, B, Q, P>(
     headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
-) -> Result<Box<dyn Iterator<Item = T>>, HttpException> 
+) -> Result<Pin<Box<dyn Stream<Item = Result<T, HttpException>> + Send>>, HttpException> 
 where 
     T: DeserializeOwned + 'static,
     B: Serialize + ?Sized,
     Q: Serialize + ?Sized,
     P: Serialize + ?Sized,
 {
-    // Prepare the request using the helper function
     let (request, _) = prepare_request(
         default_api_root,
         segment_name,
@@ -364,43 +373,86 @@ where
         status_code: 0,
         cause: None,
     })?;
-    
-    // Send the request
-    let response = request.send().map_err(|e| HttpException {
+
+    let response = request.send().await.map_err(|e| HttpException {
         message: e.to_string(),
         status_code: 0,
         cause: None,
     })?;
-    
-    // Create the streaming iterator
-    let json_stream = JsonlStream {
-        reader: std::io::BufReader::new(response),
-        buffer: String::new(),
-    };
-    
-    let typed_stream = json_stream.map(|result| {
-        match result {
-            Ok(value) => {
-                if value.get("isError").is_some() {
-                    let message = value["message"]
-                        .as_str()
-                        .unwrap_or("Unknown error")
-                        .to_string();
-                    panic!("Error from server: {}", message);
-                } else {
-                    match serde_json::from_value::<T>(value) {
-                        Ok(typed_value) => typed_value,
-                        Err(e) => panic!("Failed to deserialize value: {}", e),
-                    }
+
+    let status = response.status();
+    let status_code = status.as_u16() as i32;
+
+    if !status.is_success() {
+        let message = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Streaming request failed".to_string());
+
+        return Err(HttpException {
+            message,
+            status_code,
+            cause: None,
+        });
+    }
+
+    let byte_stream = response
+        .bytes_stream()
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e));
+
+    let reader = StreamReader::new(byte_stream);
+    let lines = FramedRead::new(reader, LinesCodec::new());
+
+    let json_stream = lines.filter_map(move |line| async move {
+        match line {
+            Ok(content) => {
+                let trimmed = content.trim();
+                if trimmed.is_empty() {
+                    return None;
                 }
-            },
-            Err(e) => {
-                panic!("Error reading from stream: {}", e);
+
+                match serde_json::from_str::<Value>(trimmed) {
+                    Ok(value) => Some(Ok(value)),
+                    Err(e) => Some(Err(HttpException {
+                        message: e.to_string(),
+                        status_code,
+                        cause: None,
+                    })),
+                }
             }
+            Err(e) => Some(Err(HttpException {
+                message: e.to_string(),
+                status_code,
+                cause: None,
+            })),
         }
     });
-    
-    Ok(Box::new(typed_stream))
+
+    let typed_stream = json_stream.map(move |result| {
+        result.and_then(|value| {
+            if value.get("isError").is_some() {
+                let message = value["message"]
+                    .as_str()
+                    .unwrap_or("Unknown error")
+                    .to_string();
+                let cause = value.get("cause").cloned();
+
+                Err(HttpException {
+                    message,
+                    status_code,
+                    cause,
+                })
+            } else {
+                serde_json::from_value::<T>(value).map_err(|e| HttpException {
+                    message: e.to_string(),
+                    status_code,
+                    cause: None,
+                })
+            }
+        })
+    });
+
+    Ok(Box::pin(typed_stream))
 }
 
 // Helper function to build query strings from nested JSON
@@ -442,47 +494,3 @@ fn build_query_string(data: &Value, prefix: &str) -> String {
     }
 }
 
-// Struct and Iterator implementation for streaming JSONL responses
-struct JsonlStream {
-    reader: std::io::BufReader<reqwest::blocking::Response>,
-    buffer: String,
-}
-
-impl Iterator for JsonlStream {
-    type Item = Result<Value, Box<dyn Error>>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        use std::io::BufRead;
-        
-        self.buffer.clear();
-        match self.reader.read_line(&mut self.buffer) {
-            Ok(0) => None, // End of stream
-            Ok(_) => {
-                let line = self.buffer.trim();
-                if line.is_empty() {
-                    return self.next(); // Skip empty lines
-                }
-                
-                match serde_json::from_str::<Value>(line) {
-                    Ok(value) => {
-                        if value.get("isError").is_some() {
-                            let message = value["message"]
-                                .as_str()
-                                .unwrap_or("Unknown error")
-                                .to_string();
-                            Some(Err(Box::new(HttpException {
-                                message,
-                                status_code: 0,
-                                cause: None,
-                            })))
-                        } else {
-                            Some(Ok(value))
-                        }
-                    },
-                    Err(e) => Some(Err(Box::new(e))),
-                }
-            },
-            Err(e) => Some(Err(Box::new(e))),
-        }
-    }
-}

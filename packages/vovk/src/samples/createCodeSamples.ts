@@ -246,7 +246,7 @@ function generateRustCode({
     JSONSchemaToCode(schema, { stripQuotes: true, indent: indent ?? 4 });
 
   const getRsFormSample = (schema: VovkJSONSchemaBase) => {
-    let formSample = 'let form = multipart::Form::new()';
+    let formSample = 'let form = reqwest::multipart::Form::new()';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
       const desc = target.description ?? prop.description ?? undefined;
@@ -264,8 +264,8 @@ function generateRustCode({
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
       sampleValue = isTextFormat(schema.contentMediaType)
-        ? 'multipart::Part::text("text_content")'
-        : 'multipart::Part::bytes(binary_data)';
+        ? 'reqwest::multipart::Part::text("text_content")'
+        : 'reqwest::multipart::Part::bytes(binary_data)';
 
       if (schema.contentMediaType) {
         sampleValue += `.mime_str("${schema.contentMediaType}").unwrap()`;
@@ -307,16 +307,16 @@ use serde_json::{
   from_value, 
   json 
 };
-${bodyValidation?.['x-isForm'] ? `use multipart;\n` : ''}
-pub fn main() {${bodyValidation?.['x-isForm'] ? '\n  ' + getRsFormSample(bodyValidation) + '\n' : ''}
+${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}${bodyValidation?.['x-isForm'] ? `use reqwest::multipart;\n` : ''}#[tokio::main]
+async fn main() {${bodyValidation?.['x-isForm'] ? '\n  ' + getRsFormSample(bodyValidation) + '\n' : ''}
   let response = ${rpcNameSnake}::${handlerNameSnake}(
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
     ${paramsValidation ? serdeUnwrap(getRsJSONSample(paramsValidation)) : '()'}, /* params */ 
     ${config?.headers ? `${getHashMapSample(config.headers)}, /* headers */` : 'None, /* headers (HashMap) */ '}
-    ${config?.apiRoot ? `"${config.apiRoot}".to_string(), /* api_root */` : 'None, /* api_root */'}
+    ${config?.apiRoot ? `Some("${config.apiRoot}"), /* api_root */` : 'None, /* api_root */'}
     false, /* disable_client_validation */
-  );${
+  ).await;${
     outputValidation
       ? `\n\nmatch response {
     Ok(output) => println!("{:?}", output),
@@ -329,12 +329,22 @@ pub fn main() {${bodyValidation?.['x-isForm'] ? '\n  ' + getRsFormSample(bodyVal
   }${
     iterationValidation
       ? `\n\nmatch response {
-    Ok(stream) => {
-      for (i, item) in stream.enumerate() {
-        println!("#{}: {:?}", i, item);
-        /*
-        #0: iteration ${getRsOutputSample(iterationValidation, 8)}
-        */
+    Ok(mut stream) => {
+      let mut i = 0;
+      while let Some(item) = stream.next().await {
+        match item {
+          Ok(value) => {
+            println!("#{}: {:?}", i, value);
+            /*
+            #0: iteration ${getRsOutputSample(iterationValidation, 8)}
+            */
+            i += 1;
+          }
+          Err(e) => {
+            eprintln!("stream error: {:?}", e);
+            break;
+          }
+        }
       }
     },
     Err(e) => println!("Error initiating stream: {:?}", e),
