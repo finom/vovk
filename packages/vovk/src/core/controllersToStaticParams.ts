@@ -6,10 +6,10 @@ import type { VovkController, StaticClass } from '../types';
  * @example
  * ```ts
  * export function generateStaticParams() {
- *  return generateStaticAPI(controllers);
+ *  return controllersToStaticParams(controllers);
  * }
  */
-export function generateStaticAPI(c: Record<string, StaticClass>, slug = 'vovk') {
+export function controllersToStaticParams(c: Record<string, StaticClass>, slug = 'vovk') {
   const controllers = c as Record<string, VovkController>;
   return [
     { [slug]: ['_schema_'] },

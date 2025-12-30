@@ -36,7 +36,7 @@ export async function newSegment({
   }
 
   const code = await prettify(
-    `import { initSegment${isStaticSegment ? ', generateStaticAPI' : ''} } from 'vovk';
+    `import { initSegment${isStaticSegment ? ', controllersToStaticParams' : ''} } from 'vovk';
 
 const controllers = {};
 
@@ -45,7 +45,7 @@ ${
   isStaticSegment
     ? `
 export function generateStaticParams() {
-  return generateStaticAPI(controllers);
+  return controllersToStaticParams(controllers);
 }
 `
     : ''

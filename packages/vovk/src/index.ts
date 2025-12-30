@@ -17,7 +17,7 @@ export {
 // core
 export { HttpException } from './core/HttpException';
 export { createDecorator } from './core/createDecorator';
-export { generateStaticAPI } from './core/generateStaticAPI';
+export { controllersToStaticParams } from './core/controllersToStaticParams';
 export { multitenant } from './core/multitenant';
 export { JSONLinesResponse } from './core/JSONLinesResponse';
 export { toDownloadResponse } from './core/toDownloadResponse';

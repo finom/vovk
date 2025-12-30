@@ -1,15 +1,15 @@
-import { prefix, get, generateStaticAPI } from 'vovk';
+import { prefix, get, controllersToStaticParams } from 'vovk';
 
 @prefix('static-api')
 export default class StaticApiController {
   @get('endpoint-one')
   static endpointOne() {
-    return generateStaticAPI({ controllers: StaticApiController });
+    return controllersToStaticParams({ controllers: StaticApiController });
   }
 
   @get('endpoint-two')
   static endpointTwo() {
-    return generateStaticAPI({ controllers: StaticApiController }, 'custom');
+    return controllersToStaticParams({ controllers: StaticApiController }, 'custom');
   }
 
   @get('endpoint-three/{a}/{b}', {
