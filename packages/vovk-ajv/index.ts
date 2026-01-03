@@ -89,7 +89,7 @@ const validate = ({
       ajvLocalize[localize](ajv.errors);
       throw new HttpException(
         HttpStatus.NULL,
-        `Ajv validation failed. Invalid ${isFormData ? 'form' : type} on client: ${ajv.errorsText()}`,
+        `Client-side validation failed. Invalid ${isFormData ? 'form' : type} on client: ${ajv.errorsText()}`,
         { input, errors: ajv.errors, endpoint }
       );
     }

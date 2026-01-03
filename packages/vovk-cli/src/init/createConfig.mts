@@ -8,6 +8,20 @@ import { getFileSystemEntryType, FileSystemEntryType } from '../utils/getFileSys
 import type { InitOptions } from '../types.mjs';
 import { updateConfigProperty } from '../utils/updateConfigProperty.mjs';
 
+export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStrictConfig['bundle']['build']>[0]) => {
+  const { build } = await import('tsdown');
+  await build({
+    entry,
+    dts: true,
+    format: ['cjs', 'esm'],
+    hash: false,
+    fixedExtension: true,
+    clean: true,
+    outDir,
+    tsconfig: './tsconfig.bundle.json',
+  });
+};
+
 export async function createConfig({
   root,
   options: { validationLibrary, bundle, lang, dryRun },
@@ -61,28 +75,12 @@ export async function createConfig({
     `// @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = ${JSON.stringify(config, null, 2)};
-${isModule ? '\nexport config;' : 'module.exports = config;'}`,
+${isModule ? '\nexport default config;' : 'module.exports = config;'}`,
     configAbsolutePath
   );
 
   if (bundle) {
-    configStr = await updateConfigProperty(
-      configStr,
-      ['bundle', 'build'],
-      async ({ entry, outDir }: Parameters<VovkStrictConfig['bundle']['build']>[0]) => {
-        const { build } = await import('tsdown');
-        await build({
-          entry,
-          dts: true,
-          format: ['cjs', 'esm'],
-          hash: false,
-          fixedExtension: true,
-          clean: true,
-          outDir,
-          tsconfig: './tsconfig.bundle.json',
-        });
-      }
-    );
+    configStr = await updateConfigProperty(configStr, ['bundle', 'build'], BUNDLE_BUILD_TSDOWN);
   }
 
   if (!dryRun) await fs.writeFile(configAbsolutePath, configStr, 'utf-8');

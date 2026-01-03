@@ -3,37 +3,16 @@ import path from 'node:path';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
 import type { VovkSchema } from 'vovk';
-import type { VovkStrictConfig } from 'vovk/internal';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfig from '../../lib/updateConfig.mts';
 import { importFresh } from '../../lib/importFresh.mts';
-import { updateConfigFileProperty } from '../../../src/utils/updateConfigProperty.mts';
+import { updateConfigFileProperty } from '../../../dist/utils/updateConfigProperty.mjs';
 
 await describe('TypeScript bundle', async () => {
   const { projectDir, runAtProjectDir, createNextApp, vovkInit, vovkDevAndKill, assertDirFileList } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir_bundle',
   });
-
-  const setupBuildConfig = async () => {
-    await updateConfigFileProperty(
-      path.join(projectDir, 'vovk.config.js'),
-      ['bundle', 'build'],
-      async ({ entry, outDir }: Parameters<VovkStrictConfig['bundle']['build']>[0]) => {
-        const { build } = await import('tsdown');
-        await build({
-          entry,
-          dts: true,
-          format: ['cjs', 'esm'],
-          hash: false,
-          fixedExtension: true,
-          clean: true,
-          outDir,
-          tsconfig: './tsconfig.build.json',
-        });
-      }
-    );
-  };
 
   beforeEach(async () => {
     await createNextApp();
@@ -49,7 +28,6 @@ await describe('TypeScript bundle', async () => {
         },
       })
     );
-    await setupBuildConfig();
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new controller user');
     await runAtProjectDir('../dist/index.mjs new segment foo');
@@ -229,7 +207,6 @@ await describe('TypeScript bundle', async () => {
         },
       },
     }));
-    await setupBuildConfig();
     await fs.writeFile(path.join(projectDir, 'x.ts'), 'export const x = 1;');
     await fs.writeFile(path.join(projectDir, 'a.ts'), 'export const a = 2;');
     await fs.writeFile(path.join(projectDir, 'foo.ts'), 'export const foo = 3;');
@@ -264,8 +241,6 @@ await describe('TypeScript bundle', async () => {
       },
     }));
 
-    await setupBuildConfig();
-
     await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug --out ./dist-origin-1`);
     const { UserRPC } = await import(path.join(projectDir, 'dist-origin-1', 'index.mjs'));
@@ -284,7 +259,6 @@ await describe('TypeScript bundle', async () => {
       },
     }));
 
-    await setupBuildConfig();
     await vovkDevAndKill();
     await runAtProjectDir(
       `../dist/index.mjs bundle --log-level debug --out ./dist-origin-2 --origin https://example.org/`

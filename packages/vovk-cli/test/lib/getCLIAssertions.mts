@@ -2,11 +2,13 @@ import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
 import { runScript } from './runScript.mts';
 import path from 'node:path';
-import { getUserConfig } from '../../src/getProjectInfo/getConfig/getUserConfig.mjs';
+import { getUserConfig } from '../../dist/getProjectInfo/getConfig/getUserConfig.mjs';
 import type { VovkConfig } from 'vovk';
-import { getFileSystemEntryType, FileSystemEntryType } from '../../src/utils/getFileSystemEntryType.mjs';
-import { checkTSConfigForExperimentalDecorators } from '../../src/init/checkTSConfigForExperimentalDecorators.mjs';
-import { getConfig } from '../../src/getProjectInfo/getConfig/index.mjs';
+import type { VovkStrictConfig } from 'vovk/internal';
+import { getFileSystemEntryType, FileSystemEntryType } from '../../dist/utils/getFileSystemEntryType.mjs';
+import { checkTSConfigForExperimentalDecorators } from '../../dist/init/checkTSConfigForExperimentalDecorators.mjs';
+import { getConfig } from '../../dist/getProjectInfo/getConfig/index.mjs';
+import { BUNDLE_BUILD_TSDOWN } from '../../dist/init/createConfig.mjs';
 
 export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);
@@ -46,7 +48,34 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function assertConfig(testConfigPaths: string[], testConfig: VovkConfig | null) {
-    const { userConfig, configAbsolutePaths } = await getUserConfig({ cwd: projectDir });
+    // eslint-disable-next-line prefer-const
+    let { userConfig, configAbsolutePaths } = await getUserConfig({ cwd: projectDir });
+
+    if (typeof userConfig?.bundle?.build === 'function') {
+      // Convert functions to strings for comparison
+      userConfig = {
+        ...userConfig,
+        bundle: {
+          ...userConfig.bundle,
+          build: userConfig.bundle.build
+            .toString()
+            .replace(/\s+/g, '') as unknown as VovkStrictConfig['bundle']['build'],
+        },
+      };
+
+      testConfig = {
+        ...testConfig,
+        bundle: {
+          ...testConfig?.bundle,
+          build: testConfig?.bundle?.build
+            ?.toString()
+            .replace(/\s+/g, '') as unknown as VovkStrictConfig['bundle']['build'],
+        },
+      };
+    }
+
+    userConfig = JSON.parse(JSON.stringify(userConfig));
+    testConfig = JSON.parse(JSON.stringify(testConfig));
 
     assert.deepStrictEqual(
       configAbsolutePaths,
@@ -61,10 +90,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     );
   }
 
-  assertConfig.makeConfig = (
-    validationLibrary: string | null,
-    extras?: Omit<Partial<VovkConfig>, 'bundle'> & { bundle?: { build: '__TSDOWN__' } }
-  ) => {
+  assertConfig.makeConfig = (validationLibrary: string | null, extras?: Partial<VovkConfig>) => {
     const typeTemplates = {
       controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
       service: 'vovk-cli/module-templates/type/service.ts.ejs',
@@ -86,14 +112,19 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
       }[validationLibrary ?? 'type'],
     };
 
-    const config: VovkConfig = {
-      moduleTemplates,
-    };
+    const config: VovkConfig = {};
     config.outputConfig ??= {};
     config.outputConfig.imports ??= {};
     config.outputConfig.imports.validateOnClient = 'vovk-ajv';
 
-    return { ...config, ...(extras as unknown as Partial<VovkConfig>) };
+    config.moduleTemplates = moduleTemplates;
+
+    if (!extras || !extras.bundle || extras.bundle.build !== undefined) {
+      config.bundle ??= {} as VovkStrictConfig['bundle'];
+      config.bundle!.build ??= BUNDLE_BUILD_TSDOWN;
+    }
+
+    return { ...config, ...extras };
   };
 
   assertConfig.getStrictConfig = () => getConfig({ cwd: projectDir });
@@ -176,6 +207,21 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     }
   }
 
+  async function assertBundleTsConfig() {
+    const bundleTsconfig = path.join(projectDir, 'tsconfig.bundle.json');
+    const bundleTsconfigContent = {
+      compilerOptions: {
+        moduleResolution: 'bundler',
+        paths: {
+          'vovk/*': ['./node_modules/vovk/*'],
+        },
+      },
+    };
+
+    const content = await fs.readFile(bundleTsconfig, 'utf-8');
+    assert.deepStrictEqual(JSON.parse(content), bundleTsconfigContent, 'tsconfig.bundle.json content mismatch');
+  }
+
   async function assertFile(filePath: string, exp?: RegExp | string | RegExp[] | string[], opposite?: boolean) {
     let content;
     const p = path.join(projectDir, filePath);
@@ -233,6 +279,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     assertDeps,
     assertNotExists,
     assertTsConfig,
+    assertBundleTsConfig,
     assertFile,
     assertDirFileList,
   };

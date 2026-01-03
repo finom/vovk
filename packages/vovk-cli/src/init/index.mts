@@ -295,7 +295,7 @@ export class Init {
     }
 
     bundle ??= await confirm({
-      message: 'Do you want to set up "tsdown" to bundle TypeScript client?',
+      message: 'Do you want to set up "tsdown" and tsconfig.bundle.json to bundle TypeScript client?',
       default: true,
     });
 

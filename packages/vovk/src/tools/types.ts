@@ -1,6 +1,8 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { VovkJSONSchemaBase, VovkRequest } from '../types';
 
+type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
 export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
   result: TOutput | Error,
   tool: VovkTool<TInput, TOutput, unknown>,
@@ -63,7 +65,7 @@ export type VovkToolNonDerived<TInput, TOutput, TFormattedOutput> = VovkToolComm
  * Vovk tool type, which can be either derived or non-derived.
  * @see https://vovk.dev/tools
  */
-export type VovkTool<TInput = unknown, TOutput = unknown, TFormattedOutput = unknown> =
+export type VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutput = KnownAny> =
   | VovkToolDerived<TInput, TOutput, TFormattedOutput>
   | VovkToolNonDerived<TInput, TOutput, TFormattedOutput>;
 
