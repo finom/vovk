@@ -304,7 +304,7 @@ class VovkApp {
     segmentName: string;
   }) => {
     const req = nextReq as unknown as VovkRequest;
-    const path = params[Object.keys(params)[0]];
+    const path = params[Object.keys(params)[0]] ?? [];
     const handlers = this.#allHandlers[segmentName]?.[httpMethod] ?? this.#collectHandlers(httpMethod, segmentName);
     this.#allHandlers[segmentName] ??= {};
     this.#allHandlers[segmentName][httpMethod] = handlers;
