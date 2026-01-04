@@ -7,13 +7,13 @@
     </picture>
   </a>
   <br>
-  <strong>Back-end for Next.js (beta)</strong>
+  <strong>Structured API Layer for Next.js</strong>
   <br />
-  <a href="https://vovk.dev/about">About Vovk.ts</a>
+  <a href="https://vovk.dev/">Documentation</a>
   &nbsp;
   <a href="https://vovk.dev/quick-install">Quick Start</a>
   &nbsp;
-  <a href="https://github.com/finom/vovk">Github Repo</a>
+  <a href="https://vovk.dev/realtime-ui">✨ Realtime UI</a>
 </p>
 
 ---

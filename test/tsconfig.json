@@ -8,7 +8,7 @@
     "src/**/*.ts",
     "other-compiled-test-sources/**/*.ts",
     "packages/**/*.ts",
-    "vovk.config.cjs",
+    "vovk.config.mjs",
     "next.config.mjs",
     "postcss.config.cjs",
     ".next/dev/types/**/*.ts"
