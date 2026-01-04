@@ -17,6 +17,14 @@ export type MCPModelOutput = {
   isError?: boolean;
 };
 
+// converts array to object with "items" key for MCP structured content
+const structuredContentToObject = (data: unknown): { [key: string]: unknown } => {
+  if (Array.isArray(data)) {
+    return { items: data };
+  }
+  return { value: data };
+};
+
 const toBase64 = (buf: ArrayBuffer) =>
   typeof Buffer !== 'undefined'
     ? Buffer.from(buf).toString('base64')
@@ -37,7 +45,7 @@ async function responseToMCP(res: Response): Promise<MCPModelOutput> {
     const structuredContent = await res.json();
     return {
       content: [{ type: 'text', text: JSON.stringify(structuredContent) }],
-      structuredContent,
+      structuredContent: structuredContentToObject(structuredContent),
     };
   }
 
@@ -73,7 +81,7 @@ export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown, _too
     ],
     ...(isError ? { isError: true } : {}),
     ...(!isError && typeof result === 'object' && result !== null
-      ? { structuredContent: result as { [key: string]: unknown } }
+      ? { structuredContent: structuredContentToObject(result) }
       : {}),
     ...(mcpOutputMeta || {}),
   };
