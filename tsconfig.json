@@ -28,7 +28,7 @@
     "*.mjs",
     "test/*.js",
     "jest.config.mjs",
-    "test/vovk.config.mjs",
+    "test/vovk.config.cjs",
     "test/next.config.mjs",
     "test/postcss.config.cjs",
     "test/webpack.config.mjs",
