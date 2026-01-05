@@ -187,7 +187,6 @@ use serde_json::{
   from_value, 
   json 
 };
-
 #[tokio::main]
 async fn main() {
   let response = user_zod_rpc::update_user(
@@ -480,7 +479,6 @@ use serde_json::{
   json 
 };
 use reqwest::multipart;
-
 #[tokio::main]
 async fn main() {
   let form = reqwest::multipart::Form::new()
@@ -634,7 +632,6 @@ use serde_json::{
   json 
 };
 use futures_util::StreamExt;
-
 #[tokio::main]
 async fn main() {
   let response = stream_rpc::stream_tokens(
@@ -655,9 +652,9 @@ match response {
             println!("#{}: {:?}", i, value);
             /*
             #0: iteration {
-                // Stream message
-                message: "string"
-            }
+            // Stream message
+            message: "string"
+        }
             */
             i += 1;
           }
@@ -771,7 +768,6 @@ use serde_json::{
   from_value, 
   json 
 };
-
 #[tokio::main]
 async fn main() {
   let response = config_rpc::send_data(
@@ -829,7 +825,6 @@ use serde_json::{
   from_value, 
   json 
 };
-
 #[tokio::main]
 async fn main() {
   let response = simple_rpc::ping(
