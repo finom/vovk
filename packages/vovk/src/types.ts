@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponse } from './core/JSONLinesResponse';
+import type { JSONLinesResponder } from './core/JSONLinesResponder';
 import type { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
 import type { VovkToolOptions } from './tools/types';
@@ -203,7 +203,7 @@ export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownA
   ? Y
   : T extends (...args: KnownAny[]) => Generator<infer Y, unknown, unknown>
     ? Y
-    : T extends (...args: KnownAny[]) => Promise<JSONLinesResponse<infer Y>> | JSONLinesResponse<infer Y>
+    : T extends (...args: KnownAny[]) => Promise<JSONLinesResponder<infer Y>> | JSONLinesResponder<infer Y>
       ? Y
       : never;
 

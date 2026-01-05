@@ -10,7 +10,7 @@ import type {
   Prettify,
   IsEmptyObject,
 } from '../types';
-import type { JSONLinesResponse } from '../core/JSONLinesResponse';
+import type { JSONLinesResponder } from '../core/JSONLinesResponder';
 import type { defaultStreamHandler } from './defaultStreamHandler';
 import type { defaultHandler } from './defaultHandler';
 
@@ -76,7 +76,7 @@ type StaticMethodOptions<
   T extends (
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponse<TStreamIteration> | Promise<JSONLinesResponse<TStreamIteration>>,
+  ) => void | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
   TFetcherOptions extends Record<string, KnownAny>,
   TStreamIteration,
   R,
@@ -92,13 +92,13 @@ export type ClientMethodReturn<
   T extends (
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponse<TStreamIteration> | Promise<JSONLinesResponse<TStreamIteration>>,
+  ) => void | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
   TStreamIteration,
   R,
 > =
   ReturnType<T> extends
-    | Promise<JSONLinesResponse<infer U>>
-    | JSONLinesResponse<infer U>
+    | Promise<JSONLinesResponder<infer U>>
+    | JSONLinesResponder<infer U>
     | Iterator<infer U>
     | AsyncIterator<infer U>
     ? Promise<VovkStreamAsyncIterable<U>>
@@ -110,7 +110,7 @@ export type ClientMethod<
   T extends ((
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponse<TStreamIteration> | Promise<JSONLinesResponse<TStreamIteration>>) & {
+  ) => void | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>) & {
     __types?: {
       body: KnownAny;
       query: KnownAny;

@@ -1,5 +1,5 @@
 import { headers } from 'next/headers.js';
-import { HttpException, HttpStatus, JSONLinesResponse, type VovkRequest, get, post, prefix } from 'vovk';
+import { HttpException, HttpStatus, JSONLinesResponder, type VovkRequest, get, post, prefix } from 'vovk';
 import { NextResponse } from 'next/server.js';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
@@ -136,7 +136,7 @@ export default class CommonController {
       headers: {
         'Content-Type': 'application/jsonl',
       },
-    }) as JSONLinesResponse<{
+    }) as unknown as JSONLinesResponder<{
       hello: string;
     }>;
   }
@@ -147,7 +147,7 @@ export default class CommonController {
       headers: {
         'Content-Type': 'text/plain',
       },
-    }) as JSONLinesResponse<{
+    }) as unknown as JSONLinesResponder<{
       hello: string;
     }>;
   }

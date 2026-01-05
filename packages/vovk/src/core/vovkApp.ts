@@ -9,7 +9,7 @@ import {
   type VovkRequest,
 } from '../types';
 import { HttpException } from './HttpException';
-import { JSONLinesResponse } from './JSONLinesResponse';
+import { JSONLinesResponder, Responder } from './JSONLinesResponder';
 import { reqQuery } from '../req/reqQuery';
 import { reqMeta } from '../req/reqMeta';
 import { reqForm } from '../req/reqForm';
@@ -351,6 +351,11 @@ class VovkApp {
         return result;
       }
 
+      if (result instanceof Responder) {
+        await onSuccess?.(result, req);
+        return result.response;
+      }
+
       const isIterator =
         typeof result === 'object' &&
         !!result &&
@@ -361,23 +366,27 @@ class VovkApp {
             typeof (result as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'));
 
       if (isIterator) {
-        const streamResponse = new JSONLinesResponse(req, {
-          headers: VovkApp.getHeadersFromOptions(staticMethod._options),
-        });
+        const responder = new JSONLinesResponder(
+          req,
+          ({ headers, readableStream }) =>
+            new Response(readableStream, {
+              headers: { ...headers, ...VovkApp.getHeadersFromOptions(staticMethod._options) },
+            })
+        );
 
         void (async () => {
           try {
             for await (const chunk of result as AsyncGenerator<unknown>) {
-              streamResponse.send(chunk);
+              responder.send(chunk);
             }
           } catch (e) {
-            return streamResponse.throw(e);
+            return responder.throw(e);
           }
 
-          return streamResponse.close();
+          return responder.close();
         })();
-        await onSuccess?.(streamResponse, req);
-        return streamResponse;
+        await onSuccess?.(responder, req);
+        return responder.response;
       }
 
       const responseBody = result ?? null;

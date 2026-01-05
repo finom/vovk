@@ -19,7 +19,7 @@ export { HttpException } from './core/HttpException';
 export { createDecorator } from './core/createDecorator';
 export { controllersToStaticParams } from './core/controllersToStaticParams';
 export { multitenant } from './core/multitenant';
-export { JSONLinesResponse } from './core/JSONLinesResponse';
+export { JSONLinesResponder } from './core/JSONLinesResponder';
 export { toDownloadResponse } from './core/toDownloadResponse';
 // client
 export type { VovkFetcher, VovkValidateOnClient } from './client/types';

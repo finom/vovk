@@ -9,6 +9,7 @@ import {
 } from '../types';
 import { reqMeta } from '../req/reqMeta';
 import { setHandlerSchema } from '../core/setHandlerSchema';
+import { JSONLinesResponder } from '../core/JSONLinesResponder';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 
@@ -110,11 +111,19 @@ export function withValidationLibrary<
 
     if (iteration && !disableServerSideValidationKeys.includes('iteration')) {
       // We assume `data` is an async iterable here; you might want to check that:
-      if (!data || typeof data[Symbol.asyncIterator] !== 'function') {
+      if (!data || (typeof data[Symbol.asyncIterator] !== 'function' && !(data instanceof JSONLinesResponder))) {
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          'Data is not an async iterable but iteration validation is defined.'
+          'Data is not an async iterable, neither JSONLinesResponder but iteration validation is defined.'
         );
+      }
+
+      if (data instanceof JSONLinesResponder) {
+        data.onBeforeSend = async (item: KnownAny) => {
+          const parsed = (await validate(item, iteration, { validationType: 'iteration', req })) ?? item;
+          return preferTransformed ? parsed : item;
+        };
+        return data;
       }
 
       // Return a brand-new async generator that yields validated items

@@ -1,5 +1,5 @@
 import { type VovkRequest, post, prefix } from 'vovk';
-import { JSONLinesResponse } from 'vovk';
+import { JSONLinesResponder } from 'vovk';
 
 export type Token = { token: string; query: 'queryValue' };
 
@@ -10,7 +10,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new JSONLinesResponse<Token>(req);
+    const response = new JSONLinesResponder<Token>(req);
 
     void (async () => {
       for (const token of body) {
@@ -30,7 +30,7 @@ export default class StreamingController {
       throw new Error('Immediate error');
     }
 
-    const response = new JSONLinesResponse<Token>(req);
+    const response = new JSONLinesResponder<Token>(req);
 
     return response;
   }
@@ -40,7 +40,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new JSONLinesResponse<Token>(req);
+    const response = new JSONLinesResponder<Token>(req);
 
     let count = 0;
     void (async () => {
@@ -63,7 +63,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new JSONLinesResponse<Token>(req);
+    const response = new JSONLinesResponder<Token>(req);
 
     let count = 0;
     void (async () => {
@@ -86,7 +86,7 @@ export default class StreamingController {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');
 
-    const response = new JSONLinesResponse<Token>(req);
+    const response = new JSONLinesResponder<Token>(req);
 
     let count = 0;
     void (async () => {
@@ -115,7 +115,7 @@ export default class StreamingController {
       return { bar: 'bar2' } as const;
     };
 
-    const response = new JSONLinesResponse<{ foo: 'foo1' } | { bar: 'bar2' } | { hello: 'world' }>(req);
+    const response = new JSONLinesResponder<{ foo: 'foo1' } | { bar: 'bar2' } | { hello: 'world' }>(req);
 
     Promise.all([
       Promise.resolve(response.send({ hello })),
