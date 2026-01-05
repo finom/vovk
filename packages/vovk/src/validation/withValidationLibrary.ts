@@ -119,10 +119,17 @@ export function withValidationLibrary<
       }
 
       if (data instanceof JSONLinesResponder) {
-        data.onBeforeSend = async (item: KnownAny) => {
-          const parsed = (await validate(item, iteration, { validationType: 'iteration', req })) ?? item;
+        data.onBeforeSend = async (item, i) => {
+          let parsed;
+          if (validateEachIteration || i === 0) {
+            parsed = (await validate(item, iteration, { validationType: 'iteration', req, status: 200, i })) ?? item;
+          } else {
+            parsed = item;
+          }
+          i++;
           return preferTransformed ? parsed : item;
         };
+
         return data;
       }
 

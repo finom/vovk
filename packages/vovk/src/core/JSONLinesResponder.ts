@@ -2,27 +2,46 @@ import type { StreamAbortMessage } from '../types';
 import '../utils/shim';
 
 export abstract class Responder {
-  public readonly response: Response;
+  public response: Response;
 }
 
 /**
- * A Response subclass for streaming JSON Lines (JSONL) data.
+ * A Responder subclass for streaming JSON Lines (JSONL) data.
  * @see https://vovk.dev/jsonlines
+ * @param request The incoming Request object.
+ * @param getResponse Optional function to create a custom Response object.
+ * @example
+ * ```ts
+ * import { JSONLinesResponder } from 'vovk';
+ *
+ * const responder = new JSONLinesResponder<MyItemType>(request, (responder) => {
+ *   return new Response(responder.readableStream, { headers: responder.headers });
+ * });
+ *
+ * // Send items
+ * responder.send({ ... });
+ * // Close the stream when done
+ * responder.close();
+ * // Or throw an error
+ * responder.throw(new Error('Something went wrong'));
+ * // get the Response object, headers, etc.
+ * const { response, headers } = responder;
+ * ```
  */
 export class JSONLinesResponder<T> extends Responder {
   private isClosed = false;
+
+  private i = 0;
 
   private controller?: ReadableStreamDefaultController | null;
 
   private readonly encoder: TextEncoder | null;
 
-  public readonly response: Response;
-
   public readonly readableStream: ReadableStream | null;
 
   public readonly headers: Record<string, string>;
 
-  public onBeforeSend = (item: T) => item;
+  public onBeforeSend: (item: T, i: number) => T | Promise<T> = (item) => item;
 
   constructor(request: Request | null, getResponse?: (responder: JSONLinesResponder<T>) => Response) {
     super();
@@ -58,16 +77,12 @@ export class JSONLinesResponder<T> extends Responder {
     this.controller?.enqueue(encoder?.encode(''));
   }
 
-  public readonly send = (item: T) => {
-    const processedItem = this.onBeforeSend(item);
-    this.sendItemOrData(processedItem);
-  };
+  public readonly send = async (item: T) => this.sendLineOrError(await this.onBeforeSend(item, this.i++));
 
-  public sendItemOrData = (data: T | StreamAbortMessage) => {
+  public sendLineOrError = (data: T | StreamAbortMessage) => {
     const { controller, encoder } = this;
     if (this.isClosed) return;
 
-    // Enqueue to the ReadableStream
     controller?.enqueue(encoder?.encode(JSON.stringify(data) + '\n'));
   };
 
@@ -79,7 +94,7 @@ export class JSONLinesResponder<T> extends Responder {
   };
 
   public readonly throw = (e: unknown) => {
-    this.sendItemOrData({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
+    this.sendLineOrError({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
     return this.close();
   };
 }
