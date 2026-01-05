@@ -232,15 +232,24 @@ export function withValidationLibrary<
     return result as TReturnType;
   }
 
-  const models = {
-    ...(body !== undefined ? { body } : {}),
-    ...(query !== undefined ? { query } : {}),
-    ...(params !== undefined ? { params } : {}),
-    ...(output !== undefined ? { output } : {}),
-    ...(iteration !== undefined ? { iteration } : {}),
+  const definition = {
+    isForm,
+    disableServerSideValidation,
+    skipSchemaEmission,
+    validateEachIteration,
+    body,
+    query,
+    params,
+    output,
+    iteration,
+    handle,
+    toJSONSchema,
+    validate,
+    preferTransformed,
+    operationObject,
   };
 
-  const resultHandlerEnhanced = Object.assign(resultHandler, { fn, models });
+  const resultHandlerEnhanced = Object.assign(resultHandler, { fn, definition });
 
   if (toJSONSchema) {
     const getJSONSchema = (model: KnownAny, validationType: VovkValidationType) =>

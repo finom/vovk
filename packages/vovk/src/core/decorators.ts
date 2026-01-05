@@ -59,13 +59,13 @@ const assignSchema = ({
   const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
     _controller: VovkController;
     fn?: (req: unknown, params: unknown) => unknown;
-    models?: Record<string, unknown>;
+    definition?: Record<string, unknown>;
     schema?: VovkHandlerSchema;
     _sourceMethod?: ((...args: unknown[]) => unknown) & {
       _getSchema?: (controller: VovkController) => VovkHandlerSchema;
       wrapper?: (...args: unknown[]) => unknown;
       fn?: (req: unknown, params: unknown) => unknown;
-      models?: Record<string, unknown>;
+      definition?: Record<string, unknown>;
       schema?: VovkHandlerSchema;
     };
   };
@@ -76,7 +76,7 @@ const assignSchema = ({
   // TODO: Some of these assignments probably not needed anymore
   originalMethod.schema = schema;
   originalMethod.fn = originalMethod._sourceMethod?.fn;
-  originalMethod.models = originalMethod._sourceMethod?.models;
+  originalMethod.definition = originalMethod._sourceMethod?.definition;
   originalMethod._sourceMethod.wrapper = originalMethod;
   controller._handlers = {
     ...controller._handlers,

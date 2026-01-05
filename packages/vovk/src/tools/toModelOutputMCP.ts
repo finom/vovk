@@ -22,7 +22,7 @@ const structuredContentToObject = (data: unknown): { [key: string]: unknown } =>
   if (Array.isArray(data)) {
     return { items: data };
   }
-  return { value: data };
+  return data as { [key: string]: unknown };
 };
 
 const toBase64 = (buf: ArrayBuffer) =>

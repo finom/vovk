@@ -4,7 +4,7 @@ import { z } from 'zod';
 import assert from 'node:assert';
 
 describe('procedure features', async () => {
-  const handler = procedure({
+  const definition: Parameters<typeof procedure>[0] = {
     body: z.object({ foo: z.string().max(5) }),
     query: z.object({ bar: z.string().max(5) }),
     params: z.object({ baz: z.string().max(5) }),
@@ -15,6 +15,14 @@ describe('procedure features', async () => {
       const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
       return { foo, bar, baz, inputMeta };
     },
+  } as const;
+  const handler = procedure(definition);
+
+  it('Should provide definition', () => {
+    assert.strictEqual(handler.definition.body, definition.body);
+    assert.strictEqual(handler.definition.query, definition.query);
+    assert.strictEqual(handler.definition.params, definition.params);
+    assert.strictEqual(handler.definition.handle, definition.handle);
   });
 
   it('Should be callable', async () => {

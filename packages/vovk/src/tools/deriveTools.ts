@@ -3,6 +3,7 @@ import type { VovkHandlerSchema, VovkRequest } from '../types';
 import type { VovkToolDerived, ToModelOutputFn } from './types';
 import { ToModelOutput } from './ToModelOutput';
 import { DefaultModelOutput } from './toModelOutputDefault';
+import { procedure } from '../validation/procedure';
 
 // Standard tool input type
 type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };
@@ -11,13 +12,7 @@ type Handler = ((...args: unknown[]) => unknown) & {
   fn?: (input: unknown) => [unknown, Pick<VovkRequest, 'vovk'> | null];
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
-  models?: {
-    body?: StandardSchemaV1;
-    query?: StandardSchemaV1;
-    params?: StandardSchemaV1;
-    output?: StandardSchemaV1;
-    iteration?: StandardSchemaV1;
-  };
+  definition?: Parameters<typeof procedure>[0];
 };
 
 type CallerInput<TOutput, TFormattedOutput> = {
@@ -113,9 +108,9 @@ const makeTool = <TOutput, TFormattedOutput>({
   if (!handler) {
     throw new Error(`Handler "${handlerName}" not found in module "${moduleName}".`);
   }
-  const { schema, models } = handler;
+  const { schema, definition } = handler;
   const inputSchemas = Object.fromEntries(
-    (['body', 'query', 'params'] as const).map((key) => [key, models?.[key]]).filter(([, value]) => Boolean(value))
+    (['body', 'query', 'params'] as const).map((key) => [key, definition?.[key]]).filter(([, value]) => Boolean(value))
   );
 
   if (!schema || !schema.operationObject) {
@@ -169,7 +164,7 @@ const makeTool = <TOutput, TFormattedOutput>({
     execute,
     name: schema.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`,
     inputSchema: undefined,
-    outputSchema: models?.output,
+    outputSchema: definition?.output,
     title: schema.operationObject?.['x-tool']?.title ?? schema.operationObject?.summary,
     description:
       schema.operationObject?.['x-tool']?.description ??

@@ -322,6 +322,35 @@ describe('deriveTools', () => {
           isError: true,
         });
       });
+
+      it('Should convert arrays to structuredContent with items key', async () => {
+        const arrayProcedure = procedure({
+          operationObject: {
+            description: 'arrayProcedure description',
+          },
+          async handle() {
+            return ['item1', 'item2', 'item3'];
+          },
+        });
+
+        const { toolsByName } = deriveTools({
+          toModelOutput: ToModelOutput.MCP,
+          modules: {
+            MyModule: { arrayProcedure },
+          },
+        });
+        const tool = toolsByName['MyModule_arrayProcedure'];
+        const result: MCPModelOutput = await tool.execute({});
+        assert.deepStrictEqual(result, {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(['item1', 'item2', 'item3']),
+            },
+          ],
+          structuredContent: { items: ['item1', 'item2', 'item3'] },
+        });
+      });
     });
 
     describe('Audio Response instance', () => {

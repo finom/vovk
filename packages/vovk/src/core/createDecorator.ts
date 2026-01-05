@@ -25,12 +25,12 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
     return function decorator(target: KnownAny, propertyKey: string) {
       const controller = target as VovkController;
 
-      const originalMethod = controller[propertyKey] as ((...args: KnownAny[]) => KnownAny) & {
-        _sourceMethod?: ((...args: KnownAny) => KnownAny) & { wrapper?: (...args: KnownAny) => KnownAny };
-        fn?: (req: KnownAny, params: KnownAny) => KnownAny;
+      const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
+        _sourceMethod?: ((...args: unknown[]) => unknown) & { wrapper?: (...args: unknown[]) => unknown };
+        fn?: (req: unknown, params: unknown) => unknown;
         schema?: VovkHandlerSchema;
-        models?: Record<string, KnownAny>;
-        wrapper?: (...args: KnownAny) => KnownAny;
+        definition?: Record<string, unknown>;
+        wrapper?: (...args: KnownAny) => unknown;
       };
       if (typeof originalMethod !== 'function') {
         throw new Error(`Unable to decorate: ${propertyKey} is not a function`);
@@ -50,7 +50,7 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
       method._controller = controller;
       method._sourceMethod = sourceMethod;
       method.fn = originalMethod.fn;
-      method.models = originalMethod.models;
+      method.definition = originalMethod.definition;
       sourceMethod.wrapper = method;
       // TODO define internal method type
       (originalMethod as unknown as { _controller: VovkController })._controller = controller;
