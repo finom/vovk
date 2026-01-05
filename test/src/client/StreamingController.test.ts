@@ -29,6 +29,31 @@ describe('Streaming', () => {
     deepStrictEqual(expected, expectedCollected);
   });
 
+  it('Should consume streaming multiple times', async () => {
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
+    const expectedCollected: typeof expected = [];
+
+    const resp = await StreamingControllerRPC.postWithStreaming({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
+    null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
+
+    deepStrictEqual([...expected, ...expected], expectedCollected);
+  });
+
   it('Should be able to abort', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);

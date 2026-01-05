@@ -117,7 +117,7 @@ export function createFetcher<T>({
       const contentType = interpretAs ?? response.headers.get('content-type');
 
       if (contentType?.startsWith('application/jsonl')) {
-        respData = defaultStreamHandler({ response, abortController, schema });
+        respData = defaultStreamHandler({ response, abortController });
       } else if (contentType?.startsWith('application/json')) {
         respData = await defaultHandler({ response, schema });
       } else {

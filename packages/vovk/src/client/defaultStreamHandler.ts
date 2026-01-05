@@ -1,4 +1,4 @@
-import { HttpStatus, VovkHandlerSchema, type VovkErrorResponse } from '../types';
+import { HttpStatus, type VovkErrorResponse } from '../types';
 import type { VovkStreamAsyncIterable } from './types';
 import { HttpException } from '../core/HttpException';
 import '../utils/shim';
@@ -11,7 +11,6 @@ export const defaultStreamHandler = ({
 }: {
   response: Response;
   abortController: AbortController;
-  schema: VovkHandlerSchema;
 }): VovkStreamAsyncIterable<unknown> => {
   if (!response.ok) {
     response
@@ -33,7 +32,17 @@ export const defaultStreamHandler = ({
 
   let isAbortedWithoutError = false;
 
-  async function* asyncIterator() {
+  // Caching state
+  const cachedItems: unknown[] = [];
+  let streamExhausted = false;
+  let streamError: unknown = null;
+  let activeIterator: AsyncGenerator<unknown> | null = null;
+  const waitingIterators: Array<{
+    resolve: (value: IteratorResult<unknown>) => void;
+    reject: (error: unknown) => void;
+  }> = [];
+
+  async function* primaryIterator() {
     let prepend = '';
     let i = 0;
 
@@ -47,9 +56,14 @@ export const defaultStreamHandler = ({
         if (done) break;
       } catch (error) {
         if ((error as Error)?.name === 'AbortError' && isAbortedWithoutError) break;
-        // await reader.cancel(); // TODO in which cases it needs to be canceled?
         const err = new Error('JSONLines stream error. ' + String(error));
         err.cause = error;
+        streamError = err;
+        // Notify waiting iterators of the error
+        for (const waiter of waitingIterators) {
+          waiter.reject(err);
+        }
+        waitingIterators.length = 0;
         throw err;
       }
 
@@ -76,17 +90,92 @@ export const defaultStreamHandler = ({
             const upcomingError = data.reason;
             abortController.abort(data.reason);
 
-            if (typeof upcomingError === 'string') {
-              throw new Error(upcomingError);
+            const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
+            streamError = error;
+            // Notify waiting iterators of the error
+            for (const waiter of waitingIterators) {
+              waiter.reject(error);
             }
-
-            throw upcomingError;
+            waitingIterators.length = 0;
+            throw error;
           } else if (!abortController.signal.aborted) {
+            // Cache the item before yielding
+            cachedItems.push(data);
+            // Notify waiting iterators that new data is available
+            for (const waiter of waitingIterators) {
+              waiter.resolve({ value: data, done: false });
+            }
+            waitingIterators.length = 0;
             yield data;
           }
         }
       }
     }
+
+    streamExhausted = true;
+    // Notify waiting iterators that stream is done
+    for (const waiter of waitingIterators) {
+      waiter.resolve({ value: undefined, done: true });
+    }
+    waitingIterators.length = 0;
+  }
+
+  async function* cachedIterator() {
+    let index = 0;
+
+    while (true) {
+      // If we have cached items available, yield them
+      if (index < cachedItems.length) {
+        yield cachedItems[index++];
+        continue;
+      }
+
+      // If stream is exhausted, we're done
+      if (streamExhausted) {
+        return;
+      }
+
+      // If there was an error, throw it
+      if (streamError) {
+        throw streamError;
+      }
+
+      // Wait for more data from the primary iterator
+      const result = await new Promise<IteratorResult<unknown>>((resolve, reject) => {
+        // Double-check cache in case data arrived while we were setting up
+        if (index < cachedItems.length) {
+          resolve({ value: cachedItems[index], done: false });
+          return;
+        }
+        if (streamExhausted) {
+          resolve({ value: undefined, done: true });
+          return;
+        }
+        if (streamError) {
+          reject(streamError);
+          return;
+        }
+        waitingIterators.push({ resolve, reject });
+      });
+
+      if (result.done) {
+        return;
+      }
+
+      index++;
+      yield result.value;
+    }
+  }
+
+  function asyncIterator(): AsyncGenerator<unknown> {
+    // First iterator becomes the primary one that reads from the stream
+    if (!activeIterator) {
+      activeIterator = primaryIterator();
+      return activeIterator;
+    }
+
+    // Subsequent iterators use cached data and wait for new items
+    return cachedIterator();
   }
 
   const asPromise = async () => {
