@@ -29,7 +29,7 @@ describe('Client validation with custom AJV options', () => {
     });
 
     await rejects.toThrow(
-      /Ajv validation failed. Invalid body on client: data\/hello darf nicht länger als 5 Zeichen sein/
+      /Client-side validation failed. Invalid body on client: data\/hello darf nicht länger als 5 Zeichen sein/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -63,7 +63,7 @@ describe('Zod-to-JSONchema constraints', async () => {
           body: constrainingObject,
         });
       }));
-      await rejects.toThrow(new RegExp(`Ajv validation failed. Invalid body on client. data\\/${key}.*`));
+      await rejects.toThrow(new RegExp(`Client-side validation failed. Invalid body on client. data\\/${key}.*`));
     });
   }
 });
@@ -134,7 +134,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid body on client: data\/hello.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid body on client: data\/hello.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -167,7 +167,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid params on client: data\/foo.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid params on client: data\/foo.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -198,7 +198,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid query on client: data\/search.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid query on client: data\/search.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -233,7 +233,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid query on client: data\/x.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid query on client: data\/x.*/);
   });
 
   it('Should handle output validation on server', async () => {
@@ -463,7 +463,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid form on client: .*file.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid form on client: .*file.*/);
     await rejects.toThrowError(HttpException);
 
     // No file
@@ -529,7 +529,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Ajv validation failed. Invalid form on client: .*files.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid form on client: .*files.*/);
     await rejects.toThrowError(HttpException);
   });
 
