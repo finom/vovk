@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "3.0.0-beta.92",
+  "version": "3.0.0-beta.93",
   "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "types": "./mjs/index.d.ts",
