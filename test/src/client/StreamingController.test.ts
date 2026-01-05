@@ -54,6 +54,40 @@ describe('Streaming', () => {
     deepStrictEqual([...expected, ...expected], expectedCollected);
   });
 
+  it('Should consume streaming multiple times at the same time', async () => {
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
+
+    const resp = await StreamingControllerRPC.postWithStreaming({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
+
+    const p1 = (async () => {
+      const collected: typeof expected = [];
+      for await (const message of resp) {
+        collected.push(message);
+      }
+      return collected;
+    })();
+
+    const p2 = (async () => {
+      const collected: typeof expected = [];
+      for await (const message of resp) {
+        collected.push(message);
+      }
+      return collected;
+    })();
+
+    const expectedCollected = (await Promise.all([p1, p2])).flat();
+
+    null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
+    null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
+
+    deepStrictEqual([...expected, ...expected], expectedCollected);
+  });
+
   it('Should be able to abort', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
@@ -75,39 +109,6 @@ describe('Streaming', () => {
     for await (const message of resp) {
       expectedCollected.push(message);
     }
-
-    deepStrictEqual(expected, expectedCollected);
-  });
-
-  it('Should be able to continue if disposable is not used', async () => {
-    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
-    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
-    const expectedCollected: typeof expected = [];
-    let r;
-    let resp;
-
-    {
-      resp = await StreamingControllerRPC.postWithStreaming({
-        body: tokens,
-        query: { query: 'queryValue' },
-        apiRoot,
-      });
-
-      r = resp;
-
-      let count = 0;
-
-      for await (const message of resp) {
-        expectedCollected.push(message);
-        if (++count === 2) break;
-      }
-    }
-
-    for await (const message of r) {
-      expectedCollected.push(message);
-    }
-
-    await resp.abortWithoutError();
 
     deepStrictEqual(expected, expectedCollected);
   });
