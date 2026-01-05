@@ -59,6 +59,7 @@ interface GenerationResult {
   templateName: string;
   outAbsoluteDir: string;
   package: PackageJson;
+  origin: string;
 }
 
 function logClientGenerationResults({
@@ -79,6 +80,7 @@ function logClientGenerationResults({
   fromTemplates: string[];
 }): void {
   const writtenResults = results.filter(({ written }) => written);
+  const origins = _.uniq(results.map((result) => result.origin).filter((origin): origin is string => !!origin));
   const duration = Date.now() - startTime;
   const groupedByDir = _.groupBy(writtenResults, ({ outAbsoluteDir }) => outAbsoluteDir);
   const logOrDebug = forceNothingWrittenLog ? log.info : log.debug;
@@ -89,7 +91,7 @@ function logClientGenerationResults({
       log.info(
         `${clientType} client${isEnsuringClient ? ' placeholder' : ''} is generated to ${chalkHighlightThing(normalizeOutTemplatePath(outAbsoluteDir, dirResults[0].package))} from template${templateNames.length !== 1 ? 's' : ''} ${chalkHighlightThing(
           templateNames.map((s) => `"${s}"`).join(', ')
-        )} in ${duration}ms`
+        )}${origins.length && !isEnsuringClient ? ` with origin${origins.length !== 1 ? 's' : ''} ${chalkHighlightThing(origins.join(', '))}` : ''} in ${duration}ms`
       );
     }
   } else if (fromTemplates.length) {
@@ -305,6 +307,7 @@ export async function generate({
           templateName,
           outAbsoluteDir,
           package: packageJson,
+          origin,
         };
       })
     );
@@ -410,6 +413,7 @@ export async function generate({
               written,
               templateName,
               package: packageJson,
+              origin,
             };
           })
         );
@@ -425,6 +429,7 @@ export async function generate({
           templateName,
           outAbsoluteDir,
           package: results[0]?.package || {}, // TODO: Might be wrong in Python segmented client (unknown use case)
+          origin: results[0]?.origin || '',
         };
       })
     );

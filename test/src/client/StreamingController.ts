@@ -15,7 +15,7 @@ export default class StreamingController {
     void (async () => {
       for (const token of body) {
         await new Promise((resolve) => setTimeout(resolve, 200));
-        response.send({ ...token, query });
+        await response.send({ ...token, query });
       }
 
       response.close();
@@ -49,7 +49,7 @@ export default class StreamingController {
           return response.throw('oh no');
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        response.send({ ...token, query });
+        await response.send({ ...token, query });
       }
     })();
 
@@ -72,7 +72,7 @@ export default class StreamingController {
           return response.throw({ customError: 'custom error' });
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        response.send({ ...token, query });
+        await response.send({ ...token, query });
       }
     })();
 
@@ -95,7 +95,7 @@ export default class StreamingController {
           throw new Error('Unhandled error');
         }
         await new Promise((resolve) => setTimeout(resolve, 200));
-        response.send({ ...token, query });
+        await response.send({ ...token, query });
       }
     })();
 

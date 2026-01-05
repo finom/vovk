@@ -377,7 +377,7 @@ class VovkApp {
         void (async () => {
           try {
             for await (const chunk of result as AsyncGenerator<unknown>) {
-              responder.send(chunk);
+              await responder.send(chunk);
             }
           } catch (e) {
             return responder.throw(e);

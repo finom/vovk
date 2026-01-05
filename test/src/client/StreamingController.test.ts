@@ -26,7 +26,7 @@ describe('Streaming', () => {
     null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
-    deepStrictEqual(expected, expectedCollected);
+    deepStrictEqual(expectedCollected, expected);
   });
 
   it('Should consume streaming multiple times', async () => {
@@ -51,7 +51,7 @@ describe('Streaming', () => {
     null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
-    deepStrictEqual([...expected, ...expected], expectedCollected);
+    deepStrictEqual(expectedCollected, [...expected, ...expected]);
   });
 
   it('Should consume streaming multiple times at the same time', async () => {
@@ -85,7 +85,7 @@ describe('Streaming', () => {
     null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
-    deepStrictEqual([...expected, ...expected], expectedCollected);
+    deepStrictEqual(expectedCollected, [...expected, ...expected]);
   });
 
   it('Should be able to abort', async () => {
@@ -110,7 +110,7 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
-    deepStrictEqual(expected, expectedCollected);
+    deepStrictEqual(expectedCollected, expected);
   });
 
   it('Should be able to dispose', async () => {
@@ -138,7 +138,7 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
-    deepStrictEqual(expected, expectedCollected);
+    deepStrictEqual(expectedCollected, expected);
   });
 
   it('Should handle immediate errors', async () => {
@@ -170,7 +170,7 @@ describe('Streaming', () => {
       }
     }).rejects.toThrow(/oh no/);
 
-    deepStrictEqual(expected, expectedCollected);
+    deepStrictEqual(expectedCollected, expected);
   });
 
   it('Should handle custom errors in the middle of stream', async () => {
@@ -196,7 +196,7 @@ describe('Streaming', () => {
 
     deepStrictEqual(await call(), { customError: 'custom error' });
 
-    deepStrictEqual(expected, expectedCollected);
+    deepStrictEqual(expectedCollected, expected);
   });
 
   // TODO: Stream never ends if not using dispose. No error when using dispose.
@@ -217,7 +217,7 @@ describe('Streaming', () => {
       }
     }).rejects.toThrow();
 
-    deepStrictEqual(expected, expectedCollected);
+    deepStrictEqual(expectedCollected, expected);
   });
 
   it('Should work with "progressive" utility', async () => {
