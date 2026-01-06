@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponder } from './core/JSONLinesResponder';
+import type { JSONLinesResponder, Responder } from './core/JSONLinesResponder';
 import type { VovkStreamAsyncIterable } from './client/types';
 import type { PackageJson } from 'type-fest';
 import type { VovkToolOptions } from './tools/types';
@@ -113,7 +113,7 @@ export type DecoratorOptions = {
 export type RouteHandler = ((
   req: VovkRequest,
   params: Record<string, string>
-) => Response | Promise<Response> | Iterable<unknown> | AsyncIterable<unknown>) & {
+) => Response | Promise<Response> | Responder | Promise<Responder> | Iterable<unknown> | AsyncIterable<unknown>) & {
   _options?: DecoratorOptions;
 };
 

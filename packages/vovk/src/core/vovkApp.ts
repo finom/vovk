@@ -15,7 +15,7 @@ import { reqMeta } from '../req/reqMeta';
 import { reqForm } from '../req/reqForm';
 
 class VovkApp {
-  private static getHeadersFromOptions(options?: DecoratorOptions) {
+  private static getHeadersFromDecoratorOptions(options?: DecoratorOptions) {
     if (!options) return {};
 
     const corsHeaders = {
@@ -76,7 +76,7 @@ class VovkApp {
       status: statusCode,
       headers: {
         'content-type': 'application/json',
-        ...VovkApp.getHeadersFromOptions(options),
+        ...VovkApp.getHeadersFromDecoratorOptions(options),
       },
     });
 
@@ -331,6 +331,8 @@ class VovkApp {
     }
 
     const { staticMethod, controller } = handler;
+    const headersFromDecoratorOptions = VovkApp.getHeadersFromDecoratorOptions(staticMethod._options);
+
     const { _onSuccess: onSuccess, _onBefore: onBefore } = controller;
 
     req.vovk = {
@@ -348,11 +350,23 @@ class VovkApp {
 
       if (result instanceof Response) {
         await onSuccess?.(result, req);
+        // set headers from decorator options
+        for (const [key, value] of Object.entries(headersFromDecoratorOptions)) {
+          if (!result.headers.has(key)) {
+            result.headers.set(key, value);
+          }
+        }
         return result;
       }
 
       if (result instanceof Responder) {
         await onSuccess?.(result, req);
+        // set headers from decorator options
+        for (const [key, value] of Object.entries(headersFromDecoratorOptions)) {
+          if (!result.response.headers.has(key)) {
+            result.response.headers.set(key, value);
+          }
+        }
         return result.response;
       }
 
@@ -370,7 +384,7 @@ class VovkApp {
           req,
           ({ headers, readableStream }) =>
             new Response(readableStream, {
-              headers: { ...headers, ...VovkApp.getHeadersFromOptions(staticMethod._options) },
+              headers: { ...headersFromDecoratorOptions, ...headers },
             })
         );
 

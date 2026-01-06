@@ -43,7 +43,7 @@ export class JSONLinesResponder<T> extends Responder {
 
   public onBeforeSend: (item: T, i: number) => T | Promise<T> = (item) => item;
 
-  constructor(request: Request | null, getResponse?: (responder: JSONLinesResponder<T>) => Response) {
+  constructor(request?: Request | null, getResponse?: (responder: JSONLinesResponder<T>) => Response) {
     super();
     const encoder = new TextEncoder();
     let readableController: ReadableStreamDefaultController;
@@ -66,9 +66,9 @@ export class JSONLinesResponder<T> extends Responder {
     };
 
     this.headers = headers;
-    this.readableStream = request ? readableStream : null;
-    this.encoder = request ? encoder : null;
-    this.controller = request ? readableController! : null;
+    this.readableStream = readableStream;
+    this.encoder = encoder;
+    this.controller = readableController!;
     this.response = getResponse?.(this) ?? new Response(readableStream, { headers });
 
     request?.signal?.addEventListener('abort', this.close, { once: true });
