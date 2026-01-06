@@ -103,6 +103,32 @@ export default class StreamingController {
   }
 
   @post.auto()
+  static async postWithStreamingAndCustomResponse(req: VovkRequest<Omit<Token, 'query'>[]>) {
+    const body = await req.json();
+
+    const response = new JSONLinesResponder<Omit<Token, 'query'>>(req, (responder) => {
+      return new Response(responder.readableStream, {
+        headers: {
+          ...responder.headers,
+          'x-custom-header': 'customValue',
+        },
+        status: 201,
+      });
+    });
+
+    void (async () => {
+      for (const token of body) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        await response.send(token);
+      }
+
+      response.close();
+    })();
+
+    return response;
+  }
+
+  @post.auto()
   static async progressiveResponse(req: VovkRequest<{ hello: 'world' }>) {
     const { hello } = await req.json();
     const getFoo = async () => {

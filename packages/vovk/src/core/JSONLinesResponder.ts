@@ -77,7 +77,17 @@ export class JSONLinesResponder<T> extends Responder {
     this.controller?.enqueue(encoder?.encode(''));
   }
 
-  public readonly send = async (item: T) => this.sendLineOrError(await this.onBeforeSend(item, this.i++));
+  public readonly send = async (item: T) => {
+    try {
+      // onBeforeSend is set by withValidationLibrary if iteration validation is provided
+      // in case if data is streamed immediately in a controller/service, we're going to lose the first iteration validation
+      // the await with zero timeout ensures onBeforeSend is set before the first send
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      this.sendLineOrError(await this.onBeforeSend(item, this.i++));
+    } catch (e) {
+      this.throw(e);
+    }
+  };
 
   public sendLineOrError = (data: T | StreamAbortMessage) => {
     const { controller, encoder } = this;

@@ -1,5 +1,5 @@
 import { it, describe } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert';
 import type { Token, default as StreamingController } from './StreamingController.ts';
 import { expectPromise } from '../lib.ts';
 import { HttpException, progressive, type VovkYieldType } from 'vovk';
@@ -218,6 +218,26 @@ describe('Streaming', () => {
     }).rejects.toThrow();
 
     deepStrictEqual(expectedCollected, expected);
+  });
+
+  it('Should work with a custom response', async () => {
+    const [resp, response] = await StreamingControllerRPC.postWithStreamingAndCustomResponse({
+      body: [{ token: 'Hello,' }, { token: ' World' }, { token: '!' }],
+      apiRoot,
+      transform: (data, response) => [data, response] as const,
+    });
+
+    const expected = [{ token: 'Hello,' }, { token: ' World' }, { token: '!' }];
+    const expectedCollected: typeof expected = [];
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    deepStrictEqual(expectedCollected, expected);
+
+    strictEqual(response.status, 201);
+    strictEqual(response.headers.get('x-custom-header'), 'customValue');
   });
 
   it('Should work with "progressive" utility', async () => {

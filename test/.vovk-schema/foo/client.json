@@ -104,6 +104,10 @@
           "path": "post-with-streaming-and-delayed-unhandled-error",
           "httpMethod": "POST"
         },
+        "postWithStreamingAndCustomResponse": {
+          "path": "post-with-streaming-and-custom-response",
+          "httpMethod": "POST"
+        },
         "progressiveResponse": {
           "path": "progressive-response",
           "httpMethod": "POST"
@@ -525,6 +529,40 @@
             }
           },
           "path": "handle-stream",
+          "httpMethod": "GET"
+        },
+        "handleResponderStream": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ]
+            },
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "path": "handle-responder-stream",
           "httpMethod": "GET"
         },
         "handleSchemaConstraints": {
@@ -1009,6 +1047,40 @@
             }
           },
           "path": "validate-each-iteration",
+          "httpMethod": "POST"
+        },
+        "validateEachResponderIteration": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ]
+            },
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "path": "validate-each-responder-iteration",
           "httpMethod": "POST"
         },
         "handleAllAsFunction": {

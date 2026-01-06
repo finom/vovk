@@ -10,6 +10,7 @@ import {
   type VovkParams,
   type VovkOutput,
   procedure,
+  JSONLinesResponder,
 } from 'vovk';
 import { z } from 'zod';
 
@@ -177,6 +178,24 @@ export default class WithZodClientController {
     },
   });
 
+  @get.auto()
+  static handleResponderStream = procedure({
+    query: z.object({ values: z.string().array() }),
+    iteration: z.object({ value: z.string().max(5) }),
+    async handle(req) {
+      const responder = new JSONLinesResponder<{ value: string }>(req);
+
+      void (async () => {
+        for (const value of req.vovk.query().values) {
+          await responder.send({ value });
+        }
+        responder.close();
+      })();
+
+      return responder;
+    },
+  });
+
   @post.auto()
   static handleSchemaConstraints = procedure({
     body: ConstrainingModel,
@@ -289,6 +308,25 @@ export default class WithZodClientController {
       for (const value of req.vovk.query().values) {
         yield { value };
       }
+    },
+  });
+
+  @post.auto()
+  static validateEachResponderIteration = procedure({
+    validateEachIteration: true,
+    query: z.object({ values: z.string().array() }),
+    iteration: z.object({ value: z.string().max(5) }),
+    async handle(req) {
+      const responder = new JSONLinesResponder<{ value: string }>(req);
+
+      void (async () => {
+        for (const value of req.vovk.query().values) {
+          await responder.send({ value });
+        }
+        responder.close();
+      })();
+
+      return responder;
     },
   });
 

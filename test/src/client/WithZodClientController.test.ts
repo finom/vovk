@@ -307,7 +307,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     deepStrictEqual(expected, expectedCollected);
   });
 
-  it('Should handle every iteration validation', async () => {
+  it('Should handle each iteration validation', async () => {
     const tokens = ['a', 'b', 'wrong_length', 'd'];
 
     const expected: { value: string }[] = tokens.slice(0, 2).map((value) => ({ value }));
@@ -315,6 +315,58 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
 
     const { rejects } = expectPromise(async () => {
       const resp = await WithZodClientControllerRPC.validateEachIteration({
+        query: { values: tokens },
+      });
+      for await (const message of resp) {
+        expectedCollected.push(message);
+      }
+    });
+    await rejects.toThrow(/Validation failed. Invalid iteration #2 on server: .*value.*/);
+
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should handle stream first iteration validation on a responder', async () => {
+    const tokens = ['wrong_length', 'b', 'c', 'd'];
+    const expected: { value: string }[] = [];
+    const expectedCollected: typeof expected = [];
+
+    const { rejects } = expectPromise(async () => {
+      const resp = await WithZodClientControllerRPC.handleResponderStream({
+        query: { values: tokens },
+      });
+      for await (const message of resp) {
+        expectedCollected.push(message);
+      }
+    });
+    await rejects.toThrow(/Validation failed. Invalid iteration #0 on server: .*value.*/);
+
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should ignore non-first iteration validation on a responder', async () => {
+    const tokens = ['a', 'b', 'wrong_length', 'd'];
+    const expected: { value: string }[] = tokens.map((value) => ({ value }));
+    const expectedCollected: typeof expected = [];
+
+    const resp = await WithZodClientControllerRPC.handleResponderStream({
+      query: { values: tokens },
+    });
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    deepStrictEqual(expected, expectedCollected);
+  });
+
+  it('Should handle each iteration validation on a responder', async () => {
+    const tokens = ['a', 'b', 'wrong_length', 'd'];
+
+    const expected: { value: string }[] = tokens.slice(0, 2).map((value) => ({ value }));
+    const expectedCollected: typeof expected = [];
+    const { rejects } = expectPromise(async () => {
+      const resp = await WithZodClientControllerRPC.validateEachResponderIteration({
         query: { values: tokens },
       });
       for await (const message of resp) {
