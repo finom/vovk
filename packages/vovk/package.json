@@ -19,7 +19,7 @@
       "types": "./mjs/internal.d.ts"
     }
   },
-  "description": "Structured API Layer for Next.js",
+  "description": "Back-end Framework for Next.js App Router",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git"

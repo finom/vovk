@@ -7,7 +7,7 @@
     </picture>
   </a>
   <br>
-  <strong>Structured API Layer for Next.js</strong>
+  <strong>Back-end Framework for Next.js App Router</strong>
   <br />
   <a href="https://vovk.dev/">Documentation</a>
   &nbsp;
