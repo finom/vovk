@@ -10,6 +10,10 @@ import { checkTSConfigForExperimentalDecorators } from '../../dist/init/checkTSC
 import { getConfig } from '../../dist/getProjectInfo/getConfig/index.mjs';
 import { BUNDLE_BUILD_TSDOWN } from '../../dist/init/createConfig.mjs';
 
+function escapeFlags(flags: string | undefined): string {
+  return flags ? '_' + flags.replace(/[\s=]+/g, '_') : '';
+}
+
 export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
   const projectDir = path.join(cwd, dir);
 
@@ -21,30 +25,63 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     return runScript(command, { cwd: projectDir, ...options });
   }
 
-  async function createNextApp(extraParams?: string) {
-    const tmpNextjsProjectDir = path.join(
-      cwd,
-      `tmp_nextjs_projects_cache${extraParams ? '_' + extraParams.replace(/\s+/g, '_') : ''}`
-    );
-    await runScript(`rm -rf ${projectDir}`);
+  async function createNextApp(flags?: string, targetDir?: string) {
+    const finalDir = targetDir ?? projectDir;
+    const tmpNextjsProjectDir = path.join(cwd, `tmp_nextjs_projects_cache${escapeFlags(flags)}`);
+    await runScript(`rm -rf ${finalDir}`);
     if (!(await getFileSystemEntryType(tmpNextjsProjectDir))) {
       await runScript(
-        `npx create-next-app ${tmpNextjsProjectDir} --ts --app --src-dir --no-eslint --no-tailwind --no-react-compiler --no-import-alias ${extraParams}`
+        `npx create-next-app ${tmpNextjsProjectDir} --ts --app --src-dir --no-eslint --no-tailwind --no-react-compiler --no-import-alias ${flags ?? ''}`
       );
       // create .npmrc with prefer-offline=true
       await fs.writeFile(path.join(tmpNextjsProjectDir, '.npmrc'), 'prefer-offline=true\n');
     }
 
-    await runScript(`cp -R ${tmpNextjsProjectDir} ${projectDir}`);
+    await runScript(`cp -R ${tmpNextjsProjectDir} ${finalDir}`);
   }
 
-  async function vovkInit(extraParams?: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
-    // Use --channel=draft for draft features
-    const script = `./dist/index.mjs init --prefix ${dir} --log-level=debug ${extraParams}`;
-    return runScript(script, {
-      ...options,
+  async function createVovkApp({
+    cache = true,
+    nextFlags,
+    vovkInitFlags,
+    cacheKey,
+    runInCacheDir,
+  }: {
+    cache?: boolean;
+    nextFlags?: string;
+    vovkInitFlags?: string;
+    cacheKey?: string;
+    runInCacheDir?: ({ cwd }: { cwd: string }) => Promise<void>;
+  }) {
+    const tmpVovkProjectDir = path.join(
       cwd,
-    });
+      `tmp_vovk_projects_cache${escapeFlags(nextFlags)}${escapeFlags(vovkInitFlags)}${escapeFlags(cacheKey)}`
+    );
+    await runScript(`rm -rf ${projectDir}`);
+
+    const initVovkApp = async (dir: string) => {
+      const vovkInitScript = `../dist/index.mjs init --log-level=debug ${vovkInitFlags ?? ''}`;
+      await runScript(vovkInitScript, { cwd: dir });
+
+      if (runInCacheDir) {
+        await runInCacheDir({ cwd: dir });
+      }
+    };
+
+    if (cache) {
+      if (!(await getFileSystemEntryType(tmpVovkProjectDir))) {
+        // Use createNextApp to create/copy the base Next.js project to the cache dir
+        await createNextApp(nextFlags, tmpVovkProjectDir);
+        // Then initialize Vovk on top of it
+        await initVovkApp(tmpVovkProjectDir);
+      }
+
+      await runScript(`cp -R ${tmpVovkProjectDir} ${projectDir}`);
+    } else {
+      // Use createNextApp to create the base project directly
+      await createNextApp(nextFlags, projectDir);
+      await initVovkApp(projectDir);
+    }
   }
 
   async function assertConfig(testConfigPaths: string[], testConfig: VovkConfig | null) {
@@ -261,16 +298,15 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     assert.deepStrictEqual(dir.sort(), files.sort(), `Directory ${dirPath} does not contain the correct files`);
   }
 
-  async function vovkDevAndKill(vovkArguments?: string) {
-    return runAtProjectDir(`../dist/index.mjs dev --next-dev --exit ${vovkArguments ?? ''} -- --turbo`);
+  async function vovkDevAndKill(vovkArguments?: string, { cwd }: { cwd: string } = { cwd: projectDir }) {
+    return runAtProjectDir(`../dist/index.mjs dev --next-dev --exit ${vovkArguments ?? ''} -- --turbo`, { cwd });
   }
 
   return {
     projectDir,
     runAtCWD,
     runAtProjectDir,
-    createNextApp,
-    vovkInit,
+    createVovkApp,
     vovkDevAndKill,
     assertConfig,
     assertScripts,
@@ -282,5 +318,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     assertBundleTsConfig,
     assertFile,
     assertDirFileList,
+    createNextApp,
   };
 }

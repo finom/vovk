@@ -6,14 +6,15 @@ import { updateConfigFileProperty } from '../../../src/utils/updateConfigPropert
 await describe('CLI new controller and flags', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
   const dir = 'tmp_test_dir_new_controller_flags';
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
+  const { runAtProjectDir, assertFile, assertNotExists, createVovkApp } = getCLIAssertions({
     cwd,
     dir,
   });
 
   await it('New controller with --template', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -40,8 +41,9 @@ await describe('CLI new controller and flags', async () => {
   });
 
   await it('New controller with rootSegmentModulesDirName set at config', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await updateConfigFileProperty(path.join(cwd, dir, 'vovk.config.js'), ['rootSegmentModulesDirName'], 'myRoot');
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
@@ -67,8 +69,9 @@ await describe('CLI new controller and flags', async () => {
   });
 
   await it('New controller with --dir', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -99,8 +102,9 @@ await describe('CLI new controller and flags', async () => {
   });
 
   await it('New controller with --no-segment-update', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -131,8 +135,9 @@ await describe('CLI new controller and flags', async () => {
   });
 
   it('New controller with --dry-run', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,

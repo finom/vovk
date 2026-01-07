@@ -1,4 +1,4 @@
-import { it, describe, beforeEach } from 'node:test';
+import { it, describe } from 'node:test';
 import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfig from '../../lib/updateConfig.mts';
@@ -6,42 +6,49 @@ import updateConfig from '../../lib/updateConfig.mts';
 const compiledClientFolderName = 'client_from_template';
 
 await describe('Client templates', async () => {
-  const { projectDir, runAtProjectDir, createNextApp, vovkInit, assertFile, vovkDevAndKill, assertDirFileList } =
-    getCLIAssertions({
-      cwd: path.resolve(import.meta.dirname, '../../..'),
-      dir: 'tmp_test_dir_client_templates',
-    });
+  const { runAtProjectDir, assertFile, vovkDevAndKill, assertDirFileList, createVovkApp } = getCLIAssertions({
+    cwd: path.resolve(import.meta.dirname, '../../..'),
+    dir: 'tmp_test_dir_client_templates',
+  });
   const customTemplatesDir = path.join(import.meta.dirname, '../../data/client-templates');
 
-  beforeEach(async () => {
-    try {
-      await runAtProjectDir(`rm -rf ${compiledClientFolderName}`);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(`Error removing ${compiledClientFolderName}: ${e}`);
-    }
-    await createNextApp();
-    await vovkInit('--yes');
-    await runAtProjectDir('../dist/index.mjs new segment');
-    await runAtProjectDir('../dist/index.mjs new controller user');
-    await updateConfig(projectDir + '/vovk.config.js', (config) => ({
-      ...config,
-      clientTemplateDefs: {
-        custom: {
-          templatePath: path.join(customTemplatesDir, './custom'),
-        },
-        customAsFile: {
-          templatePath: path.join(customTemplatesDir, './custom/custom.ts.ejs'),
-        },
-        helloWorld: {
-          templatePath: path.join(customTemplatesDir, './hello-world'),
-        },
+  const createApp = async ({
+    devAndKillFlags = '',
+    cache = true,
+  }: { devAndKillFlags?: string; cache?: boolean } = {}) => {
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+      cacheKey: 'templates-test',
+      cache,
+      runInCacheDir: async ({ cwd }) => {
+        await runAtProjectDir('../dist/index.mjs new segment', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller user', { cwd });
+        await updateConfig(cwd + '/vovk.config.js', () => ({
+          outputConfig: {
+            package: {
+              name: compiledClientFolderName,
+            },
+          },
+          clientTemplateDefs: {
+            custom: {
+              templatePath: path.join(customTemplatesDir, './custom'),
+            },
+            customAsFile: {
+              templatePath: path.join(customTemplatesDir, './custom/custom.ts.ejs'),
+            },
+            helloWorld: {
+              templatePath: path.join(customTemplatesDir, './hello-world'),
+            },
+          },
+        }));
+        await vovkDevAndKill(devAndKillFlags, { cwd });
+        await runAtProjectDir(`rm -rf ${compiledClientFolderName}`, { cwd });
       },
-    }));
-  });
+    });
+  };
 
   await it('Generates composed client from custom schema dir using --schema-out for dev and --schema for generate', async () => {
-    await vovkDevAndKill('--schema-out ./custom-schema-dir');
+    await createApp({ devAndKillFlags: '--schema-out ./custom-schema-dir', cache: false });
     await runAtProjectDir(`../dist/index.mjs generate --out ${compiledClientFolderName} --schema ./custom-schema-dir`);
 
     await assertDirFileList(compiledClientFolderName, [
@@ -60,7 +67,7 @@ await describe('Client templates', async () => {
   });
 
   await it('Should use default templates', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --out ${compiledClientFolderName}`);
 
     await assertDirFileList(compiledClientFolderName, [
@@ -77,7 +84,7 @@ await describe('Client templates', async () => {
   });
 
   await it('Should use default templates explicitly', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --from=mjs --from=ts --out ${compiledClientFolderName}`);
 
     await assertDirFileList(compiledClientFolderName, [
@@ -95,7 +102,7 @@ await describe('Client templates', async () => {
   });
 
   await it('Generates file from compiled and custom template', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --from=cjs --from=custom --out ${compiledClientFolderName}`);
 
     await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { createRPC } = require('vovk')`]);
@@ -119,7 +126,7 @@ await describe('Client templates', async () => {
   });
 
   await it('Generates file from compiled and custom template as file', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(
       `../dist/index.mjs generate --from=cjs --from=customAsFile --out ${compiledClientFolderName}`
     );
@@ -145,7 +152,7 @@ await describe('Client templates', async () => {
   });
 
   await it('Generates files from multiple custom templates', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(
       `../dist/index.mjs generate --from=cjs --from=custom --from helloWorld --from=cjs --out ${compiledClientFolderName}`
     );
@@ -172,20 +179,21 @@ await describe('Client templates', async () => {
   });
 
   await it('Generates README.md and package.json', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(
       `../dist/index.mjs generate --from=readme --from=packageJson --out ${compiledClientFolderName}`
     );
-    await assertFile(`${compiledClientFolderName}/README.md`, ['tmp_test_dir_client_templates']);
-    await assertFile(`${compiledClientFolderName}/package.json`, ['"name": "tmp_test_dir_client_templates"']);
+    await assertFile(`${compiledClientFolderName}/README.md`, ['client_from_template']);
+    await assertFile(`${compiledClientFolderName}/package.json`, ['"name": "client_from_template"']);
   });
 
   await it('Generates Python client', async () => {
+    await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --from=py --out ${compiledClientFolderName}`);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await assertDirFileList(compiledClientFolderName, ['src', 'README.md', 'setup.cfg', 'pyproject.toml']);
-    await assertDirFileList(`${compiledClientFolderName}/src`, ['tmp_test_dir_client_templates']);
-    await assertDirFileList(`${compiledClientFolderName}/src/tmp_test_dir_client_templates`, [
+    await assertDirFileList(`${compiledClientFolderName}/src`, [compiledClientFolderName]);
+    await assertDirFileList(`${compiledClientFolderName}/src/${compiledClientFolderName}`, [
       '__init__.py',
       'api_client.py',
       'py.typed',
@@ -194,7 +202,7 @@ await describe('Client templates', async () => {
   });
 
   await it('Generates Rust client', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --from=rs --out ${compiledClientFolderName}`);
     await assertDirFileList(compiledClientFolderName, ['Cargo.toml', 'src', 'README.md']);
     await assertDirFileList(`${compiledClientFolderName}/src`, [

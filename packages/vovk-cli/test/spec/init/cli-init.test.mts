@@ -7,6 +7,7 @@ import { DOWN, ENTER, SPACE } from '../../lib/runScript.mts';
 import type { PackageJson } from 'type-fest';
 import NPMCliPackageJson from '@npmcli/package-json';
 import { deepStrictEqual } from 'node:assert';
+import { runScript } from '../../lib/runScript.mts';
 
 const combos = {
   /*
@@ -125,8 +126,6 @@ await describe('CLI init', async () => {
   const {
     projectDir,
     runAtProjectDir,
-    createNextApp,
-    vovkInit,
     assertConfig,
     assertScripts,
     assertDirExists,
@@ -135,7 +134,17 @@ await describe('CLI init', async () => {
     assertNotExists,
     assertTsConfig,
     assertBundleTsConfig,
+    createNextApp,
   } = getCLIAssertions({ cwd, dir });
+
+  async function vovkInit(flags?: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
+    // Use --channel=draft for draft features
+    const script = `./dist/index.mjs init --prefix ${dir} --log-level=debug ${flags}`;
+    return runScript(script, {
+      ...options,
+      cwd,
+    });
+  }
 
   await it('Works with --yes and does not change other scripts', async () => {
     await createNextApp();

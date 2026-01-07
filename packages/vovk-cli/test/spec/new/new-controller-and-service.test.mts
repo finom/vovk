@@ -3,14 +3,16 @@ import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 
 await describe('CLI new controller and service', async () => {
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
+  const { runAtProjectDir, assertFile, assertNotExists, createVovkApp } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir_new_controller_and_service',
   });
 
   await it('New service only', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
+
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new service user');
 
@@ -32,8 +34,9 @@ await describe('CLI new controller and service', async () => {
   });
 
   await it('New controller and service without validation library', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new controller service user');
 
@@ -63,8 +66,9 @@ await describe('CLI new controller and service', async () => {
   });
 
   await it('New --empty controller and service', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new controller service user --empty');
 

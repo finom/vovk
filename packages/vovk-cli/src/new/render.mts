@@ -80,7 +80,7 @@ export async function render(
 
   const parsed = matter((await ejs.render(codeTemplate, { t }, { async: true, filename: templateFileName })).trim());
   const { outDir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
-  const code = empty ? (sourceName ? `export class ${sourceName} {}` : '') : parsed.content;
+  const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;
 
   return {
     outDir,

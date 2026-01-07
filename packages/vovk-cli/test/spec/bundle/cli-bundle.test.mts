@@ -1,4 +1,4 @@
-import { it, describe, beforeEach } from 'node:test';
+import { it, describe } from 'node:test';
 import path from 'node:path';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
@@ -9,39 +9,37 @@ import { importFresh } from '../../lib/importFresh.mts';
 import { updateConfigFileProperty } from '../../../dist/utils/updateConfigProperty.mjs';
 
 await describe('TypeScript bundle', async () => {
-  const { projectDir, runAtProjectDir, createNextApp, vovkInit, vovkDevAndKill, assertDirFileList } = getCLIAssertions({
+  const { projectDir, runAtProjectDir, vovkDevAndKill, assertDirFileList, createVovkApp } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir_bundle',
   });
 
-  beforeEach(async () => {
-    await createNextApp();
-    await vovkInit('--yes');
-    await fs.writeFile(
-      path.join(projectDir, 'tsconfig.build.json'),
-      JSON.stringify({
-        compilerOptions: {
-          moduleResolution: 'bundler',
-          paths: {
-            'vovk/*': ['./node_modules/vovk/*'],
-          },
-        },
-      })
-    );
-    await runAtProjectDir('../dist/index.mjs new segment');
-    await runAtProjectDir('../dist/index.mjs new controller user');
-    await runAtProjectDir('../dist/index.mjs new segment foo');
-    await runAtProjectDir('../dist/index.mjs new controller foo/cucumber');
-    await runAtProjectDir('../dist/index.mjs new controller foo/tomato');
-    await runAtProjectDir('../dist/index.mjs new segment bar/baz');
-    await runAtProjectDir('../dist/index.mjs new controller bar/baz/pineapple');
-    await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi');
-    await runAtProjectDir('../dist/index.mjs new segment a/b/c/d/e');
-    await runAtProjectDir('../dist/index.mjs new controller a/b/c/d/e/post');
-  });
+  const createApp = async ({
+    devAndKillFlags = '',
+    cache = true,
+  }: { devAndKillFlags?: string; cache?: boolean } = {}) => {
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+      cacheKey: 'bundle-or-generate-test',
+      cache,
+      runInCacheDir: async ({ cwd }) => {
+        await runAtProjectDir('../dist/index.mjs new segment', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller user', { cwd });
+        await runAtProjectDir('../dist/index.mjs new segment foo', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller foo/cucumber', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller foo/tomato', { cwd });
+        await runAtProjectDir('../dist/index.mjs new segment bar/baz', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller bar/baz/pineapple', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi', { cwd });
+        await runAtProjectDir('../dist/index.mjs new segment a/b/c/d/e', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller a/b/c/d/e/post', { cwd });
+        await vovkDevAndKill(devAndKillFlags, { cwd });
+      },
+    });
+  };
 
   await it('Bundles composed client', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
 
     await assertDirFileList('./dist', [
@@ -54,22 +52,8 @@ await describe('TypeScript bundle', async () => {
     ]);
   });
 
-  await it('Bundles composed client from custom schema dir using --schema-out for dev and --schema for bundle', async () => {
-    await vovkDevAndKill('--schema-out ./custom-schema-dir');
-    await runAtProjectDir(`../dist/index.mjs bundle --log-level debug --schema ./custom-schema-dir`);
-
-    await assertDirFileList('./dist', [
-      'index.mjs',
-      'index.d.mts',
-      'index.cjs',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
-  });
-
   await it('Bundles composed client to an --out dir', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(`../dist/index.mjs bundle --out my_dist --log-level debug`);
 
     await assertDirFileList('./my_dist', [
@@ -83,7 +67,7 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Builds composed bundle with included segments', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await updateConfigFileProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
     await updateConfigFileProperty(
       path.join(projectDir, 'vovk.config.js'),
@@ -108,7 +92,7 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Builds composed bundle with excluded segments', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await updateConfigFileProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
     await updateConfigFileProperty(
       path.join(projectDir, 'vovk.config.js'),
@@ -133,7 +117,7 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Builds composed bundle with included segments using --include flag', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(
       `../dist/index.mjs bundle --include foo --include bar/baz --out ./composed-bundle --log-level debug`
     );
@@ -154,7 +138,7 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Builds composed bundle with excluded segments using --exclude flag', async () => {
-    await vovkDevAndKill();
+    await createApp();
     await runAtProjectDir(
       `../dist/index.mjs bundle --exclude "" --exclude bar/baz --out ./composed-bundle --log-level debug`
     );
@@ -175,11 +159,9 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Uses combined outputConfig to create re-exports in composed bundle', async () => {
-    await vovkDevAndKill();
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
-      ...config,
+    await createApp();
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), () => ({
       bundle: {
-        build: () => Promise.resolve(),
         outDir: './composed-bundle',
         includeSegments: ['foo', 'bar/baz'],
         outputConfig: {
@@ -231,17 +213,16 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Uses origin option', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
-      ...config,
+    await createApp();
+
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), () => ({
       bundle: {
-        build: () => Promise.resolve(),
         outputConfig: {
           origin: 'https://example.com/',
         },
       },
     }));
 
-    await vovkDevAndKill();
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug --out ./dist-origin-1`);
     const { UserRPC } = await import(path.join(projectDir, 'dist-origin-1', 'index.mjs'));
 
@@ -249,22 +230,37 @@ await describe('TypeScript bundle', async () => {
   });
 
   await it('Uses --origin flag', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
-      ...config,
+    await createApp();
+    await updateConfig(path.join(projectDir, 'vovk.config.js'), () => ({
       bundle: {
-        build: () => Promise.resolve(),
         outputConfig: {
           origin: 'https://example.com/', // should be overridden by --origin
         },
       },
     }));
 
-    await vovkDevAndKill();
     await runAtProjectDir(
       `../dist/index.mjs bundle --log-level debug --out ./dist-origin-2 --origin https://example.org/`
     );
     const { UserRPC } = await import(path.join(projectDir, 'dist-origin-2', 'index.mjs'));
 
     strictEqual(UserRPC.createUser.apiRoot, 'https://example.org/api');
+  });
+
+  await it('Bundles composed client from custom schema dir using --schema-out for dev and --schema for bundle', async () => {
+    await createApp({
+      devAndKillFlags: '--schema-out ./custom-schema-dir',
+      cache: false, // no need to cache as this test is unique
+    });
+    await runAtProjectDir(`../dist/index.mjs bundle --log-level debug --schema ./custom-schema-dir`);
+
+    await assertDirFileList('./dist', [
+      'index.mjs',
+      'index.d.mts',
+      'index.cjs',
+      'index.d.cts',
+      'package.json',
+      'README.md',
+    ]);
   });
 });

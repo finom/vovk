@@ -3,14 +3,15 @@ import path from 'node:path';
 import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 
 await describe('CLI new controller only', async () => {
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
+  const { runAtProjectDir, assertFile, assertNotExists, createVovkApp } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir_new_controller_only',
   });
 
   await it('New controller without validation library', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -61,8 +62,9 @@ await describe('CLI new controller only', async () => {
   });
 
   await it('New --empty controller only', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new controller user --empty');
 
@@ -81,8 +83,9 @@ await describe('CLI new controller only', async () => {
   });
 
   await it('New controller on non-root segment', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment foo');
     await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -115,8 +118,9 @@ await describe('CLI new controller only', async () => {
   });
 
   await it('New controller with zod validation library', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=zod');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=zod',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -131,7 +135,7 @@ await describe('CLI new controller only', async () => {
       `import { z } from 'zod';`,
       `export default class UserController {`,
       `@get()
-        static getUsers = endpoint(`,
+        static getUsers = procedure(`,
       `static createUser = `,
       `static updateUser = `,
     ]);
@@ -148,8 +152,9 @@ await describe('CLI new controller only', async () => {
   });
 
   await it('New controller with valibot validation library', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=valibot');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=valibot',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -164,7 +169,7 @@ await describe('CLI new controller only', async () => {
       `import * as v from 'valibot';`,
       `export default class UserController {`,
       `@get()
-        static getUsers = endpoint(`,
+        static getUsers = procedure(`,
       `static createUser = `,
       `static updateUser = `,
     ]);
@@ -181,8 +186,9 @@ await describe('CLI new controller only', async () => {
   });
 
   await it('New controller with arktype validation library', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=arktype');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=arktype',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -197,7 +203,7 @@ await describe('CLI new controller only', async () => {
       `import { type } from 'arktype';`,
       `export default class UserController {`,
       `@get()
-        static getUsers = endpoint(`,
+        static getUsers = procedure(`,
       `static createUser = `,
       `static updateUser = `,
     ]);

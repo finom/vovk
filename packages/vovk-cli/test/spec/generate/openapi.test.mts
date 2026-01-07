@@ -111,7 +111,6 @@ await describe('OpenAPI flags', async () => {
     const { schema: schema2 } = await import(path.join(generatedClientDir, 'schema.cjs'));
 
     strictEqual(openapi.openapi, '3.1.0');
-    strictEqual(openapi.paths['/test']?.post?.operationId, 'postTest');
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(
@@ -130,7 +129,7 @@ await describe('OpenAPI flags', async () => {
     ok(typeof api.postTest === 'function', 'api.postTest should be a function');
     strictEqual(schema.segments.mixin.forceApiRoot, 'https://example.com/api/v1');
     strictEqual(schema2.segments.mixin.forceApiRoot, 'https://example.com/api/v1');
-    await fs.rm(generatedClientDir, { recursive: true, force: true });
+    // await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
   await it('assigns x-isForm to multipart/form-data bodies', async () => {

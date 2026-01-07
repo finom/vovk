@@ -13,7 +13,7 @@ let dev: Promise<string> & {
 await describe('CLI dev', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
   const dir = 'tmp_test_dir_dev';
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({ cwd, dir });
+  const { runAtProjectDir, assertFile, createVovkApp } = getCLIAssertions({ cwd, dir });
   const getSchema = async () =>
     JSON.parse(await fs.readFile(path.join(cwd, dir, '.vovk-schema/root.json'), 'utf8')) as VovkSegmentSchema;
 
@@ -37,8 +37,9 @@ await describe('CLI dev', async () => {
 
   for (const [name, devCommand] of Object.entries(devCommands)) {
     await it(name, async () => {
-      await createNextApp();
-      await vovkInit('--yes --validation-library=none');
+      await createVovkApp({
+        vovkInitFlags: '--yes --validation-library=none',
+      });
       try {
         await runAtProjectDir('../dist/index.mjs new segment');
         await assertFile('src/app/api/[[...vovk]]/route.ts', [

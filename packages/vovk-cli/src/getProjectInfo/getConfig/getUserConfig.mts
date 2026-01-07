@@ -1,4 +1,8 @@
 import { pathToFileURL } from 'node:url';
+import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { dirname, extname } from 'node:path';
+import vm from 'node:vm';
 import type { VovkConfig } from 'vovk';
 import { getConfigAbsolutePaths } from './getConfigAbsolutePaths.mjs';
 
@@ -18,7 +22,7 @@ export async function getUserConfig({
   let userConfig: VovkConfig;
   let lastError: unknown;
 
-  const loaders: Array<() => Promise<VovkConfig>> = [() => importWithCacheBuster(configPath)];
+  const loaders = getLoadersForExtension(configPath);
 
   for (const loader of loaders) {
     try {
@@ -30,6 +34,153 @@ export async function getUserConfig({
   }
 
   return { userConfig: null, configAbsolutePaths, error: lastError as Error };
+}
+
+function getLoadersForExtension(configPath: string): Array<() => Promise<VovkConfig>> {
+  const ext = extname(configPath).toLowerCase();
+
+  switch (ext) {
+    case '.mjs':
+      return [() => importWithVMModule(configPath), () => importWithCacheBuster(configPath)];
+    case '.cjs':
+      return [() => importWithVMCommonJS(configPath), () => importWithCacheBuster(configPath)];
+    case '.js':
+    default:
+      return [
+        () => importWithVMCommonJS(configPath),
+        () => importWithVMModule(configPath),
+        () => importWithCacheBuster(configPath),
+      ];
+  }
+}
+
+async function importWithVMCommonJS(configPath: string): Promise<VovkConfig> {
+  const code = await readFile(configPath, 'utf-8');
+  const require = createRequire(configPath);
+  const moduleObj = { exports: {} as VovkConfig };
+
+  const contextObject = {
+    module: moduleObj,
+    exports: moduleObj.exports,
+    require,
+    __filename: configPath,
+    __dirname: dirname(configPath),
+    console,
+    process,
+    Buffer,
+    URL,
+    URLSearchParams,
+    setTimeout,
+    setInterval,
+    setImmediate,
+    clearTimeout,
+    clearInterval,
+    clearImmediate,
+  };
+
+  const context = vm.createContext(contextObject);
+
+  const script = new vm.Script(code, {
+    filename: configPath,
+    importModuleDynamically: async (specifier) => {
+      const imported = await import(specifier);
+
+      const exportNames = Object.keys(imported);
+      const syntheticModule = new vm.SyntheticModule(
+        exportNames,
+        function () {
+          for (const name of exportNames) {
+            this.setExport(name, imported[name]);
+          }
+        },
+        { context, identifier: specifier }
+      );
+
+      await syntheticModule.link(() => {
+        throw new Error('Nested linking not supported');
+      });
+      await syntheticModule.evaluate();
+
+      return syntheticModule;
+    },
+  });
+
+  script.runInContext(context);
+
+  return moduleObj.exports;
+}
+
+async function importWithVMModule(configPath: string): Promise<VovkConfig> {
+  if (typeof vm.SourceTextModule === 'undefined') {
+    throw new Error('vm.SourceTextModule not available');
+  }
+
+  const code = await readFile(configPath, 'utf-8');
+  const configUrl = pathToFileURL(configPath).href;
+
+  const context = vm.createContext({
+    console,
+    process,
+    Buffer,
+    URL,
+    URLSearchParams,
+    setTimeout,
+    setInterval,
+    setImmediate,
+    clearTimeout,
+    clearInterval,
+    clearImmediate,
+  });
+
+  const module = new vm.SourceTextModule(code, {
+    context,
+    identifier: configUrl,
+    initializeImportMeta(meta) {
+      meta.url = configUrl;
+    },
+    async importModuleDynamically(specifier) {
+      const imported = await import(specifier);
+
+      const exportNames = Object.keys(imported);
+      const syntheticModule = new vm.SyntheticModule(
+        exportNames,
+        function () {
+          for (const name of exportNames) {
+            this.setExport(name, imported[name]);
+          }
+        },
+        { context, identifier: specifier }
+      );
+
+      await syntheticModule.link(() => {
+        throw new Error('Nested linking not supported');
+      });
+      await syntheticModule.evaluate();
+
+      return syntheticModule;
+    },
+  });
+
+  await module.link(async (specifier) => {
+    const imported = await import(specifier);
+
+    const exportNames = Object.keys(imported);
+    const syntheticModule = new vm.SyntheticModule(
+      exportNames,
+      function () {
+        for (const name of exportNames) {
+          this.setExport(name, imported[name]);
+        }
+      },
+      { context, identifier: specifier }
+    );
+
+    return syntheticModule;
+  });
+
+  await module.evaluate();
+
+  return (module.namespace as { default: VovkConfig }).default;
 }
 
 async function importWithCacheBuster(configPath: string): Promise<VovkConfig> {

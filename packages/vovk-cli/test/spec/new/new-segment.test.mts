@@ -4,14 +4,15 @@ import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import assert from 'node:assert';
 
 await describe('CLI new segment', async () => {
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile } = getCLIAssertions({
+  const { runAtProjectDir, assertFile, createVovkApp } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir_new_segment',
   });
 
   await it('New root segment', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
@@ -23,8 +24,9 @@ await describe('CLI new segment', async () => {
   });
 
   await it('New root segment passing "" string as segment name', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir('../dist/index.mjs new segment ""');
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
@@ -36,8 +38,9 @@ await describe('CLI new segment', async () => {
   });
 
   await it("New root segment passing '' string as segment name", async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir("../dist/index.mjs new segment ''");
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
@@ -49,8 +52,9 @@ await describe('CLI new segment', async () => {
   });
 
   await it('New simple segment', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir('../dist/index.mjs new segment foo');
     await assertFile(
       'src/app/api/foo/[[...vovk]]/route.ts',
@@ -63,8 +67,9 @@ await describe('CLI new segment', async () => {
   });
 
   await it('New static segment', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir('../dist/index.mjs new segment foo --static');
     await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
       `export function generateStaticParams() {`,
@@ -77,8 +82,9 @@ await describe('CLI new segment', async () => {
   });
 
   await it('New nested segment', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir('../dist/index.mjs new segment bar/baz/qwe');
     await assertFile(
       'src/app/api/bar/baz/qwe/[[...vovk]]/route.ts',
@@ -93,8 +99,9 @@ await describe('CLI new segment', async () => {
   });
 
   await it('Multiple new segments', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir('../dist/index.mjs new segment "" foo foo/bar/baz');
     await assertFile(
       'src/app/api/[[...vovk]]/route.ts',
@@ -122,8 +129,9 @@ await describe('CLI new segment', async () => {
   });
 
   await it('Throws if segment already exists', async () => {
-    await createNextApp();
-    await vovkInit('--yes');
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+    });
     await runAtProjectDir('../dist/index.mjs new segment foo');
     await assert.rejects(() => runAtProjectDir('../dist/index.mjs new segment foo'));
   });

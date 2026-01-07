@@ -24,7 +24,7 @@ export function runScript(
   }
 ) {
   // eslint-disable-next-line no-console
-  console.info('Running script:', commandWithArgs);
+  console.info('Running script: ', commandWithArgs, ' at ', options.cwd);
   const { env = process.env, combo = [] } = options;
 
   const envWithPath = {
@@ -60,7 +60,7 @@ export function runScript(
             )
           );
         }
-      }, 3000);
+      }, 100);
     });
   }) as Promise<string> & { kill: () => Promise<void> };
 

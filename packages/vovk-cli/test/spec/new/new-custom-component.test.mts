@@ -6,14 +6,15 @@ import updateConfig from '../../lib/updateConfig.mts';
 await describe('Custom components', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
   const dir = 'tmp_test_dir_new_custom_component';
-  const { runAtProjectDir, createNextApp, vovkInit, assertFile, assertNotExists } = getCLIAssertions({
+  const { runAtProjectDir, assertFile, assertNotExists, createVovkApp } = getCLIAssertions({
     cwd,
     dir,
   });
 
   await it('New controller and state', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,
@@ -60,8 +61,9 @@ await describe('Custom components', async () => {
   });
 
   await it('New custom controller and state', async () => {
-    await createNextApp();
-    await vovkInit('--yes --validation-library=none');
+    await createVovkApp({
+      vovkInitFlags: '--yes --validation-library=none',
+    });
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,

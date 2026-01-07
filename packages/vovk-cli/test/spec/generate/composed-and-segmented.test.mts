@@ -7,29 +7,41 @@ import getCLIAssertions from '../../lib/getCLIAssertions.mts';
 import updateConfig from '../../lib/updateConfig.mts';
 
 await describe('Composed & Segmented client', async () => {
-  const { projectDir, runAtProjectDir, createNextApp, vovkInit, assertNotExists, vovkDevAndKill, assertDirFileList } =
+  const { projectDir, runAtProjectDir, assertNotExists, vovkDevAndKill, assertDirFileList, createVovkApp } =
     getCLIAssertions({
       cwd: path.resolve(import.meta.dirname, '../../..'),
       dir: 'tmp_test_dir_composed_and_segmented',
     });
 
-  beforeEach(async () => {
-    await createNextApp();
-    await vovkInit('--yes');
-    await runAtProjectDir('../dist/index.mjs new segment');
-    await runAtProjectDir('../dist/index.mjs new controller user');
-    await runAtProjectDir('../dist/index.mjs new segment foo');
-    await runAtProjectDir('../dist/index.mjs new controller foo/cucumber');
-    await runAtProjectDir('../dist/index.mjs new controller foo/tomato');
-    await runAtProjectDir('../dist/index.mjs new segment bar/baz');
-    await runAtProjectDir('../dist/index.mjs new controller bar/baz/pineapple');
-    await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi');
-    await runAtProjectDir('../dist/index.mjs new segment a/b/c/d/e');
-    await runAtProjectDir('../dist/index.mjs new controller a/b/c/d/e/post');
-    await vovkDevAndKill();
-  });
+  const createApp = async ({
+    devAndKillFlags = '',
+    cache = true,
+  }: { devAndKillFlags?: string; cache?: boolean } = {}) => {
+    await createVovkApp({
+      vovkInitFlags: '--yes',
+      cacheKey: 'bundle-or-generate-test', // TODO: DRY
+      cache,
+      runInCacheDir: async ({ cwd }) => {
+        await runAtProjectDir('../dist/index.mjs new segment', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller user', { cwd });
+        await runAtProjectDir('../dist/index.mjs new segment foo', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller foo/cucumber', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller foo/tomato', { cwd });
+        await runAtProjectDir('../dist/index.mjs new segment bar/baz', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller bar/baz/pineapple', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller bar/baz/kiwi', { cwd });
+        await runAtProjectDir('../dist/index.mjs new segment a/b/c/d/e', { cwd });
+        await runAtProjectDir('../dist/index.mjs new controller a/b/c/d/e/post', { cwd });
+        await vovkDevAndKill(devAndKillFlags, { cwd });
+      },
+    });
+  };
 
+  beforeEach(async () => {
+    await createApp();
+  });
   await it('Generates composed client', async () => {
+    await runAtProjectDir('rm -rf ./node_modules/.vovk-client');
     await runAtProjectDir(`../dist/index.mjs generate`);
 
     await assertDirFileList('./node_modules/.vovk-client', [
