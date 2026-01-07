@@ -24,7 +24,7 @@ export async function getUserConfig({
   let userConfig: VovkConfig;
   let lastError: unknown;
 
-  const loaders = getLoadersForExtension(configPath);
+  const loaders = await getLoadersForExtension(configPath);
 
   for (const loader of loaders) {
     try {
@@ -38,31 +38,36 @@ export async function getUserConfig({
   return { userConfig: null, configAbsolutePaths, error: lastError as Error };
 }
 
-function getLoadersForExtension(configPath: string): Array<() => Promise<VovkConfig>> {
+async function getLoadersForExtension(configPath: string): Promise<Array<() => Promise<VovkConfig>>> {
   const ext = extname(configPath).toLowerCase();
+  const code = await readFile(configPath, 'utf-8');
+  const hasDynamicImport = /\bimport\s*\(/.test(code);
+
+  // If config has dynamic imports and flag is not enabled, skip VM loaders entirely
+  const canUseVM = isVMModulesEnabled || !hasDynamicImport;
 
   switch (ext) {
     case '.mjs':
-      return [() => importWithVMModule(configPath), () => importWithCacheBuster(configPath)];
+      return canUseVM
+        ? [() => importWithVMModule(configPath, code), () => importWithCacheBuster(configPath)]
+        : [() => importWithCacheBuster(configPath)];
     case '.cjs':
-      return [() => importWithVMCommonJS(configPath), () => importWithCacheBuster(configPath)];
+      return canUseVM
+        ? [() => importWithVMCommonJS(configPath, code), () => importWithCacheBuster(configPath)]
+        : [() => importWithCacheBuster(configPath)];
     case '.js':
     default:
-      return [
-        () => importWithVMCommonJS(configPath),
-        () => importWithVMModule(configPath),
-        () => importWithCacheBuster(configPath),
-      ];
+      return canUseVM
+        ? [
+            () => importWithVMCommonJS(configPath, code),
+            () => importWithVMModule(configPath, code),
+            () => importWithCacheBuster(configPath),
+          ]
+        : [() => importWithCacheBuster(configPath)];
   }
 }
 
 function createDynamicImportHandler(context: vm.Context) {
-  // If --experimental-vm-modules is not enabled, don't provide the callback
-  // This way vm.Script works without the flag (but dynamic imports won't work)
-  if (!isVMModulesEnabled) {
-    return undefined;
-  }
-
   return async (specifier: string) => {
     const imported = await import(specifier);
 
@@ -86,9 +91,7 @@ function createDynamicImportHandler(context: vm.Context) {
   };
 }
 
-async function importWithVMCommonJS(configPath: string): Promise<VovkConfig> {
-  const code = await readFile(configPath, 'utf-8');
-
+async function importWithVMCommonJS(configPath: string, code: string): Promise<VovkConfig> {
   const require = createRequire(configPath);
   const moduleObj = { exports: {} as VovkConfig };
 
@@ -123,12 +126,11 @@ async function importWithVMCommonJS(configPath: string): Promise<VovkConfig> {
   return moduleObj.exports;
 }
 
-async function importWithVMModule(configPath: string): Promise<VovkConfig> {
+async function importWithVMModule(configPath: string, code: string): Promise<VovkConfig> {
   if (!isVMModulesEnabled) {
     throw new Error('vm.SourceTextModule not available');
   }
 
-  const code = await readFile(configPath, 'utf-8');
   const configUrl = pathToFileURL(configPath).href;
 
   const context = vm.createContext({
@@ -145,15 +147,13 @@ async function importWithVMModule(configPath: string): Promise<VovkConfig> {
     clearImmediate,
   });
 
-  const dynamicImportHandler = createDynamicImportHandler(context)!;
-
   const module = new vm.SourceTextModule(code, {
     context,
     identifier: configUrl,
     initializeImportMeta(meta) {
       meta.url = configUrl;
     },
-    importModuleDynamically: dynamicImportHandler,
+    importModuleDynamically: createDynamicImportHandler(context),
   });
 
   await module.link(async (specifier) => {
