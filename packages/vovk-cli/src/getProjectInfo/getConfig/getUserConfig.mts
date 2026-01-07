@@ -6,6 +6,8 @@ import vm from 'node:vm';
 import type { VovkConfig } from 'vovk';
 import { getConfigAbsolutePaths } from './getConfigAbsolutePaths.mjs';
 
+const isVMModulesEnabled = typeof vm.SourceTextModule !== 'undefined';
+
 export async function getUserConfig({
   configPath: givenConfigPath,
   cwd,
@@ -54,8 +56,39 @@ function getLoadersForExtension(configPath: string): Array<() => Promise<VovkCon
   }
 }
 
+function createDynamicImportHandler(context: vm.Context) {
+  // If --experimental-vm-modules is not enabled, don't provide the callback
+  // This way vm.Script works without the flag (but dynamic imports won't work)
+  if (!isVMModulesEnabled) {
+    return undefined;
+  }
+
+  return async (specifier: string) => {
+    const imported = await import(specifier);
+
+    const exportNames = Object.keys(imported);
+    const syntheticModule = new vm.SyntheticModule(
+      exportNames,
+      function () {
+        for (const name of exportNames) {
+          this.setExport(name, imported[name]);
+        }
+      },
+      { context, identifier: specifier }
+    );
+
+    await syntheticModule.link(() => {
+      throw new Error('Nested linking not supported');
+    });
+    await syntheticModule.evaluate();
+
+    return syntheticModule;
+  };
+}
+
 async function importWithVMCommonJS(configPath: string): Promise<VovkConfig> {
   const code = await readFile(configPath, 'utf-8');
+
   const require = createRequire(configPath);
   const moduleObj = { exports: {} as VovkConfig };
 
@@ -82,27 +115,7 @@ async function importWithVMCommonJS(configPath: string): Promise<VovkConfig> {
 
   const script = new vm.Script(code, {
     filename: configPath,
-    importModuleDynamically: async (specifier) => {
-      const imported = await import(specifier);
-
-      const exportNames = Object.keys(imported);
-      const syntheticModule = new vm.SyntheticModule(
-        exportNames,
-        function () {
-          for (const name of exportNames) {
-            this.setExport(name, imported[name]);
-          }
-        },
-        { context, identifier: specifier }
-      );
-
-      await syntheticModule.link(() => {
-        throw new Error('Nested linking not supported');
-      });
-      await syntheticModule.evaluate();
-
-      return syntheticModule;
-    },
+    importModuleDynamically: createDynamicImportHandler(context),
   });
 
   script.runInContext(context);
@@ -111,7 +124,7 @@ async function importWithVMCommonJS(configPath: string): Promise<VovkConfig> {
 }
 
 async function importWithVMModule(configPath: string): Promise<VovkConfig> {
-  if (typeof vm.SourceTextModule === 'undefined') {
+  if (!isVMModulesEnabled) {
     throw new Error('vm.SourceTextModule not available');
   }
 
@@ -132,33 +145,15 @@ async function importWithVMModule(configPath: string): Promise<VovkConfig> {
     clearImmediate,
   });
 
+  const dynamicImportHandler = createDynamicImportHandler(context)!;
+
   const module = new vm.SourceTextModule(code, {
     context,
     identifier: configUrl,
     initializeImportMeta(meta) {
       meta.url = configUrl;
     },
-    async importModuleDynamically(specifier) {
-      const imported = await import(specifier);
-
-      const exportNames = Object.keys(imported);
-      const syntheticModule = new vm.SyntheticModule(
-        exportNames,
-        function () {
-          for (const name of exportNames) {
-            this.setExport(name, imported[name]);
-          }
-        },
-        { context, identifier: specifier }
-      );
-
-      await syntheticModule.link(() => {
-        throw new Error('Nested linking not supported');
-      });
-      await syntheticModule.evaluate();
-
-      return syntheticModule;
-    },
+    importModuleDynamically: dynamicImportHandler,
   });
 
   await module.link(async (specifier) => {
