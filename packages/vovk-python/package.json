@@ -1,6 +1,6 @@
 {
   "name": "vovk-python",
-  "version": "0.0.1-beta.4",
+  "version": "0.0.1-beta.5",
   "description": "Codegen templates for Python client library for Vovk.ts",
   "scripts": {
     "build": "tsc",

@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.1-beta.61",
+  "version": "0.0.1-beta.62",
   "description": "CLI tool for managing Vovk.ts projects",
   "bin": {
     "vovk": "./dist/index.mjs"
@@ -37,11 +37,11 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-beta.97",
-    "vovk-ajv": "^0.0.0-beta.4",
-    "vovk-client": "^0.0.4-beta.4",
-    "vovk-python": "^0.0.1-beta.4",
-    "vovk-rust": "^0.0.1-beta.6"
+    "vovk": "^3.0.0-beta.98",
+    "vovk-ajv": "^0.0.0-beta.5",
+    "vovk-client": "^0.0.4-beta.5",
+    "vovk-python": "^0.0.1-beta.5",
+    "vovk-rust": "^0.0.1-beta.7"
   },
   "optionalDependencies": {
     "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.57"
