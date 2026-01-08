@@ -1,6 +1,7 @@
 {
   "name": "vovk-cli",
   "version": "0.0.1-beta.61",
+  "description": "CLI tool for managing Vovk.ts projects",
   "bin": {
     "vovk": "./dist/index.mjs"
   },

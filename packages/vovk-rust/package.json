@@ -1,7 +1,7 @@
 {
   "name": "vovk-rust",
   "version": "0.0.1-beta.6",
-  "description": "Vovk.ts Rust client",
+  "description": "Codegen templates for Rust client library for Vovk.ts",
   "scripts": {
     "build": "tsc",
     "npm-publish": "npm publish",
@@ -22,12 +22,14 @@
     "url": "git+https://github.com/finom/vovk.git"
   },
   "keywords": [
-    "Vovk"
+    "vovk",
+    "rust",
+    "codegen"
   ],
   "author": "Andrey Gubanov",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/finom/vovk/issues"
   },
-  "homepage": "https://github.com/finom/vovk#readme"
+  "homepage": "https://vovk.dev/rust"
 }

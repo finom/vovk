@@ -1,7 +1,7 @@
 {
   "name": "vovk-ajv",
   "version": "0.0.0-beta.4",
-  "description": "Client-side JSON validation library for Vovk.ts",
+  "description": "Client-side JSON Schema validation library for Vovk.ts",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
@@ -17,15 +17,14 @@
     "vovk",
     "json",
     "ajv",
-    "validation",
-    "zod"
+    "validation"
   ],
   "author": "Andrey Gubanov",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/finom/vovk/issues"
   },
-  "homepage": "https://github.com/finom/vovk#readme",
+  "homepage": "https://vovk.dev/imports",
   "peerDependencies": {
     "vovk": "^3.0.0-beta.96"
   },
