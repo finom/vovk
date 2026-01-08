@@ -266,6 +266,7 @@ export function withValidationLibrary<
   };
 
   const resultHandlerEnhanced = Object.assign(resultHandler, { fn, definition });
+  const validation: VovkHandlerSchema['validation'] = {};
 
   if (toJSONSchema) {
     const getJSONSchema = (model: KnownAny, validationType: VovkValidationType) =>
@@ -274,25 +275,45 @@ export function withValidationLibrary<
         validationType === 'body' && isForm ? { 'x-isForm': isForm } : {}
       );
 
-    const validation: VovkHandlerSchema['validation'] = {};
     if (body && !skipSchemaEmissionKeys.includes('body')) {
-      validation.body = getJSONSchema(body, 'body');
+      let bodyJSONSchema;
+      Object.defineProperty(validation, 'body', {
+        enumerable: true,
+        get: () => (bodyJSONSchema ??= getJSONSchema(body, 'body')),
+      });
     }
     if (query && !skipSchemaEmissionKeys.includes('query')) {
-      validation.query = getJSONSchema(query, 'query');
+      let queryJSONSchema;
+      Object.defineProperty(validation, 'query', {
+        enumerable: true,
+        get: () => (queryJSONSchema ??= getJSONSchema(query, 'query')),
+      });
     }
     if (params && !skipSchemaEmissionKeys.includes('params')) {
-      validation.params = getJSONSchema(params, 'params');
+      let paramsJSONSchema;
+      Object.defineProperty(validation, 'params', {
+        enumerable: true,
+        get: () => (paramsJSONSchema ??= getJSONSchema(params, 'params')),
+      });
     }
     if (output && !skipSchemaEmissionKeys.includes('output')) {
-      validation.output = getJSONSchema(output, 'output');
+      let outputJSONSchema;
+      Object.defineProperty(validation, 'output', {
+        enumerable: true,
+        get: () => (outputJSONSchema ??= getJSONSchema(output, 'output')),
+      });
     }
     if (iteration && !skipSchemaEmissionKeys.includes('iteration')) {
-      validation.iteration = getJSONSchema(iteration, 'iteration');
+      let iterationJSONSchema;
+      Object.defineProperty(validation, 'iteration', {
+        enumerable: true,
+        get: () => (iterationJSONSchema ??= getJSONSchema(iteration, 'iteration')),
+      });
     }
-    resultHandlerEnhanced.schema = { validation, operationObject };
-    setHandlerSchema(resultHandlerEnhanced, { validation, operationObject });
   }
+
+  resultHandlerEnhanced.schema = { validation, operationObject };
+  setHandlerSchema(resultHandlerEnhanced, { validation, operationObject });
 
   return resultHandlerEnhanced;
 }
