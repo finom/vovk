@@ -20,8 +20,6 @@
 
 ## Vovk.ts (beta) [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/finom/vovk/blob/main/LICENSE) 
 
-[![NPM Version](https://img.shields.io/npm/v/vovk?label=vovk)](https://www.npmjs.com/package/vovk) [![NPM Version](https://img.shields.io/npm/v/vovk-cli?label=vovk-cli)](https://www.npmjs.com/package/vovk-cli)  [![NPM Version](https://img.shields.io/npm/v/vovk-ajv?label=vovk-ajv)](https://www.npmjs.com/package/vovk-ajv)  [![NPM Version](https://img.shields.io/npm/v/vovk-client?label=vovk-client)](https://www.npmjs.com/package/vovk-client) [![NPM Version](https://img.shields.io/npm/v/vovk-rust?label=vovk-rust)](https://www.npmjs.com/package/vovk-rust) [![NPM Version](https://img.shields.io/npm/v/vovk-python?label=vovk-python)](https://www.npmjs.com/package/vovk-python)
-
 Vovk.ts is a **Next.js App Router–native back-end meta-framework**: you write real Route Handlers (via Controllers), and Vovk **derives schema artifacts** to **generate type-safe clients**, **OpenAPI docs**, and **AI tools**—without maintaining a separate contract layer.
 
 > **Requirements:** Node.js 22+ and Next.js 15+
@@ -127,12 +125,12 @@ const { tools } = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI 
 ## Packages in this repo
 
 This repository is a monorepo for:
-- [`vovk`](https://npmjs.com/package/vovk) — runtime
-- [`vovk-cli`](https://npmjs.com/package/vovk-cli) — generator/tooling
-- [`vovk-client`](https://npmjs.com/package/vovk-client) - optional re-exports for [segmented TypeScript client](https://vovk.dev/segmented)
-- [`vovk-ajv`](https://npmjs.com/package/vovk-ajv) - client-side validation library for RPC modules
-- [`vovk-python`](https://npmjs.com/package/vovk-python) - [Python/mypy](https://vovk.dev/python) client template files
-- [`vovk-rust`](https://npmjs.com/package/vovk-rust) - [Rust](https://vovk.dev/rust) client template files
+- [`vovk`](https://npmjs.com/package/vovk) — runtime [![NPM Version](https://img.shields.io/npm/v/vovk?label=vovk)](https://www.npmjs.com/package/vovk)
+- [`vovk-cli`](https://npmjs.com/package/vovk-cli) — generator/tooling [![NPM Version](https://img.shields.io/npm/v/vovk-cli?label=vovk-cli)](https://www.npmjs.com/package/vovk-cli)
+- [`vovk-client`](https://npmjs.com/package/vovk-client) - optional re-exports for [segmented TypeScript client](https://vovk.dev/segmented) [![NPM Version](https://img.shields.io/npm/v/vovk-client?label=vovk-client)](https://www.npmjs.com/package/vovk-client)
+- [`vovk-ajv`](https://npmjs.com/package/vovk-ajv) - client-side validation library for RPC modules [![NPM Version](https://img.shields.io/npm/v/vovk-ajv?label=vovk-ajv)](https://www.npmjs.com/package/vovk-ajv)
+- [`vovk-python`](https://npmjs.com/package/vovk-python) - [Python/mypy](https://vovk.dev/python) client template files [![NPM Version](https://img.shields.io/npm/v/vovk-python?label=vovk-python)](https://www.npmjs.com/package/vovk-python)
+- [`vovk-rust`](https://npmjs.com/package/vovk-rust) - [Rust](https://vovk.dev/rust) client template files [![NPM Version](https://img.shields.io/npm/v/vovk-rust?label=vovk-rust)](https://www.npmjs.com/package/vovk-rust)
 
 More info: https://vovk.dev/packages
 
