@@ -97,7 +97,7 @@ export function createStandardValidation({
           );
         }
 
-        return (result as StandardSchemaV1.SuccessResult<typeof model>).value;
+        return (result as CombinedSpec.SuccessResult<typeof model>).value;
       },
       preferTransformed,
       operationObject,
