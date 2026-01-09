@@ -1,4 +1,4 @@
-import type { StandardSchemaV1, StandardJSONSchemaV1 } from '@standard-schema/spec';
+import type { CombinedSpec } from './types';
 import {
   HttpStatus,
   type VovkRequest,
@@ -17,23 +17,23 @@ export function createStandardValidation({
 }: {
   toJSONSchema: (
     model: KnownAny,
-    meta: { validationType: VovkValidationType; target: StandardJSONSchemaV1.Target | undefined }
+    meta: { validationType: VovkValidationType; target: CombinedSpec.Target | undefined }
   ) => KnownAny;
 }) {
   function withStandard<
     T extends (
       req: TReq,
-      params: TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : Record<string, string>
+      params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
     ) => KnownAny,
-    TBody extends StandardSchemaV1,
-    TQuery extends StandardSchemaV1,
-    TParams extends StandardSchemaV1,
-    TOutput extends StandardSchemaV1,
-    TIteration extends StandardSchemaV1,
+    TBody extends CombinedSpec,
+    TQuery extends CombinedSpec,
+    TParams extends CombinedSpec,
+    TOutput extends CombinedSpec,
+    TIteration extends CombinedSpec,
     TReq extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-      TBody extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TBody> : undefined,
-      TQuery extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TQuery> : undefined,
-      TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : undefined
+      TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined,
+      TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined,
+      TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined
     >,
     TIsForm extends boolean = false,
   >({
@@ -63,7 +63,7 @@ export function createStandardValidation({
     validateEachIteration?: boolean;
     preferTransformed?: boolean;
     operationObject?: VovkOperationObject;
-    target?: StandardJSONSchemaV1.Target;
+    target?: CombinedSpec.Target;
   }) {
     return withValidationLibrary({
       isForm,
@@ -77,11 +77,11 @@ export function createStandardValidation({
       validateEachIteration,
       handle: handle as VovkTypedMethod<
         T,
-        TBody extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TBody> : KnownAny,
-        TQuery extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TQuery> : KnownAny,
-        TParams extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TParams> : KnownAny,
-        TOutput extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TOutput> : KnownAny,
-        TIteration extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TIteration> : KnownAny,
+        TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny,
+        TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny,
+        TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny,
+        TOutput extends CombinedSpec ? CombinedSpec.InferOutput<TOutput> : KnownAny,
+        TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny,
         TIsForm
       >,
       toJSONSchema: (model, options) => toJSONSchema(model, { validationType: options.validationType, target }),

@@ -1,9 +1,9 @@
-import { StandardSchemaV1 } from '@standard-schema/spec';
 import type { VovkHandlerSchema, VovkRequest } from '../types';
 import type { VovkToolDerived, ToModelOutputFn } from './types';
 import { ToModelOutput } from './ToModelOutput';
 import { DefaultModelOutput } from './toModelOutputDefault';
 import { procedure } from '../validation/procedure';
+import { CombinedSpec } from '../validation/types';
 
 // Standard tool input type
 type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };
@@ -23,9 +23,9 @@ type CallerInput<TOutput, TFormattedOutput> = {
   schema: VovkHandlerSchema;
   inputSchemas:
     | {
-        body?: StandardSchemaV1;
-        query?: StandardSchemaV1;
-        params?: StandardSchemaV1;
+        body?: CombinedSpec;
+        query?: CombinedSpec;
+        params?: CombinedSpec;
       }
     | undefined;
   meta: Record<string, unknown> | undefined;

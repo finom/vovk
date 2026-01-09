@@ -20,7 +20,8 @@
 
 ## Vovk.ts [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/finom/vovk/blob/main/LICENSE)
 
-Vovk.ts is a **Next.js App Router–native back-end meta-framework**: write real Route Handlers (via Controllers), and Vovk **derives schema artifacts** to **generate type-safe clients**, **OpenAPI docs**, and **AI tools**—without maintaining a separate contract layer.
+Vovk.ts lets you build a structured back end on top of **Next.js App Router Route Handlers**—and generate a **type-safe client**, **OpenAPI**, and **AI tools** from the same code.
+Under the hood: you write Controllers (real handlers), and Vovk **emits schema artifacts** for codegen—without maintaining a separate contract layer.
 
 > **Requirements:** Node.js 22+ and Next.js 15+
 
@@ -38,7 +39,7 @@ See: https://vovk.dev/quick-install
 - **Structured API layer** (Controller → Service → Repository) on top of Route Handlers
 - **Schema emission as a build artifact** (`.vovk-schema/`) to power codegen/docs/tools
 - **Typed request handling** via `procedure(...)` with `{ params, query, body }`
-- **Derive AI tools from your API surface** (controllers *or* emitted RPC modules can be exposed as tools with structured parameters + a real `execute`)
+- **Derive AI tools from your API surface** (controllers *and* emitted RPC modules can be exposed as AI tools with parameters + `execute`)
 
 ## What it looks like
 
@@ -67,6 +68,21 @@ export default class UserController {
     },
   });
 }
+```
+
+Codegen emits `fetch`-powered client:
+
+```ts
+import { UserRPC } from 'vovk-client';
+
+const user = await UserRPC.getUser({ params: { id: '123' } });
+```
+
+Both controller and RPC module can be used to derive AI tools:
+
+```ts
+const { tools } = deriveTools({ modules: { UserRPC } });
+console.log(tools); // [{ name, description, parameters, execute }, ...]
 ```
 
 ## Runtime vs toolchain

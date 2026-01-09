@@ -1,5 +1,5 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { VovkJSONSchemaBase, VovkRequest } from '../types';
+import { CombinedSpec } from '../validation/types';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -30,19 +30,19 @@ interface VovkToolCommon<
     additionalProperties?: false;
   };
   // if derived, input schema is undefined
-  inputSchema: TIsDerived extends true ? undefined : TInput extends undefined ? undefined : StandardSchemaV1<TInput>;
+  inputSchema: TIsDerived extends true ? undefined : TInput extends undefined ? undefined : CombinedSpec<TInput>;
   // if derived, output schema is output metod validation or undefined
   outputSchema: TIsDerived extends true
-    ? StandardSchemaV1 | undefined
+    ? CombinedSpec | undefined
     : TOutput extends undefined
       ? undefined
-      : StandardSchemaV1<TOutput>;
+      : CombinedSpec<TOutput>;
   // set only if derived
   inputSchemas: TIsDerived extends true
     ? {
-        body?: StandardSchemaV1;
-        query?: StandardSchemaV1;
-        params?: StandardSchemaV1;
+        body?: CombinedSpec;
+        query?: CombinedSpec;
+        params?: CombinedSpec;
       }
     : undefined;
   type: 'function';

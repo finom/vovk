@@ -1,9 +1,9 @@
-import { StandardSchemaV1, StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type { VovkErrorResponse, VovkValidationType } from '../types';
 import type { VovkToolNonDerived } from './types';
 import { ToModelOutput } from './ToModelOutput';
 import type { ToModelOutputFn } from './types';
 import type { DefaultModelOutput, ToModelOutputDefaultFn } from './toModelOutputDefault';
+import type { CombinedSpec } from '../validation/types';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -24,7 +24,7 @@ export function createToolFactory({
 }: {
   toJSONSchema: (
     model: KnownAny,
-    meta: { validationType: VovkValidationType; target: StandardJSONSchemaV1.Target | undefined }
+    meta: { validationType: VovkValidationType; target: CombinedSpec.Target | undefined }
   ) => KnownAny;
 }) {
   // Base options without toModelOutput
@@ -34,12 +34,12 @@ export function createToolFactory({
     description: string;
     onExecute?: (result: unknown, tool: VovkToolNonDerived<TInput, TOutput, TFormattedOutput>) => void;
     onError?: (error: Error, tool: VovkToolNonDerived<TInput, TOutput, TFormattedOutput>) => void;
-    target?: StandardJSONSchemaV1.Target;
+    target?: CombinedSpec.Target;
   };
 
   // Options with input schema
   type WithInputSchema<TInput> = {
-    inputSchema: StandardSchemaV1<TInput>;
+    inputSchema: CombinedSpec<TInput>;
   };
 
   // Options without input schema
@@ -49,7 +49,7 @@ export function createToolFactory({
 
   // Options with output schema
   type WithOutputSchema<TOutput> = {
-    outputSchema: StandardSchemaV1<TOutput>;
+    outputSchema: CombinedSpec<TOutput>;
   };
 
   // Options without output schema
@@ -152,8 +152,8 @@ export function createToolFactory({
     execute,
     target,
   }: CreateToolBaseOptions<TInput, TOutput, TFormattedOutput> & {
-    inputSchema?: StandardSchemaV1<TInput>;
-    outputSchema?: StandardSchemaV1<TOutput>;
+    inputSchema?: CombinedSpec<TInput>;
+    outputSchema?: CombinedSpec<TOutput>;
     execute: (input: KnownAny, processingMeta?: unknown) => TOutput | Promise<TOutput>;
     toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>;
   }): VovkToolNonDerived<TInput, TOutput, TFormattedOutput> {
@@ -166,8 +166,8 @@ export function createToolFactory({
       get parameters() {
         return (parameters ??= inputSchema ? toJSONSchema(inputSchema, { validationType: 'tool-input', target }) : {});
       },
-      inputSchema: inputSchema as TInput extends undefined ? undefined : StandardSchemaV1<TInput>,
-      outputSchema: outputSchema as TOutput extends undefined ? undefined : StandardSchemaV1<TOutput>,
+      inputSchema: inputSchema as TInput extends undefined ? undefined : CombinedSpec<TInput>,
+      outputSchema: outputSchema as TOutput extends undefined ? undefined : CombinedSpec<TOutput>,
       inputSchemas: undefined,
       async execute(input, processingMeta) {
         let result: TOutput | Error;
@@ -183,9 +183,9 @@ export function createToolFactory({
                   .join(', ')}`
               );
             }
-            validatedInput = (validatedInputResult as StandardSchemaV1.SuccessResult<TInput>).value;
+            validatedInput = (validatedInputResult as CombinedSpec.SuccessResult<TInput>).value;
           } else {
-            validatedInput = null as TInput extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<TInput> : null;
+            validatedInput = null as TInput extends CombinedSpec ? CombinedSpec.InferOutput<TInput> : null;
           }
 
           result = await (execute as (input: KnownAny, processingMeta: KnownAny) => TOutput | Promise<TOutput>)(
@@ -201,7 +201,7 @@ export function createToolFactory({
                   .join(', ')}`
               );
             }
-            result = (validatedOutputResult as StandardSchemaV1.SuccessResult<TOutput>).value;
+            result = (validatedOutputResult as CombinedSpec.SuccessResult<TOutput>).value;
           }
           onExecute?.(result, tool);
         } catch (e) {
