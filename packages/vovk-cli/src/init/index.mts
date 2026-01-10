@@ -180,8 +180,11 @@ export class Init {
       });
 
       log.info('Config created successfully at ' + chalkHighlightThing(configAbsolutePath));
+      log.info(`You can now create a root segment with ${chalkHighlightThing('npx vovk new segment')} command`);
     } catch (error) {
-      log.error(`Failed to create config: ${(error as Error).message}`);
+      log.error(
+        `Failed to create config: ${(error as Error).message}. Please, refer to the documentation at https://vovk.dev/config`
+      );
     }
   }
 

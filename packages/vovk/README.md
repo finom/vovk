@@ -20,8 +20,14 @@
 
 ## vovk [![npm version](https://badge.fury.io/js/vovk.svg)](https://www.npmjs.com/package/vovk)
 
-The main library with [100% self-composition](https://bundlephobia.com/result?p=vovk) that's going to be used in production. It provides a wrapper for Next.js API routes, client-side RPC tooling, utilities and types.
+The Vovk.ts runtime library with [100% self-composition](https://bundlephobia.com/result?p=vovk). It provides a wrapper for Next.js API routes, client-side tooling, utilities and types.
 
 ```sh
 npm install vovk
 ```
+
+## Links
+
+- Docs: https://vovk.dev
+- Quick Start: https://vovk.dev/quick-install
+- Manual install: https://vovk.dev/manual-install

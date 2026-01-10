@@ -39,6 +39,7 @@ See: https://vovk.dev/quick-install
 - **Structured API layer** (Controller → Service → Repository) on top of Route Handlers
 - **Schema emission as a build artifact** (`.vovk-schema/`) to power codegen/docs/tools
 - **Typed request handling** via `procedure(...)` with `{ params, query, body }`
+- **Mix in third-party OpenAPI schemas** as modules that share the same client/tooling pipeline (OpenAPI mixins)
 - **Derive AI tools from your API surface** (controllers *and* emitted RPC modules can be exposed as AI tools with parameters + `execute`)
 
 ## What it looks like
@@ -73,16 +74,23 @@ export default class UserController {
 Codegen emits `fetch`-powered client:
 
 ```ts
-import { UserRPC } from 'vovk-client';
+import { UserRPC, PetstoreAPI } from 'vovk-client';
 
 const user = await UserRPC.getUser({ params: { id: '123' } });
+const pet = await PetstoreAPI.getPetById({ params: { petId: 1 } });
 ```
 
-Both controller and RPC module can be used to derive AI tools:
+Controllers (current context execution), RPC/API modules and OpenAPI modules (HTTP calls) can be used to derive AI tools:
 
 ```ts
-const { tools } = deriveTools({ modules: { UserRPC } });
+const { tools } = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI } });
 console.log(tools); // [{ name, description, parameters, execute }, ...]
+```
+
+Procedures can be executed locally for SSR/PPR:
+
+```ts
+await UserController.getUser.fn({ params: { id: '123' } });
 ```
 
 ## Runtime vs toolchain
@@ -98,6 +106,7 @@ Packages overview: https://vovk.dev/packages
 - Docs: https://vovk.dev
 - Quick Start: https://vovk.dev/quick-install
 - Manual install: https://vovk.dev/manual-install
+- OpenAPI Mixins: https://vovk.dev/mixins
 - Performance: https://vovk.dev/performance
 - “Hello World” example app: https://github.com/finom/vovk-hello-world
 
