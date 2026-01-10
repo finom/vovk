@@ -85,7 +85,7 @@ export function multitenant(config: Config) {
       destinationUrl.search = urlObj.search;
 
       return {
-        action: 'redirect',
+        action: 'redirect' as const,
         destination: destinationUrl.toString(),
         message: `Redirecting to ${segment} subdomain`,
         subdomains: null, // No wildcards used
@@ -127,7 +127,7 @@ export function multitenant(config: Config) {
           const wildcardSubdomains = paramNames.length > 0 ? params : null;
 
           return {
-            action: 'rewrite',
+            action: 'rewrite' as const,
             destination: `${urlObj.protocol}//${urlObj.host}/${destination}${urlObj.search}`,
             message: `Rewriting to ${destination}`,
             subdomains: wildcardSubdomains,
@@ -155,7 +155,7 @@ export function multitenant(config: Config) {
     destinationUrl.search = urlObj.search;
 
     return {
-      action: 'redirect',
+      action: 'redirect' as const,
       destination: destinationUrl.toString(),
       message: `Redirecting to ${reservedPath} subdomain`,
       subdomains: null, // No wildcards used for reserved paths
