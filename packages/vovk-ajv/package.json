@@ -26,7 +26,7 @@
   },
   "homepage": "https://vovk.dev/imports",
   "peerDependencies": {
-    "vovk": "^3.0.0-beta.98"
+    "vovk": "^3.0.0-beta.104"
   },
   "dependencies": {
     "ajv": "^8.17.1",

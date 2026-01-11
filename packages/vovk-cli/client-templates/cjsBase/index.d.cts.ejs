@@ -1,5 +1,5 @@
 <%- t.getFirstLineBanner() %>
-import type { VovkFetcher } from 'vovk';
+import type { VovkFetcher } from 'vovk/fetcher';
 import type { createRPC } from '<%= t.commonImports.module.createRPC %>';
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";

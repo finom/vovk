@@ -1,5 +1,5 @@
 <%- t.getFirstLineBanner() %>
-import type { VovkFetcher } from 'vovk';
+import type { VovkFetcher } from 'vovk/fetcher';
 import { createRPC } from '<%= t.commonImports.module.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>

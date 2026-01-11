@@ -102,9 +102,9 @@ export function resolveGeneratorConfigValues({
         ?.replace(/\/$/, '') ?? '',
     imports: deepExtend(
       {
-        fetcher: ['vovk'] as const,
+        fetcher: ['vovk/fetcher'] as const,
         validateOnClient: null,
-        createRPC: ['vovk'] as const,
+        createRPC: ['vovk/createRPC'] as const,
       } as NonNullable<VovkOutputConfig['imports']>,
       config?.outputConfig?.imports,
       typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.imports : undefined,

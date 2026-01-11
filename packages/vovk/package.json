@@ -1,6 +1,6 @@
 {
   "name": "vovk",
-  "version": "3.0.0-beta.98",
+  "version": "3.0.0-beta.104",
   "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "types": "./mjs/index.d.ts",
@@ -17,6 +17,16 @@
       "import": "./mjs/internal.js",
       "require": "./cjs/internal.js",
       "types": "./mjs/internal.d.ts"
+    },
+    "./fetcher": {
+      "import": "./mjs/client/fetcher.js",
+      "require": "./cjs/client/fetcher.js",
+      "types": "./mjs/client/fetcher.d.ts"
+    },
+    "./createRPC": {
+      "import": "./mjs/client/createRPC.js",
+      "require": "./cjs/client/createRPC.js",
+      "types": "./mjs/client/createRPC.d.ts"
     }
   },
   "description": "Back-end Framework for Next.js App Router",

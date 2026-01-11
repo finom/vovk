@@ -33,8 +33,8 @@ export function getTemplateClientImports({
   });
 
   const validateOnClientImport = configImports?.validateOnClient ?? null;
-  const fetcherImport = configImports?.fetcher ?? 'vovk';
-  const createRPCImport = configImports?.createRPC ?? 'vovk';
+  const fetcherImport = configImports?.fetcher ?? 'vovk/fetcher';
+  const createRPCImport = configImports?.createRPC ?? 'vovk/createRPC';
   const imports = {
     fetcher: typeof fetcherImport === 'string' ? ([fetcherImport] as const) : fetcherImport,
     validateOnClient:

@@ -23,6 +23,7 @@ export {
   type VovkValidationType,
   type VovkTypedMethod,
   type VovkOperationObject,
+  type VovkSegmentConfig,
 } from './types';
 export { type VovkRPCModule, type VovkFetcherOptions, type VovkStreamAsyncIterable } from './client/types';
 export { openAPIToVovkSchema } from './openapi/openAPIToVovkSchema';
