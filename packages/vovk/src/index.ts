@@ -24,7 +24,6 @@ export { toDownloadResponse } from './core/toDownloadResponse';
 // client
 export type { VovkFetcher, VovkValidateOnClient } from './client/types';
 export { progressive } from './client/progressive';
-export { createRPC } from './client/createRPC';
 export { fetcher, createFetcher } from './client/fetcher';
 export { initSegment } from './core/initSegment';
 export { get, post, put, patch, del, head, options, prefix, cloneControllerMetadata } from './core/decorators';
