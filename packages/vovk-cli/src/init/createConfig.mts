@@ -18,7 +18,7 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
     fixedExtension: true,
     clean: true,
     outDir,
-    tsconfig: './tsconfig.bundle.json',
+    noExternal: ['vovk/createRPC', 'vovk/fetcher', 'vovk-ajv'],
   });
 };
 

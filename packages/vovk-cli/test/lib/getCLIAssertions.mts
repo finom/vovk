@@ -244,21 +244,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     }
   }
 
-  async function assertBundleTsConfig() {
-    const bundleTsconfig = path.join(projectDir, 'tsconfig.bundle.json');
-    const bundleTsconfigContent = {
-      compilerOptions: {
-        moduleResolution: 'bundler',
-        paths: {
-          'vovk/*': ['./node_modules/vovk/*'],
-        },
-      },
-    };
-
-    const content = await fs.readFile(bundleTsconfig, 'utf-8');
-    assert.deepStrictEqual(JSON.parse(content), bundleTsconfigContent, 'tsconfig.bundle.json content mismatch');
-  }
-
   async function assertFile(filePath: string, exp?: RegExp | string | RegExp[] | string[], opposite?: boolean) {
     let content;
     const p = path.join(projectDir, filePath);
@@ -315,7 +300,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     assertDeps,
     assertNotExists,
     assertTsConfig,
-    assertBundleTsConfig,
     assertFile,
     assertDirFileList,
     createNextApp,

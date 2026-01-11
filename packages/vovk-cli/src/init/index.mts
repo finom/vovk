@@ -74,25 +74,6 @@ export class Init {
 
     if (bundle) {
       devDependencies.push('tsdown');
-      if (!dryRun) {
-        const bundleTsconfig = path.join(root, 'tsconfig.bundle.json');
-        const bundleTsconfigContent = {
-          compilerOptions: {
-            moduleResolution: 'bundler',
-            paths: {
-              'vovk/*': ['./node_modules/vovk/*'],
-            },
-          },
-        };
-        try {
-          await fs.writeFile(bundleTsconfig, JSON.stringify(bundleTsconfigContent, null, 2));
-          log.info(`Created bundle tsconfig at ${chalkHighlightThing(bundleTsconfig)}`);
-        } catch (error) {
-          log.error(
-            `Failed to create bundle tsconfig at ${chalkHighlightThing(bundleTsconfig)}: ${(error as Error).message}`
-          );
-        }
-      }
     }
 
     if (updateScripts) {
@@ -298,7 +279,7 @@ export class Init {
     }
 
     bundle ??= await confirm({
-      message: 'Do you want to set up "tsdown" and tsconfig.bundle.json to bundle TypeScript client?',
+      message: 'Do you want to set up "tsdown" to bundle TypeScript client?',
       default: true,
     });
 

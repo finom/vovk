@@ -133,7 +133,6 @@ await describe('CLI init', async () => {
     assertFileExists,
     assertNotExists,
     assertTsConfig,
-    assertBundleTsConfig,
     createNextApp,
   } = getCLIAssertions({ cwd, dir });
 
@@ -170,7 +169,6 @@ await describe('CLI init', async () => {
     });
 
     await assertTsConfig();
-    await assertBundleTsConfig();
 
     // check if packages are NOT installed because of --skip-install
     await assertNotExists('./node_modules/vovk');
