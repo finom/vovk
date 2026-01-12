@@ -1,4 +1,4 @@
-import type { NextRequest } from 'next/server.js';
+import type { NextRequest } from 'next/dist/server/web/spec-extension/request.js';
 import type { PackageJson } from 'type-fest';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
 import type { JSONLinesResponder, Responder } from './core/JSONLinesResponder.js';

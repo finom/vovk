@@ -1,4 +1,4 @@
-import type { NextRequest } from 'next/server.js';
+import type { NextRequest } from 'next/dist/server/web/spec-extension/request.js';
 import {
   HttpMethod,
   HttpStatus,

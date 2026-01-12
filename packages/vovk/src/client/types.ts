@@ -1,4 +1,4 @@
-import type { NextResponse } from 'next/server.js';
+import type { NextResponse } from 'next/dist/server/web/spec-extension/response.js';
 import type {
   HttpMethod,
   ControllerStaticMethod,

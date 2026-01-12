@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server.js';
+import type { NextRequest } from 'next/dist/server/web/spec-extension/request.js';
 import type { HttpMethod, StaticClass, VovkController, VovkRequest } from '../types.js';
 import { vovkApp } from './vovkApp.js';
 import { trimPath } from '../utils/trimPath.js';
