@@ -8,7 +8,7 @@ import updateConfig from '../../lib/updateConfig.mts';
 import { importFresh } from '../../lib/importFresh.mts';
 import { updateConfigFileProperty } from '../../../dist/utils/updateConfigProperty.mjs';
 
-await describe('TypeScript bundle', async () => {
+await describe.only('TypeScript bundle', async () => {
   const { projectDir, runAtProjectDir, vovkDevAndKill, assertDirFileList, createVovkApp } = getCLIAssertions({
     cwd: path.resolve(import.meta.dirname, '../../..'),
     dir: 'tmp_test_dir_bundle',

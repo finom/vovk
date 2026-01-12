@@ -23,7 +23,6 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
     inputOptions: {
       resolve: {
         mainFields: ['module', 'main'],
-        conditionNames: ['default', 'import', 'module', 'node'],
       },
     },
     noExternal: ['vovk', 'vovk/*', 'vovk-ajv', 'ajv/**', 'ajv-errors', 'ajv-formats/**'],
