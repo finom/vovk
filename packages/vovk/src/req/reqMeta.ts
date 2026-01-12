@@ -1,4 +1,4 @@
-import type { VovkRequest } from '../types';
+import type { VovkRequest } from '../types.js';
 
 const metaMap = new WeakMap();
 

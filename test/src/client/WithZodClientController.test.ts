@@ -1,7 +1,7 @@
 import test, { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { WithZodClientControllerRPC } from 'vovk-client';
-import { validateOnClient as validateOnClientAjv } from 'vovk-ajv';
+import { validateOnClient as validateOnClientAjv } from '../../../packages/vovk-ajv/index.ts';
 import { HttpException, type VovkReturnType, type VovkYieldType, type VovkOutput, type VovkIteration } from 'vovk';
 import type WithZodClientController from './WithZodClientController.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';

@@ -1,5 +1,5 @@
-import type { VovkJSONSchemaBase, VovkRequest } from '../types';
-import { CombinedSpec } from '../validation/types';
+import type { VovkJSONSchemaBase, VovkRequest } from '../types.js';
+import { CombinedSpec } from '../validation/types.js';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 

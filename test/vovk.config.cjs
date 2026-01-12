@@ -50,7 +50,6 @@ const vovkConfig = {
         fixedExtension: true,
         clean: true,
         outDir,
-        tsconfig: './tsconfig.tsdown-bundle.json',
       });
     },
     outDir: './other-compiled-test-sources/bundle',

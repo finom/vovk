@@ -104,11 +104,11 @@ await describe('OpenAPI flags', async () => {
     await writeSpec();
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
-    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from mjs`);
+    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from js`);
 
-    const { schema, api } = await import(path.join(generatedClientDir, 'index.mjs'));
-    const { openapi } = await import(path.join(generatedClientDir, 'openapi.cjs'));
-    const { schema: schema2 } = await import(path.join(generatedClientDir, 'schema.cjs'));
+    const { schema, api } = await import(path.join(generatedClientDir, 'index.js'));
+    const { openapi } = await import(path.join(generatedClientDir, 'openapi.js'));
+    const { schema: schema2 } = await import(path.join(generatedClientDir, 'schema.js'));
 
     strictEqual(openapi.openapi, '3.1.0');
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
@@ -137,9 +137,9 @@ await describe('OpenAPI flags', async () => {
     await writeSpec({
       requestBodyContentType: 'multipart/form-data',
     });
-    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from mjs`);
+    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from js`);
 
-    const { schema, api } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { schema, api } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.body['x-isForm'], true);
@@ -152,9 +152,9 @@ await describe('OpenAPI flags', async () => {
     await writeSpec({
       requestBodyContentType: 'application/x-www-form-urlencoded',
     });
-    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from mjs`);
+    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from js`);
 
-    const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { schema } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.body['x-isForm'], true);
@@ -166,9 +166,9 @@ await describe('OpenAPI flags', async () => {
     await writeSpec({
       responseContentType: 'application/jsonl',
     });
-    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from mjs`);
+    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from js`);
 
-    const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { schema } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.output, undefined);
@@ -184,9 +184,9 @@ await describe('OpenAPI flags', async () => {
     await writeSpec({
       responseContentType: 'application/jsonlines',
     });
-    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from mjs`);
+    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from js`);
 
-    const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { schema } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.output, undefined);
@@ -202,9 +202,9 @@ await describe('OpenAPI flags', async () => {
     await writeSpec({
       operationId: '',
     });
-    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from mjs`);
+    await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from js`);
 
-    const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { schema } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin.controllers.api.handlers.createByTest.httpMethod, HttpMethod.POST);
     strictEqual(
@@ -219,10 +219,10 @@ await describe('OpenAPI flags', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     await runAtProjectDir(
-      `../dist/index.mjs generate --openapi spec.json --openapi-module-name MyRPC --openapi-mixin-name myMixin --out ${generatedClientDir} --from mjs`
+      `../dist/index.mjs generate --openapi spec.json --openapi-module-name MyRPC --openapi-mixin-name myMixin --out ${generatedClientDir} --from js`
     );
 
-    const { schema, MyRPC } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { schema, MyRPC } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.myMixin.controllers.MyRPC.handlers.postTest.httpMethod, HttpMethod.POST);
     strictEqual(
@@ -254,10 +254,10 @@ await describe('OpenAPI flags', async () => {
       await writeSpec();
 
       await runAtProjectDir(
-        `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.json --out ${generatedClientDir} --from mjs --openapi-fallback fallback.json`
+        `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.json --out ${generatedClientDir} --from js --openapi-fallback fallback.json`
       );
 
-      const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+      const { schema } = await import(path.join(generatedClientDir, 'index.js'));
 
       strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
       const fallback = JSON.parse(await fs.readFile(path.join(artifactsDir, 'fallback.json'), 'utf-8'));
@@ -282,10 +282,10 @@ await describe('OpenAPI flags', async () => {
       await writeSpec({}, 'yaml');
 
       await runAtProjectDir(
-        `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.yaml --out ${generatedClientDir} --from mjs --openapi-fallback fallback.yaml`
+        `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.yaml --out ${generatedClientDir} --from js --openapi-fallback fallback.yaml`
       );
 
-      const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+      const { schema } = await import(path.join(generatedClientDir, 'index.js'));
 
       strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
       const fallback = YAML.parse(await fs.readFile(path.join(artifactsDir, 'fallback.yaml'), 'utf-8'));
@@ -305,7 +305,7 @@ await describe('OpenAPI flags', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     const watch = runAtProjectDir(
-      `../dist/index.mjs generate --openapi ${artifactsDir}/spec.json --out ${generatedClientDir} --from mjs --watch 1`
+      `../dist/index.mjs generate --openapi ${artifactsDir}/spec.json --out ${generatedClientDir} --from js --watch 1`
     );
 
     try {
@@ -313,7 +313,7 @@ await describe('OpenAPI flags', async () => {
 
       await new Promise((resolve) => setTimeout(resolve, 4000));
 
-      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.mjs'), [
+      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.js'), [
         'schema',
       ]);
 
@@ -321,10 +321,9 @@ await describe('OpenAPI flags', async () => {
 
       await writeSpec({ operationId: 'postTest2' });
       await new Promise((resolve) => setTimeout(resolve, 4000));
-      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(
-        path.join(generatedClientDir, 'index.mjs'),
-        ['schema']
-      );
+      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.js'), [
+        'schema',
+      ]);
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       await watch.kill();
@@ -342,7 +341,7 @@ await describe('OpenAPI flags', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     const watch = runAtProjectDir(
-      `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.json --out ${generatedClientDir} --from mjs --watch 1`
+      `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.json --out ${generatedClientDir} --from js --watch 1`
     );
 
     try {
@@ -350,7 +349,7 @@ await describe('OpenAPI flags', async () => {
 
       await new Promise((resolve) => setTimeout(resolve, 4000));
 
-      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.mjs'), [
+      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.js'), [
         'schema',
       ]);
 
@@ -358,10 +357,9 @@ await describe('OpenAPI flags', async () => {
 
       await writeSpec({ operationId: 'postTest2' });
       await new Promise((resolve) => setTimeout(resolve, 4000));
-      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(
-        path.join(generatedClientDir, 'index.mjs'),
-        ['schema']
-      );
+      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.js'), [
+        'schema',
+      ]);
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       await watch.kill();
@@ -381,7 +379,7 @@ await describe('OpenAPI flags', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     const watch = runAtProjectDir(
-      `../dist/index.mjs generate --openapi ${artifactsDir}/spec.yaml --out ${generatedClientDir} --from mjs --watch 1`
+      `../dist/index.mjs generate --openapi ${artifactsDir}/spec.yaml --out ${generatedClientDir} --from js --watch 1`
     );
 
     try {
@@ -389,7 +387,7 @@ await describe('OpenAPI flags', async () => {
 
       await new Promise((resolve) => setTimeout(resolve, 4000));
 
-      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.mjs'), [
+      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.js'), [
         'schema',
       ]);
 
@@ -397,10 +395,9 @@ await describe('OpenAPI flags', async () => {
 
       await writeSpec({ operationId: 'postTest2' }, 'yaml');
       await new Promise((resolve) => setTimeout(resolve, 4000));
-      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(
-        path.join(generatedClientDir, 'index.mjs'),
-        ['schema']
-      );
+      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.js'), [
+        'schema',
+      ]);
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       await watch.kill();
@@ -418,7 +415,7 @@ await describe('OpenAPI flags', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     const watch = runAtProjectDir(
-      `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.yaml --out ${generatedClientDir} --from mjs --watch 1`
+      `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.yaml --out ${generatedClientDir} --from js --watch 1`
     );
 
     try {
@@ -426,7 +423,7 @@ await describe('OpenAPI flags', async () => {
 
       await new Promise((resolve) => setTimeout(resolve, 4000));
 
-      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.mjs'), [
+      const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.js'), [
         'schema',
       ]);
 
@@ -434,10 +431,9 @@ await describe('OpenAPI flags', async () => {
 
       await writeSpec({ operationId: 'postTest2' }, 'yaml');
       await new Promise((resolve) => setTimeout(resolve, 4000));
-      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(
-        path.join(generatedClientDir, 'index.mjs'),
-        ['schema']
-      );
+      const { schema: schema2 } = await importFresh<{ schema: VovkSchema }>(path.join(generatedClientDir, 'index.js'), [
+        'schema',
+      ]);
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       await watch.kill();
@@ -458,10 +454,10 @@ await describe('OpenAPI flags', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     await runAtProjectDir(
-      `../dist/index.mjs generate --openapi spec.json --openapi-root-url https://api.example.com/v1 --out ${generatedClientDir} --from mjs`
+      `../dist/index.mjs generate --openapi spec.json --openapi-root-url https://api.example.com/v1 --out ${generatedClientDir} --from js`
     );
 
-    const { schema } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { schema } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin.forceApiRoot, 'https://api.example.com/v1');
 
@@ -486,10 +482,10 @@ await describe('OpenAPI flags', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
 
     await runAtProjectDir(
-      `../dist/index.mjs generate --openapi ${artifactsDir}/spec1.json --openapi spec2.yaml --openapi-module-name RPC1 --openapi-get-module-name RPC2 --openapi-mixin-name mixin1 --openapi-mixin-name mixin2 --out ${generatedClientDir} --from mjs`
+      `../dist/index.mjs generate --openapi ${artifactsDir}/spec1.json --openapi spec2.yaml --openapi-module-name RPC1 --openapi-get-module-name RPC2 --openapi-mixin-name mixin1 --openapi-mixin-name mixin2 --out ${generatedClientDir} --from js`
     );
 
-    const { schema, RPC1, RPC2 } = await import(path.join(generatedClientDir, 'index.mjs'));
+    const { schema, RPC1, RPC2 } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin1.controllers.RPC1.handlers.postTest1.httpMethod, HttpMethod.POST);
     strictEqual(schema.segments.mixin2.controllers.RPC2.handlers.postTest2.httpMethod, HttpMethod.POST);

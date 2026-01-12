@@ -14,7 +14,34 @@ function escapeFlags(flags: string | undefined): string {
   return flags ? '_' + flags.replace(/[\s=]+/g, '_') : '';
 }
 
-export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }) {
+type RunScriptReturn = ReturnType<typeof runScript>;
+
+export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: string }): {
+  projectDir: string;
+  runAtCWD: (command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) => RunScriptReturn;
+  runAtProjectDir: (command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) => RunScriptReturn;
+  createVovkApp: (options: {
+    cache?: boolean;
+    nextFlags?: string;
+    vovkInitFlags?: string;
+    cacheKey?: string;
+    runInCacheDir?: ({ cwd }: { cwd: string }) => Promise<void>;
+  }) => Promise<void>;
+  vovkDevAndKill: (vovkArguments?: string, options?: { cwd: string }) => RunScriptReturn;
+  assertConfig: ((testConfigPaths: string[], testConfig: VovkConfig | null) => Promise<void>) & {
+    makeConfig: (validationLibrary: string | null, extras?: Partial<VovkConfig>) => VovkConfig;
+    getStrictConfig: () => ReturnType<typeof getConfig>;
+  };
+  assertScripts: (scripts: Record<string, string | undefined>) => Promise<void>;
+  assertDirExists: (dirPath: string) => Promise<void>;
+  assertFileExists: (filePath: string) => Promise<void>;
+  assertDeps: (options: { dependencies?: string[]; devDependencies?: string[]; opposite?: boolean }) => Promise<void>;
+  assertNotExists: (filePath: string) => Promise<void>;
+  assertTsConfig: (opposite?: boolean) => Promise<void>;
+  assertFile: (filePath: string, exp?: RegExp | string | RegExp[] | string[], opposite?: boolean) => Promise<void>;
+  assertDirFileList: (options: { dirPath: string; files: string[]; allowExtraFiles?: boolean }) => Promise<void>;
+  createNextApp: (flags?: string, targetDir?: string) => Promise<void>;
+} {
   const projectDir = path.join(cwd, dir);
 
   function runAtCWD(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
@@ -277,13 +304,27 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     }
   }
 
-  async function assertDirFileList(dirPath: string, files: string[]) {
+  async function assertDirFileList({
+    dirPath,
+    files,
+    allowExtraFiles = false,
+  }: {
+    dirPath: string;
+    files: string[];
+    allowExtraFiles?: boolean;
+  }) {
     const dir = await fs.readdir(path.join(projectDir, dirPath));
 
-    assert.deepStrictEqual(dir.sort(), files.sort(), `Directory ${dirPath} does not contain the correct files`);
+    if (allowExtraFiles) {
+      for (const file of files) {
+        assert.ok(dir.includes(file), `Expected file ${file} not found in directory ${dirPath}`);
+      }
+    } else {
+      assert.deepStrictEqual(dir.sort(), files.sort(), `Directory ${dirPath} does not contain the correct files`);
+    }
   }
 
-  async function vovkDevAndKill(vovkArguments?: string, { cwd }: { cwd: string } = { cwd: projectDir }) {
+  function vovkDevAndKill(vovkArguments?: string, { cwd }: { cwd: string } = { cwd: projectDir }) {
     return runAtProjectDir(`../dist/index.mjs dev --next-dev --exit ${vovkArguments ?? ''} -- --turbo`, { cwd });
   }
 

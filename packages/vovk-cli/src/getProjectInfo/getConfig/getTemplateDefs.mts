@@ -3,20 +3,18 @@ import type { VovkStrictConfig } from 'vovk/internal';
 export enum BuiltInTemplateName {
   // ts/js
   tsBase = 'tsBase',
-  cjsBase = 'cjsBase',
-  mjsBase = 'mjsBase',
+  jsBase = 'jsBase',
   ts = 'ts',
-  cjs = 'cjs',
-  mjs = 'mjs',
+  js = 'js',
 
   // schema
   schemaTs = 'schemaTs',
-  schemaCjs = 'schemaCjs',
+  schemaJs = 'schemaJs',
   schemaJson = 'schemaJson',
 
   // openapi
   openapiTs = 'openapiTs',
-  openapiCjs = 'openapiCjs',
+  openapiJs = 'openapiJs',
   openapiJson = 'openapiJson',
 
   // misc
@@ -46,8 +44,8 @@ export function getTemplateDefs(
         [BuiltInTemplateName.openapiJson]: './',
       },
     },
-    [BuiltInTemplateName.openapiCjs]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.openapiCjs}/`,
+    [BuiltInTemplateName.openapiJs]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.openapiJs}/`,
       requires: {
         [BuiltInTemplateName.openapiJson]: './',
       },
@@ -62,17 +60,10 @@ export function getTemplateDefs(
         [BuiltInTemplateName.mixins]: './', // used conditionally if OpenAPI mixins are used
       },
     },
-    [BuiltInTemplateName.cjsBase]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.cjsBase}/`,
+    [BuiltInTemplateName.jsBase]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.jsBase}/`,
       requires: {
-        [BuiltInTemplateName.schemaCjs]: './',
-        [BuiltInTemplateName.mixins]: './', // used conditionally if OpenAPI mixins are used
-      },
-    },
-    [BuiltInTemplateName.mjsBase]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.mjsBase}/`,
-      requires: {
-        [BuiltInTemplateName.schemaCjs]: './',
+        [BuiltInTemplateName.schemaJs]: './',
         [BuiltInTemplateName.mixins]: './', // used conditionally if OpenAPI mixins are used
       },
     },
@@ -82,23 +73,17 @@ export function getTemplateDefs(
         [BuiltInTemplateName.openapiTs]: './',
       },
     },
-    [BuiltInTemplateName.cjs]: {
+    [BuiltInTemplateName.js]: {
       requires: {
-        [BuiltInTemplateName.cjsBase]: './',
-        [BuiltInTemplateName.openapiCjs]: './',
-      },
-    },
-    [BuiltInTemplateName.mjs]: {
-      requires: {
-        [BuiltInTemplateName.mjsBase]: './',
-        [BuiltInTemplateName.openapiCjs]: './',
+        [BuiltInTemplateName.jsBase]: './',
+        [BuiltInTemplateName.openapiJs]: './',
       },
     },
     [BuiltInTemplateName.schemaTs]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaTs}/`,
     },
-    [BuiltInTemplateName.schemaCjs]: {
-      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaCjs}/`,
+    [BuiltInTemplateName.schemaJs]: {
+      templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaJs}/`,
     },
     [BuiltInTemplateName.schemaJson]: {
       templatePath: `vovk-cli/client-templates/${BuiltInTemplateName.schemaJson}/`,

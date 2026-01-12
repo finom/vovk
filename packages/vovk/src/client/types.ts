@@ -1,4 +1,4 @@
-import type { NextResponse } from 'next/server';
+import type { NextResponse } from 'next/server.js';
 import type {
   HttpMethod,
   ControllerStaticMethod,
@@ -9,10 +9,10 @@ import type {
   VovkRequest,
   Prettify,
   IsEmptyObject,
-} from '../types';
-import type { JSONLinesResponder } from '../core/JSONLinesResponder';
-import type { defaultStreamHandler } from './defaultStreamHandler';
-import type { defaultHandler } from './defaultHandler';
+} from '../types.js';
+import type { JSONLinesResponder } from '../core/JSONLinesResponder.js';
+import type { defaultStreamHandler } from './defaultStreamHandler.js';
+import type { defaultHandler } from './defaultHandler.js';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 

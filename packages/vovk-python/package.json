@@ -1,6 +1,12 @@
 {
   "name": "vovk-python",
-  "version": "0.0.1-beta.5",
+  "type": "module",
+  "version": "0.0.1-beta.6",
+  "files": [
+    "client-templates",
+    "index.js",
+    "index.d.ts"
+  ],
   "description": "Codegen templates for Python client library for Vovk.ts",
   "scripts": {
     "build": "tsc",
@@ -17,7 +23,6 @@
     "test": "npm run unit:ts && PORT=3210 npm run generate && npm run build --prefix ../../test && PORT=3210 concurrently 'sleep 15 && npm run unit:py' 'npm run start --prefix ../../test' --kill-others --success first"
   },
   "main": "./index.js",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git"

@@ -1,9 +1,9 @@
-import type { VovkHandlerSchema, VovkRequest } from '../types';
-import type { VovkToolDerived, ToModelOutputFn } from './types';
-import { ToModelOutput } from './ToModelOutput';
-import { DefaultModelOutput } from './toModelOutputDefault';
-import { procedure } from '../validation/procedure';
-import { CombinedSpec } from '../validation/types';
+import type { VovkHandlerSchema, VovkRequest } from '../types.js';
+import type { VovkToolDerived, ToModelOutputFn } from './types.js';
+import { ToModelOutput } from './ToModelOutput.js';
+import { DefaultModelOutput } from './toModelOutputDefault.js';
+import { procedure } from '../validation/procedure.js';
+import { CombinedSpec } from '../validation/types.js';
 
 // Standard tool input type
 type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };

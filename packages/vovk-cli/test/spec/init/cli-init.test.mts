@@ -521,7 +521,7 @@ await describe('CLI init', async () => {
       ['vovk.config.js'],
       assertConfig.makeConfig('zod', {
         composedClient: {
-          fromTemplates: ['mjs', 'cjs', 'rs'],
+          fromTemplates: ['js', 'rs'],
         },
       })
     );
@@ -530,7 +530,7 @@ await describe('CLI init', async () => {
 
     deepStrictEqual(JSON.parse(JSON.stringify(config.composedClient)), {
       enabled: true,
-      fromTemplates: ['mjs', 'cjs', 'rs'],
+      fromTemplates: ['js', 'rs'],
       outDir: './node_modules/.vovk-client',
       prettifyClient: false,
     });
@@ -555,7 +555,7 @@ await describe('CLI init', async () => {
       ['vovk.config.js'],
       assertConfig.makeConfig('zod', {
         composedClient: {
-          fromTemplates: ['mjs', 'cjs', 'py', 'rs'],
+          fromTemplates: ['js', 'py', 'rs'],
         },
       })
     );
@@ -564,7 +564,7 @@ await describe('CLI init', async () => {
 
     deepStrictEqual(JSON.parse(JSON.stringify(config.composedClient)), {
       enabled: true,
-      fromTemplates: ['mjs', 'cjs', 'py', 'rs'],
+      fromTemplates: ['js', 'py', 'rs'],
       outDir: './node_modules/.vovk-client',
       prettifyClient: false,
     });

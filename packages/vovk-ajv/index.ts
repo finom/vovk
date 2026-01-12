@@ -1,8 +1,8 @@
-import { Ajv, Options } from 'ajv';
-import Ajv2020 from 'ajv/dist/2020';
-import ajvFormats from 'ajv-formats';
-import ajvLocalize from 'ajv-i18n';
-import ajvErrors from 'ajv-errors';
+import { Ajv, type Options, type ErrorObject } from 'ajv';
+import _Ajv2020 from 'ajv/dist/2020.js';
+import _ajvFormats from 'ajv-formats';
+import _ajvLocalize from 'ajv-i18n';
+import _ajvErrors from 'ajv-errors';
 import {
   createValidateOnClient,
   HttpException,
@@ -10,9 +10,43 @@ import {
   type VovkJSONSchemaBase,
   type VovkValidateOnClient,
   type VovkSchema,
-} from 'vovk';
+} from 'vovk/createValidateOnClient';
 
-type Lang = keyof typeof ajvLocalize;
+// Handle ESM/CJS interop - these packages export CJS and may have .default wrapper
+const Ajv2020 = ((_Ajv2020 as unknown as { default?: typeof Ajv }).default ?? _Ajv2020) as unknown as typeof Ajv;
+const ajvFormats = ((_ajvFormats as unknown as { default?: (ajv: Ajv) => Ajv }).default ?? _ajvFormats) as unknown as (
+  ajv: Ajv
+) => Ajv;
+const ajvErrors = ((_ajvErrors as unknown as { default?: (ajv: Ajv) => Ajv }).default ?? _ajvErrors) as unknown as (
+  ajv: Ajv
+) => Ajv;
+type LocalizeFn = (errors?: null | ErrorObject[]) => void;
+type Lang =
+  | 'en'
+  | 'ar'
+  | 'ca'
+  | 'cs'
+  | 'de'
+  | 'es'
+  | 'fi'
+  | 'fr'
+  | 'hu'
+  | 'id'
+  | 'it'
+  | 'ja'
+  | 'ko'
+  | 'nb'
+  | 'nl'
+  | 'pl'
+  | 'pt-BR'
+  | 'ru'
+  | 'sk'
+  | 'sv'
+  | 'th'
+  | 'zh'
+  | 'zh-TW';
+const ajvLocalize = ((_ajvLocalize as unknown as { default?: Record<Lang, LocalizeFn> }).default ??
+  _ajvLocalize) as unknown as Record<Lang, LocalizeFn>;
 
 export type VovkAjvConfig = {
   options?: Options;

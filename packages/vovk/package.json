@@ -1,32 +1,36 @@
 {
   "name": "vovk",
-  "version": "3.0.0-beta.104",
-  "main": "./cjs/index.js",
-  "module": "./mjs/index.js",
-  "types": "./mjs/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "version": "3.0.0-beta.117",
   "bin": {
     "vovk-cli-npx": "./bin/index.mjs"
   },
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js",
-      "types": "./mjs/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./internal": {
-      "import": "./mjs/internal.js",
-      "require": "./cjs/internal.js",
-      "types": "./mjs/internal.d.ts"
+      "types": "./dist/internal.d.ts",
+      "default": "./dist/internal.js"
     },
     "./fetcher": {
-      "import": "./mjs/client/fetcher.js",
-      "require": "./cjs/client/fetcher.js",
-      "types": "./mjs/client/fetcher.d.ts"
+      "types": "./dist/client/fetcher.d.ts",
+      "default": "./dist/client/fetcher.js"
     },
     "./createRPC": {
-      "import": "./mjs/client/createRPC.js",
-      "require": "./cjs/client/createRPC.js",
-      "types": "./mjs/client/createRPC.d.ts"
+      "types": "./dist/client/createRPC.d.ts",
+      "default": "./dist/client/createRPC.js"
+    },
+    "./createValidateOnClient": {
+      "types": "./dist/validation/createValidateOnClient.d.ts",
+      "default": "./dist/validation/createValidateOnClient.js"
     }
   },
   "description": "Back-end Framework for Next.js App Router",
@@ -36,9 +40,7 @@
   },
   "scripts": {
     "postbuild": "chmod +x ./bin/index.mjs",
-    "build": "rm -f *.tsbuildinfo && npm run build:cjs && npm run build:esm",
-    "build:esm": "tsc --module NodeNext --outDir mjs --moduleResolution nodenext",
-    "build:cjs": "tsc --module commonjs --outDir cjs",
+    "build": "rm -f *.tsbuildinfo && tsc",
     "rm-dist": "rm -rf mjs cjs",
     "lint": "eslint . --fix",
     "tsc": "tsc --noEmit",
@@ -56,11 +58,11 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "next": "*",
-    "openapi3-ts": "^4"
+    "next": "^15.0.0 || ^16.0.0",
+    "openapi3-ts": "^4.5.0"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0",
-    "type-fest": "*"
+    "type-fest": "^5.3.1"
   }
 }

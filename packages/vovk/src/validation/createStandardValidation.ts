@@ -1,14 +1,14 @@
-import type { CombinedSpec } from './types';
+import type { CombinedSpec } from './types.js';
 import {
   HttpStatus,
   type VovkRequest,
   type VovkTypedMethod,
   type VovkValidationType,
   type VovkOperationObject,
-} from '../types';
-import { withValidationLibrary } from './withValidationLibrary';
-import { HttpException } from '../core/HttpException';
-import { createToolFactory } from '../tools/createToolFactory';
+} from '../types.js';
+import { withValidationLibrary } from './withValidationLibrary.js';
+import { HttpException } from '../core/HttpException.js';
+import { createToolFactory } from '../tools/createToolFactory.js';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 

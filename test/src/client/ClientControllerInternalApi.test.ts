@@ -1,6 +1,7 @@
 import { schema } from 'vovk-client';
 import type ClientController from './CommonController.ts';
-import { createRPC, fetcher } from 'vovk';
+import { createRPC } from 'vovk/createRPC';
+import { fetcher } from 'vovk/fetcher';
 import type { VovkFetcherOptions } from 'vovk/internal';
 import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';

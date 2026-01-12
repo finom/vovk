@@ -42,28 +42,22 @@ await describe('TypeScript bundle', async () => {
     await createApp();
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
 
-    await assertDirFileList('./dist', [
-      'index.mjs',
-      'index.d.mts',
-      'index.cjs',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
+    await assertDirFileList({
+      dirPath: './dist',
+      files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
+      allowExtraFiles: true,
+    });
   });
 
   await it('Bundles composed client to an --out dir', async () => {
     await createApp();
     await runAtProjectDir(`../dist/index.mjs bundle --out my_dist --log-level debug`);
 
-    await assertDirFileList('./my_dist', [
-      'index.mjs',
-      'index.d.mts',
-      'index.cjs',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
+    await assertDirFileList({
+      dirPath: './my_dist',
+      files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
+      allowExtraFiles: true,
+    });
   });
 
   await it('Builds composed bundle with included segments', async () => {
@@ -75,19 +69,15 @@ await describe('TypeScript bundle', async () => {
       ['foo', 'bar/baz']
     );
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
-    await assertDirFileList('./composed-bundle', [
-      'index.mjs',
-      'index.cjs',
-      'index.d.mts',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
+    await assertDirFileList({
+      dirPath: './composed-bundle',
+      files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
+      allowExtraFiles: true,
+    });
 
-    const { schema } = await importFresh<{ schema: VovkSchema }>(
-      path.join(projectDir, 'composed-bundle', 'index.cjs'),
-      ['schema']
-    );
+    const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.js'), [
+      'schema',
+    ]);
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 
@@ -100,19 +90,15 @@ await describe('TypeScript bundle', async () => {
       ['', 'bar/baz']
     );
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
-    await assertDirFileList('./composed-bundle', [
-      'index.mjs',
-      'index.cjs',
-      'index.d.mts',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
+    await assertDirFileList({
+      dirPath: './composed-bundle',
+      files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
+      allowExtraFiles: true,
+    });
 
-    const { schema } = await importFresh<{ schema: VovkSchema }>(
-      path.join(projectDir, 'composed-bundle', 'index.cjs'),
-      ['schema']
-    );
+    const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.js'), [
+      'schema',
+    ]);
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
@@ -121,19 +107,15 @@ await describe('TypeScript bundle', async () => {
     await runAtProjectDir(
       `../dist/index.mjs bundle --include foo --include bar/baz --out ./composed-bundle --log-level debug`
     );
-    await assertDirFileList('./composed-bundle', [
-      'index.mjs',
-      'index.cjs',
-      'index.d.mts',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
+    await assertDirFileList({
+      dirPath: './composed-bundle',
+      files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
+      allowExtraFiles: true,
+    });
 
-    const { schema } = await importFresh<{ schema: VovkSchema }>(
-      path.join(projectDir, 'composed-bundle', 'index.cjs'),
-      ['schema']
-    );
+    const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.js'), [
+      'schema',
+    ]);
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
 
@@ -142,19 +124,15 @@ await describe('TypeScript bundle', async () => {
     await runAtProjectDir(
       `../dist/index.mjs bundle --exclude "" --exclude bar/baz --out ./composed-bundle --log-level debug`
     );
-    await assertDirFileList('./composed-bundle', [
-      'index.mjs',
-      'index.cjs',
-      'index.d.mts',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
+    await assertDirFileList({
+      dirPath: './composed-bundle',
+      files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
+      allowExtraFiles: true,
+    });
 
-    const { schema } = await importFresh<{ schema: VovkSchema }>(
-      path.join(projectDir, 'composed-bundle', 'index.cjs'),
-      ['schema']
-    );
+    const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.js'), [
+      'schema',
+    ]);
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
 
@@ -194,20 +172,17 @@ await describe('TypeScript bundle', async () => {
     await fs.writeFile(path.join(projectDir, 'foo.ts'), 'export const foo = 3;');
     await fs.writeFile(path.join(projectDir, 'bar.ts'), 'export const bar = 4;');
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug`);
-    await assertDirFileList('./composed-bundle', [
-      'index.mjs',
-      'index.cjs',
-      'index.d.mts',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
+    await assertDirFileList({
+      dirPath: './composed-bundle',
+      files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
+      allowExtraFiles: true,
+    });
     const { y, a, fooX, barX } = await importFresh<{
       y: number;
       a: number;
       fooX: number;
       barX: number;
-    }>(path.join(projectDir, 'composed-bundle', 'index.cjs'), ['y', 'a', 'fooX', 'barX']);
+    }>(path.join(projectDir, 'composed-bundle', 'index.js'), ['y', 'a', 'fooX', 'barX']);
 
     deepStrictEqual({ y, a, fooX, barX }, { y: 1, a: 2, fooX: 3, barX: 4 });
   });
@@ -224,7 +199,7 @@ await describe('TypeScript bundle', async () => {
     }));
 
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug --out ./dist-origin-1`);
-    const { UserRPC } = await import(path.join(projectDir, 'dist-origin-1', 'index.mjs'));
+    const { UserRPC } = await import(path.join(projectDir, 'dist-origin-1', 'index.js'));
 
     strictEqual(UserRPC.createUser.apiRoot, 'https://example.com/api');
   });
@@ -242,7 +217,7 @@ await describe('TypeScript bundle', async () => {
     await runAtProjectDir(
       `../dist/index.mjs bundle --log-level debug --out ./dist-origin-2 --origin https://example.org/`
     );
-    const { UserRPC } = await import(path.join(projectDir, 'dist-origin-2', 'index.mjs'));
+    const { UserRPC } = await import(path.join(projectDir, 'dist-origin-2', 'index.js'));
 
     strictEqual(UserRPC.createUser.apiRoot, 'https://example.org/api');
   });
@@ -254,13 +229,10 @@ await describe('TypeScript bundle', async () => {
     });
     await runAtProjectDir(`../dist/index.mjs bundle --log-level debug --schema ./custom-schema-dir`);
 
-    await assertDirFileList('./dist', [
-      'index.mjs',
-      'index.d.mts',
-      'index.cjs',
-      'index.d.cts',
-      'package.json',
-      'README.md',
-    ]);
+    await assertDirFileList({
+      dirPath: './dist',
+      files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
+      allowExtraFiles: true,
+    });
   });
 });

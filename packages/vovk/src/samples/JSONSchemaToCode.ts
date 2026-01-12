@@ -1,4 +1,4 @@
-import type { VovkJSONSchemaBase } from '../types';
+import type { VovkJSONSchemaBase } from '../types.js';
 
 interface SamplerOptions {
   comment?: '//' | '#';

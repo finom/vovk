@@ -1,6 +1,6 @@
-import type { VovkJSONSchemaBase, VovkControllerSchema, VovkHandlerSchema, VovkSamplesConfig } from '../types';
-import { JSONSchemaToCode, getSampleValue } from './JSONSchemaToCode';
-import { objectToCode } from './objectToCode';
+import type { VovkJSONSchemaBase, VovkControllerSchema, VovkHandlerSchema, VovkSamplesConfig } from '../types.js';
+import { JSONSchemaToCode, getSampleValue } from './JSONSchemaToCode.js';
+import { objectToCode } from './objectToCode.js';
 
 const toSnakeCase = (str: string) =>
   str

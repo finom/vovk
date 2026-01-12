@@ -51,131 +51,127 @@ await describe('Client templates', async () => {
     await createApp({ devAndKillFlags: '--schema-out ./custom-schema-dir', cache: false });
     await runAtProjectDir(`../dist/index.mjs generate --out ${compiledClientFolderName} --schema ./custom-schema-dir`);
 
-    await assertDirFileList(compiledClientFolderName, [
-      'index.cjs',
-      'index.d.cts',
-      'index.mjs',
-      'index.d.mts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.json',
-      'openapi.d.cts',
-      'openapi.cjs',
-    ]);
+    await assertDirFileList({
+      dirPath: compiledClientFolderName,
+      files: ['index.js', 'index.d.ts', 'schema.js', 'schema.d.ts', 'openapi.json', 'openapi.d.ts', 'openapi.js'],
+    });
 
-    assertFile(`${compiledClientFolderName}/schema.cjs`, [`require('./../custom-schema-dir/root.json')`]);
+    assertFile(`${compiledClientFolderName}/schema.js`, [`require('./../custom-schema-dir/root.json')`]);
   });
 
   await it('Should use default templates', async () => {
     await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --out ${compiledClientFolderName}`);
 
-    await assertDirFileList(compiledClientFolderName, [
-      'index.cjs',
-      'index.d.cts',
-      'index.mjs',
-      'index.d.mts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.json',
-      'openapi.d.cts',
-      'openapi.cjs',
-    ]);
+    await assertDirFileList({
+      dirPath: compiledClientFolderName,
+      files: ['index.js', 'index.d.ts', 'schema.js', 'schema.d.ts', 'openapi.json', 'openapi.d.ts', 'openapi.js'],
+    });
   });
 
   await it('Should use default templates explicitly', async () => {
     await createApp();
-    await runAtProjectDir(`../dist/index.mjs generate --from=mjs --from=ts --out ${compiledClientFolderName}`);
+    await runAtProjectDir(`../dist/index.mjs generate --from=js --from=ts --out ${compiledClientFolderName}`);
 
-    await assertDirFileList(compiledClientFolderName, [
-      'index.ts',
-      'index.mjs',
-      'index.d.mts',
-      'schema.cjs',
-      'schema.d.cts',
-      'schema.ts',
-      'openapi.json',
-      'openapi.d.cts',
-      'openapi.cjs',
-      'openapi.ts',
-    ]);
+    await assertDirFileList({
+      dirPath: compiledClientFolderName,
+      files: [
+        'index.ts',
+        'index.js',
+        'index.d.ts',
+        'schema.js',
+        'schema.d.ts',
+        'schema.ts',
+        'openapi.json',
+        'openapi.d.ts',
+        'openapi.js',
+        'openapi.ts',
+      ],
+    });
   });
 
   await it('Generates file from compiled and custom template', async () => {
     await createApp();
-    await runAtProjectDir(`../dist/index.mjs generate --from=cjs --from=custom --out ${compiledClientFolderName}`);
+    await runAtProjectDir(`../dist/index.mjs generate --from=js --from=custom --out ${compiledClientFolderName}`);
 
-    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { createRPC } = require('vovk')`]);
-    await assertFile(`${compiledClientFolderName}/index.d.cts`, [
+    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/createRPC';`]);
+    await assertFile(`${compiledClientFolderName}/index.d.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
 
-    await assertDirFileList(compiledClientFolderName, [
-      'index.cjs',
-      'index.d.cts',
-      'custom.ts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.json',
-      'openapi.d.cts',
-      'openapi.cjs',
-    ]);
+    await assertDirFileList({
+      dirPath: compiledClientFolderName,
+      files: [
+        'index.js',
+        'index.d.ts',
+        'custom.ts',
+        'schema.js',
+        'schema.d.ts',
+        'openapi.json',
+        'openapi.d.ts',
+        'openapi.js',
+      ],
+    });
   });
 
   await it('Generates file from compiled and custom template as file', async () => {
     await createApp();
-    await runAtProjectDir(
-      `../dist/index.mjs generate --from=cjs --from=customAsFile --out ${compiledClientFolderName}`
-    );
+    await runAtProjectDir(`../dist/index.mjs generate --from=js --from=customAsFile --out ${compiledClientFolderName}`);
 
-    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { createRPC } = require('vovk')`]);
-    await assertFile(`${compiledClientFolderName}/index.d.cts`, [
+    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/createRPC';`]);
+    await assertFile(`${compiledClientFolderName}/index.d.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
 
-    await assertDirFileList(compiledClientFolderName, [
-      'index.cjs',
-      'index.d.cts',
-      'custom.ts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.json',
-      'openapi.d.cts',
-      'openapi.cjs',
-    ]);
+    await assertDirFileList({
+      dirPath: compiledClientFolderName,
+      files: [
+        'index.js',
+        'index.d.ts',
+        'custom.ts',
+        'schema.js',
+        'schema.d.ts',
+        'openapi.json',
+        'openapi.d.ts',
+        'openapi.js',
+      ],
+    });
   });
 
   await it('Generates files from multiple custom templates', async () => {
     await createApp();
     await runAtProjectDir(
-      `../dist/index.mjs generate --from=cjs --from=custom --from helloWorld --from=cjs --out ${compiledClientFolderName}`
+      `../dist/index.mjs generate --from=js --from=custom --from helloWorld --from=js --out ${compiledClientFolderName}`
     );
 
-    await assertFile(`${compiledClientFolderName}/index.cjs`, [`const { createRPC } = require('vovk');`]);
-    await assertFile(`${compiledClientFolderName}/index.d.cts`, [
+    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/createRPC';`]);
+    await assertFile(`${compiledClientFolderName}/index.d.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
       '// Hello from custom.js.ejs',
     ]);
-    await assertDirFileList(compiledClientFolderName, [
-      'index.cjs',
-      'index.d.cts',
-      'custom.ts',
-      'hello-world.js',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.json',
-      'openapi.d.cts',
-      'openapi.cjs',
-    ]);
+    await assertDirFileList({
+      dirPath: compiledClientFolderName,
+      files: [
+        'index.js',
+        'index.d.ts',
+        'custom.ts',
+        'hello-world.js',
+        'schema.js',
+        'schema.d.ts',
+        'openapi.json',
+        'openapi.d.ts',
+        'openapi.js',
+      ],
+    });
   });
 
   await it('Generates README.md and package.json', async () => {
@@ -191,25 +187,24 @@ await describe('Client templates', async () => {
     await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --from=py --out ${compiledClientFolderName}`);
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    await assertDirFileList(compiledClientFolderName, ['src', 'README.md', 'setup.cfg', 'pyproject.toml']);
-    await assertDirFileList(`${compiledClientFolderName}/src`, [compiledClientFolderName]);
-    await assertDirFileList(`${compiledClientFolderName}/src/${compiledClientFolderName}`, [
-      '__init__.py',
-      'api_client.py',
-      'py.typed',
-      'schema.json',
-    ]);
+    await assertDirFileList({
+      dirPath: compiledClientFolderName,
+      files: ['src', 'README.md', 'setup.cfg', 'pyproject.toml'],
+    });
+    await assertDirFileList({ dirPath: `${compiledClientFolderName}/src`, files: [compiledClientFolderName] });
+    await assertDirFileList({
+      dirPath: `${compiledClientFolderName}/src/${compiledClientFolderName}`,
+      files: ['__init__.py', 'api_client.py', 'py.typed', 'schema.json'],
+    });
   });
 
   await it('Generates Rust client', async () => {
     await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --from=rs --out ${compiledClientFolderName}`);
-    await assertDirFileList(compiledClientFolderName, ['Cargo.toml', 'src', 'README.md']);
-    await assertDirFileList(`${compiledClientFolderName}/src`, [
-      'lib.rs',
-      'http_request.rs',
-      'read_full_schema.rs',
-      'schema.json',
-    ]);
+    await assertDirFileList({ dirPath: compiledClientFolderName, files: ['Cargo.toml', 'src', 'README.md'] });
+    await assertDirFileList({
+      dirPath: `${compiledClientFolderName}/src`,
+      files: ['lib.rs', 'http_request.rs', 'read_full_schema.rs', 'schema.json'],
+    });
   });
 });

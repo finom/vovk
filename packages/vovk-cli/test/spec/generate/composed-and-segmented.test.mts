@@ -44,17 +44,10 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir('rm -rf ./node_modules/.vovk-client');
     await runAtProjectDir(`../dist/index.mjs generate`);
 
-    await assertDirFileList('./node_modules/.vovk-client', [
-      'index.mjs',
-      'index.d.mts',
-      'index.cjs',
-      'index.d.cts',
-      'schema.cjs',
-      'schema.d.cts',
-      'openapi.json',
-      'openapi.d.cts',
-      'openapi.cjs',
-    ]);
+    await assertDirFileList({
+      dirPath: './node_modules/.vovk-client',
+      files: ['index.js', 'index.d.ts', 'schema.js', 'schema.d.ts', 'openapi.json', 'openapi.d.ts', 'openapi.js'],
+    });
 
     await assertNotExists('./node_modules/.vovk-client/root/index.mjs');
   });
@@ -71,7 +64,10 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --out ./composed-client --from ts --composed-only`);
     await assertNotExists('./composed-client/index.mjs');
     await assertNotExists('./composed-client/root/index.mjs');
-    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './composed-client',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
   });
 
   await it('Generates composed client with included segments', async () => {
@@ -84,7 +80,10 @@ await describe('Composed & Segmented client', async () => {
       },
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
-    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './composed-client',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
     );
@@ -101,7 +100,10 @@ await describe('Composed & Segmented client', async () => {
       },
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
-    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './composed-client',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
     );
@@ -112,7 +114,10 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --include foo --include bar/baz --out ./composed-client --from ts`
     );
-    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './composed-client',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
     );
@@ -123,7 +128,10 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --exclude "" --exclude bar/baz --out ./composed-client --from ts`
     );
-    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './composed-client',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
     );
@@ -171,7 +179,10 @@ await describe('Composed & Segmented client', async () => {
     tsconfig.compilerOptions.moduleResolution = 'nodenext';
     await fs.writeFile(path.join(projectDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2));
     await runAtProjectDir(`../dist/index.mjs generate`);
-    await assertDirFileList('./composed-client', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './composed-client',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
     const { y, z, a, b, c }: { y: number; z: number; a: number; b: number; c: number } = await import(
       path.join(projectDir, 'composed-client', 'index.ts') + '?' + Math.random()
     );
@@ -182,7 +193,10 @@ await describe('Composed & Segmented client', async () => {
 
   await it('Generates segmented client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
-    await assertDirFileList('./segmented-client/root', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './segmented-client/root',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
     await assertNotExists('./segmented-client/index.ts');
   });
 
@@ -190,13 +204,25 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client --segmented-from ts`
     );
-    await assertDirFileList('./segmented-client/root', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './segmented-client/root',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
     await assertNotExists('./segmented-client/index.ts');
     await assertNotExists('./segmented-client/schema.ts');
-    await assertDirFileList('./segmented-client/foo', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
-    await assertDirFileList('./segmented-client/bar', ['baz']);
-    await assertDirFileList('./segmented-client/bar/baz', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
-    await assertDirFileList('./segmented-client/a/b/c/d/e', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './segmented-client/foo',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
+    await assertDirFileList({ dirPath: './segmented-client/bar', files: ['baz'] });
+    await assertDirFileList({
+      dirPath: './segmented-client/bar/baz',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
+    await assertDirFileList({
+      dirPath: './segmented-client/a/b/c/d/e',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
   });
 
   await it('Generates segmented client with included segments', async () => {
@@ -212,7 +238,7 @@ await describe('Composed & Segmented client', async () => {
       },
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
-    await assertDirFileList('./segmented-client', ['foo', 'bar']);
+    await assertDirFileList({ dirPath: './segmented-client', files: ['foo', 'bar'] });
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'segmented-client/bar/baz', 'schema.ts') + '?' + Math.random()
     );
@@ -231,7 +257,7 @@ await describe('Composed & Segmented client', async () => {
       },
     }));
     await runAtProjectDir(`../dist/index.mjs generate`);
-    await assertDirFileList('./segmented-client', ['foo', 'a']);
+    await assertDirFileList({ dirPath: './segmented-client', files: ['foo', 'a'] });
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'segmented-client/foo', 'schema.ts') + '?' + Math.random()
     );
@@ -248,7 +274,7 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --segmented-include-segments foo --segmented-include-segments bar/baz --segmented-out ./segmented-client`
     );
-    await assertDirFileList('./segmented-client', ['foo', 'bar']);
+    await assertDirFileList({ dirPath: './segmented-client', files: ['foo', 'bar'] });
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'segmented-client/bar/baz', 'schema.ts') + '?' + Math.random()
     );
@@ -265,7 +291,7 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir(
       `../dist/index.mjs generate --segmented-exclude-segments "" --segmented-exclude-segments bar/baz --segmented-out ./segmented-client`
     );
-    await assertDirFileList('./segmented-client', ['foo', 'a']);
+    await assertDirFileList({ dirPath: './segmented-client', files: ['foo', 'a'] });
     const { schema }: { schema: VovkSchema } = await import(
       path.join(projectDir, 'segmented-client/foo', 'schema.ts') + '?' + Math.random()
     );
@@ -314,9 +340,18 @@ await describe('Composed & Segmented client', async () => {
     await fs.writeFile(path.join(projectDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2));
     await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
 
-    await assertDirFileList('./segmented-client/root', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
-    await assertDirFileList('./segmented-client/foo', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
-    await assertDirFileList('./segmented-client/a/b/c/d/e', ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json']);
+    await assertDirFileList({
+      dirPath: './segmented-client/root',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
+    await assertDirFileList({
+      dirPath: './segmented-client/foo',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
+    await assertDirFileList({
+      dirPath: './segmented-client/a/b/c/d/e',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
+    });
     const { y, z, c }: { y: number; z: number; a: number; b: number; c: number } = await import(
       path.join(projectDir, 'segmented-client/root/index.ts') + '?' + Math.random()
     );
@@ -339,8 +374,8 @@ await describe('Composed & Segmented client', async () => {
       },
     }));
 
-    await runAtProjectDir(`../dist/index.mjs generate --out ./composed-client-origin-1 --from mjs --composed-only`);
-    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-1', 'index.mjs'));
+    await runAtProjectDir(`../dist/index.mjs generate --out ./composed-client-origin-1 --from js --composed-only`);
+    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-1', 'index.js'));
 
     deepStrictEqual(UserRPC.createUser.apiRoot, 'https://example.com/api');
   });
@@ -354,9 +389,9 @@ await describe('Composed & Segmented client', async () => {
     }));
 
     await runAtProjectDir(
-      `../dist/index.mjs generate --out ./composed-client-origin-2 --from mjs --composed-only --origin https://example.org/`
+      `../dist/index.mjs generate --out ./composed-client-origin-2 --from js --composed-only --origin https://example.org/`
     );
-    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-2', 'index.mjs'));
+    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-2', 'index.js'));
 
     deepStrictEqual(UserRPC.createUser.apiRoot, 'https://example.org/api');
   });

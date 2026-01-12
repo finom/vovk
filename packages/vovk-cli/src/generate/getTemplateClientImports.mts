@@ -32,62 +32,33 @@ export function getTemplateClientImports({
     outputConfigs,
   });
 
-  const validateOnClientImport = configImports?.validateOnClient ?? null;
-  const fetcherImport = configImports?.fetcher ?? 'vovk/fetcher';
-  const createRPCImport = configImports?.createRPC ?? 'vovk/createRPC';
   const imports = {
-    fetcher: typeof fetcherImport === 'string' ? ([fetcherImport] as const) : fetcherImport,
-    validateOnClient:
-      typeof validateOnClientImport === 'string'
-        ? ([validateOnClientImport] as const)
-        : (validateOnClientImport ?? null),
-    createRPC: typeof createRPCImport === 'string' ? ([createRPCImport] as const) : createRPCImport,
+    fetcher: configImports?.fetcher ?? 'vovk/fetcher',
+    validateOnClient: configImports?.validateOnClient ?? null,
+    createRPC: configImports?.createRPC ?? 'vovk/createRPC',
   };
 
   const getImportPath = (p: string, s = '') =>
     p.startsWith('.') ? path.relative(path.join(outCwdRelativeDir, s), p) : p;
 
   const clientImports: {
-    composedClient: ClientImports & { module: ClientImports };
-    segmentedClient: Record<string, ClientImports & { module: ClientImports }>;
+    composedClient: ClientImports;
+    segmentedClient: Record<string, ClientImports>;
   } = {
     composedClient: {
-      fetcher: getImportPath(imports.fetcher[0]),
-      createRPC: getImportPath(imports.createRPC[0]),
-      validateOnClient: imports.validateOnClient ? getImportPath(imports.validateOnClient[0]) : null,
-      module: {
-        fetcher: getImportPath(imports.fetcher[1] ?? imports.fetcher[0]),
-        createRPC: getImportPath(imports.createRPC[1] ?? imports.createRPC[0]),
-        validateOnClient: imports.validateOnClient
-          ? getImportPath(imports.validateOnClient[1] ?? imports.validateOnClient[0])
-          : null,
-      },
+      fetcher: getImportPath(imports.fetcher),
+      createRPC: getImportPath(imports.createRPC),
+      validateOnClient: imports.validateOnClient ? getImportPath(imports.validateOnClient) : null,
     },
     segmentedClient: Object.fromEntries(
       Object.values(fullSchema.segments).map((segment) => [
         segment.segmentName,
         {
-          fetcher: getImportPath(imports.fetcher[0], segment.segmentName || ROOT_SEGMENT_FILE_NAME),
-          createRPC: getImportPath(imports.createRPC[0], segment.segmentName || ROOT_SEGMENT_FILE_NAME),
+          fetcher: getImportPath(imports.fetcher, segment.segmentName || ROOT_SEGMENT_FILE_NAME),
+          createRPC: getImportPath(imports.createRPC, segment.segmentName || ROOT_SEGMENT_FILE_NAME),
           validateOnClient: imports.validateOnClient
-            ? getImportPath(imports.validateOnClient[0], segment.segmentName || ROOT_SEGMENT_FILE_NAME)
+            ? getImportPath(imports.validateOnClient, segment.segmentName || ROOT_SEGMENT_FILE_NAME)
             : null,
-          module: {
-            fetcher: getImportPath(
-              imports.fetcher[1] ?? imports.fetcher[0],
-              segment.segmentName || ROOT_SEGMENT_FILE_NAME
-            ),
-            createRPC: getImportPath(
-              imports.createRPC[1] ?? imports.createRPC[0],
-              segment.segmentName || ROOT_SEGMENT_FILE_NAME
-            ),
-            validateOnClient: imports.validateOnClient
-              ? getImportPath(
-                  imports.validateOnClient[1] ?? imports.validateOnClient[0],
-                  segment.segmentName || ROOT_SEGMENT_FILE_NAME
-                )
-              : null,
-          },
         },
       ])
     ),

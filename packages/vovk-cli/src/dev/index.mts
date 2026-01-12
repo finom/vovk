@@ -25,7 +25,7 @@ import { LogLevelNames } from 'loglevel';
 import { getMetaSchema } from '../getProjectInfo/getMetaSchema.mjs';
 
 export class VovkDev {
-  #projectInfo: ProjectInfo;
+  #projectInfo!: ProjectInfo;
 
   #segments: Segment[] = [];
 
@@ -216,23 +216,13 @@ export class VovkDev {
     }, 1000);
 
     chokidar
-      // .watch(['vovk.config.{js,mjs,cjs}', '.config/vovk.config.{js,mjs,cjs}'], {
-      .watch(
-        [
-          'vovk.config.js',
-          'vovk.config.mjs',
-          'vovk.config.cjs',
-          '.config/vovk.config.js',
-          '.config/vovk.config.mjs',
-          '.config/vovk.config.cjs',
-        ],
-        {
-          persistent: true,
-          cwd,
-          ignoreInitial: false,
-          depth: 0,
-        }
-      )
+      // .watch(['vovk.config.{js,mjs}', '.config/vovk.config.{js,mjs}'], {
+      .watch(['vovk.config.js', 'vovk.config.mjs', '.config/vovk.config.js', '.config/vovk.config.mjs'], {
+        persistent: true,
+        cwd,
+        ignoreInitial: false,
+        depth: 0,
+      })
       .on('add', () => void handle())
       .on('change', () => void handle())
       .on('unlink', () => void handle())

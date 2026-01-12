@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import type { HttpMethod, StaticClass, VovkController, VovkRequest } from '../types';
-import { vovkApp } from './vovkApp';
-import { trimPath } from '../utils/trimPath';
-import { getSchema } from './getSchema';
+import { NextRequest } from 'next/server.js';
+import type { HttpMethod, StaticClass, VovkController, VovkRequest } from '../types.js';
+import { vovkApp } from './vovkApp.js';
+import { trimPath } from '../utils/trimPath.js';
+import { getSchema } from './getSchema.js';
 
 export const initSegment = (options: {
   segmentName?: string;

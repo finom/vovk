@@ -1,9 +1,9 @@
-import type { NextRequest } from 'next/server';
-import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
-import type { JSONLinesResponder, Responder } from './core/JSONLinesResponder';
-import type { VovkStreamAsyncIterable } from './client/types';
+import type { NextRequest } from 'next/server.js';
 import type { PackageJson } from 'type-fest';
-import type { VovkToolOptions } from './tools/types';
+import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
+import type { JSONLinesResponder, Responder } from './core/JSONLinesResponder.js';
+import type { VovkStreamAsyncIterable } from './client/types.js';
+import type { VovkToolOptions } from './tools/types.js';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -38,7 +38,7 @@ export type VovkControllerSchema = {
   rpcModuleName: string;
   originalControllerName?: string;
   prefix?: string;
-  forceApiRoot?: string;
+  forceApiJ?: string;
   handlers: { [key: string]: VovkHandlerSchema };
 };
 
@@ -476,7 +476,7 @@ type ClientConfigComposed = ClientConfigCommon;
 
 type ClientConfigSegmented = ClientConfigCommon;
 
-type BundleConfig = {
+export type VovkBundleConfig = {
   requires?: Record<string, string>;
   prebundleOutDir?: string;
   keepPrebundleDir?: boolean;
@@ -486,14 +486,14 @@ type BundleConfig = {
 } & IncludeExcludeSegments;
 
 type GeneratorConfigImports = {
-  fetcher?: string | [string, string] | [string];
-  validateOnClient?: string | [string, string] | [string] | null;
-  createRPC?: string | [string, string] | [string];
+  fetcher?: string;
+  validateOnClient?: string | null;
+  createRPC?: string;
 };
 
 type SegmentConfigImports = {
-  fetcher?: string | [string, string] | [string];
-  validateOnClient?: string | [string, string] | [string] | null;
+  fetcher?: string;
+  validateOnClient?: string | null;
 };
 
 export interface VovkOutputConfig<TImports extends GeneratorConfigImports = GeneratorConfigImports> {
@@ -581,7 +581,7 @@ type VovkUserConfig = {
   devHttps?: boolean;
   composedClient?: ClientConfigComposed;
   segmentedClient?: ClientConfigSegmented;
-  bundle?: BundleConfig;
+  bundle?: VovkBundleConfig;
   clientTemplateDefs?: Record<string, ClientTemplateDef>;
   rootSegmentModulesDirName?: string;
   moduleTemplates?: {

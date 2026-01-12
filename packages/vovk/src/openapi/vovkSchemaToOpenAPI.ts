@@ -1,5 +1,5 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
-import { createCodeSamples } from '../samples/createCodeSamples';
+import { createCodeSamples } from '../samples/createCodeSamples.js';
 import {
   HttpStatus,
   type VovkJSONSchemaBase,
@@ -10,9 +10,9 @@ import {
   VovkReadmeConfig,
   VovkSamplesConfig,
   VovkPackageJson,
-} from '../types';
-import { JSONSchemaToObject } from '../samples/JSONSchemaToObject';
-import { resolveGeneratorConfigValues } from '../core/resolveGeneratorConfigValues';
+} from '../types.js';
+import { JSONSchemaToObject } from '../samples/JSONSchemaToObject.js';
+import { resolveGeneratorConfigValues } from '../core/resolveGeneratorConfigValues.js';
 
 function extractComponents(
   schema: VovkJSONSchemaBase | undefined

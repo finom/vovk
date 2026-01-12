@@ -157,7 +157,6 @@ export async function writeOneClientFile({
     nodeNextResolutionExt: {
       ts: isNodeNextResolution ? '.ts' : '',
       js: isNodeNextResolution ? '.js' : '',
-      cjs: isNodeNextResolution ? '.cjs' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },
     schemaOutDir:

@@ -1,6 +1,6 @@
 <%- t.getFirstLineBanner() %>
 import type { VovkFetcher } from 'vovk/fetcher';
-import { createRPC } from '<%= t.commonImports.module.createRPC %>';
+import { createRPC } from '<%= t.commonImports.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
 import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
@@ -15,9 +15,9 @@ export { <%= reExportWhat %> } from '<%= reExportFrom %>';
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => {  
   Object.keys(segment.controllers).forEach((rpcModuleName) => { 
     const apiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? t.apiRoot; %>
-export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].module.fetcher %>').fetcher extends VovkFetcher<infer U> ? U : never>(
-  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', import('<%- t.segmentImports[segment.segmentName].module.fetcher %>'),
-  { validateOnClient: <%- t.segmentImports[segment.segmentName].module.validateOnClient ? `import('${t.segmentImports[segment.segmentName].validateOnClient}')` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : apiRoot ? `apiRoot: '${apiRoot}'` : '' %> }
+export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].fetcher %>').fetcher extends VovkFetcher<infer U> ? U : never>(
+  schema, '<%= segment.segmentName %>', '<%= rpcModuleName %>', import('<%- t.segmentImports[segment.segmentName].fetcher %>'),
+  { validateOnClient: <%- t.segmentImports[segment.segmentName].validateOnClient ? `import('${t.segmentImports[segment.segmentName].validateOnClient}')` : 'undefined' %>, <%- typeof t.segmentMeta[segment.segmentName].segmentNameOverride === 'string' ? `segmentNameOverride: '${t.segmentMeta[segment.segmentName].segmentNameOverride}', ` : '' %><%- segment.segmentType === 'mixin' ? '' : apiRoot ? `apiRoot: '${apiRoot}'` : '' %> }
 );
 <% }) 
 }) %>

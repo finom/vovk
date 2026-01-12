@@ -1,4 +1,4 @@
-import { VovkJSONSchemaBase } from '../types';
+import { VovkJSONSchemaBase } from '../types.js';
 
 export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: VovkJSONSchemaBase): unknown {
   if (!schema || typeof schema !== 'object') return null;

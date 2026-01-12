@@ -1,4 +1,4 @@
-import type { VovkController, StaticClass } from '../types';
+import type { VovkController, StaticClass } from '../types.js';
 
 /**
  * Generates static API of the given controllers for a static segment.

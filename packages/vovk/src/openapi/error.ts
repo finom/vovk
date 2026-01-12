@@ -1,5 +1,5 @@
-import { HttpStatus } from '../types';
-import { createDecorator } from '../core/createDecorator';
+import { HttpStatus } from '../types.js';
+import { createDecorator } from '../core/createDecorator.js';
 
 const statusDisplayText = {
   [HttpStatus.NULL]: 'Error',

@@ -17,8 +17,8 @@ import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 import type { InitOptions } from '../types.mjs';
 
 export class Init {
-  root: string;
-  log: ReturnType<typeof getLogger>;
+  root!: string;
+  log!: ReturnType<typeof getLogger>;
 
   async #init(
     {

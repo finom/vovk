@@ -1,5 +1,7 @@
 import path from 'node:path';
+import type { VovkConfig } from 'vovk';
 import { VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk/internal';
+import type { LogLevelNames } from 'loglevel';
 import { getLogger } from '../../utils/getLogger.mjs';
 import { getUserConfig } from './getUserConfig.mjs';
 import { getRelativeSrcRoot } from './getRelativeSrcRoot.mjs';
@@ -7,7 +9,6 @@ import type { VovkEnv } from '../../types.mjs';
 import { getTemplateDefs, BuiltInTemplateName } from './getTemplateDefs.mjs';
 import { normalizeOpenAPIMixin } from '../../utils/normalizeOpenAPIMixin.mjs';
 import { chalkHighlightThing } from '../../utils/chalkHighlightThing.mjs';
-import type { LogLevelNames } from 'loglevel';
 
 export async function getConfig({
   configPath,
@@ -17,7 +18,13 @@ export async function getConfig({
   configPath?: string;
   cwd: string;
   logLevel?: LogLevelNames;
-}) {
+}): Promise<{
+  config: VovkStrictConfig;
+  srcRoot: string | null;
+  configAbsolutePaths: string[];
+  userConfig: VovkConfig | null;
+  log: ReturnType<typeof getLogger>;
+}> {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({
     configPath,
     cwd,
@@ -39,7 +46,7 @@ export async function getConfig({
     composedClient: {
       ...conf.composedClient,
       enabled: conf.composedClient?.enabled ?? true,
-      fromTemplates: conf.composedClient?.fromTemplates ?? ['mjs', 'cjs'],
+      fromTemplates: conf.composedClient?.fromTemplates ?? [BuiltInTemplateName.js],
       outDir: conf.composedClient?.outDir ?? './node_modules/.vovk-client',
       prettifyClient: conf.composedClient?.prettifyClient ?? false,
     },

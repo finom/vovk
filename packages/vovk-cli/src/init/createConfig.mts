@@ -13,12 +13,20 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
   await build({
     entry,
     dts: true,
-    format: ['cjs', 'esm'],
+    format: 'esm',
     hash: false,
     fixedExtension: true,
     clean: true,
     outDir,
-    noExternal: ['vovk/createRPC', 'vovk/fetcher', 'vovk-ajv'],
+    platform: 'neutral',
+    outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+    inputOptions: {
+      resolve: {
+        mainFields: ['module', 'main'],
+        conditionNames: ['default', 'import', 'module', 'node'],
+      },
+    },
+    noExternal: ['vovk', 'vovk/*', 'vovk-ajv', 'ajv/**', 'ajv-errors', 'ajv-formats/**'],
   });
 };
 
@@ -66,7 +74,7 @@ export async function createConfig({
 
   if (lang?.length) {
     config.composedClient ??= {};
-    config.composedClient.fromTemplates = ['mjs', 'cjs', ...lang];
+    config.composedClient.fromTemplates = ['js', ...lang];
   }
 
   config.moduleTemplates = moduleTemplates;

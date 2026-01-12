@@ -13,27 +13,27 @@ export {
   type VovkSchema,
   type VovkConfig,
   type VovkJSONSchemaBase,
-} from './types';
+} from './types.js';
 // core
-export { HttpException } from './core/HttpException';
-export { createDecorator } from './core/createDecorator';
-export { controllersToStaticParams } from './core/controllersToStaticParams';
-export { multitenant } from './core/multitenant';
-export { JSONLinesResponder } from './core/JSONLinesResponder';
-export { toDownloadResponse } from './core/toDownloadResponse';
+export { HttpException } from './core/HttpException.js';
+export { createDecorator } from './core/createDecorator.js';
+export { controllersToStaticParams } from './core/controllersToStaticParams.js';
+export { multitenant } from './core/multitenant.js';
+export { JSONLinesResponder } from './core/JSONLinesResponder.js';
+export { toDownloadResponse } from './core/toDownloadResponse.js';
 // client
-export type { VovkFetcher, VovkValidateOnClient } from './client/types';
-export { progressive } from './client/progressive';
-export { fetcher, createFetcher } from './client/fetcher';
-export { initSegment } from './core/initSegment';
-export { get, post, put, patch, del, head, options, prefix, cloneControllerMetadata } from './core/decorators';
+export type { VovkFetcher, VovkValidateOnClient } from './client/types.js';
+export { progressive } from './client/progressive.js';
+export { fetcher, createFetcher } from './client/fetcher.js';
+export { initSegment } from './core/initSegment.js';
+export { get, post, put, patch, del, head, options, prefix, cloneControllerMetadata } from './core/decorators.js';
 // openapi
-export { operation } from './openapi/operation';
+export { operation } from './openapi/operation.js';
 // validation
-export { createValidateOnClient } from './validation/createValidateOnClient';
-export { procedure } from './validation/procedure';
+export { createValidateOnClient } from './validation/createValidateOnClient.js';
+export { procedure } from './validation/procedure.js';
 // tools
-export { ToModelOutput } from './tools/ToModelOutput';
-export type { VovkTool } from './tools/types';
-export { createTool } from './tools/createTool';
-export { deriveTools } from './tools/deriveTools';
+export { ToModelOutput } from './tools/ToModelOutput.js';
+export type { VovkTool } from './tools/types.js';
+export { createTool } from './tools/createTool.js';
+export { deriveTools } from './tools/deriveTools.js';

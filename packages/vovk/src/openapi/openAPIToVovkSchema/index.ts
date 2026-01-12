@@ -11,9 +11,9 @@ import {
   VovkJSONSchemaBase,
   type VovkSchema,
   VovkSchemaIdEnum,
-} from '../../types';
-import { applyComponentsSchemas } from './applyComponentsSchemas';
-import { inlineRefs } from './inlineRefs';
+} from '../../types.js';
+import { applyComponentsSchemas } from './applyComponentsSchemas.js';
+import { inlineRefs } from './inlineRefs.js';
 
 export function openAPIToVovkSchema({
   apiRoot,

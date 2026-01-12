@@ -1,4 +1,4 @@
-import { procedure } from '../validation/procedure';
+import { procedure } from '../validation/procedure.js';
 
 /**
  * Function to create a standalone AI tool.

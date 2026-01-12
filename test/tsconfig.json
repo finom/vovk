@@ -27,9 +27,6 @@
       }
     ],
     "baseUrl": ".",
-    "paths": {
-      "vovk": ["../packages/vovk/src/index.ts"]
-    },
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     // "allowJs": true,

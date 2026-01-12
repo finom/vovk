@@ -1,4 +1,4 @@
-import type { HttpStatus, VovkErrorResponse } from '../types';
+import type { HttpStatus, VovkErrorResponse } from '../types.js';
 
 /**
  * Represents an HTTP exception with a status code and message.

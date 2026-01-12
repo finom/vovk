@@ -1,9 +1,9 @@
-import type { VovkErrorResponse, VovkValidationType } from '../types';
-import type { VovkToolNonDerived } from './types';
-import { ToModelOutput } from './ToModelOutput';
-import type { ToModelOutputFn } from './types';
-import type { DefaultModelOutput, ToModelOutputDefaultFn } from './toModelOutputDefault';
-import type { CombinedSpec } from '../validation/types';
+import type { VovkErrorResponse, VovkValidationType } from '../types.js';
+import type { VovkToolNonDerived } from './types.js';
+import { ToModelOutput } from './ToModelOutput.js';
+import type { ToModelOutputFn } from './types.js';
+import type { DefaultModelOutput, ToModelOutputDefaultFn } from './toModelOutputDefault.js';
+import type { CombinedSpec } from '../validation/types.js';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 

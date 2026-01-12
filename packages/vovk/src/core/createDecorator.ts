@@ -1,4 +1,4 @@
-import type { VovkHandlerSchema, VovkController, VovkRequest } from '../types';
+import type { VovkHandlerSchema, VovkController, VovkRequest } from '../types.js';
 
 type Next = () => Promise<unknown>;
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any

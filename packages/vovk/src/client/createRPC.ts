@@ -4,14 +4,19 @@ import type {
   VovkControllerQuery,
   HttpMethod,
   VovkSchema,
-} from '../types';
-import type { ClientMethod, VovkRPCModule, VovkFetcher, VovkFetcherOptions, VovkValidateOnClient } from './types';
+  VovkHandlerSchema,
+  VovkRequest,
+} from '../types.js';
+import type { ClientMethod, VovkRPCModule, VovkFetcher, VovkFetcherOptions, VovkValidateOnClient } from './types.js';
+import type { CombinedSpec } from '../validation/types.js';
 
-import { fetcher as defaultFetcher } from './fetcher';
-import { defaultHandler } from './defaultHandler';
-import { defaultStreamHandler } from './defaultStreamHandler';
-import { serializeQuery } from './serializeQuery';
-import { deepExtend } from '../utils/deepExtend';
+import { fetcher as defaultFetcher } from './fetcher.js';
+import { defaultHandler } from './defaultHandler.js';
+import { defaultStreamHandler } from './defaultStreamHandler.js';
+import { serializeQuery } from './serializeQuery.js';
+import { deepExtend } from '../utils/deepExtend.js';
+
+export type { VovkHandlerSchema, VovkRequest, CombinedSpec };
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -63,7 +68,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   }
   const controllerPrefix = trimPath(controllerSchema.prefix ?? '');
 
-  const forceApiRoot = controllerSchema.forceApiRoot ?? segmentSchema.forceApiRoot;
+  const forceApiRoot = segmentSchema.forceApiRoot;
   const configRootEntry = schema.meta?.config?.rootEntry;
   const originalApiRoot = forceApiRoot ?? options?.apiRoot ?? (configRootEntry ? `/${configRootEntry}` : '/api');
 

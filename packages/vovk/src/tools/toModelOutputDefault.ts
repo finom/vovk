@@ -1,5 +1,5 @@
-import { VovkRequest } from '../types';
-import type { VovkTool } from './types';
+import { VovkRequest } from '../types.js';
+import type { VovkTool } from './types.js';
 
 export type DefaultModelOutput<T> = T | { error: string };
 

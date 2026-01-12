@@ -1,10 +1,21 @@
-import type { VovkValidateOnClient } from '../client/types';
-import type { VovkJSONSchemaBase } from '../types';
+import type { VovkValidateOnClient } from '../client/types.js';
+import { HttpException } from '../core/HttpException.js';
+import { HttpStatus, type VovkJSONSchemaBase, type VovkSchema } from '../types.js';
+
+// types and enums required for client validation libs
+export {
+  createValidateOnClient,
+  HttpException,
+  HttpStatus,
+  type VovkJSONSchemaBase,
+  type VovkValidateOnClient,
+  type VovkSchema,
+};
 
 /**
  * Creates a validation function for client-side input validation.
  */
-export function createValidateOnClient<TFetcherOptions>({
+function createValidateOnClient<TFetcherOptions>({
   validate,
 }: {
   validate: (

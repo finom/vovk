@@ -1,7 +1,0 @@
-src
-test
-test_data
-.eslintrc.mjs
-tsconfig.*
-.turbo
-eslint.config.js

@@ -1,5 +1,5 @@
-import type { VovkStreamAsyncIterable } from './types';
-import type { VovkYieldType } from '../types';
+import type { VovkStreamAsyncIterable } from './types.js';
+import type { VovkYieldType } from '../types.js';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 

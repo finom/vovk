@@ -1,13 +1,13 @@
-import { vovkApp } from './vovkApp';
+import { vovkApp } from './vovkApp.js';
 import {
   HttpMethod,
   type RouteHandler,
   type VovkController,
   type DecoratorOptions,
   type VovkHandlerSchema,
-} from '../types';
-import { trimPath } from '../utils/trimPath';
-import { toKebabCase } from '../utils/toKebabCase';
+} from '../types.js';
+import { trimPath } from '../utils/trimPath.js';
+import { toKebabCase } from '../utils/toKebabCase.js';
 
 type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 

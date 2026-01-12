@@ -1,19 +1,13 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "node",
     "declaration": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "paths": {
-      "vovk/*": ["../vovk/mjs/*"]
-    }
+    "allowImportingTsExtensions": true
   },
-  "include": ["src/**/*", "templates/**/*", "test/**/*", "tmp/**/*", "eslint.config.js", "tsconfig.tsdown-bundle.json"],
+  "include": ["src/**/*", "templates/**/*", "test/**/*", "tmp/**/*", "eslint.config.js"],
   "exclude": ["node_modules", "dist", "test/test_data"]
 }

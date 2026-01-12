@@ -4,8 +4,7 @@
     "outDir": "dist",
     "noEmit": false,
     "declaration": true,
-    "resolveJsonModule": false
+    "resolveJsonModule": false,
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["mjs", "cjs"]
 }

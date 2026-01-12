@@ -1,5 +1,5 @@
-import type { VovkToolOptions } from '../tools/types';
-import { createDecorator } from '../core/createDecorator';
+import type { VovkToolOptions } from '../tools/types.js';
+import { createDecorator } from '../core/createDecorator.js';
 
 export const tool = createDecorator(null, (toolOptions: VovkToolOptions) => {
   return (handlerSchema) => {

@@ -1,8 +1,8 @@
-import type { StreamAbortMessage } from '../types';
-import '../utils/shim';
+import type { StreamAbortMessage } from '../types.js';
+import '../utils/shim.js';
 
 export abstract class Responder {
-  public response: Response;
+  public response!: Response;
 }
 
 /**

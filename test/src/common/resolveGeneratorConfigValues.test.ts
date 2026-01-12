@@ -16,22 +16,21 @@ describe('resolveGeneratorConfigValues', () => {
 
       // Check defaults
       deepStrictEqual(result.package, {
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
       });
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
-        fetcher: ['vovk'],
+        fetcher: 'vovk/fetcher',
         validateOnClient: null,
-        createRPC: ['vovk'],
+        createRPC: 'vovk/createRPC',
       });
       deepStrictEqual(result.reExports, {});
       deepStrictEqual(result.readme, {});
@@ -60,14 +59,13 @@ describe('resolveGeneratorConfigValues', () => {
         version: '1.0.0',
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
     });
 
@@ -97,14 +95,13 @@ describe('resolveGeneratorConfigValues', () => {
         name: 'users-segment',
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
     });
   });
@@ -168,14 +165,13 @@ describe('resolveGeneratorConfigValues', () => {
         keywords: ['api', 'vovk'], // from configs array
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
     });
 
@@ -257,7 +253,7 @@ describe('resolveGeneratorConfigValues', () => {
       const outputConfigs: VovkOutputConfig[] = [
         {
           imports: {
-            createRPC: ['createRPCCommon', 'createRPCESM'],
+            createRPC: 'customCreateRPC',
           },
         },
       ];
@@ -281,7 +277,7 @@ describe('resolveGeneratorConfigValues', () => {
       deepStrictEqual(result.imports, {
         fetcher: '@custom/fetcher',
         validateOnClient: '@custom/validator',
-        createRPC: ['createRPCCommon', 'createRPCESM'],
+        createRPC: 'customCreateRPC',
       });
     });
   });
@@ -311,14 +307,13 @@ describe('resolveGeneratorConfigValues', () => {
         name: 'bundled',
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
       strictEqual(result.origin, 'https://bundle.example.com');
     });
@@ -347,14 +342,13 @@ describe('resolveGeneratorConfigValues', () => {
         name: 'base',
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
       strictEqual(result.origin, '');
     });
@@ -385,10 +379,10 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'users-api',
-        exports: { '.': { import: './index.mjs', require: './index.cjs', types: './index.d.mts' } },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        exports: { '.': { default: './index.js', types: './index.d.ts' } },
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
       strictEqual(result.origin, 'https://users.example.com');
       deepStrictEqual(result.reExports, { User: './models/User' });
@@ -418,10 +412,10 @@ describe('resolveGeneratorConfigValues', () => {
 
       // Should not include segment-specific configs
       deepStrictEqual(result.package, {
-        exports: { '.': { import: './index.mjs', require: './index.cjs', types: './index.d.mts' } },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        exports: { '.': { default: './index.js', types: './index.d.ts' } },
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
     });
 
@@ -497,17 +491,15 @@ describe('resolveGeneratorConfigValues', () => {
         homepage: 'https://example.com',
         bugs: { url: 'https://github.com/test/repo/issues' },
         keywords: ['test', 'api'],
-
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
     });
   });
@@ -532,20 +524,19 @@ describe('resolveGeneratorConfigValues', () => {
       deepStrictEqual(result.package, {
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
-        fetcher: ['vovk'],
+        fetcher: 'vovk/fetcher',
         validateOnClient: null,
-        createRPC: ['vovk'],
+        createRPC: 'vovk/createRPC',
       });
     });
 
@@ -579,14 +570,13 @@ describe('resolveGeneratorConfigValues', () => {
         version: '3.0.0', // overridden by third config
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
       deepStrictEqual(result.readme, {
         banner: 'Third banner', // overridden by third config
@@ -647,14 +637,13 @@ describe('resolveGeneratorConfigValues', () => {
         repository: 'https://github.com/test/repo',
         exports: {
           '.': {
-            import: './index.mjs',
-            require: './index.cjs',
-            types: './index.d.mts',
+            default: './index.js',
+            types: './index.d.ts',
           },
         },
-        main: './index.cjs',
-        module: './index.mjs',
-        types: './index.d.mts',
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
       });
 
       strictEqual(result.origin, 'https://bundle.example.com');

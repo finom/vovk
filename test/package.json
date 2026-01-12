@@ -1,6 +1,7 @@
 {
   "name": "test",
   "version": "0.1.1-beta.0",
+  "type": "module",
   "private": true,
   "description": "Vovk test app",
   "license": "MIT",
@@ -18,7 +19,6 @@
     "generate-modules-from-templates": "sh ./scripts/generateModulesFromTemplates.sh",
     "build-other-compiled-sources": "rm -rf other-compiled-test-sources && npm run bundle && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
   },
-  "type": "module",
   "dependencies": {
     "@testing-library/react": "^16.3.1",
     "@valibot/to-json-schema": "^1.5.0",
@@ -31,7 +31,7 @@
     "reflect-metadata": "^0.2.2",
     "tsdown": "^0.18.3",
     "valibot": "^1.2.0",
-    "vovk-client": "^0.0.4-beta.4",
+    "vovk-client": "^0.0.4-beta.17",
     "zod": "^4.2.1"
   },
   "devDependencies": {
