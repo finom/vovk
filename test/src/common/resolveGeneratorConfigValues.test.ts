@@ -14,18 +14,7 @@ describe('resolveGeneratorConfigValues', () => {
         projectPackageJson: undefined,
       });
 
-      // Check defaults
-      deepStrictEqual(result.package, {
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-      });
+      deepStrictEqual(result.package, {});
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
         fetcher: 'vovk/fetcher',
@@ -57,15 +46,6 @@ describe('resolveGeneratorConfigValues', () => {
       deepStrictEqual(result.package, {
         name: 'root-segment',
         version: '1.0.0',
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
       });
     });
 
@@ -93,15 +73,6 @@ describe('resolveGeneratorConfigValues', () => {
       deepStrictEqual(result.package, {
         version: '2.0.0',
         name: 'users-segment',
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
       });
     });
   });
@@ -163,15 +134,6 @@ describe('resolveGeneratorConfigValues', () => {
         authors: ['test-author'], // from segment outputConfig
         homepage: 'https://bundle.example.com', // from bundle
         keywords: ['api', 'vovk'], // from configs array
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
       });
     });
 
@@ -287,7 +249,18 @@ describe('resolveGeneratorConfigValues', () => {
       const result = resolveGeneratorConfigValues({
         config: {
           outputConfig: {
-            package: { name: 'base' },
+            package: {
+              name: 'base',
+              exports: {
+                '.': {
+                  default: './index.js',
+                  types: './index.d.ts',
+                },
+              },
+              type: 'module',
+              main: './index.js',
+              types: './index.d.ts',
+            },
           },
           bundle: {
             build: () => Promise.resolve(),
@@ -340,15 +313,6 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'base',
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
       });
       strictEqual(result.origin, '');
     });
@@ -379,10 +343,6 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'users-api',
-        exports: { '.': { default: './index.js', types: './index.d.ts' } },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
       });
       strictEqual(result.origin, 'https://users.example.com');
       deepStrictEqual(result.reExports, { User: './models/User' });
@@ -411,12 +371,7 @@ describe('resolveGeneratorConfigValues', () => {
       });
 
       // Should not include segment-specific configs
-      deepStrictEqual(result.package, {
-        exports: { '.': { default: './index.js', types: './index.d.ts' } },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
-      });
+      deepStrictEqual(result.package, {});
     });
 
     it('should aggregate reExports for composed client', () => {
@@ -493,15 +448,6 @@ describe('resolveGeneratorConfigValues', () => {
         homepage: 'https://example.com',
         bugs: { url: 'https://github.com/test/repo/issues' },
         keywords: ['test', 'api'],
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
       });
     });
   });
@@ -522,18 +468,7 @@ describe('resolveGeneratorConfigValues', () => {
         outputConfigs: [],
       });
 
-      // Should handle null/undefined gracefully
-      deepStrictEqual(result.package, {
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
-      });
+      deepStrictEqual(result.package, {});
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
         fetcher: 'vovk/fetcher',
@@ -570,15 +505,6 @@ describe('resolveGeneratorConfigValues', () => {
       deepStrictEqual(result.package, {
         name: 'second', // overridden by second config
         version: '3.0.0', // overridden by third config
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
       });
       deepStrictEqual(result.readme, {
         banner: 'Third banner', // overridden by third config
@@ -637,15 +563,6 @@ describe('resolveGeneratorConfigValues', () => {
         keywords: ['api'],
         homepage: 'https://bundle.example.com/about',
         repository: 'https://github.com/test/repo',
-        exports: {
-          '.': {
-            default: './index.js',
-            types: './index.d.ts',
-          },
-        },
-        type: 'module',
-        main: './index.js',
-        types: './index.d.ts',
       });
 
       strictEqual(result.origin, 'https://bundle.example.com');

@@ -27,17 +27,6 @@ export function resolveGeneratorConfigValues({
   reExports: VovkOutputConfig['reExports'];
 } {
   const packageJson: PackageJson = deepExtend(
-    {
-      type: 'module',
-      main: './index.js',
-      types: './index.d.ts',
-      exports: {
-        '.': {
-          default: './index.js',
-          types: './index.d.ts',
-        },
-      },
-    },
     Object.fromEntries(
       Object.entries(projectPackageJson ?? {}).filter(([key]) =>
         [
@@ -53,7 +42,7 @@ export function resolveGeneratorConfigValues({
           'keywords',
         ].includes(key)
       )
-    ) as PackageJson,
+    ),
     config?.outputConfig?.package,
     typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.package : undefined,
     outputConfigs?.reduce((acc, config) => deepExtend(acc, config.package), {} as PackageJson),
