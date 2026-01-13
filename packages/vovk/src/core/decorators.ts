@@ -1,15 +1,9 @@
 import { vovkApp } from './vovkApp.js';
-import {
-  HttpMethod,
-  type RouteHandler,
-  type VovkController,
-  type DecoratorOptions,
-  type VovkHandlerSchema,
-} from '../types.js';
 import { trimPath } from '../utils/trimPath.js';
 import { toKebabCase } from '../utils/toKebabCase.js';
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+import { HttpMethod } from '../types/enums.js';
+import type { RouteHandler, VovkController, DecoratorOptions, VovkHandlerSchema } from '../types/core.js';
+import type { KnownAny } from '../types/utils.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 

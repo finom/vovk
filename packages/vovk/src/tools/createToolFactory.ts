@@ -1,11 +1,10 @@
-import type { VovkErrorResponse, VovkValidationType } from '../types.js';
-import type { VovkToolNonDerived } from './types.js';
 import { ToModelOutput } from './ToModelOutput.js';
-import type { ToModelOutputFn } from './types.js';
+import type { VovkErrorResponse, VovkValidationType } from '../types/core.js';
+import type { VovkToolNonDerived } from '../types/tools.js';
+import type { ToModelOutputFn } from '../types/tools.js';
 import type { DefaultModelOutput, ToModelOutputDefaultFn } from './toModelOutputDefault.js';
-import type { CombinedSpec } from '../validation/types.js';
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+import type { CombinedSpec } from '../types/validation.js';
+import type { KnownAny } from '../types/utils.js';
 
 // Helper type to extract the formatted output type from a toModelOutput function
 type InferFormattedOutput<TFn, TOutput> = TFn extends ToModelOutputDefaultFn

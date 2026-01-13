@@ -1,26 +1,22 @@
 import { HttpException } from '../core/HttpException.js';
-import {
-  HttpStatus,
-  VovkHandlerSchema,
-  VovkTypedMethod,
-  VovkValidationType,
-  type VovkRequest,
-  type VovkOperationObject,
-} from '../types.js';
 import { reqMeta } from '../req/reqMeta.js';
 import { setHandlerSchema } from '../core/setHandlerSchema.js';
 import { JSONLinesResponder } from '../core/JSONLinesResponder.js';
+import { HttpStatus } from './createValidateOnClient.js';
+import type { VovkHandlerSchema, VovkValidationType } from '../types/core.js';
+import type { VovkRequest } from '../types/request.js';
+import type { VovkTypedProcedure } from '../types/validation.js';
+import type { VovkOperationObject } from '../types/operation.js';
+import type { KnownAny } from '../types/utils.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 
 type Meta = { __disableClientValidation?: boolean; [key: string]: KnownAny };
 
 export function withValidationLibrary<
-  T extends VovkTypedMethod<
+  T extends VovkTypedProcedure<
     (req: KnownAny, params: KnownAny) => KnownAny,
     KnownAny,
     KnownAny,

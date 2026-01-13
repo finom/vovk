@@ -1,9 +1,10 @@
-import { HttpStatus, type VovkErrorResponse } from '../types.js';
-import type { VovkStreamAsyncIterable } from './types.js';
+import { HttpStatus } from '../types/enums.js';
 import { HttpException } from '../core/HttpException.js';
+import type { VovkStreamAsyncIterable } from '../types/client.js';
+import type { VovkErrorResponse } from '../types/core.js';
 import '../utils/shim.js';
 
-export const DEFAULT_ERROR_MESSAGE = 'An unknown error at defaultStreamHandler';
+export const DEFAULT_ERROR_MESSAGE = 'An unknown error at the default stream handler';
 
 export const defaultStreamHandler = ({
   response,

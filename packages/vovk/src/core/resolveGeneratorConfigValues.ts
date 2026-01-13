@@ -1,7 +1,13 @@
-import type { PackageJson } from 'type-fest';
-import type { OpenAPIObject } from 'openapi3-ts/oas31';
-import type { VovkConfig, VovkOutputConfig, VovkPackageJson, VovkReadmeConfig, VovkSamplesConfig } from '../types.js';
 import { deepExtend } from '../utils/deepExtend.js';
+import type { OpenAPIObject } from 'openapi3-ts/oas31';
+import type {
+  VovkConfig,
+  VovkOutputConfig,
+  VovkPackageJson,
+  VovkReadmeConfig,
+  VovkSamplesConfig,
+} from '../types/config.js';
+import type { PackageJson } from '../types/package.js';
 
 export function resolveGeneratorConfigValues({
   config,

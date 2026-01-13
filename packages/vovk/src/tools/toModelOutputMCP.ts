@@ -1,5 +1,5 @@
-import type { VovkRequest } from '../types.js';
-import type { VovkTool } from './types.js';
+import type { VovkRequest } from '../types/request.js';
+import type { VovkTool } from '../types/tools.js';
 import { reqMeta } from '../req/reqMeta.js';
 
 export type MCPModelOutput = {

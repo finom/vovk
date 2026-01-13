@@ -1,7 +1,10 @@
-import type { HttpMethod, StaticClass, VovkController, VovkRequest } from '../types.js';
 import { vovkApp } from './vovkApp.js';
 import { trimPath } from '../utils/trimPath.js';
 import { getSchema } from './getSchema.js';
+import { HttpMethod } from '../types/enums.js';
+import type { VovkController } from '../types/core.js';
+import type { VovkRequest } from '../types/request.js';
+import type { StaticClass } from '../types/utils.js';
 
 export const initSegment = (options: {
   segmentName?: string;

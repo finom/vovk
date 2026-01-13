@@ -1,7 +1,7 @@
 import { createDecorator } from '../core/createDecorator.js';
 import { error } from './error.js';
 import { tool } from './tool.js';
-import type { VovkOperationObject } from '../types.js';
+import type { VovkOperationObject } from '../types/operation.js';
 
 export const operationDecorator = createDecorator(null, (openAPIOperationObject: VovkOperationObject = {}) => {
   return (handlerSchema) => {

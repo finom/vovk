@@ -5,15 +5,12 @@ import type {
   RequestBodyObject,
   SchemaObject,
 } from 'openapi3-ts/oas31';
-import {
-  HttpMethod,
-  VovkOpenAPIMixinNormalized,
-  VovkJSONSchemaBase,
-  type VovkSchema,
-  VovkSchemaIdEnum,
-} from '../../types.js';
 import { applyComponentsSchemas } from './applyComponentsSchemas.js';
 import { inlineRefs } from './inlineRefs.js';
+import { HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
+import type { VovkSchema } from '../../types/core.js';
+import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
+import type { VovkOpenAPIMixinNormalized } from '../../types/config.js';
 
 export function openAPIToVovkSchema({
   apiRoot,

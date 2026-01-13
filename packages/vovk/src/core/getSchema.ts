@@ -1,4 +1,6 @@
-import { type VovkSegmentSchema, type VovkController, type StaticClass, VovkSchemaIdEnum } from '../types.js';
+import { VovkSchemaIdEnum } from '../types/enums.js';
+import type { VovkSegmentSchema, VovkController } from '../types/core.js';
+import type { StaticClass } from '../types/utils.js';
 
 export async function getControllerSchema(
   controller: VovkController,

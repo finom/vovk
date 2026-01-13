@@ -1,7 +1,7 @@
-import type { VovkFetcherOptions, VovkFetcher } from './types.js';
-import { HttpStatus, type VovkHandlerSchema } from '../types.js';
+import { HttpStatus } from '../types/enums.js';
 import { HttpException } from '../core/HttpException.js';
-
+import type { VovkFetcherOptions, VovkFetcher } from '../types/client.js';
+import type { VovkHandlerSchema } from '../types/core.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
 export type { VovkFetcher };

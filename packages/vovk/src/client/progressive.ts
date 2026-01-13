@@ -1,7 +1,6 @@
-import type { VovkStreamAsyncIterable } from './types.js';
-import type { VovkYieldType } from '../types.js';
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+import type { VovkStreamAsyncIterable } from '../types/client.js';
+import type { VovkYieldType } from '../types/inference.js';
+import type { KnownAny } from '../types/utils.js';
 
 type UnionToIntersection<U> = (U extends KnownAny ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 

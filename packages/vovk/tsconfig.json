@@ -6,5 +6,5 @@
     "declaration": true,
     "resolveJsonModule": false
   },
-  "include": ["src/**/*.ts", "./src/next-compat.d.ts"],
+  "include": ["src/**/*.ts", "./src/next-compat.d.ts"]
 }

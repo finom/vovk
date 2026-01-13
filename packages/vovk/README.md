@@ -23,7 +23,7 @@
 The Vovk.ts runtime library with [100% self-composition](https://bundlephobia.com/result?p=vovk). It provides a wrapper for Next.js API routes, client-side tooling, utilities and types.
 
 ```sh
-npm install vovk
+npm install vovk openapi3-ts @standard-schema/spec
 ```
 
 ## Links

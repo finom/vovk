@@ -1,5 +1,5 @@
-import type { CombinedSpec } from './types.js';
 import { createStandardValidation } from './createStandardValidation.js';
+import type { CombinedSpec } from '../types/validation.js';
 
 /**
  * Procedure function for defining validation schemas for API procedures.

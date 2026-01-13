@@ -1,7 +1,8 @@
-import type { VovkHandlerSchema, VovkController, VovkRequest } from '../types.js';
+import type { VovkHandlerSchema, VovkController } from '../types/core.js';
+import type { VovkRequest } from '../types/request.js';
+import type { KnownAny } from '../types/utils.js';
 
 type Next = () => Promise<unknown>;
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 /**
  * Creates a custom decorator for Vovk controllers.

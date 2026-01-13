@@ -1,16 +1,12 @@
-import type { CombinedSpec } from './types.js';
-import {
-  HttpStatus,
-  type VovkRequest,
-  type VovkTypedMethod,
-  type VovkValidationType,
-  type VovkOperationObject,
-} from '../types.js';
 import { withValidationLibrary } from './withValidationLibrary.js';
 import { HttpException } from '../core/HttpException.js';
 import { createToolFactory } from '../tools/createToolFactory.js';
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+import { HttpStatus } from './createValidateOnClient.js';
+import type { VovkRequest } from '../types/request.js';
+import type { CombinedSpec, VovkTypedProcedure } from '../types/validation.js';
+import type { VovkValidationType } from '../types/core.js';
+import type { VovkOperationObject } from '../types/operation.js';
+import type { KnownAny } from '../types/utils.js';
 
 export function createStandardValidation({
   toJSONSchema,
@@ -75,7 +71,7 @@ export function createStandardValidation({
       disableServerSideValidation,
       skipSchemaEmission,
       validateEachIteration,
-      handle: handle as VovkTypedMethod<
+      handle: handle as VovkTypedProcedure<
         T,
         TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny,
         TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny,

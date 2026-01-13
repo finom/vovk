@@ -1,7 +1,7 @@
-import type { VovkJSONSchemaBase, VovkRequest } from '../types.js';
-import { CombinedSpec } from '../validation/types.js';
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+import type { VovkJSONSchemaBase } from './json-schema.js';
+import type { VovkRequest } from './request.js';
+import type { CombinedSpec } from './validation.js';
+import type { KnownAny } from './utils.js';
 
 export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
   result: TOutput | Error,

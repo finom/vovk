@@ -1,20 +1,16 @@
-import type {
-  ControllerStaticMethod,
-  VovkControllerParams,
-  VovkControllerQuery,
-  HttpMethod,
-  VovkSchema,
-  VovkHandlerSchema,
-  VovkRequest,
-} from '../types.js';
-import type { ClientMethod, VovkRPCModule, VovkFetcher, VovkFetcherOptions, VovkValidateOnClient } from './types.js';
-import type { CombinedSpec } from '../validation/types.js';
-
 import { fetcher as defaultFetcher } from './fetcher.js';
 import { defaultHandler } from './defaultHandler.js';
 import { defaultStreamHandler } from './defaultStreamHandler.js';
 import { serializeQuery } from './serializeQuery.js';
 import { deepExtend } from '../utils/deepExtend.js';
+import type { VovkHandlerSchema } from '../internal.js';
+import type { VovkRequest } from '../types/request.js';
+import type { ControllerStaticMethod, VovkSchema } from '../types/core.js';
+import type { VovkControllerParams, VovkControllerQuery } from '../types/inference.js';
+import type { HttpMethod } from '../types/enums.js';
+import type { ClientMethod, VovkRPCModule, VovkFetcher, VovkFetcherOptions } from '../types/client.js';
+import type { CombinedSpec, VovkValidateOnClient } from '../types/validation.js';
+import type { KnownAny } from '../types/utils.js';
 
 export type { VovkHandlerSchema, VovkRequest, CombinedSpec };
 
@@ -32,8 +28,6 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   }
   return `${result}${queryStr ? `?${queryStr}` : ''}`;
 };
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 /**
  * Creates a client-side RPC module for interacting with server-side controllers.

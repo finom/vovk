@@ -1,4 +1,4 @@
-import { OpenAPIObject } from 'openapi3-ts/oas31';
+import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
 /**
  * Resolves $ref references at the first level only (except for components/schemas references)

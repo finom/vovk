@@ -1,7 +1,7 @@
-import { ComponentsObject } from 'openapi3-ts/oas31';
+import type { ComponentsObject } from 'openapi3-ts/oas31';
 import { camelCase } from '../../utils/camelCase.js';
 import { upperFirst } from '../../utils/upperFirst.js';
-import { VovkJSONSchemaBase } from '../../types.js';
+import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 
 // fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: unknown): unknown {

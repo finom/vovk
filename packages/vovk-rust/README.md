@@ -29,6 +29,7 @@ npm i vovk-rust -D
 ```
 
 Generate:
+
 ```sh
 npx vovk generate --from rs --out ./rust_package
 ```

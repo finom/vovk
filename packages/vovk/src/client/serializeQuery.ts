@@ -1,4 +1,5 @@
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+import type { KnownAny } from '../types/utils.js';
+
 /**
  * Recursively build query parameters from an object.
  *

@@ -1,0 +1,43 @@
+import { KnownAny } from './utils.js';
+
+/**
+ * Base JSON Schema type used in Vovk.ts for validation and code generation.
+ * @see https://vovk.dev/schema
+ */
+export type VovkJSONSchemaBase = {
+  $schema?: 'https://json-schema.org/draft/2020-12/schema' | 'http://json-schema.org/draft-07/schema#';
+  type?: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'integer';
+  format?: string;
+  pattern?: string;
+  $ref?: string;
+  items?: VovkJSONSchemaBase;
+  enum?: KnownAny[];
+  minimum?: number;
+  maximum?: number;
+  exclusiveMinimum?: number;
+  exclusiveMaximum?: number;
+  minItems?: number;
+  maxItems?: number;
+  title?: string;
+  description?: string;
+  properties?: { [key: string]: VovkJSONSchemaBase };
+  required?: string[];
+  examples?: KnownAny[];
+  // support both $defs and definitions
+  $defs?: { [key: string]: VovkJSONSchemaBase };
+  definitions?: { [key: string]: VovkJSONSchemaBase };
+  additionalProperties?: boolean;
+  anyOf?: VovkJSONSchemaBase[];
+  oneOf?: VovkJSONSchemaBase[];
+  allOf?: VovkJSONSchemaBase[];
+  // older schema
+  const?: KnownAny;
+  example?: KnownAny;
+  // binary
+  contentEncoding?: string;
+  contentMediaType?: string;
+  minLength?: number;
+  maxLength?: number;
+  // 'x-foo' extensions
+  [key: `x-${string}`]: KnownAny;
+};

@@ -1,3 +1,5 @@
+import type { KnownAny } from '../types/utils.js';
+
 /**
  * Parse a bracket-based key (e.g. "z[d][0][x]" or "arr[]")
  * into an array of path segments (strings or special push-markers).
@@ -34,7 +36,6 @@ function parseKey(key: string): string[] {
  * - Else => object property
  */
 function setValue(obj: Record<string, unknown>, path: string[], value: unknown): void {
-  type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
   let current: KnownAny = obj;
 
   for (let i = 0; i < path.length; i++) {

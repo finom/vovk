@@ -40,7 +40,7 @@ See: https://vovk.dev/quick-install
 - **Schema emission as a build artifact** (`.vovk-schema/`) to power codegen/docs/tools
 - **Typed request handling** via `procedure(...)` with `{ params, query, body }`
 - **Mix in third-party OpenAPI schemas** as modules that share the same client/tooling pipeline (OpenAPI mixins)
-- **Derive AI tools from your API surface** (controllers *and* emitted RPC modules can be exposed as AI tools with parameters + `execute`)
+- **Derive AI tools from your API surface** (controllers _and_ emitted RPC modules can be exposed as AI tools with parameters + `execute`)
 
 ## What it looks like
 

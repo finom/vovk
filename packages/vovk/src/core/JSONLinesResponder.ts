@@ -1,4 +1,4 @@
-import type { StreamAbortMessage } from '../types.js';
+import type { StreamAbortMessage } from '../types/core.js';
 import '../utils/shim.js';
 
 export abstract class Responder {

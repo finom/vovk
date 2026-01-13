@@ -1,6 +1,8 @@
-import type { VovkValidateOnClient } from '../client/types.js';
 import { HttpException } from '../core/HttpException.js';
-import { HttpStatus, type VovkJSONSchemaBase, type VovkSchema } from '../types.js';
+import { HttpStatus } from '../types/enums.js';
+import type { VovkValidateOnClient } from '../types/validation.js';
+import type { VovkJSONSchemaBase } from '../types/json-schema.js';
+import type { VovkSchema } from '../types/core.js';
 
 // types and enums required for client validation libs
 export {

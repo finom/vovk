@@ -1,4 +1,4 @@
-import { HttpStatus } from '../types.js';
+import { HttpStatus } from '../types/enums.js';
 import { createDecorator } from '../core/createDecorator.js';
 
 const statusDisplayText = {

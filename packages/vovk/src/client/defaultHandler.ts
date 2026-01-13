@@ -1,9 +1,8 @@
-import { VovkHandlerSchema } from '../types.js';
 import { HttpException } from '../core/HttpException.js';
+import type { KnownAny } from '../types/utils.js';
+import type { VovkHandlerSchema } from '../types/core.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultHandler';
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Helper function to get a value from an object using dot notation path
 const getNestedValue = (obj: Record<string, KnownAny>, path: string): unknown => {

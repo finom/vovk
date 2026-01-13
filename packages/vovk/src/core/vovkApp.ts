@@ -1,17 +1,11 @@
-import {
-  HttpMethod,
-  HttpStatus,
-  type RouteHandler,
-  type VovkErrorResponse,
-  type VovkController,
-  type DecoratorOptions,
-  type VovkRequest,
-} from '../types.js';
 import { HttpException } from './HttpException.js';
 import { JSONLinesResponder, Responder } from './JSONLinesResponder.js';
 import { reqQuery } from '../req/reqQuery.js';
 import { reqMeta } from '../req/reqMeta.js';
 import { reqForm } from '../req/reqForm.js';
+import { HttpMethod, HttpStatus } from '../types/enums.js';
+import type { RouteHandler, VovkErrorResponse, VovkController, DecoratorOptions } from '../types/core.js';
+import type { VovkRequest } from '../types/request.js';
 
 class VovkApp {
   private static getHeadersFromDecoratorOptions(options?: DecoratorOptions) {

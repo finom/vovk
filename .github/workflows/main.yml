@@ -11,7 +11,7 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 120  # Add this line - adjust value as needed
+    timeout-minutes: 120 # Add this line - adjust value as needed
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]

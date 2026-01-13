@@ -1,20 +1,18 @@
-import type {
-  HttpMethod,
-  ControllerStaticMethod,
-  VovkHandlerSchema,
-  VovkControllerSchema,
-  VovkSegmentSchema,
-  VovkSchema,
-  VovkRequest,
-  Prettify,
-  IsEmptyObject,
-} from '../types.js';
 import type { NextResponse } from 'next/server.js';
 import type { JSONLinesResponder } from '../core/JSONLinesResponder.js';
-import type { defaultStreamHandler } from './defaultStreamHandler.js';
-import type { defaultHandler } from './defaultHandler.js';
-
-type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+import type { defaultStreamHandler } from '../client/defaultStreamHandler.js';
+import type { defaultHandler } from '../client/defaultHandler.js';
+import type { VovkRequest } from './request.js';
+import type {
+  ControllerStaticMethod,
+  VovkControllerSchema,
+  VovkHandlerSchema,
+  VovkSchema,
+  VovkSegmentSchema,
+} from './core.js';
+import type { IsEmptyObject, KnownAny, Prettify } from './utils.js';
+import type { HttpMethod } from './enums.js';
+import type { VovkValidateOnClient } from './validation.js';
 
 type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
@@ -220,13 +218,3 @@ export type VovkFetcherOptions<T> = T & {
   interpretAs?: string;
   init?: RequestInit;
 };
-
-/**
- * Client-side validation function type.
- * @see https://vovk.dev/imports
- */
-export type VovkValidateOnClient<TFetcherOptions> = (
-  input: { body?: unknown; query?: unknown; params?: unknown; meta?: unknown } & TFetcherOptions,
-  validation: Omit<Exclude<VovkHandlerSchema['validation'], undefined>, 'output' | 'iteration'>,
-  meta: { fullSchema: VovkSchema; endpoint: string }
-) => KnownAny | Promise<KnownAny>;
