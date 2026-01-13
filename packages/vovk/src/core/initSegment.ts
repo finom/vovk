@@ -1,4 +1,3 @@
-import type { NextRequest } from 'next/dist/server/web/spec-extension/request.js';
 import type { HttpMethod, StaticClass, VovkController, VovkRequest } from '../types.js';
 import { vovkApp } from './vovkApp.js';
 import { trimPath } from '../utils/trimPath.js';
@@ -23,7 +22,7 @@ export const initSegment = (options: {
     controller._onBefore = options?.onBefore;
   }
 
-  async function GET_DEV(req: NextRequest, data: { params: Promise<Record<string, string[]>> }) {
+  async function GET_DEV(req: Request, data: { params: Promise<Record<string, string[]>> }) {
     const params = await data.params;
     if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
       const schema = await getSchema(options);
@@ -46,6 +45,6 @@ export const initSegment = (options: {
     OPTIONS: (req, data) => vovkApp.OPTIONS(req, data, segmentName),
   } satisfies Record<
     HttpMethod,
-    (req: NextRequest, data: { params: Promise<Record<string, string[]>> }) => Promise<unknown>
+    (req: Request, data: { params: Promise<Record<string, string[]>> }) => Promise<unknown>
   >;
 };

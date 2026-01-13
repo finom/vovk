@@ -1,4 +1,3 @@
-import type { NextRequest } from 'next/dist/server/web/spec-extension/request.js';
 import type { PackageJson } from 'type-fest';
 import type { OpenAPIObject, OperationObject } from 'openapi3-ts/oas31';
 import type { JSONLinesResponder, Responder } from './core/JSONLinesResponder.js';
@@ -125,26 +124,15 @@ export type RouteHandler = ((
  * - TParams: the expected shape of the route parameters (default: unknown)
  * @see https://vovk.dev/procedure
  */
-export interface VovkRequest<TBody = unknown, TQuery = unknown, TParams = unknown> extends Omit<
-  NextRequest,
-  'json' | 'nextUrl'
-> {
+export interface VovkRequest<TBody = unknown, TQuery = unknown, TParams = unknown> extends Request {
   json: () => Promise<TBody>;
-  nextUrl: Omit<NextRequest['nextUrl'], 'searchParams'> & {
-    searchParams: Omit<
-      NextRequest['nextUrl']['searchParams'],
-      'get' | 'getAll' | 'entries' | 'forEach' | 'keys' | 'values'
-    > & {
+  nextUrl: {
+    search: string;
+    searchParams: {
       get: <KEY extends keyof TQuery>(key: KEY) => TQuery[KEY] extends readonly (infer ITEM)[] ? ITEM : TQuery[KEY];
       getAll: <KEY extends keyof TQuery>(key: KEY) => TQuery[KEY] extends unknown[] ? TQuery[KEY] : TQuery[KEY][];
       entries: () => IterableIterator<[keyof TQuery, TQuery[keyof TQuery]]>;
-      forEach: (
-        callbackfn: (
-          value: TQuery[keyof TQuery],
-          key: keyof TQuery,
-          searchParams: NextRequest['nextUrl']['searchParams'] // original searchParams
-        ) => void
-      ) => void;
+      forEach: (callbackfn: (value: TQuery[keyof TQuery], key: keyof TQuery) => void) => void;
       keys: () => IterableIterator<keyof TQuery>;
       values: () => IterableIterator<TQuery[keyof TQuery]>;
     };

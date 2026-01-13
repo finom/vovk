@@ -1,4 +1,3 @@
-import type { NextResponse } from 'next/dist/server/web/spec-extension/response.js';
 import type {
   HttpMethod,
   ControllerStaticMethod,
@@ -10,6 +9,7 @@ import type {
   Prettify,
   IsEmptyObject,
 } from '../types.js';
+import type { NextResponse } from 'next/server.js';
 import type { JSONLinesResponder } from '../core/JSONLinesResponder.js';
 import type { defaultStreamHandler } from './defaultStreamHandler.js';
 import type { defaultHandler } from './defaultHandler.js';
@@ -63,12 +63,17 @@ export type VovkStreamAsyncIterable<T> = {
   abortController: AbortController;
 };
 
-type StaticMethodReturn<T extends ControllerStaticMethod> =
-  ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
+type IsNextJs = NextResponse extends Response ? true : false;
+
+type StaticMethodReturn<T extends ControllerStaticMethod> = IsNextJs extends true
+  ? ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
     ? U
     : ReturnType<T> extends Response | Promise<Response>
       ? Awaited<ReturnType<T>>
-      : ReturnType<T>;
+      : ReturnType<T>
+  : ReturnType<T> extends Response | Promise<Response>
+    ? Awaited<ReturnType<T>>
+    : ReturnType<T>;
 
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 

@@ -56,7 +56,9 @@ await describe('Client templates', async () => {
       files: ['index.js', 'index.d.ts', 'schema.js', 'schema.d.ts', 'openapi.json', 'openapi.d.ts', 'openapi.js'],
     });
 
-    assertFile(`${compiledClientFolderName}/schema.js`, [`require('./../custom-schema-dir/root.json')`]);
+    assertFile(`${compiledClientFolderName}/schema.js`, [
+      `import schema0 from './../custom-schema-dir/root.json' with { type: 'json' };`,
+    ]);
   });
 
   await it('Should use default templates', async () => {

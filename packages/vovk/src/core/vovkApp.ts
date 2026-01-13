@@ -1,4 +1,3 @@
-import type { NextRequest } from 'next/dist/server/web/spec-extension/request.js';
 import {
   HttpMethod,
   HttpStatus,
@@ -42,24 +41,24 @@ class VovkApp {
     OPTIONS: new Map(),
   };
 
-  GET = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  GET = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.GET, req, params: await data.params, segmentName });
 
-  POST = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  POST = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.POST, req, params: await data.params, segmentName });
-  PUT = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  PUT = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.PUT, req, params: await data.params, segmentName });
 
-  PATCH = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  PATCH = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.PATCH, req, params: await data.params, segmentName });
 
-  DELETE = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  DELETE = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.DELETE, req, params: await data.params, segmentName });
 
-  HEAD = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  HEAD = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params, segmentName });
 
-  OPTIONS = async (req: NextRequest, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  OPTIONS = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params, segmentName });
 
   respond = async ({
@@ -299,7 +298,7 @@ class VovkApp {
     segmentName,
   }: {
     httpMethod: HttpMethod;
-    req: NextRequest;
+    req: Request;
     params: Record<string, string[]>;
     segmentName: string;
   }) => {

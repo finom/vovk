@@ -1,6 +1,6 @@
 {
   "name": "vovk-ajv",
-  "version": "0.0.0-beta.17",
+  "version": "0.0.0-beta.18",
   "description": "Client-side JSON Schema validation library for Vovk.ts",
   "files": [
     "index.js",
@@ -37,7 +37,7 @@
   },
   "homepage": "https://vovk.dev/imports",
   "peerDependencies": {
-    "vovk": "^3.0.0-beta.118"
+    "vovk": "^3.0.0-beta.123"
   },
   "dependencies": {
     "ajv": "^8.17.1",

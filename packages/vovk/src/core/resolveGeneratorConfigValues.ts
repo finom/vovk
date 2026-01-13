@@ -40,9 +40,18 @@ export function resolveGeneratorConfigValues({
     },
     Object.fromEntries(
       Object.entries(projectPackageJson ?? {}).filter(([key]) =>
-        ['name', 'version', 'description', 'license', 'authors', 'repository', 'homepage', 'bugs', 'keywords'].includes(
-          key
-        )
+        [
+          'name',
+          'version',
+          'description',
+          'license',
+          'author',
+          'contributors',
+          'repository',
+          'homepage',
+          'bugs',
+          'keywords',
+        ].includes(key)
       )
     ) as PackageJson,
     config?.outputConfig?.package,

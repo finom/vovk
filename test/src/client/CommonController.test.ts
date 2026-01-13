@@ -8,6 +8,7 @@ import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import type CommonController from './CommonController.ts';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import omit from 'lodash/omit.js';
+import noop from 'lodash/noop.js';
 
 const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
 
@@ -16,6 +17,8 @@ describe('Client with vovk-client', () => {
     const result = await CommonControllerRPC.getHelloWorldObjectLiteral({
       apiRoot,
     });
+    // @ts-expect-error Expect error
+    noop(null as typeof result);
     deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
@@ -35,6 +38,8 @@ describe('Client with vovk-client', () => {
 
   it(`Should handle requests that return NextResponse.json`, async () => {
     const result = await CommonControllerRPC.getHelloWorldResponseObject();
+    // @ts-expect-error Expect error
+    noop(null as typeof result);
     deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
