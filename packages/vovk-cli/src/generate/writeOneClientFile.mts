@@ -265,7 +265,7 @@ export async function writeOneClientFile({
       existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
 
   if (needsWriting) {
-    log.debug(`Writing client file: ${path.relative(cwd, outPath)}`);
+    log.debug(`Writing file: ${outPath} ${existingContent ? '(updated)' : '(new)'}`);
     await fs.mkdir(path.dirname(outPath), { recursive: true });
     await fs.writeFile(outPath, rendered, 'utf-8');
   }
