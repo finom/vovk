@@ -1,7 +1,6 @@
 import { Ajv, type Options } from 'ajv';
 import _Ajv2020 from 'ajv/dist/2020.js';
 import _ajvFormats from 'ajv-formats';
-import _ajvLocalize from 'ajv-i18n';
 import _ajvErrors from 'ajv-errors';
 import {
   createValidateOnClient,
@@ -13,16 +12,12 @@ import {
 } from 'vovk/createValidateOnClient';
 
 // Handle ESM/CJS interop - these packages export CJS and may have .default wrapper
-const ajvLocalize = _ajvLocalize.default ?? _ajvLocalize;
 const Ajv2020 = _Ajv2020.default ?? _Ajv2020;
 const ajvFormats = _ajvFormats.default ?? _ajvFormats;
 const ajvErrors = _ajvErrors.default ?? _ajvErrors;
 
-type Language = keyof typeof ajvLocalize;
-
 export type VovkAjvConfig = {
   options?: Options;
-  localize?: Language;
   target?: 'draft-2020-12' | 'draft-07';
 };
 
@@ -39,7 +34,6 @@ const createAjv = (options: NonNullable<Options>, target: NonNullable<VovkAjvCon
 const validate = ({
   input,
   schema,
-  localize = 'en',
   type,
   endpoint,
   options,
@@ -47,7 +41,6 @@ const validate = ({
 }: {
   input: unknown;
   schema: VovkJSONSchemaBase;
-  localize: Language;
   type: 'body' | 'query' | 'params';
   endpoint: string;
   options: VovkAjvConfig['options'] | undefined;
@@ -92,7 +85,6 @@ const validate = ({
     }
     const isValid = ajv.validate(schema, input);
     if (!isValid) {
-      ajvLocalize[localize](ajv.errors);
       throw new HttpException(
         HttpStatus.NULL,
         `Client-side validation failed. Invalid ${isFormData ? 'form' : type} on client: ${ajv.errorsText()}`,
@@ -106,21 +98,19 @@ const getConfig = (schema: VovkSchema) => {
   const config = schema.meta?.config?.libs?.ajv as VovkAjvConfig | undefined;
 
   const options = config?.options ?? {};
-  const localize = config?.localize ?? 'en';
   const target = config?.target;
 
-  return { options, localize, target };
+  return { options, target };
 };
 
 const validateOnClientAjv = createValidateOnClient({
   validate: (input, schema, { endpoint, type, fullSchema }) => {
-    const { options, localize, target } = getConfig(fullSchema);
+    const { options, target } = getConfig(fullSchema);
 
     validate({
       input,
       schema,
       target,
-      localize,
       endpoint,
       options,
       type,
@@ -128,20 +118,14 @@ const validateOnClientAjv = createValidateOnClient({
   },
 });
 
-const configure = ({
-  options: givenOptions,
-  localize: givenLocalize,
-  target: givenTarget,
-}: VovkAjvConfig): VovkValidateOnClient<unknown> =>
+const configure = ({ options: givenOptions, target: givenTarget }: VovkAjvConfig): VovkValidateOnClient<unknown> =>
   createValidateOnClient({
     validate: (input, schema, { endpoint, type, fullSchema }) => {
-      const { options, localize, target } = getConfig(fullSchema);
-
+      const { options, target } = getConfig(fullSchema);
       validate({
         input,
         schema,
         target: givenTarget ?? target,
-        localize: givenLocalize ?? localize,
         endpoint,
         options: givenOptions ?? options,
         type,

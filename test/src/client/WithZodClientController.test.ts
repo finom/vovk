@@ -7,7 +7,7 @@ import type WithZodClientController from './WithZodClientController.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 describe('Client validation with custom AJV options', () => {
-  it('Should handle body validation on client: with localize and options', async () => {
+  it('Should handle body validation on client: with options', async () => {
     const result = await WithZodClientControllerRPC.handleBody({
       body: { hello: 'world' },
     });
@@ -20,7 +20,6 @@ describe('Client validation with custom AJV options', () => {
           hello: 'wrong_length',
         },
         validateOnClient: validateOnClientAjv.configure({
-          localize: 'de',
           options: {
             verbose: true,
           },
@@ -29,7 +28,7 @@ describe('Client validation with custom AJV options', () => {
     });
 
     await rejects.toThrow(
-      /Client-side validation failed. Invalid body on client: data\/hello darf nicht länger als 5 Zeichen sein/
+      /Client-side validation failed. Invalid body on client: data\/hello should NOT be longer than 5 characters, data\/hello should be shorter than or equal to 5 characters/
     );
     await rejects.toThrowError(HttpException);
   });
