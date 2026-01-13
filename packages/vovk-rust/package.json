@@ -1,6 +1,6 @@
 {
   "name": "vovk-rust",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "Codegen templates for Rust client library for Vovk.ts",
   "files": [
     "client-templates",

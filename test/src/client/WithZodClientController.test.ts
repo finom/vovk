@@ -28,7 +28,7 @@ describe('Client validation with custom AJV options', () => {
     });
 
     await rejects.toThrow(
-      /Client-side validation failed. Invalid body on client: data\/hello should NOT be longer than 5 characters, data\/hello should be shorter than or equal to 5 characters/
+      /Client-side validation failed. Invalid body on client: data\/hello must NOT have more than 5 characters/
     );
     await rejects.toThrowError(HttpException);
   });
