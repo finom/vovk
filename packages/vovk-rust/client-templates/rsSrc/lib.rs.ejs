@@ -1,15 +1,14 @@
 ---
 imports: ['vovk-rust']
 ---
+<%- t.getFirstLineBanner() %>
 <% const vars = {
     convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
 }; %>
-<%- t.getFirstLineBanner() %>
 mod http_request;
 mod read_full_schema;
 
 pub use crate::http_request::HttpException;
-
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach((controllerSchema) => { %>
 pub mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %> {

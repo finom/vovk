@@ -88,7 +88,7 @@ export async function writeOneClientFile({
   cliSchemaPath: string | null;
   projectConfig: VovkStrictConfig;
 }) {
-  const { config } = projectInfo;
+  const { config, log } = projectInfo;
 
   const { templateFilePath, relativeDir } = clientTemplateFile;
   const locatedSegmentsByName = _.keyBy(locatedSegments, 'segmentName');
@@ -265,6 +265,7 @@ export async function writeOneClientFile({
       existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
 
   if (needsWriting) {
+    log.debug(`Writing client file: ${path.relative(cwd, outPath)}`);
     await fs.mkdir(path.dirname(outPath), { recursive: true });
     await fs.writeFile(outPath, rendered, 'utf-8');
   }

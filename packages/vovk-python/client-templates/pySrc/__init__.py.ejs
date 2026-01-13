@@ -1,13 +1,13 @@
 ---
 imports: ['vovk-python']
 ---
+<%- t.getFirstLineBanner('sh') %>
 <% const vars = {
     convertJSONSchemaToPythonDataType: t.imports['vovk-python'].convertJSONSchemaToPythonDataType,
     convertJSONSchemaToPythonFilesType: t.imports['vovk-python'].convertJSONSchemaToPythonFilesType,
     hasFiles: t.imports['vovk-python'].hasFiles,
     hasNormalData: t.imports['vovk-python'].hasNormalData
 }; %>
-<%- t.getFirstLineBanner('sh') %>
 from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
 from .api_client import ApiClient, HttpException
