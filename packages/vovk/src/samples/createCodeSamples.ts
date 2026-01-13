@@ -1,4 +1,4 @@
-import { JSONSchemaToCode, getSampleValue } from './JSONSchemaToCode.js';
+import { schemaToCode, getSampleValue } from './schemaToCode.js';
 import { objectToCode } from './objectToCode.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
@@ -71,7 +71,7 @@ function generateTypeScriptCode({
   config,
 }: CodeGenerationParams): string {
   const getTsSample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    JSONSchemaToCode(schema, { stripQuotes: true, indent: indent ?? 4 });
+    schemaToCode(schema, { stripQuotes: true, indent: indent ?? 4 });
 
   const getTsFormSample = (schema: VovkJSONSchemaBase) => {
     let formSample = '\nconst formData = new FormData();';
@@ -162,7 +162,7 @@ function generatePythonCode({
   config,
 }: CodeGenerationParams): string {
   const getPySample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    JSONSchemaToCode(schema, {
+    schemaToCode(schema, {
       stripQuotes: false,
       indent: indent ?? 4,
       comment: '#',
@@ -243,9 +243,9 @@ function generateRustCode({
   config,
 }: CodeGenerationParams): string {
   const getRsJSONSample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    JSONSchemaToCode(schema, { stripQuotes: false, indent: indent ?? 4 });
+    schemaToCode(schema, { stripQuotes: false, indent: indent ?? 4 });
   const getRsOutputSample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    JSONSchemaToCode(schema, { stripQuotes: true, indent: indent ?? 4 });
+    schemaToCode(schema, { stripQuotes: true, indent: indent ?? 4 });
 
   const getRsFormSample = (schema: VovkJSONSchemaBase) => {
     let formSample = 'let form = reqwest::multipart::Form::new()';

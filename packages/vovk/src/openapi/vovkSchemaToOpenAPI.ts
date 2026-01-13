@@ -1,6 +1,6 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
 import { createCodeSamples } from '../samples/createCodeSamples.js';
-import { JSONSchemaToObject } from '../samples/JSONSchemaToObject.js';
+import { schemaToObject } from '../samples/schemaToObject.js';
 import { resolveGeneratorConfigValues } from '../core/resolveGeneratorConfigValues.js';
 import type {
   VovkOutputConfig,
@@ -222,9 +222,9 @@ export function vovkSchemaToOpenAPI({
                             ...iterationValidation,
                             examples: iterationValidation.examples ?? [
                               [
-                                JSON.stringify(JSONSchemaToObject(iterationValidation)),
-                                JSON.stringify(JSONSchemaToObject(iterationValidation)),
-                                JSON.stringify(JSONSchemaToObject(iterationValidation)),
+                                JSON.stringify(schemaToObject(iterationValidation)),
+                                JSON.stringify(schemaToObject(iterationValidation)),
+                                JSON.stringify(schemaToObject(iterationValidation)),
                               ].join('\n'),
                             ],
                           },

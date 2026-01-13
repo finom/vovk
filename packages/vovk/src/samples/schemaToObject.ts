@@ -1,6 +1,6 @@
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
 
-export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: VovkJSONSchemaBase): unknown {
+export function schemaToObject(schema: VovkJSONSchemaBase, rootSchema?: VovkJSONSchemaBase): unknown {
   if (!schema || typeof schema !== 'object') return null;
   // Use the input schema as the root if not provided
   rootSchema = rootSchema || schema;
@@ -32,11 +32,11 @@ export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: Vovk
 
   // Handle oneOf, anyOf, allOf
   if (schema.oneOf && schema.oneOf.length > 0) {
-    return JSONSchemaToObject(schema.oneOf[0], rootSchema);
+    return schemaToObject(schema.oneOf[0], rootSchema);
   }
 
   if (schema.anyOf && schema.anyOf.length > 0) {
-    return JSONSchemaToObject(schema.anyOf[0], rootSchema);
+    return schemaToObject(schema.anyOf[0], rootSchema);
   }
 
   if (schema.allOf && schema.allOf.length > 0) {
@@ -45,7 +45,7 @@ export function JSONSchemaToObject(schema: VovkJSONSchemaBase, rootSchema?: Vovk
       (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => ({ ...acc, ...s }),
       {}
     );
-    return JSONSchemaToObject(mergedSchema, rootSchema);
+    return schemaToObject(mergedSchema, rootSchema);
   }
 
   // Handle different types
@@ -92,7 +92,7 @@ function handleRef(ref: string, rootSchema: VovkJSONSchemaBase): unknown {
   }
 
   // Process the referenced schema
-  return JSONSchemaToObject(current, rootSchema);
+  return schemaToObject(current, rootSchema);
 }
 
 function handleString(schema: VovkJSONSchemaBase): string {
@@ -166,14 +166,14 @@ function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase
     for (const [key, propSchema] of Object.entries<VovkJSONSchemaBase>(schema.properties)) {
       // Only include required properties or as a basic example
       if (required.includes(key) || required.length === 0) {
-        result[key] = JSONSchemaToObject(propSchema, rootSchema);
+        result[key] = schemaToObject(propSchema, rootSchema);
       }
     }
   }
 
   // Handle additionalProperties
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-    result['additionalProp'] = JSONSchemaToObject(schema.additionalProperties, rootSchema);
+    result['additionalProp'] = schemaToObject(schema.additionalProperties, rootSchema);
   }
 
   return result;
@@ -187,7 +187,7 @@ function handleArray(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase)
     // Create minimum number of items (capped at a reasonable max for examples)
     const numItems = Math.min(minItems, 3);
 
-    return Array.from({ length: numItems }, () => JSONSchemaToObject(itemSchema, rootSchema));
+    return Array.from({ length: numItems }, () => schemaToObject(itemSchema, rootSchema));
   }
 
   return [];

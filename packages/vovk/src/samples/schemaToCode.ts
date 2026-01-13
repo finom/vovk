@@ -8,7 +8,7 @@ interface SamplerOptions {
   ignoreBinary?: boolean;
 }
 
-export function JSONSchemaToCode(
+export function schemaToCode(
   schema: VovkJSONSchemaBase,
   options: SamplerOptions,
   rootSchema?: VovkJSONSchemaBase
