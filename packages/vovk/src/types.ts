@@ -117,6 +117,15 @@ export type RouteHandler = ((
 };
 
 /**
+ * Represents a cookie object
+ */
+export type VovkRequestCookie = {
+  name: string;
+  value: string;
+  [key: string]: string;
+};
+
+/**
  * The Vovk.ts request object, extending Next.js's NextRequest
  * Accepts three generic parameters:
  * - TBody: the expected shape of the request body (default: unknown)
@@ -126,7 +135,18 @@ export type RouteHandler = ((
  */
 export interface VovkRequest<TBody = unknown, TQuery = unknown, TParams = unknown> extends Request {
   json: () => Promise<TBody>;
+  cookies: {
+    set: (name: string, value: string) => void;
+    get: (name: string) => VovkRequestCookie | undefined;
+    getAll: (name?: string) => VovkRequestCookie[];
+    delete: (name: string) => boolean;
+    has: (name: string) => boolean;
+    clear: () => void;
+  };
   nextUrl: {
+    basePath: string;
+    buildId: string | undefined;
+    pathname: string;
     search: string;
     searchParams: {
       get: <KEY extends keyof TQuery>(key: KEY) => TQuery[KEY] extends readonly (infer ITEM)[] ? ITEM : TQuery[KEY];
