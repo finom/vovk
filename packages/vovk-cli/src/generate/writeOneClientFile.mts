@@ -1,26 +1,27 @@
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import ejs from 'ejs';
 import _ from 'lodash';
+import * as YAML from 'yaml';
+import TOML from '@iarna/toml';
 import type { VovkSchema } from 'vovk';
 import {
   createCodeSamples,
-  VovkReadmeConfig,
   VovkSchemaIdEnum,
-  VovkSamplesConfig,
+  type VovkReadmeConfig,
+  type VovkSamplesConfig,
   type VovkStrictConfig,
 } from 'vovk/internal';
-import * as YAML from 'yaml';
-import TOML from '@iarna/toml';
 import type { PackageJson } from 'type-fest';
-import { prettify } from '../utils/prettify.mjs';
+import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import type { ClientTemplateFile } from './getClientTemplateFiles.mjs';
-import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import type { Segment } from '../utils/locateSegments.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compileJSONSchemaToTypeScriptType.mjs';
-import { OpenAPIObject } from 'openapi3-ts/oas31';
 import { getTemplateClientImports } from './getTemplateClientImports.mjs';
+import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
+import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
+import { prettify } from '../utils/prettify.mjs';
 
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
   return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');
@@ -265,7 +266,7 @@ export async function writeOneClientFile({
       existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
 
   if (needsWriting) {
-    log.debug(`Writing file: ${outPath} ${existingContent ? '(updated)' : '(new)'}`);
+    log.debug(`Writing file: ${chalkHighlightThing(outPath)} ${existingContent ? '(updated)' : '(new)'}`);
     await fs.mkdir(path.dirname(outPath), { recursive: true });
     await fs.writeFile(outPath, rendered, 'utf-8');
   }
