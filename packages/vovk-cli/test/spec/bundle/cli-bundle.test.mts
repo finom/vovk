@@ -58,7 +58,7 @@ await describe('TypeScript bundle', async () => {
     });
   });
 
-  await it('Builds composed bundle with included segments', async () => {
+  await it.only('Builds composed bundle with included segments', async () => {
     await createApp();
     await updateConfigFileProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
     await updateConfigFileProperty(

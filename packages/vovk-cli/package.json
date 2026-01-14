@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
     "postbuild": "chmod +x ./dist/index.mjs",
-    "pre-test": "npm run build",
+    "pre-test": "npm run build && npm run clear-test-cache",
     "test-only": "npm run pre-test && node --experimental-transform-types --experimental-strip-types --experimental-vm-modules --test --test-only test/spec/**/*.mts",
     "test": "npm run pre-test && node --experimental-transform-types --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",

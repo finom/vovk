@@ -39,6 +39,7 @@ function mutateConfig(sourceFile: import('ts-morph').SourceFile, pathToProperty:
 
   for (let i = 0; i < pathToProperty.length; i++) {
     const key = pathToProperty[i];
+    const isLastKey = i === pathToProperty.length - 1;
 
     if (!Node.isObjectLiteralExpression(currentNode)) {
       throw new Error(`Property at path ${pathToProperty.slice(0, i).join('.')} is not an object.`);
@@ -51,47 +52,44 @@ function mutateConfig(sourceFile: import('ts-morph').SourceFile, pathToProperty:
       if (newValue === undefined) {
         // Nothing to remove
         return sourceFile.getFullText();
+      }
+
+      if (isLastKey) {
+        // Last key - add the final value
+        currentNode.addPropertyAssignment({
+          name: key,
+          initializer: (writer) => writeInitializer(writer, newValue),
+        });
       } else {
-        // Create property
-        if (i === pathToProperty.length - 1) {
-          // Last key
-          currentNode.addPropertyAssignment({
-            name: key,
-            initializer: (writer) => writeInitializer(writer, newValue),
-          });
-        } else {
-          // Need to create nested object
-          const newObjectAssignment = currentNode.addPropertyAssignment({
-            name: key,
-            initializer: '{}',
-          });
-          const init = newObjectAssignment.getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
-          currentNode = init;
-        }
+        // Need to create nested object
+        const newObjectAssignment = currentNode.addPropertyAssignment({
+          name: key,
+          initializer: '{}',
+        });
+        currentNode = newObjectAssignment.getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
       }
     } else {
       // Property exists
-      if (Node.isPropertyAssignment(property)) {
-        const propInitializer = property.getInitializer();
-        if (i === pathToProperty.length - 1) {
-          // Last key
-          if (newValue === undefined) {
-            // Remove the property
-            property.remove();
-          } else {
-            // Update the value
-            property.setInitializer((writer) => writeInitializer(writer, newValue));
-          }
+      if (!Node.isPropertyAssignment(property)) {
+        throw new Error(`Unsupported property kind at path ${pathToProperty.slice(0, i + 1).join('.')}.`);
+      }
+
+      const propInitializer = property.getInitializer();
+
+      if (isLastKey) {
+        // Last key - update or remove the value
+        if (newValue === undefined) {
+          property.remove();
         } else {
-          // Need to go deeper
-          if (propInitializer && Node.isObjectLiteralExpression(propInitializer)) {
-            currentNode = propInitializer;
-          } else {
-            throw new Error(`Cannot traverse into non-object property at ${pathToProperty.slice(0, i + 1).join('.')}.`);
-          }
+          property.setInitializer((writer) => writeInitializer(writer, newValue));
         }
       } else {
-        throw new Error(`Unsupported property kind at path ${pathToProperty.slice(0, i + 1).join('.')}.`);
+        // Need to go deeper into existing object
+        if (propInitializer && Node.isObjectLiteralExpression(propInitializer)) {
+          currentNode = propInitializer;
+        } else {
+          throw new Error(`Cannot traverse into non-object property at ${pathToProperty.slice(0, i + 1).join('.')}.`);
+        }
       }
     }
   }
