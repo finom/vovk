@@ -18,7 +18,7 @@
 
 ---
 
-## Vovk.ts [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/finom/vovk/blob/main/LICENSE)
+## Vovk.ts [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/finom/vovk/blob/main/LICENSE) [![Runtime NPM Version](https://img.shields.io/npm/v/vovk?label=vovk)](https://www.npmjs.com/package/vovk) [![CLI NPM Version](https://img.shields.io/npm/v/vovk-cli?label=vovk-cli)](https://www.npmjs.com/package/vovk-cli)
 
 Vovk.ts lets you build a structured back end on top of **Next.js App Router Route Handlers**—and generate a **type-safe client**, **OpenAPI**, and **AI tools** from the same code.
 Under the hood: you write Controllers (real handlers), and Vovk **emits schema artifacts** for codegen—without maintaining a separate contract layer.
@@ -37,8 +37,9 @@ See: https://vovk.dev/quick-install
 
 - **Stay native to Next.js** (routing, streaming, middleware/auth patterns, deployment targets)
 - **Structured API layer** (Controller → Service → Repository) on top of Route Handlers
-- **Schema emission as a build artifact** (`.vovk-schema/`) to power codegen/docs/tools
+- **Schema emission as a build artifact** (`.vovk-schema/`) to power codegen/docs/AI tools
 - **Typed request handling** via `procedure(...)` with `{ params, query, body }`
+- **Back-end segmentation** via [segments](https://vovk.dev/segment): split your API into independently configured units that each compile into their own serverless function
 - **Mix in third-party OpenAPI schemas** as modules that share the same client/tooling pipeline (OpenAPI mixins)
 - **Derive AI tools from your API surface** (controllers _and_ emitted RPC modules can be exposed as AI tools with parameters + `execute`)
 
