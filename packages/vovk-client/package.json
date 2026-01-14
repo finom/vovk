@@ -1,6 +1,6 @@
 {
   "name": "vovk-client",
-  "version": "0.0.4-beta.22",
+  "version": "0.0.4-beta.23",
   "description": "Re-exports of composed TypeScript client for Vovk.ts",
   "scripts": {
     "npm-publish": "npm publish"
