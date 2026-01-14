@@ -81,7 +81,7 @@ const user = await UserRPC.getUser({ params: { id: '123' } });
 const pet = await PetstoreAPI.getPetById({ params: { petId: 1 } });
 ```
 
-Controllers (current context execution), RPC/API modules and OpenAPI modules (HTTP calls) can be used to derive AI tools:
+Controllers (current context execution), RPC/API modules (HTTP calls) can be used to derive AI tools:
 
 ```ts
 const { tools } = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI } });
