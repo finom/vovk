@@ -1,4 +1,14 @@
-import { Project, QuoteKind, IndentationText, NewLineKind, SyntaxKind, CodeBlockWriter, Node } from 'ts-morph';
+import {
+  Project,
+  QuoteKind,
+  IndentationText,
+  NewLineKind,
+  SyntaxKind,
+  CodeBlockWriter,
+  Node,
+  ObjectLiteralExpression,
+  PropertyAssignment,
+} from 'ts-morph';
 
 export function updateConfigProperty(sourceCode: string, pathToProperty: string[], newValue: unknown) {
   const project = createProject();
@@ -24,6 +34,21 @@ function createProject() {
   });
 }
 
+function findPropertyAssignment(objectNode: ObjectLiteralExpression, key: string): PropertyAssignment | undefined {
+  const properties = objectNode.getProperties();
+  for (const prop of properties) {
+    if (Node.isPropertyAssignment(prop)) {
+      const name = prop.getName();
+      // Handle both quoted and unquoted property names
+      const unquotedName = name.replace(/^['"]|['"]$/g, '');
+      if (unquotedName === key || name === key) {
+        return prop;
+      }
+    }
+  }
+  return undefined;
+}
+
 function mutateConfig(sourceFile: import('ts-morph').SourceFile, pathToProperty: string[], newValue: unknown) {
   const variableDeclaration = sourceFile.getVariableDeclaration('config');
   if (!variableDeclaration) {
@@ -35,17 +60,13 @@ function mutateConfig(sourceFile: import('ts-morph').SourceFile, pathToProperty:
     throw new Error('config is not initialized as an object literal.');
   }
 
-  let currentNode = initializer;
+  let currentNode: ObjectLiteralExpression = initializer;
 
   for (let i = 0; i < pathToProperty.length; i++) {
     const key = pathToProperty[i];
     const isLastKey = i === pathToProperty.length - 1;
 
-    if (!Node.isObjectLiteralExpression(currentNode)) {
-      throw new Error(`Property at path ${pathToProperty.slice(0, i).join('.')} is not an object.`);
-    }
-
-    const property = currentNode.getProperty(key);
+    const property = findPropertyAssignment(currentNode, key);
 
     if (!property) {
       // Property does not exist
@@ -70,10 +91,6 @@ function mutateConfig(sourceFile: import('ts-morph').SourceFile, pathToProperty:
       }
     } else {
       // Property exists
-      if (!Node.isPropertyAssignment(property)) {
-        throw new Error(`Unsupported property kind at path ${pathToProperty.slice(0, i + 1).join('.')}.`);
-      }
-
       const propInitializer = property.getInitializer();
 
       if (isLastKey) {
