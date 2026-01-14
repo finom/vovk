@@ -16,3 +16,7 @@ export type Prettify<T> = {
 export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
+
+export type IsAny<T> = 0 extends 1 & T ? true : false;
+
+export type IsNotAny<T> = IsAny<T> extends true ? false : true;

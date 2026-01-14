@@ -17,7 +17,7 @@ export function createStandardValidation({
   ) => KnownAny;
 }) {
   function withStandard<
-    T extends (
+    THandle extends (
       req: TReq,
       params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
     ) => KnownAny,
@@ -53,7 +53,7 @@ export function createStandardValidation({
     params?: TParams;
     output?: TOutput;
     iteration?: TIteration;
-    handle: T;
+    handle: THandle;
     disableServerSideValidation?: boolean | VovkValidationType[];
     skipSchemaEmission?: boolean | VovkValidationType[];
     validateEachIteration?: boolean;
@@ -72,7 +72,7 @@ export function createStandardValidation({
       skipSchemaEmission,
       validateEachIteration,
       handle: handle as VovkTypedProcedure<
-        T,
+        THandle,
         TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny,
         TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny,
         TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny,

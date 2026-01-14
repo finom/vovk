@@ -32,3 +32,4 @@ export type {
 } from './types/config.js';
 export type { VovkOperationObject } from './types/operation.js';
 export type { VovkRPCModule, VovkFetcherOptions, VovkStreamAsyncIterable } from './types/client.js';
+export type { IsAny, IsNotAny } from './types/utils.js';

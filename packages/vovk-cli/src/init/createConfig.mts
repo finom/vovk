@@ -1,7 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { VovkConfig } from 'vovk';
-import type { VovkStrictConfig } from 'vovk/internal';
+import type { VovkBundleConfig, VovkStrictConfig } from 'vovk/internal';
 import type { getLogger } from '../utils/getLogger.mjs';
 import { prettify } from '../utils/prettify.mjs';
 import { getFileSystemEntryType, FileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
@@ -12,7 +12,9 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
   const { build } = await import('tsdown');
   await build({
     entry,
-    dts: true,
+    dts: {
+      resolve: [/^(?!next($|\/))/],
+    },
     format: 'esm',
     hash: false,
     fixedExtension: true,
@@ -20,12 +22,15 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
     outDir,
     platform: 'neutral',
     outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+    outputOptions: {
+      inlineDynamicImports: true,
+    },
     inputOptions: {
       resolve: {
         mainFields: ['module', 'main'],
       },
     },
-    noExternal: ['vovk', 'vovk/*', 'vovk-ajv', 'ajv/**', 'ajv-errors', 'ajv-formats/**'],
+    noExternal: ['vovk/**', 'vovk-ajv', 'ajv/**', 'ajv-errors', 'ajv-formats/**'],
   });
 };
 
@@ -40,11 +45,7 @@ export async function createConfig({
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
   const dir = (await getFileSystemEntryType(dotConfigPath)) === FileSystemEntryType.DIRECTORY ? dotConfigPath : root;
-  const isModule = await fs
-    .readFile(path.join(root, 'package.json'), 'utf-8')
-    .catch(() => '{}')
-    .then((content) => (JSON.parse(content) as { type: 'module' }).type === 'module');
-  const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
+  const configAbsolutePath = path.join(dir, 'vovk.config.mjs');
 
   const typeTemplates = {
     controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
@@ -78,17 +79,34 @@ export async function createConfig({
 
   config.moduleTemplates = moduleTemplates;
 
-  let configStr = await prettify(
-    `// @ts-check
+  if (bundle) {
+    config.bundle ??= {} as VovkBundleConfig;
+    config.bundle.outputConfig ??= {
+      imports: { validateOnClient: null },
+      package: {
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
+        exports: {
+          '.': {
+            default: './index.js',
+            types: './index.d.ts',
+          },
+        },
+      },
+    };
+  }
+
+  let configStr = `// @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = ${JSON.stringify(config, null, 2)};
-${isModule ? '\nexport default config;' : 'module.exports = config;'}`,
-    configAbsolutePath
-  );
+export default config;`;
 
   if (bundle) {
     configStr = await updateConfigProperty(configStr, ['bundle', 'build'], BUNDLE_BUILD_TSDOWN);
   }
+
+  configStr = await prettify(configStr, configAbsolutePath);
 
   if (!dryRun) await fs.writeFile(configAbsolutePath, configStr, 'utf-8');
 
