@@ -121,22 +121,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
         ...userConfig,
         bundle: {
           ...userConfig.bundle,
-          outputConfig: {
-            imports: {
-              validateOnClient: null,
-            },
-            package: {
-              exports: {
-                '.': {
-                  default: './index.js',
-                  types: './index.d.ts',
-                },
-              },
-              main: './index.js',
-              type: 'module',
-              types: './index.d.ts',
-            },
-          },
           build: userConfig.bundle.build
             .toString()
             .replace(/\s+/g, '') as unknown as VovkStrictConfig['bundle']['build'],
@@ -200,7 +184,24 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     config.moduleTemplates = moduleTemplates;
 
     if (!extras || !extras.bundle || extras.bundle.build !== undefined) {
-      config.bundle ??= {} as VovkStrictConfig['bundle'];
+      config.bundle ??= {
+        outputConfig: {
+          imports: {
+            validateOnClient: null,
+          },
+          package: {
+            exports: {
+              '.': {
+                default: './index.js',
+                types: './index.d.ts',
+              },
+            },
+            main: './index.js',
+            type: 'module',
+            types: './index.d.ts',
+          },
+        },
+      } as VovkStrictConfig['bundle'];
       config.bundle!.build ??= BUNDLE_BUILD_TSDOWN;
     }
 
