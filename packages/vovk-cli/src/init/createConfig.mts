@@ -12,9 +12,7 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
   const { build } = await import('tsdown');
   await build({
     entry,
-    dts: {
-      resolve: [/^(?!next($|\/))/],
-    },
+    dts: true,
     format: 'esm',
     hash: false,
     fixedExtension: true,
@@ -30,7 +28,7 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
         mainFields: ['module', 'main'],
       },
     },
-    noExternal: ['vovk/**', 'vovk-ajv', 'ajv/**', 'ajv-errors', 'ajv-formats/**'],
+    noExternal: ['!next/**'],
   });
 };
 
