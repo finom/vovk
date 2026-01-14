@@ -38,10 +38,10 @@ See: https://vovk.dev/quick-install
 - **Stay native to Next.js** (routing, streaming, middleware/auth patterns, deployment targets)
 - **Structured API layer** (Controller → Service → Repository) on top of Route Handlers
 - **Schema emission as a build artifact** (`.vovk-schema/`) to power codegen/docs/AI tools
-- **Typed request handling** via `procedure(...)` with `{ params, query, body }`
+- **Typed request handling** via [`procedure(...)`](https://vovk.dev/procedure) with `{ params, query, body }`
 - **Back-end segmentation** via [segments](https://vovk.dev/segment): split your API into independently configured units that each compile into their own serverless function
-- **Mix in third-party OpenAPI schemas** as modules that share the same client/tooling pipeline (OpenAPI mixins)
-- **Derive AI tools from your API surface** (controllers _and_ emitted RPC modules can be exposed as AI tools with parameters + `execute`)
+- **Mix in third-party OpenAPI schemas** as modules that share the same client/tooling pipeline ([OpenAPI mixins](https://vovk.dev/mixins))
+- **Derive AI tools from your API surface** (controllers _and_ emitted RPC modules can be exposed as [AI tools](https://vovk.dev/tools) with parameters + `execute`)
 
 ## What it looks like
 
