@@ -45,7 +45,6 @@ await describe('TypeScript bundle', async () => {
     await assertDirFileList({
       dirPath: './dist',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
-      allowExtraFiles: true,
     });
   });
 
@@ -56,7 +55,6 @@ await describe('TypeScript bundle', async () => {
     await assertDirFileList({
       dirPath: './my_dist',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
-      allowExtraFiles: true,
     });
   });
 
@@ -72,7 +70,6 @@ await describe('TypeScript bundle', async () => {
     await assertDirFileList({
       dirPath: './composed-bundle',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
-      allowExtraFiles: true,
     });
 
     const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.js'), [
@@ -93,7 +90,6 @@ await describe('TypeScript bundle', async () => {
     await assertDirFileList({
       dirPath: './composed-bundle',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
-      allowExtraFiles: true,
     });
 
     const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.js'), [
@@ -110,7 +106,6 @@ await describe('TypeScript bundle', async () => {
     await assertDirFileList({
       dirPath: './composed-bundle',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
-      allowExtraFiles: true,
     });
 
     const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.js'), [
@@ -127,7 +122,6 @@ await describe('TypeScript bundle', async () => {
     await assertDirFileList({
       dirPath: './composed-bundle',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
-      allowExtraFiles: true,
     });
 
     const { schema } = await importFresh<{ schema: VovkSchema }>(path.join(projectDir, 'composed-bundle', 'index.js'), [
@@ -175,7 +169,6 @@ await describe('TypeScript bundle', async () => {
     await assertDirFileList({
       dirPath: './composed-bundle',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
-      allowExtraFiles: true,
     });
     const { y, a, fooX, barX } = await importFresh<{
       y: number;
@@ -232,7 +225,6 @@ await describe('TypeScript bundle', async () => {
     await assertDirFileList({
       dirPath: './dist',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
-      allowExtraFiles: true,
     });
   });
 });
