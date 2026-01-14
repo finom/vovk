@@ -183,7 +183,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
 
     config.moduleTemplates = moduleTemplates;
 
-    if (!extras || 'bundle' in extras) {
+    if (!extras || !('bundle' in extras)) {
       config.bundle ??= {
         build: BUNDLE_BUILD_TSDOWN,
         outputConfig: {
