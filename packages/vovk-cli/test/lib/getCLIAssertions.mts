@@ -183,8 +183,9 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
 
     config.moduleTemplates = moduleTemplates;
 
-    if (!extras || !extras.bundle || extras.bundle.build !== undefined) {
+    if (!extras || 'bundle' in extras) {
       config.bundle ??= {
+        build: BUNDLE_BUILD_TSDOWN,
         outputConfig: {
           imports: {
             validateOnClient: null,
@@ -201,8 +202,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
             types: './index.d.ts',
           },
         },
-      } as VovkStrictConfig['bundle'];
-      config.bundle!.build ??= BUNDLE_BUILD_TSDOWN;
+      } satisfies VovkConfig['bundle'];
     }
 
     return { ...config, ...extras };
