@@ -42,21 +42,21 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": "^3.0.0-beta.127",
+    "vovk": "^3.0.0-beta.128",
     "vovk-ajv": "^0.0.0-beta.21",
     "vovk-client": "^0.0.4-beta.22",
     "vovk-python": "^0.0.1-beta.11",
     "vovk-rust": "^0.0.1-beta.13"
   },
   "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.57"
+    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.60"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
-    "@inquirer/prompts": "^8.1.0",
+    "@inquirer/prompts": "^8.2.0",
     "@npmcli/package-json": "^7.0.4",
     "@types/json-schema": "^7.0.15",
-    "@types/lodash": "^4.17.21",
+    "@types/lodash": "^4.17.23",
     "chalk": "^5.6.2",
     "chokidar": "^5.0.0",
     "clone-deep": "^4.0.1",
@@ -76,8 +76,8 @@
     "prettier": "^3.7.4",
     "tar-stream": "^3.1.7",
     "ts-morph": "^27.0.2",
-    "type-fest": "^5.3.1",
-    "undici": "^7.16.0",
+    "type-fest": "^5.4.1",
+    "undici": "^7.18.2",
     "yaml": "^2.8.2"
   },
   "devDependencies": {
@@ -91,7 +91,7 @@
     "create-next-app": "^16.1.1",
     "http-server": "^14.1.1",
     "node-pty": "0.10.1",
-    "tsdown": "^0.18.3",
-    "zod": "^4.2.1"
+    "tsdown": "^0.19.0",
+    "zod": "^4.3.5"
   }
 }
