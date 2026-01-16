@@ -211,8 +211,7 @@ describe('deriveTools', () => {
       assert.deepStrictEqual(result, { myResult: { foo: 'foo1', inputMeta: 'hello' } });
       result = await tool.execute({ body: { foo: 'foo1long' } });
       assert.deepStrictEqual(result, {
-        myError:
-          'Error: Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
+        myError: 'Error: Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
       });
     });
   });
@@ -644,8 +643,7 @@ describe('deriveTools', () => {
       assert.deepStrictEqual(result, { myResult: { foo: 'foo1', inputMeta: 'hello' } });
       result = await tool.execute({ body: { foo: 'foo1long' } });
       assert.deepStrictEqual(result, {
-        myError:
-          'Error: Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
+        myError: 'Error: Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
       });
     });
   });
