@@ -46,7 +46,7 @@ class TestZod(unittest.TestCase):
                 body={"hello": "wrong_length"}, 
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body\. .*hello.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
     
     def test_query(self) -> None:
         data: WithZodClientControllerRPC.HandleQueryQuery = WithZodClientControllerRPC.handle_query(
@@ -65,7 +65,7 @@ class TestZod(unittest.TestCase):
                 query={"search": "wrong_length"},  
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query\. .*search.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query: .*search.*")
 
     def test_nested_query(self) -> None:
         NESTED_QUERY_EXAMPLE: WithZodClientControllerRPC.HandleNestedQueryQuery = {
@@ -106,7 +106,7 @@ class TestZod(unittest.TestCase):
                 query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context1.exception), r"Validation failed\. Invalid query\. .*at x.*")
+        self.assertRegex(str(context1.exception), r"Validation failed\. Invalid query: .*at x.*")
 
         with self.assertRaises(ValidationError) as context2:
             WithZodClientControllerRPC.handle_nested_query(
@@ -131,7 +131,7 @@ class TestZod(unittest.TestCase):
                 params={"foo": "foo", "bar": "wrong_length"},
                 disable_client_validation=True
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params\. .*bar.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params: .*bar.*")
 
     def test_output(self) -> None:
         data: WithZodClientControllerRPC.HandleOutputOutput = WithZodClientControllerRPC.handle_output(
@@ -143,7 +143,7 @@ class TestZod(unittest.TestCase):
             WithZodClientControllerRPC.handle_output(
                 query={"helloOutput": "wrong_length"},
             )
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output\. .*hello.*")
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output: .*hello.*")
 
     def test_form(self) -> None:
         data: WithZodClientControllerRPC.HandleFormDataOutput = WithZodClientControllerRPC.handle_form_data(
@@ -157,7 +157,7 @@ class TestZod(unittest.TestCase):
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form\. .*hello.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form: .*hello.*")
 
     def test_form_with_file(self) -> None:
         file_content = "file_text_content"
@@ -176,7 +176,7 @@ class TestZod(unittest.TestCase):
                 query={"search": "value"},
                 files={"file": ('filename.txt', file_data, 'text/plain')}
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form\. .*hello.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form: .*hello.*")
 
     def test_form_with_multiple_files(self) -> None:
         file_content1 = "file_text_content1"
@@ -204,7 +204,7 @@ class TestZod(unittest.TestCase):
                     ('files', ('filename2.txt', file_data2, 'text/plain'))
                 ]
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form\. .*hello.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form: .*hello.*")
 
     def test_stream(self) -> None: ## TODO: StreamException????
         iterator: Generator[WithZodClientControllerRPC.HandleStreamIteration, None, None] = WithZodClientControllerRPC.handle_stream(
@@ -222,7 +222,7 @@ class TestZod(unittest.TestCase):
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0\. .*value.*")
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0: .*value.*")
     def test_constraints(self) -> None:
         # List of keys that are not supported
         not_supported: List[str] = []
