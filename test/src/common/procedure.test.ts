@@ -45,7 +45,7 @@ describe('procedure features', async () => {
         params: { baz: 'baz3' },
       }),
       {
-        message: 'Validation failed. Invalid body on server: Too big: expected string to have <=5 characters at foo',
+        message: 'Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
       }
     );
     await assert.rejects(
@@ -55,7 +55,7 @@ describe('procedure features', async () => {
         params: { baz: 'baz3' },
       }),
       {
-        message: 'Validation failed. Invalid query on server: Too big: expected string to have <=5 characters at bar',
+        message: 'Validation failed. Invalid query: Too big: expected string to have <=5 characters at bar',
       }
     );
     await assert.rejects(
@@ -65,7 +65,7 @@ describe('procedure features', async () => {
         params: { baz: 'baz3long' },
       }),
       {
-        message: 'Validation failed. Invalid params on server: Too big: expected string to have <=5 characters at baz',
+        message: 'Validation failed. Invalid params: Too big: expected string to have <=5 characters at baz',
       }
     );
   });

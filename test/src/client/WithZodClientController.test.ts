@@ -7,7 +7,7 @@ import type WithZodClientController from './WithZodClientController.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 describe('Client validation with custom AJV options', () => {
-  it('Should handle body validation on client: with options', async () => {
+  it('Should handle body validation: with options', async () => {
     const result = await WithZodClientControllerRPC.handleBody({
       body: { hello: 'world' },
     });
@@ -28,7 +28,7 @@ describe('Client validation with custom AJV options', () => {
     });
 
     await rejects.toThrow(
-      /Client-side validation failed. Invalid body on client: data\/hello must NOT have more than 5 characters/
+      /Client-side validation failed. Invalid body: data\/hello must NOT have more than 5 characters/
     );
     await rejects.toThrowError(HttpException);
   });
@@ -54,7 +54,7 @@ describe('Zod-to-JSONchema constraints', async () => {
         });
       });
 
-      await rejects.toThrow(new RegExp(`Validation failed. Invalid body on server: .*${key}.*`));
+      await rejects.toThrow(new RegExp(`Validation failed. Invalid body: .*${key}.*`));
       await rejects.toThrowError(HttpException);
 
       ({ rejects } = expectPromise(async () => {
@@ -62,7 +62,7 @@ describe('Zod-to-JSONchema constraints', async () => {
           body: constrainingObject,
         });
       }));
-      await rejects.toThrow(new RegExp(`Client-side validation failed. Invalid body on client. data\\/${key}.*`));
+      await rejects.toThrow(new RegExp(`Client-side validation failed. Invalid body. data\\/${key}.*`));
     });
   }
 });
@@ -106,7 +106,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     deepStrictEqual(result satisfies { nothing: 'here' }, { nothing: 'here' });
   });
 
-  it('Should handle body validation on server and client', async () => {
+  it('Should handle body validation and client', async () => {
     const result = await WithZodClientControllerRPC.handleBody({
       body: { hello: 'world' },
     });
@@ -122,7 +122,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid body on server: .*hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid body: .*hello.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -133,11 +133,11 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Client-side validation failed. Invalid body on client: data\/hello.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid body: data\/hello.*/);
     await rejects.toThrowError(HttpException);
   });
 
-  it('Should handle params validation on server and client', async () => {
+  it('Should handle params validation and client', async () => {
     const result = await WithZodClientControllerRPC.handleParams({
       params: { foo: 'foo', bar: 'bar' },
     });
@@ -154,7 +154,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid params on server: .*foo.*/);
+    await rejects.toThrow(/Validation failed. Invalid params: .*foo.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -166,11 +166,11 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Client-side validation failed. Invalid params on client: data\/foo.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid params: data\/foo.*/);
     await rejects.toThrowError(HttpException);
   });
 
-  it('Should handle query validation on server and client', async () => {
+  it('Should handle query validation and client', async () => {
     const result = await WithZodClientControllerRPC.handleQuery({
       query: { search: 'value' },
     });
@@ -186,7 +186,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid query on server: .*search.*/);
+    await rejects.toThrow(/Validation failed. Invalid query: .*search.*/);
     await rejects.toThrowError(HttpException);
 
     ({ rejects } = expectPromise(async () => {
@@ -197,11 +197,11 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Client-side validation failed. Invalid query on client: data\/search.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid query: data\/search.*/);
     await rejects.toThrowError(HttpException);
   });
 
-  it('Should handle nested queries on server and client', async () => {
+  it('Should handle nested queries and client', async () => {
     const result = await WithZodClientControllerRPC.handleNestedQuery({
       query: NESTED_QUERY_EXAMPLE,
     });
@@ -221,7 +221,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid query on server: .*x.*/);
+    await rejects.toThrow(/Validation failed. Invalid query: .*x.*/);
 
     ({ rejects } = expectPromise(async () => {
       await WithZodClientControllerRPC.handleNestedQuery({
@@ -232,10 +232,10 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Client-side validation failed. Invalid query on client: data\/x.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid query: data\/x.*/);
   });
 
-  it('Should handle output validation on server', async () => {
+  it('Should handle output validation', async () => {
     const result = await WithZodClientControllerRPC.handleOutput({
       query: { helloOutput: 'world' },
     });
@@ -248,7 +248,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid output on server: .*hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid output: .*hello.*/);
   });
 
   it('Should handle stream', async () => {
@@ -285,7 +285,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Validation failed. Invalid iteration #0 on server: .*value.*/);
+    await rejects.toThrow(/Validation failed. Invalid iteration #0: .*value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -320,7 +320,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Validation failed. Invalid iteration #2 on server: .*value.*/);
+    await rejects.toThrow(/Validation failed. Invalid iteration #2: .*value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -338,7 +338,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Validation failed. Invalid iteration #0 on server: .*value.*/);
+    await rejects.toThrow(/Validation failed. Invalid iteration #0: .*value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -372,7 +372,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
         expectedCollected.push(message);
       }
     });
-    await rejects.toThrow(/Validation failed. Invalid iteration #2 on server: .*value.*/);
+    await rejects.toThrow(/Validation failed. Invalid iteration #2: .*value.*/);
 
     deepStrictEqual(expected, expectedCollected);
   });
@@ -410,7 +410,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid query on server: .*search.*/);
+    await rejects.toThrow(/Validation failed. Invalid query: .*search.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -421,7 +421,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Validation failed. Invalid body on server: .*hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid body: .*hello.*/);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.body, undefined);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionBool.schema.validation?.query, undefined);
   });
@@ -433,7 +433,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
         query: { search: 'value' },
       });
     });
-    await rejects.toThrow(/Validation failed. Invalid body on server: .*hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid body: .*hello.*/);
     strictEqual(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.body, undefined);
     ok(WithZodClientControllerRPC.skipSchemaEmissionStrings.schema.validation?.query);
   });
@@ -465,7 +465,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid form: .*hello.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -501,7 +501,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid form: .*hello.*/);
     await rejects.toThrowError(HttpException);
 
     // No file
@@ -514,7 +514,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Client-side validation failed. Invalid form on client: .*file.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid form: .*file.*/);
     await rejects.toThrowError(HttpException);
 
     // No file
@@ -528,7 +528,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Validation failed. Invalid form on server: .*file.*/);
+    await rejects.toThrow(/Validation failed. Invalid form: .*file.*/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -567,7 +567,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed. Invalid form on server: .*hello.*/);
+    await rejects.toThrow(/Validation failed. Invalid form: .*hello.*/);
     await rejects.toThrowError(HttpException);
 
     // No files
@@ -580,7 +580,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     }));
 
-    await rejects.toThrow(/Client-side validation failed. Invalid form on client: .*files.*/);
+    await rejects.toThrow(/Client-side validation failed. Invalid form: .*files.*/);
     await rejects.toThrowError(HttpException);
   });
 

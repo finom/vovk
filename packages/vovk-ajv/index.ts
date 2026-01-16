@@ -87,7 +87,7 @@ const validate = ({
     if (!isValid) {
       throw new HttpException(
         HttpStatus.NULL,
-        `Client-side validation failed. Invalid ${isFormData ? 'form' : type} on client: ${ajv.errorsText()}`,
+        `Client-side validation failed. Invalid ${isFormData ? 'form' : type}: ${ajv.errorsText()}`,
         { input, errors: ajv.errors, endpoint }
       );
     }

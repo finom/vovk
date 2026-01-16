@@ -157,7 +157,7 @@ describe('deriveTools', () => {
       assert.deepStrictEqual(result, { foo: 'foo1', inputMeta: 'hello' });
       result = await tool.execute({ body: { foo: 'foo1long' } });
       assert.deepStrictEqual(result, {
-        error: 'Validation failed. Invalid body on server: Too big: expected string to have <=5 characters at foo',
+        error: 'Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
       });
     });
 
@@ -212,7 +212,7 @@ describe('deriveTools', () => {
       result = await tool.execute({ body: { foo: 'foo1long' } });
       assert.deepStrictEqual(result, {
         myError:
-          'Error: Validation failed. Invalid body on server: Too big: expected string to have <=5 characters at foo',
+          'Error: Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
       });
     });
   });
@@ -261,7 +261,7 @@ describe('deriveTools', () => {
       assert.deepStrictEqual(result, { foo: 'foo1', inputMeta: 'hello' });
       result = await tool.execute({ body: { foo: 'foo1long' } });
       assert.deepStrictEqual(result, {
-        error: 'Validation failed. Invalid body on server: Too big: expected string to have <=5 characters at foo',
+        error: 'Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
       });
     });
   });
@@ -316,7 +316,7 @@ describe('deriveTools', () => {
           content: [
             {
               type: 'text',
-              text: 'Validation failed. Invalid body on server: Too big: expected string to have <=5 characters at foo',
+              text: 'Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
             },
           ],
           isError: true,
@@ -645,7 +645,7 @@ describe('deriveTools', () => {
       result = await tool.execute({ body: { foo: 'foo1long' } });
       assert.deepStrictEqual(result, {
         myError:
-          'Error: Validation failed. Invalid body on server: Too big: expected string to have <=5 characters at foo',
+          'Error: Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
       });
     });
   });

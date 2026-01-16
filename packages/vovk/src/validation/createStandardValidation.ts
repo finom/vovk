@@ -86,7 +86,7 @@ export function createStandardValidation({
         if (result.issues?.length) {
           throw new HttpException(
             HttpStatus.BAD_REQUEST,
-            `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType} on server: ${result.issues
+            `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType}: ${result.issues
               .map(({ message, path }) => `${message}${path ? ` at ${path.join('.')}` : ''}`)
               .join(', ')}`,
             { issues: result.issues }

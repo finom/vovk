@@ -1,7 +1,7 @@
 {
   "name": "vovk-python",
   "type": "module",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "files": [
     "client-templates",
     "index.js",
