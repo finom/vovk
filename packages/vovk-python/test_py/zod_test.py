@@ -249,7 +249,7 @@ class TestZod(unittest.TestCase):
                 )
             self.assertRegex(
                 str(context1.exception), 
-                rf"Validation failed\. Invalid body\. .*{key}.*",
+                rf"Validation failed\. Invalid body: .*{key}.*",
             )
             
             # Test with client validation enabled
