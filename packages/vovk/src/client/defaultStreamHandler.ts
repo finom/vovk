@@ -62,7 +62,7 @@ export const defaultStreamHandler = ({
   }
 
   if (!response.body) {
-    throw new HttpException(HttpStatus.NULL, 'Stream body is falsy. Check your controller code.');
+    throw new HttpException(HttpStatus.NULL, 'Stream body is falsy');
   }
 
   const reader = response.body.getReader();
