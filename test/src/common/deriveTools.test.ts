@@ -457,8 +457,6 @@ describe('deriveTools', () => {
         assert.strictEqual(result.content[0].type, 'image');
         assert.strictEqual(result.content[0].mimeType, 'image/png');
         assert.strictEqual(result.content[0].data, base64);
-        assert.ok(result.content[0].data.length > 0, 'Image data should not be empty');
-        assert.ok(typeof result.content[0].data === 'string', 'Image data should be a base64 string');
       });
     });
 
