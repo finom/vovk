@@ -58,7 +58,6 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "openapi3-ts": "^4.5.0",
-    "@standard-schema/spec": "^1.1.0"
+    "openapi3-ts": "^4.5.0"
   }
 }

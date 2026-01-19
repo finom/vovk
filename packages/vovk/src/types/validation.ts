@@ -1,4 +1,4 @@
-import type { StandardSchemaV1, StandardJSONSchemaV1 } from '@standard-schema/spec';
+import type { StandardSchemaV1, StandardJSONSchemaV1 } from './standard-schema.js';
 import type { KnownAny } from './utils.js';
 import type { VovkHandlerSchema, VovkSchema } from './core.js';
 
