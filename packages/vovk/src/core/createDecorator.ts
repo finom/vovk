@@ -40,7 +40,7 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
 
       const method = function method(req: TRequest, params?: unknown) {
         const next: Next = async () => {
-          return (await originalMethod.call(controller, req, params)) as unknown;
+          return await originalMethod.call(controller, req, params);
         };
 
         return handler ? handler.call(controller, req, next, ...args) : next();

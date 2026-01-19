@@ -137,7 +137,7 @@ export const prefix = (givenPath = '') => {
   const path = trimPath(givenPath);
 
   return (givenTarget: KnownAny) => {
-    const controller = givenTarget as unknown as VovkController;
+    const controller = givenTarget as VovkController;
     controller._prefix = path;
 
     return givenTarget;

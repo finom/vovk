@@ -25,7 +25,7 @@ export const defaultHandler = async ({ response, schema }: { response: Response;
         ? (schema.operationObject['x-errorMessageKey'] as string)
         : 'message';
     // handle server errors
-    const errorResponse = result as unknown as Record<string, unknown>;
+    const errorResponse = result as Record<string, unknown>;
     throw new HttpException(
       response.status,
       (getNestedValue(errorResponse, errorKey) as string) ?? DEFAULT_ERROR_MESSAGE,
