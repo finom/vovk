@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+/* eslint-disable @typescript-eslint/no-namespace */
 // #########################
 // ###   Standard Typed  ###
 // #########################
 
-/* eslint-disable @typescript-eslint/no-namespace */
 /** The Standard Typed interface. This is a base type extended by other specs. */
 export interface StandardTypedV1<Input = unknown, Output = Input> {
   /** The Standard properties. */
@@ -34,6 +35,10 @@ export declare namespace StandardTypedV1 {
   /** Infers the output type of a Standard Typed. */
   export type InferOutput<Schema extends StandardTypedV1> = NonNullable<Schema['~standard']['types']>['output'];
 }
+
+// ##########################
+// ###   Standard Schema  ###
+// ##########################
 
 /** The Standard Schema interface. */
 export interface StandardSchemaV1<Input = unknown, Output = Input> {
@@ -88,7 +93,6 @@ export declare namespace StandardSchemaV1 {
   }
 
   /** The Standard types interface. */
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   export interface Types<Input = unknown, Output = Input> extends StandardTypedV1.Types<Input, Output> {}
 
   /** Infers the input type of a Standard. */
@@ -97,6 +101,10 @@ export declare namespace StandardSchemaV1 {
   /** Infers the output type of a Standard. */
   export type InferOutput<Schema extends StandardTypedV1> = StandardTypedV1.InferOutput<Schema>;
 }
+
+// ###############################
+// ###   Standard JSON Schema  ###
+// ###############################
 
 /** The Standard JSON Schema interface. */
 export interface StandardJSONSchemaV1<Input = unknown, Output = Input> {
@@ -130,7 +138,7 @@ export declare namespace StandardJSONSchemaV1 {
     | 'draft-2020-12'
     | 'draft-07'
     | 'openapi-3.0'
-    // Accepts any string: allows future targets while preserving autocomplete
+    // Accepts any string for future targets while preserving autocomplete
     | ({} & string);
 
   /** The options for the input/output methods. */
@@ -143,7 +151,6 @@ export declare namespace StandardJSONSchemaV1 {
   }
 
   /** The Standard types interface. */
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   export interface Types<Input = unknown, Output = Input> extends StandardTypedV1.Types<Input, Output> {}
 
   /** Infers the input type of a Standard. */
