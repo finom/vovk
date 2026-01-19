@@ -30,7 +30,7 @@ export const initSegment = (options: {
     if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
       const schema = await getSchema(options);
       return vovkApp.respond({
-        req: req as unknown as VovkRequest,
+        req,
         statusCode: 200,
         responseBody: { schema },
       });

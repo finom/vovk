@@ -60,7 +60,7 @@ class VovkApp {
     responseBody,
     options,
   }: {
-    req: VovkRequest;
+    req: Request;
     statusCode: HttpStatus;
     responseBody: unknown;
     options?: DecoratorOptions;
@@ -83,7 +83,7 @@ class VovkApp {
     options,
     cause,
   }: {
-    req: VovkRequest;
+    req: Request;
     statusCode: HttpStatus;
     message: string;
     options?: DecoratorOptions;
@@ -287,7 +287,7 @@ class VovkApp {
 
   #callMethod = async ({
     httpMethod,
-    req: nextReq,
+    req: request,
     params,
     segmentName,
   }: {
@@ -296,14 +296,14 @@ class VovkApp {
     params: Record<string, string[]>;
     segmentName: string;
   }) => {
-    const req = nextReq as unknown as VovkRequest;
+    const req = request as VovkRequest;
     const path = params[Object.keys(params)[0]] ?? [];
     const handlers = this.#allHandlers[segmentName]?.[httpMethod] ?? this.#collectHandlers(httpMethod, segmentName);
     this.#allHandlers[segmentName] ??= {};
     this.#allHandlers[segmentName][httpMethod] = handlers;
-    let headerList: typeof nextReq.headers | null;
+    let headerList: typeof request.headers | null;
     try {
-      headerList = nextReq.headers;
+      headerList = request.headers;
     } catch {
       // this is static rendering environment, headers are not available
       headerList = null;
