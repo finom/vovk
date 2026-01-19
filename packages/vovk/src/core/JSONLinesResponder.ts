@@ -104,7 +104,7 @@ export class JSONLinesResponder<T> extends Responder {
   };
 
   public readonly throw = (e: unknown) => {
-    this.sendLineOrError({ isError: true, reason: e instanceof Error ? e.message : (e as unknown) });
+    this.sendLineOrError({ isError: true, reason: e instanceof Error ? e.message : e });
     return this.close();
   };
 }
