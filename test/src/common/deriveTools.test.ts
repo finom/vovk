@@ -433,6 +433,8 @@ describe('deriveTools', () => {
     });
 
     describe('Image Response instance (fetch)', () => {
+      const base64 = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAADklEQVQI12P4z8AAAAEBAQAY3Y20AAAAAElFTkSuQmCC';
+
       const { toolsByName } = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
@@ -443,7 +445,7 @@ describe('deriveTools', () => {
                 'x-tool': { name: 'withImageResponse' },
               },
               async handle() {
-                return fetch('https://picsum.photos/2/2');
+                return fetch(`data:image/png;base64,${base64}`);
               },
             }),
           },
@@ -452,8 +454,9 @@ describe('deriveTools', () => {
 
       it('Should return fetched image output', async () => {
         const result: MCPModelOutput = await toolsByName.withImageResponse.execute({});
-        assert.deepStrictEqual(result.content[0].type, 'image');
-        assert.deepStrictEqual(result.content[0].mimeType, 'image/jpeg');
+        assert.strictEqual(result.content[0].type, 'image');
+        assert.strictEqual(result.content[0].mimeType, 'image/png');
+        assert.strictEqual(result.content[0].data, base64);
         assert.ok(result.content[0].data.length > 0, 'Image data should not be empty');
         assert.ok(typeof result.content[0].data === 'string', 'Image data should be a base64 string');
       });
