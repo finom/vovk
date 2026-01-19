@@ -454,9 +454,15 @@ describe('deriveTools', () => {
 
       it('Should return fetched image output', async () => {
         const result: MCPModelOutput = await toolsByName.withImageResponse.execute({});
-        assert.strictEqual(result.content[0].type, 'image');
-        assert.strictEqual(result.content[0].mimeType, 'image/png');
-        assert.strictEqual(result.content[0].data, base64);
+        assert.deepStrictEqual(result, {
+          content: [
+            {
+              type: 'image',
+              mimeType: 'image/png',
+              data: base64,
+            },
+          ],
+        });
       });
     });
 
