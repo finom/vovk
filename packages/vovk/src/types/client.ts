@@ -56,7 +56,7 @@ export type VovkStreamAsyncIterable<T> = {
   [Symbol.dispose](): Promise<void> | void;
   [Symbol.asyncDispose](): Promise<void> | void;
   [Symbol.asyncIterator](): AsyncIterator<T>;
-  abortWithoutError: () => void;
+  abortSilently: () => void;
   onIterate: (cb: (data: T, i: number) => void) => () => void;
   abortController: AbortController;
 };

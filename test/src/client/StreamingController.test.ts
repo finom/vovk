@@ -103,7 +103,7 @@ describe('Streaming', () => {
 
     for await (const message of resp) {
       expectedCollected.push(message);
-      if (++count === 2) await resp.abortWithoutError();
+      if (++count === 2) await resp.abortSilently();
     }
 
     for await (const message of resp) {

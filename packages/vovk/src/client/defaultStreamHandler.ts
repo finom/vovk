@@ -56,7 +56,7 @@ export const defaultStreamHandler = ({
       [Symbol.asyncIterator]: errorIterator,
       [Symbol.dispose]: noop,
       [Symbol.asyncDispose]: async () => {},
-      abortWithoutError: noop,
+      abortSilently: noop,
       onIterate: () => noop,
     };
   }
@@ -270,7 +270,7 @@ export const defaultStreamHandler = ({
     return items;
   };
 
-  const abortWithoutError = (reason?: unknown) => {
+  const abortSilently = (reason?: unknown) => {
     isAbortedWithoutError = true;
     streamExhausted = true;
     notifyWaiters();
@@ -285,7 +285,7 @@ export const defaultStreamHandler = ({
     [Symbol.asyncIterator]: asyncIterator,
     [Symbol.dispose]: () => disposeStream('Stream disposed'),
     [Symbol.asyncDispose]: async () => disposeStream('Stream async disposed'),
-    abortWithoutError,
+    abortSilently,
     onIterate: (cb) => {
       if (abortController.signal.aborted) return () => {};
       subscribers.add(cb);
