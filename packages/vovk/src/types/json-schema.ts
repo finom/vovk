@@ -11,6 +11,7 @@ export type VovkJSONSchemaBase = {
   pattern?: string;
   $ref?: string;
   items?: VovkJSONSchemaBase;
+  prefixItems?: VovkJSONSchemaBase[];
   enum?: KnownAny[];
   minimum?: number;
   maximum?: number;
@@ -23,10 +24,11 @@ export type VovkJSONSchemaBase = {
   properties?: { [key: string]: VovkJSONSchemaBase };
   required?: string[];
   examples?: KnownAny[];
+  not?: VovkJSONSchemaBase;
   // support both $defs and definitions
   $defs?: { [key: string]: VovkJSONSchemaBase };
   definitions?: { [key: string]: VovkJSONSchemaBase };
-  additionalProperties?: boolean;
+  additionalProperties?: boolean | VovkJSONSchemaBase;
   anyOf?: VovkJSONSchemaBase[];
   oneOf?: VovkJSONSchemaBase[];
   allOf?: VovkJSONSchemaBase[];
