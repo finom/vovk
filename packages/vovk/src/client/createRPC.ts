@@ -173,12 +173,17 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
     client[staticMethodName] = handler;
   }
 
-  client.withDefaults = (newOptions?: VovkFetcherOptions<OPTS>) => {
-    return createRPC<T, OPTS>(schema, segmentName, rpcModuleName, givenFetcher, {
-      ...options,
-      ...newOptions,
-    } as VovkFetcherOptions<OPTS>);
-  };
+  Object.defineProperty(client, 'withDefaults', {
+    value: (newOptions?: VovkFetcherOptions<OPTS>) => {
+      return createRPC<T, OPTS>(schema, segmentName, rpcModuleName, givenFetcher, {
+        ...options,
+        ...newOptions,
+      } as VovkFetcherOptions<OPTS>);
+    },
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  });
 
   return client;
 };
