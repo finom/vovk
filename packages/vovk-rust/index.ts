@@ -168,7 +168,7 @@ export function toRustType(
   } else if (schema.type === 'null') {
     return '()';
   } else if (schema.type === 'array') {
-    if (schema.items) {
+    if (schema.items && typeof schema.items !== 'boolean') {
       // Check if array items are objects that need special handling
       if (schema.items.type === 'object' || schema.items.properties || schema.items.$ref) {
         // For array of objects, reference the item type with proper module path
@@ -425,6 +425,7 @@ export function processObject(
       ((propSchema.type === 'string' || !propSchema.type) && propSchema.enum) ||
       (propSchema.type === 'array' &&
         propSchema.items &&
+        typeof propSchema.items !== 'boolean' &&
         (propSchema.items.type === 'object' || propSchema.items.properties || propSchema.items.$ref)) ||
       propSchema.anyOf ||
       propSchema.oneOf ||
@@ -456,7 +457,7 @@ export function processObject(
         code += generateEnum(propSchema, propName, level + 1, pad);
       }
       // Generate types for array items if they're objects
-      else if (propSchema.type === 'array' && propSchema.items) {
+      else if (propSchema.type === 'array' && propSchema.items && typeof propSchema.items !== 'boolean') {
         // Check if items has a $ref
         if (propSchema.items.$ref) {
           const resolved = resolveRef(propSchema.items.$ref, rootSchema);
@@ -557,7 +558,10 @@ export function convertJSONSchemasToRustTypes({
             result += generateEnum(defSchema, defName, 1, pad);
           } else if (defSchema.anyOf || defSchema.oneOf || defSchema.allOf) {
             result += generateVariantEnum(defSchema, defName, [defName], 1, schemaObj, pad);
-          } else if (defSchema.type && ['string', 'number', 'integer', 'boolean', 'null'].includes(defSchema.type)) {
+          } else if (
+            typeof defSchema.type === 'string' &&
+            ['string', 'number', 'integer', 'boolean', 'null'].includes(defSchema.type)
+          ) {
             // Handle primitive types in $defs
             result += processPrimitive(defSchema, defName, 1, pad);
           }
@@ -578,7 +582,10 @@ export function convertJSONSchemasToRustTypes({
       } as const;
 
       result += processObject(rootObject, [schemaName], 1, schemaObj, pad);
-    } else if (['string', 'number', 'integer', 'boolean', 'null'].includes(schemaObj.type!)) {
+    } else if (
+      typeof schemaObj.type === 'string' &&
+      ['string', 'number', 'integer', 'boolean', 'null'].includes(schemaObj.type)
+    ) {
       // Handle primitive schema
       result += processPrimitive(schemaObj, schemaName, 1, pad);
     } else if (schemaObj.enum) {
@@ -591,7 +598,7 @@ export function convertJSONSchemasToRustTypes({
       // For array as root type, create a type alias to Vec<ItemType>
       let itemType = 'String'; // Default if no items specified
 
-      if (schemaObj.items) {
+      if (schemaObj.items && typeof schemaObj.items !== 'boolean') {
         if (schemaObj.items.type === 'object' || schemaObj.items.properties) {
           // Create the item type
           const itemSchema = {

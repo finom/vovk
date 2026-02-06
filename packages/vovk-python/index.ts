@@ -22,10 +22,10 @@ function isFileUploadSchema(s: VovkJSONSchemaBase): boolean {
   }
 
   // Check if it's an array of files
-  if (s.type === 'array' && s.items) {
+  if (s.type === 'array' && s.items && typeof s.items !== 'boolean') {
     if (Array.isArray(s.items)) {
       // For tuple-style items, check if any is a file
-      return s.items.some((item) => isFileUploadSchema(item));
+      return s.items.some((item) => typeof item !== 'boolean' && isFileUploadSchema(item));
     } else {
       return isFileUploadSchema(s.items);
     }
@@ -129,9 +129,11 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           return 'None';
         case 'array':
           if (Array.isArray(s.items)) {
-            const tupleTypes = s.items.map((sub, i) => buildType(sub, propNameForParent + `_items_${i}`));
+            const tupleTypes = s.items
+              .filter((sub): sub is VovkJSONSchemaBase => typeof sub !== 'boolean')
+              .map((sub, i) => buildType(sub, propNameForParent + `_items_${i}`));
             return `Tuple[${tupleTypes.join(', ')}]`;
-          } else if (s.items) {
+          } else if (s.items && typeof s.items !== 'boolean') {
             const itemType = buildType(s.items, propNameForParent + `_items`);
             return `List[${itemType}]`;
           } else {
