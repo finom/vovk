@@ -78,7 +78,7 @@ function generateTypeScriptCode({
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
       const desc = target.description ?? prop.description ?? undefined;
-      if (target.type === 'array' && target.items) {
+      if (target.type === 'array' && target.items && typeof target.items !== 'boolean') {
         formSample += getTsFormAppend(target.items, key, desc);
         formSample += getTsFormAppend(target.items, key, desc);
       } else {
@@ -184,7 +184,12 @@ function generatePythonCode({
         acc.push(
           `${desc ? `${getIndentSpaces(8)}# ${desc}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target)})`
         );
-      } else if (target.type === 'array' && target.items?.format === 'binary') {
+      } else if (
+        target.type === 'array' &&
+        target.items &&
+        typeof target.items !== 'boolean' &&
+        target.items.format === 'binary'
+      ) {
         const val = `${desc ? `${getIndentSpaces(8)}# ${desc}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target.items)})`;
         acc.push(val, val);
       }
@@ -252,7 +257,7 @@ function generateRustCode({
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
       const desc = target.description ?? prop.description ?? undefined;
-      if (target.type === 'array' && target.items) {
+      if (target.type === 'array' && target.items && typeof target.items !== 'boolean') {
         formSample += getRsFormPart(target.items, key, desc);
         formSample += getRsFormPart(target.items, key, desc);
       } else {

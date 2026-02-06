@@ -180,7 +180,7 @@ function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase
 }
 
 function handleArray(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase) {
-  if (schema.items) {
+  if (schema.items && typeof schema.items === 'object') {
     const itemSchema = schema.items;
     const minItems = schema.minItems || 1;
 

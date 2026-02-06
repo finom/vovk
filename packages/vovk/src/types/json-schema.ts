@@ -10,8 +10,9 @@ export type VovkJSONSchemaBase = {
   format?: string;
   pattern?: string;
   $ref?: string;
-  items?: VovkJSONSchemaBase;
+  items?: boolean | VovkJSONSchemaBase;
   prefixItems?: VovkJSONSchemaBase[];
+  additionalItems?: boolean | VovkJSONSchemaBase;
   enum?: KnownAny[];
   minimum?: number;
   maximum?: number;

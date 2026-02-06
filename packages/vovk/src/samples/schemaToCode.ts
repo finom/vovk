@@ -157,7 +157,7 @@ function formatWithDescriptions(
     if (value.length === 0) return '[]';
 
     const items = value.map((item) => {
-      const itemSchema = schema.items || ({} as VovkJSONSchemaBase);
+      const itemSchema = schema.items && typeof schema.items === 'object' ? schema.items : ({} as VovkJSONSchemaBase);
       const formattedItem = formatWithDescriptions(
         item,
         itemSchema,
@@ -345,6 +345,11 @@ function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase
 
 function handleArray(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase, ignoreBinary?: boolean) {
   if (schema.items) {
+    // If items is a boolean, return empty array (true means any items allowed, false means no items)
+    if (typeof schema.items === 'boolean') {
+      return schema.items ? [null] : [];
+    }
+
     const itemSchema = schema.items;
 
     // Check if the items are binary strings that should be ignored
