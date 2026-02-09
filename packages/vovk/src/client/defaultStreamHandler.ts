@@ -151,19 +151,23 @@ export const defaultStreamHandler = ({
 
         const chunk = typeof value === 'number' ? String.fromCharCode(value) : new TextDecoder().decode(value);
         buffer += chunk;
-        const lines = buffer.split('\n').filter(Boolean);
 
-        for (const line of lines) {
+        let newlineIdx: number;
+        while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
           if (abortController.signal.aborted && isAbortedWithoutError) {
             break;
           }
 
+          const line = buffer.slice(0, newlineIdx);
+          buffer = buffer.slice(newlineIdx + 1);
+
+          if (!line) continue;
+
           let data: object | undefined;
           try {
             data = JSON.parse(line) as object;
-            buffer = buffer.slice(line.length + 1);
           } catch {
-            break; // Incomplete JSON line, wait for more data
+            continue;
           }
 
           if (data) {
