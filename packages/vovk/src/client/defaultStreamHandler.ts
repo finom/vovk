@@ -127,6 +127,37 @@ export const defaultStreamHandler = ({
     let buffer = '';
     let iterationIndex = 0;
 
+    // Returns true if the stream should stop (error encountered)
+    const processLine = (line: string): boolean => {
+      let data: object | undefined;
+      try {
+        data = JSON.parse(line) as object;
+      } catch {
+        return false;
+      }
+
+      if (data) {
+        subscribers.forEach((cb) => {
+          if (!abortController.signal.aborted) cb(data, iterationIndex);
+        });
+
+        iterationIndex++;
+
+        if ('isError' in data && 'reason' in data) {
+          const upcomingError = (data as { reason: unknown }).reason;
+          abortController.abort(upcomingError);
+          const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
+          setStreamError(error);
+          return true;
+        } else if (!abortController.signal.aborted) {
+          cachedItems.push(data);
+          notifyWaiters();
+        }
+      }
+
+      return false;
+    };
+
     try {
       while (true) {
         if (abortController.signal.aborted && isAbortedWithoutError) {
@@ -162,37 +193,18 @@ export const defaultStreamHandler = ({
           buffer = buffer.slice(newlineIdx + 1);
 
           if (!line) continue;
-
-          let data: object | undefined;
-          try {
-            data = JSON.parse(line) as object;
-          } catch {
-            continue;
-          }
-
-          if (data) {
-            subscribers.forEach((cb) => {
-              if (!abortController.signal.aborted) cb(data, iterationIndex);
-            });
-
-            iterationIndex++;
-
-            if ('isError' in data && 'reason' in data) {
-              const upcomingError = (data as { reason: unknown }).reason;
-              abortController.abort(upcomingError);
-              const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
-              setStreamError(error);
-              return;
-            } else if (!abortController.signal.aborted) {
-              cachedItems.push(data);
-              notifyWaiters();
-            }
-          }
+          if (processLine(line)) return;
         }
 
         if (abortController.signal.aborted && isAbortedWithoutError) {
           break;
         }
+      }
+
+      // Process any remaining data in the buffer (last line without trailing newline)
+      const remaining = buffer.trim();
+      if (remaining) {
+        processLine(remaining);
       }
     } finally {
       streamExhausted = true;

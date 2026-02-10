@@ -79,9 +79,7 @@
     "prettier": "^3.7.4",
     "turbo": "^2.7.4",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.53.0"
-  },
-  "dependencies": {
+    "typescript-eslint": "^8.53.0",
     "next": "^16.1.1"
   }
 }
