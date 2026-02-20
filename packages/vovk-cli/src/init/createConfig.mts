@@ -43,11 +43,7 @@ export async function createConfig({
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
   const dir = (await getFileSystemEntryType(dotConfigPath)) === FileSystemEntryType.DIRECTORY ? dotConfigPath : root;
-  const isModule = await fs
-    .readFile(path.join(root, 'package.json'), 'utf-8')
-    .catch(() => '{}')
-    .then((content) => (JSON.parse(content) as { type: 'module' }).type === 'module');
-  const configAbsolutePath = path.join(dir, isModule ? 'vovk.config.mjs' : 'vovk.config.js');
+  const configAbsolutePath = path.join(dir, 'vovk.config.js');
 
   const typeTemplates = {
     controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
@@ -102,7 +98,8 @@ export async function createConfig({
   let configStr = `// @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = ${JSON.stringify(config, null, 2)};
-${isModule ? '\nexport default config;' : 'module.exports = config;'};`;
+
+export default config;`;
 
   if (bundle) {
     configStr = await updateConfigProperty(configStr, ['bundle', 'build'], BUNDLE_BUILD_TSDOWN);

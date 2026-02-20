@@ -15,7 +15,7 @@ export { <%= reExportWhat %> } from '<%= reExportFrom %>';
 export const <%= rpcModuleName %>: ReturnType<typeof createRPC<<%= segment.segmentType === 'mixin' ? `MixinControllers` : `Controllers${i}` %>["<%= rpcModuleName %>"], typeof import('<%- t.segmentImports[segment.segmentName].fetcher %>').fetcher extends VovkFetcher<infer U> ? U : never>>;
   <% }) 
 }) %>
-export { schema } from './schema.cjs';
+export { schema } from './schema.js';
 <% if (t.hasMixins) { %>
 export { Mixins };
 <% } %>
