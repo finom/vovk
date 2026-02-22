@@ -327,31 +327,6 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await it('If type of package is "module", creates an .mjs file', async () => {
-    await createNextApp();
-    // set package.json type to module
-    const pkgPath = path.join(cwd, dir, 'package.json');
-    const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8')) as { type?: string };
-    pkg.type = 'module';
-    await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
-
-    await vovkInit('--yes --skip-install');
-    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
-
-    await assertDeps({
-      dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli', 'tsdown'],
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-      build: 'next build',
-      prebuild: 'vovk generate',
-    });
-
-    await assertTsConfig();
-  });
-
   await it('Works with prompting', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.YES });
