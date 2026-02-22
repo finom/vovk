@@ -11,15 +11,15 @@ export const DEFAULT_ERROR_MESSAGE = 'An unknown error at the default stream han
  * This is the core streaming logic extracted for reuse outside of HTTP contexts.
  * @see https://vovk.dev/jsonlines
  */
-export const readableStreamToAsyncIterable = ({
+export const readableStreamToAsyncIterable = <T = unknown>({
   readableStream,
   abortController,
 }: {
   readableStream: ReadableStream<Uint8Array | string>;
   abortController?: AbortController;
-}): Omit<VovkStreamAsyncIterable<unknown>, 'abortController' | 'status'> => {
+}): Omit<VovkStreamAsyncIterable<T>, 'abortController' | 'status'> => {
   const reader = readableStream.getReader();
-  const subscribers = new Set<(data: unknown, i: number) => void>();
+  const subscribers = new Set<(data: T, i: number) => void>();
 
   // State
   let isAbortedWithoutError = false;
@@ -27,11 +27,11 @@ export const readableStreamToAsyncIterable = ({
   let streamError: unknown = null;
   let errorIndex = -1;
   let primaryStarted = false;
-  const cachedItems: unknown[] = [];
+  const cachedItems: T[] = [];
 
   type Waiter = {
     index: number;
-    resolve: (value: IteratorResult<unknown>) => void;
+    resolve: (value: IteratorResult<T>) => void;
     reject: (error: unknown) => void;
   };
   const waiters: Waiter[] = [];
@@ -82,9 +82,9 @@ export const readableStreamToAsyncIterable = ({
 
     // Returns true if the stream should stop (error encountered)
     const processLine = (line: string): boolean => {
-      let data: object | undefined;
+      let data: T | undefined;
       try {
-        data = JSON.parse(line) as object;
+        data = JSON.parse(line) as T;
       } catch {
         return false;
       }
@@ -96,7 +96,7 @@ export const readableStreamToAsyncIterable = ({
 
         iterationIndex++;
 
-        if ('isError' in data && 'reason' in data) {
+        if (typeof data === 'object' && data !== null && 'isError' in data && 'reason' in data) {
           const upcomingError = (data as { reason: unknown }).reason;
           abortController?.abort(upcomingError);
           const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
@@ -172,7 +172,7 @@ export const readableStreamToAsyncIterable = ({
 
   // --- Async iterator ---
 
-  async function* asyncIterator(): AsyncGenerator<unknown> {
+  async function* asyncIterator(): AsyncGenerator<T> {
     if (!primaryStarted) {
       primaryStarted = true;
       void runPrimaryReader();
@@ -203,7 +203,7 @@ export const readableStreamToAsyncIterable = ({
       }
 
       // Wait for next item or completion
-      const result = await new Promise<IteratorResult<unknown>>((resolve, reject) => {
+      const result = await new Promise<IteratorResult<T>>((resolve, reject) => {
         // Re-check state inside promise to handle race conditions
         if (streamError && index >= errorIndex) {
           reject(streamError);
@@ -237,7 +237,7 @@ export const readableStreamToAsyncIterable = ({
   // --- Public API ---
 
   const asPromise = async () => {
-    const items: unknown[] = [];
+    const items: T[] = [];
     for await (const item of asyncIterator()) {
       items.push(item);
     }

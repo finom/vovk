@@ -5,7 +5,6 @@ import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import { includeIgnoreFile } from '@eslint/compat';
-
 // @ts-check
 const ignores = [
   ...(includeIgnoreFile(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.gitignore')).ignores ?? []),
