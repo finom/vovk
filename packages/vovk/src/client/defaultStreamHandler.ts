@@ -12,15 +12,13 @@ export const DEFAULT_ERROR_MESSAGE = 'An unknown error at the default stream han
  * @see https://vovk.dev/jsonlines
  */
 export const readableStreamToAsyncIterable = ({
-  body,
+  readableStream,
   abortController,
-  status = 200,
 }: {
-  body: ReadableStream<Uint8Array>;
-  abortController: AbortController;
-  status?: number;
-}): VovkStreamAsyncIterable<unknown> => {
-  const reader = body.getReader();
+  readableStream: ReadableStream<Uint8Array>;
+  abortController?: AbortController;
+}): Omit<VovkStreamAsyncIterable<unknown>, 'abortController' | 'status'> => {
+  const reader = readableStream.getReader();
   const subscribers = new Set<(data: unknown, i: number) => void>();
 
   // State
@@ -51,7 +49,7 @@ export const readableStreamToAsyncIterable = ({
       } else if (waiter.index < cachedItems.length) {
         waiter.resolve({ value: cachedItems[waiter.index], done: false });
         handled = true;
-      } else if (streamExhausted || (abortController.signal.aborted && isAbortedWithoutError)) {
+      } else if (streamExhausted || (abortController?.signal.aborted && isAbortedWithoutError)) {
         waiter.resolve({ value: undefined, done: true });
         handled = true;
       }
@@ -72,7 +70,7 @@ export const readableStreamToAsyncIterable = ({
     isAbortedWithoutError = true;
     streamExhausted = true;
     notifyWaiters();
-    abortController.abort(reason);
+    abortController?.abort(reason);
     reader.cancel().catch(() => {});
   };
 
@@ -93,18 +91,18 @@ export const readableStreamToAsyncIterable = ({
 
       if (data) {
         subscribers.forEach((cb) => {
-          if (!abortController.signal.aborted) cb(data, iterationIndex);
+          if (!abortController?.signal.aborted) cb(data, iterationIndex);
         });
 
         iterationIndex++;
 
         if ('isError' in data && 'reason' in data) {
           const upcomingError = (data as { reason: unknown }).reason;
-          abortController.abort(upcomingError);
+          abortController?.abort(upcomingError);
           const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
           setStreamError(error);
           return true;
-        } else if (!abortController.signal.aborted) {
+        } else if (!abortController?.signal.aborted) {
           cachedItems.push(data);
           notifyWaiters();
         }
@@ -115,7 +113,7 @@ export const readableStreamToAsyncIterable = ({
 
     try {
       while (true) {
-        if (abortController.signal.aborted && isAbortedWithoutError) {
+        if (abortController?.signal.aborted && isAbortedWithoutError) {
           break;
         }
 
@@ -140,7 +138,7 @@ export const readableStreamToAsyncIterable = ({
 
         let newlineIdx: number;
         while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
-          if (abortController.signal.aborted && isAbortedWithoutError) {
+          if (abortController?.signal.aborted && isAbortedWithoutError) {
             break;
           }
 
@@ -151,7 +149,7 @@ export const readableStreamToAsyncIterable = ({
           if (processLine(line)) return;
         }
 
-        if (abortController.signal.aborted && isAbortedWithoutError) {
+        if (abortController?.signal.aborted && isAbortedWithoutError) {
           break;
         }
       }
@@ -184,7 +182,7 @@ export const readableStreamToAsyncIterable = ({
       }
 
       // Clean exit on abort without error
-      if (abortController.signal.aborted && isAbortedWithoutError) {
+      if (abortController?.signal.aborted && isAbortedWithoutError) {
         return;
       }
 
@@ -206,7 +204,7 @@ export const readableStreamToAsyncIterable = ({
           reject(streamError);
           return;
         }
-        if (abortController.signal.aborted && isAbortedWithoutError) {
+        if (abortController?.signal.aborted && isAbortedWithoutError) {
           resolve({ value: undefined, done: true });
           return;
         }
@@ -245,20 +243,19 @@ export const readableStreamToAsyncIterable = ({
     isAbortedWithoutError = true;
     streamExhausted = true;
     notifyWaiters();
-    abortController.abort(reason);
+    abortController?.abort(reason);
     reader.cancel().catch(() => {});
   };
 
   return {
-    status,
     asPromise,
-    abortController,
+    // abortController,
     [Symbol.asyncIterator]: asyncIterator,
     [Symbol.dispose]: () => disposeStream('Stream disposed'),
     [Symbol.asyncDispose]: async () => disposeStream('Stream async disposed'),
     abortSilently,
     onIterate: (cb) => {
-      if (abortController.signal.aborted) return () => {};
+      if (abortController?.signal.aborted) return () => {};
       subscribers.add(cb);
       return () => subscribers.delete(cb);
     },
@@ -324,9 +321,12 @@ export const defaultStreamHandler = ({
     throw new HttpException(HttpStatus.NULL, 'Stream body is falsy');
   }
 
-  return readableStreamToAsyncIterable({
-    body: response.body,
-    abortController,
+  return {
     status: response.status,
-  });
+    abortController,
+    ...readableStreamToAsyncIterable({
+      readableStream: response.body,
+      abortController,
+    }),
+  };
 };
