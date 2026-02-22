@@ -6,6 +6,7 @@ export { withValidationLibrary } from './validation/withValidationLibrary.js';
 export { operation } from './openapi/operation.js';
 export { openAPIToVovkSchema } from './openapi/openAPIToVovkSchema/index.js';
 export { vovkSchemaToOpenAPI } from './openapi/vovkSchemaToOpenAPI.js';
+export { readableStreamToAsyncIterable } from './client/defaultStreamHandler.js';
 
 export { VovkSchemaIdEnum } from './types/enums.js';
 export type { VovkToolDerived, VovkToolNonDerived } from './types/tools.js';

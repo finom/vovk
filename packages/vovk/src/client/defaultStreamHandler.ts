@@ -6,66 +6,21 @@ import '../utils/shim.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'An unknown error at the default stream handler';
 
-export const defaultStreamHandler = ({
-  response,
+/**
+ * Converts a ReadableStream of JSON Lines into a VovkStreamAsyncIterable.
+ * This is the core streaming logic extracted for reuse outside of HTTP contexts.
+ * @see https://vovk.dev/jsonlines
+ */
+export const readableStreamToAsyncIterable = ({
+  body,
   abortController,
+  status = 200,
 }: {
-  response: Response;
+  body: ReadableStream<Uint8Array>;
   abortController: AbortController;
+  status?: number;
 }): VovkStreamAsyncIterable<unknown> => {
-  // Handle error responses by creating a stream that fails on first iteration
-  if (!response.ok) {
-    let cachedError: HttpException | null = null;
-    let errorParsed = false;
-
-    // Parse error asynchronously and cache it
-    void response
-      .json()
-      .then((res) => {
-        cachedError = new HttpException(response.status, (res as VovkErrorResponse).message ?? DEFAULT_ERROR_MESSAGE);
-      })
-      .catch((e) => {
-        cachedError = new HttpException(response.status, (e as Error).message ?? DEFAULT_ERROR_MESSAGE, e);
-      })
-      .finally(() => {
-        errorParsed = true;
-      });
-
-    const getError = async (): Promise<HttpException> => {
-      // Wait for error to be parsed
-      while (!errorParsed) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      }
-      return cachedError ?? new HttpException(response.status, DEFAULT_ERROR_MESSAGE);
-    };
-
-    const errorIterator = (): AsyncIterator<unknown> => ({
-      async next() {
-        throw await getError();
-      },
-    });
-
-    const noop = () => {};
-
-    return {
-      status: response.status,
-      asPromise: async () => {
-        throw await getError();
-      },
-      abortController,
-      [Symbol.asyncIterator]: errorIterator,
-      [Symbol.dispose]: noop,
-      [Symbol.asyncDispose]: async () => {},
-      abortSilently: noop,
-      onIterate: () => noop,
-    };
-  }
-
-  if (!response.body) {
-    throw new HttpException(HttpStatus.NULL, 'Stream body is falsy');
-  }
-
-  const reader = response.body.getReader();
+  const reader = body.getReader();
   const subscribers = new Set<(data: unknown, i: number) => void>();
 
   // State
@@ -295,7 +250,7 @@ export const defaultStreamHandler = ({
   };
 
   return {
-    status: response.status,
+    status,
     asPromise,
     abortController,
     [Symbol.asyncIterator]: asyncIterator,
@@ -308,4 +263,70 @@ export const defaultStreamHandler = ({
       return () => subscribers.delete(cb);
     },
   };
+};
+
+export const defaultStreamHandler = ({
+  response,
+  abortController,
+}: {
+  response: Response;
+  abortController: AbortController;
+}): VovkStreamAsyncIterable<unknown> => {
+  // Handle error responses by creating a stream that fails on first iteration
+  if (!response.ok) {
+    let cachedError: HttpException | null = null;
+    let errorParsed = false;
+
+    // Parse error asynchronously and cache it
+    void response
+      .json()
+      .then((res) => {
+        cachedError = new HttpException(response.status, (res as VovkErrorResponse).message ?? DEFAULT_ERROR_MESSAGE);
+      })
+      .catch((e) => {
+        cachedError = new HttpException(response.status, (e as Error).message ?? DEFAULT_ERROR_MESSAGE, e);
+      })
+      .finally(() => {
+        errorParsed = true;
+      });
+
+    const getError = async (): Promise<HttpException> => {
+      // Wait for error to be parsed
+      while (!errorParsed) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+      return cachedError ?? new HttpException(response.status, DEFAULT_ERROR_MESSAGE);
+    };
+
+    const errorIterator = (): AsyncIterator<unknown> => ({
+      async next() {
+        throw await getError();
+      },
+    });
+
+    const noop = () => {};
+
+    return {
+      status: response.status,
+      asPromise: async () => {
+        throw await getError();
+      },
+      abortController,
+      [Symbol.asyncIterator]: errorIterator,
+      [Symbol.dispose]: noop,
+      [Symbol.asyncDispose]: async () => {},
+      abortSilently: noop,
+      onIterate: () => noop,
+    };
+  }
+
+  if (!response.body) {
+    throw new HttpException(HttpStatus.NULL, 'Stream body is falsy');
+  }
+
+  return readableStreamToAsyncIterable({
+    body: response.body,
+    abortController,
+    status: response.status,
+  });
 };
