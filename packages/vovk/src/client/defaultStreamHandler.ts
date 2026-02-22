@@ -15,7 +15,7 @@ export const readableStreamToAsyncIterable = ({
   readableStream,
   abortController,
 }: {
-  readableStream: ReadableStream<Uint8Array>;
+  readableStream: ReadableStream<Uint8Array | string>;
   abortController?: AbortController;
 }): Omit<VovkStreamAsyncIterable<unknown>, 'abortController' | 'status'> => {
   const reader = readableStream.getReader();
@@ -117,7 +117,7 @@ export const readableStreamToAsyncIterable = ({
           break;
         }
 
-        let value: Uint8Array | undefined;
+        let value: Uint8Array | string | undefined;
         let done: boolean;
 
         try {
@@ -133,7 +133,12 @@ export const readableStreamToAsyncIterable = ({
           return;
         }
 
-        const chunk = typeof value === 'number' ? String.fromCharCode(value) : new TextDecoder().decode(value);
+        const chunk =
+          typeof value === 'string'
+            ? value
+            : typeof value === 'number'
+              ? String.fromCharCode(value)
+              : new TextDecoder().decode(value);
         buffer += chunk;
 
         let newlineIdx: number;
