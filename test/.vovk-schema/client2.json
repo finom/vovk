@@ -57,10 +57,6 @@
           "path": "nested-query",
           "httpMethod": "GET"
         },
-        "postWithFormDataUsingReqVovk": {
-          "path": "form-data",
-          "httpMethod": "POST"
-        },
         "getErrorResponse": {
           "path": "error",
           "httpMethod": "GET"

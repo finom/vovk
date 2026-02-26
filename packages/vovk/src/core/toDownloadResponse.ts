@@ -1,3 +1,5 @@
+import { fileNameToDisposition } from '../utils/fileNameToDisposition.js';
+
 type BinaryData = Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | string;
 
 /**
@@ -23,7 +25,7 @@ export function toDownloadResponse(
       ...(resolvedType ? { 'Content-Type': resolvedType } : {}),
       ...(resolvedName
         ? {
-            'Content-Disposition': `attachment; filename="${resolvedName.replace(/[^\x20-\x7E]|"/g, '_')}"; filename*=UTF-8''${encodeURIComponent(resolvedName)}`,
+            'Content-Disposition': fileNameToDisposition(resolvedName),
           }
         : {}),
       ...headers,

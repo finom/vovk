@@ -201,7 +201,7 @@ export function vovkSchemaToOpenAPI({
                     200: {
                       description: 'description' in outputValidation ? outputValidation.description : 'Success',
                       content: {
-                        [outputValidation['x-isForm'] ? 'multipart/form-data' : 'application/json']: {
+                        'application/json': {
                           schema: outputValidation,
                         },
                       },

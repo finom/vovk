@@ -248,7 +248,7 @@ match response {
         body: {
           $schema: 'https://json-schema.org/draft/2020-12/schema',
           type: 'object',
-          'x-isForm': true,
+          'x-contentType': ['multipart/form-data'],
           properties: {
             email: {
               description: 'User email',
@@ -900,7 +900,7 @@ const response = await QueryRPC.search({
         validation: {
           body: {
             type: 'object',
-            'x-isForm': true,
+            'x-contentType': ['multipart/form-data'],
             properties: {
               username: {
                 description: 'Username',
@@ -1028,7 +1028,7 @@ const response = await MixedFormRPC.uploadProfile({
         validation: {
           body: {
             type: 'object',
-            'x-isForm': true,
+            'x-contentType': ['multipart/form-data'],
             properties: {
               config: {
                 description: 'Config file',

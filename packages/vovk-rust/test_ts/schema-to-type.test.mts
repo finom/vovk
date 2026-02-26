@@ -1,10 +1,11 @@
 import assert from 'node:assert';
 import { test, describe } from 'node:test';
 import { convertJSONSchemasToRustTypes } from '../index.js';
+import type { VovkJSONSchemaBase } from '../../vovk/src/index.js';
 
 describe('convertJSONSchemasToRustTypes', () => {
   test('basic primitive types', () => {
-    const schema = {
+    const schemas: Record<string, VovkJSONSchemaBase> = {
       BasicTypes: {
         type: 'object',
         properties: {
@@ -18,7 +19,7 @@ describe('convertJSONSchemasToRustTypes', () => {
     };
 
     const output = convertJSONSchemasToRustTypes({
-      schemas: schema,
+      schemas,
       rootName: 'test',
     });
 
@@ -30,7 +31,7 @@ describe('convertJSONSchemasToRustTypes', () => {
   });
 
   test('nested objects', () => {
-    const schema = {
+    const schemas: Record<string, VovkJSONSchemaBase> = {
       Parent: {
         type: 'object',
         properties: {
@@ -43,10 +44,10 @@ describe('convertJSONSchemasToRustTypes', () => {
           },
         },
       },
-    };
+    } as const;
 
     const output = convertJSONSchemasToRustTypes({
-      schemas: schema,
+      schemas,
       rootName: 'test',
     });
 
@@ -59,7 +60,7 @@ describe('convertJSONSchemasToRustTypes', () => {
   });
 
   test('array types', () => {
-    const schema = {
+    const schemas: Record<string, VovkJSONSchemaBase> = {
       ArrayTypes: {
         type: 'object',
         properties: {
@@ -79,10 +80,10 @@ describe('convertJSONSchemasToRustTypes', () => {
           },
         },
       },
-    };
+    } as const;
 
     const output = convertJSONSchemasToRustTypes({
-      schemas: schema,
+      schemas,
       rootName: 'test',
     });
 
@@ -93,7 +94,7 @@ describe('convertJSONSchemasToRustTypes', () => {
   });
 
   test('required vs optional fields', () => {
-    const schema = {
+    const schemas: Record<string, VovkJSONSchemaBase> = {
       MixedFields: {
         type: 'object',
         properties: {
@@ -104,10 +105,10 @@ describe('convertJSONSchemasToRustTypes', () => {
         },
         required: ['required1', 'required2'],
       },
-    };
+    } as const;
 
     const output = convertJSONSchemasToRustTypes({
-      schemas: schema,
+      schemas,
       rootName: 'test',
     });
 
@@ -118,7 +119,7 @@ describe('convertJSONSchemasToRustTypes', () => {
   });
 
   test('enum generation', () => {
-    const schema = {
+    const schemas: Record<string, VovkJSONSchemaBase> = {
       EnumContainer: {
         type: 'object',
         properties: {
@@ -128,10 +129,10 @@ describe('convertJSONSchemasToRustTypes', () => {
           },
         },
       },
-    };
+    } as const;
 
     const output = convertJSONSchemasToRustTypes({
-      schemas: schema,
+      schemas,
       rootName: 'test',
     });
 
@@ -145,36 +146,37 @@ describe('convertJSONSchemasToRustTypes', () => {
   });
 
   test('$ref resolution', () => {
-    const schema = {
+    const schemas: Record<string, VovkJSONSchemaBase> = {
       User: {
         type: 'object',
         properties: {
           profile: { $ref: '#/$defs/Profile' },
         },
-      },
-      $defs: {
-        Profile: {
-          type: 'object',
-          properties: {
-            name: { type: 'string' },
-            email: { type: 'string' },
+        $defs: {
+          Profile: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              email: { type: 'string' },
+            },
           },
         },
       },
-    };
+    } as const;
 
     const output = convertJSONSchemasToRustTypes({
-      schemas: schema,
+      schemas,
       rootName: 'test',
     });
 
     assert.ok(output.includes('pub struct User'));
-    assert.ok(output.includes('pub profile: Option<Profile>,') || output.includes('pub profile: Option<String>,'));
-    assert.ok(output.includes('Profile'));
+    assert.ok(output.includes('pub profile: Option<User_::profile>,'), output);
+    assert.ok(output.includes('pub struct Profile'), output);
+    assert.ok(output.includes('pub struct profile'), output);
   });
 
   test('anyOf/oneOf variants', () => {
-    const schema = {
+    const schemas: Record<string, VovkJSONSchemaBase> = {
       VariantContainer: {
         type: 'object',
         properties: {
@@ -191,10 +193,10 @@ describe('convertJSONSchemasToRustTypes', () => {
           },
         },
       },
-    };
+    } as const;
 
     const output = convertJSONSchemasToRustTypes({
-      schemas: schema,
+      schemas,
       rootName: 'test',
     });
 
@@ -221,7 +223,7 @@ describe('convertJSONSchemasToRustTypes', () => {
   });
 
   test('complex schema with multiple features', () => {
-    const schema = {
+    const schema: Record<string, VovkJSONSchemaBase> = {
       ApiResponse: {
         type: 'object',
         properties: {
@@ -248,23 +250,23 @@ describe('convertJSONSchemasToRustTypes', () => {
           },
         },
         required: ['status', 'code'],
-      },
-      $defs: {
-        User: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer' },
-            name: { type: 'string' },
-            isActive: { type: 'boolean' },
-            metadata: {
-              type: 'object',
-              additionalProperties: true,
+        $defs: {
+          User: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer' },
+              name: { type: 'string' },
+              isActive: { type: 'boolean' },
+              metadata: {
+                type: 'object',
+                additionalProperties: true,
+              },
             },
+            required: ['id', 'name'],
           },
-          required: ['id', 'name'],
         },
       },
-    };
+    } as const;
 
     const output = convertJSONSchemasToRustTypes({
       schemas: schema,

@@ -3,7 +3,7 @@ import { HttpException } from '../core/HttpException.js';
 import { createToolFactory } from '../tools/createToolFactory.js';
 import { HttpStatus } from './createValidateOnClient.js';
 import type { VovkRequest } from '../types/request.js';
-import type { CombinedSpec, VovkTypedProcedure } from '../types/validation.js';
+import type { CombinedSpec, ContentType, VovkTypedProcedure } from '../types/validation.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { KnownAny } from '../types/utils.js';
@@ -31,9 +31,9 @@ export function createStandardValidation({
       TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined,
       TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined
     >,
-    TIsForm extends boolean = false,
+    TContentType extends ContentType[] = ['application/json'],
   >({
-    isForm,
+    contentType,
     body,
     query,
     params,
@@ -47,7 +47,7 @@ export function createStandardValidation({
     operationObject,
     target,
   }: {
-    isForm?: TIsForm;
+    contentType?: TContentType;
     body?: TBody;
     query?: TQuery;
     params?: TParams;
@@ -62,7 +62,7 @@ export function createStandardValidation({
     target?: CombinedSpec.Target;
   }) {
     return withValidationLibrary({
-      isForm,
+      contentType,
       body,
       query,
       params,
@@ -78,7 +78,7 @@ export function createStandardValidation({
         TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny,
         TOutput extends CombinedSpec ? CombinedSpec.InferOutput<TOutput> : KnownAny,
         TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny,
-        TIsForm
+        TContentType
       >,
       toJSONSchema: (model, options) => toJSONSchema(model, { validationType: options.validationType, target }),
       validate: async (data, model, { validationType, i }) => {

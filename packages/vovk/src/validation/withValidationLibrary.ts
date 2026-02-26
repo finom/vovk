@@ -5,9 +5,11 @@ import { JSONLinesResponder } from '../core/JSONLinesResponder.js';
 import { HttpStatus } from '../types/enums.js';
 import type { VovkHandlerSchema, VovkValidationType } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
-import type { VovkTypedProcedure } from '../types/validation.js';
+import type { ContentType, VovkTypedProcedure } from '../types/validation.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { KnownAny } from '../types/utils.js';
+import { validateContentType } from '../req/validateContentType.js';
+import { bufferBody } from '../req/bufferBody.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 
@@ -23,16 +25,16 @@ export function withValidationLibrary<
     KnownAny,
     KnownAny,
     KnownAny,
-    boolean
+    ContentType[]
   >,
   TBodyModel,
   TQueryModel,
   TParamsModel,
   TOutputModel,
   TIterationModel,
-  TIsForm extends boolean = false,
+  TContentType extends ContentType[] = ['application/json'],
 >({
-  isForm,
+  contentType,
   disableServerSideValidation,
   skipSchemaEmission,
   validateEachIteration,
@@ -47,7 +49,7 @@ export function withValidationLibrary<
   preferTransformed,
   operationObject,
 }: {
-  isForm: TIsForm | undefined;
+  contentType: TContentType | undefined;
   disableServerSideValidation: boolean | VovkValidationType[] | undefined;
   skipSchemaEmission: boolean | VovkValidationType[] | undefined;
   validateEachIteration: boolean | undefined;
@@ -62,7 +64,7 @@ export function withValidationLibrary<
     data: unknown,
     model: NonNullable<TBodyModel | TQueryModel | TParamsModel | TOutputModel | TIterationModel>,
     meta: {
-      validationType: VovkValidationType | 'form';
+      validationType: VovkValidationType;
       req: VovkRequestAny;
       status?: number;
       i?: number;
@@ -157,13 +159,12 @@ export function withValidationLibrary<
     const { __disableClientValidation } = req.vovk.meta<Meta>();
     if (!__disableClientValidation) {
       if (body && !disableServerSideValidationKeys.includes('body')) {
-        const data = await req.vovk[isForm ? 'form' : 'body']();
-        const parsed = (await validate(data, body, { validationType: isForm ? 'form' : 'body', req })) ?? data;
+        if (typeof req.url === 'string') await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
+        validateContentType(req, contentType ?? ['application/json']);
+        const data = await req.vovk.body();
+        const parsed = (await validate(data, body, { validationType: 'body', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
-
-        // redeclare to add ability to call req.json() and req.vovk.body() again
-        req.json = () => Promise.resolve(data);
-        req.vovk[isForm ? 'form' : 'body'] = () => Promise.resolve(instance);
+        req.vovk.body = () => Promise.resolve(instance);
       }
 
       if (query && !disableServerSideValidationKeys.includes('query')) {
@@ -229,9 +230,6 @@ export function withValidationLibrary<
         query: () => (input?.query ?? {}) as THandle['__types']['query'],
         params: () => (input?.params ?? {}) as THandle['__types']['params'],
         meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
-        form: () => {
-          throw new Error('Form data is not supported in this context.');
-        },
       },
     };
 
@@ -252,7 +250,7 @@ export function withValidationLibrary<
   }
 
   const definition = {
-    isForm,
+    contentType,
     disableServerSideValidation,
     skipSchemaEmission,
     validateEachIteration,
@@ -275,7 +273,7 @@ export function withValidationLibrary<
     const getJSONSchema = (model: KnownAny, validationType: VovkValidationType) =>
       Object.assign(
         toJSONSchema(model, { validationType }),
-        validationType === 'body' && isForm ? { 'x-isForm': isForm } : {}
+        validationType === 'body' ? { 'x-contentType': contentType } : {}
       );
 
     if (body && !skipSchemaEmissionKeys.includes('body')) {

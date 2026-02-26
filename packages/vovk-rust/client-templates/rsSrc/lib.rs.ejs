@@ -45,8 +45,20 @@ vars.convertJSONSchemasToRustTypes({
     validation?.query?.description ? `Query: ${validation?.query?.description}`: '',
     validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
 ]).filter(Boolean).map((s) => s.split('\n')).flat().map((s) => ' '.repeat(4) + '/// ' + s).join('\n') %>
+<%
+    // Determine body kind: 'none', 'form', 'binary', 'text', or 'json'
+    const bodyKind = (() => {
+        if (!validation?.body) return 'none';
+        const ct = validation.body['x-contentType'];
+        if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';
+        if (validation.body.format === 'binary' || validation.body.contentEncoding === 'binary') return 'binary';
+        if (ct?.some(c => c.startsWith('text/'))) return 'text';
+        return 'json';
+    })();
+    const firstContentType = validation?.body?.['x-contentType']?.[0] || 'application/octet-stream';
+%>
     pub async fn <%= handlerName %>( 
-        body: <%- validation?.body ? (validation?.body?.['x-isForm'] ?'reqwest::multipart::Form' : `${handlerName}_::body`): '()' %>,
+        body: <%- bodyKind === 'form' ? 'reqwest::multipart::Form' : bodyKind !== 'none' ? `${handlerName}_::body` : '()' %>,
         query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
         params: <%- validation?.params ? `${handlerName}_::params` : '()' %>,
         headers: Option<&HashMap<String, String>>,
@@ -56,7 +68,7 @@ vars.convertJSONSchemasToRustTypes({
         let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
 <%- [
                 validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
-                validation?.body && !validation?.body?.['x-isForm'] ? `${handlerName}_::body` : '()',
+                bodyKind === 'json' ? `${handlerName}_::body` : '()',
                 validation?.query ? `${handlerName}_::query` : '()',
                 validation?.params ? `${handlerName}_::params` : '()'
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
@@ -65,8 +77,10 @@ vars.convertJSONSchemasToRustTypes({
             "<%= segmentName %>",
             "<%= controllerSchema.rpcModuleName %>",
             "<%= handlerNameOriginal %>",
-            <%- !validation?.body || !validation?.body?.['x-isForm'] ? `Some(&body)` : 'None' %>,
-            <%- validation?.body && validation?.body?.['x-isForm'] ? `Some(body)` : 'None' %>,
+            <%- bodyKind === 'json' ? 'Some(&body)' : 'None' %>,
+            <%- bodyKind === 'form' ? 'Some(body)' : 'None' %>,
+            <%- bodyKind === 'text' ? 'Some(body)' : 'None' %>,
+            <%- bodyKind === 'binary' ? `Some((body, "${firstContentType}".to_string()))` : 'None' %>,
             Some(&query),
             Some(&params),
             headers,

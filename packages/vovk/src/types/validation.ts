@@ -1,6 +1,7 @@
 import type { StandardSchemaV1, StandardJSONSchemaV1 } from './standard-schema.js';
 import type { KnownAny } from './utils.js';
 import type { VovkHandlerSchema, VovkSchema } from './core.js';
+import type { textTypes } from '../req/parseBody.js';
 
 export interface CombinedProps<Input = unknown, Output = Input>
   extends StandardSchemaV1.Props<Input, Output>, StandardJSONSchemaV1.Props<Input, Output> {}
@@ -20,6 +21,38 @@ export namespace CombinedSpec {
   export type SuccessResult<T> = StandardSchemaV1.SuccessResult<T>;
 }
 
+/** Application MIME types that are parsed as text (derived from parseBody.ts textTypes). */
+type TextLikeApplicationType = (typeof textTypes)[number];
+
+export type ContentType =
+  | 'application/json'
+  | 'multipart/form-data'
+  | 'application/x-www-form-urlencoded'
+  | 'text/plain'
+  | 'application/octet-stream'
+  | TextLikeApplicationType
+  | `text/${string}`
+  | `application/${string}`
+  | (string & {});
+
+export type BodyTypeFromContentType<T extends ContentType[], TBody> = T[number] extends infer A
+  ? A extends 'application/json' | `${string}+json`
+    ? TBody | Blob
+    : A extends 'multipart/form-data'
+      ? FormData | Blob
+      : A extends 'application/x-www-form-urlencoded'
+        ? URLSearchParams | FormData | Blob
+        : A extends
+              | `text/${string}`
+              | TextLikeApplicationType
+              | `${string}+xml`
+              | `${string}+text`
+              | `${string}+yaml`
+              | `${string}+json-seq`
+          ? string | Blob
+          : File | ArrayBuffer | Uint8Array | Blob
+  : never;
+
 export type VovkTypedProcedure<
   T extends (...args: KnownAny[]) => unknown,
   B = unknown,
@@ -27,7 +60,7 @@ export type VovkTypedProcedure<
   P = unknown,
   O = unknown,
   I = unknown,
-  TIsForm extends boolean = false,
+  TContentType extends ContentType[] = ['application/json'],
 > = T & {
   __types: {
     body: B;
@@ -35,7 +68,7 @@ export type VovkTypedProcedure<
     params: P;
     output: O;
     iteration: I;
-    isForm: TIsForm;
+    contentType: TContentType;
   };
   isRPC?: boolean;
 };

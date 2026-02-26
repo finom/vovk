@@ -45,7 +45,6 @@ export interface VovkRequest<TBody = unknown, TQuery = unknown, TParams = unknow
     body: () => Promise<TBody>;
     query: () => TQuery;
     meta: <T = Record<KnownAny, KnownAny>>(meta?: T | null) => T;
-    form: <T = TBody>() => Promise<T>;
     params: () => TParams;
   };
 }

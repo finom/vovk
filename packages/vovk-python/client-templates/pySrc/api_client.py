@@ -53,6 +53,7 @@ class ApiClient:
         params: Optional[Any] = None,
         headers: Optional[Dict[str, str]] = None,
         files: Optional[Any] = None,
+        body_content_type: Optional[str] = None,
         disable_client_validation: bool = False
     ) -> Any:
         """
@@ -82,6 +83,7 @@ class ApiClient:
             headers=headers,
             validation=validation,
             files=files,
+            body_content_type=body_content_type,
             disable_client_validation=disable_client_validation,
         )
         
@@ -95,6 +97,7 @@ class ApiClient:
         headers: Optional[Dict[str, str]] = None,
         files: Optional[Any] = None,
         validation: Optional[Dict[str, Any]] = None,
+        body_content_type: Optional[str] = None,
         disable_client_validation: bool = False,
     ) -> Any:
         """
@@ -108,6 +111,7 @@ class ApiClient:
             params: Optional dictionary to replace URL parameters
             headers: Optional dictionary of custom headers
             validation: Optional dictionary with JSON schemas to validate body, query, and params
+            body_content_type: Optional content type for the body (e.g. 'text/plain', 'application/octet-stream')
             disable_client_validation: Whether to disable validation entirely
             
         Returns:
@@ -123,12 +127,16 @@ class ApiClient:
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
         TIsForm = False
+        TIsText = body_content_type is not None and body_content_type.startswith('text/')
+        TIsBinary = body_content_type is not None and not TIsText
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
             # Always use format checker by default
             format_checker = FormatChecker()
-            # Validate body
-            if validation.get('body') and not validation['body'].get('x-isForm', False):
+            # Validate body (skip for form data and binary data since they can't be validated client-side)
+            body_content_types = validation.get('body', {}).get('x-contentType', [])
+            is_form = 'multipart/form-data' in body_content_types or 'application/x-www-form-urlencoded' in body_content_types
+            if validation.get('body') and not is_form and not TIsBinary:
                 if body is None:
                     raise ValueError("Body is required for validation but not provided")
                 jsonschema.validate(instance=body, schema=validation['body'], format_checker=format_checker)
@@ -145,8 +153,13 @@ class ApiClient:
                     raise ValueError("Params are required for validation but not provided")
                 jsonschema.validate(instance=params, schema=validation['params'], format_checker=format_checker)
 
-        if validation and validation.get('body') and validation['body'].get('x-isForm', False):
-            TIsForm = True
+        TIsMultipart = False
+        if validation and validation.get('body'):
+            body_ct = validation['body'].get('x-contentType', [])
+            if 'multipart/form-data' in body_ct or 'application/x-www-form-urlencoded' in body_ct:
+                TIsForm = True
+            if 'multipart/form-data' in body_ct:
+                TIsMultipart = True
 
         # Process URL and substitute path parameters
         processed_url = url
@@ -173,15 +186,46 @@ class ApiClient:
             request_headers.update(headers)
         
         response: Response
-        if TIsForm:
+        if TIsText:
+            request_headers['Content-Type'] = body_content_type # type: ignore
             response = requests.request(
                 method=http_method.upper(),
                 url=processed_url,
                 headers=request_headers,
-                files=files,
+                data=body.encode('utf-8') if isinstance(body, str) else body,
+                stream=True # Always stream for consistent handling
+            )
+        elif TIsBinary:
+            request_headers['Content-Type'] = body_content_type # type: ignore
+            response = requests.request(
+                method=http_method.upper(),
+                url=processed_url,
+                headers=request_headers,
                 data=body,
                 stream=True # Always stream for consistent handling
             )
+        elif TIsForm:
+            # When the content type is multipart/form-data and no files are provided,
+            # convert body fields to multipart tuples via the files parameter
+            # to force requests to use multipart encoding instead of application/x-www-form-urlencoded
+            if TIsMultipart and not files and body and isinstance(body, dict):
+                multipart_fields = [(k, (None, str(v))) for k, v in body.items()]
+                response = requests.request(
+                    method=http_method.upper(),
+                    url=processed_url,
+                    headers=request_headers,
+                    files=multipart_fields,
+                    stream=True # Always stream for consistent handling
+                )
+            else:
+                response = requests.request(
+                    method=http_method.upper(),
+                    url=processed_url,
+                    headers=request_headers,
+                    files=files,
+                    data=body,
+                    stream=True # Always stream for consistent handling
+                )
         else:
             response = requests.request(
                 method=http_method.upper(),

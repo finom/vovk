@@ -3,7 +3,7 @@ import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { runScript } from '../../lib/runScript.mts';
-import { ok, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { HttpMethod, type VovkSchema } from 'vovk';
 import * as YAML from 'yaml';
 import { importFresh } from '../../lib/importFresh.mts';
@@ -132,7 +132,7 @@ await describe('OpenAPI flags', async () => {
     // await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
-  await it('assigns x-isForm to multipart/form-data bodies', async () => {
+  await it('assigns x-contentType to multipart/form-data bodies', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
     await writeSpec({
       requestBodyContentType: 'multipart/form-data',
@@ -142,12 +142,14 @@ await describe('OpenAPI flags', async () => {
     const { schema, api } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
-    strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.body['x-isForm'], true);
+    deepStrictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.body['x-contentType'], [
+      'multipart/form-data',
+    ]);
     ok(typeof api.postTest === 'function', 'api.postTest should be a function');
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 
-  await it('assigns x-isForm to application/x-www-form-urlencoded bodies', async () => {
+  await it('assigns x-contentType to application/x-www-form-urlencoded bodies', async () => {
     const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
     await writeSpec({
       requestBodyContentType: 'application/x-www-form-urlencoded',
@@ -157,7 +159,9 @@ await describe('OpenAPI flags', async () => {
     const { schema } = await import(path.join(generatedClientDir, 'index.js'));
 
     strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.httpMethod, HttpMethod.POST);
-    strictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.body['x-isForm'], true);
+    deepStrictEqual(schema.segments.mixin.controllers.api.handlers.postTest.validation.body['x-contentType'], [
+      'application/x-www-form-urlencoded',
+    ]);
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 

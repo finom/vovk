@@ -212,41 +212,104 @@ export default class WithZodClientController {
   });
 
   @post.auto()
-  static handleFormData = procedure({
-    isForm: true,
+  static handleMultipartDataOnly = procedure({
+    contentType: ['multipart/form-data'],
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), search: z.string() }),
     handle: async (req) => {
-      const { hello } = await req.vovk.form();
+      const { hello } = await req.vovk.body();
       const search = req.vovk.query().search;
       return { hello, search };
     },
   });
 
   @post.auto()
-  static handleFormDataWithFile = procedure({
-    isForm: true,
+  static handleMultipartAndJsonData = procedure({
+    contentType: ['multipart/form-data', 'application/json'],
+    body: z.object({ hello: z.string().max(5) }),
+    query: z.object({ search: z.string() }),
+    output: z.object({ hello: z.string().max(5), search: z.string() }),
+    handle: async (req) => {
+      const { hello } = await req.vovk.body();
+      const search = req.vovk.query().search;
+      return { hello, search };
+    },
+  });
+
+  @post.auto()
+  static handleMultipartDataWithFile = procedure({
+    contentType: ['multipart/form-data'],
     body: z.object({ hello: z.string().max(5), file: z.file() }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), file: z.string(), search: z.string() }),
     handle: async (req) => {
-      const { hello, file } = await req.vovk.form();
+      const { hello, file } = await req.vovk.body();
       const search = req.vovk.query().search;
       return { hello, file: await file.text(), search };
     },
   });
 
   @post.auto()
-  static handleFormDataWithMultipleFiles = procedure({
-    isForm: true,
+  static handleMultipartDataWithMultipleFiles = procedure({
+    contentType: ['multipart/form-data'],
     body: z.object({ hello: z.string().max(5), files: z.array(z.file()) }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), files: z.array(z.string()), search: z.string() }),
     handle: async (req) => {
-      const { hello, files } = await req.vovk.form();
+      const { hello, files } = await req.vovk.body();
       const search = req.vovk.query().search;
       return { hello, files: await Promise.all(files.map((file) => file.text())), search };
+    },
+  });
+
+  @post.auto()
+  static handleUrlEncodedData = procedure({
+    contentType: ['application/x-www-form-urlencoded'],
+    body: z.object({ hello: z.string().max(5) }),
+    query: z.object({ search: z.string() }),
+    output: z.object({ hello: z.string().max(5), search: z.string() }),
+    handle: async (req) => {
+      const { hello } = await req.vovk.body();
+      const search = req.vovk.query().search;
+      return { hello, search };
+    },
+  });
+
+  @post.auto()
+  static handleTextPlainData = procedure({
+    contentType: ['text/plain'],
+    body: z.string().max(5),
+    query: z.object({ search: z.string() }),
+    output: z.object({ hello: z.string().max(5), search: z.string() }),
+    handle: async (req) => {
+      const hello = await req.vovk.body();
+      const search = req.vovk.query().search;
+      return { hello, search };
+    },
+  });
+
+  @post.auto()
+  static handleOctetStreamData = procedure({
+    contentType: ['image/png'],
+    body: z.file(),
+    output: z.object({ fileName: z.string() }),
+    handle: async (req) => {
+      const file = await req.vovk.body();
+      return { fileName: file.name };
+    },
+  });
+
+  @post.auto()
+  static handleOctetStreamOrJsonData = procedure({
+    contentType: ['image/png', 'application/json'],
+    body: z.union([z.file(), z.object({ hello: z.string().max(5) })]),
+    output: z.object({ type: z.string(), hello: z.string().max(5) }),
+    handle: async (req) => {
+      const fileOrJson = await req.vovk.body();
+      return fileOrJson instanceof File
+        ? { type: fileOrJson.type, hello: 'none' }
+        : { hello: fileOrJson.hello, type: 'none' };
     },
   });
 
@@ -410,6 +473,113 @@ export default class WithZodClientController {
         items,
         hasNextPage,
         nextPage: hasNextPage ? page + 1 : undefined,
+      };
+    },
+  });
+
+  // === Content-type validation: wildcard */* ===
+  @post.auto()
+  static handleWildcardContentType = procedure({
+    contentType: ['*/*'],
+    body: z.file(),
+    output: z.object({ size: z.number(), type: z.string() }),
+    handle: async (req) => {
+      const file = await req.vovk.body();
+      return { size: file.size, type: file.type };
+    },
+  });
+
+  // === Content-type validation: partial wildcard image/* ===
+  @post.auto()
+  static handleImageWildcard = procedure({
+    contentType: ['image/*'],
+    body: z.file(),
+    output: z.object({ size: z.number(), type: z.string() }),
+    handle: async (req) => {
+      const file = await req.vovk.body();
+      return { size: file.size, type: file.type };
+    },
+  });
+
+  // === Content-type validation: true application/octet-stream binary ===
+  @post.auto()
+  static handleBinaryOctetStream = procedure({
+    contentType: ['application/octet-stream'],
+    body: z.file(),
+    output: z.object({ size: z.number(), content: z.string() }),
+    handle: async (req) => {
+      const file = await req.vovk.body();
+      return { size: file.size, content: await file.text() };
+    },
+  });
+
+  // === bufferBody re-readability: JSON body ===
+  @post.auto()
+  static handleJsonRereadAfterValidation = procedure({
+    body: z.object({ hello: z.string().max(5) }),
+    handle: async (req) => {
+      const vovkBody = await req.vovk.body();
+      const fromJson = await req.json();
+      const fromText = await req.text();
+      const arrayBuf = await req.arrayBuffer();
+      const blob = await req.blob();
+      return {
+        vovkBody,
+        fromJson,
+        fromText,
+        arrayBufferByteLength: arrayBuf.byteLength,
+        blobSize: blob.size,
+      };
+    },
+  });
+
+  // === bufferBody re-readability: text/plain body ===
+  @post.auto()
+  static handleTextRereadAfterValidation = procedure({
+    contentType: ['text/plain'],
+    body: z.string().max(100),
+    handle: async (req) => {
+      const vovkBody = await req.vovk.body();
+      const fromText = await req.text();
+      const arrayBuf = await req.arrayBuffer();
+      return {
+        vovkBody,
+        fromText,
+        arrayBufferByteLength: arrayBuf.byteLength,
+      };
+    },
+  });
+
+  // === bufferBody re-readability: multipart/form-data body ===
+  @post.auto()
+  static handleFormDataRereadAfterValidation = procedure({
+    contentType: ['multipart/form-data'],
+    body: z.object({ name: z.string() }),
+    handle: async (req) => {
+      const vovkBody = await req.vovk.body();
+      const formData = await req.formData();
+      return {
+        vovkBody,
+        formDataKeys: Array.from(formData.keys()).sort(),
+      };
+    },
+  });
+
+  // === bufferBody re-readability: application/octet-stream binary body ===
+  @post.auto()
+  static handleBinaryRereadAfterValidation = procedure({
+    contentType: ['application/octet-stream'],
+    body: z.file(),
+    handle: async (req) => {
+      const file = await req.vovk.body();
+      const blob = await req.blob();
+      const arrayBuf = await req.arrayBuffer();
+      const bytes = await req.bytes();
+      return {
+        vovkBodyContent: await file.text(),
+        blobSize: blob.size,
+        arrayBufferByteLength: arrayBuf.byteLength,
+        bytesLength: bytes.length,
       };
     },
   });

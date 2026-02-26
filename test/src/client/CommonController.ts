@@ -110,12 +110,6 @@ export default class CommonController {
     return { query: req.vovk.query(), search: decodeURIComponent(req.nextUrl.search) };
   }
 
-  @post('form-data')
-  static async postWithFormDataUsingReqVovk(req: VovkRequest<FormData>) {
-    const formData = await req.vovk.form<{ field: 'value' }>();
-    return formData;
-  }
-
   @get('error')
   static getErrorResponse() {
     throw new HttpException(HttpStatus.BAD_REQUEST, 'This is an error', { theCause: 'This is the cause' });

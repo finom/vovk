@@ -46,6 +46,8 @@ fn prepare_request<B, Q, P>(
     handler_name: &str,
     body: Option<&B>,
     form: Option<multipart::Form>,
+    text_body: Option<String>,
+    binary_body: Option<(Vec<u8>, String)>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -111,8 +113,8 @@ where
         .transpose()
         .map_err(|e| format!("Failed to serialize params: {}", e))?;
 
-    // Perform JSON validation if not disabled and no form data is provided
-    if !disable_client_validation && form.is_none() {
+    // Perform JSON validation if not disabled and no form/text/binary data is provided
+    if !disable_client_validation && form.is_none() && text_body.is_none() && binary_body.is_none() {
         if let Some(body_schema) = validation.get("body") {
             if let Some(ref body_val) = body_value {
                 let schema =
@@ -189,8 +191,12 @@ where
     // Set up request headers
     let mut headers_map = reqwest::header::HeaderMap::new();
     headers_map.insert("Accept", "application/jsonl, application/json".parse().unwrap());
-    if body_value.is_some() && form.is_none() {
+    if body_value.is_some() && form.is_none() && text_body.is_none() && binary_body.is_none() {
         headers_map.insert("Content-Type", "application/json".parse().unwrap());
+    } else if text_body.is_some() {
+        headers_map.insert("Content-Type", "text/plain".parse().unwrap());
+    } else if let Some((_, ref content_type)) = binary_body {
+        headers_map.insert("Content-Type", content_type.parse().unwrap());
     }
 
     // Merge with user-provided headers if any
@@ -220,9 +226,13 @@ where
     let client = Client::new();
     let mut request = client.request(method, &url).headers(headers_map);
     
-    // Apply form data or JSON body to the request
+    // Apply form data, text body, binary body, or JSON body to the request
     if let Some(form_data) = form {
         request = request.multipart(form_data);
+    } else if let Some(text) = text_body {
+        request = request.body(text);
+    } else if let Some((bytes, _)) = binary_body {
+        request = request.body(bytes);
     } else if let Some(body_val) = body_value {
         request = request.json(&body_val);
     }
@@ -239,6 +249,8 @@ pub async fn http_request<T, B, Q, P>(
     handler_name: &str,
     body: Option<&B>,
     form: Option<multipart::Form>,
+    text_body: Option<String>,
+    binary_body: Option<(Vec<u8>, String)>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -258,6 +270,8 @@ where
         handler_name,
         body,
         form,
+        text_body,
+        binary_body,
         query,
         params,
         headers,
@@ -344,6 +358,8 @@ pub async fn http_request_stream<T, B, Q, P>(
     handler_name: &str,
     body: Option<&B>,
     form: Option<multipart::Form>,
+    text_body: Option<String>,
+    binary_body: Option<(Vec<u8>, String)>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -363,6 +379,8 @@ where
         handler_name,
         body,
         form,
+        text_body,
+        binary_body,
         query,
         params,
         headers,

@@ -1,5 +1,16 @@
 import type { VovkJSONSchemaBase } from 'vovk';
 
+// Rust reserved keywords that cannot be used as identifiers
+const RUST_KEYWORDS = new Set([
+  'as', 'break', 'const', 'continue', 'crate', 'else', 'enum', 'extern',
+  'false', 'fn', 'for', 'if', 'impl', 'in', 'let', 'loop', 'match',
+  'mod', 'move', 'mut', 'pub', 'ref', 'return', 'self', 'Self', 'static',
+  'struct', 'super', 'trait', 'true', 'type', 'unsafe', 'use', 'where',
+  'while', 'async', 'await', 'dyn', 'abstract', 'become', 'box', 'do',
+  'final', 'macro', 'override', 'priv', 'typeof', 'unsized', 'virtual',
+  'yield', 'try', 'union',
+]);
+
 // Helper function for indentation
 export function indent(level: number, pad: number = 0): string {
   return ' '.repeat(pad + level * 2);
@@ -111,6 +122,10 @@ export function toRustType(
   }
 
   if (schema.type === 'string') {
+    // Binary format maps to Vec<u8>
+    if (schema.format === 'binary' || schema.contentEncoding === 'binary') {
+      return 'Vec<u8>';
+    }
     return 'String';
   } else if (schema.type === 'number' || schema.type === 'integer') {
     // Handle numeric types with constraints
@@ -260,8 +275,8 @@ export function generateVariantEnum(
     // If it's an object type, we need to create a separate struct
     if (variant.type === 'object' || variant.properties) {
       code += `${indentFn(level + 1)}${variantName}(${name}_::${variantName}),\n`;
-      // Create a nested type definition to be added outside the enum
-      nestedTypes += processObject(variant, variantPath, level, rootSchema, pad);
+      // Create a nested type definition to be added inside a sub-module
+      nestedTypes += processObject(variant, variantPath, level + 1, rootSchema, pad);
     } else {
       // For simple types, we can include them directly in the enum
       const variantType = toRustType(variant, variantPath, rootSchema);
@@ -271,9 +286,13 @@ export function generateVariantEnum(
 
   code += `${indentFn(level)}}\n\n`;
 
-  // Add nested type definitions if needed
+  // Add nested type definitions wrapped in a sub-module
   if (nestedTypes) {
+    code += `${indentFn(level)}#[allow(non_snake_case)]\n`;
+    code += `${indentFn(level)}pub mod ${name}_ {\n`;
+    code += `${indentFn(level + 1)}use serde::{Serialize, Deserialize};\n\n`;
     code += nestedTypes;
+    code += `${indentFn(level)}}\n`;
   }
 
   return code;
@@ -350,7 +369,11 @@ export function processObject(
   // Add documentation comments for the struct
   code += generateDocComment(schema, level, pad);
 
-  if (schema.type === 'object' && schema['x-isForm'] === true) {
+  if (
+    schema.type === 'object' &&
+    (schema['x-contentType']?.includes('multipart/form-data') ||
+      schema['x-contentType']?.includes('application/x-www-form-urlencoded'))
+  ) {
     code += `${indentFn(level)}pub use reqwest::multipart::Form as ${currentName};\n`;
     return code;
   }
@@ -406,7 +429,12 @@ export function processObject(
       propType = `Option<${propType}>`;
     }
 
-    code += `${indentFn(level + 1)}pub ${propName}: ${propType},\n`;
+    if (RUST_KEYWORDS.has(propName)) {
+      code += `${indentFn(level + 1)}#[serde(rename = "${propName}")]\n`;
+      code += `${indentFn(level + 1)}pub r#${propName}: ${propType},\n`;
+    } else {
+      code += `${indentFn(level + 1)}pub ${propName}: ${propType},\n`;
+    }
   });
 
   code += `${indentFn(level)}}\n\n`;
@@ -493,7 +521,12 @@ export function processPrimitive(schema: VovkJSONSchemaBase, name: string, level
   code += `${indentFn(level)}pub type ${name} = `;
 
   if (schema.type === 'string') {
-    code += 'String';
+    // Binary format maps to Vec<u8>
+    if (schema.format === 'binary' || schema.contentEncoding === 'binary') {
+      code += 'Vec<u8>';
+    } else {
+      code += 'String';
+    }
   } else if (schema.type === 'number') {
     code += 'f64';
   } else if (schema.type === 'integer') {
@@ -531,7 +564,9 @@ export function convertJSONSchemasToRustTypes({
   const indentFn = (level: number) => ' '.repeat(pad + level * 2);
 
   // Start code generation
-  let result = `${indentFn(0)}pub mod ${rootName}_ {\n`;
+  let result = `${indentFn(0)}#[allow(non_camel_case_types)]\n`;
+  result += `${indentFn(0)}pub mod ${rootName}_ {\n`;
+  result += `${indentFn(1)}#[allow(unused_imports)]\n`;
   result += `${indentFn(1)}use serde::{Serialize, Deserialize};\n`;
 
   // Process each schema in the schemas object
@@ -551,7 +586,7 @@ export function convertJSONSchemasToRustTypes({
               required: defSchema.required || [],
               title: defSchema.title,
               description: defSchema.description,
-              'x-isForm': defSchema['x-isForm'],
+              'x-contentType': defSchema['x-contentType'],
             } as const;
             result += processObject(rootDefObject, [defName], 1, schemaObj, pad);
           } else if (defSchema.type === 'string' && defSchema.enum) {
@@ -578,7 +613,7 @@ export function convertJSONSchemasToRustTypes({
         required: schemaObj.required || [],
         title: schemaObj.title,
         description: schemaObj.description,
-        'x-isForm': schemaObj['x-isForm'],
+        'x-contentType': schemaObj['x-contentType'],
       } as const;
 
       result += processObject(rootObject, [schemaName], 1, schemaObj, pad);

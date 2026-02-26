@@ -43,6 +43,21 @@ export function hasNormalData(schema: VovkJSONSchemaBase): boolean {
 }
 
 /**
+ * Determine the body kind from the schema's x-contentType and format fields.
+ * Returns 'none', 'form', 'binary', 'text', or 'json'.
+ */
+export function getBodyKind(
+  schema: VovkJSONSchemaBase | undefined
+): 'none' | 'form' | 'binary' | 'text' | 'json' {
+  if (!schema) return 'none';
+  const ct = schema['x-contentType'] as string[] | undefined;
+  if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';
+  if (schema.format === 'binary' || schema.contentEncoding === 'binary') return 'binary';
+  if (ct?.some((c: string) => c.startsWith('text/'))) return 'text';
+  return 'json';
+}
+
+/**
  * Convert a JSON schema to Python type definitions (TypedDict and others).
  * Returns a string containing Python code with all needed classes and the top-level type.
  * This version EXCLUDES file upload properties (format: binary).
@@ -215,10 +230,22 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     classDefinitions.push(`class ${className}(TypedDict):\n    pass`);
   }
 
+  // Strip the namespace prefix from class references for class-level assignments.
+  // Inner classes are in the same scope, so they don't need the fully-qualified name.
+  // Type annotations with `from __future__ import annotations` are lazily evaluated,
+  // but class-level assignments (e.g. type aliases) are eagerly evaluated.
+  const namespacePrefix = `${namespace}.`;
+
   return classDefinitions
     .join('\n')
     .split('\n')
-    .map((line) => `${' '.repeat(pad)}${line}`)
+    .map((line) => {
+      // For class-level type alias assignments (not TypedDict fields), strip namespace prefix
+      if (!line.startsWith('    ') || line.match(/^\s+\w+\s*=/)) {
+        line = line.replaceAll(namespacePrefix, '');
+      }
+      return `${' '.repeat(pad)}${line}`;
+    })
     .join('\n');
 }
 

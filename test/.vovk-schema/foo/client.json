@@ -57,10 +57,6 @@
           "path": "nested-query",
           "httpMethod": "GET"
         },
-        "postWithFormDataUsingReqVovk": {
-          "path": "form-data",
-          "httpMethod": "POST"
-        },
         "getErrorResponse": {
           "path": "error",
           "httpMethod": "GET"
@@ -756,7 +752,7 @@
           "path": "handle-nothitng",
           "httpMethod": "POST"
         },
-        "handleFormData": {
+        "handleMultipartDataOnly": {
           "validation": {
             "body": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -770,7 +766,9 @@
               "required": [
                 "hello"
               ],
-              "x-isForm": true
+              "x-contentType": [
+                "multipart/form-data"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -802,10 +800,62 @@
               ]
             }
           },
-          "path": "handle-form-data",
+          "path": "handle-multipart-data-only",
           "httpMethod": "POST"
         },
-        "handleFormDataWithFile": {
+        "handleMultipartAndJsonData": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "multipart/form-data",
+                "application/json"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello",
+                "search"
+              ]
+            }
+          },
+          "path": "handle-multipart-and-json-data",
+          "httpMethod": "POST"
+        },
+        "handleMultipartDataWithFile": {
           "validation": {
             "body": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -825,7 +875,9 @@
                 "hello",
                 "file"
               ],
-              "x-isForm": true
+              "x-contentType": [
+                "multipart/form-data"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -861,10 +913,10 @@
               ]
             }
           },
-          "path": "handle-form-data-with-file",
+          "path": "handle-multipart-data-with-file",
           "httpMethod": "POST"
         },
-        "handleFormDataWithMultipleFiles": {
+        "handleMultipartDataWithMultipleFiles": {
           "validation": {
             "body": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -887,7 +939,9 @@
                 "hello",
                 "files"
               ],
-              "x-isForm": true
+              "x-contentType": [
+                "multipart/form-data"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -926,7 +980,177 @@
               ]
             }
           },
-          "path": "handle-form-data-with-multiple-files",
+          "path": "handle-multipart-data-with-multiple-files",
+          "httpMethod": "POST"
+        },
+        "handleUrlEncodedData": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "application/x-www-form-urlencoded"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello",
+                "search"
+              ]
+            }
+          },
+          "path": "handle-url-encoded-data",
+          "httpMethod": "POST"
+        },
+        "handleTextPlainData": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "maxLength": 5,
+              "x-contentType": [
+                "text/plain"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello",
+                "search"
+              ]
+            }
+          },
+          "path": "handle-text-plain-data",
+          "httpMethod": "POST"
+        },
+        "handleOctetStreamData": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "binary",
+              "contentEncoding": "binary",
+              "x-contentType": [
+                "image/png"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fileName"
+              ]
+            }
+          },
+          "path": "handle-octet-stream-data",
+          "httpMethod": "POST"
+        },
+        "handleOctetStreamOrJsonData": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "binary",
+                  "contentEncoding": "binary"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string",
+                      "maxLength": 5
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ]
+                }
+              ],
+              "x-contentType": [
+                "image/png",
+                "application/json"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "type",
+                "hello"
+              ]
+            }
+          },
+          "path": "handle-octet-stream-or-json-data",
           "httpMethod": "POST"
         },
         "disableServerSideValidationBool": {
@@ -1358,6 +1582,168 @@
           },
           "path": "handle-pagination",
           "httpMethod": "GET"
+        },
+        "handleWildcardContentType": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "binary",
+              "contentEncoding": "binary",
+              "x-contentType": [
+                "*/*"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "number"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "size",
+                "type"
+              ]
+            }
+          },
+          "path": "handle-wildcard-content-type",
+          "httpMethod": "POST"
+        },
+        "handleImageWildcard": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "binary",
+              "contentEncoding": "binary",
+              "x-contentType": [
+                "image/*"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "number"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "size",
+                "type"
+              ]
+            }
+          },
+          "path": "handle-image-wildcard",
+          "httpMethod": "POST"
+        },
+        "handleBinaryOctetStream": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "binary",
+              "contentEncoding": "binary",
+              "x-contentType": [
+                "application/octet-stream"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "number"
+                },
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "size",
+                "content"
+              ]
+            }
+          },
+          "path": "handle-binary-octet-stream",
+          "httpMethod": "POST"
+        },
+        "handleJsonRereadAfterValidation": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "path": "handle-json-reread-after-validation",
+          "httpMethod": "POST"
+        },
+        "handleTextRereadAfterValidation": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "maxLength": 100,
+              "x-contentType": [
+                "text/plain"
+              ]
+            }
+          },
+          "path": "handle-text-reread-after-validation",
+          "httpMethod": "POST"
+        },
+        "handleFormDataRereadAfterValidation": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "x-contentType": [
+                "multipart/form-data"
+              ]
+            }
+          },
+          "path": "handle-form-data-reread-after-validation",
+          "httpMethod": "POST"
+        },
+        "handleBinaryRereadAfterValidation": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "binary",
+              "contentEncoding": "binary",
+              "x-contentType": [
+                "application/octet-stream"
+              ]
+            }
+          },
+          "path": "handle-binary-reread-after-validation",
+          "httpMethod": "POST"
         }
       }
     },

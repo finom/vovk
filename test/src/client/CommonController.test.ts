@@ -278,18 +278,6 @@ describe('Client with vovk-client', () => {
     });
   });
 
-  it('Should handle requests form data with using of req.vovk object', async () => {
-    const body = new FormData();
-    body.append('field', 'value');
-    const result = await CommonControllerRPC.postWithFormDataUsingReqVovk({
-      body,
-    });
-
-    deepStrictEqual(result satisfies VovkReturnType<typeof CommonControllerRPC.postWithFormDataUsingReqVovk>, {
-      field: 'value',
-    });
-  });
-
   it('Should handle nested queries', async () => {
     const { query, search } = await CommonControllerRPC.getNestedQuery({ query: NESTED_QUERY_EXAMPLE });
 

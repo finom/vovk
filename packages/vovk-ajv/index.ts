@@ -26,7 +26,7 @@ const createAjv = (options: NonNullable<Options>, target: NonNullable<VovkAjvCon
   const ajv = new AjvClass({ allErrors: true, ...options });
   ajvFormats(ajv);
   ajvErrors(ajv);
-  ajv.addKeyword('x-isForm');
+  ajv.addKeyword('x-contentType');
   ajv.addKeyword('x-tsType');
   return ajv;
 };
@@ -47,10 +47,12 @@ const validate = ({
   target: VovkAjvConfig['target'] | undefined;
 }) => {
   if (input && schema) {
+    if (input instanceof Blob) {
+      return; // skip validation for binary data
+    }
     const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
     const ajv = createAjv(options ?? {}, target ?? schemaTarget);
-    const isFormData = input instanceof FormData;
-    if (input instanceof FormData) {
+    if (input instanceof FormData || input instanceof URLSearchParams) {
       const formDataEntries = Array.from(input.entries());
       const result: Record<string, unknown> = {};
 
@@ -85,11 +87,11 @@ const validate = ({
     }
     const isValid = ajv.validate(schema, input);
     if (!isValid) {
-      throw new HttpException(
-        HttpStatus.NULL,
-        `Client-side validation failed. Invalid ${isFormData ? 'form' : type}: ${ajv.errorsText()}`,
-        { input, errors: ajv.errors, endpoint }
-      );
+      throw new HttpException(HttpStatus.NULL, `Client-side validation failed. Invalid ${type}: ${ajv.errorsText()}`, {
+        input,
+        errors: ajv.errors,
+        endpoint,
+      });
     }
   }
 };

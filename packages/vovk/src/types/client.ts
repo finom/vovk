@@ -12,28 +12,34 @@ import type {
 } from './core.js';
 import type { IsEmptyObject, KnownAny, Prettify } from './utils.js';
 import type { HttpMethod } from './enums.js';
-import type { VovkValidateOnClient } from './validation.js';
+import type { BodyTypeFromContentType, ContentType, VovkValidateOnClient } from './validation.js';
 
 type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
 };
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-type Empty = {}; // TODO: Remove and replace by "object"
+type Empty = {};
 
 export type StaticMethodInput<
   T extends ((req: VovkRequest<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
     __types?: {
-      isForm: boolean;
+      contentType: ContentType[];
     };
   },
 > = OmitNullable<
   (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
-    ? (TBody extends Record<KnownAny, KnownAny>
-        ? {
-            body: T['__types'] extends { isForm: true } ? FormData : TBody;
-          }
-        : Empty) &
+    ? (T['__types'] extends { contentType: infer CT extends ContentType[] }
+        ? unknown extends TBody
+          ? Empty
+          : {
+              body: BodyTypeFromContentType<CT, TBody>;
+            }
+        : TBody extends Record<KnownAny, KnownAny>
+          ? {
+              body: TBody;
+            }
+          : Empty) &
         (TQuery extends Record<KnownAny, KnownAny>
           ? {
               query: TQuery;
@@ -133,7 +139,7 @@ export type ClientMethod<
       params: KnownAny;
       output: KnownAny;
       iteration: KnownAny;
-      isForm: boolean;
+      contentType: ContentType[];
     };
   },
   TFetcherOptions extends Record<string, KnownAny>,

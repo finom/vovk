@@ -1,4 +1,5 @@
 import { KnownAny } from './utils.js';
+import { ContentType } from './validation.js';
 
 type Type = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'integer';
 
@@ -44,5 +45,6 @@ export type VovkJSONSchemaBase = {
   minLength?: number;
   maxLength?: number;
   // 'x-foo' extensions
-  [key: `x-${string}`]: KnownAny;
+  'x-contentType'?: ContentType[]; // custom extension to track content type for body schemas
+  'x-tsType'?: string; // custom extension to track TypeScript type for code generation
 };

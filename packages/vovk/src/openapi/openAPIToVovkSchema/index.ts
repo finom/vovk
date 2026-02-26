@@ -11,6 +11,26 @@ import { HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
 import type { VovkSchema } from '../../types/core.js';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { VovkOpenAPIMixinNormalized } from '../../types/config.js';
+import { ContentType } from '../../types/validation.js';
+
+function getTsTypeString(contentType: ContentType[]): string {
+  const tsTypes = contentType.map((ct) => {
+    switch (ct) {
+      case 'application/json':
+        return 'JSON';
+      case 'multipart/form-data':
+      case 'application/x-www-form-urlencoded':
+        return 'FormData';
+      case 'text/plain':
+        return 'string';
+      case 'application/octet-stream':
+        return 'Blob | ArrayBuffer | Uint8Array';
+      default:
+        return 'unknown';
+    }
+  });
+  return tsTypes.join(' | ') || 'unknown';
+}
 
 export function openAPIToVovkSchema({
   apiRoot,
@@ -90,34 +110,33 @@ export function openAPIToVovkSchema({
             }
           : null;
 
-        // TODO: how to utilize ReferenceObject?
         const requestBodyContent = inlineRefs<RequestBodyObject>(operation.requestBody, openAPIObject)?.content ?? {};
-        const jsonBody = requestBodyContent['application/json']?.schema ?? null;
-        const formDataBody = requestBodyContent['multipart/form-data']?.schema ?? null;
-        let urlEncodedBody = requestBodyContent['application/x-www-form-urlencoded']?.schema ?? null;
-        if (formDataBody && urlEncodedBody && JSON.stringify(formDataBody) === JSON.stringify(urlEncodedBody)) {
-          urlEncodedBody = null; // Avoid duplication if both form-data and url-encoded bodies are the same
-        }
-        if (formDataBody) {
-          Object.assign(formDataBody, {
-            'x-isForm': true,
-            'x-tsType': 'FormData',
-          });
-        }
-        if (urlEncodedBody) {
-          Object.assign(urlEncodedBody, {
-            'x-isForm': true,
-            'x-tsType': 'FormData',
-          });
-        }
-        const bodySchemas = [jsonBody, formDataBody, urlEncodedBody].filter(Boolean) as SchemaObject[];
+        const contentTypes: ContentType[] = [
+          'application/json',
+          'multipart/form-data',
+          'application/x-www-form-urlencoded',
+          'text/plain',
+          'application/octet-stream',
+        ];
+
+        const bodySchemas = contentTypes
+          .map((contentType) =>
+            requestBodyContent[contentType]?.schema
+              ? { ...requestBodyContent[contentType].schema, 'x-contentType': [contentType] }
+              : null
+          )
+          .filter(Boolean) as SchemaObject[];
         const body: VovkJSONSchemaBase | null = !bodySchemas.length
           ? null
           : bodySchemas.length === 1
-            ? (bodySchemas[0] as VovkJSONSchemaBase)
-            : ({
+            ? ({
+                ...bodySchemas[0],
+                'x-tsType': getTsTypeString(bodySchemas[0]['x-contentType'] ?? []),
+              } as VovkJSONSchemaBase)
+            : {
                 anyOf: bodySchemas,
-              } as VovkJSONSchemaBase);
+                'x-tsType': getTsTypeString(bodySchemas.flatMap((s) => s['x-contentType'] ?? [])),
+              };
         const output =
           operation.responses?.['200']?.content?.['application/json']?.schema ??
           operation.responses?.['201']?.content?.['application/json']?.schema ??

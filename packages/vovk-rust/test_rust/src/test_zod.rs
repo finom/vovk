@@ -309,9 +309,9 @@ pub mod test_zod {
         let form = multipart::Form::new()
             .text("hello", "world");
         // Test successful form data validation
-        let data = with_zod_client_controller_rpc::handle_form_data(
+        let data = with_zod_client_controller_rpc::handle_multipart_data_only(
             form,
-            with_zod_client_controller_rpc::handle_form_data_::query {
+            with_zod_client_controller_rpc::handle_multipart_data_only_::query {
                 search: "value".to_string(),
             },
             (),
@@ -326,9 +326,9 @@ pub mod test_zod {
             .text("hello", "wrong_length");
 
         // Test client-side validation error
-        let result = with_zod_client_controller_rpc::handle_form_data(
+        let result = with_zod_client_controller_rpc::handle_multipart_data_only(
             form,
-            with_zod_client_controller_rpc::handle_form_data_::query {
+            with_zod_client_controller_rpc::handle_multipart_data_only_::query {
                 search: "value".to_string(),
             },
             (),
@@ -355,9 +355,9 @@ pub mod test_zod {
             .part("file", file_part);
 
         // Test successful form data with file validation
-        let data = with_zod_client_controller_rpc::handle_form_data_with_file(
+        let data = with_zod_client_controller_rpc::handle_multipart_data_with_file(
             form,
-            with_zod_client_controller_rpc::handle_form_data_with_file_::query {
+            with_zod_client_controller_rpc::handle_multipart_data_with_file_::query {
                 search: "value".to_string(),
             },
             (),
@@ -383,9 +383,9 @@ pub mod test_zod {
                 .file_name("filename2.txt")
                 .mime_str("text/plain").unwrap());
 
-        let data = with_zod_client_controller_rpc::handle_form_data_with_multiple_files(
+        let data = with_zod_client_controller_rpc::handle_multipart_data_with_multiple_files(
             form,
-            with_zod_client_controller_rpc::handle_form_data_with_multiple_files_::query {
+            with_zod_client_controller_rpc::handle_multipart_data_with_multiple_files_::query {
                 search: "value".to_string(),
             },
             (),
@@ -404,6 +404,59 @@ pub mod test_zod {
         );
     }
     
+    #[tokio::test]
+    async fn test_text_body() {
+        // Test successful text/plain body
+        let data = with_zod_client_controller_rpc::handle_text_plain_data(
+            "world".to_string(),
+            with_zod_client_controller_rpc::handle_text_plain_data_::query {
+                search: "foo".to_string(),
+            },
+            (),
+            None,
+            None,
+            false,
+        ).await.unwrap();
+
+        assert_eq!(
+            serde_json::to_value(&data).unwrap(),
+            serde_json::json!({"hello": "world", "search": "foo"})
+        );
+
+        // Test server-side validation error (text too long, client validation skipped for text)
+        let result = with_zod_client_controller_rpc::handle_text_plain_data(
+            "world wrong_length".to_string(),
+            with_zod_client_controller_rpc::handle_text_plain_data_::query {
+                search: "foo".to_string(),
+            },
+            (),
+            None,
+            None,
+            true,
+        ).await;
+
+        assert!(result.is_err());
+        let err = result.err().unwrap().to_string();
+        assert!(err.contains("<=5") || err.contains("Validation failed") || err.contains("Too big"));
+    }
+
+    #[tokio::test]
+    async fn test_binary_body() {
+        // Test successful binary body (application/octet-stream)
+        let content = "binary content here";
+        let data = with_zod_client_controller_rpc::handle_binary_octet_stream(
+            content.as_bytes().to_vec(),
+            (),
+            (),
+            None,
+            None,
+            false,
+        ).await.unwrap();
+
+        assert_eq!(data.content, content);
+        assert_eq!(data.size as usize, content.len());
+    }
+
     #[tokio::test]
     async fn test_stream() {
         // Test successful streaming

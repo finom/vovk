@@ -2,6 +2,7 @@ import { HttpStatus } from '../types/enums.js';
 import { HttpException } from '../core/HttpException.js';
 import type { VovkFetcherOptions, VovkFetcher } from '../types/client.js';
 import type { VovkHandlerSchema } from '../types/core.js';
+import { fileNameToDisposition } from '../utils/fileNameToDisposition.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
 export type { VovkFetcher };
@@ -81,19 +82,40 @@ export function createFetcher<T>({
         }
       }
 
+      const resolvedContentType =
+        body instanceof FormData
+          ? undefined // browser sets multipart/form-data with boundary automatically
+          : body instanceof URLSearchParams
+            ? 'application/x-www-form-urlencoded'
+            : typeof body === 'string'
+              ? 'text/plain'
+              : body instanceof Blob
+                ? body.type || 'application/octet-stream'
+                : body instanceof ArrayBuffer || body instanceof Uint8Array
+                  ? 'application/octet-stream'
+                  : 'application/json';
+      const resolvedFileName = body instanceof File ? body.name : undefined;
+
       requestInit = {
         method: httpMethod,
         ...init,
         headers: {
           accept: 'application/jsonl, application/json',
-          ...(body instanceof FormData ? {} : { 'content-type': 'application/json' }),
+          ...(resolvedContentType ? { 'content-type': resolvedContentType } : {}),
+          ...(resolvedFileName ? { 'content-disposition': fileNameToDisposition(resolvedFileName) } : {}),
           ...(meta ? { 'x-meta': JSON.stringify(meta) } : {}),
           ...init?.headers,
         },
       };
 
-      if (body instanceof FormData) {
+      if (body instanceof FormData || body instanceof URLSearchParams) {
         requestInit.body = body as BodyInit;
+      } else if (body instanceof Blob) {
+        requestInit.body = body as BodyInit;
+      } else if (body instanceof ArrayBuffer || body instanceof Uint8Array) {
+        requestInit.body = body as BodyInit;
+      } else if (typeof body === 'string') {
+        requestInit.body = body;
       } else if (body) {
         requestInit.body = JSON.stringify(body);
       }

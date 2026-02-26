@@ -6,7 +6,8 @@ imports: ['vovk-python']
     convertJSONSchemaToPythonDataType: t.imports['vovk-python'].convertJSONSchemaToPythonDataType,
     convertJSONSchemaToPythonFilesType: t.imports['vovk-python'].convertJSONSchemaToPythonFilesType,
     hasFiles: t.imports['vovk-python'].hasFiles,
-    hasNormalData: t.imports['vovk-python'].hasNormalData
+    hasNormalData: t.imports['vovk-python'].hasNormalData,
+    getBodyKind: t.imports['vovk-python'].getBodyKind
 }; %>
 from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
@@ -21,10 +22,12 @@ const { rpcModuleName } = controllerSchema; %>
 class <%= rpcModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
     const { validation, openapi, path, httpMethod } = handlerSchema;
     const handlerNameOriginalCapitalized = handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1);
-    const handlerName = t._.snakeCase(handlerNameOriginal); %>
+    const handlerName = t._.snakeCase(handlerNameOriginal);
+    const bodyKind = vars.getBodyKind(validation?.body);
+    const firstContentType = validation?.body?.['x-contentType']?.[0] || 'application/octet-stream'; %>
     # <%= rpcModuleName %>.<%= handlerName %> <%= httpMethod %> `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
 <%- ([
-        vars.convertJSONSchemaToPythonDataType({ schema: validation?.body, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
+        bodyKind === 'text' ? '' : bodyKind === 'binary' ? '' : vars.convertJSONSchemaToPythonDataType({ schema: validation?.body, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
         vars.convertJSONSchemaToPythonFilesType({ schema: validation?.body, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Files`, pad: 4 }),
         vars.convertJSONSchemaToPythonDataType({ schema: validation?.query, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Query`, pad: 4 }),
         vars.convertJSONSchemaToPythonDataType({ schema: validation?.params, namespace: rpcModuleName, className: `${handlerNameOriginalCapitalized}Params`, pad: 4 }),
@@ -34,7 +37,9 @@ class <%= rpcModuleName %>: <% Object.entries(controllerSchema.handlers).forEach
     @staticmethod
     def <%= handlerName %>(
 <%= [
-            validation?.body && vars.hasNormalData(validation.body) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
+            bodyKind === 'text' ? 'body: str,' : bodyKind === 'binary' ? 'body: bytes,' : '',
+            bodyKind === 'json' && validation?.body && vars.hasNormalData(validation.body) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
+            bodyKind === 'form' && validation?.body && vars.hasNormalData(validation.body) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
             validation?.body && vars.hasFiles(validation.body) ? `files: ${handlerNameOriginalCapitalized}Files,` : '',
             validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '',
             validation?.params ? `params: ${handlerNameOriginalCapitalized}Params,` : ''
@@ -56,9 +61,11 @@ class <%= rpcModuleName %>: <% Object.entries(controllerSchema.handlers).forEach
             segment_name='<%= segmentName %>',
             rpc_name='<%= rpcModuleName %>',
             handler_name='<%= handlerNameOriginal %>',
-<%= [
-                validation?.body && vars.hasNormalData(validation.body) ? 'body=body,' : '',
+<%- [
+                bodyKind === 'text' || bodyKind === 'binary' ? 'body=body,' : '',
+                (bodyKind === 'json' || bodyKind === 'form') && validation?.body && vars.hasNormalData(validation.body) ? 'body=body,' : '',
                 validation?.body && vars.hasFiles(validation.body) ? 'files=files,' : '',
+                bodyKind === 'text' || bodyKind === 'binary' ? `body_content_type='${firstContentType}',` : '',
                 validation?.query ? 'query=query,' : '',
                 validation?.params ? 'params=params,' : ''
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n') %>

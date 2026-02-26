@@ -146,24 +146,24 @@ class TestZod(unittest.TestCase):
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid output: .*hello.*")
 
     def test_form(self) -> None:
-        data: WithZodClientControllerRPC.HandleFormDataOutput = WithZodClientControllerRPC.handle_form_data(
+        data: WithZodClientControllerRPC.HandleMultipartDataOnlyOutput = WithZodClientControllerRPC.handle_multipart_data_only(
             body={"hello": "world"},
             query={"search": "value"},
         )
         self.assertEqual(data, {'hello': 'world', 'search': 'value'})
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_form_data(
+            WithZodClientControllerRPC.handle_multipart_data_only(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form: .*hello.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
 
     def test_form_with_file(self) -> None:
         file_content = "file_text_content"
         file_data = BytesIO(file_content.encode('utf-8'))
 
-        data: WithZodClientControllerRPC.HandleFormDataWithFileOutput = WithZodClientControllerRPC.handle_form_data_with_file(
+        data: WithZodClientControllerRPC.HandleMultipartDataWithFileOutput = WithZodClientControllerRPC.handle_multipart_data_with_file(
             body={"hello": "world"},
             query={"search": "value"},
             files={"file": ('filename.txt', file_data, 'text/plain')}
@@ -171,12 +171,12 @@ class TestZod(unittest.TestCase):
         self.assertEqual(data, {'file': 'file_text_content', 'hello': 'world', 'search': 'value'})
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_form_data_with_file(
+            WithZodClientControllerRPC.handle_multipart_data_with_file(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
                 files={"file": ('filename.txt', file_data, 'text/plain')}
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form: .*hello.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
 
     def test_form_with_multiple_files(self) -> None:
         file_content1 = "file_text_content1"
@@ -185,7 +185,7 @@ class TestZod(unittest.TestCase):
         file_content2 = "file_text_content2"
         file_data2 = BytesIO(file_content2.encode('utf-8'))
 
-        data: WithZodClientControllerRPC.HandleFormDataWithMultipleFilesOutput = WithZodClientControllerRPC.handle_form_data_with_multiple_files(
+        data: WithZodClientControllerRPC.HandleMultipartDataWithMultipleFilesOutput = WithZodClientControllerRPC.handle_multipart_data_with_multiple_files(
             body={"hello": "world"},
             query={"search": "value"},
             files=[
@@ -196,7 +196,7 @@ class TestZod(unittest.TestCase):
         self.assertEqual(data, {'files': ['file_text_content1', 'file_text_content2'], 'hello': 'world', 'search': 'value'})
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_form_data_with_multiple_files(
+            WithZodClientControllerRPC.handle_multipart_data_with_multiple_files(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
                 files=[
@@ -204,7 +204,7 @@ class TestZod(unittest.TestCase):
                     ('files', ('filename2.txt', file_data2, 'text/plain'))
                 ]
             )
-        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid form: .*hello.*")
+        self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
 
     def test_stream(self) -> None: ## TODO: StreamException????
         iterator: Generator[WithZodClientControllerRPC.HandleStreamIteration, None, None] = WithZodClientControllerRPC.handle_stream(
@@ -223,6 +223,38 @@ class TestZod(unittest.TestCase):
                 print(data)
                 pass
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0: .*value.*")
+
+    def test_text_plain(self) -> None:
+        data: WithZodClientControllerRPC.HandleTextPlainDataOutput = WithZodClientControllerRPC.handle_text_plain_data(
+            body="world",
+            query={"search": "value"},
+        )
+        self.assertEqual(data, {'hello': 'world', 'search': 'value'})
+
+        # Client-side validation: text body is a string, validated by jsonschema (maxLength: 5)
+        with self.assertRaises(ValidationError) as context2:
+            WithZodClientControllerRPC.handle_text_plain_data(
+                body="wrong_length",
+                query={"search": "value"},
+            )
+        self.assertIn("too long", str(context2.exception).lower())
+
+        # Server-side validation: body string too long (max 5), with client validation disabled
+        with self.assertRaises(HttpException) as context:
+            WithZodClientControllerRPC.handle_text_plain_data(
+                body="wrong_length",
+                query={"search": "value"},
+                disable_client_validation=True,
+            )
+        self.assertRegex(str(context.exception), r"Validation failed\. Invalid body")
+
+    def test_binary_octet_stream(self) -> None:
+        binary_content = b"hello binary world"
+        data: WithZodClientControllerRPC.HandleBinaryOctetStreamOutput = WithZodClientControllerRPC.handle_binary_octet_stream(
+            body=binary_content,
+        )
+        self.assertEqual(data, {'size': len(binary_content), 'content': 'hello binary world'})
+
     def test_constraints(self) -> None:
         # List of keys that are not supported
         not_supported: List[str] = []

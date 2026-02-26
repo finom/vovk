@@ -2,10 +2,10 @@ import { HttpException } from './HttpException.js';
 import { JSONLinesResponder, Responder } from './JSONLinesResponder.js';
 import { reqQuery } from '../req/reqQuery.js';
 import { reqMeta } from '../req/reqMeta.js';
-import { reqForm } from '../req/reqForm.js';
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { RouteHandler, VovkErrorResponse, VovkController, DecoratorOptions } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
+import { parseBody } from '../req/parseBody.js';
 
 class VovkApp {
   private static getHeadersFromDecoratorOptions(options?: DecoratorOptions) {
@@ -329,10 +329,9 @@ class VovkApp {
     const { _onSuccess: onSuccess, _onBefore: onBefore } = controller;
 
     req.vovk = {
-      body: () => req.json(),
+      body: () => parseBody(req),
       query: () => reqQuery(req as VovkRequest<unknown, object>),
       meta: <T = unknown>(meta?: T | null) => reqMeta<T>(req, meta),
-      form: () => reqForm(req),
       params: () => methodParams,
     };
 

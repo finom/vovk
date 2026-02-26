@@ -58,6 +58,11 @@ type CodeGenerationParams = {
   config: VovkSamplesConfig;
 };
 
+const isForm = (schema: VovkJSONSchemaBase): boolean => {
+  const contentTypes = schema['x-contentType'] ?? [];
+  return contentTypes.some((ct) => ct === 'multipart/form-data' || ct === 'application/x-www-form-urlencoded') ?? false;
+};
+
 function generateTypeScriptCode({
   handlerName,
   rpcName,
@@ -108,7 +113,7 @@ function generateTypeScriptCode({
   const tsArgs = hasArg
     ? `{
 ${[
-  bodyValidation ? `    body: ${bodyValidation['x-isForm'] ? 'formData' : getTsSample(bodyValidation)},` : null,
+  bodyValidation ? `    body: ${isForm(bodyValidation) ? 'formData' : getTsSample(bodyValidation)},` : null,
   queryValidation ? `    query: ${getTsSample(queryValidation)},` : null,
   paramsValidation ? `    params: ${getTsSample(paramsValidation)},` : null,
   config?.apiRoot ? `    apiRoot: '${config.apiRoot}',` : null,
@@ -124,7 +129,7 @@ ${[
     : '';
 
   const TS_CODE = `import { ${rpcName} } from '${packageName}';
-${bodyValidation?.['x-isForm'] ? getTsFormSample(bodyValidation) + '\n' : ''}
+${bodyValidation && isForm(bodyValidation) ? getTsFormSample(bodyValidation) + '\n' : ''}
 ${iterationValidation ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
 ${
   outputValidation
@@ -204,7 +209,7 @@ function generatePythonCode({
     : null;
 
   const PY_CODE = `from ${packageName} import ${rpcName}
-${bodyValidation?.['x-isForm'] ? 'from io import BytesIO\n' : ''}
+${bodyValidation && isForm(bodyValidation) ? 'from io import BytesIO\n' : ''}
 response = ${rpcName}.${handlerNameSnake}(${
     hasArg
       ? '\n' +
@@ -298,7 +303,7 @@ function generateRustCode({
   };
 
   const getBody = (schema: VovkJSONSchemaBase) => {
-    if (schema['x-isForm']) {
+    if (isForm(schema)) {
       return 'form';
     }
     return serdeUnwrap(getRsJSONSample(schema));
@@ -314,8 +319,8 @@ use serde_json::{
   from_value, 
   json 
 };
-${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}${bodyValidation?.['x-isForm'] ? `use reqwest::multipart;\n` : ''}#[tokio::main]
-async fn main() {${bodyValidation?.['x-isForm'] ? '\n  ' + getRsFormSample(bodyValidation) + '\n' : ''}
+${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}${bodyValidation && isForm(bodyValidation) ? `use reqwest::multipart;\n` : ''}#[tokio::main]
+async fn main() {${bodyValidation && isForm(bodyValidation) ? '\n  ' + getRsFormSample(bodyValidation) + '\n' : ''}
   let response = ${rpcNameSnake}::${handlerNameSnake}(
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
