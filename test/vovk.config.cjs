@@ -50,7 +50,6 @@ const vovkConfig = {
         fixedExtension: true,
         clean: true,
         outDir,
-        external: ['ajv', 'ajv-formats', 'ajv-errors'],
       });
     },
     outDir: './other-compiled-test-sources/bundle',

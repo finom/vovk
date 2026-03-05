@@ -22,18 +22,18 @@
   "dependencies": {
     "@testing-library/react": "^16.3.2",
     "@valibot/to-json-schema": "^1.5.0",
-    "arktype": "^2.1.29",
+    "arktype": "^2.2.0",
     "react": "^19",
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
-    "tsdown": "^0.20.3",
+    "tsdown": "^0.21.0",
     "valibot": "^1.2.0",
     "vovk-client": "^0.0.4-beta.24",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.1",
-    "@types/node": "^25.3.2",
+    "@types/node": "^25.3.3",
     "@types/react": "19.2.14",
     "@types/react-dom": "^19",
     "@types/supertest": "^7.2.0",
