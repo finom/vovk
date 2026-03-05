@@ -3,7 +3,7 @@ import { HttpException } from '../core/HttpException.js';
 import { createToolFactory } from '../tools/createToolFactory.js';
 import { HttpStatus } from './createValidateOnClient.js';
 import type { VovkRequest } from '../types/request.js';
-import type { CombinedSpec, ContentType, VovkTypedProcedure } from '../types/validation.js';
+import type { CombinedSpec, ContentType, NormalizeContentType, VovkTypedProcedure } from '../types/validation.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { KnownAny } from '../types/utils.js';
@@ -31,7 +31,7 @@ export function createStandardValidation({
       TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined,
       TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined
     >,
-    TContentType extends ContentType[] = ['application/json'],
+    TContentType extends ContentType | ContentType[] = ['application/json'],
   >({
     contentType,
     body,
@@ -61,8 +61,9 @@ export function createStandardValidation({
     operationObject?: VovkOperationObject;
     target?: CombinedSpec.Target;
   }) {
+    const normalizedContentType = (typeof contentType === 'string' ? [contentType] : contentType) as NormalizeContentType<TContentType> | undefined;
     return withValidationLibrary({
-      contentType,
+      contentType: normalizedContentType,
       body,
       query,
       params,
@@ -78,7 +79,7 @@ export function createStandardValidation({
         TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny,
         TOutput extends CombinedSpec ? CombinedSpec.InferOutput<TOutput> : KnownAny,
         TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny,
-        TContentType
+        NormalizeContentType<TContentType>
       >,
       toJSONSchema: (model, options) => toJSONSchema(model, { validationType: options.validationType, target }),
       validate: async (data, model, { validationType, i }) => {

@@ -35,6 +35,8 @@ export type ContentType =
   | `application/${string}`
   | (string & {});
 
+export type NormalizeContentType<T extends ContentType | ContentType[]> = T extends ContentType[] ? T : [T & ContentType];
+
 export type BodyTypeFromContentType<T extends ContentType[], TBody> = T[number] extends infer A
   ? A extends 'application/json' | `${string}+json`
     ? TBody | Blob
@@ -60,7 +62,7 @@ export type VovkTypedProcedure<
   P = unknown,
   O = unknown,
   I = unknown,
-  TContentType extends ContentType[] = ['application/json'],
+  TContentType extends ContentType | ContentType[] = ['application/json'],
 > = T & {
   __types: {
     body: B;
@@ -68,7 +70,7 @@ export type VovkTypedProcedure<
     params: P;
     output: O;
     iteration: I;
-    contentType: TContentType;
+    contentType: NormalizeContentType<TContentType>;
   };
   isRPC?: boolean;
 };
