@@ -41,4 +41,4 @@ jobs:
           npm --prefix test ci
 
       - name: Run tests
-        run: NODE_OPTIONS="--max-old-space-size=4096" npm t
+        run: NODE_OPTIONS="--max-old-space-size=8192" npm t
