@@ -583,4 +583,31 @@ export default class WithZodClientController {
       };
     },
   });
+
+  // === String contentType (not array) ===
+  @post.auto()
+  static handleStringContentTypeJson = procedure({
+    contentType: 'application/json',
+    body: z.object({ hello: z.string().max(5) }),
+    query: z.object({ search: z.string() }),
+    output: z.object({ hello: z.string().max(5), search: z.string() }),
+    handle: async (req) => {
+      const { hello } = await req.vovk.body();
+      const search = req.vovk.query().search;
+      return { hello, search };
+    },
+  });
+
+  @post.auto()
+  static handleStringContentTypeTextPlain = procedure({
+    contentType: 'text/plain',
+    body: z.string().max(5),
+    query: z.object({ search: z.string() }),
+    output: z.object({ hello: z.string().max(5), search: z.string() }),
+    handle: async (req) => {
+      const hello = await req.vovk.body();
+      const search = req.vovk.query().search;
+      return { hello, search };
+    },
+  });
 }

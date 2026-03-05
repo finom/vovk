@@ -888,6 +888,71 @@ describe('Content-type validation: wildcard and partial wildcard', () => {
   });
 });
 
+describe('String contentType (not array)', () => {
+  it('Should handle application/json as a string contentType', async () => {
+    const result = await WithZodClientControllerRPC.handleStringContentTypeJson({
+      body: { hello: 'world' },
+      query: { search: 'foo' },
+    });
+    const expected = {
+      hello: 'world',
+      search: 'foo',
+    };
+    null as unknown as VovkReturnType<
+      typeof WithZodClientControllerRPC.handleStringContentTypeJson
+    > satisfies typeof expected;
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleStringContentTypeJson> satisfies null;
+    deepStrictEqual(result satisfies typeof expected, expected);
+
+    const { rejects } = expectPromise(async () => {
+      await WithZodClientControllerRPC.handleStringContentTypeJson({
+        body: { hello: 'wrong_length' },
+        query: { search: 'foo' },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Validation failed. Invalid body: .*hello.*/);
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle text/plain as a string contentType', async () => {
+    type BodyType = VovkBody<typeof WithZodClientControllerRPC.handleStringContentTypeTextPlain>;
+    null as unknown as BodyType satisfies string | Blob;
+    // @ts-expect-error Expect error
+    null as unknown as BodyType satisfies FormData;
+    // @ts-expect-error Expect error
+    null as unknown as BodyType satisfies URLSearchParams;
+
+    const result = await WithZodClientControllerRPC.handleStringContentTypeTextPlain({
+      body: 'world',
+      query: { search: 'foo' },
+    });
+    const expected = {
+      hello: 'world',
+      search: 'foo',
+    };
+    null as unknown as VovkReturnType<
+      typeof WithZodClientControllerRPC.handleStringContentTypeTextPlain
+    > satisfies typeof expected;
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleStringContentTypeTextPlain> satisfies null;
+    deepStrictEqual(result satisfies typeof expected, expected);
+
+    const { rejects } = expectPromise(async () => {
+      await WithZodClientControllerRPC.handleStringContentTypeTextPlain({
+        body: 'world wrong_length',
+        query: { search: 'foo' },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Too big: expected string to have <=5 characters/);
+    await rejects.toThrowError(HttpException);
+  });
+});
+
 describe('Body re-readability after validation (bufferBody workaround)', () => {
   it('Should allow reading JSON body via req.json(), req.text(), req.arrayBuffer(), req.blob() after validation', async () => {
     const body = { hello: 'world' };
