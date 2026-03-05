@@ -28,7 +28,7 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
         mainFields: ['module', 'main'],
       },
     },
-    deps: { neverBundle: ['next/**'] },
+    noExternal: ['!next/**'],
   });
 };
 
