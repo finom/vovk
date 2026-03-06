@@ -13,6 +13,14 @@ export interface CombinedSpec<Input = unknown, Output = Input> {
   '~standard': CombinedProps<Input, Output>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace CombinedSpec {
+  export type Target = StandardJSONSchemaV1.Target;
+  export type InferInput<T extends StandardSchemaV1> = StandardSchemaV1.InferInput<T>;
+  export type InferOutput<T extends StandardSchemaV1> = StandardSchemaV1.InferOutput<T>;
+  export type SuccessResult<T> = StandardSchemaV1.SuccessResult<T>;
+}
+
 /** Application MIME types that are parsed as text (derived from parseBody.ts textTypes). */
 type TextLikeApplicationType = (typeof textTypes)[number];
 
