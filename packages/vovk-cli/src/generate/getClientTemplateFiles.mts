@@ -78,7 +78,7 @@ export async function getClientTemplateFiles({
     const defOutDir =
       configKey === 'composedClient' ? templateDef.composedClient?.outDir : templateDef.segmentedClient?.outDir;
 
-    let files: { filePath: string; isSingleFileTemplate: boolean }[] = [];
+    let files: { filePath: string; isSingleFileTemplate: boolean }[];
 
     const outCwdRelativeDir = forceOutCwdRelativeDir ?? cliOutDir ?? defOutDir ?? configOutDir;
 

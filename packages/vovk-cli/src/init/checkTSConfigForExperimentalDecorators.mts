@@ -10,7 +10,8 @@ export async function checkTSConfigForExperimentalDecorators(root: string) {
     tsconfigContent = await fs.readFile(tsconfigPath, 'utf8');
   } catch (error) {
     throw new Error(
-      `Failed to read tsconfig.json at ${tsconfigPath}. You can run "npx tsc --init" to create it. ${String(error)}`
+      `Failed to read tsconfig.json at ${tsconfigPath}. You can run "npx tsc --init" to create it. ${String(error)}`,
+      { cause: error }
     );
   }
 

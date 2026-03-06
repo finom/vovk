@@ -20,12 +20,12 @@ export function addClassToSegmentCode(
   const sourceFile = project.createSourceFile('route.ts', segmentSourceCode, { overwrite: true });
 
   // Add the import if it doesn't exist
-  let importDeclaration = sourceFile.getImportDeclaration((imp) => {
+  const importDeclaration = sourceFile.getImportDeclaration((imp) => {
     return imp.getModuleSpecifierValue() === importPath;
   });
 
   if (!importDeclaration) {
-    importDeclaration = sourceFile.addImportDeclaration({
+    sourceFile.addImportDeclaration({
       defaultImport: sourceName,
       moduleSpecifier: importPath,
     });

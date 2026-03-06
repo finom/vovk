@@ -124,7 +124,6 @@ export function withValidationLibrary<
           } else {
             parsed = item;
           }
-          i++;
           return preferTransformed ? parsed : item;
         };
 
