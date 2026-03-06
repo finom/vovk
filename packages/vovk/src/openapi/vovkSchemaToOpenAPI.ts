@@ -245,13 +245,15 @@ export function vovkSchemaToOpenAPI({
                   requestBody: h.operationObject?.requestBody ?? {
                     description: 'description' in bodyValidation ? bodyValidation.description : 'Request body',
                     required: true,
-                    content: bodyValidation['x-contentType']?.length ?
-                      Object.fromEntries(bodyValidation['x-contentType']!.map((ct) => [ct, { schema: bodyValidation as SchemaObject }]))
-                    : {
-                      'application/json': {
-                        schema: bodyValidation as SchemaObject,
-                      },
-                    },
+                    content: bodyValidation['x-contentType']?.length
+                      ? Object.fromEntries(
+                          bodyValidation['x-contentType']!.map((ct) => [ct, { schema: bodyValidation as SchemaObject }])
+                        )
+                      : {
+                          'application/json': {
+                            schema: bodyValidation as SchemaObject,
+                          },
+                        },
                   },
                 }
               : {}),

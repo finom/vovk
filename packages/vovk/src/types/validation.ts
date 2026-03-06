@@ -35,7 +35,9 @@ export type ContentType =
   | `application/${string}`
   | (string & {});
 
-export type NormalizeContentType<T extends ContentType | ContentType[]> = T extends ContentType[] ? T : [T & ContentType];
+export type NormalizeContentType<T extends ContentType | ContentType[]> = T extends ContentType[]
+  ? T
+  : [T & ContentType];
 
 export type BodyTypeFromContentType<T extends ContentType[], TBody> = T[number] extends infer A
   ? A extends 'application/json' | `${string}+json`
