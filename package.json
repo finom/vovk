@@ -20,7 +20,7 @@
     "test:unit": "NODE_ENV=test node --experimental-strip-types --test --test-concurrency=1 ./test/**/*.test.ts",
     "prettier": "prettier --write .",
     "serve:unit": "npm --prefix test run generate && npm --prefix test run dev",
-    "lint-nofix": "eslint .",
+    "lint-nofix": "eslint . -c eslint.config.js",
     "lint": "npm run lint-nofix -- --fix",
     "build": "npm run rm-dist --prefix packages/vovk && npm run build --prefix packages/vovk && npm run build --prefix packages/vovk-cli && turbo run build --force --dangerously-disable-package-manager-check",
     "vpub-check-vars": "if [ -z \"$VERSION_TYPE\" ] || [ -z \"$PACKAGE\" ] || [ -z \"$NPM_TAG\" ]; then echo 'Error: some vars are not set'; exit 1; fi;",
