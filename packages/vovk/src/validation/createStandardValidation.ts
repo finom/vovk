@@ -61,7 +61,9 @@ export function createStandardValidation({
     operationObject?: VovkOperationObject;
     target?: CombinedSpec.Target;
   }) {
-    const normalizedContentType = (typeof contentType === 'string' ? [contentType] : contentType) as NormalizeContentType<TContentType> | undefined;
+    const normalizedContentType = (typeof contentType === 'string' ? [contentType] : contentType) as
+      | NormalizeContentType<TContentType>
+      | undefined;
     return withValidationLibrary({
       contentType: normalizedContentType,
       body,

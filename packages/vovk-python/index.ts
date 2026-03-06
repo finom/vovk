@@ -46,9 +46,7 @@ export function hasNormalData(schema: VovkJSONSchemaBase): boolean {
  * Determine the body kind from the schema's x-contentType and format fields.
  * Returns 'none', 'form', 'binary', 'text', or 'json'.
  */
-export function getBodyKind(
-  schema: VovkJSONSchemaBase | undefined
-): 'none' | 'form' | 'binary' | 'text' | 'json' {
+export function getBodyKind(schema: VovkJSONSchemaBase | undefined): 'none' | 'form' | 'binary' | 'text' | 'json' {
   if (!schema) return 'none';
   const ct = schema['x-contentType'] as string[] | undefined;
   if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';

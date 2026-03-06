@@ -14,6 +14,7 @@ npx vovk new controller service <n>  # scaffold controller + service pair
 ```
 
 Typical `package.json` scripts:
+
 ```json
 {
   "dev": "PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others",
@@ -25,11 +26,13 @@ Typical `package.json` scripts:
 ## Packages and installation
 
 Three packages are required:
+
 - `vovk` — runtime library (decorators, procedure, types, utilities)
 - `vovk-client` — re-exports the generated TypeScript RPC client
 - `vovk-cli` — CLI for code generation, dev server (dev dependency)
 
 Optional:
+
 - `vovk-ajv` — client-side validation via Ajv
 - `zod` — server-side validation schemas
 - `concurrently` — run vovk dev + next dev in parallel
@@ -91,7 +94,7 @@ import HelloController from '../../../modules/hello/HelloController';
 import UserController from '../../../modules/user/UserController';
 
 const controllers = {
-  HelloRPC: HelloController,   // key = generated RPC module name
+  HelloRPC: HelloController, // key = generated RPC module name
   UserRPC: UserController,
 };
 
@@ -164,6 +167,7 @@ export default class UserService {
 ```
 
 Inject services via `private static`:
+
 ```typescript
 private static userService = UserService;
 // access as: this.userService.getUser(id)
@@ -183,6 +187,7 @@ const user = await UserRPC.updateUser({
 ```
 
 For React Query:
+
 ```typescript
 const { data } = useQuery({
   queryKey: UserRPC.getUser.queryKey(),
@@ -193,6 +198,7 @@ const { data } = useQuery({
 ## JSON Lines streaming
 
 Server (generator syntax):
+
 ```typescript
 @post('completions')
 static streamTokens = procedure({
@@ -204,6 +210,7 @@ static streamTokens = procedure({
 ```
 
 Client (disposable async iterator):
+
 ```typescript
 using stream = await StreamRPC.streamTokens();
 for await (const { message } of stream) {
@@ -282,28 +289,41 @@ import {
   // Segment init
   initSegment,
   // Decorators
-  get, post, put, patch, del, head, options,  // HTTP methods
-  prefix,                                      // class URL prefix
-  operation,                                   // OpenAPI metadata
+  get,
+  post,
+  put,
+  patch,
+  del,
+  head,
+  options, // HTTP methods
+  prefix, // class URL prefix
+  operation, // OpenAPI metadata
   // Procedure
   procedure,
   // Decorator factory
   createDecorator,
   // Error handling
-  HttpException, HttpStatus,
+  HttpException,
+  HttpStatus,
   // Streaming
   JSONLinesResponder,
   // Types
-  type VovkRequest,      // extends NextRequest with typed body/query
-  type VovkReturnType,   // extract return type from controller method
-  type VovkBody, type VovkQuery, type VovkParams, type VovkOutput,
-  type VovkClientBody, type VovkClientQuery, type VovkClientParams,
+  type VovkRequest, // extends NextRequest with typed body/query
+  type VovkReturnType, // extract return type from controller method
+  type VovkBody,
+  type VovkQuery,
+  type VovkParams,
+  type VovkOutput,
+  type VovkClientBody,
+  type VovkClientQuery,
+  type VovkClientParams,
   type VovkClientReturnType,
-  type VovkConfig, type VovkIteration,
+  type VovkConfig,
+  type VovkIteration,
   // Utilities
-  deriveTools,                  // AI function calling
-  controllersToStaticParams,    // static export
-  multitenant,                  // multitenancy routing
+  deriveTools, // AI function calling
+  controllersToStaticParams, // static export
+  multitenant, // multitenancy routing
 } from 'vovk';
 ```
 
