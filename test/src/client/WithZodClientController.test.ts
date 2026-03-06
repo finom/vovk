@@ -936,9 +936,9 @@ describe('String contentType (not array)', () => {
     null as unknown as VovkReturnType<
       typeof WithZodClientControllerRPC.handleStringContentTypeTextPlain
     > satisfies typeof expected;
-    // @ts-expect-error Expect error
     null as unknown as VovkReturnType<
       typeof WithZodClientControllerRPC.handleStringContentTypeTextPlain
+      // @ts-expect-error Expect error
     > satisfies null;
     deepStrictEqual(result satisfies typeof expected, expected);
 
