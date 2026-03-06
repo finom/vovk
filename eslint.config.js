@@ -26,9 +26,12 @@ const ignores = [
   '**/emscripten_fetch_worker.js',
 ];
 
-export default tseslint.config(
-  {
+export default [
+  { ignores },
+  ...tseslint.config({
     name: 'Custom Config',
+    extends: [eslint.configs.recommended, ...tseslint.configs.recommended, eslintConfigPrettier],
+    files: ['**/*.ts', '**/*.mjs', '**/*.mts', '**/*.js'],
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -41,10 +44,5 @@ export default tseslint.config(
     rules: {
       'no-console': 'warn',
     },
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  eslintConfigPrettier,
-  { ignores },
-  { files: ['**/*.ts', '**/*.mjs', '**/*.mts', '**/*.js'] }
-);
+  }),
+];
