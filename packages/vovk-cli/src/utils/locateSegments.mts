@@ -25,7 +25,7 @@ export async function locateSegments({
   if (!dir) return results; // If dir is null, return empty results because this isn't a Next.js app
 
   rootDir = rootDir ?? dir;
-  let list: string[] = [];
+  let list: string[];
 
   // Read the contents of the directory
   try {
