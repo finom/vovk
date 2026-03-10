@@ -125,6 +125,15 @@ describe('procedure features', async () => {
     assert.deepEqual(result, { message: 'no args' });
   });
 
+  it('Should be able to use no arguments and transform type via generic', async () => {
+    const noArgsHandler = procedure().handle(async () => {
+      return { message: 'no args' };
+    });
+
+    const result = await noArgsHandler.fn<{ message: string }>();
+    result satisfies { message: string };
+  });
+
   it('Should assign schema', async () => {
     assert.equal(handler.schema.validation?.body?.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(handler.schema.validation?.query?.$schema, 'https://json-schema.org/draft/2020-12/schema');
