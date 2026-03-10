@@ -69,15 +69,21 @@ export type VovkStreamAsyncIterable<T> = {
 
 type IsNextJs = NextResponse extends Response ? true : false;
 
+type ActualReturnType<T extends ControllerStaticMethod> = T extends {
+  __handleFn: (...args: KnownAny[]) => infer R;
+}
+  ? R
+  : ReturnType<T>;
+
 type StaticMethodReturn<T extends ControllerStaticMethod> = IsNextJs extends true
-  ? ReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
+  ? ActualReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
     ? U
-    : ReturnType<T> extends Response | Promise<Response>
-      ? Awaited<ReturnType<T>>
-      : ReturnType<T>
-  : ReturnType<T> extends Response | Promise<Response>
-    ? Awaited<ReturnType<T>>
-    : ReturnType<T>;
+    : ActualReturnType<T> extends Response | Promise<Response>
+      ? Awaited<ActualReturnType<T>>
+      : ActualReturnType<T>
+  : ActualReturnType<T> extends Response | Promise<Response>
+    ? Awaited<ActualReturnType<T>>
+    : ActualReturnType<T>;
 
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
@@ -119,7 +125,7 @@ export type ClientMethodReturn<
     ? unknown extends U
       ? StaticMethodReturnPromise<T>
       : Promise<VovkStreamAsyncIterable<U>>
-    : ReturnType<T> extends
+    : ActualReturnType<T> extends
           | Promise<JSONLinesResponder<infer U>>
           | JSONLinesResponder<infer U>
           | Iterator<infer U>
