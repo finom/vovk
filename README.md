@@ -89,9 +89,7 @@ import UserService from './UserService';
 
 export default class UserController {
   @get('{id}')
-  static getUser = procedure({
-    params: z.object({ /*...*/ }),
-  }).handle(async (req, { id }) => {
+  static getUser = procedure({ /*...*/ }).handle(async (req, { id }) => {
     return UserService.getUserById(id);
   });
 }
