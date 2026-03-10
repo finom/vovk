@@ -64,10 +64,35 @@ export default class UserController {
   static getUser = procedure({
     params: z.object({
       id: z.string().uuid(),
-    }),
-    handle: async (req, { id }) => {
-      // ...
-    },
+    })
+  }).handle(async (req, { id }) => {
+    // ...
+  });
+}
+```
+
+Procedures can use services that infer parameter types from the controller method signature:
+
+```ts
+import type { VovkParams } from 'vovk';
+import type UserController from './UserController';
+
+export class UserService {
+  static async getUserById(id: VovkParams<typeof UserController.getUser>['id']) {
+    // ...
+  }
+}
+```
+
+```ts
+import UserService from '../services/UserService';
+
+export default class UserController {
+  @get('{id}')
+  static getUser = procedure({
+    params: z.object({ /*...*/ }),
+  }).handle(async (req, { id }) => {
+    return UserService.getUserById(id);
   });
 }
 ```
