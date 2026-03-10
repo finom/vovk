@@ -172,6 +172,15 @@ export default class WithZodClientController {
   });
 
   @get.auto()
+  static handleStreamNoIterationValidation = procedure({
+    query: z.object({ values: z.string().array() }),
+  }).handle(async function* (req) {
+    for (const value of req.vovk.query().values) {
+      yield { value };
+    }
+  });
+
+  @get.auto()
   static handleResponderStream = procedure({
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.string().max(5) }),
