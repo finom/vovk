@@ -154,21 +154,28 @@ export function createStandardValidation({
   >(
     options?: ProcedureOptions<TBody, TQuery, TParams, TOutput, TIteration, TContentType>
   ): BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq> & {
-    handle(
-      fn: (
-        req: TReq,
-        params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-      ) => HandleReturnType<TOutput, TIteration>
-    ): BuilderHandleReturn<
-      TBody,
-      TQuery,
-      TParams,
-      TOutput,
-      TIteration,
-      TContentType,
-      TReq,
-      HandleReturnType<TOutput, TIteration>
-    >;
+    handle: unknown extends CombinedSpec.InferOutput<TOutput>
+      ? <THandleReturn>(
+          fn: (
+            req: TReq,
+            params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
+          ) => THandleReturn
+        ) => BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq, THandleReturn>
+      : (
+          fn: (
+            req: TReq,
+            params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
+          ) => HandleReturnType<TOutput, TIteration>
+        ) => BuilderHandleReturn<
+          TBody,
+          TQuery,
+          TParams,
+          TOutput,
+          TIteration,
+          TContentType,
+          TReq,
+          HandleReturnType<TOutput, TIteration>
+        >;
   };
 
   // Implementation

@@ -279,6 +279,25 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     deepStrictEqual(expected, expectedCollected);
   });
 
+  it('Should handle stream without iteration validation and infer yield type', async () => {
+    const tokens = ['a', 'b', 'c', 'd'];
+    const expected = tokens.map((value) => ({ value }));
+    const expectedCollected: typeof expected = [];
+
+    const resp = await WithZodClientControllerRPC.handleStreamNoIterationValidation({
+      query: { values: tokens },
+    });
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+      message satisfies { value: string };
+      // @ts-expect-error Should not be any
+      message satisfies null;
+    }
+
+    deepStrictEqual(expected, expectedCollected);
+  });
+
   it('Should handle stream first iteration validation', async () => {
     const tokens = ['wrong_length', 'b', 'c', 'd'];
     const expected: { value: string }[] = [];
@@ -1009,6 +1028,16 @@ describe('Body re-readability after validation (bufferBody workaround)', () => {
     const result = await WithZodClientControllerRPC.handleBinaryRereadAfterValidation({
       body: file,
     });
+
+    result satisfies {
+      vovkBodyContent: string;
+      blobSize: number;
+      arrayBufferByteLength: number;
+      bytesLength: number;
+    };
+
+    // @ts-expect-error Should not be any
+    result satisfies null;
 
     strictEqual(result.vovkBodyContent, content);
     strictEqual(result.blobSize, file.size);
