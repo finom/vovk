@@ -105,6 +105,26 @@ describe('procedure features', async () => {
     assert.deepEqual(result, { foo: 'foo1', bar: 'bar2', baz: 'baz3', hello1: 'world', inputMeta: 'metaValue' });
   });
 
+  it('Should transform only type of response via generic', async () => {
+    const result = await handler.fn<{ foo: string; bar: string; baz: string; hello1: string; inputMeta?: string }>({
+      body: { foo: 'foo1' },
+      query: { bar: 'bar2' },
+      params: { baz: 'baz3' },
+      meta: { hello: 'world', inputMeta: 'metaValue' },
+    });
+
+    result satisfies { foo: string; bar: string; baz: string; hello1: string; inputMeta?: string };
+  });
+
+  it('Should be able to use no arguments', async () => {
+    const noArgsHandler = procedure().handle(async () => {
+      return { message: 'no args' };
+    });
+
+    const result = await noArgsHandler.fn();
+    assert.deepEqual(result, { message: 'no args' });
+  });
+
   it('Should assign schema', async () => {
     assert.equal(handler.schema.validation?.body?.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(handler.schema.validation?.query?.$schema, 'https://json-schema.org/draft/2020-12/schema');

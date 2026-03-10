@@ -119,6 +119,13 @@ export function createStandardValidation({
         disableClientValidation?: boolean;
         transform: (data: Awaited<THandleReturn>, fakeReq: Pick<TReq, 'vovk'>) => TTransformed;
       }): Promise<TTransformed>;
+      <TReturnType = THandleReturn>(input: {
+        body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
+        query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
+        params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
+        meta?: Record<string, KnownAny>;
+        disableClientValidation?: boolean;
+      }): TReturnType;
       (input?: {
         body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
         query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;

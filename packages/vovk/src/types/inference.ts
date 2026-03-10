@@ -53,10 +53,8 @@ export type VovkIteration<T> = T extends {
   ? I
   : unknown;
 
-export type VovkClientBody<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends {
-  body: Exclude<infer B, Blob>;
-}
-  ? B
+export type VovkClientBody<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends { body: infer B }
+  ? Exclude<B, Blob>
   : undefined;
 
 export type VovkClientQuery<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends { query: infer Q }
