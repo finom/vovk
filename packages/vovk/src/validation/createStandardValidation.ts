@@ -162,10 +162,12 @@ export function createStandardValidation({
     options?: ProcedureOptions<TBody, TQuery, TParams, TOutput, TIteration, TContentType>
   ): BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq> & {
     handle: unknown extends CombinedSpec.InferOutput<TOutput>
-      ? <THandleFn extends (
-          req: TReq,
-          params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-        ) => KnownAny>(
+      ? <
+          THandleFn extends (
+            req: TReq,
+            params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
+          ) => KnownAny,
+        >(
           fn: THandleFn
         ) => BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq, THandleFn>
       : (
