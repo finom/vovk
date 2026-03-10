@@ -73,7 +73,8 @@ export class Init {
     }
 
     if (bundle) {
-      devDependencies.push('tsdown');
+      const TSDOWN_VERSION = '0.19.0';
+      devDependencies.push(`tsdown@${TSDOWN_VERSION}`);
     }
 
     if (updateScripts) {

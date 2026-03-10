@@ -10,10 +10,8 @@ export default class ValibotControllerAndServiceEntityController {
     summary: 'Get valibotControllerAndServiceEntities',
   })
   @get()
-  static getValibotControllerAndServiceEntities = procedure({
-    handle() {
-      return ValibotControllerAndServiceEntityService.getValibotControllerAndServiceEntities();
-    },
+  static getValibotControllerAndServiceEntities = procedure().handle(() => {
+    return ValibotControllerAndServiceEntityService.getValibotControllerAndServiceEntities();
   });
 
   @operation({
@@ -22,9 +20,8 @@ export default class ValibotControllerAndServiceEntityController {
   @get('{id}')
   static getSingleValibotControllerAndServiceEntity = procedure({
     params: toStandardJsonSchema(v.object({ id: v.string() })),
-    handle(_req, { id }) {
-      return ValibotControllerAndServiceEntityService.getSingleValibotControllerAndServiceEntity(id);
-    },
+  }).handle((_req, { id }) => {
+    return ValibotControllerAndServiceEntityService.getSingleValibotControllerAndServiceEntity(id);
   });
 
   @operation({
@@ -34,11 +31,10 @@ export default class ValibotControllerAndServiceEntityController {
   static updateValibotControllerAndServiceEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
     params: toStandardJsonSchema(v.object({ id: v.string() })),
-    async handle(req, { id }) {
-      const body = await req.json();
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
 
-      return ValibotControllerAndServiceEntityService.updateValibotControllerAndServiceEntity(id, body);
-    },
+    return ValibotControllerAndServiceEntityService.updateValibotControllerAndServiceEntity(id, body);
   });
 
   @operation({
@@ -47,11 +43,10 @@ export default class ValibotControllerAndServiceEntityController {
   @post()
   static createValibotControllerAndServiceEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
-    async handle(req) {
-      const body = await req.json();
+  }).handle(async (req) => {
+    const body = await req.json();
 
-      return ValibotControllerAndServiceEntityService.createValibotControllerAndServiceEntity(body);
-    },
+    return ValibotControllerAndServiceEntityService.createValibotControllerAndServiceEntity(body);
   });
 
   @operation({
@@ -60,8 +55,7 @@ export default class ValibotControllerAndServiceEntityController {
   @del('{id}')
   static deleteValibotControllerAndServiceEntity = procedure({
     params: toStandardJsonSchema(v.object({ id: v.string() })),
-    handle(_req, { id }) {
-      return ValibotControllerAndServiceEntityService.deleteValibotControllerAndServiceEntity(id);
-    },
+  }).handle((_req, { id }) => {
+    return ValibotControllerAndServiceEntityService.deleteValibotControllerAndServiceEntity(id);
   });
 }

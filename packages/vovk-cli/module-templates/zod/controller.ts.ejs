@@ -21,14 +21,12 @@ export default class <%= vars.ModuleName %> {
       summary: 'Get <%= t.theThings %>',
     })
     @get()
-    static get<%= t.TheThings %> = procedure({
-        handle() {
-            <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.get<%= t.TheThings %>();
-            <% } else { %>
-            return { message: 'TODO: get <%= t.theThings %>' };
-            <% } %>
-        }
+    static get<%= t.TheThings %> = procedure().handle(() => {
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.get<%= t.TheThings %>();
+        <% } else { %>
+        return { message: 'TODO: get <%= t.theThings %>' };
+        <% } %>
     });
 
     @operation({
@@ -39,13 +37,12 @@ export default class <%= vars.ModuleName %> {
       params: z.object({
         id: z.string(),
       }),
-      handle(_req, { id }) {
+    }).handle((_req, { id }) => {
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.getSingle<%= t.TheThing %>(id);
         <% } else { %>
         return { message: `TODO: get single <%= t.theThing %>`, id };
         <% } %>
-      }
     });
 
     @operation({
@@ -57,14 +54,13 @@ export default class <%= vars.ModuleName %> {
           todo: z.literal(true),
         }),
         params: z.object({ id: z.string() }),
-        async handle(req, { id }) {
-            const body = await req.json();
-            <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
-            <% } else { %>
-            return { message: `TODO: update <%= t.theThing %>`, id, body };
-            <% } %>
-        }
+    }).handle(async (req, { id }) => {
+        const body = await req.json();
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
+        <% } else { %>
+        return { message: `TODO: update <%= t.theThing %>`, id, body };
+        <% } %>
     });
 
     @operation({
@@ -75,14 +71,13 @@ export default class <%= vars.ModuleName %> {
         body: z.object({
             todo: z.literal(true),
         }),
-        async handle(req) {
-            const body = await req.json();
-            <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
-            <% } else { %>
-            return { message: `TODO: create <%= t.theThing %>`, body };
-            <% } %>
-        }
+    }).handle(async (req) => {
+        const body = await req.json();
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
+        <% } else { %>
+        return { message: `TODO: create <%= t.theThing %>`, body };
+        <% } %>
     });
 
     @operation({
@@ -93,12 +88,11 @@ export default class <%= vars.ModuleName %> {
         params: z.object({
             id: z.string(),
         }),
-        handle(req, { id }) {
-            <% if(t.withService) { %>
-            return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
-            <% } else { %>
-            return { message: `TODO: delete <%= t.theThing %>`, id };
-            <% } %>
-        }
+    }).handle((_req, { id }) => {
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
+        <% } else { %>
+        return { message: `TODO: delete <%= t.theThing %>`, id };
+        <% } %>
     });
 }

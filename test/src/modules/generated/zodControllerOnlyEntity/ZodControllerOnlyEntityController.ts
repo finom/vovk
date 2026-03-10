@@ -7,10 +7,8 @@ export default class ZodControllerOnlyEntityController {
     summary: 'Get zodControllerOnlyEntities',
   })
   @get()
-  static getZodControllerOnlyEntities = procedure({
-    handle() {
-      return { message: 'TODO: get zodControllerOnlyEntities' };
-    },
+  static getZodControllerOnlyEntities = procedure().handle(() => {
+    return { message: 'TODO: get zodControllerOnlyEntities' };
   });
 
   @operation({
@@ -21,9 +19,8 @@ export default class ZodControllerOnlyEntityController {
     params: z.object({
       id: z.string(),
     }),
-    handle(_req, { id }) {
-      return { message: `TODO: get single zodControllerOnlyEntity`, id };
-    },
+  }).handle((_req, { id }) => {
+    return { message: `TODO: get single zodControllerOnlyEntity`, id };
   });
 
   @operation({
@@ -35,11 +32,10 @@ export default class ZodControllerOnlyEntityController {
       todo: z.literal(true),
     }),
     params: z.object({ id: z.string() }),
-    async handle(req, { id }) {
-      const body = await req.json();
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
 
-      return { message: `TODO: update zodControllerOnlyEntity`, id, body };
-    },
+    return { message: `TODO: update zodControllerOnlyEntity`, id, body };
   });
 
   @operation({
@@ -50,11 +46,10 @@ export default class ZodControllerOnlyEntityController {
     body: z.object({
       todo: z.literal(true),
     }),
-    async handle(req) {
-      const body = await req.json();
+  }).handle(async (req) => {
+    const body = await req.json();
 
-      return { message: `TODO: create zodControllerOnlyEntity`, body };
-    },
+    return { message: `TODO: create zodControllerOnlyEntity`, body };
   });
 
   @operation({
@@ -65,8 +60,7 @@ export default class ZodControllerOnlyEntityController {
     params: z.object({
       id: z.string(),
     }),
-    handle(req, { id }) {
-      return { message: `TODO: delete zodControllerOnlyEntity`, id };
-    },
+  }).handle((_req, { id }) => {
+    return { message: `TODO: delete zodControllerOnlyEntity`, id };
   });
 }

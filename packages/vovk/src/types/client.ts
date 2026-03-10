@@ -93,9 +93,13 @@ type StaticMethodOptions<
 > = Partial<
   TFetcherOptions & {
     transform: (
-      staticMethodReturn: Awaited<StaticMethodReturn<T>> extends JSONLinesResponder<infer U>
-        ? VovkStreamAsyncIterable<U>
-        : Awaited<StaticMethodReturn<T>>,
+      staticMethodReturn: T extends { __types: { iteration: infer U } }
+        ? unknown extends U
+          ? Awaited<StaticMethodReturn<T>>
+          : VovkStreamAsyncIterable<U>
+        : Awaited<StaticMethodReturn<T>> extends JSONLinesResponder<infer U>
+          ? VovkStreamAsyncIterable<U>
+          : Awaited<StaticMethodReturn<T>>,
       resp: Response
     ) => R;
     fetcher: VovkFetcher<F>;
@@ -111,13 +115,17 @@ export type ClientMethodReturn<
   R,
 > = R extends object
   ? Promise<Awaited<R>>
-  : ReturnType<T> extends
-        | Promise<JSONLinesResponder<infer U>>
-        | JSONLinesResponder<infer U>
-        | Iterator<infer U>
-        | AsyncIterator<infer U>
-    ? Promise<VovkStreamAsyncIterable<U>>
-    : StaticMethodReturnPromise<T>;
+  : T extends { __types: { iteration: infer U } }
+    ? unknown extends U
+      ? StaticMethodReturnPromise<T>
+      : Promise<VovkStreamAsyncIterable<U>>
+    : ReturnType<T> extends
+          | Promise<JSONLinesResponder<infer U>>
+          | JSONLinesResponder<infer U>
+          | Iterator<infer U>
+          | AsyncIterator<infer U>
+      ? Promise<VovkStreamAsyncIterable<U>>
+      : StaticMethodReturnPromise<T>;
 /* ReturnType<T> extends
     | Promise<JSONLinesResponder<infer U>>
     | JSONLinesResponder<infer U>

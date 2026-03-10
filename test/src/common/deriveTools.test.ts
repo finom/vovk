@@ -15,11 +15,10 @@ describe('deriveTools', () => {
     },
     body: bodySchema,
     output: outputSchema,
-    async handle({ vovk }) {
-      const { foo } = await vovk.body();
-      const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
-      return { foo, inputMeta } satisfies VovkOutput<typeof procedureWithBody>;
-    },
+  }).handle(async ({ vovk }) => {
+    const { foo } = await vovk.body();
+    const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
+    return { foo, inputMeta } satisfies VovkOutput<typeof procedureWithBody>;
   });
 
   describe('Common tests, implicit default toFormatOutput', () => {
@@ -28,17 +27,15 @@ describe('deriveTools', () => {
         description: 'procedureWithQuery description',
       },
       query: querySchema,
-      async handle({ vovk }) {
-        const { bar } = vovk.query();
-        const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
-        return { bar, inputMeta };
-      },
+    }).handle(async ({ vovk }) => {
+      const { bar } = vovk.query();
+      const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
+      return { bar, inputMeta };
     });
     const procedureWithNoDescription = procedure({
       query: querySchema,
-      async handle() {
-        // ...
-      },
+    }).handle(async () => {
+      // ...
     });
 
     const procedureWithExcluded = procedure({
@@ -46,9 +43,8 @@ describe('deriveTools', () => {
         'x-tool': { hidden: true },
       },
       query: querySchema,
-      async handle() {
-        // ...
-      },
+    }).handle(async () => {
+      // ...
     });
 
     const procedureWithToolDescription = procedure({
@@ -57,9 +53,8 @@ describe('deriveTools', () => {
         description: 'procedureWithToolDescription description',
       },
       query: z.object({ bar: z.string().max(5) }),
-      async handle() {
-        // ...
-      },
+    }).handle(async () => {
+      // ...
     });
 
     const procedureWithToolName = procedure({
@@ -67,9 +62,8 @@ describe('deriveTools', () => {
         'x-tool': { name: 'customToolName' },
       },
       query: z.object({ bar: z.string().max(5) }),
-      async handle() {
-        // ...
-      },
+    }).handle(async () => {
+      // ...
     });
 
     const { tools, toolsByName } = deriveTools({
@@ -327,9 +321,8 @@ describe('deriveTools', () => {
           operationObject: {
             description: 'arrayProcedure description',
           },
-          async handle() {
-            return ['item1', 'item2', 'item3'];
-          },
+        }).handle(async () => {
+          return ['item1', 'item2', 'item3'];
         });
 
         const { toolsByName } = deriveTools({
@@ -362,12 +355,11 @@ describe('deriveTools', () => {
                 summary: 'Returns an audio response',
                 'x-tool': { name: 'withAudioResponse' },
               },
-              async handle() {
-                return toDownloadResponse(new Uint8Array([1, 2, 3, 4, 5]).buffer, {
-                  type: 'audio/wav',
-                  filename: 'test.wav',
-                });
-              },
+            }).handle(async () => {
+              return toDownloadResponse(new Uint8Array([1, 2, 3, 4, 5]).buffer, {
+                type: 'audio/wav',
+                filename: 'test.wav',
+              });
             }),
           },
         },
@@ -398,21 +390,20 @@ describe('deriveTools', () => {
                 summary: 'Returns an image response',
                 'x-tool': { name: 'withImageResponse' },
               },
-              async handle() {
-                return toDownloadResponse(
-                  Uint8Array.from([
-                    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-                    0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x08, 0x02, 0x00, 0x00, 0x00, 0xfd, 0xd4, 0x9a,
-                    0x73, 0x00, 0x00, 0x00, 0x0e, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8, 0xcf, 0xc0, 0x00,
-                    0x00, 0x01, 0x01, 0x01, 0x00, 0x18, 0xdd, 0x8d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e,
-                    0x44, 0xae, 0x42, 0x60, 0x82,
-                  ]).buffer,
-                  {
-                    type: 'image/png',
-                    filename: 'test.png',
-                  }
-                );
-              },
+            }).handle(async () => {
+              return toDownloadResponse(
+                Uint8Array.from([
+                  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00,
+                  0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x08, 0x02, 0x00, 0x00, 0x00, 0xfd, 0xd4, 0x9a, 0x73, 0x00,
+                  0x00, 0x00, 0x0e, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8, 0xcf, 0xc0, 0x00, 0x00, 0x01, 0x01,
+                  0x01, 0x00, 0x18, 0xdd, 0x8d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60,
+                  0x82,
+                ]).buffer,
+                {
+                  type: 'image/png',
+                  filename: 'test.png',
+                }
+              );
             }),
           },
         },
@@ -444,9 +435,8 @@ describe('deriveTools', () => {
                 summary: 'Returns an image response',
                 'x-tool': { name: 'withImageResponse' },
               },
-              async handle() {
-                return fetch(`data:image/png;base64,${base64}`);
-              },
+            }).handle(async () => {
+              return fetch(`data:image/png;base64,${base64}`);
             }),
           },
         },
@@ -476,13 +466,12 @@ describe('deriveTools', () => {
                 summary: 'Returns a CSV response',
                 'x-tool': { name: 'withCSVResponse' },
               },
-              async handle() {
-                const csvContent = 'name,age\nAlice,30\nBob,25';
-                return toDownloadResponse(csvContent, {
-                  type: 'text/csv',
-                  filename: 'test.csv',
-                });
-              },
+            }).handle(async () => {
+              const csvContent = 'name,age\nAlice,30\nBob,25';
+              return toDownloadResponse(csvContent, {
+                type: 'text/csv',
+                filename: 'test.csv',
+              });
             }),
           },
         },
@@ -511,11 +500,10 @@ describe('deriveTools', () => {
                 summary: 'Returns a text response',
                 'x-tool': { name: 'withTextResponse' },
               },
-              async handle() {
-                return new Response('Hello, this is a text response.', {
-                  headers: { 'Content-Type': 'text/plain' },
-                });
-              },
+            }).handle(async () => {
+              return new Response('Hello, this is a text response.', {
+                headers: { 'Content-Type': 'text/plain' },
+              });
             }),
           },
         },
@@ -544,11 +532,10 @@ describe('deriveTools', () => {
                 summary: 'Returns a JSON response',
                 'x-tool': { name: 'withJSONResponse' },
               },
-              async handle() {
-                return new Response(JSON.stringify({ message: 'Hello, this is a JSON response.' }), {
-                  headers: { 'Content-Type': 'application/json' },
-                });
-              },
+            }).handle(async () => {
+              return new Response(JSON.stringify({ message: 'Hello, this is a JSON response.' }), {
+                headers: { 'Content-Type': 'application/json' },
+              });
             }),
           },
         },
@@ -577,12 +564,11 @@ describe('deriveTools', () => {
           description: 'procedureWithAnnotations description',
         },
         body: z.object({ foo: z.string().max(5) }),
-        async handle({ vovk }) {
-          const { foo } = await vovk.body();
-          vovk.meta({ mcpOutput: { annotations: { audience: ['user'], priority: 5 } } });
+      }).handle(async ({ vovk }) => {
+        const { foo } = await vovk.body();
+        vovk.meta({ mcpOutput: { annotations: { audience: ['user'], priority: 5 } } });
 
-          return { foo };
-        },
+        return { foo };
       });
 
       const { toolsByName } = deriveTools({

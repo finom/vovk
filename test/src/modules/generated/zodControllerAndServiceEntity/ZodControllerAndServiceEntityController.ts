@@ -9,10 +9,8 @@ export default class ZodControllerAndServiceEntityController {
     summary: 'Get zodControllerAndServiceEntities',
   })
   @get()
-  static getZodControllerAndServiceEntities = procedure({
-    handle() {
-      return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities();
-    },
+  static getZodControllerAndServiceEntities = procedure().handle(() => {
+    return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities();
   });
 
   @operation({
@@ -23,9 +21,8 @@ export default class ZodControllerAndServiceEntityController {
     params: z.object({
       id: z.string(),
     }),
-    handle(_req, { id }) {
-      return ZodControllerAndServiceEntityService.getSingleZodControllerAndServiceEntity(id);
-    },
+  }).handle((_req, { id }) => {
+    return ZodControllerAndServiceEntityService.getSingleZodControllerAndServiceEntity(id);
   });
 
   @operation({
@@ -37,11 +34,10 @@ export default class ZodControllerAndServiceEntityController {
       todo: z.literal(true),
     }),
     params: z.object({ id: z.string() }),
-    async handle(req, { id }) {
-      const body = await req.json();
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
 
-      return ZodControllerAndServiceEntityService.updateZodControllerAndServiceEntity(id, body);
-    },
+    return ZodControllerAndServiceEntityService.updateZodControllerAndServiceEntity(id, body);
   });
 
   @operation({
@@ -52,11 +48,10 @@ export default class ZodControllerAndServiceEntityController {
     body: z.object({
       todo: z.literal(true),
     }),
-    async handle(req) {
-      const body = await req.json();
+  }).handle(async (req) => {
+    const body = await req.json();
 
-      return ZodControllerAndServiceEntityService.createZodControllerAndServiceEntity(body);
-    },
+    return ZodControllerAndServiceEntityService.createZodControllerAndServiceEntity(body);
   });
 
   @operation({
@@ -67,8 +62,7 @@ export default class ZodControllerAndServiceEntityController {
     params: z.object({
       id: z.string(),
     }),
-    handle(req, { id }) {
-      return ZodControllerAndServiceEntityService.deleteZodControllerAndServiceEntity(id);
-    },
+  }).handle((_req, { id }) => {
+    return ZodControllerAndServiceEntityService.deleteZodControllerAndServiceEntity(id);
   });
 }

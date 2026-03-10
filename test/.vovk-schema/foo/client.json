@@ -1744,6 +1744,100 @@
           },
           "path": "handle-binary-reread-after-validation",
           "httpMethod": "POST"
+        },
+        "handleStringContentTypeJson": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "application/json"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello",
+                "search"
+              ]
+            }
+          },
+          "path": "handle-string-content-type-json",
+          "httpMethod": "POST"
+        },
+        "handleStringContentTypeTextPlain": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "maxLength": 5,
+              "x-contentType": [
+                "text/plain"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello",
+                "search"
+              ]
+            }
+          },
+          "path": "handle-string-content-type-text-plain",
+          "httpMethod": "POST"
         }
       }
     },
