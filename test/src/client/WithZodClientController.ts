@@ -92,41 +92,37 @@ export default class WithZodClientController {
   @post('all/{foo}/{bar}')
   static handleAll = procedure({
     ...HandleAllInput,
-    handle: async ({ vovk }, params) => {
-      const body = await vovk.body();
-      const { search } = vovk.query();
-      const vovkParams = vovk.params();
-      return WithZodClientService.handleAll({
-        body,
-        query: { search },
-        params,
-        vovkParams,
-      });
-    },
+  }).handle(async ({ vovk }, params) => {
+    const body = await vovk.body();
+    const { search } = vovk.query();
+    const vovkParams = vovk.params();
+    return WithZodClientService.handleAll({
+      body,
+      query: { search },
+      params,
+      vovkParams,
+    });
   });
 
   @get.auto()
   static handleQuery = procedure({
     query: z.object({ search: z.string().max(5) }),
-    handle: (req) => {
-      return req.vovk.query();
-    },
+  }).handle((req) => {
+    return req.vovk.query();
   });
 
   @post.auto()
   static handleBody = procedure({
     body: z.object({ hello: z.string().max(5) }),
-    handle: async (req) => {
-      return req.vovk.body();
-    },
+  }).handle(async (req) => {
+    return req.vovk.body();
   });
 
   @put('x/{foo}/{bar}/y')
   static handleParams = procedure({
     params: z.object({ foo: z.string().max(5), bar: z.string().max(5) }),
-    handle: async (req) => {
-      return req.vovk.params();
-    },
+  }).handle(async (req) => {
+    return req.vovk.params();
   });
 
   @get.auto()
@@ -153,62 +149,55 @@ export default class WithZodClientController {
         }),
       }),
     }),
-    handle: (req) => {
-      return req.vovk.query();
-    },
+  }).handle((req) => {
+    return req.vovk.query();
   });
 
   @get.auto()
   static handleOutput = procedure({
     query: z.object({ helloOutput: z.string() }),
     output: z.object({ hello: z.string().max(5) }),
-    handle: async (req) => {
-      return { hello: req.vovk.query().helloOutput };
-    },
+  }).handle(async (req) => {
+    return { hello: req.vovk.query().helloOutput };
   });
 
   @get.auto()
   static handleStream = procedure({
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.string().max(5) }),
-    async *handle(req) {
-      for (const value of req.vovk.query().values) {
-        yield { value };
-      }
-    },
+  }).handle(async function* (req) {
+    for (const value of req.vovk.query().values) {
+      yield { value };
+    }
   });
 
   @get.auto()
   static handleResponderStream = procedure({
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.string().max(5) }),
-    async handle(req) {
-      const responder = new JSONLinesResponder<{ value: string }>(req);
+  }).handle(async (req) => {
+    const responder = new JSONLinesResponder<{ value: string }>(req);
 
-      void (async () => {
-        for (const value of req.vovk.query().values) {
-          await responder.send({ value });
-        }
-        responder.close();
-      })();
+    void (async () => {
+      for (const value of req.vovk.query().values) {
+        await responder.send({ value });
+      }
+      responder.close();
+    })();
 
-      return responder;
-    },
+    return responder;
   });
 
   @post.auto()
   static handleSchemaConstraints = procedure({
     body: ConstrainingModel,
-    handle: async (req) => {
-      return req.json();
-    },
+  }).handle(async (req) => {
+    return req.json();
   });
 
   @post.auto()
-  static handleNothitng = procedure({
-    handle: async () => {
-      return { nothing: 'here' } as const;
-    },
+  static handleNothitng = procedure().handle(async () => {
+    return { nothing: 'here' } as const;
   });
 
   @post.auto()
@@ -217,11 +206,10 @@ export default class WithZodClientController {
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), search: z.string() }),
-    handle: async (req) => {
-      const { hello } = await req.vovk.body();
-      const search = req.vovk.query().search;
-      return { hello, search };
-    },
+  }).handle(async (req) => {
+    const { hello } = await req.vovk.body();
+    const search = req.vovk.query().search;
+    return { hello, search };
   });
 
   @post.auto()
@@ -230,11 +218,10 @@ export default class WithZodClientController {
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), search: z.string() }),
-    handle: async (req) => {
-      const { hello } = await req.vovk.body();
-      const search = req.vovk.query().search;
-      return { hello, search };
-    },
+  }).handle(async (req) => {
+    const { hello } = await req.vovk.body();
+    const search = req.vovk.query().search;
+    return { hello, search };
   });
 
   @post.auto()
@@ -243,11 +230,10 @@ export default class WithZodClientController {
     body: z.object({ hello: z.string().max(5), file: z.file() }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), file: z.string(), search: z.string() }),
-    handle: async (req) => {
-      const { hello, file } = await req.vovk.body();
-      const search = req.vovk.query().search;
-      return { hello, file: await file.text(), search };
-    },
+  }).handle(async (req) => {
+    const { hello, file } = await req.vovk.body();
+    const search = req.vovk.query().search;
+    return { hello, file: await file.text(), search };
   });
 
   @post.auto()
@@ -256,11 +242,10 @@ export default class WithZodClientController {
     body: z.object({ hello: z.string().max(5), files: z.array(z.file()) }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), files: z.array(z.string()), search: z.string() }),
-    handle: async (req) => {
-      const { hello, files } = await req.vovk.body();
-      const search = req.vovk.query().search;
-      return { hello, files: await Promise.all(files.map((file) => file.text())), search };
-    },
+  }).handle(async (req) => {
+    const { hello, files } = await req.vovk.body();
+    const search = req.vovk.query().search;
+    return { hello, files: await Promise.all(files.map((file) => file.text())), search };
   });
 
   @post.auto()
@@ -269,11 +254,10 @@ export default class WithZodClientController {
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), search: z.string() }),
-    handle: async (req) => {
-      const { hello } = await req.vovk.body();
-      const search = req.vovk.query().search;
-      return { hello, search };
-    },
+  }).handle(async (req) => {
+    const { hello } = await req.vovk.body();
+    const search = req.vovk.query().search;
+    return { hello, search };
   });
 
   @post.auto()
@@ -282,11 +266,10 @@ export default class WithZodClientController {
     body: z.string().max(5),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), search: z.string() }),
-    handle: async (req) => {
-      const hello = await req.vovk.body();
-      const search = req.vovk.query().search;
-      return { hello, search };
-    },
+  }).handle(async (req) => {
+    const hello = await req.vovk.body();
+    const search = req.vovk.query().search;
+    return { hello, search };
   });
 
   @post.auto()
@@ -294,10 +277,9 @@ export default class WithZodClientController {
     contentType: ['image/png'],
     body: z.file(),
     output: z.object({ fileName: z.string() }),
-    handle: async (req) => {
-      const file = await req.vovk.body();
-      return { fileName: file.name };
-    },
+  }).handle(async (req) => {
+    const file = await req.vovk.body();
+    return { fileName: file.name };
   });
 
   @post.auto()
@@ -305,12 +287,11 @@ export default class WithZodClientController {
     contentType: ['image/png', 'application/json'],
     body: z.union([z.file(), z.object({ hello: z.string().max(5) })]),
     output: z.object({ type: z.string(), hello: z.string().max(5) }),
-    handle: async (req) => {
-      const fileOrJson = await req.vovk.body();
-      return fileOrJson instanceof File
-        ? { type: fileOrJson.type, hello: 'none' }
-        : { hello: fileOrJson.hello, type: 'none' };
-    },
+  }).handle(async (req) => {
+    const fileOrJson = await req.vovk.body();
+    return fileOrJson instanceof File
+      ? { type: fileOrJson.type, hello: 'none' }
+      : { hello: fileOrJson.hello, type: 'none' };
   });
 
   @post.auto()
@@ -318,11 +299,10 @@ export default class WithZodClientController {
     disableServerSideValidation: true,
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
-    handle: async (req) => {
-      const body = await req.json();
-      const search = req.nextUrl.searchParams.get('search');
-      return { body, search };
-    },
+  }).handle(async (req) => {
+    const body = await req.json();
+    const search = req.nextUrl.searchParams.get('search');
+    return { body, search };
   });
 
   @post.auto()
@@ -330,11 +310,10 @@ export default class WithZodClientController {
     disableServerSideValidation: ['body'],
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string().max(5) }),
-    handle: async (req) => {
-      const body = await req.json();
-      const search = req.nextUrl.searchParams.get('search');
-      return { body, search };
-    },
+  }).handle(async (req) => {
+    const body = await req.json();
+    const search = req.nextUrl.searchParams.get('search');
+    return { body, search };
   });
 
   // skipSchemaEmission
@@ -343,22 +322,20 @@ export default class WithZodClientController {
     skipSchemaEmission: true,
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
-    handle: async (req) => {
-      const body = await req.json();
-      const search = req.nextUrl.searchParams.get('search');
-      return { body, search };
-    },
+  }).handle(async (req) => {
+    const body = await req.json();
+    const search = req.nextUrl.searchParams.get('search');
+    return { body, search };
   });
   @post.auto()
   static skipSchemaEmissionStrings = procedure({
     skipSchemaEmission: ['body'],
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
-    handle: async (req) => {
-      const body = await req.json();
-      const search = req.nextUrl.searchParams.get('search');
-      return { body, search };
-    },
+  }).handle(async (req) => {
+    const body = await req.json();
+    const search = req.nextUrl.searchParams.get('search');
+    return { body, search };
   });
 
   // validateEachIteration
@@ -367,11 +344,10 @@ export default class WithZodClientController {
     validateEachIteration: true,
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.string().max(5) }),
-    async *handle(req) {
-      for (const value of req.vovk.query().values) {
-        yield { value };
-      }
-    },
+  }).handle(async function* (req) {
+    for (const value of req.vovk.query().values) {
+      yield { value };
+    }
   });
 
   @post.auto()
@@ -379,63 +355,59 @@ export default class WithZodClientController {
     validateEachIteration: true,
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.string().max(5) }),
-    async handle(req) {
-      const responder = new JSONLinesResponder<{ value: string }>(req);
+  }).handle(async (req) => {
+    const responder = new JSONLinesResponder<{ value: string }>(req);
 
-      void (async () => {
-        for (const value of req.vovk.query().values) {
-          await responder.send({ value });
-        }
-        responder.close();
-      })();
+    void (async () => {
+      for (const value of req.vovk.query().values) {
+        await responder.send({ value });
+      }
+      responder.close();
+    })();
 
-      return responder;
-    },
+    return responder;
   });
 
   static handleAllNoHTTP = procedure({
     ...HandleAllInput,
-    handle: async ({ vovk }, params) => {
-      const body = await vovk.body();
-      const { search } = vovk.query();
-      const vovkParams = vovk.params();
-      return WithZodClientService.handleAll({
-        body,
-        query: { search },
-        params,
-        vovkParams,
-      });
-    },
+  }).handle(async ({ vovk }, params) => {
+    const body = await vovk.body();
+    const { search } = vovk.query();
+    const vovkParams = vovk.params();
+    return WithZodClientService.handleAll({
+      body,
+      query: { search },
+      params,
+      vovkParams,
+    });
   });
 
   @post('all-as-func/{foo}/{bar}')
   static handleAllAsFunction = procedure({
     ...HandleAllInput,
     disableServerSideValidation: true,
-    async handle(req, params) {
-      const result = await WithZodClientController.handleAll.fn({
-        body: await req.vovk.body(),
-        query: req.vovk.query(),
-        params,
-      });
+  }).handle(async (req, params) => {
+    const result = await WithZodClientController.handleAll.fn({
+      body: await req.vovk.body(),
+      query: req.vovk.query(),
+      params,
+    });
 
-      return result;
-    },
+    return result;
   });
 
   @post('all-no-http-as-func/{foo}/{bar}')
   static handleAllNoHttpAsFunction = procedure({
     ...HandleAllInput,
     disableServerSideValidation: true,
-    async handle(req, params) {
-      const result = await WithZodClientController.handleAllNoHTTP.fn({
-        body: await req.vovk.body(),
-        query: req.vovk.query(),
-        params,
-      });
+  }).handle(async (req, params) => {
+    const result = await WithZodClientController.handleAllNoHTTP.fn({
+      body: await req.vovk.body(),
+      query: req.vovk.query(),
+      params,
+    });
 
-      return result;
-    },
+    return result;
   });
 
   @get.auto()
@@ -454,27 +426,26 @@ export default class WithZodClientController {
       hasNextPage: z.boolean(),
       nextPage: z.number().optional(),
     }),
-    handle: async (req) => {
-      const query = req.vovk.query();
-      const page = parseInt(query.page, 10) || 1;
-      const limit = parseInt(query.limit, 10) || 10;
+  }).handle(async (req) => {
+    const query = req.vovk.query();
+    const page = parseInt(query.page, 10) || 1;
+    const limit = parseInt(query.limit, 10) || 10;
 
-      // Generate dummy data
-      const items = Array.from({ length: limit }, (_, i) => ({
-        id: (page - 1) * limit + i + 1,
-        name: `Item ${(page - 1) * limit + i + 1}`,
-      }));
+    // Generate dummy data
+    const items = Array.from({ length: limit }, (_, i) => ({
+      id: (page - 1) * limit + i + 1,
+      name: `Item ${(page - 1) * limit + i + 1}`,
+    }));
 
-      // For example purposes, let's say we have 50 items total
-      const totalItems = 50;
-      const hasNextPage = page * limit < totalItems;
+    // For example purposes, let's say we have 50 items total
+    const totalItems = 50;
+    const hasNextPage = page * limit < totalItems;
 
-      return {
-        items,
-        hasNextPage,
-        nextPage: hasNextPage ? page + 1 : undefined,
-      };
-    },
+    return {
+      items,
+      hasNextPage,
+      nextPage: hasNextPage ? page + 1 : undefined,
+    };
   });
 
   // === Content-type validation: wildcard */* ===
@@ -483,10 +454,9 @@ export default class WithZodClientController {
     contentType: ['*/*'],
     body: z.file(),
     output: z.object({ size: z.number(), type: z.string() }),
-    handle: async (req) => {
-      const file = await req.vovk.body();
-      return { size: file.size, type: file.type };
-    },
+  }).handle(async (req) => {
+    const file = await req.vovk.body();
+    return { size: file.size, type: file.type };
   });
 
   // === Content-type validation: partial wildcard image/* ===
@@ -495,10 +465,9 @@ export default class WithZodClientController {
     contentType: ['image/*'],
     body: z.file(),
     output: z.object({ size: z.number(), type: z.string() }),
-    handle: async (req) => {
-      const file = await req.vovk.body();
-      return { size: file.size, type: file.type };
-    },
+  }).handle(async (req) => {
+    const file = await req.vovk.body();
+    return { size: file.size, type: file.type };
   });
 
   // === Content-type validation: true application/octet-stream binary ===
@@ -507,30 +476,28 @@ export default class WithZodClientController {
     contentType: ['application/octet-stream'],
     body: z.file(),
     output: z.object({ size: z.number(), content: z.string() }),
-    handle: async (req) => {
-      const file = await req.vovk.body();
-      return { size: file.size, content: await file.text() };
-    },
+  }).handle(async (req) => {
+    const file = await req.vovk.body();
+    return { size: file.size, content: await file.text() };
   });
 
   // === bufferBody re-readability: JSON body ===
   @post.auto()
   static handleJsonRereadAfterValidation = procedure({
     body: z.object({ hello: z.string().max(5) }),
-    handle: async (req) => {
-      const vovkBody = await req.vovk.body();
-      const fromJson = await req.json();
-      const fromText = await req.text();
-      const arrayBuf = await req.arrayBuffer();
-      const blob = await req.blob();
-      return {
-        vovkBody,
-        fromJson,
-        fromText,
-        arrayBufferByteLength: arrayBuf.byteLength,
-        blobSize: blob.size,
-      };
-    },
+  }).handle(async (req) => {
+    const vovkBody = await req.vovk.body();
+    const fromJson = await req.json();
+    const fromText = await req.text();
+    const arrayBuf = await req.arrayBuffer();
+    const blob = await req.blob();
+    return {
+      vovkBody,
+      fromJson,
+      fromText,
+      arrayBufferByteLength: arrayBuf.byteLength,
+      blobSize: blob.size,
+    };
   });
 
   // === bufferBody re-readability: text/plain body ===
@@ -538,16 +505,15 @@ export default class WithZodClientController {
   static handleTextRereadAfterValidation = procedure({
     contentType: ['text/plain'],
     body: z.string().max(100),
-    handle: async (req) => {
-      const vovkBody = await req.vovk.body();
-      const fromText = await req.text();
-      const arrayBuf = await req.arrayBuffer();
-      return {
-        vovkBody,
-        fromText,
-        arrayBufferByteLength: arrayBuf.byteLength,
-      };
-    },
+  }).handle(async (req) => {
+    const vovkBody = await req.vovk.body();
+    const fromText = await req.text();
+    const arrayBuf = await req.arrayBuffer();
+    return {
+      vovkBody,
+      fromText,
+      arrayBufferByteLength: arrayBuf.byteLength,
+    };
   });
 
   // === bufferBody re-readability: multipart/form-data body ===
@@ -555,14 +521,13 @@ export default class WithZodClientController {
   static handleFormDataRereadAfterValidation = procedure({
     contentType: ['multipart/form-data'],
     body: z.object({ name: z.string() }),
-    handle: async (req) => {
-      const vovkBody = await req.vovk.body();
-      const formData = await req.formData();
-      return {
-        vovkBody,
-        formDataKeys: Array.from(formData.keys()).sort(),
-      };
-    },
+  }).handle(async (req) => {
+    const vovkBody = await req.vovk.body();
+    const formData = await req.formData();
+    return {
+      vovkBody,
+      formDataKeys: Array.from(formData.keys()).sort(),
+    };
   });
 
   // === bufferBody re-readability: application/octet-stream binary body ===
@@ -570,18 +535,17 @@ export default class WithZodClientController {
   static handleBinaryRereadAfterValidation = procedure({
     contentType: ['application/octet-stream'],
     body: z.file(),
-    handle: async (req) => {
-      const file = await req.vovk.body();
-      const blob = await req.blob();
-      const arrayBuf = await req.arrayBuffer();
-      const bytes = await req.bytes();
-      return {
-        vovkBodyContent: await file.text(),
-        blobSize: blob.size,
-        arrayBufferByteLength: arrayBuf.byteLength,
-        bytesLength: bytes.length,
-      };
-    },
+  }).handle(async (req) => {
+    const file = await req.vovk.body();
+    const blob = await req.blob();
+    const arrayBuf = await req.arrayBuffer();
+    const bytes = await req.bytes();
+    return {
+      vovkBodyContent: await file.text(),
+      blobSize: blob.size,
+      arrayBufferByteLength: arrayBuf.byteLength,
+      bytesLength: bytes.length,
+    };
   });
 
   // === String contentType (not array) ===
@@ -591,11 +555,10 @@ export default class WithZodClientController {
     body: z.object({ hello: z.string().max(5) }),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), search: z.string() }),
-    handle: async (req) => {
-      const { hello } = await req.vovk.body();
-      const search = req.vovk.query().search;
-      return { hello, search };
-    },
+  }).handle(async (req) => {
+    const { hello } = await req.vovk.body();
+    const search = req.vovk.query().search;
+    return { hello, search };
   });
 
   @post.auto()
@@ -604,10 +567,9 @@ export default class WithZodClientController {
     body: z.string().max(5),
     query: z.object({ search: z.string() }),
     output: z.object({ hello: z.string().max(5), search: z.string() }),
-    handle: async (req) => {
-      const hello = await req.vovk.body();
-      const search = req.vovk.query().search;
-      return { hello, search };
-    },
+  }).handle(async (req) => {
+    const hello = await req.vovk.body();
+    const search = req.vovk.query().search;
+    return { hello, search };
   });
 }

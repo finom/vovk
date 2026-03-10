@@ -1,28 +1,29 @@
 import { it, describe } from 'node:test';
 import { procedure } from 'vovk';
+import type { VovkRequest } from 'vovk';
 import { z } from 'zod';
 import assert from 'node:assert';
 
 describe('procedure features', async () => {
-  const definition: Parameters<typeof procedure>[0] = {
+  const definition = {
     body: z.object({ foo: z.string().max(5) }),
     query: z.object({ bar: z.string().max(5) }),
     params: z.object({ baz: z.string().max(5) }),
-    async handle({ vovk }) {
-      const { foo } = await vovk.body();
-      const { bar } = vovk.query();
-      const { baz } = vovk.params();
-      const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
-      return { foo, bar, baz, inputMeta };
-    },
   } as const;
-  const handler = procedure(definition);
+  const handleFn = async ({ vovk }: VovkRequest<{ foo: string }, { bar: string }, { baz: string }>) => {
+    const { foo } = await vovk.body();
+    const { bar } = vovk.query();
+    const { baz } = vovk.params();
+    const { inputMeta } = vovk.meta<{ inputMeta?: string }>();
+    return { foo, bar, baz, inputMeta };
+  };
+  const handler = procedure(definition).handle(handleFn);
 
   it('Should provide definition', () => {
     assert.strictEqual(handler.definition.body, definition.body);
     assert.strictEqual(handler.definition.query, definition.query);
     assert.strictEqual(handler.definition.params, definition.params);
-    assert.strictEqual(handler.definition.handle, definition.handle);
+    assert.strictEqual(handler.definition.handle, handleFn);
   });
 
   it('Should be callable', async () => {

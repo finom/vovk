@@ -8,6 +8,28 @@ import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { KnownAny } from '../types/utils.js';
 
+type ProcedureOptions<
+  TBody extends CombinedSpec,
+  TQuery extends CombinedSpec,
+  TParams extends CombinedSpec,
+  TOutput extends CombinedSpec,
+  TIteration extends CombinedSpec,
+  TContentType extends ContentType | ContentType[],
+> = {
+  contentType?: TContentType;
+  body?: TBody;
+  query?: TQuery;
+  params?: TParams;
+  output?: TOutput;
+  iteration?: TIteration;
+  disableServerSideValidation?: boolean | VovkValidationType[];
+  skipSchemaEmission?: boolean | VovkValidationType[];
+  validateEachIteration?: boolean;
+  preferTransformed?: boolean;
+  operationObject?: VovkOperationObject;
+  target?: CombinedSpec.Target;
+};
+
 export function createStandardValidation({
   toJSONSchema,
 }: {
@@ -16,11 +38,101 @@ export function createStandardValidation({
     meta: { validationType: VovkValidationType; target: CombinedSpec.Target | undefined }
   ) => KnownAny;
 }) {
-  function withStandard<
-    THandle extends (
+  function callWithValidationLibrary(options: KnownAny, handle: (...args: KnownAny[]) => KnownAny) {
+    const normalizedContentType = (
+      typeof options.contentType === 'string' ? [options.contentType] : options.contentType
+    ) as KnownAny;
+    return withValidationLibrary({
+      contentType: normalizedContentType,
+      body: options.body,
+      query: options.query,
+      params: options.params,
+      output: options.output,
+      iteration: options.iteration,
+      disableServerSideValidation: options.disableServerSideValidation,
+      skipSchemaEmission: options.skipSchemaEmission,
+      validateEachIteration: options.validateEachIteration,
+      handle: handle as KnownAny,
+      toJSONSchema: (model, opts) =>
+        toJSONSchema(model, { validationType: opts.validationType, target: options.target }),
+      validate: async (data, model: KnownAny, { validationType, i }) => {
+        const result = await model['~standard'].validate(data);
+        if (result.issues?.length) {
+          throw new HttpException(
+            HttpStatus.BAD_REQUEST,
+            `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType}: ${result.issues
+              .map(
+                ({ message, path }: { message: string; path?: string[] }) =>
+                  `${message}${path ? ` at ${path.join('.')}` : ''}`
+              )
+              .join(', ')}`,
+            { issues: result.issues }
+          );
+        }
+
+        return (result as CombinedSpec.SuccessResult<typeof model>).value;
+      },
+      preferTransformed: options.preferTransformed,
+      operationObject: options.operationObject,
+    });
+  }
+
+  // Compute handle return type: concrete when output schema exists, KnownAny otherwise
+  type HandleReturnType<TOutput extends CombinedSpec, TIteration extends CombinedSpec> =
+    unknown extends CombinedSpec.InferOutput<TOutput>
+      ? KnownAny
+      :
+          | CombinedSpec.InferOutput<TOutput>
+          | Promise<CombinedSpec.InferOutput<TOutput>>
+          | (unknown extends CombinedSpec.InferOutput<TIteration>
+              ? never
+              : AsyncGenerator<CombinedSpec.InferOutput<TIteration>>);
+
+  // Return type for procedure().handle() — preserves VovkBody/VovkOutput/VovkReturnType extraction
+  type BuilderHandleReturn<
+    TBody extends CombinedSpec,
+    TQuery extends CombinedSpec,
+    TParams extends CombinedSpec,
+    TOutput extends CombinedSpec,
+    TIteration extends CombinedSpec,
+    TContentType extends ContentType | ContentType[],
+    TReq extends VovkRequest<KnownAny, KnownAny, KnownAny>,
+    THandleReturn = KnownAny,
+  > = VovkTypedProcedure<
+    (
       req: TReq,
       params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-    ) => KnownAny,
+    ) => THandleReturn,
+    TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny,
+    TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny,
+    TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny,
+    unknown extends CombinedSpec.InferOutput<TOutput> ? KnownAny : CombinedSpec.InferOutput<TOutput>,
+    TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny,
+    NormalizeContentType<TContentType>
+  > & {
+    fn: {
+      <TTransformed>(input: {
+        body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
+        query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
+        params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
+        meta?: Record<string, KnownAny>;
+        disableClientValidation?: boolean;
+        transform: (data: Awaited<THandleReturn>, fakeReq: Pick<TReq, 'vovk'>) => TTransformed;
+      }): Promise<TTransformed>;
+      (input?: {
+        body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
+        query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
+        params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
+        meta?: Record<string, KnownAny>;
+        disableClientValidation?: boolean;
+      }): THandleReturn;
+    };
+    definition: KnownAny;
+    schema: KnownAny;
+    wrapper?: KnownAny;
+  };
+
+  function procedure<
     TBody extends CombinedSpec,
     TQuery extends CombinedSpec,
     TParams extends CombinedSpec,
@@ -32,76 +144,38 @@ export function createStandardValidation({
       TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined
     >,
     TContentType extends ContentType | ContentType[] = ['application/json'],
-  >({
-    contentType,
-    body,
-    query,
-    params,
-    output,
-    iteration,
-    handle,
-    disableServerSideValidation,
-    skipSchemaEmission,
-    validateEachIteration,
-    preferTransformed,
-    operationObject,
-    target,
-  }: {
-    contentType?: TContentType;
-    body?: TBody;
-    query?: TQuery;
-    params?: TParams;
-    output?: TOutput;
-    iteration?: TIteration;
-    handle: THandle;
-    disableServerSideValidation?: boolean | VovkValidationType[];
-    skipSchemaEmission?: boolean | VovkValidationType[];
-    validateEachIteration?: boolean;
-    preferTransformed?: boolean;
-    operationObject?: VovkOperationObject;
-    target?: CombinedSpec.Target;
-  }) {
-    const normalizedContentType = (typeof contentType === 'string' ? [contentType] : contentType) as
-      | NormalizeContentType<TContentType>
-      | undefined;
-    return withValidationLibrary({
-      contentType: normalizedContentType,
-      body,
-      query,
-      params,
-      output,
-      iteration,
-      disableServerSideValidation,
-      skipSchemaEmission,
-      validateEachIteration,
-      handle: handle as VovkTypedProcedure<
-        THandle,
-        TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny,
-        TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny,
-        TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny,
-        TOutput extends CombinedSpec ? CombinedSpec.InferOutput<TOutput> : KnownAny,
-        TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny,
-        NormalizeContentType<TContentType>
-      >,
-      toJSONSchema: (model, options) => toJSONSchema(model, { validationType: options.validationType, target }),
-      validate: async (data, model, { validationType, i }) => {
-        const result = await model['~standard'].validate(data);
-        if (result.issues?.length) {
-          throw new HttpException(
-            HttpStatus.BAD_REQUEST,
-            `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType}: ${result.issues
-              .map(({ message, path }) => `${message}${path ? ` at ${path.join('.')}` : ''}`)
-              .join(', ')}`,
-            { issues: result.issues }
-          );
-        }
+  >(
+    options?: ProcedureOptions<TBody, TQuery, TParams, TOutput, TIteration, TContentType>
+  ): BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq> & {
+    handle(
+      fn: (
+        req: TReq,
+        params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
+      ) => HandleReturnType<TOutput, TIteration>
+    ): BuilderHandleReturn<
+      TBody,
+      TQuery,
+      TParams,
+      TOutput,
+      TIteration,
+      TContentType,
+      TReq,
+      HandleReturnType<TOutput, TIteration>
+    >;
+  };
 
-        return (result as CombinedSpec.SuccessResult<typeof model>).value;
+  // Implementation
+  function procedure(options?: KnownAny): KnownAny {
+    const notImplementedHandler = callWithValidationLibrary(options ?? {}, () => {
+      throw new HttpException(HttpStatus.NOT_IMPLEMENTED, 'Not implemented');
+    });
+
+    return Object.assign(notImplementedHandler, {
+      handle(fn: (...args: KnownAny[]) => KnownAny) {
+        return callWithValidationLibrary(options ?? {}, fn);
       },
-      preferTransformed,
-      operationObject,
     });
   }
 
-  return Object.assign(withStandard, { createTool: createToolFactory({ toJSONSchema }) });
+  return Object.assign(procedure, { createTool: createToolFactory({ toJSONSchema }) });
 }

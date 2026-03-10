@@ -7,10 +7,8 @@ export default class ArktypeControllerOnlyEntityController {
     summary: 'Get arktypeControllerOnlyEntities',
   })
   @get()
-  static getArktypeControllerOnlyEntities = procedure({
-    handle() {
-      return { message: 'TODO: get arktypeControllerOnlyEntities' };
-    },
+  static getArktypeControllerOnlyEntities = procedure().handle(() => {
+    return { message: 'TODO: get arktypeControllerOnlyEntities' };
   });
 
   @operation({
@@ -19,9 +17,8 @@ export default class ArktypeControllerOnlyEntityController {
   @get('{id}')
   static getSingleArktypeControllerOnlyEntity = procedure({
     params: type({ id: type('string') }),
-    handle(_req, { id }) {
-      return { message: 'TODO: get single arktypeControllerOnlyEntity', id };
-    },
+  }).handle((_req, { id }) => {
+    return { message: 'TODO: get single arktypeControllerOnlyEntity', id };
   });
 
   @operation({
@@ -31,11 +28,10 @@ export default class ArktypeControllerOnlyEntityController {
   static updateArktypeControllerOnlyEntity = procedure({
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
-    async handle(req, { id }) {
-      const body = await req.json();
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
 
-      return { message: `TODO: update arktypeControllerOnlyEntity`, id, body };
-    },
+    return { message: `TODO: update arktypeControllerOnlyEntity`, id, body };
   });
 
   @operation({
@@ -44,11 +40,10 @@ export default class ArktypeControllerOnlyEntityController {
   @post()
   static createArktypeControllerOnlyEntity = procedure({
     body: type({ todo: type('true') }),
-    async handle(req) {
-      const body = await req.json();
+  }).handle(async (req) => {
+    const body = await req.json();
 
-      return { message: `TODO: create arktypeControllerOnlyEntity`, body };
-    },
+    return { message: `TODO: create arktypeControllerOnlyEntity`, body };
   });
 
   @operation({
@@ -57,10 +52,7 @@ export default class ArktypeControllerOnlyEntityController {
   @del('{id}')
   static deleteArktypeControllerOnlyEntity = procedure({
     params: type({ id: type('string') }),
-    handle(_req, params) {
-      const { id } = params;
-
-      return { message: `TODO: delete arktypeControllerOnlyEntity`, id };
-    },
+  }).handle((_req, { id }) => {
+    return { message: `TODO: delete arktypeControllerOnlyEntity`, id };
   });
 }

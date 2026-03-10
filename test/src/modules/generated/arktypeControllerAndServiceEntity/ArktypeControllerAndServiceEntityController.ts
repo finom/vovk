@@ -9,10 +9,8 @@ export default class ArktypeControllerAndServiceEntityController {
     summary: 'Get arktypeControllerAndServiceEntities',
   })
   @get()
-  static getArktypeControllerAndServiceEntities = procedure({
-    handle() {
-      return ArktypeControllerAndServiceEntityService.getArktypeControllerAndServiceEntities();
-    },
+  static getArktypeControllerAndServiceEntities = procedure().handle(() => {
+    return ArktypeControllerAndServiceEntityService.getArktypeControllerAndServiceEntities();
   });
 
   @operation({
@@ -21,9 +19,8 @@ export default class ArktypeControllerAndServiceEntityController {
   @get('{id}')
   static getSingleArktypeControllerAndServiceEntity = procedure({
     params: type({ id: type('string') }),
-    handle(_req, { id }) {
-      return ArktypeControllerAndServiceEntityService.getSingleArktypeControllerAndServiceEntity(id);
-    },
+  }).handle((_req, { id }) => {
+    return ArktypeControllerAndServiceEntityService.getSingleArktypeControllerAndServiceEntity(id);
   });
 
   @operation({
@@ -33,11 +30,10 @@ export default class ArktypeControllerAndServiceEntityController {
   static updateArktypeControllerAndServiceEntity = procedure({
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
-    async handle(req, { id }) {
-      const body = await req.json();
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
 
-      return ArktypeControllerAndServiceEntityService.updateArktypeControllerAndServiceEntity(id, body);
-    },
+    return ArktypeControllerAndServiceEntityService.updateArktypeControllerAndServiceEntity(id, body);
   });
 
   @operation({
@@ -46,11 +42,10 @@ export default class ArktypeControllerAndServiceEntityController {
   @post()
   static createArktypeControllerAndServiceEntity = procedure({
     body: type({ todo: type('true') }),
-    async handle(req) {
-      const body = await req.json();
+  }).handle(async (req) => {
+    const body = await req.json();
 
-      return ArktypeControllerAndServiceEntityService.createArktypeControllerAndServiceEntity(body);
-    },
+    return ArktypeControllerAndServiceEntityService.createArktypeControllerAndServiceEntity(body);
   });
 
   @operation({
@@ -59,10 +54,7 @@ export default class ArktypeControllerAndServiceEntityController {
   @del('{id}')
   static deleteArktypeControllerAndServiceEntity = procedure({
     params: type({ id: type('string') }),
-    handle(_req, params) {
-      const { id } = params;
-
-      return ArktypeControllerAndServiceEntityService.deleteArktypeControllerAndServiceEntity(id);
-    },
+  }).handle((_req, { id }) => {
+    return ArktypeControllerAndServiceEntityService.deleteArktypeControllerAndServiceEntity(id);
   });
 }

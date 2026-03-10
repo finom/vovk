@@ -15,15 +15,19 @@ export type VovkControllerParams<T extends (...args: KnownAny[]) => unknown> = P
   ? Parameters<T>[1]
   : ReturnType<Parameters<T>[0]['vovk']['params']>;
 
-export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownAny>) => unknown> = T extends (
-  ...args: KnownAny[]
-) => AsyncGenerator<infer Y, unknown, unknown>
-  ? Y
-  : T extends (...args: KnownAny[]) => Generator<infer Y, unknown, unknown>
+export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownAny>) => unknown> = T extends {
+  __types: { iteration: infer U };
+}
+  ? unknown extends U
+    ? never
+    : U
+  : T extends (...args: KnownAny[]) => AsyncGenerator<infer Y, unknown, unknown>
     ? Y
-    : T extends (...args: KnownAny[]) => Promise<JSONLinesResponder<infer Y>> | JSONLinesResponder<infer Y>
+    : T extends (...args: KnownAny[]) => Generator<infer Y, unknown, unknown>
       ? Y
-      : never;
+      : T extends (...args: KnownAny[]) => Promise<JSONLinesResponder<infer Y>> | JSONLinesResponder<infer Y>
+        ? Y
+        : never;
 
 /**
  * Utility type to extract output from controller methods

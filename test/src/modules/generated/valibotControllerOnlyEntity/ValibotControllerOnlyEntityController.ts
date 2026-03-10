@@ -8,10 +8,8 @@ export default class ValibotControllerOnlyEntityController {
     summary: 'Get valibotControllerOnlyEntities',
   })
   @get()
-  static getValibotControllerOnlyEntities = procedure({
-    handle() {
-      return { message: 'TODO: get valibotControllerOnlyEntities' };
-    },
+  static getValibotControllerOnlyEntities = procedure().handle(() => {
+    return { message: 'TODO: get valibotControllerOnlyEntities' };
   });
 
   @operation({
@@ -20,9 +18,8 @@ export default class ValibotControllerOnlyEntityController {
   @get('{id}')
   static getSingleValibotControllerOnlyEntity = procedure({
     params: toStandardJsonSchema(v.object({ id: v.string() })),
-    handle(_req, { id }) {
-      return { message: `TODO: get single valibotControllerOnlyEntity`, id };
-    },
+  }).handle((_req, { id }) => {
+    return { message: `TODO: get single valibotControllerOnlyEntity`, id };
   });
 
   @operation({
@@ -32,11 +29,10 @@ export default class ValibotControllerOnlyEntityController {
   static updateValibotControllerOnlyEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
     params: toStandardJsonSchema(v.object({ id: v.string() })),
-    async handle(req, { id }) {
-      const body = await req.json();
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
 
-      return { message: `TODO: update valibotControllerOnlyEntity`, id, body };
-    },
+    return { message: `TODO: update valibotControllerOnlyEntity`, id, body };
   });
 
   @operation({
@@ -45,11 +41,10 @@ export default class ValibotControllerOnlyEntityController {
   @post()
   static createValibotControllerOnlyEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
-    async handle(req) {
-      const body = await req.json();
+  }).handle(async (req) => {
+    const body = await req.json();
 
-      return { message: `TODO: create valibotControllerOnlyEntity`, body };
-    },
+    return { message: `TODO: create valibotControllerOnlyEntity`, body };
   });
 
   @operation({
@@ -58,8 +53,7 @@ export default class ValibotControllerOnlyEntityController {
   @del('{id}')
   static deleteValibotControllerOnlyEntity = procedure({
     params: toStandardJsonSchema(v.object({ id: v.string() })),
-    handle(_req, { id }) {
-      return { message: `TODO: delete valibotControllerOnlyEntity`, id };
-    },
+  }).handle((_req, { id }) => {
+    return { message: `TODO: delete valibotControllerOnlyEntity`, id };
   });
 }
