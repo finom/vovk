@@ -3,7 +3,7 @@ import { HttpException } from '../core/HttpException.js';
 import { createToolFactory } from '../tools/createToolFactory.js';
 import { HttpStatus } from './createValidateOnClient.js';
 import type { VovkRequest } from '../types/request.js';
-import type { CombinedSpec, ContentType, NormalizeContentType, VovkTypedProcedure } from '../types/validation.js';
+import type { CombinedSpec, ContentType, NormalizeContentType } from '../types/validation.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { KnownAny } from '../types/utils.js';
@@ -89,6 +89,10 @@ export function createStandardValidation({
               : AsyncGenerator<CombinedSpec.InferOutput<TIteration>>);
 
   // Return type for procedure().handle() — preserves VovkBody/VovkOutput/VovkReturnType extraction
+  // Stores the handler function type (THandleFn) instead of eagerly resolving its return type.
+  // This breaks circular type inference when the handler callback calls a service whose
+  // param types reference the controller — TypeScript captures THandleFn structurally
+  // without resolving ReturnType<THandleFn>, which is computed lazily when queried.
   type BuilderHandleReturn<
     TBody extends CombinedSpec,
     TQuery extends CombinedSpec,
@@ -97,19 +101,22 @@ export function createStandardValidation({
     TIteration extends CombinedSpec,
     TContentType extends ContentType | ContentType[],
     TReq extends VovkRequest<KnownAny, KnownAny, KnownAny>,
-    THandleReturn = KnownAny,
-  > = VovkTypedProcedure<
+    THandleFn extends (...args: KnownAny[]) => KnownAny = (...args: KnownAny[]) => KnownAny,
+  > = {
     (
       req: TReq,
       params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-    ) => THandleReturn,
-    TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny,
-    TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny,
-    TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny,
-    unknown extends CombinedSpec.InferOutput<TOutput> ? KnownAny : CombinedSpec.InferOutput<TOutput>,
-    TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny,
-    NormalizeContentType<TContentType>
-  > & {
+    ): KnownAny;
+    __types: {
+      body: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny;
+      query: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny;
+      params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny;
+      output: unknown extends CombinedSpec.InferOutput<TOutput> ? KnownAny : CombinedSpec.InferOutput<TOutput>;
+      iteration: TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny;
+      contentType: NormalizeContentType<TContentType>;
+    };
+    __handleFn: THandleFn;
+    isRPC?: boolean;
     fn: {
       <TTransformed>(input: {
         body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
@@ -117,9 +124,9 @@ export function createStandardValidation({
         params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
-        transform: (data: Awaited<THandleReturn>, fakeReq: Pick<TReq, 'vovk'>) => TTransformed;
+        transform: (data: Awaited<ReturnType<THandleFn>>, fakeReq: Pick<TReq, 'vovk'>) => TTransformed;
       }): Promise<TTransformed>;
-      <TReturnType = THandleReturn>(input?: {
+      <TReturnType = ReturnType<THandleFn>>(input?: {
         body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
         query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
         params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
@@ -132,7 +139,7 @@ export function createStandardValidation({
         params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
-      }): THandleReturn;
+      }): ReturnType<THandleFn>;
     };
     definition: KnownAny;
     schema: KnownAny;
@@ -155,12 +162,12 @@ export function createStandardValidation({
     options?: ProcedureOptions<TBody, TQuery, TParams, TOutput, TIteration, TContentType>
   ): BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq> & {
     handle: unknown extends CombinedSpec.InferOutput<TOutput>
-      ? <THandleReturn>(
-          fn: (
-            req: TReq,
-            params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-          ) => THandleReturn
-        ) => BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq, THandleReturn>
+      ? <THandleFn extends (
+          req: TReq,
+          params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
+        ) => KnownAny>(
+          fn: THandleFn
+        ) => BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq, THandleFn>
       : (
           fn: (
             req: TReq,
@@ -174,7 +181,10 @@ export function createStandardValidation({
           TIteration,
           TContentType,
           TReq,
-          HandleReturnType<TOutput, TIteration>
+          (
+            req: TReq,
+            params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
+          ) => HandleReturnType<TOutput, TIteration>
         >;
   };
 

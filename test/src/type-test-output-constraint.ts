@@ -1,4 +1,4 @@
-import { procedure, type VovkBody, type VovkOutput } from 'vovk';
+import { procedure, VovkParams, type VovkBody, type VovkOutput } from 'vovk';
 import { z } from 'zod';
 
 // ====== Builder pattern tests (with output type checking) ======
@@ -46,18 +46,23 @@ const test5 = procedure({
 
 // Test 6: Service↔Controller circular reference (builder pattern should handle this)
 class TestService {
-  static doWork(input: { body: VovkBody<typeof TestController.myMethod> }) {
-    return { greeting: `Hello ${input.body.name}` };
+  static doWork(input: {
+    body: VovkBody<typeof TestController.myMethod>;
+    params: VovkParams<typeof TestController.myMethod>;
+  }) {
+    return { greeting: `Hello ${input.body.name}`, id: input.params.id };
   }
 }
 
 class TestController {
   static myMethod = procedure({
     body: z.object({ name: z.string() }),
-    output: z.object({ greeting: z.string() }),
+    params: z.object({ id: z.string() }),
+    output: z.object({ greeting: z.string(), id: z.string() }),
   }).handle(async (req) => {
     const body = await req.vovk.body();
-    return TestService.doWork({ body });
+    const params = req.vovk.params();
+    return TestService.doWork({ body, params });
   });
 }
 

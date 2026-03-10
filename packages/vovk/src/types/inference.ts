@@ -21,13 +21,21 @@ export type VovkControllerYieldType<T extends (req: VovkRequest<KnownAny, KnownA
   ? unknown extends U
     ? never
     : U
-  : T extends (...args: KnownAny[]) => AsyncGenerator<infer Y, unknown, unknown>
-    ? Y
-    : T extends (...args: KnownAny[]) => Generator<infer Y, unknown, unknown>
+  : T extends { __handleFn: (...args: KnownAny[]) => infer R }
+    ? R extends AsyncGenerator<infer Y, unknown, unknown>
       ? Y
-      : T extends (...args: KnownAny[]) => Promise<JSONLinesResponder<infer Y>> | JSONLinesResponder<infer Y>
+      : R extends Generator<infer Y, unknown, unknown>
         ? Y
-        : never;
+        : R extends Promise<JSONLinesResponder<infer Y>> | JSONLinesResponder<infer Y>
+          ? Y
+          : never
+    : T extends (...args: KnownAny[]) => AsyncGenerator<infer Y, unknown, unknown>
+      ? Y
+      : T extends (...args: KnownAny[]) => Generator<infer Y, unknown, unknown>
+        ? Y
+        : T extends (...args: KnownAny[]) => Promise<JSONLinesResponder<infer Y>> | JSONLinesResponder<infer Y>
+          ? Y
+          : never;
 
 /**
  * Utility type to extract output from controller methods
@@ -81,7 +89,9 @@ export type VovkClientYieldType<T extends (...args: KnownAny[]) => unknown> = T 
  */
 export type VovkBody<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
   ? VovkClientBody<T>
-  : VovkControllerBody<T>;
+  : T extends { __types: { body: infer B } }
+    ? B
+    : VovkControllerBody<T>;
 
 /**
  * Utility type to extract query from both controller and client methods
@@ -93,7 +103,9 @@ export type VovkBody<T extends (...args: KnownAny[]) => unknown> = T extends { i
  */
 export type VovkQuery<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
   ? VovkClientQuery<T>
-  : VovkControllerQuery<T>;
+  : T extends { __types: { query: infer Q } }
+    ? Q
+    : VovkControllerQuery<T>;
 
 /**
  * Utility type to extract params from both controller and client methods
@@ -105,7 +117,9 @@ export type VovkQuery<T extends (...args: KnownAny[]) => unknown> = T extends { 
  */
 export type VovkParams<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
   ? VovkClientParams<T>
-  : VovkControllerParams<T>;
+  : T extends { __types: { params: infer P } }
+    ? P
+    : VovkControllerParams<T>;
 
 /**
  * Utility type to extract yield type from both controller and client methods
@@ -127,4 +141,8 @@ export type VovkYieldType<T extends (...args: KnownAny[]) => unknown> = T extend
  * type MyControllerReturnType = VovkReturnType<typeof MyController.myMethod>;
  * ```
  */
-export type VovkReturnType<T extends (...args: KnownAny) => unknown> = Awaited<ReturnType<T>>;
+export type VovkReturnType<T extends (...args: KnownAny) => unknown> = T extends {
+  __handleFn: (...args: KnownAny[]) => infer R;
+}
+  ? Awaited<R>
+  : Awaited<ReturnType<T>>;
