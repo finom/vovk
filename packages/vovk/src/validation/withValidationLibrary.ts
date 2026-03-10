@@ -213,7 +213,7 @@ export function withValidationLibrary<
     : false;
 
   function fn<TTransformed>(input: FnInputWithTransform<TTransformed>): Promise<TTransformed>;
-  function fn<TReturnType = ReturnType<THandle>>(input: FnInput): TReturnType;
+  function fn<TReturnType = ReturnType<THandle>>(input?: FnInput): TReturnType;
   function fn<TReturnType = ReturnType<THandle>>(
     input?: IsInputOptional extends true ? FnInput : never
   ): IsInputOptional extends true ? TReturnType : never;
