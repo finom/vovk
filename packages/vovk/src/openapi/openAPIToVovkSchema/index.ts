@@ -15,23 +15,23 @@ import { ContentType } from '../../types/validation.js';
 import { schemaToTsType } from '../../samples/schemaToTsType.js';
 
 function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase): string {
-  const tsTypes = contentType.map((ct) => {
-    switch (ct) {
-      case 'application/json':
-        return schemaToTsType(schema);
-      case 'multipart/form-data':
-        return `FormData | ${schemaToTsType(schema)}`;
-      case 'application/x-www-form-urlencoded':
-        return `FormData | URLSearchParams | ${schemaToTsType(schema)}`;
-      case 'text/plain':
-        return 'string';
-      case 'application/octet-stream':
-        return 'Blob | ArrayBuffer | Uint8Array';
-      default:
-        return 'unknown';
-    }
-  });
-  return tsTypes.join(' | ') || 'unknown';
+  const tsTypes = new Set(
+    contentType.flatMap((ct) => {
+      switch (ct) {
+        case 'application/json':
+          return [schemaToTsType(schema)];
+        case 'multipart/form-data':
+          return ['FormData', schemaToTsType(schema)];
+        case 'application/x-www-form-urlencoded':
+          return ['FormData', 'URLSearchParams', schemaToTsType(schema)];
+        case 'text/plain':
+          return ['string'];
+        default:
+          return ['Blob', 'ArrayBuffer', 'Uint8Array'];
+      }
+    })
+  );
+  return [...tsTypes].join(' | ') || 'unknown';
 }
 
 export function openAPIToVovkSchema({
