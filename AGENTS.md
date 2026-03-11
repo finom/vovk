@@ -75,7 +75,7 @@ vovk.config.mjs                # framework configuration
 
 **Controller** — A static class with HTTP method decorators (`@get`, `@post`, `@put`, `@patch`, `@del`). Handles routing, validation, authorization. All methods MUST be `static`.
 
-**Service** — A static class (no decorators) handling business logic, DB calls, external APIs. Injected into controllers via `private static` property.
+**Service** — A static class (no decorators) handling business logic, DB calls, external APIs. Used into controllers via import (no DI) and direct method calls.
 
 **Segment** — A Next.js catch-all route (`[[...vovk]]/route.ts`) that registers controllers via `initSegment()`. Each segment compiles into its own serverless function.
 
@@ -118,8 +118,6 @@ import UserService from './UserService';
 
 @prefix('users')
 export default class UserController {
-  private static userService = UserService;
-
   @operation({ summary: 'Update user', description: 'Update user by ID' })
   @put('{id}')
   static updateUser = procedure({
@@ -130,11 +128,10 @@ export default class UserController {
     params: z.object({ id: z.uuid() }),
     query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
     output: z.object({ success: z.boolean(), id: z.uuid() }),
-    async handle(req, { id }) {
-      const body = await req.json();
-      const notify = req.nextUrl.searchParams.get('notify');
-      return UserController.userService.updateUser(id, body, notify);
-    },
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
+    const notify = req.nextUrl.searchParams.get('notify');
+    return UserService.updateUser(id, body, notify);
   });
 
   @operation({ summary: 'Get user' })
@@ -142,35 +139,52 @@ export default class UserController {
   static getUser = procedure({
     params: z.object({ id: z.uuid() }),
     output: z.object({ id: z.string(), name: z.string() }),
-    async handle(_req, { id }) {
-      return UserController.userService.getUser(id);
-    },
+  }).handle(async (_req, { id }) => {
+    return UserService.getUser(id);
   });
 }
 ```
 
-`procedure()` fields: `body`, `query`, `params`, `output`, `iteration` (streaming), `handle`, `isForm`, `validateEachIteration`, `disableServerSideValidation`.
+`procedure()` fields: `body`, `query`, `params`, `output`, `iteration` (streaming), `handle`, `contentType`, `validateEachIteration`, `disableServerSideValidation`.
+
+## `contentType` option
+
+The `contentType` option on `procedure` controls client-side `body` typing, server-side `req.vovk.body()` parsing, and `Content-Type` enforcement (415 error on mismatch). It can be a single string or an array. Wildcards like `'image/*'`, `'video/*'`, `'*/*'` are supported.
+
+| Content Type | Client `body` type | `req.vovk.body()` return type |
+|---|---|---|
+| `application/json` (default) | `TBody \| Blob` | Parsed JSON object |
+| `multipart/form-data` | `FormData \| Blob` | Parsed form object |
+| `application/x-www-form-urlencoded` | `URLSearchParams \| FormData \| Blob` | Parsed form object |
+| `text/*` and text-like types | `string \| Blob` | `string` |
+| Everything else (`image/*`, `video/*`, `application/octet-stream`, etc.) | `File \| ArrayBuffer \| Uint8Array \| Blob` | `File` |
+
+```typescript
+@post()
+static uploadImage = procedure({
+  contentType: 'image/*',
+}).handle(async (req) => {
+  const file = await req.vovk.body(); // File
+  // ...
+});
+```
 
 ## Service pattern
 
 Services are plain static classes — no decorators:
 
 ```typescript
+import type { VovkParams, VovkBody, VovkQuery } from 'vovk';
+import type UserController from './UserController';
+
 export default class UserService {
-  static async updateUser(id: string, data: Partial<User>, notify: string) {
+  static async updateUser(id: VovkParams<typeof UserController.updateUser>['id'], data: VovkBody<typeof UserController.updateUser>, notify: VovkQuery<typeof UserController.updateUser>['notify']) {
     return prisma.user.update({ where: { id }, data });
   }
-  static async getUser(id: string) {
+  static async getUser(id: VovkParams<typeof UserController.getUser>['id']) {
     return prisma.user.findUnique({ where: { id } });
   }
 }
-```
-
-Inject services via `private static`:
-
-```typescript
-private static userService = UserService;
-// access as: this.userService.getUser(id)
 ```
 
 ## Client-side usage (generated RPC)
@@ -203,9 +217,8 @@ Server (generator syntax):
 @post('completions')
 static streamTokens = procedure({
   iteration: z.object({ message: z.string() }),
-  async *handle() {
-    yield* StreamService.getTokens();
-  },
+}).handle(function* () {
+  yield* StreamService.getTokens();
 });
 ```
 
@@ -340,25 +353,270 @@ const { tools, toolsByName } = deriveTools({
 // tools = [{ name, description, parameters, execute }, ...]
 ```
 
-Use `@operation.tool({ name, description })` on controller methods to expose them as AI tools. Methods without a summary or description are excluded from tools.
+### `@operation.tool` decorator
+
+Use `@operation.tool()` to define tool-specific attributes (name, description, title, hidden) separately from OpenAPI metadata. These are set under the `x-tool` key in the OpenAPI operation object.
+
+```typescript
+import { prefix, get, operation } from 'vovk';
+
+@prefix('user')
+export default class UserController {
+  @operation.tool({
+    name: 'get_user_by_id',
+    title: 'Get user by ID',
+    description: 'Retrieves a user by their unique ID, including name and email.',
+  })
+  @operation({
+    summary: 'Get user by ID',
+    description: 'Retrieves a user by their unique ID.',
+  })
+  @get('{id}')
+  static getUser() { /* ... */ }
+}
+```
+
+`x-tool` attributes: `name` (override tool name), `description` (override tool description), `title` (MCP title), `hidden` (exclude from derived tools).
+
+Methods without a summary or description are excluded from tools by default.
+
+## CLI module scaffolding
+
+`vovk new` creates segments and modules (controllers, services, custom modules). When creating a controller, the CLI automatically updates the segment's `route.ts` (adds import and registers the controller in `controllers` object) using AST manipulation.
+
+```bash
+npx vovk new controller service user          # creates UserController + UserService in root segment
+npx vovk new controller service admin/user     # creates in admin segment, updates admin route.ts
+npx vovk n c s user                            # shortcut syntax
+```
+
+Use `--empty` flag to create empty controllers and services (without CRUD boilerplate):
+
+```bash
+npx vovk new controller service user --empty
+```
+
+Other flags: `--overwrite`, `--no-segment-update` (skip route.ts update), `--template <path>` (override template), `--out-dir <dir>` (override output directory), `--dry-run`.
+
+## Nested segments
+
+Segments can be nested to unlimited depth. The `segmentName` must match the folder path under `src/app/api/`.
+
+```bash
+npx vovk new segment foo/bar/baz
+```
+
+This creates `src/app/api/foo/bar/baz/[[...vovk]]/route.ts` with `segmentName: 'foo/bar/baz'`, serving at `/api/foo/bar/baz/...`. Schema is stored at `.vovk-schema/foo/bar/baz.json`.
+
+```typescript
+// src/app/api/foo/bar/baz/[[...vovk]]/route.ts
+export const { GET, POST, PUT, DELETE } = initSegment({
+  segmentName: 'foo/bar/baz',
+  controllers,
+});
+```
+
+Modules for nested segments are placed under `src/modules/foo/bar/baz/`:
+
+```bash
+npx vovk new controller service foo/bar/baz/user
+```
+
+## OpenAPI Mixins
+
+Third-party OpenAPI specs can be integrated into the Vovk.ts client as pseudo-segments. Define in `outputConfig.segments` with `openAPIMixin` property:
+
+```javascript
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  outputConfig: {
+    imports: { validateOnClient: 'vovk-ajv' },
+    segments: {
+      petstore: {
+        openAPIMixin: {
+          source: {
+            url: 'https://petstore3.swagger.io/api/v3/openapi.json',
+            fallback: './.openapi-cache/petstore.json',
+          },
+          getModuleName: 'PetstoreAPI',
+          getMethodName: 'auto',
+          apiRoot: 'https://petstore3.swagger.io/api/v3',
+        },
+      },
+    },
+  },
+};
+export default config;
+```
+
+`openAPIMixin` options:
+- `source` — `{ url, fallback }`, `{ path }`, or `{ object }` to provide the OpenAPI spec.
+- `getModuleName` — string or `(ctx) => string` to name generated API modules.
+- `getMethodName` — `'auto'`, `'camel-case-operation-id'`, or `(ctx) => string`.
+- `apiRoot` — base URL for API calls (required if OAS has no `servers`).
+
+Usage:
+
+```typescript
+import { PetstoreAPI } from 'vovk-client';
+
+await PetstoreAPI.updatePet({
+  body: { name: 'Doggo' },
+  params: { id: '123' },
+});
+```
+
+Mixin modules support `withDefaults`, `deriveTools`, client-side validation, and type inference (`VovkBody`, `VovkQuery`, etc.) just like regular RPC modules.
+
+## `req.vovk` interface
+
+The `req.vovk` property provides enhanced request methods beyond standard `NextRequest`:
+
+- `req.vovk.body()` — returns parsed body (respects validation library transforms). For unknown content types (e.g., `image/*`) returns `File`.
+- `req.vovk.query()` — returns typed query params with nested object support (bracket notation: `?arr[0]=a&obj[key]=val`).
+- `req.vovk.params()` — returns typed route params.
+- `req.vovk.meta()` / `req.vovk.meta({ key: value })` — get/set request metadata (used in decorators and procedures). Client-side meta sent via `x-meta` header is available under `xMetaHeader` key.
+
+```typescript
+@post('{id}')
+static updateUser = procedure({
+  contentType: 'multipart/form-data',
+  body: z.object({ name: z.string() }),
+  query: z.object({ filters: z.object({ role: z.string() }) }),
+  params: z.object({ id: z.uuid() }),
+}).handle(async (req, { id }) => {
+  const body = await req.vovk.body();      // parsed form data as object
+  const query = req.vovk.query();          // nested query params
+  const params = req.vovk.params();        // { id: string }
+  // ...
+});
+```
+
+## Custom fetcher
+
+Override the default fetch behavior by specifying `outputConfig.imports.fetcher` in config. The file must export a `fetcher` variable. Use `createFetcher` from `vovk` to build it:
+
+```typescript
+// src/lib/fetcher.ts
+import { createFetcher } from 'vovk';
+
+export const fetcher = createFetcher<{
+  successMessage?: string;
+  useAuth?: boolean;
+}>({
+  prepareRequestInit: async (init, { useAuth }) => ({
+    ...init,
+    headers: {
+      ...init.headers,
+      ...(useAuth ? { Authorization: 'Bearer token' } : {}),
+    },
+  }),
+  onSuccess: async (data, { successMessage }) => {
+    if (successMessage) alert(successMessage);
+  },
+  onError: async (error) => {
+    alert(error.message);
+  },
+});
+```
+
+Config:
+
+```javascript
+const config = {
+  outputConfig: {
+    imports: {
+      fetcher: './src/lib/fetcher',
+    },
+  },
+};
+```
+
+Custom options are then available on every RPC call:
+
+```typescript
+await UserRPC.updateUser({
+  body: { email: 'john@example.com' },
+  useAuth: true,
+  successMessage: 'User updated!',
+});
+```
+
+Fetcher can be set per-segment for different auth mechanisms:
+
+```javascript
+outputConfig: {
+  segments: {
+    admin: {
+      imports: { fetcher: './src/lib/adminFetcher' },
+    },
+  },
+},
+```
+
+## Segmented client
+
+Splits the generated RPC client into per-segment TypeScript modules instead of a single composed client. Each segment gets its own folder with `index.ts`, `schema.ts`, and `openapi.json`. This keeps admin code out of customer bundles.
+
+```javascript
+const config = {
+  segmentedClient: {
+    enabled: true,
+    // outDir: './src/client', // default
+  },
+  composedClient: {
+    enabled: false, // disable composed if using segmented only
+  },
+};
+```
+
+Import from segment-specific paths:
+
+```typescript
+import { UserRPC } from '@/client/customer';
+import { AdminRPC } from '@/client/admin';
+```
+
+When using segmented client, `vovk-client` package is no longer needed.
+
+## Composed client and pnpm
+
+By default, the composed client is emitted to `node_modules/.vovk-client` and re-exported by the `vovk-client` package. When using **pnpm**, this may cause hoisting issues.
+
+To fix, emit the composed client to a local project directory using the `ts` template:
+
+```javascript
+const config = {
+  composedClient: {
+    fromTemplates: ['ts'],
+    outDir: './src/client',
+  },
+};
+```
+
+In this case, `vovk-client` package is not needed — import directly from the local directory:
+
+```typescript
+import { UserRPC } from '@/client';
+```
 
 ## Conventions and patterns
 
 - All controller methods must be **static**
 - Use `@prefix()` on the class, HTTP method decorator + `procedure()` on methods
 - Path params use `{id}` syntax (not `:id`) in current API
-- Service injection: `private static myService = MyService;`
-- The `handle` function in `procedure()` receives `(req, params)` — params are the second argument
+- The `handle` function returned by `procedure()` receives `(req, params)` — params are the second argument
 - `vovk-client` re-exports from `node_modules/.vovk-client` (auto-generated, do not edit)
 - `.vovk-schema/` directory should be committed to version control
 - Restart TypeScript server in VS Code after adding new controller classes
 - JSON Lines streaming responses cannot use Gzip/Brotli compression
+- Schema is emitted when `dev` script is running (use `--exit` flag to emit on demand). `vovk generate` generates the client library from the emitted schema
 
 ## Do not
 
 - Do not edit files inside `node_modules/.vovk-client` — they are auto-generated
 - Do not use instance methods on controllers — all methods must be `static`
 - Do not use `:id` for path params in `procedure()` — use `{id}` instead
-- Do not forget to register controllers in the segment's `route.ts` file
+- Do not forget to register controllers in the segment's `route.ts` file if they are not created via CLI
 - Do not import directly from `.vovk-schema/` — use `vovk-client` or `vovk-client/openapi`
 - Do not skip `vovk generate` before production builds
