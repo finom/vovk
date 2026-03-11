@@ -22,8 +22,7 @@ export default class NoValidationControllerOnlyEntityController {
     summary: 'Update noValidationControllerOnlyEntity',
   })
   @put('{id}')
-  static updateNoValidationControllerOnlyEntity = async (req: VovkRequest<{ todo: true }>, params: { id: string }) => {
-    const { id } = params;
+  static updateNoValidationControllerOnlyEntity = async (req: VovkRequest<{ todo: true }>, { id }: { id: string }) => {
     const body = await req.json();
 
     return { message: `TODO: update noValidationControllerOnlyEntity`, id, body };
@@ -43,9 +42,7 @@ export default class NoValidationControllerOnlyEntityController {
     summary: 'Delete noValidationControllerOnlyEntity',
   })
   @del('{id}')
-  static deleteNoValidationControllerOnlyEntity = (_req: VovkRequest, params: { id: string }) => {
-    const { id } = params;
-
+  static deleteNoValidationControllerOnlyEntity = (_req: VovkRequest, { id }: { id: string }) => {
     return { message: `TODO: delete noValidationControllerOnlyEntity`, id };
   };
 }

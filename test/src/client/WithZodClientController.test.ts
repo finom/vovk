@@ -469,7 +469,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     formData.append('hello', 'world');
 
     type BodyType = VovkBody<typeof WithZodClientControllerRPC.handleMultipartDataOnly>;
-    null as unknown as BodyType satisfies FormData | Blob;
+    null as unknown as BodyType satisfies FormData | Blob | { hello: string };
     // @ts-expect-error Expect error
     null as unknown as BodyType satisfies { hello: string };
     // @ts-expect-error Expect error
@@ -493,6 +493,44 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     const { rejects } = expectPromise(async () => {
       formData = new FormData();
       formData.append('hello', 'wrong_length');
+      await WithZodClientControllerRPC.handleMultipartDataOnly({
+        body: formData,
+        query: { search: 'foo' },
+        disableClientValidation: true,
+      });
+    });
+
+    await rejects.toThrow(/Validation failed. Invalid body: .*hello.*/);
+    await rejects.toThrowError(HttpException);
+  });
+
+  it('Should handle multipart data onl but use object as input', async () => {
+    let formData = { hello: 'world' };
+
+    type BodyType = VovkBody<typeof WithZodClientControllerRPC.handleMultipartDataOnly>;
+    null as unknown as BodyType satisfies FormData | Blob | { hello: string };
+    // @ts-expect-error Expect error
+    null as unknown as BodyType satisfies { hello: string };
+    // @ts-expect-error Expect error
+    null as unknown as BodyType satisfies URLSearchParams;
+
+    const result = await WithZodClientControllerRPC.handleMultipartDataOnly({
+      body: formData,
+      query: { search: 'foo' },
+    });
+    const expected = {
+      hello: 'world',
+      search: 'foo',
+    };
+    null as unknown as VovkReturnType<
+      typeof WithZodClientControllerRPC.handleMultipartDataOnly
+    > satisfies typeof expected;
+    // @ts-expect-error Expect error
+    null as unknown as VovkReturnType<typeof WithZodClientControllerRPC.handleMultipartDataOnly> satisfies null;
+    deepStrictEqual(result satisfies typeof expected, expected);
+
+    const { rejects } = expectPromise(async () => {
+      formData = { hello: 'wrong_length' };
       await WithZodClientControllerRPC.handleMultipartDataOnly({
         body: formData,
         query: { search: 'foo' },
@@ -549,7 +587,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     urlSearchParams.append('hello', 'world');
 
     type BodyType = VovkBody<typeof WithZodClientControllerRPC.handleUrlEncodedData>;
-    null as unknown as BodyType satisfies URLSearchParams | FormData | Blob;
+    null as unknown as BodyType satisfies URLSearchParams | FormData | Blob | { hello: string };
     // @ts-expect-error Expect error
     null as unknown as BodyType satisfies { hello: string };
     // @ts-expect-error Expect error

@@ -26,9 +26,8 @@ export default class NoValidationControllerAndServiceEntityController {
   @put('{id}')
   static updateNoValidationControllerAndServiceEntity = async (
     req: VovkRequest<{ todo: true }>,
-    params: { id: string }
+    { id }: { id: string }
   ) => {
-    const { id } = params;
     const body = await req.json();
 
     return NoValidationControllerAndServiceEntityService.updateNoValidationControllerAndServiceEntity(id, body);
@@ -48,9 +47,7 @@ export default class NoValidationControllerAndServiceEntityController {
     summary: 'Delete noValidationControllerAndServiceEntity',
   })
   @del('{id}')
-  static deleteNoValidationControllerAndServiceEntity = (_req: VovkRequest, params: { id: string }) => {
-    const { id } = params;
-
+  static deleteNoValidationControllerAndServiceEntity = (_req: VovkRequest, { id }: { id: string }) => {
     return NoValidationControllerAndServiceEntityService.deleteNoValidationControllerAndServiceEntity(id);
   };
 }

@@ -527,6 +527,27 @@
           "path": "handle-stream",
           "httpMethod": "GET"
         },
+        "handleStreamNoIterationValidation": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ]
+            }
+          },
+          "path": "handle-stream-no-iteration-validation",
+          "httpMethod": "GET"
+        },
         "handleResponderStream": {
           "validation": {
             "query": {
@@ -797,7 +818,8 @@
               "required": [
                 "hello",
                 "search"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-multipart-data-only",

@@ -131,6 +131,29 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         defaultStreamHandler,
         schema: handlerSchema,
       };
+
+      let processedBody = input.body as FormData;
+
+      if (
+        (validation?.body?.['x-contentType']?.includes('multipart/form-data') ||
+          validation?.body?.['x-contentType']?.includes('application/x-www-form-urlencoded')) &&
+        input.body &&
+        !(input.body instanceof FormData || input.body instanceof URLSearchParams || input.body instanceof Blob)
+      ) {
+        processedBody = new FormData();
+        for (const [key, value] of Object.entries(input.body)) {
+          if (value instanceof Array) {
+            value.forEach((item) => {
+              processedBody.append(key, item);
+            });
+          } else {
+            processedBody.append(key, value as string);
+          }
+        }
+      } else {
+        processedBody = input.body as FormData;
+      }
+
       const internalInput = {
         ...(deepExtend(
           {},
@@ -140,7 +163,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
           },
           input
         ) as OPTS),
-        body: input.body ?? null,
+        body: processedBody ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
       };

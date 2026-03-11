@@ -43,9 +43,9 @@ export type BodyTypeFromContentType<T extends ContentType[], TBody> = T[number] 
   ? A extends 'application/json' | `${string}+json`
     ? TBody | Blob
     : A extends 'multipart/form-data'
-      ? FormData | Blob
+      ? TBody | FormData | Blob
       : A extends 'application/x-www-form-urlencoded'
-        ? URLSearchParams | FormData | Blob
+        ? TBody | URLSearchParams | FormData | Blob
         : A extends
               | `text/${string}`
               | TextLikeApplicationType
