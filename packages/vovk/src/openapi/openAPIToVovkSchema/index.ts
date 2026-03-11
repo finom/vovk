@@ -12,15 +12,17 @@ import type { VovkSchema } from '../../types/core.js';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { VovkOpenAPIMixinNormalized } from '../../types/config.js';
 import { ContentType } from '../../types/validation.js';
+import { schemaToTsType } from '../../samples/schemaToTsType.js';
 
-function getTsTypeString(contentType: ContentType[]): string {
+function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase): string {
   const tsTypes = contentType.map((ct) => {
     switch (ct) {
       case 'application/json':
-        return 'JSON';
+        return schemaToTsType(schema);
       case 'multipart/form-data':
+        return `FormData | ${schemaToTsType(schema)}`;
       case 'application/x-www-form-urlencoded':
-        return 'FormData';
+        return `FormData | URLSearchParams | ${schemaToTsType(schema)}`;
       case 'text/plain':
         return 'string';
       case 'application/octet-stream':
@@ -131,11 +133,14 @@ export function openAPIToVovkSchema({
           : bodySchemas.length === 1
             ? ({
                 ...bodySchemas[0],
-                'x-tsType': getTsTypeString(bodySchemas[0]['x-contentType'] ?? []),
+                'x-tsType': getTsTypeString(bodySchemas[0]['x-contentType'] ?? [], bodySchemas[0]),
               } as VovkJSONSchemaBase)
             : {
                 anyOf: bodySchemas,
-                'x-tsType': getTsTypeString(bodySchemas.flatMap((s) => s['x-contentType'] ?? [])),
+                'x-tsType': getTsTypeString(
+                  bodySchemas.flatMap((s) => s['x-contentType'] ?? []),
+                  { anyOf: bodySchemas } as VovkJSONSchemaBase
+                ),
               };
         const output =
           operation.responses?.['200']?.content?.['application/json']?.schema ??
