@@ -22,11 +22,11 @@ export namespace Types {
         export namespace <%= controllerSchema.rpcModuleName %> {
           <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
             export namespace <%= t._.upperFirst(handlerName) %> {
-            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.body, 'Body') %>
-            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.query, 'Query') %>
-            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.params, 'Params') %>
-            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.output, 'Output') %>
-            <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.iteration,  'Iteration') %>
+              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.body, 'Body') %>
+              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.query, 'Query') %>
+              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.params, 'Params') %>
+              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.output, 'Output') %>
+              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.iteration,  'Iteration') %>
             }
           <% } %>
         }
@@ -53,9 +53,9 @@ export type Controllers = {
       <%= controllerSchema.rpcModuleName %>: {
         <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
           <%= handlerName %>: (req: VovkRequest<
-          <%- getType(segment, controllerSchema, handlerName, 'body') %>, 
-          <%- getType(segment, controllerSchema, handlerName, 'query') %>, 
-          <%- getType(segment, controllerSchema, handlerName, 'params')  %>
+            <%- getType(segment, controllerSchema, handlerName, 'body') %>, 
+            <%- getType(segment, controllerSchema, handlerName, 'query') %>, 
+            <%- getType(segment, controllerSchema, handlerName, 'params')  %>
           >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<KnownAny>' %>,
         <% } %>
       };
