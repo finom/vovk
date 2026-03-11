@@ -31,7 +31,7 @@ function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase)
       }
     })
   );
-  return [...tsTypes].join(' | ') || 'unknown';
+  return [...tsTypes].join(' | ') || schemaToTsType(schema);
 }
 
 export function openAPIToVovkSchema({
