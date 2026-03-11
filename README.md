@@ -21,7 +21,7 @@
 ## Vovk.ts [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/finom/vovk/blob/main/LICENSE) [![Runtime NPM Version](https://img.shields.io/npm/v/vovk?label=vovk)](https://www.npmjs.com/package/vovk) [![CLI NPM Version](https://img.shields.io/npm/v/vovk-cli?label=vovk-cli)](https://www.npmjs.com/package/vovk-cli)
 
 Vovk.ts lets you build a structured back end on top of **Next.js App Router Route Handlers**—and generate a **type-safe client**, **OpenAPI**, and **AI tools** from the same code.
-Under the hood: you write Controllers (real handlers), and Vovk **emits schema artifacts** for codegen—without maintaining a separate contract layer.
+Under the hood: you write Controllers, and Vovk **emits schema artifacts** for codegen—without maintaining a separate contract layer.
 
 > **Requirements:** Node.js 22+ and Next.js 15+
 
