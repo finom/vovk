@@ -37,11 +37,11 @@ See: https://vovk.dev/quick-install
 
 - 🧩 **Stay native to Next.js** (routing, streaming, proxy.js/auth patterns, deployment targets)
 - 🏗️ **Structured API layer** (Controller → Service → Repository) on top of Route Handlers
-- 📦 **Schema emission as a build artifact** (`.vovk-schema/`) to power codegen/docs/AI tools
-- ✅ **Typed request handling** via [`procedure(...)`](https://vovk.dev/procedure) with `{ params, query, body }`
-- ⚡ **Back-end segmentation** via [segments](https://vovk.dev/segment): split your API into independently configured units that each compile into their own serverless function
-- 🔗 **Mix in third-party OpenAPI schemas** as modules that share the same client/tooling pipeline ([OpenAPI mixins](https://vovk.dev/mixins))
+- 📝 **No separate contract layer** — schema is derived from your controller code, not maintained by hand
 - 🤖 **Derive AI tools from your API surface** (controllers _and_ emitted RPC modules can be exposed as [AI tools](https://vovk.dev/tools) with parameters + `execute`)
+- ⚡ **Back-end segmentation** via [segments](https://vovk.dev/segment): split your API into independently configured units that each compile into their own serverless function
+- ✅ **Typed request handling** via [`procedure(...)`](https://vovk.dev/procedure) with `{ params, query, body }`
+- 🔗 **Mix in third-party OpenAPI schemas** as modules that share the same client/tooling pipeline ([OpenAPI mixins](https://vovk.dev/mixins))
 
 ## What it looks like
 
@@ -116,14 +116,6 @@ Procedures can be executed locally for SSR/PPR:
 ```ts
 await UserController.getUser.fn({ params: { id: '123' } });
 ```
-
-## Runtime vs toolchain
-
-- **`vovk` (runtime)**: decorators, `procedure`, routing helpers, `deriveTools`
-- **`vovk-cli` (toolchain)**: codegen, docs generation, bundling/publishing
-- **`vovk-client` (optional)**: re-exported composed client for easy imports
-
-Packages overview: https://vovk.dev/packages
 
 ## Links
 
