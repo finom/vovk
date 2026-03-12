@@ -96,16 +96,21 @@ export function createFetcher<T>({
                   : 'application/json';
       const resolvedFileName = body instanceof File ? body.name : undefined;
 
+      // Default headers (lowercase keys)
+      const defaultHeaders: Record<string, string> = {
+        accept: 'application/jsonl, application/json',
+        ...(resolvedContentType ? { 'content-type': resolvedContentType } : {}),
+        ...(resolvedFileName ? { 'content-disposition': fileNameToDisposition(resolvedFileName) } : {}),
+        ...(meta ? { 'x-meta': JSON.stringify(meta) } : {}),
+      };
+
+      // Normalize user headers to lowercase keys via Headers API (handles plain objects, arrays, and Headers instances)
+      const userHeaders = init?.headers ? Object.fromEntries(new Headers(init.headers as HeadersInit).entries()) : {};
+
       requestInit = {
         method: httpMethod,
         ...init,
-        headers: {
-          accept: 'application/jsonl, application/json',
-          ...(resolvedContentType ? { 'content-type': resolvedContentType } : {}),
-          ...(resolvedFileName ? { 'content-disposition': fileNameToDisposition(resolvedFileName) } : {}),
-          ...(meta ? { 'x-meta': JSON.stringify(meta) } : {}),
-          ...init?.headers,
-        },
+        headers: { ...defaultHeaders, ...userHeaders },
       };
 
       if (body instanceof FormData || body instanceof URLSearchParams) {

@@ -11,24 +11,29 @@ export function validateContentType(request: Request | undefined, allowed: strin
     throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, 'Missing Content-Type header', { allowed });
   }
 
-  // Strip parameters like charset, boundary
-  const contentType = raw.split(';')[0].trim().toLowerCase();
+  // Handle comma-separated content types and strip parameters like charset, boundary
+  const contentTypes = raw
+    .split(',')
+    .map((part) => part.split(';')[0].trim().toLowerCase())
+    .filter(Boolean);
 
-  const match = allowed.some((pattern) => {
-    const normalized = pattern.toLowerCase();
+  const match = contentTypes.some((contentType) =>
+    allowed.some((pattern) => {
+      const normalized = pattern.toLowerCase();
 
-    // Partial wildcard: image/*, text/*, etc.
-    if (normalized.endsWith('/*')) {
-      const prefix = normalized.slice(0, -1);
-      return contentType.startsWith(prefix);
-    }
+      // Partial wildcard: image/*, text/*, etc.
+      if (normalized.endsWith('/*')) {
+        const prefix = normalized.slice(0, -1);
+        return contentType.startsWith(prefix);
+      }
 
-    return contentType === normalized;
-  });
+      return contentType === normalized;
+    })
+  );
 
   if (!match) {
-    throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, `Unsupported media type: ${contentType}`, {
-      contentType,
+    throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, `Unsupported media type: ${contentTypes.join(', ')}`, {
+      contentTypes,
       allowed,
     });
   }
