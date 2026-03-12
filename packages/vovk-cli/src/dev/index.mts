@@ -300,16 +300,25 @@ export class VovkDev {
     try {
       const resp = await fetch(endpoint);
       const text = await resp.text();
-      const json = text ? JSON.parse(text) : null;
+      let json;
+      try {
+        json = JSON.parse(text) as { schema: VovkSegmentSchema | null };
+      } catch (error) {
+        log.error(
+          `Error parsing JSON from ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)}: ${(error as Error)?.message}`
+        );
+        log.error(`Response text: ${text.length > 2000 ? text.slice(0, 2000) + '...' : text}`);
+        return { isError: true };
+      }
 
       if (resp.status !== 200) {
         const probableCause = {
           404: 'The segment did not compile or config.origin is wrong.',
         }[resp.status];
         log.warn(
-          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}` : ''}. Response text will be logged below on "debug" level.`
+          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}.` : ''}.`
         );
-        log.debug(`Response from ${formatLoggedSegmentName(segmentName)}: ${text}`);
+        log.warn(`Response from ${formatLoggedSegmentName(segmentName)}: ${text}`);
         return { isError: true };
       }
 
