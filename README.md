@@ -77,7 +77,7 @@ Procedures can use services that infer parameter types from the controller metho
 import type { VovkParams } from 'vovk';
 import type UserController from './UserController';
 
-export class UserService {
+export default class UserService {
   static async getUserById(id: VovkParams<typeof UserController.getUser>['id']) {
     // ...
   }
