@@ -468,6 +468,17 @@ export default class WithZodClientController {
     return { size: file.size, type: file.type };
   });
 
+  // === Content-type validation: wildcard */* with JSON body ===
+  @post.auto()
+  static handleWildcardContentTypeWithJsonBody = procedure({
+    contentType: ['*/*'],
+    body: z.object({ hello: z.string().max(5) }),
+    output: z.object({ hello: z.string() }),
+  }).handle(async (req) => {
+    const body = await req.vovk.body();
+    return { hello: (body as { hello: string }).hello };
+  });
+
   // === Content-type validation: partial wildcard image/* ===
   @post.auto()
   static handleImageWildcard = procedure({
