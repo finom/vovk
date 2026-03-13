@@ -911,6 +911,29 @@ describe('Content-type validation: wildcard and partial wildcard', () => {
     deepStrictEqual(result, { size: 6, type: 'image/png' });
   });
 
+  it('Should handle wildcard */* content type with JSON body', async () => {
+    const result = await WithZodClientControllerRPC.handleWildcardContentTypeWithJsonBody({
+      body: { hello: 'world' },
+    });
+    deepStrictEqual(result, { hello: 'world' });
+  });
+
+  it('Should handle wildcard */* content type with FormData body', async () => {
+    const formData = new FormData();
+    formData.append('hello', 'world');
+    const result = await WithZodClientControllerRPC.handleWildcardContentTypeWithJsonBody({
+      body: formData,
+    });
+    deepStrictEqual(result, { hello: 'world' });
+  });
+
+  it('Should handle wildcard */* content type with Blob body', async () => {
+    const result = await WithZodClientControllerRPC.handleWildcardContentType({
+      body: new Blob(['blob data'], { type: 'application/octet-stream' }),
+    });
+    deepStrictEqual(result, { size: 9, type: 'application/octet-stream' });
+  });
+
   it('Should handle image/* partial wildcard content type', async () => {
     const result = await WithZodClientControllerRPC.handleImageWildcard({
       body: new File(['png binary data'], 'photo.png', { type: 'image/png' }),

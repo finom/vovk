@@ -33,6 +33,12 @@ export type ContentType =
   | TextLikeApplicationType
   | `text/${string}`
   | `application/${string}`
+  | `${string}+json`
+  | `${string}+xml`
+  | `${string}+text`
+  | `${string}+yaml`
+  | `${string}+json-seq`
+  | '*/*'
   | (string & {});
 
 export type NormalizeContentType<T extends ContentType | ContentType[]> = T extends ContentType[]
@@ -40,21 +46,23 @@ export type NormalizeContentType<T extends ContentType | ContentType[]> = T exte
   : [T & ContentType];
 
 export type BodyTypeFromContentType<T extends ContentType[], TBody> = T[number] extends infer A
-  ? A extends 'application/json' | `${string}+json`
-    ? TBody | Blob
-    : A extends 'multipart/form-data'
-      ? TBody | FormData | Blob
-      : A extends 'application/x-www-form-urlencoded'
-        ? TBody | URLSearchParams | FormData | Blob
-        : A extends
-              | `text/${string}`
-              | TextLikeApplicationType
-              | `${string}+xml`
-              | `${string}+text`
-              | `${string}+yaml`
-              | `${string}+json-seq`
-          ? string | Blob
-          : File | ArrayBuffer | Uint8Array | Blob
+  ? A extends '*/*'
+    ? TBody | URLSearchParams | FormData | ArrayBuffer | Uint8Array | Blob
+    : A extends 'application/json' | `${string}+json`
+      ? TBody | Blob
+      : A extends 'multipart/form-data'
+        ? TBody | FormData | Blob
+        : A extends 'application/x-www-form-urlencoded'
+          ? TBody | URLSearchParams | FormData | Blob
+          : A extends
+                | `text/${string}`
+                | TextLikeApplicationType
+                | `${string}+xml`
+                | `${string}+text`
+                | `${string}+yaml`
+                | `${string}+json-seq`
+            ? string | Blob
+            : ArrayBuffer | Uint8Array | Blob
   : never;
 
 export type VovkTypedProcedure<

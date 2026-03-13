@@ -132,15 +132,6 @@ export type ClientMethodReturn<
           | AsyncIterator<infer U>
       ? Promise<VovkStreamAsyncIterable<U>>
       : StaticMethodReturnPromise<T>;
-/* ReturnType<T> extends
-    | Promise<JSONLinesResponder<infer U>>
-    | JSONLinesResponder<infer U>
-    | Iterator<infer U>
-    | AsyncIterator<infer U>
-    ? Promise<VovkStreamAsyncIterable<U>>
-    : R extends object
-      ? Promise<Awaited<R>>
-      : StaticMethodReturnPromise<T>; */
 
 export type ClientMethod<
   T extends ((
