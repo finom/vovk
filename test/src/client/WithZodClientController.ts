@@ -476,7 +476,7 @@ export default class WithZodClientController {
     output: z.object({ hello: z.string() }),
   }).handle(async (req) => {
     const body = await req.vovk.body();
-    return { hello: (body as { hello: string }).hello };
+    return { hello: body.hello };
   });
 
   // === Content-type validation: partial wildcard image/* ===
