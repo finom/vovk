@@ -1636,6 +1636,40 @@
           "path": "handle-wildcard-content-type",
           "httpMethod": "POST"
         },
+        "handleWildcardContentTypeWithJsonBody": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "*/*"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "path": "handle-wildcard-content-type-with-json-body",
+          "httpMethod": "POST"
+        },
         "handleImageWildcard": {
           "validation": {
             "body": {
