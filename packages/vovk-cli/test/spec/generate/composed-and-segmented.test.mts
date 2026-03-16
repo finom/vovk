@@ -16,7 +16,10 @@ await describe('Composed & Segmented client', async () => {
   const createApp = async ({
     devAndKillFlags = '',
     cache = true,
-  }: { devAndKillFlags?: string; cache?: boolean } = {}) => {
+  }: {
+    devAndKillFlags?: string;
+    cache?: boolean;
+  } = {}) => {
     await createVovkApp({
       vovkInitFlags: '--yes',
       cacheKey: 'bundle-or-generate-test', // TODO: DRY
@@ -85,7 +88,7 @@ await describe('Composed & Segmented client', async () => {
       files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
     });
     const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'composed-client', 'schema.ts')}?${Math.random()}`
     );
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
@@ -105,7 +108,7 @@ await describe('Composed & Segmented client', async () => {
       files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
     });
     const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'composed-client', 'schema.ts')}?${Math.random()}`
     );
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
@@ -119,7 +122,7 @@ await describe('Composed & Segmented client', async () => {
       files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
     });
     const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'composed-client', 'schema.ts')}?${Math.random()}`
     );
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'bar/baz'].sort());
   });
@@ -133,7 +136,7 @@ await describe('Composed & Segmented client', async () => {
       files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
     });
     const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'composed-client', 'schema.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'composed-client', 'schema.ts')}?${Math.random()}`
     );
     deepStrictEqual(Object.keys(schema.segments).sort(), ['foo', 'a/b/c/d/e'].sort());
   });
@@ -184,7 +187,7 @@ await describe('Composed & Segmented client', async () => {
       files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
     });
     const { y, z, a, b, c }: { y: number; z: number; a: number; b: number; c: number } = await import(
-      path.join(projectDir, 'composed-client', 'index.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'composed-client', 'index.ts')}?${Math.random()}`
     );
     deepStrictEqual({ y, z, a, b, c }, { y: 1, z: 2, a: 3, b: 4, c: 5 });
   });
@@ -240,7 +243,7 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate`);
     await assertDirFileList({ dirPath: './segmented-client', files: ['foo', 'bar'] });
     const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'segmented-client/bar/baz', 'schema.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'segmented-client/bar/baz', 'schema.ts')}?${Math.random()}`
     );
     deepStrictEqual(Object.keys(schema.segments), ['bar/baz']);
   });
@@ -259,7 +262,7 @@ await describe('Composed & Segmented client', async () => {
     await runAtProjectDir(`../dist/index.mjs generate`);
     await assertDirFileList({ dirPath: './segmented-client', files: ['foo', 'a'] });
     const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'segmented-client/foo', 'schema.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'segmented-client/foo', 'schema.ts')}?${Math.random()}`
     );
     deepStrictEqual(Object.keys(schema.segments), ['foo']);
   });
@@ -276,7 +279,7 @@ await describe('Composed & Segmented client', async () => {
     );
     await assertDirFileList({ dirPath: './segmented-client', files: ['foo', 'bar'] });
     const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'segmented-client/bar/baz', 'schema.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'segmented-client/bar/baz', 'schema.ts')}?${Math.random()}`
     );
     deepStrictEqual(Object.keys(schema.segments), ['bar/baz']);
   });
@@ -293,7 +296,7 @@ await describe('Composed & Segmented client', async () => {
     );
     await assertDirFileList({ dirPath: './segmented-client', files: ['foo', 'a'] });
     const { schema }: { schema: VovkSchema } = await import(
-      path.join(projectDir, 'segmented-client/foo', 'schema.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'segmented-client/foo', 'schema.ts')}?${Math.random()}`
     );
     deepStrictEqual(Object.keys(schema.segments), ['foo']);
   });
@@ -353,15 +356,15 @@ await describe('Composed & Segmented client', async () => {
       files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
     });
     const { y, z, c }: { y: number; z: number; a: number; b: number; c: number } = await import(
-      path.join(projectDir, 'segmented-client/root/index.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'segmented-client/root/index.ts')}?${Math.random()}`
     );
     deepStrictEqual({ y, z, c }, { y: 1, z: 2, c: 5 });
     const { a }: { a: number } = await import(
-      path.join(projectDir, 'segmented-client/foo/index.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'segmented-client/foo/index.ts')}?${Math.random()}`
     );
     deepStrictEqual({ a }, { a: 3 });
     const { b }: { b: number } = await import(
-      path.join(projectDir, 'segmented-client/a/b/c/d/e/index.ts') + '?' + Math.random()
+      `${path.join(projectDir, 'segmented-client/a/b/c/d/e/index.ts')}?${Math.random()}`
     );
     deepStrictEqual({ b }, { b: 4 });
   });

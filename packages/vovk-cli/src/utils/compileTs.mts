@@ -1,5 +1,5 @@
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import { OpenAPIObject } from 'openapi3-ts/oas31';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import upperFirst from 'lodash/upperFirst.js';
 import camelCase from 'lodash/camelCase.js';
 
@@ -92,7 +92,9 @@ function collectDefinitions(schema: JSONSchema7, refs: Map<string, JSONSchema7>)
   if (schema.anyOf) schemasToProcess.push(...schema.anyOf.filter(isSchema));
   if (schema.oneOf) schemasToProcess.push(...schema.oneOf.filter(isSchema));
 
-  schemasToProcess.forEach((s) => collectDefinitions(s, refs));
+  schemasToProcess.forEach((s) => {
+    collectDefinitions(s, refs);
+  });
 }
 
 function isSchema(value: JSONSchema7Definition | boolean): value is JSONSchema7 {

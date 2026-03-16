@@ -4,10 +4,10 @@ import {
   IndentationText,
   NewLineKind,
   SyntaxKind,
-  CodeBlockWriter,
+  type CodeBlockWriter,
   Node,
-  ObjectLiteralExpression,
-  PropertyAssignment,
+  type ObjectLiteralExpression,
+  type PropertyAssignment,
 } from 'ts-morph';
 
 export function updateConfigProperty(sourceCode: string, pathToProperty: string[], newValue: unknown) {

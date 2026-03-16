@@ -134,7 +134,7 @@ export class Init {
       if (depsUpdated) {
         if (skipInstall) {
           log.info(
-            `Installation skipped. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`
+            `Installation skipped. Please, install them manually with ${chalkHighlightThing(`${packageManager} install`)}`
           );
         } else {
           try {
@@ -147,7 +147,7 @@ export class Init {
             log.info('Dependencies installed successfully');
           } catch (error) {
             log.warn(
-              `Failed to install dependencies. ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(packageManager + ' install')}`
+              `Failed to install dependencies. ${(error as Error).message}. Please, install them manually with ${chalkHighlightThing(`${packageManager} install`)}`
             );
           }
         }
@@ -161,7 +161,7 @@ export class Init {
         options: { validationLibrary, channel, bundle, lang, dryRun },
       });
 
-      log.info('Config created successfully at ' + chalkHighlightThing(configAbsolutePath));
+      log.info(`Config created successfully at ${chalkHighlightThing(configAbsolutePath)}`);
       log.info(`You can now create a root segment with ${chalkHighlightThing('npx vovk new segment')} command`);
     } catch (error) {
       log.error(

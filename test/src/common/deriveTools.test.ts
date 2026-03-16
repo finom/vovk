@@ -124,13 +124,13 @@ describe('deriveTools', () => {
     });
 
     it('Should provide outputSchema', async () => {
-      const tool = toolsByName['MyModule_procedureWithBody'];
+      const tool = toolsByName.MyModule_procedureWithBody;
       assert.deepStrictEqual(tool.outputSchema, outputSchema);
     });
 
     it('Should provide inputSchemas', async () => {
-      const toolProcedureWithBody = toolsByName['MyModule_procedureWithBody'];
-      const toolProcedureWithQuery = toolsByName['MyModule2_procedureWithQuery'];
+      const toolProcedureWithBody = toolsByName.MyModule_procedureWithBody;
+      const toolProcedureWithQuery = toolsByName.MyModule2_procedureWithQuery;
       assert.deepStrictEqual(toolProcedureWithBody.inputSchemas, {
         body: bodySchema,
       });
@@ -141,12 +141,12 @@ describe('deriveTools', () => {
     });
 
     it('Should NOT provide inputSchema', async () => {
-      const tool = toolsByName['MyModule_procedureWithBody'];
+      const tool = toolsByName.MyModule_procedureWithBody;
       assert.strictEqual(tool.inputSchema, undefined);
     });
 
     it('Should validate input', async () => {
-      const tool = toolsByName['MyModule_procedureWithBody'];
+      const tool = toolsByName.MyModule_procedureWithBody;
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { foo: 'foo1', inputMeta: 'hello' });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -156,9 +156,9 @@ describe('deriveTools', () => {
     });
 
     it('Should use proper description', async () => {
-      assert.strictEqual(toolsByName['MyModule_procedureWithBody'].description, 'procedureWithBody description');
+      assert.strictEqual(toolsByName.MyModule_procedureWithBody.description, 'procedureWithBody description');
       assert.strictEqual(
-        toolsByName['MyModule_procedureWithToolDescription'].description,
+        toolsByName.MyModule_procedureWithToolDescription.description,
         'procedureWithToolDescription x-tool-description'
       );
     });
@@ -200,7 +200,7 @@ describe('deriveTools', () => {
     };
 
     it('Should validate input', async () => {
-      const tool = toolsByName['MyModule_procedureWithBody'];
+      const tool = toolsByName.MyModule_procedureWithBody;
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { myResult: { foo: 'foo1', inputMeta: 'hello' } });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -249,7 +249,7 @@ describe('deriveTools', () => {
     });
 
     it('Should validate input', async () => {
-      const tool = toolsByName['MyModule_procedureWithBody'];
+      const tool = toolsByName.MyModule_procedureWithBody;
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { foo: 'foo1', inputMeta: 'hello' });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -293,7 +293,7 @@ describe('deriveTools', () => {
       };
 
       it('Should validate input', async () => {
-        const tool = toolsByName['MyModule_procedureWithBody'];
+        const tool = toolsByName.MyModule_procedureWithBody;
         let result: MCPModelOutput = await tool.execute({ body: { foo: 'foo1' } });
         assert.deepStrictEqual(result, {
           content: [
@@ -331,7 +331,7 @@ describe('deriveTools', () => {
             MyModule: { arrayProcedure },
           },
         });
-        const tool = toolsByName['MyModule_arrayProcedure'];
+        const tool = toolsByName.MyModule_arrayProcedure;
         const result: MCPModelOutput = await tool.execute({});
         assert.deepStrictEqual(result, {
           content: [
@@ -631,7 +631,7 @@ describe('deriveTools', () => {
     };
 
     it('Should validate input', async () => {
-      const tool = toolsByName['MyModule_procedureWithBody'];
+      const tool = toolsByName.MyModule_procedureWithBody;
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { myResult: { foo: 'foo1', inputMeta: 'hello' } });
       result = await tool.execute({ body: { foo: 'foo1long' } });

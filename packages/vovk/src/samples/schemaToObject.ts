@@ -42,7 +42,7 @@ export function schemaToObject(schema: VovkJSONSchemaBase, rootSchema?: VovkJSON
   if (schema.allOf && schema.allOf.length > 0) {
     // Merge all schemas in allOf
     const mergedSchema = schema.allOf.reduce(
-      (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => ({ ...acc, ...s }),
+      (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => Object.assign(acc, s),
       {}
     );
     return schemaToObject(mergedSchema, rootSchema);
@@ -173,7 +173,7 @@ function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase
 
   // Handle additionalProperties
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-    result['additionalProp'] = schemaToObject(schema.additionalProperties, rootSchema);
+    result.additionalProp = schemaToObject(schema.additionalProperties, rootSchema);
   }
 
   return result;

@@ -1,7 +1,7 @@
 import { readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { glob } from 'glob';
-import { type VovkSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
 import { getMetaSchema } from '../getProjectInfo/getMetaSchema.mjs';

@@ -177,7 +177,8 @@ class VovkApp {
       const candidateRoutes = routesByLength.get(pathLength) || [];
 
       for (const p of candidateRoutes) {
-        const routeSegments = this.#routeSegmentsCache.get(p)!;
+        const routeSegments = this.#routeSegmentsCache.get(p);
+        if (!routeSegments) continue; // This should never happen, fix TS error
         const params: Record<string, string> = {};
 
         // Fast path for routes with parameters
@@ -365,7 +366,7 @@ class VovkApp {
       const isIterator =
         typeof result === 'object' &&
         !!result &&
-        !(result instanceof Array) &&
+        !Array.isArray(result) &&
         ((Reflect.has(result, Symbol.iterator) &&
           typeof (result as Iterable<unknown>)[Symbol.iterator] === 'function') ||
           (Reflect.has(result, Symbol.asyncIterator) &&

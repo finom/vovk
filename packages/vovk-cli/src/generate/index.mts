@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { type VovkSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
 import * as chokidar from 'chokidar';
 import type { GenerateOptions } from '../types.mjs';
 import { getProjectFullSchema } from './getProjectFullSchema.mjs';

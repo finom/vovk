@@ -174,7 +174,7 @@ export async function writeOneClientFile({
       outCwdRelativeDir,
       segmentName,
       outputConfigs: [templateDef.outputConfig ?? {}],
-    })['composedClient'],
+    }).composedClient,
     segmentImports: Object.fromEntries(
       Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
         const clientImports = getTemplateClientImports({
@@ -186,7 +186,7 @@ export async function writeOneClientFile({
           outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
         });
         const imports =
-          configKey === 'composedClient' ? clientImports['composedClient'] : clientImports['segmentedClient'][sName];
+          configKey === 'composedClient' ? clientImports.composedClient : clientImports.segmentedClient[sName];
 
         return [sName, imports];
       })
@@ -227,7 +227,7 @@ export async function writeOneClientFile({
     ),
   };
 
-  if (data.imports instanceof Array) {
+  if (Array.isArray(data.imports)) {
     for (const imp of data.imports) {
       t.imports = {
         [imp]: await import(imp),
@@ -253,7 +253,7 @@ export async function writeOneClientFile({
   }
 
   if (isEnsuringClient) {
-    rendered = rendered + `\n\n${placeholder}`;
+    rendered = `${rendered}\n\n${placeholder}`;
   }
 
   // Read existing file content to compare

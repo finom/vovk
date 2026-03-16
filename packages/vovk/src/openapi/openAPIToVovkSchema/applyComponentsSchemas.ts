@@ -47,7 +47,7 @@ export function applyComponentsSchemas(
 
     if ($ref && typeof $ref === 'string' && $ref.startsWith(`#/${key}/`)) {
       const componentName = $ref.replace(`#/${key}/`, '');
-      if (components![componentName]) {
+      if (components?.[componentName]) {
         newObj.$ref = `#/$defs/${componentName}`;
         newObj['x-tsType'] ??= `Mixins.${upperFirst(camelCase(mixinName))}.${upperFirst(camelCase(componentName))}`;
       } else {
@@ -55,11 +55,11 @@ export function applyComponentsSchemas(
       }
 
       // Add the component to $defs if not already added
-      if (!addedComponents.has(componentName) && components![componentName]) {
+      if (!addedComponents.has(componentName) && components?.[componentName]) {
         addedComponents.add(componentName);
         if (result.$defs) {
           result.$defs[componentName] = processSchema(
-            cloneJSON(components![componentName]) as VovkJSONSchemaBase
+            cloneJSON(components[componentName]) as VovkJSONSchemaBase
           ) as VovkJSONSchemaBase;
         }
       }
@@ -67,7 +67,7 @@ export function applyComponentsSchemas(
 
     // Process properties recursively
     for (const key in newObj) {
-      if (Object.prototype.hasOwnProperty.call(newObj, key)) {
+      if (Object.hasOwn(newObj, key)) {
         newObj[key as keyof VovkJSONSchemaBase] = processSchema(
           newObj[key as keyof VovkJSONSchemaBase]
         ) as VovkJSONSchemaBase;

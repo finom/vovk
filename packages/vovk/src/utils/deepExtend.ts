@@ -26,7 +26,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-'use strict';
+import type { KnownAny } from '../types/utils.js';
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[] ? DeepPartial<U>[] : T[P] extends object ? DeepPartial<T[P]> : T[P];
@@ -34,7 +34,7 @@ type DeepPartial<T> = {
 
 type SpecificValue = Buffer | Date | RegExp;
 
-function isSpecificValue(val: any): val is SpecificValue {
+function isSpecificValue(val: KnownAny): val is SpecificValue {
   return val instanceof Buffer || val instanceof Date || val instanceof RegExp;
 }
 
@@ -55,7 +55,7 @@ function cloneSpecificValue(val: SpecificValue): SpecificValue {
 /**
  * Recursive cloning array.
  */
-function deepCloneArray<T = any>(arr: T[]): T[] {
+function deepCloneArray<T = KnownAny>(arr: T[]): T[] {
   const clone: T[] = [];
   arr.forEach((item, index) => {
     if (typeof item === 'object' && item !== null) {
@@ -73,8 +73,8 @@ function deepCloneArray<T = any>(arr: T[]): T[] {
   return clone;
 }
 
-function safeGetProperty<T extends object>(object: T, property: PropertyKey): any {
-  return property === '__proto__' ? undefined : (object as any)[property];
+function safeGetProperty<T extends object>(object: T, property: PropertyKey): KnownAny {
+  return property === '__proto__' ? undefined : (object as KnownAny)[property];
 }
 
 /**
@@ -95,8 +95,8 @@ function deepExtend<T extends object, U extends object, V extends object, W exte
   source2: V,
   source3: W
 ): T & U & V & W;
-function deepExtend<T extends object>(target: T, ...sources: any[]): T;
-function deepExtend(...args: any[]): any {
+function deepExtend<T extends object>(target: T, ...sources: KnownAny[]): T;
+function deepExtend(...args: KnownAny[]): KnownAny {
   if (args.length < 1 || typeof args[0] !== 'object') {
     return false;
   }
@@ -109,7 +109,7 @@ function deepExtend(...args: any[]): any {
   // convert arguments to array and cut off target object
   const sources = args.slice(1);
 
-  sources.forEach((obj: any) => {
+  sources.forEach((obj: KnownAny) => {
     // skip argument if isn't an object, is null, or is an array
     if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
       return;

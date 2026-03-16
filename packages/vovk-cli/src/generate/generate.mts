@@ -133,7 +133,7 @@ const cliOptionsToOpenAPIMixins = ({
           apiRoot: openapiRootUrl?.[i] ?? '',
           getModuleName: openapiGetModuleName?.[i] ?? 'api',
           getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
-          mixinName: openapiMixinName?.[i] ?? 'mixin' + (i > 0 ? i + 1 : ''),
+          mixinName: openapiMixinName?.[i] ?? `mixin${i > 0 ? i + 1 : ''}`,
         };
       }) || []
     ).map(({ source, apiRoot, getModuleName, getMethodName, mixinName }) => [
@@ -183,6 +183,7 @@ export async function generate({
     .forEach(([segmentName, segmentConfig]) => {
       fullSchema.segments = {
         ...fullSchema.segments,
+        // biome-ignore lint/style/noNonNullAssertion: TODO
         [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin!, segmentName }).segments[segmentName],
       };
     });

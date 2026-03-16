@@ -104,7 +104,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
             ...sub.properties,
           };
           if (sub.required) {
-            merged.required = Array.from(new Set([...merged.required!, ...sub.required]));
+            merged.required = Array.from(new Set([...(merged.required ?? []), ...sub.required]));
           }
         }
       }
@@ -113,11 +113,11 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
     // 3. anyOf / oneOf => Union
     if (s.anyOf && s.anyOf.length > 0) {
-      const subTypes = s.anyOf.map((sub, i) => buildType(sub, propNameForParent + `_anyOf_${i}`));
+      const subTypes = s.anyOf.map((sub, i) => buildType(sub, `${propNameForParent}_anyOf_${i}`));
       return `Union[${subTypes.join(', ')}]`;
     }
     if (s.oneOf && s.oneOf.length > 0) {
-      const subTypes = s.oneOf.map((sub, i) => buildType(sub, propNameForParent + `_oneOf_${i}`));
+      const subTypes = s.oneOf.map((sub, i) => buildType(sub, `${propNameForParent}_oneOf_${i}`));
       return `Union[${subTypes.join(', ')}]`;
     }
 
@@ -144,10 +144,10 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           if (Array.isArray(s.items)) {
             const tupleTypes = s.items
               .filter((sub): sub is VovkJSONSchemaBase => typeof sub !== 'boolean')
-              .map((sub, i) => buildType(sub, propNameForParent + `_items_${i}`));
+              .map((sub, i) => buildType(sub, `${propNameForParent}_items_${i}`));
             return `Tuple[${tupleTypes.join(', ')}]`;
           } else if (s.items && typeof s.items !== 'boolean') {
-            const itemType = buildType(s.items, propNameForParent + `_items`);
+            const itemType = buildType(s.items, `${propNameForParent}_items`);
             return `List[${itemType}]`;
           } else {
             return `List[Any]`;
@@ -155,6 +155,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
         case 'object': {
           if (seenObjects.has(s)) {
+            // biome-ignore lint/style/noNonNullAssertion: TODO
             return seenObjects.get(s)!;
           }
 

@@ -1,4 +1,4 @@
-import { procedure, VovkParams, type VovkBody, type VovkOutput } from 'vovk';
+import { procedure, type VovkParams, type VovkBody, type VovkOutput } from 'vovk';
 import { z } from 'zod';
 
 // ====== Builder pattern tests (with output type checking) ======

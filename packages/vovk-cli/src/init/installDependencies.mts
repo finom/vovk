@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
-import NPMCliPackageJson from '@npmcli/package-json';
-import { getLogger } from '../utils/getLogger.mjs';
+import type NPMCliPackageJson from '@npmcli/package-json';
+import type { getLogger } from '../utils/getLogger.mjs';
 import type { InitOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 
@@ -13,7 +13,7 @@ export function getPackageManager(
   if (options.useYarn) return 'yarn';
   if (options.usePnpm) return 'pnpm';
   if (options.useBun) return 'bun';
-  const packageManager = options.pkgJson.content?.['packageManager'];
+  const packageManager = options.pkgJson.content?.packageManager;
   return packageManager ? (packageManager.split('@')[0] as PackageManager) : 'npm'; // Default to npm if no options are true
 }
 

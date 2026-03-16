@@ -18,9 +18,6 @@ type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-type Empty = {};
-
 export type StaticMethodInput<
   T extends ((req: VovkRequest<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
     __types?: {
@@ -31,7 +28,7 @@ export type StaticMethodInput<
   (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
     ? (T['__types'] extends { contentType: infer CT extends ContentType[] }
         ? unknown extends TBody
-          ? Empty
+          ? unknown
           : {
               body: BodyTypeFromContentType<CT, TBody>;
             }
@@ -39,19 +36,19 @@ export type StaticMethodInput<
           ? {
               body: TBody;
             }
-          : Empty) &
+          : unknown) &
         (TQuery extends Record<KnownAny, KnownAny>
           ? {
               query: TQuery;
             }
-          : Empty) &
+          : unknown) &
         (TParams extends Record<KnownAny, KnownAny>
           ? {
               params: TParams;
             }
-          : Empty) & { meta?: { [key: string]: KnownAny } }
-    : Empty) &
-    (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : Empty)
+          : unknown) & { meta?: { [key: string]: KnownAny } }
+    : unknown) &
+    (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : unknown)
 >;
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
@@ -91,7 +88,7 @@ type StaticMethodOptions<
   T extends (
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
+  ) => undefined | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
   TFetcherOptions extends Record<string, KnownAny>,
   TStreamIteration,
   R,
@@ -116,7 +113,7 @@ export type ClientMethodReturn<
   T extends (
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
+  ) => undefined | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
   TStreamIteration,
   R,
 > = R extends object
@@ -137,7 +134,7 @@ export type ClientMethod<
   T extends ((
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
     params: KnownAny
-  ) => void | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>) & {
+  ) => undefined | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>) & {
     __types?: {
       body: KnownAny;
       query: KnownAny;

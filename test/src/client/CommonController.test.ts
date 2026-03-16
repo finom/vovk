@@ -10,7 +10,7 @@ import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import omit from 'lodash/omit.js';
 import noop from 'lodash/noop.js';
 
-const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
+const apiRoot = `http://localhost:${process.env.PORT}/api`;
 
 describe('Client with vovk-client', () => {
   it(`Should handle object literals`, async () => {
@@ -110,7 +110,7 @@ describe('Client with vovk-client', () => {
     });
     strictEqual(
       CommonControllerDifferentFetcherRPC.extraClonedControllerMethod.getURL({ apiRoot }),
-      apiRoot + '/client2/common2/extra-cloned-controller-method'
+      `${apiRoot}/client2/common2/extra-cloned-controller-method`
     );
     strictEqual(result.hello satisfies string, 'world from client2');
   });
@@ -144,7 +144,7 @@ describe('Client with vovk-client', () => {
     });
     strictEqual(
       CommonControllerDifferentFetcherRPC.getHelloWorldHeaders.getURL({ apiRoot }),
-      apiRoot + '/client2/common2/get-hello-world-headers'
+      `${apiRoot}/client2/common2/get-hello-world-headers`
     );
     deepStrictEqual(result.schema, CommonControllerDifferentFetcherRPC.getHelloWorldHeaders.schema);
   });

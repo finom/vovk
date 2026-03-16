@@ -44,9 +44,10 @@ export interface GenerateOptions {
   logLevel?: LogLevelNames;
 }
 
-export interface BundleOptions extends Partial<
-  Pick<VovkStrictConfig['bundle'], 'prebundleOutDir' | 'keepPrebundleDir' | 'includeSegments' | 'excludeSegments'>
-> {
+export interface BundleOptions
+  extends Partial<
+    Pick<VovkStrictConfig['bundle'], 'prebundleOutDir' | 'keepPrebundleDir' | 'includeSegments' | 'excludeSegments'>
+  > {
   bundler?: 'tsdown' | 'ncc';
   configPath?: string;
   schemaPath?: string;

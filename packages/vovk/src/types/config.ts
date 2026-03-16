@@ -115,10 +115,8 @@ export interface VovkOpenAPIMixin {
   mixinName?: string;
 }
 
-export interface VovkOpenAPIMixinNormalized extends Omit<
-  VovkOpenAPIMixin,
-  'source' | 'getMethodName' | 'getModuleName'
-> {
+export interface VovkOpenAPIMixinNormalized
+  extends Omit<VovkOpenAPIMixin, 'source' | 'getMethodName' | 'getModuleName'> {
   source: Exclude<
     NonNullable<VovkOpenAPIMixin['source']>,
     { file: string } | { url: string } // "object" only

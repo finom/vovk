@@ -6,7 +6,7 @@ import type { VovkFetcherOptions } from 'vovk/internal';
 import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
 
-const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
+const apiRoot = `http://localhost:${process.env.PORT}/api`;
 
 const defaultController = createRPC<typeof ClientController, VovkFetcherOptions<unknown>>(
   schema,

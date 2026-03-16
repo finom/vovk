@@ -156,13 +156,14 @@ export function createToolFactory({
     execute: (input: KnownAny, processingMeta?: unknown) => TOutput | Promise<TOutput>;
     toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>;
   }): VovkToolNonDerived<TInput, TOutput, TFormattedOutput> {
-    let parameters;
+    let parameters: unknown;
     const tool: VovkToolNonDerived<TInput, TOutput, TFormattedOutput> = {
       type: 'function',
       name,
       title,
       description,
       get parameters() {
+        // biome-ignore lint/suspicious/noAssignInExpressions: TODO
         return (parameters ??= inputSchema ? toJSONSchema(inputSchema, { validationType: 'tool-input', target }) : {});
       },
       inputSchema: inputSchema as TInput extends undefined ? undefined : CombinedSpec<TInput>,
@@ -171,7 +172,7 @@ export function createToolFactory({
       async execute(input, processingMeta) {
         let result: TOutput | Error;
         try {
-          let validatedInput;
+          let validatedInput: unknown;
 
           if (inputSchema) {
             const validatedInputResult = await inputSchema['~standard'].validate(input);

@@ -1,7 +1,7 @@
 import { ToModelOutput } from './ToModelOutput.js';
-import { DefaultModelOutput } from './toModelOutputDefault.js';
-import { procedure } from '../validation/procedure.js';
-import { CombinedSpec } from '../types/validation.js';
+import type { DefaultModelOutput } from './toModelOutputDefault.js';
+import type { procedure } from '../validation/procedure.js';
+import type { CombinedSpec } from '../types/validation.js';
 import type { VovkRequest } from '../types/request.js';
 import type { VovkHandlerSchema } from '../types/core.js';
 import type { VovkToolDerived, ToModelOutputFn } from '../types/tools.js';
@@ -43,7 +43,7 @@ async function caller<TOutput, TFormattedOutput>(
     throw new Error('Handler is not a valid RPC or controller method');
   }
   try {
-    let result;
+    let result: unknown;
     let req = null;
     if (handler.isRPC) {
       result = await handler({
@@ -265,25 +265,23 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
 
   const tools = Object.entries(
     (modules as Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>) ?? {}
-  )
-    .map(([moduleName, module]) => {
-      return Object.entries(module ?? {})
-        .filter(
-          ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.hidden
-        )
-        .map(([handlerName]) =>
-          makeTool<TOutput, TFormattedOutput>({
-            moduleName,
-            handlerName,
-            module,
-            meta,
-            toModelOutput,
-            onExecute,
-            onError,
-          })
-        );
-    })
-    .flat();
+  ).flatMap(([moduleName, module]) => {
+    return Object.entries(module ?? {})
+      .filter(
+        ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.hidden
+      )
+      .map(([handlerName]) =>
+        makeTool<TOutput, TFormattedOutput>({
+          moduleName,
+          handlerName,
+          module,
+          meta,
+          toModelOutput,
+          onExecute,
+          onError,
+        })
+      );
+  });
   const toolsByName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
   return {
     tools,

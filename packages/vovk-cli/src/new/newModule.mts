@@ -71,10 +71,10 @@ export async function newModule({
       throw new Error('Too many templates provided');
     }
     templates = templatesFlag.reduce(
-      (acc, templatePath, index) => ({
-        ...acc,
-        [what[index]]: templatePath,
-      }),
+      (acc, templatePath, index) =>
+        Object.assign(acc, {
+          [what[index]]: templatePath,
+        }),
       templates
     );
   }
@@ -96,7 +96,8 @@ export async function newModule({
   }
 
   for (const type of what) {
-    const templatePath = templates[type]!;
+    const templatePath = templates[type];
+    if (!templatePath) continue; // suppresses TypeScript error, but it shouldn't happen
     const templateAbsolutePath = resolveAbsoluteModulePath(templatePath, cwd);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
 
@@ -158,7 +159,7 @@ export async function newModule({
 
       const { routeFilePath } = segment;
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
-      let importPath = path.relative(path.dirname(routeFilePath) + '/', absoluteModulePath).replace(/\.(ts|tsx)$/, '');
+      let importPath = path.relative(`${path.dirname(routeFilePath)}/`, absoluteModulePath).replace(/\.(ts|tsx)$/, '');
 
       importPath += isNodeNextResolution ? '.ts' : '';
 

@@ -21,7 +21,9 @@ function parseKey(key: string): string[] {
   // Now capture all bracket parts: [something], [0], []
   const bracketRegex = /\[([^[\]]*)\]/g;
   let match: RegExpExecArray | null;
-  while ((match = bracketRegex.exec(key)) !== null) {
+  while (true) {
+    match = bracketRegex.exec(key);
+    if (match === null) break;
     // match[1] is the content inside the brackets
     segments.push(match[1]);
   }
@@ -49,7 +51,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
           current = [];
         }
         current.push(value);
-      } else if (!isNaN(Number(segment))) {
+      } else if (!Number.isNaN(Number(segment))) {
         // Numeric segment => array index
         const idx = Number(segment);
         if (!Array.isArray(current)) {
@@ -74,8 +76,8 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         // for the next segment. We'll push something and move current to that.
         if (current.length === 0) {
           // nothing in array yet
-          current.push(typeof nextSegment === 'string' && !isNaN(Number(nextSegment)) ? [] : {});
-        } else if (typeof nextSegment === 'string' && !isNaN(Number(nextSegment))) {
+          current.push(typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {});
+        } else if (typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment))) {
           // next is numeric => we want an array
           if (!Array.isArray(current[current.length - 1])) {
             current[current.length - 1] = [];
@@ -87,7 +89,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
           }
         }
         current = current[current.length - 1];
-      } else if (!isNaN(Number(segment))) {
+      } else if (!Number.isNaN(Number(segment))) {
         // segment is numeric => array index
         const idx = Number(segment);
         if (!Array.isArray(current)) {
@@ -95,14 +97,14 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         }
         if (current[idx] === undefined) {
           // Create placeholder for next segment
-          current[idx] = typeof nextSegment === 'string' && !isNaN(Number(nextSegment)) ? [] : {};
+          current[idx] = typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {};
         }
         current = current[idx];
       } else {
         // segment is an object key
         if (current[segment] === undefined) {
           // Create placeholder
-          current[segment] = typeof nextSegment === 'string' && !isNaN(Number(nextSegment)) ? [] : {};
+          current[segment] = typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {};
         }
         current = current[segment];
       }

@@ -104,7 +104,7 @@ export async function getClientTemplateFiles({
           templateFilePath: filePath,
           relativeDir: path.relative(
             isSingleFileTemplate ? path.dirname(templateAbsolutePath) : templateAbsolutePath,
-            path.dirname(filePath) + '/'
+            `${path.dirname(filePath)}/`
           ),
           outCwdRelativeDir,
           templateDef,

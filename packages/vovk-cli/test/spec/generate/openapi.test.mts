@@ -102,7 +102,7 @@ const writeSpec = async (opts?: Parameters<typeof getSpec>[0], format?: 'json' |
 await describe('OpenAPI flags', async () => {
   await it('can generate from local openapi spec with default options', async () => {
     await writeSpec();
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     await runAtProjectDir(`../dist/index.mjs generate --openapi spec.json --out ${generatedClientDir} --from js`);
 
@@ -133,7 +133,7 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('assigns x-contentType to multipart/form-data bodies', async () => {
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
     await writeSpec({
       requestBodyContentType: 'multipart/form-data',
     });
@@ -150,7 +150,7 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('assigns x-contentType to application/x-www-form-urlencoded bodies', async () => {
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
     await writeSpec({
       requestBodyContentType: 'application/x-www-form-urlencoded',
     });
@@ -166,7 +166,7 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('creates iteration validation with content-type application/jsonl', async () => {
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
     await writeSpec({
       responseContentType: 'application/jsonl',
     });
@@ -184,7 +184,7 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('creates iteration validation with content-type application/jsonlines', async () => {
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
     await writeSpec({
       responseContentType: 'application/jsonlines',
     });
@@ -202,7 +202,7 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('generates handler name without operation id', async () => {
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
     await writeSpec({
       operationId: '',
     });
@@ -220,7 +220,7 @@ await describe('OpenAPI flags', async () => {
 
   await it('can accept custom module name and custom mixin name', async () => {
     await writeSpec();
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     await runAtProjectDir(
       `../dist/index.mjs generate --openapi spec.json --openapi-module-name MyRPC --openapi-mixin-name myMixin --out ${generatedClientDir} --from js`
@@ -252,7 +252,7 @@ await describe('OpenAPI flags', async () => {
   await it('can use JSON URL and write fallback', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     try {
       await writeSpec();
@@ -280,7 +280,7 @@ await describe('OpenAPI flags', async () => {
   await it('can use YAML URL and write fallback', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     try {
       await writeSpec({}, 'yaml');
@@ -306,7 +306,7 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('can watch JSON file and regenerate on spec change', async () => {
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     const watch = runAtProjectDir(
       `../dist/index.mjs generate --openapi ${artifactsDir}/spec.json --out ${generatedClientDir} --from js --watch 1`
@@ -342,7 +342,7 @@ await describe('OpenAPI flags', async () => {
   await it('can watch JSON URL and regenerate on spec change', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     const watch = runAtProjectDir(
       `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.json --out ${generatedClientDir} --from js --watch 1`
@@ -380,7 +380,7 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('can watch YAML file and regenerate on spec change', async () => {
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     const watch = runAtProjectDir(
       `../dist/index.mjs generate --openapi ${artifactsDir}/spec.yaml --out ${generatedClientDir} --from js --watch 1`
@@ -416,7 +416,7 @@ await describe('OpenAPI flags', async () => {
   await it('can watch YAML URL and regenerate on spec change', async () => {
     const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     const watch = runAtProjectDir(
       `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.yaml --out ${generatedClientDir} --from js --watch 1`
@@ -455,7 +455,7 @@ await describe('OpenAPI flags', async () => {
 
   await it('defines --openapi-root-url flag to override server url', async () => {
     await writeSpec();
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     await runAtProjectDir(
       `../dist/index.mjs generate --openapi spec.json --openapi-root-url https://api.example.com/v1 --out ${generatedClientDir} --from js`
@@ -483,7 +483,7 @@ await describe('OpenAPI flags', async () => {
       'yaml',
       'spec2'
     );
-    const generatedClientDir = path.join(artifactsDir, 'generated-client' + Date.now());
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     await runAtProjectDir(
       `../dist/index.mjs generate --openapi ${artifactsDir}/spec1.json --openapi spec2.yaml --openapi-module-name RPC1 --openapi-get-module-name RPC2 --openapi-mixin-name mixin1 --openapi-mixin-name mixin2 --out ${generatedClientDir} --from js`

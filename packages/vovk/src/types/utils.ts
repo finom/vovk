@@ -13,9 +13,10 @@ export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 
-export type KnownAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: this is an utility type, so any is expected
+export type KnownAny = any;
 
-export type StaticClass = Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
+export type StaticClass = Function;
 
 export type IsAny<T> = 0 extends 1 & T ? true : false;
 

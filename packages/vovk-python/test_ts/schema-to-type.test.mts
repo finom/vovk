@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { convertJSONSchemaToPythonDataType } from '../index.js'; // Replace with your actual module path
+import type { VovkJSONSchemaBase } from 'vovk';
 
 test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
   await t.test('converts string schema', () => {
@@ -420,7 +421,7 @@ test('convertJSONSchemaToPythonDataType - error handling', async (t) => {
   await t.test('handles null schema', () => {
     const result = convertJSONSchemaToPythonDataType({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      schema: null as any,
+      schema: null as unknown as VovkJSONSchemaBase,
       namespace: 'MyNamespace',
       className: 'NullSchema',
       pad: 0,

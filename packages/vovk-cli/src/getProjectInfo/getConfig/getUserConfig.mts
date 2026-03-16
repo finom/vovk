@@ -55,7 +55,6 @@ async function getLoadersForExtension(configPath: string): Promise<Array<() => P
       return canUseVM
         ? [() => importWithVMCommonJS(configPath, code), () => importWithCacheBuster(configPath)]
         : [() => importWithCacheBuster(configPath)];
-    case '.js':
     default:
       return canUseVM
         ? [

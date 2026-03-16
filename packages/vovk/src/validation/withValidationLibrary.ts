@@ -118,7 +118,7 @@ export function withValidationLibrary<
 
       if (data instanceof JSONLinesResponder) {
         data.onBeforeSend = async (item, i) => {
-          let parsed;
+          let parsed: unknown;
           if (validateEachIteration || i === 0) {
             parsed = (await validate(item, iteration, { validationType: 'iteration', req, status: 200, i })) ?? item;
           } else {
@@ -134,7 +134,7 @@ export function withValidationLibrary<
       return (async function* () {
         let i = 0;
         for await (const item of data) {
-          let parsed;
+          let parsed: unknown;
           if (validateEachIteration || i === 0) {
             parsed = (await validate(item, iteration, { validationType: 'iteration', req, status: 200, i })) ?? item;
           } else {
@@ -276,35 +276,35 @@ export function withValidationLibrary<
       );
 
     if (body && !skipSchemaEmissionKeys.includes('body')) {
-      let bodyJSONSchema;
+      let bodyJSONSchema: unknown;
       Object.defineProperty(validation, 'body', {
         enumerable: true,
         get: () => (bodyJSONSchema ??= getJSONSchema(body, 'body')),
       });
     }
     if (query && !skipSchemaEmissionKeys.includes('query')) {
-      let queryJSONSchema;
+      let queryJSONSchema: unknown;
       Object.defineProperty(validation, 'query', {
         enumerable: true,
         get: () => (queryJSONSchema ??= getJSONSchema(query, 'query')),
       });
     }
     if (params && !skipSchemaEmissionKeys.includes('params')) {
-      let paramsJSONSchema;
+      let paramsJSONSchema: unknown;
       Object.defineProperty(validation, 'params', {
         enumerable: true,
         get: () => (paramsJSONSchema ??= getJSONSchema(params, 'params')),
       });
     }
     if (output && !skipSchemaEmissionKeys.includes('output')) {
-      let outputJSONSchema;
+      let outputJSONSchema: unknown;
       Object.defineProperty(validation, 'output', {
         enumerable: true,
         get: () => (outputJSONSchema ??= getJSONSchema(output, 'output')),
       });
     }
     if (iteration && !skipSchemaEmissionKeys.includes('iteration')) {
-      let iterationJSONSchema;
+      let iterationJSONSchema: unknown;
       Object.defineProperty(validation, 'iteration', {
         enumerable: true,
         get: () => (iterationJSONSchema ??= getJSONSchema(iteration, 'iteration')),

@@ -87,7 +87,7 @@ export function getSampleValue(
   if (schema.allOf && schema.allOf.length > 0) {
     // Merge all schemas in allOf
     const mergedSchema = schema.allOf.reduce(
-      (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => ({ ...acc, ...s }),
+      (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => Object.assign(acc, s),
       {}
     );
     return getSampleValue(mergedSchema, rootSchema, ignoreBinary);
@@ -336,7 +336,7 @@ function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
     const value = getSampleValue(schema.additionalProperties, rootSchema, ignoreBinary);
     if (value !== undefined) {
-      result['additionalProp'] = value;
+      result.additionalProp = value;
     }
   }
 

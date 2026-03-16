@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server.js';
+import type { NextRequest } from 'next/server.js';
 import { prefix, get } from 'vovk';
 
 const prefixes = ['trim-prefix-1', '/trim-prefix-2', 'trim-prefix-3/', '/trim-prefix-4/'];
@@ -36,7 +36,7 @@ for (const p of prefixes) {
     }
   }
 
-  controllers['TrimController' + p] = TrimController;
+  controllers[`TrimController${p}`] = TrimController;
 }
 
 export default controllers;
