@@ -71,7 +71,7 @@ const assignSchema = ({
     ...controller._handlers,
     [propertyKey]: {
       ...schema,
-      ...((controller._handlers ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
+      ...(controller._handlers?.[propertyKey] as Partial<VovkHandlerSchema>),
       path,
       httpMethod,
     },
@@ -83,7 +83,7 @@ const assignSchema = ({
   controller._handlersMetadata = {
     ...controller._handlersMetadata,
     [propertyKey]: {
-      ...((controller._handlersMetadata ?? {})[propertyKey] as Partial<VovkHandlerSchema>),
+      ...(controller._handlersMetadata?.[propertyKey] as Partial<VovkHandlerSchema>),
       staticParams: options?.staticParams,
     },
   };
@@ -108,7 +108,7 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
     function decorator(givenTarget: unknown, propertyKey: string) {
       const controller = givenTarget as VovkController;
       // validation is already assigned at procedure function
-      const properties = Object.keys((controller._handlers ?? {})[propertyKey]?.validation?.params?.properties ?? {});
+      const properties = Object.keys(controller._handlers?.[propertyKey]?.validation?.params?.properties ?? {});
       const kebabCasePath = toKebabCase(propertyKey);
       const path = properties.length
         ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`
@@ -150,16 +150,16 @@ export const prefix = (givenPath = '') => {
 export function cloneControllerMetadata() {
   return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T) {
     const parent = Object.getPrototypeOf(c) as VovkController;
-    const constructor = c as unknown as VovkController;
-    constructor._handlers = { ...parent._handlers, ...constructor._handlers };
-    constructor._handlersMetadata = { ...parent._handlersMetadata, ...constructor._handlersMetadata };
+    const controller = c as unknown as VovkController;
+    controller._handlers = { ...parent._handlers, ...controller._handlers };
+    controller._handlersMetadata = { ...parent._handlersMetadata, ...controller._handlersMetadata };
 
     Object.values(vovkApp.routes).forEach((methods) => {
       const parentMethods = methods.get(parent) ?? {};
-      methods.set(constructor, { ...parentMethods, ...methods.get(constructor) });
+      methods.set(controller, { ...parentMethods, ...methods.get(controller) });
     });
 
-    return constructor as unknown as T;
+    return controller as unknown as T;
   };
 }
 

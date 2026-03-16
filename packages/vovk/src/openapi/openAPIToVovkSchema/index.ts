@@ -7,11 +7,11 @@ import type {
 } from 'openapi3-ts/oas31';
 import { applyComponentsSchemas } from './applyComponentsSchemas.js';
 import { inlineRefs } from './inlineRefs.js';
-import { HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
+import { type HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
 import type { VovkSchema } from '../../types/core.js';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { VovkOpenAPIMixinNormalized } from '../../types/config.js';
-import { ContentType } from '../../types/validation.js';
+import type { ContentType } from '../../types/validation.js';
 import { schemaToTsType } from '../../samples/schemaToTsType.js';
 
 function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase): string {

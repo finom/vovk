@@ -15,7 +15,10 @@ await describe('Client templates', async () => {
   const createApp = async ({
     devAndKillFlags = '',
     cache = true,
-  }: { devAndKillFlags?: string; cache?: boolean } = {}) => {
+  }: {
+    devAndKillFlags?: string;
+    cache?: boolean;
+  } = {}) => {
     await createVovkApp({
       vovkInitFlags: '--yes',
       cacheKey: 'templates-test',
@@ -23,7 +26,7 @@ await describe('Client templates', async () => {
       runInCacheDir: async ({ cwd }) => {
         await runAtProjectDir('../dist/index.mjs new segment', { cwd });
         await runAtProjectDir('../dist/index.mjs new controller user', { cwd });
-        await updateConfig(cwd + '/vovk.config.js', () => ({
+        await updateConfig(`${cwd}/vovk.config.js`, () => ({
           outputConfig: {
             package: {
               name: compiledClientFolderName,

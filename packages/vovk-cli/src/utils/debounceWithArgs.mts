@@ -1,5 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function debounceWithArgs<Callback extends (...args: any[]) => any>(
+// biome-ignore lint/suspicious/noExplicitAny: Used to explicitly
+type KnownAny = any;
+export function debounceWithArgs<Callback extends (...args: KnownAny[]) => KnownAny>(
   callback: Callback,
   wait: number
 ): (...args: Parameters<Callback>) => Promise<Awaited<ReturnType<Callback>>> {
@@ -12,7 +13,7 @@ export function debounceWithArgs<Callback extends (...args: any[]) => any>(
 
     // Clear any existing timer for this specific key
     if (timeouts.has(key)) {
-      clearTimeout(timeouts.get(key)!);
+      clearTimeout(timeouts.get(key));
     }
 
     // Return a promise that resolves/rejects after the debounce delay

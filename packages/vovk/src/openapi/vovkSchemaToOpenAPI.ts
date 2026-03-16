@@ -159,7 +159,7 @@ export function vovkSchemaToOpenAPI({
 
           const path =
             (h.misc?.originalPath as string) ??
-            '/' + [rootEntry.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path].filter(Boolean).join('/');
+            `/${[rootEntry.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path].filter(Boolean).join('/')}`;
           paths[path] = paths[path] ?? {};
           const httpMethod = h.httpMethod.toLowerCase() as Lowercase<HttpMethod>;
           paths[path][httpMethod] ??= {};
@@ -247,7 +247,7 @@ export function vovkSchemaToOpenAPI({
                     required: true,
                     content: bodyValidation['x-contentType']?.length
                       ? Object.fromEntries(
-                          bodyValidation['x-contentType']!.map((ct) => [ct, { schema: bodyValidation as SchemaObject }])
+                          bodyValidation['x-contentType'].map((ct) => [ct, { schema: bodyValidation as SchemaObject }])
                         )
                       : {
                           'application/json': {

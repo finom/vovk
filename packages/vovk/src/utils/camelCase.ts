@@ -1,5 +1,5 @@
 // Convert any value to string
-function toString(value: unknown): string {
+function valToString(value: unknown): string {
   return value == null ? '' : String(value);
 }
 
@@ -21,7 +21,7 @@ function unicodeWords(str: string) {
  * @returns {string}
  */
 export function camelCase(input: string) {
-  const str = toString(input);
+  const str = valToString(input);
   // replace separators with space
   const sanitized = str.replace(/[\s_-]+/g, ' ').trim();
   const words = unicodeWords(sanitized);

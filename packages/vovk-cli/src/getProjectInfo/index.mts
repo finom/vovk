@@ -2,7 +2,7 @@ import path from 'node:path';
 import { getConfig } from './getConfig/index.mjs';
 import { getPackageJson } from '../utils/getPackageJson.mjs';
 import { readFile } from 'node:fs/promises';
-import { LogLevelNames } from 'loglevel';
+import type { LogLevelNames } from 'loglevel';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 
@@ -13,7 +13,13 @@ export async function getProjectInfo(
     configPath,
     srcRootRequired = true,
     logLevel,
-  }: { port?: number; cwd?: string; configPath?: string; srcRootRequired?: boolean; logLevel?: LogLevelNames } = {
+  }: {
+    port?: number;
+    cwd?: string;
+    configPath?: string;
+    srcRootRequired?: boolean;
+    logLevel?: LogLevelNames;
+  } = {
     logLevel: 'info',
   }
 ) {

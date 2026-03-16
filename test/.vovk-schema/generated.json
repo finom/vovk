@@ -111,9 +111,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -133,9 +131,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -145,9 +141,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -167,9 +161,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -188,9 +180,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -224,9 +214,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -246,9 +234,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -258,9 +244,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -280,9 +264,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -301,9 +283,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -336,9 +316,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
@@ -357,9 +335,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ],
+              "required": ["todo"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             },
             "params": {
@@ -369,9 +345,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
@@ -390,9 +364,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ],
+              "required": ["todo"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
@@ -411,9 +383,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
@@ -447,9 +417,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
@@ -468,9 +436,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ],
+              "required": ["todo"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             },
             "params": {
@@ -480,9 +446,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
@@ -501,9 +465,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ],
+              "required": ["todo"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
@@ -522,9 +484,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
@@ -559,9 +519,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -580,9 +538,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -592,9 +548,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -613,9 +567,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -634,9 +586,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -670,9 +620,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -691,9 +639,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -703,9 +649,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {
@@ -724,9 +668,7 @@
                   "const": true
                 }
               },
-              "required": [
-                "todo"
-              ]
+              "required": ["todo"]
             }
           },
           "operationObject": {
@@ -745,9 +687,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           },
           "operationObject": {

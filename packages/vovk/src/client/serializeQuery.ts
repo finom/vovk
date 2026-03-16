@@ -59,7 +59,7 @@ export function serializeQuery(obj: Record<string, KnownAny>): string {
   // Collect query segments
   const segments: string[] = [];
   for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (Object.hasOwn(obj, key)) {
       const value = obj[key];
       segments.push(...buildParams(key, value));
     }

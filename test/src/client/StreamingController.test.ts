@@ -5,7 +5,7 @@ import { expectPromise } from '../lib.ts';
 import { HttpException, progressive, type VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from 'vovk-client';
 
-const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
+const apiRoot = `http://localhost:${process.env.PORT}/api`;
 
 describe('Streaming', () => {
   it('Should work', async () => {

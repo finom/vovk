@@ -142,7 +142,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       ) {
         processedBody = new FormData();
         for (const [key, value] of Object.entries(input.body)) {
-          if (value instanceof Array) {
+          if (Array.isArray(value)) {
             value.forEach((item) => {
               processedBody.append(key, item);
             });

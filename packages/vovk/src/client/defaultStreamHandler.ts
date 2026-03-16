@@ -127,7 +127,7 @@ export const readableStreamToAsyncIterable = <T = unknown>({
           if ((error as Error)?.name === 'AbortError' && isAbortedWithoutError) {
             break;
           }
-          const err = new Error('JSONLines stream error. ' + String(error));
+          const err = new Error(`JSONLines stream error. ${String(error)}`);
           err.cause = error;
           setStreamError(err);
           return;
@@ -142,7 +142,9 @@ export const readableStreamToAsyncIterable = <T = unknown>({
         buffer += chunk;
 
         let newlineIdx: number;
-        while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
+        while (true) {
+          newlineIdx = buffer.indexOf('\n');
+          if (newlineIdx === -1) break;
           if (abortController?.signal.aborted && isAbortedWithoutError) {
             break;
           }

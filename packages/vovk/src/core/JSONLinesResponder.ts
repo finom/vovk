@@ -35,6 +35,7 @@ export class JSONLinesResponder<T> extends Responder {
 
   private controller?: ReadableStreamDefaultController | null;
 
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: biome bug
   private readonly encoder: TextEncoder | null;
 
   public readonly readableStream: ReadableStream | null;
@@ -68,6 +69,7 @@ export class JSONLinesResponder<T> extends Responder {
     this.headers = headers;
     this.readableStream = readableStream;
     this.encoder = encoder;
+    // biome-ignore lint/style/noNonNullAssertion: assigned at readableStream start
     this.controller = readableController!;
     this.response = getResponse?.(this) ?? new Response(readableStream, { headers });
 
@@ -93,7 +95,7 @@ export class JSONLinesResponder<T> extends Responder {
     const { controller, encoder } = this;
     if (this.isClosed) return;
 
-    controller?.enqueue(encoder?.encode(JSON.stringify(data) + '\n'));
+    controller?.enqueue(encoder?.encode(`${JSON.stringify(data)}\n`));
   };
 
   public readonly close = () => {

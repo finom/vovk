@@ -1,4 +1,4 @@
-import { VovkJSONSchemaBase } from 'vovk';
+import type { VovkJSONSchemaBase } from 'vovk';
 
 export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string {
   if (jsonSchema === true) return 'unknown';

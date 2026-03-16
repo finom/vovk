@@ -5,7 +5,7 @@ import { StreamingGeneratorControllerRPC } from 'vovk-client';
 import type { VovkYieldType } from 'vovk';
 import { expectPromise } from '../lib.ts';
 
-const apiRoot = 'http://localhost:' + process.env.PORT + '/api';
+const apiRoot = `http://localhost:${process.env.PORT}/api`;
 
 describe('Streaming generator', () => {
   it('Should work with generator', async () => {
@@ -61,7 +61,7 @@ describe('Streaming generator', () => {
 
     await expectPromise(async () => {
       for await (const message of resp) {
-        throw new Error('This should not be called ' + String(message));
+        throw new Error(`This should not be called ${String(message)}`);
       }
     }).rejects.toThrow(/Immediate error/);
   });

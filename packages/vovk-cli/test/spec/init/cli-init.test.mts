@@ -149,7 +149,10 @@ await describe('CLI init', async () => {
     await createNextApp();
 
     const packageJSON = JSON.parse(await fs.readFile(path.join(cwd, dir, 'package.json'), 'utf-8')) as PackageJson;
-    packageJSON.scripts!.test = 'jest';
+    if (!packageJSON.scripts) {
+      packageJSON.scripts = {};
+    }
+    packageJSON.scripts.test = 'jest';
     await fs.writeFile(path.join(cwd, dir, 'package.json'), JSON.stringify(packageJSON, null, 2));
 
     await vovkInit('--yes --skip-install');

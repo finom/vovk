@@ -1,4 +1,4 @@
-import NPMCliPackageJson from '@npmcli/package-json';
+import type NPMCliPackageJson from '@npmcli/package-json';
 
 export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'implicit' | 'explicit') {
   const dev = pkgJson.content.scripts?.dev ?? 'next dev';

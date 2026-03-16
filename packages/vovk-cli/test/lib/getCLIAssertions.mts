@@ -11,7 +11,7 @@ import { getConfig } from '../../dist/getProjectInfo/getConfig/index.mjs';
 import { BUNDLE_BUILD_TSDOWN } from '../../dist/init/createConfig.mjs';
 
 function escapeFlags(flags: string | undefined): string {
-  return flags ? '_' + flags.replace(/[\s=]+/g, '_') : '';
+  return flags ? `_${flags.replace(/[\s=]+/g, '_')}` : '';
 }
 
 type RunScriptReturn = ReturnType<typeof runScript>;
@@ -150,7 +150,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     assert.deepStrictEqual(
       userConfig,
       testConfig,
-      'Config does not match. Config paths: ' + JSON.stringify(configAbsolutePaths)
+      `Config does not match. Config paths: ${JSON.stringify(configAbsolutePaths)}`
     );
   }
 
@@ -266,7 +266,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
     for (const [script, command] of Object.entries(scripts)) {
       if (typeof command === 'undefined') {
         assert.ok(!packageJson.scripts[script], `Script ${script} found`);
-        continue;
       } else {
         assert.strictEqual(packageJson.scripts[script], command, `Script ${script} not found`);
       }
@@ -289,7 +288,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function assertFile(filePath: string, exp?: RegExp | string | RegExp[] | string[], opposite?: boolean) {
-    let content;
+    let content: string;
     const p = path.join(projectDir, filePath);
     try {
       content = await fs.readFile(p, 'utf-8');

@@ -14,29 +14,25 @@ export function controllersToStaticParams(c: Record<string, StaticClass>, slug =
   const controllers = c as Record<string, VovkController>;
   return [
     { [slug]: ['_schema_'] },
-    ...Object.values(controllers)
-      .map((controller) => {
-        const handlers = controller._handlers;
-        const splitPrefix = controller._prefix?.split('/') ?? [];
+    ...Object.values(controllers).flatMap((controller) => {
+      const handlers = controller._handlers;
+      const splitPrefix = controller._prefix?.split('/') ?? [];
 
-        return Object.entries(handlers ?? {})
-          .map(([name, handler]) => {
-            const staticParams = controller._handlersMetadata?.[name]?.staticParams;
+      return Object.entries(handlers ?? {}).flatMap(([name, handler]) => {
+        const staticParams = controller._handlersMetadata?.[name]?.staticParams;
 
-            if (staticParams?.length) {
-              return staticParams.map((paramsItem) => {
-                let path = handler.path;
-                for (const [key, value] of Object.entries(paramsItem ?? {})) {
-                  path = path.replace(`{${key}}`, value);
-                }
-                return { [slug]: [...splitPrefix, ...path.split('/')].filter(Boolean) };
-              });
+        if (staticParams?.length) {
+          return staticParams.map((paramsItem) => {
+            let path = handler.path;
+            for (const [key, value] of Object.entries(paramsItem ?? {})) {
+              path = path.replace(`{${key}}`, value);
             }
+            return { [slug]: [...splitPrefix, ...path.split('/')].filter(Boolean) };
+          });
+        }
 
-            return [{ [slug]: [...splitPrefix, ...handler.path.split('/')].filter(Boolean) }];
-          })
-          .flat();
-      })
-      .flat(),
+        return [{ [slug]: [...splitPrefix, ...handler.path.split('/')].filter(Boolean) }];
+      });
+    }),
   ];
 }

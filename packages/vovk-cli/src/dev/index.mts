@@ -13,7 +13,7 @@ import { ensureSchemaFiles, debouncedEnsureSchemaFiles } from './ensureSchemaFil
 import { writeOneSegmentSchemaFile } from './writeOneSegmentSchemaFile.mjs';
 import { logDiffResult } from './logDiffResult.mjs';
 import { ensureClient } from '../generate/ensureClient.mjs';
-import { getProjectInfo, ProjectInfo } from '../getProjectInfo/index.mjs';
+import { getProjectInfo, type ProjectInfo } from '../getProjectInfo/index.mjs';
 import { generate } from '../generate/generate.mjs';
 import { locateSegments, type Segment } from '../utils/locateSegments.mjs';
 import { debounceWithArgs } from '../utils/debounceWithArgs.mjs';
@@ -21,7 +21,7 @@ import { formatLoggedSegmentName } from '../utils/formatLoggedSegmentName.mjs';
 import { writeMetaJson } from './writeMetaJson.mjs';
 import type { DevOptions, VovkEnv } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
-import { LogLevelNames } from 'loglevel';
+import type { LogLevelNames } from 'loglevel';
 import { getMetaSchema } from '../getProjectInfo/getMetaSchema.mjs';
 
 export class VovkDev {
@@ -300,14 +300,14 @@ export class VovkDev {
     try {
       const resp = await fetch(endpoint);
       const text = await resp.text();
-      let json;
+      let json: { schema: VovkSegmentSchema | null };
       try {
-        json = JSON.parse(text) as { schema: VovkSegmentSchema | null };
+        json = JSON.parse(text);
       } catch (error) {
         log.error(
           `Error parsing JSON from ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)}: ${(error as Error)?.message}`
         );
-        log.error(`Response text: ${text.length > 2000 ? text.slice(0, 2000) + '...' : text}`);
+        log.error(`Response text: ${text.length > 2000 ? `${text.slice(0, 2000)}...` : text}`);
         return { isError: true };
       }
 

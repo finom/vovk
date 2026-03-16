@@ -1,4 +1,4 @@
-import { HttpMethod } from 'vovk';
+import type { HttpMethod } from 'vovk';
 
 export interface VerbMapEntry {
   noParams?: string;
@@ -68,8 +68,10 @@ export function generateFnName(method: HttpMethod, rawPath: string, opts: Genera
   // 3. Pick base verb from VERB_MAP
   let baseVerb: string;
   if (method === 'GET') {
+    // biome-ignore lint/style/noNonNullAssertion: TODO
     baseVerb = params.length ? VERB_MAP.GET.withParams! : VERB_MAP.GET.noParams!;
   } else {
+    // biome-ignore lint/style/noNonNullAssertion: TODO
     baseVerb = VERB_MAP[method].default!;
   }
 
@@ -77,7 +79,7 @@ export function generateFnName(method: HttpMethod, rawPath: string, opts: Genera
   const resourcePart = resources.map(capitalize).join('');
 
   // 5. Build the “ByParam” suffix
-  const byParams = params.length ? 'By' + params.map(capitalize).join('') : '';
+  const byParams = params.length ? `By${params.map(capitalize).join('')}` : '';
 
   // 6. Combine and ensure camelCase
   const rawName = `${baseVerb}${resourcePart}${byParams}`;

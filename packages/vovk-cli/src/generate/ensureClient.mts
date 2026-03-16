@@ -1,4 +1,4 @@
-import { type VovkSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
 import { VovkSchemaIdEnum } from 'vovk/internal';
 import type { ProjectInfo } from '../getProjectInfo/index.mjs';
 import { generate } from './generate.mjs';

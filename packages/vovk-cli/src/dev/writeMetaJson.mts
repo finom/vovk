@@ -6,7 +6,7 @@ import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
 import { getMetaSchema } from '../getProjectInfo/getMetaSchema.mjs';
 
 export async function writeMetaJson(schemaOutAbsolutePath: string, projectInfo: ProjectInfo) {
-  const metaJsonPath = path.join(schemaOutAbsolutePath, META_FILE_NAME + '.json');
+  const metaJsonPath = path.join(schemaOutAbsolutePath, `${META_FILE_NAME}.json`);
   const metaStr = JSON.stringify(
     getMetaSchema({
       config: projectInfo.config,

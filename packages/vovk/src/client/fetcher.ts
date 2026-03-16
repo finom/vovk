@@ -135,7 +135,7 @@ export function createFetcher<T>({
         response = await fetch(endpoint, requestInit);
       } catch (e) {
         // handle network errors
-        throw new HttpException(HttpStatus.NULL, ((e as Error)?.message ?? DEFAULT_ERROR_MESSAGE) + ' ' + endpoint, {
+        throw new HttpException(HttpStatus.NULL, `${(e as Error)?.message ?? DEFAULT_ERROR_MESSAGE} ${endpoint}`, {
           body,
           query,
           params,

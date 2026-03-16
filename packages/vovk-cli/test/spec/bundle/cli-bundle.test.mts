@@ -17,7 +17,10 @@ await describe('TypeScript bundle', async () => {
   const createApp = async ({
     devAndKillFlags = '',
     cache = true,
-  }: { devAndKillFlags?: string; cache?: boolean } = {}) => {
+  }: {
+    devAndKillFlags?: string;
+    cache?: boolean;
+  } = {}) => {
     await createVovkApp({
       vovkInitFlags: '--yes',
       cacheKey: 'bundle-or-generate-test',

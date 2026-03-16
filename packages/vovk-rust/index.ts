@@ -116,7 +116,7 @@ export function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSO
   }
 
   // If the resolved schema also has a $ref, resolve it recursively
-  if (current && current.$ref) {
+  if (current?.$ref) {
     return resolveRef(current.$ref, rootSchema);
   }
 
@@ -130,7 +130,7 @@ export function getModulePath(path: string[]): string {
 
   let result = '';
   for (let i = 0; i < path.length - 1; i++) {
-    result += path[i] + '_::';
+    result += `${path[i]}_::`;
   }
   result += path[path.length - 1];
   return result;
@@ -428,7 +428,7 @@ export function processObject(
   code += `${indentFn(level)}pub struct ${currentName} {\n`;
   // Generate struct fields
   Object.entries(schema.properties).forEach(([propName, propSchema]: [string, VovkJSONSchemaBase]) => {
-    const isRequired = schema.required && schema.required.includes(propName);
+    const isRequired = schema.required?.includes(propName);
 
     // Handle $ref in property
     if (propSchema.$ref) {
@@ -535,10 +535,10 @@ export function processObject(
         if (propSchema.items.$ref) {
           const resolved = resolveRef(propSchema.items.$ref, rootSchema);
           if (resolved && (resolved.type === 'object' || resolved.properties)) {
-            code += processObject(resolved, [...path, propName + 'Item'], level + 1, rootSchema, pad);
+            code += processObject(resolved, [...path, `${propName}Item`], level + 1, rootSchema, pad);
           }
         } else if (propSchema.items.type === 'object' || propSchema.items.properties) {
-          code += processObject(propSchema.items, [...path, propName + 'Item'], level + 1, rootSchema, pad);
+          code += processObject(propSchema.items, [...path, `${propName}Item`], level + 1, rootSchema, pad);
         }
       }
       // Handle anyOf/oneOf/allOf schemas

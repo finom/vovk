@@ -1,5 +1,5 @@
-import { KnownAny } from './utils.js';
-import { ContentType } from './validation.js';
+import type { KnownAny } from './utils.js';
+import type { ContentType } from './validation.js';
 
 type Type = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'integer';
 

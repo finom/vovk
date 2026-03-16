@@ -712,5 +712,3 @@ export type PackageJson = JsonObject &
   PackageJson.TypeScriptConfiguration &
   PackageJson.YarnConfiguration &
   PackageJson.JSPMConfiguration;
-
-export {};

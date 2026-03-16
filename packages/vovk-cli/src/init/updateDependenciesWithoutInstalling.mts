@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { PackageJson } from 'type-fest';
+import type { PackageJson } from 'type-fest';
 import chalk from 'chalk';
 import type { getLogger } from '../utils/getLogger.mjs';
-import { getNPMPackageMetadata } from '../utils/getNPMPackageMetadata.mjs';
-import { InitOptions } from '../types.mjs';
+import { getNPMPackageMetadata, type NpmPackageMetadata } from '../utils/getNPMPackageMetadata.mjs';
+import type { InitOptions } from '../types.mjs';
 
 async function updateDeps({
   packageJson,
@@ -46,7 +46,7 @@ async function updateDeps({
         packageJson[key][name] = version;
         return;
       }
-      let metadata;
+      let metadata: NpmPackageMetadata;
 
       try {
         metadata = await getNPMPackageMetadata(name);

@@ -129,7 +129,7 @@ ${[
     : '';
 
   const TS_CODE = `import { ${rpcName} } from '${packageName}';
-${bodyValidation && isForm(bodyValidation) ? getTsFormSample(bodyValidation) + '\n' : ''}
+${bodyValidation && isForm(bodyValidation) ? `${getTsFormSample(bodyValidation)}\n` : ''}
 ${iterationValidation ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
 ${
   outputValidation
@@ -140,16 +140,16 @@ ${getTsSample(outputValidation, 0)}
 */`
     : ''
 }${
-    iterationValidation
-      ? `
+  iterationValidation
+    ? `
 for await (const item of response) {
     console.log(item); 
     /*
     ${getTsSample(iterationValidation)}
     */
 }`
-      : ''
-  }`;
+    : ''
+}`;
 
   return TS_CODE.trim();
 }
@@ -230,13 +230,13 @@ response = ${rpcName}.${handlerNameSnake}(${
   })
 
 ${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''}${
-    iterationValidation
-      ? `for i, item in enumerate(response):
+  iterationValidation
+    ? `for i, item in enumerate(response):
     print(f"iteration #{i}:\\n {item}")
     # iteration #0:
     ${getPySample(iterationValidation)}`
-      : ''
-  }`;
+    : ''
+}`;
 
   return PY_CODE.trim();
 }
@@ -320,7 +320,7 @@ use serde_json::{
   json 
 };
 ${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}${bodyValidation && isForm(bodyValidation) ? `use reqwest::multipart;\n` : ''}#[tokio::main]
-async fn main() {${bodyValidation && isForm(bodyValidation) ? '\n  ' + getRsFormSample(bodyValidation) + '\n' : ''}
+async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSample(bodyValidation)}\n` : ''}
   let response = ${rpcNameSnake}::${handlerNameSnake}(
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 

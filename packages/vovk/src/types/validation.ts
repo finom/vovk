@@ -4,7 +4,8 @@ import type { VovkHandlerSchema, VovkSchema } from './core.js';
 import type { textTypes } from '../req/parseBody.js';
 
 export interface CombinedProps<Input = unknown, Output = Input>
-  extends StandardSchemaV1.Props<Input, Output>, StandardJSONSchemaV1.Props<Input, Output> {}
+  extends StandardSchemaV1.Props<Input, Output>,
+    StandardJSONSchemaV1.Props<Input, Output> {}
 
 /**
  * An interface that combines StandardJSONSchema and StandardSchema.
