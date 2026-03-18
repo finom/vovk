@@ -26,7 +26,7 @@ await describe('Client templates', async () => {
       runInCacheDir: async ({ cwd }) => {
         await runAtProjectDir('../dist/index.mjs new segment', { cwd });
         await runAtProjectDir('../dist/index.mjs new controller user', { cwd });
-        await updateConfig(`${cwd}/vovk.config.js`, () => ({
+        await updateConfig(`${cwd}/vovk.config.mjs`, () => ({
           outputConfig: {
             package: {
               name: compiledClientFolderName,

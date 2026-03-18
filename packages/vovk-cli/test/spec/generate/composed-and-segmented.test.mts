@@ -57,7 +57,7 @@ await describe('Composed & Segmented client', async () => {
 
   await it('Generates composed client using --from, --out and --composed-only', async () => {
     // also make sure that segmented client is not generated even if it is enabled
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       segmentedClient: {
         enabled: true,
@@ -74,7 +74,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Generates composed client with included segments', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       composedClient: {
         outDir: './composed-client',
@@ -94,7 +94,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Generates composed client with excluded segments', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       composedClient: {
         outDir: './composed-client',
@@ -142,7 +142,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Uses outputConfig re-exports with composed client (all re-exports compiled into one file)', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       composedClient: {
         outDir: './composed-client',
@@ -229,7 +229,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Generates segmented client with included segments', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       composedClient: {
         enabled: false,
@@ -248,7 +248,7 @@ await describe('Composed & Segmented client', async () => {
     deepStrictEqual(Object.keys(schema.segments), ['bar/baz']);
   });
   await it('Generates segmented client with excluded segments', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       composedClient: {
         enabled: false,
@@ -268,7 +268,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Generates segmented client with included segments using --segmented-include-segments flag', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       composedClient: {
         enabled: false,
@@ -285,7 +285,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Generates segmented client with excluded segments using --segmented-include-segments flag', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       composedClient: {
         enabled: false,
@@ -302,7 +302,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Uses outputConfig re-exports with segmented client (re-exports correspond to their segment, and the top-level re-exports are compiled into the root segment)', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       segmentedClient: {
         outDir: './segmented-client',
@@ -370,7 +370,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Uses origin option', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       outputConfig: {
         origin: 'https://example.com/',
@@ -384,7 +384,7 @@ await describe('Composed & Segmented client', async () => {
   });
 
   await it('Uses --origin flag', async () => {
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
       outputConfig: {
         origin: 'https://example.com/', // should be overridden by --origin

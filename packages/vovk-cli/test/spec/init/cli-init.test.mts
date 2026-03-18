@@ -156,7 +156,7 @@ await describe('CLI init', async () => {
     await fs.writeFile(path.join(cwd, dir, 'package.json'), JSON.stringify(packageJSON, null, 2));
 
     await vovkInit('--yes --skip-install');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
@@ -207,7 +207,7 @@ await describe('CLI init', async () => {
   await it('Works with --yes and --update-scripts=implicit --skip-install', async () => {
     await createNextApp();
     await vovkInit('--yes --update-scripts=implicit');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
@@ -224,7 +224,7 @@ await describe('CLI init', async () => {
   await it('Works with --yes and --update-scripts=explicit', async () => {
     await createNextApp();
     await vovkInit('--yes --update-scripts=explicit');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
@@ -261,7 +261,7 @@ await describe('CLI init', async () => {
   await it('Works with --yes and NO --skip-install', async () => {
     await createNextApp();
     await vovkInit('--yes');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -281,7 +281,7 @@ await describe('CLI init', async () => {
   await it('Works with --yes and --validation-library=none', async () => {
     await createNextApp();
     await vovkInit('--yes --validation-library=none --skip-install');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig(null));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client'],
@@ -298,7 +298,7 @@ await describe('CLI init', async () => {
   await it('Works with --yes and --validation-library=zod', async () => {
     await createNextApp();
     await vovkInit('--yes --validation-library=zod --skip-install');
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -316,7 +316,7 @@ await describe('CLI init', async () => {
     await createNextApp();
     await runAtProjectDir('mkdir .config');
     await vovkInit('--yes --skip-install');
-    await assertConfig(['.config/vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['.config/vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -333,7 +333,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.YES });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -352,7 +352,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and no TSConfig update', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.NO_TS_CONFIG_UPDATE });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -371,7 +371,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and --update-ts-config', async () => {
     await createNextApp();
     await vovkInit('--update-ts-config --skip-install', { combo: combos.ONE_FLAG_PASSED });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -390,7 +390,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and --validation-library=none', async () => {
     await createNextApp();
     await vovkInit('--validation-library=none --skip-install', { combo: combos.ONE_FLAG_PASSED });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig(null));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig(null));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client'],
@@ -414,7 +414,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and no validation', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.NO_VALIDATION });
-    await assertConfig(['vovk.config.js'], omit(assertConfig.makeConfig(null)));
+    await assertConfig(['vovk.config.mjs'], omit(assertConfig.makeConfig(null)));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client', 'vovk-ajv'],
@@ -438,7 +438,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and down arrow selection for Zod', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.YES });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client', 'zod'],
@@ -457,7 +457,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and down arrow selection for Arktype', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.ARKTYPE });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('arktype'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('arktype'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client', 'arktype'],
@@ -476,7 +476,7 @@ await describe('CLI init', async () => {
   await it('Works with prompting and down arrow selection for Valibot', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.VALIBOT });
-    await assertConfig(['vovk.config.js'], assertConfig.makeConfig('valibot'));
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('valibot'));
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-client', 'valibot', '@valibot/to-json-schema'],
@@ -496,7 +496,7 @@ await describe('CLI init', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.RUST });
     await assertConfig(
-      ['vovk.config.js'],
+      ['vovk.config.mjs'],
       assertConfig.makeConfig('zod', {
         composedClient: {
           fromTemplates: ['js', 'rs'],
@@ -530,7 +530,7 @@ await describe('CLI init', async () => {
     await createNextApp();
     await vovkInit('--skip-install', { combo: combos.PYTHON_AND_RUST });
     await assertConfig(
-      ['vovk.config.js'],
+      ['vovk.config.mjs'],
       assertConfig.makeConfig('zod', {
         composedClient: {
           fromTemplates: ['js', 'py', 'rs'],
@@ -570,7 +570,7 @@ await describe('CLI init', async () => {
       });
       await pkgJson.save();
       await vovkInit('--use-yarn', { combo: combos.YES });
-      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+      await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -601,7 +601,7 @@ await describe('CLI init', async () => {
       });
       await pkgJson.save();
       await vovkInit('--yes --use-yarn');
-      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+      await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod'],
@@ -636,7 +636,7 @@ await describe('CLI init', async () => {
       });
       await pkgJson.save();
       await vovkInit('--use-bun', { combo: combos.YES });
-      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+      await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -667,7 +667,7 @@ await describe('CLI init', async () => {
       });
       await pkgJson.save();
       await vovkInit('--yes --use-bun');
-      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+      await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod'],
@@ -702,7 +702,7 @@ await describe('CLI init', async () => {
       await pkgJson.save();
       // The last ENTER is made to confim pnpm prompt "✔ The modules directory at "/Users/finom/Work/vovk/packages/vovk-cli/tmp_test_dir/node_modules" will be removed and reinstalled from scratch. Proceed? (Y/n)"
       await vovkInit('--use-pnpm --log-level debug', { combo: [...combos.YES, ENTER] });
-      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+      await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
@@ -733,7 +733,7 @@ await describe('CLI init', async () => {
       });
       await pkgJson.save();
       await vovkInit('--yes --use-pnpm', { combo: [ENTER, ENTER] });
-      await assertConfig(['vovk.config.js'], assertConfig.makeConfig('zod'));
+      await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
       await assertDeps({
         dependencies: ['vovk', 'vovk-ajv', 'zod'],
