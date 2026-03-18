@@ -13,7 +13,7 @@
       "!.next",
       "!dist",
       "!build",
-      "!.vovk-schema",
+      "!**/.vovk-schema",
       "!.rollup.cache",
       "!.tmp*",
       "!test_data"
