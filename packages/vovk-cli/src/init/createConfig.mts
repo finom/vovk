@@ -43,7 +43,7 @@ export async function createConfig({
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
   const dir = (await getFileSystemEntryType(dotConfigPath)) === FileSystemEntryType.DIRECTORY ? dotConfigPath : root;
-  const configAbsolutePath = path.join(dir, 'vovk.config.js');
+  const configAbsolutePath = path.join(dir, 'vovk.config.mjs');
 
   const typeTemplates = {
     controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
