@@ -174,7 +174,9 @@
                   "type": "string"
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -184,7 +186,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -197,7 +201,10 @@
                   "type": "string"
                 }
               },
-              "required": ["foo", "bar"]
+              "required": [
+                "foo",
+                "bar"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -210,7 +217,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["hello"]
+                  "required": [
+                    "hello"
+                  ]
                 },
                 "query": {
                   "type": "object",
@@ -219,7 +228,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["search"]
+                  "required": [
+                    "search"
+                  ]
                 },
                 "params": {
                   "type": "object",
@@ -231,7 +242,10 @@
                       "type": "string"
                     }
                   },
-                  "required": ["foo", "bar"]
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -243,10 +257,18 @@
                       "type": "string"
                     }
                   },
-                  "required": ["foo", "bar"]
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
                 }
               },
-              "required": ["body", "query", "params", "vovkParams"]
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ]
             }
           },
           "operationObject": {
@@ -265,11 +287,15 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": ["This is a bad request"]
+                              "enum": [
+                                "This is a bad request"
+                              ]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [400]
+                              "enum": [
+                                400
+                              ]
                             }
                           }
                         }
@@ -296,7 +322,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "handle-query",
@@ -313,7 +341,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             }
           },
           "path": "handle-body",
@@ -334,7 +364,10 @@
                   "maxLength": 5
                 }
               },
-              "required": ["foo", "bar"]
+              "required": [
+                "foo",
+                "bar"
+              ]
             }
           },
           "path": "x/{foo}/{bar}/y",
@@ -395,20 +428,35 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": ["deepKey"]
+                                "required": [
+                                  "deepKey"
+                                ]
                               }
                             },
-                            "required": ["foo"]
+                            "required": [
+                              "foo"
+                            ]
                           }
                         }
                       },
-                      "required": ["x", "arrOfObjects"]
+                      "required": [
+                        "x",
+                        "arrOfObjects"
+                      ]
                     }
                   },
-                  "required": ["f", "u", "d"]
+                  "required": [
+                    "f",
+                    "u",
+                    "d"
+                  ]
                 }
               },
-              "required": ["x", "y", "z"]
+              "required": [
+                "x",
+                "y",
+                "z"
+              ]
             }
           },
           "path": "handle-nested-query",
@@ -424,7 +472,9 @@
                   "type": "string"
                 }
               },
-              "required": ["helloOutput"]
+              "required": [
+                "helloOutput"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -435,7 +485,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             }
           },
           "path": "handle-output",
@@ -454,7 +506,9 @@
                   }
                 }
               },
-              "required": ["values"]
+              "required": [
+                "values"
+              ]
             },
             "iteration": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -465,7 +519,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["value"]
+              "required": [
+                "value"
+              ]
             }
           },
           "path": "handle-stream",
@@ -484,7 +540,9 @@
                   }
                 }
               },
-              "required": ["values"]
+              "required": [
+                "values"
+              ]
             }
           },
           "path": "handle-stream-no-iteration-validation",
@@ -503,7 +561,9 @@
                   }
                 }
               },
-              "required": ["values"]
+              "required": [
+                "values"
+              ]
             },
             "iteration": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -514,7 +574,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["value"]
+              "required": [
+                "value"
+              ]
             }
           },
           "path": "handle-responder-stream",
@@ -528,7 +590,11 @@
               "properties": {
                 "enum_value": {
                   "type": "string",
-                  "enum": ["a", "b", "c"]
+                  "enum": [
+                    "a",
+                    "b",
+                    "c"
+                  ]
                 },
                 "num_minimum": {
                   "type": "number",
@@ -615,7 +681,9 @@
                       "type": "number"
                     }
                   },
-                  "required": ["requiredField"]
+                  "required": [
+                    "requiredField"
+                  ]
                 },
                 "obj_strict": {
                   "type": "object",
@@ -624,7 +692,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["knownField"],
+                  "required": [
+                    "knownField"
+                  ],
                   "additionalProperties": false
                 },
                 "logical_anyOf": {
@@ -650,7 +720,9 @@
                           "type": "string"
                         }
                       },
-                      "required": ["a"],
+                      "required": [
+                        "a"
+                      ],
                       "additionalProperties": {}
                     },
                     {
@@ -660,7 +732,9 @@
                           "type": "number"
                         }
                       },
-                      "required": ["b"],
+                      "required": [
+                        "b"
+                      ],
                       "additionalProperties": {}
                     }
                   ]
@@ -710,8 +784,12 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"],
-              "x-contentType": ["multipart/form-data"]
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "multipart/form-data"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -721,7 +799,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -735,7 +815,10 @@
                   "type": "string"
                 }
               },
-              "required": ["hello", "search"],
+              "required": [
+                "hello",
+                "search"
+              ],
               "additionalProperties": false
             }
           },
@@ -753,8 +836,13 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"],
-              "x-contentType": ["multipart/form-data", "application/json"]
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "multipart/form-data",
+                "application/json"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -764,7 +852,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -778,7 +868,10 @@
                   "type": "string"
                 }
               },
-              "required": ["hello", "search"]
+              "required": [
+                "hello",
+                "search"
+              ]
             }
           },
           "path": "handle-multipart-and-json-data",
@@ -800,8 +893,13 @@
                   "contentEncoding": "binary"
                 }
               },
-              "required": ["hello", "file"],
-              "x-contentType": ["multipart/form-data"]
+              "required": [
+                "hello",
+                "file"
+              ],
+              "x-contentType": [
+                "multipart/form-data"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -811,7 +909,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -828,7 +928,11 @@
                   "type": "string"
                 }
               },
-              "required": ["hello", "file", "search"]
+              "required": [
+                "hello",
+                "file",
+                "search"
+              ]
             }
           },
           "path": "handle-multipart-data-with-file",
@@ -853,8 +957,13 @@
                   }
                 }
               },
-              "required": ["hello", "files"],
-              "x-contentType": ["multipart/form-data"]
+              "required": [
+                "hello",
+                "files"
+              ],
+              "x-contentType": [
+                "multipart/form-data"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -864,7 +973,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -884,7 +995,11 @@
                   "type": "string"
                 }
               },
-              "required": ["hello", "files", "search"]
+              "required": [
+                "hello",
+                "files",
+                "search"
+              ]
             }
           },
           "path": "handle-multipart-data-with-multiple-files",
@@ -901,8 +1016,12 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"],
-              "x-contentType": ["application/x-www-form-urlencoded"]
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "application/x-www-form-urlencoded"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -912,7 +1031,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -926,7 +1047,10 @@
                   "type": "string"
                 }
               },
-              "required": ["hello", "search"]
+              "required": [
+                "hello",
+                "search"
+              ]
             }
           },
           "path": "handle-url-encoded-data",
@@ -938,7 +1062,9 @@
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "string",
               "maxLength": 5,
-              "x-contentType": ["text/plain"]
+              "x-contentType": [
+                "text/plain"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -948,7 +1074,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -962,7 +1090,10 @@
                   "type": "string"
                 }
               },
-              "required": ["hello", "search"]
+              "required": [
+                "hello",
+                "search"
+              ]
             }
           },
           "path": "handle-text-plain-data",
@@ -975,7 +1106,9 @@
               "type": "string",
               "format": "binary",
               "contentEncoding": "binary",
-              "x-contentType": ["image/png"]
+              "x-contentType": [
+                "image/png"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -985,7 +1118,9 @@
                   "type": "string"
                 }
               },
-              "required": ["fileName"]
+              "required": [
+                "fileName"
+              ]
             }
           },
           "path": "handle-octet-stream-data",
@@ -1009,10 +1144,15 @@
                       "maxLength": 5
                     }
                   },
-                  "required": ["hello"]
+                  "required": [
+                    "hello"
+                  ]
                 }
               ],
-              "x-contentType": ["image/png", "application/json"]
+              "x-contentType": [
+                "image/png",
+                "application/json"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1026,7 +1166,10 @@
                   "maxLength": 5
                 }
               },
-              "required": ["type", "hello"]
+              "required": [
+                "type",
+                "hello"
+              ]
             }
           },
           "path": "handle-octet-stream-or-json-data",
@@ -1043,7 +1186,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1053,7 +1198,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "disable-server-side-validation-bool",
@@ -1070,7 +1217,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1081,7 +1230,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "disable-server-side-validation-strings",
@@ -1102,7 +1253,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             }
           },
           "path": "skip-schema-emission-strings",
@@ -1121,7 +1274,9 @@
                   }
                 }
               },
-              "required": ["values"]
+              "required": [
+                "values"
+              ]
             },
             "iteration": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1132,7 +1287,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["value"]
+              "required": [
+                "value"
+              ]
             }
           },
           "path": "validate-each-iteration",
@@ -1151,7 +1308,9 @@
                   }
                 }
               },
-              "required": ["values"]
+              "required": [
+                "values"
+              ]
             },
             "iteration": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1162,7 +1321,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["value"]
+              "required": [
+                "value"
+              ]
             }
           },
           "path": "validate-each-responder-iteration",
@@ -1178,7 +1339,9 @@
                   "type": "string"
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1188,7 +1351,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1201,7 +1366,10 @@
                   "type": "string"
                 }
               },
-              "required": ["foo", "bar"]
+              "required": [
+                "foo",
+                "bar"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1214,7 +1382,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["hello"]
+                  "required": [
+                    "hello"
+                  ]
                 },
                 "query": {
                   "type": "object",
@@ -1223,7 +1393,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["search"]
+                  "required": [
+                    "search"
+                  ]
                 },
                 "params": {
                   "type": "object",
@@ -1235,7 +1407,10 @@
                       "type": "string"
                     }
                   },
-                  "required": ["foo", "bar"]
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -1247,10 +1422,18 @@
                       "type": "string"
                     }
                   },
-                  "required": ["foo", "bar"]
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
                 }
               },
-              "required": ["body", "query", "params", "vovkParams"]
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ]
             }
           },
           "path": "all-as-func/{foo}/{bar}",
@@ -1266,7 +1449,9 @@
                   "type": "string"
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1276,7 +1461,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1289,7 +1476,10 @@
                   "type": "string"
                 }
               },
-              "required": ["foo", "bar"]
+              "required": [
+                "foo",
+                "bar"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1302,7 +1492,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["hello"]
+                  "required": [
+                    "hello"
+                  ]
                 },
                 "query": {
                   "type": "object",
@@ -1311,7 +1503,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["search"]
+                  "required": [
+                    "search"
+                  ]
                 },
                 "params": {
                   "type": "object",
@@ -1323,7 +1517,10 @@
                       "type": "string"
                     }
                   },
-                  "required": ["foo", "bar"]
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
                 },
                 "vovkParams": {
                   "type": "object",
@@ -1335,10 +1532,18 @@
                       "type": "string"
                     }
                   },
-                  "required": ["foo", "bar"]
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
                 }
               },
-              "required": ["body", "query", "params", "vovkParams"]
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ]
             }
           },
           "path": "all-no-http-as-func/{foo}/{bar}",
@@ -1357,7 +1562,10 @@
                   "type": "string"
                 }
               },
-              "required": ["page", "limit"]
+              "required": [
+                "page",
+                "limit"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1375,7 +1583,10 @@
                         "type": "string"
                       }
                     },
-                    "required": ["id", "name"]
+                    "required": [
+                      "id",
+                      "name"
+                    ]
                   }
                 },
                 "hasNextPage": {
@@ -1385,7 +1596,10 @@
                   "type": "number"
                 }
               },
-              "required": ["items", "hasNextPage"]
+              "required": [
+                "items",
+                "hasNextPage"
+              ]
             }
           },
           "path": "handle-pagination",
@@ -1398,7 +1612,9 @@
               "type": "string",
               "format": "binary",
               "contentEncoding": "binary",
-              "x-contentType": ["*/*"]
+              "x-contentType": [
+                "*/*"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1411,7 +1627,10 @@
                   "type": "string"
                 }
               },
-              "required": ["size", "type"]
+              "required": [
+                "size",
+                "type"
+              ]
             }
           },
           "path": "handle-wildcard-content-type",
@@ -1428,8 +1647,12 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"],
-              "x-contentType": ["*/*"]
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "*/*"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1439,7 +1662,9 @@
                   "type": "string"
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             }
           },
           "path": "handle-wildcard-content-type-with-json-body",
@@ -1452,7 +1677,9 @@
               "type": "string",
               "format": "binary",
               "contentEncoding": "binary",
-              "x-contentType": ["image/*"]
+              "x-contentType": [
+                "image/*"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1465,7 +1692,10 @@
                   "type": "string"
                 }
               },
-              "required": ["size", "type"]
+              "required": [
+                "size",
+                "type"
+              ]
             }
           },
           "path": "handle-image-wildcard",
@@ -1478,7 +1708,9 @@
               "type": "string",
               "format": "binary",
               "contentEncoding": "binary",
-              "x-contentType": ["application/octet-stream"]
+              "x-contentType": [
+                "application/octet-stream"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1491,7 +1723,10 @@
                   "type": "string"
                 }
               },
-              "required": ["size", "content"]
+              "required": [
+                "size",
+                "content"
+              ]
             }
           },
           "path": "handle-binary-octet-stream",
@@ -1508,7 +1743,9 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"]
+              "required": [
+                "hello"
+              ]
             }
           },
           "path": "handle-json-reread-after-validation",
@@ -1520,7 +1757,9 @@
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "string",
               "maxLength": 100,
-              "x-contentType": ["text/plain"]
+              "x-contentType": [
+                "text/plain"
+              ]
             }
           },
           "path": "handle-text-reread-after-validation",
@@ -1536,8 +1775,12 @@
                   "type": "string"
                 }
               },
-              "required": ["name"],
-              "x-contentType": ["multipart/form-data"]
+              "required": [
+                "name"
+              ],
+              "x-contentType": [
+                "multipart/form-data"
+              ]
             }
           },
           "path": "handle-form-data-reread-after-validation",
@@ -1550,7 +1793,9 @@
               "type": "string",
               "format": "binary",
               "contentEncoding": "binary",
-              "x-contentType": ["application/octet-stream"]
+              "x-contentType": [
+                "application/octet-stream"
+              ]
             }
           },
           "path": "handle-binary-reread-after-validation",
@@ -1567,8 +1812,12 @@
                   "maxLength": 5
                 }
               },
-              "required": ["hello"],
-              "x-contentType": ["application/json"]
+              "required": [
+                "hello"
+              ],
+              "x-contentType": [
+                "application/json"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1578,7 +1827,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1592,7 +1843,10 @@
                   "type": "string"
                 }
               },
-              "required": ["hello", "search"]
+              "required": [
+                "hello",
+                "search"
+              ]
             }
           },
           "path": "handle-string-content-type-json",
@@ -1604,7 +1858,9 @@
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "string",
               "maxLength": 5,
-              "x-contentType": ["text/plain"]
+              "x-contentType": [
+                "text/plain"
+              ]
             },
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1614,7 +1870,9 @@
                   "type": "string"
                 }
               },
-              "required": ["search"]
+              "required": [
+                "search"
+              ]
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1628,7 +1886,10 @@
                   "type": "string"
                 }
               },
-              "required": ["hello", "search"]
+              "required": [
+                "hello",
+                "search"
+              ]
             }
           },
           "path": "handle-string-content-type-text-plain",
@@ -1658,11 +1919,15 @@
                           "properties": {
                             "message": {
                               "type": "string",
-                              "enum": ["I am a teapot error"]
+                              "enum": [
+                                "I am a teapot error"
+                              ]
                             },
                             "statusCode": {
                               "type": "integer",
-                              "enum": [418]
+                              "enum": [
+                                418
+                              ]
                             }
                           }
                         }
