@@ -44,7 +44,7 @@ await describe('CLI new controller and flags', async () => {
     await createVovkApp({
       vovkInitFlags: '--yes --validation-library=none',
     });
-    await updateConfigFileProperty(path.join(cwd, dir, 'vovk.config.js'), ['rootSegmentModulesDirName'], 'myRoot');
+    await updateConfigFileProperty(path.join(cwd, dir, 'vovk.config.mjs'), ['rootSegmentModulesDirName'], 'myRoot');
     await runAtProjectDir('../dist/index.mjs new segment');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {};`,

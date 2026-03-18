@@ -63,9 +63,9 @@ await describe('TypeScript bundle', async () => {
 
   await it('Builds composed bundle with included segments', async () => {
     await createApp();
-    await updateConfigFileProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
+    await updateConfigFileProperty(path.join(projectDir, 'vovk.config.mjs'), ['bundle', 'outDir'], './composed-bundle');
     await updateConfigFileProperty(
-      path.join(projectDir, 'vovk.config.js'),
+      path.join(projectDir, 'vovk.config.mjs'),
       ['bundle', 'includeSegments'],
       ['foo', 'bar/baz']
     );
@@ -83,9 +83,9 @@ await describe('TypeScript bundle', async () => {
 
   await it('Builds composed bundle with excluded segments', async () => {
     await createApp();
-    await updateConfigFileProperty(path.join(projectDir, 'vovk.config.js'), ['bundle', 'outDir'], './composed-bundle');
+    await updateConfigFileProperty(path.join(projectDir, 'vovk.config.mjs'), ['bundle', 'outDir'], './composed-bundle');
     await updateConfigFileProperty(
-      path.join(projectDir, 'vovk.config.js'),
+      path.join(projectDir, 'vovk.config.mjs'),
       ['bundle', 'excludeSegments'],
       ['', 'bar/baz']
     );
@@ -135,7 +135,7 @@ await describe('TypeScript bundle', async () => {
 
   await it('Uses combined outputConfig to create re-exports in composed bundle', async () => {
     await createApp();
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), () => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), () => ({
       bundle: {
         outDir: './composed-bundle',
         includeSegments: ['foo', 'bar/baz'],
@@ -186,7 +186,7 @@ await describe('TypeScript bundle', async () => {
   await it('Uses origin option', async () => {
     await createApp();
 
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), () => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), () => ({
       bundle: {
         outputConfig: {
           origin: 'https://example.com/',
@@ -202,7 +202,7 @@ await describe('TypeScript bundle', async () => {
 
   await it('Uses --origin flag', async () => {
     await createApp();
-    await updateConfig(path.join(projectDir, 'vovk.config.js'), () => ({
+    await updateConfig(path.join(projectDir, 'vovk.config.mjs'), () => ({
       bundle: {
         outputConfig: {
           origin: 'https://example.com/', // should be overridden by --origin

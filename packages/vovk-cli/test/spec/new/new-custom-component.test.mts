@@ -23,7 +23,7 @@ await describe('Custom components', async () => {
         controllers, 
       });`,
     ]);
-    await updateConfig(path.join(cwd, dir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(cwd, dir, 'vovk.config.mjs'), (config) => ({
       ...config,
       moduleTemplates: {
         ...config.moduleTemplates,
@@ -73,7 +73,7 @@ await describe('Custom components', async () => {
       });`,
     ]);
 
-    await updateConfig(path.join(cwd, dir, 'vovk.config.js'), (config) => ({
+    await updateConfig(path.join(cwd, dir, 'vovk.config.mjs'), (config) => ({
       ...config,
       moduleTemplates: {
         ...config.moduleTemplates,
