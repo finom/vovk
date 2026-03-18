@@ -1,6 +1,6 @@
 {
   "name": "vovk-cli",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "CLI tool for managing Vovk.ts projects",
   "files": [
     "dist",
