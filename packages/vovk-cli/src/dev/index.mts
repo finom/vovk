@@ -205,6 +205,9 @@ export class VovkDev {
 
       if (isInitial) {
         callback();
+        if(!this.#segments.length) {
+          log.info(`Create a root segment with ${chalkHighlightThing('npx vovk new segment')} command`);
+        }
       } else {
         log.info('Config file has been updated');
         this.#generate();
