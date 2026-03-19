@@ -28,8 +28,8 @@ npm install -D vovk-cli
 
 - [vovk dev](https://vovk.dev/dev) - starts the development script that watches the changes in [controllers](https://vovk.dev/controller) and regenerates the [schema](https://vovk.dev/schema) and [client](https://vovk.dev/typescript)
 - [vovk generate](https://vovk.dev/generate) - generates the client based on the schema
-- [vovk bundle](https://vovk.dev/bundle) - bundles the client with [tsdown](https://tsdown.dev/)
-- [vovk init](https://vovk.dev/init) - initializes a new Vovk.ts project
+- [vovk bundle](https://vovk.dev/bundle) - bundles the client (requires `bundle.build` config to be set)
+- [vovk init](https://vovk.dev/init) - initializes a new Vovk.ts project in an existing Next.js app
 - [vovk new](https://vovk.dev/new) - generates a new controller, service or a custom module
 
 ```sh
