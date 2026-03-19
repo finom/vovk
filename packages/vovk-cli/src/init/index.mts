@@ -240,7 +240,7 @@ export class Init {
         ? null
         : (validationLibrary ??
           (await select({
-            message: 'Choose validation library',
+            message: 'Which validation library would you like to use?',
             default: 'zod',
             choices: [
               {
@@ -280,8 +280,8 @@ export class Init {
     }
 
     bundle ??= await confirm({
-      message: 'Do you want to set up "tsdown" to bundle TypeScript client?',
-      default: true,
+      message: 'Do you want to set up "tsdown" to bundle TypeScript client (experimental)?',
+      default: false,
     });
 
     updateScripts ??= !pkgJson
