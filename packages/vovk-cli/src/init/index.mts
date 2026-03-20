@@ -281,7 +281,7 @@ export class Init {
 
     bundle ??= await confirm({
       message: 'Do you want to set up "tsdown" to bundle TypeScript client (experimental)?',
-      default: false,
+      default: true,
     });
 
     updateScripts ??= !pkgJson
