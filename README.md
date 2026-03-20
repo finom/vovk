@@ -10,11 +10,7 @@
   <strong>Back-end Framework for Next.js App Router</strong>
   <br />
   <br />
-  <em>
-  SaaS-ready&nbsp;—&nbsp;auto-generated API&nbsp;clients and&nbsp;docs,
-  <br />
-  MCP-compatible&nbsp;AI&nbsp;tools, all&nbsp;from a&nbsp;single&nbsp;codebase.
-  </em>
+  One codebase → type-safe clients, OpenAPI, and AI tools
   <br />
   <br />
   <a href="https://vovk.dev/">Documentation</a>
