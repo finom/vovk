@@ -9,9 +9,7 @@
   <br />
   <strong>Back-end Framework for Next.js App Router</strong>
   <br />
-  <br />
-  One codebase → type-safe clients, OpenAPI, and AI tools
-  <br />
+  <em>One codebase → type-safe clients, OpenAPI, and AI tools</em>
   <br />
   <a href="https://vovk.dev/">Documentation</a>
   &nbsp;&nbsp;
