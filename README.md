@@ -1,13 +1,17 @@
 <p align="center">
   <a href="https://vovk.dev">
     <picture>
-      <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg">
-      <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg">
-      <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg">
+      <source width="300" media="(prefers-color-scheme: dark)" srcset="https://vovk.dev/vovk-logo-white.svg" />
+      <source width="300" media="(prefers-color-scheme: light)" srcset="https://vovk.dev/vovk-logo.svg" />
+      <img width="300" alt="vovk" src="https://vovk.dev/vovk-logo.svg" />
     </picture>
   </a>
-  <br>
+  <br />
   <strong>Back-end Framework for Next.js App Router</strong>
+  <br />
+  <br />
+  SaaS-ready — auto-generated API clients and docs, MCP-compatible AI tools, all from a single codebase.
+  <br />
   <br />
   <a href="https://vovk.dev/">Documentation</a>
   &nbsp;&nbsp;
