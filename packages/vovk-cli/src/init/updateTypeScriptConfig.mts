@@ -5,7 +5,7 @@ import { prettify } from '../utils/prettify.mjs';
 
 export async function updateTypeScriptConfig(
   root: string,
-  compilerOptions: { experimentalDecorators?: true; emitDecoratorMetadata?: true }
+  compilerOptions: { experimentalDecorators?: true; }
 ) {
   const tsconfigPath = path.join(root, 'tsconfig.json');
   const tsconfigContent = await fs.readFile(tsconfigPath, 'utf8');
