@@ -9,8 +9,6 @@ import { installDependencies, getPackageManager } from './installDependencies.mj
 import { getLogger } from '../utils/getLogger.mjs';
 import { createConfig } from './createConfig.mjs';
 import { updateNPMScripts, getDevScript } from './updateNPMScripts.mjs';
-import { checkTSConfigForExperimentalDecorators } from './checkTSConfigForExperimentalDecorators.mjs';
-import { updateTypeScriptConfig } from './updateTypeScriptConfig.mjs';
 import { updateDependenciesWithoutInstalling } from './updateDependenciesWithoutInstalling.mjs';
 import { logUpdateDependenciesError } from './logUpdateDependenciesError.mjs';
 import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
@@ -35,7 +33,6 @@ export class Init {
       usePnpm,
       useBun,
       skipInstall,
-      updateTsConfig,
       updateScripts,
       validationLibrary,
       bundle,
@@ -86,23 +83,6 @@ export class Init {
       }
       if (updateScripts === 'explicit') {
         devDependencies.push('concurrently');
-      }
-    }
-
-    if (updateTsConfig) {
-      try {
-        const compilerOptions: Record<string, true> = {
-          experimentalDecorators: true,
-        };
-
-        if (!dryRun) await updateTypeScriptConfig(root, compilerOptions);
-        log.info(
-          `Added ${Object.keys(compilerOptions)
-            .map((k) => `"${k}"`)
-            .join(' and ')} to tsconfig.json`
-        );
-      } catch (error) {
-        log.error(`Failed to update tsconfig.json: ${(error as Error).message}`);
       }
     }
 
@@ -179,7 +159,6 @@ export class Init {
     usePnpm,
     useBun,
     skipInstall,
-    updateTsConfig,
     updateScripts,
     validationLibrary,
     bundle,
@@ -205,7 +184,6 @@ export class Init {
         usePnpm: usePnpm ?? false,
         useBun: useBun ?? false,
         skipInstall: skipInstall ?? false,
-        updateTsConfig: updateTsConfig ?? true,
         updateScripts: updateScripts ?? 'implicit',
         validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'zod'),
         bundle: bundle ?? true,
@@ -262,23 +240,6 @@ export class Init {
             ],
           })));
 
-    if (typeof updateTsConfig === 'undefined' && pkgJson) {
-      let shouldAsk = false;
-
-      try {
-        shouldAsk = !(await checkTSConfigForExperimentalDecorators(root));
-      } catch (error) {
-        log.error(`Failed to check tsconfig.json for "experimentalDecorators": ${(error as Error).message}`);
-      }
-
-      if (shouldAsk) {
-        const keys = ['experimentalDecorators'];
-        updateTsConfig = await confirm({
-          message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')} to tsconfig.json? (recommended)`,
-        });
-      }
-    }
-
     bundle ??= await confirm({
       message: 'Do you want to set up "tsdown" to bundle TypeScript client (experimental)?',
       default: true,
@@ -324,7 +285,6 @@ export class Init {
         usePnpm: usePnpm ?? false,
         useBun: useBun ?? false,
         skipInstall: skipInstall ?? false,
-        updateTsConfig,
         updateScripts,
         validationLibrary,
         bundle,

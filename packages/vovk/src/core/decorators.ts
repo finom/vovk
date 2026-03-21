@@ -7,6 +7,12 @@ import type { KnownAny } from '../types/utils.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
+/** Minimal shape shared by all TC39 Stage 3 decorator context objects. */
+type _Stage3Context = { kind: string; name: string | symbol; addInitializer: (fn: () => void) => void };
+
+/** Detects whether the second decorator argument is a TC39 Stage 3 context object. */
+const _isStage3 = (arg: unknown): arg is _Stage3Context => typeof arg === 'object' && arg !== null && 'kind' in arg;
+
 const assignSchema = ({
   controller,
   propertyKey,
@@ -96,25 +102,50 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   ) {
     const path = trimPath(givenPath);
 
-    function decorator(givenTarget: unknown, propertyKey: string) {
+    function decorator(givenTarget: unknown, propertyKeyOrContext: string | _Stage3Context) {
+      if (_isStage3(propertyKeyOrContext)) {
+        const propertyKey = String(propertyKeyOrContext.name);
+        propertyKeyOrContext.addInitializer(function (this: KnownAny) {
+          assignSchema({ controller: this as VovkController, propertyKey, path, options, httpMethod });
+        });
+        return;
+      }
+
       const controller = givenTarget as VovkController;
-      assignSchema({ controller, propertyKey, path, options, httpMethod });
+      assignSchema({ controller, propertyKey: propertyKeyOrContext, path, options, httpMethod });
     }
 
     return decorator;
   }
 
   const auto = (options?: DecoratorOptions) => {
-    function decorator(givenTarget: unknown, propertyKey: string) {
+    function decorator(givenTarget: unknown, propertyKeyOrContext: string | _Stage3Context) {
+      if (_isStage3(propertyKeyOrContext)) {
+        const propertyKey = String(propertyKeyOrContext.name);
+        propertyKeyOrContext.addInitializer(function (this: KnownAny) {
+          const controller = this as VovkController;
+          // validation is already assigned at procedure function
+          const properties = Object.keys(controller._handlers?.[propertyKey]?.validation?.params?.properties ?? {});
+          const kebabCasePath = toKebabCase(propertyKey);
+          const path = properties.length
+            ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`
+            : kebabCasePath;
+          assignSchema({ controller, propertyKey, path, options, httpMethod });
+        });
+        return;
+      }
+
       const controller = givenTarget as VovkController;
       // validation is already assigned at procedure function
-      const properties = Object.keys(controller._handlers?.[propertyKey]?.validation?.params?.properties ?? {});
-      const kebabCasePath = toKebabCase(propertyKey);
+      const properties = Object.keys(
+        controller._handlers?.[propertyKeyOrContext]?.validation?.params?.properties ?? {}
+      );
+      const kebabCasePath = toKebabCase(propertyKeyOrContext);
       const path = properties.length
         ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`
         : kebabCasePath;
 
-      assignSchema({ controller, propertyKey, path, options, httpMethod });
+      assignSchema({ controller, propertyKey: propertyKeyOrContext, path, options, httpMethod });
     }
 
     return decorator;
@@ -136,7 +167,7 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
 export const prefix = (givenPath = '') => {
   const path = trimPath(givenPath);
 
-  return (givenTarget: KnownAny) => {
+  return (givenTarget: KnownAny, _context?: KnownAny) => {
     const controller = givenTarget as VovkController;
     controller._prefix = path;
 
@@ -148,7 +179,7 @@ export const prefix = (givenPath = '') => {
  * Clones metadata from parent controller to child controller.
  */
 export function cloneControllerMetadata() {
-  return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T) {
+  return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T, _context?: KnownAny) {
     const parent = Object.getPrototypeOf(c) as VovkController;
     const controller = c as unknown as VovkController;
     controller._handlers = { ...parent._handlers, ...controller._handlers };

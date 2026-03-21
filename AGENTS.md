@@ -42,7 +42,7 @@ npm i vovk vovk-client zod vovk-ajv
 npm i -D vovk-cli concurrently
 ```
 
-Requires **Node.js 22+** and **Next.js 15+**. Enable `"experimentalDecorators": true` in `tsconfig.json`.
+Requires **Node.js 22+** and **Next.js 15+**. Works with both TC39 Stage 3 decorators and legacy `experimentalDecorators`.
 
 ## Project structure
 
