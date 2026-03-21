@@ -159,9 +159,9 @@
         }
       }
     },
-    "WithZodClientControllerRPC": {
-      "rpcModuleName": "WithZodClientControllerRPC",
-      "originalControllerName": "WithZodClientController",
+    "WithValidationRPC": {
+      "rpcModuleName": "WithValidationRPC",
+      "originalControllerName": "WithValidationController",
       "prefix": "with-zod",
       "handlers": {
         "handleAll": {
@@ -1894,6 +1894,280 @@
           },
           "path": "handle-string-content-type-text-plain",
           "httpMethod": "POST"
+        },
+        "handleAllCompose": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search"
+              ]
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string"
+                },
+                "bar": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "foo",
+                "bar"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "hello": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "hello"
+                  ]
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "search": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "search"
+                  ]
+                },
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                },
+                "vovkParams": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ]
+                }
+              },
+              "required": [
+                "body",
+                "query",
+                "params",
+                "vovkParams"
+              ]
+            }
+          },
+          "operationObject": {
+            "responses": {
+              "400": {
+                "description": "400 Bad Request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/VovkErrorResponse"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "enum": [
+                                "This is a bad request"
+                              ]
+                            },
+                            "statusCode": {
+                              "type": "integer",
+                              "enum": [
+                                400
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "summary": "Compose version of handleAll",
+            "description": "This is a compose description"
+          },
+          "path": "all-compose/{foo}/{bar}",
+          "httpMethod": "POST"
+        },
+        "handleBodyCompose": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "path": "handle-body-compose",
+          "httpMethod": "POST"
+        },
+        "handleQueryCompose": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "search"
+              ]
+            }
+          },
+          "path": "handle-query-compose",
+          "httpMethod": "GET"
+        },
+        "handleParamsCompose": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string",
+                  "maxLength": 5
+                },
+                "bar": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "foo",
+                "bar"
+              ]
+            }
+          },
+          "path": "x-compose/{foo}/{bar}/y",
+          "httpMethod": "PUT"
+        },
+        "handleOutputCompose": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "helloOutput": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "helloOutput"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "hello"
+              ]
+            }
+          },
+          "path": "handle-output-compose",
+          "httpMethod": "GET"
+        },
+        "handleStreamCompose": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "values"
+              ]
+            },
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "maxLength": 5
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "path": "handle-stream-compose",
+          "httpMethod": "GET"
         }
       }
     },

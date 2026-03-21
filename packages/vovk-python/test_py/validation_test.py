@@ -1,24 +1,24 @@
 import unittest
 from typing import Generator, cast, List
 from jsonschema import ValidationError
-from generated_python_client.src.test_generated_python_client import HttpException, WithZodClientControllerRPC
+from generated_python_client.src.test_generated_python_client import HttpException, WithValidationRPC
 from utils import noop, get_constraining_object
 from io import BytesIO
 
-class TestZod(unittest.TestCase):
+class TestValidation(unittest.TestCase):
     def test_ok(self) -> None:
         # Create an instance of the API client with the back-end URL
-        data: WithZodClientControllerRPC.HandleAllOutput = WithZodClientControllerRPC.handle_all(
+        data: WithValidationRPC.HandleAllOutput = WithValidationRPC.handle_all(
             body={"hello": "world"},
             query={"search": "value"},
             params={"foo": "foo", "bar": "bar"},
         )
         
         # Check types
-        body: WithZodClientControllerRPC.HandleAllBody = data['body']
-        query: WithZodClientControllerRPC.HandleAllQuery = data['query']
-        params: WithZodClientControllerRPC.HandleAllParams = data['params']
-        vovkParams: WithZodClientControllerRPC.HandleAllParams = data['vovkParams']
+        body: WithValidationRPC.HandleAllBody = data['body']
+        query: WithValidationRPC.HandleAllQuery = data['query']
+        params: WithValidationRPC.HandleAllParams = data['params']
+        vovkParams: WithValidationRPC.HandleAllParams = data['vovkParams']
         noop(body, query, params, vovkParams)
         
         # Check that the response matches the expected value
@@ -29,46 +29,46 @@ class TestZod(unittest.TestCase):
             'vovkParams': {'bar': 'bar', 'foo': 'foo'}
         })
     def test_body(self) -> None:
-        data: WithZodClientControllerRPC.HandleBodyBody = WithZodClientControllerRPC.handle_body(
+        data: WithValidationRPC.HandleBodyBody = WithValidationRPC.handle_body(
             body={"hello": "world"}
         )
         self.assertEqual(data, {'hello': 'world'})
 
         with self.assertRaises(ValidationError) as context:
-            WithZodClientControllerRPC.handle_body(
+            WithValidationRPC.handle_body(
                 body={"hello": "wrong_length"}
             )
             self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_body(
+            WithValidationRPC.handle_body(
                 body={"hello": "wrong_length"}, 
                 disable_client_validation=True
             )
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
     
     def test_query(self) -> None:
-        data: WithZodClientControllerRPC.HandleQueryQuery = WithZodClientControllerRPC.handle_query(
+        data: WithValidationRPC.HandleQueryQuery = WithValidationRPC.handle_query(
             query={"search": "value"}
         )
         self.assertEqual(data, {'search': 'value'})
 
         with self.assertRaises(ValidationError) as context:
-            WithZodClientControllerRPC.handle_query(
+            WithValidationRPC.handle_query(
                 query={"search": "wrong_length"} 
             )
         self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_query(
+            WithValidationRPC.handle_query(
                 query={"search": "wrong_length"},  
                 disable_client_validation=True
             )
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid query: .*search.*")
 
     def test_nested_query(self) -> None:
-        NESTED_QUERY_EXAMPLE: WithZodClientControllerRPC.HandleNestedQueryQuery = {
+        NESTED_QUERY_EXAMPLE: WithValidationRPC.HandleNestedQueryQuery = {
             'x': 'xx',
             'y': ['yy', 'uu'],
             'z': {
@@ -96,64 +96,64 @@ class TestZod(unittest.TestCase):
             },
         }
 
-        data: WithZodClientControllerRPC.HandleNestedQueryQuery = WithZodClientControllerRPC.handle_nested_query(
+        data: WithValidationRPC.HandleNestedQueryQuery = WithValidationRPC.handle_nested_query(
             query=NESTED_QUERY_EXAMPLE
         )
         self.assertEqual(data, NESTED_QUERY_EXAMPLE)
 
         with self.assertRaises(HttpException) as context1:
-            WithZodClientControllerRPC.handle_nested_query(
+            WithValidationRPC.handle_nested_query(
                 query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"},
                 disable_client_validation=True
             )
         self.assertRegex(str(context1.exception), r"Validation failed\. Invalid query: .*at x.*")
 
         with self.assertRaises(ValidationError) as context2:
-            WithZodClientControllerRPC.handle_nested_query(
+            WithValidationRPC.handle_nested_query(
                 query={**NESTED_QUERY_EXAMPLE, "x": "wrong_length"}
             )
         self.assertIn("'wrong_length' is too long", str(context2.exception))
     
     def test_params(self) -> None:
-        data: WithZodClientControllerRPC.HandleParamsParams = WithZodClientControllerRPC.handle_params(
+        data: WithValidationRPC.HandleParamsParams = WithValidationRPC.handle_params(
             params={"foo": "foo", "bar": "bar"}
         )
         self.assertEqual(data, {'bar': 'bar', 'foo': 'foo'})
 
         with self.assertRaises(ValidationError) as context:
-            WithZodClientControllerRPC.handle_params(
+            WithValidationRPC.handle_params(
                 params={"foo": "foo", "bar": "wrong_length"}
             )
         self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_params(
+            WithValidationRPC.handle_params(
                 params={"foo": "foo", "bar": "wrong_length"},
                 disable_client_validation=True
             )
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params: .*bar.*")
 
     def test_output(self) -> None:
-        data: WithZodClientControllerRPC.HandleOutputOutput = WithZodClientControllerRPC.handle_output(
+        data: WithValidationRPC.HandleOutputOutput = WithValidationRPC.handle_output(
             query={"helloOutput": "world"}
         )
         self.assertEqual(data, {'hello': 'world'})
 
         with self.assertRaises(HttpException) as context:
-            WithZodClientControllerRPC.handle_output(
+            WithValidationRPC.handle_output(
                 query={"helloOutput": "wrong_length"},
             )
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid output: .*hello.*")
 
     def test_form(self) -> None:
-        data: WithZodClientControllerRPC.HandleMultipartDataOnlyOutput = WithZodClientControllerRPC.handle_multipart_data_only(
+        data: WithValidationRPC.HandleMultipartDataOnlyOutput = WithValidationRPC.handle_multipart_data_only(
             body={"hello": "world"},
             query={"search": "value"},
         )
         self.assertEqual(data, {'hello': 'world', 'search': 'value'})
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_multipart_data_only(
+            WithValidationRPC.handle_multipart_data_only(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
             )
@@ -163,7 +163,7 @@ class TestZod(unittest.TestCase):
         file_content = "file_text_content"
         file_data = BytesIO(file_content.encode('utf-8'))
 
-        data: WithZodClientControllerRPC.HandleMultipartDataWithFileOutput = WithZodClientControllerRPC.handle_multipart_data_with_file(
+        data: WithValidationRPC.HandleMultipartDataWithFileOutput = WithValidationRPC.handle_multipart_data_with_file(
             body={"hello": "world"},
             query={"search": "value"},
             files={"file": ('filename.txt', file_data, 'text/plain')}
@@ -171,7 +171,7 @@ class TestZod(unittest.TestCase):
         self.assertEqual(data, {'file': 'file_text_content', 'hello': 'world', 'search': 'value'})
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_multipart_data_with_file(
+            WithValidationRPC.handle_multipart_data_with_file(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
                 files={"file": ('filename.txt', file_data, 'text/plain')}
@@ -185,7 +185,7 @@ class TestZod(unittest.TestCase):
         file_content2 = "file_text_content2"
         file_data2 = BytesIO(file_content2.encode('utf-8'))
 
-        data: WithZodClientControllerRPC.HandleMultipartDataWithMultipleFilesOutput = WithZodClientControllerRPC.handle_multipart_data_with_multiple_files(
+        data: WithValidationRPC.HandleMultipartDataWithMultipleFilesOutput = WithValidationRPC.handle_multipart_data_with_multiple_files(
             body={"hello": "world"},
             query={"search": "value"},
             files=[
@@ -196,7 +196,7 @@ class TestZod(unittest.TestCase):
         self.assertEqual(data, {'files': ['file_text_content1', 'file_text_content2'], 'hello': 'world', 'search': 'value'})
 
         with self.assertRaises(HttpException) as context2:
-            WithZodClientControllerRPC.handle_multipart_data_with_multiple_files(
+            WithValidationRPC.handle_multipart_data_with_multiple_files(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
                 files=[
@@ -207,14 +207,14 @@ class TestZod(unittest.TestCase):
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
 
     def test_stream(self) -> None: ## TODO: StreamException????
-        iterator: Generator[WithZodClientControllerRPC.HandleStreamIteration, None, None] = WithZodClientControllerRPC.handle_stream(
+        iterator: Generator[WithValidationRPC.HandleStreamIteration, None, None] = WithValidationRPC.handle_stream(
             query={ "values": ['a', 'b', 'c', 'd'] }
         )
 
         for i, data in enumerate(iterator):
             self.assertEqual(data, {'value': ['a', 'b', 'c', 'd'][i]})
 
-        iterator = WithZodClientControllerRPC.handle_stream(
+        iterator = WithValidationRPC.handle_stream(
             query={ "values": ['wrong_length', 'f', 'g', 'h'] }
         )
 
@@ -225,7 +225,7 @@ class TestZod(unittest.TestCase):
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0: .*value.*")
 
     def test_text_plain(self) -> None:
-        data: WithZodClientControllerRPC.HandleTextPlainDataOutput = WithZodClientControllerRPC.handle_text_plain_data(
+        data: WithValidationRPC.HandleTextPlainDataOutput = WithValidationRPC.handle_text_plain_data(
             body="world",
             query={"search": "value"},
         )
@@ -233,7 +233,7 @@ class TestZod(unittest.TestCase):
 
         # Client-side validation: text body is a string, validated by jsonschema (maxLength: 5)
         with self.assertRaises(ValidationError) as context2:
-            WithZodClientControllerRPC.handle_text_plain_data(
+            WithValidationRPC.handle_text_plain_data(
                 body="wrong_length",
                 query={"search": "value"},
             )
@@ -241,7 +241,7 @@ class TestZod(unittest.TestCase):
 
         # Server-side validation: body string too long (max 5), with client validation disabled
         with self.assertRaises(HttpException) as context:
-            WithZodClientControllerRPC.handle_text_plain_data(
+            WithValidationRPC.handle_text_plain_data(
                 body="wrong_length",
                 query={"search": "value"},
                 disable_client_validation=True,
@@ -250,7 +250,7 @@ class TestZod(unittest.TestCase):
 
     def test_binary_octet_stream(self) -> None:
         binary_content = b"hello binary world"
-        data: WithZodClientControllerRPC.HandleBinaryOctetStreamOutput = WithZodClientControllerRPC.handle_binary_octet_stream(
+        data: WithValidationRPC.HandleBinaryOctetStreamOutput = WithValidationRPC.handle_binary_octet_stream(
             body=binary_content,
         )
         self.assertEqual(data, {'size': len(binary_content), 'content': 'hello binary world'})
@@ -260,10 +260,10 @@ class TestZod(unittest.TestCase):
         not_supported: List[str] = []
         
         # Get object with no constraints
-        no_constraints = cast(WithZodClientControllerRPC.HandleSchemaConstraintsBody, get_constraining_object(None))
+        no_constraints = cast(WithValidationRPC.HandleSchemaConstraintsBody, get_constraining_object(None))
         
         # Test valid object first
-        WithZodClientControllerRPC.handle_schema_constraints(body=no_constraints)
+        WithValidationRPC.handle_schema_constraints(body=no_constraints)
         
         # Test each key for constraints
         for key in no_constraints.keys():
@@ -271,11 +271,11 @@ class TestZod(unittest.TestCase):
                 continue
                 
             # Get object with specific constraint
-            constraining_object = cast(WithZodClientControllerRPC.HandleSchemaConstraintsBody,get_constraining_object(key))
+            constraining_object = cast(WithValidationRPC.HandleSchemaConstraintsBody,get_constraining_object(key))
             
             # Test with client validation disabled
             with self.assertRaises(HttpException, msg='HttpException is not raised for key ' + key) as context1:
-                WithZodClientControllerRPC.handle_schema_constraints(
+                WithValidationRPC.handle_schema_constraints(
                     body=constraining_object,
                     disable_client_validation=True
                 )
@@ -286,7 +286,7 @@ class TestZod(unittest.TestCase):
             
             # Test with client validation enabled
             with self.assertRaises(ValidationError, msg='ValidationError is not raised for key ' + key) as context2:
-                WithZodClientControllerRPC.handle_schema_constraints(
+                WithValidationRPC.handle_schema_constraints(
                     body=constraining_object
                 )
             # WORKAROUND: "logical_anyOf" does not appear in the error message

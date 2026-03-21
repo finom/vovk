@@ -11,6 +11,7 @@ import {
   type VovkOutput,
   procedure,
   JSONLinesResponder,
+  compose,
 } from 'vovk';
 import { z } from 'zod';
 
@@ -66,24 +67,24 @@ export const ConstrainingModel = z.object({
 });
 
 // check if the "circular" types don't error
-class WithZodClientService {
+class WithValidationService {
   static handleAll({
     body,
     query,
     params,
     vovkParams,
   }: {
-    body: VovkBody<typeof WithZodClientController.handleAll>;
-    query: VovkQuery<typeof WithZodClientController.handleAll>;
-    params: VovkParams<typeof WithZodClientController.handleAll>;
-    vovkParams: VovkParams<typeof WithZodClientController.handleAll>;
+    body: VovkBody<typeof WithValidationController.handleAll>;
+    query: VovkQuery<typeof WithValidationController.handleAll>;
+    params: VovkParams<typeof WithValidationController.handleAll>;
+    vovkParams: VovkParams<typeof WithValidationController.handleAll>;
   }) {
-    return { body, query, params, vovkParams } satisfies VovkOutput<typeof WithZodClientController.handleAll>;
+    return { body, query, params, vovkParams } satisfies VovkOutput<typeof WithValidationController.handleAll>;
   }
 }
 
 @prefix('with-zod')
-export default class WithZodClientController {
+export default class WithValidationController {
   @operation({
     summary: 'This is a summary',
     description: 'This is a description',
@@ -96,7 +97,7 @@ export default class WithZodClientController {
     const body = await vovk.body();
     const { search } = vovk.query();
     const vovkParams = vovk.params();
-    return WithZodClientService.handleAll({
+    return WithValidationService.handleAll({
       body,
       query: { search },
       params,
@@ -383,7 +384,7 @@ export default class WithZodClientController {
     const body = await vovk.body();
     const { search } = vovk.query();
     const vovkParams = vovk.params();
-    return WithZodClientService.handleAll({
+    return WithValidationService.handleAll({
       body,
       query: { search },
       params,
@@ -396,7 +397,7 @@ export default class WithZodClientController {
     ...HandleAllInput,
     disableServerSideValidation: true,
   }).handle(async (req, params) => {
-    const result = await WithZodClientController.handleAll.fn({
+    const result = await WithValidationController.handleAll.fn({
       body: await req.vovk.body(),
       query: req.vovk.query(),
       params,
@@ -410,7 +411,7 @@ export default class WithZodClientController {
     ...HandleAllInput,
     disableServerSideValidation: true,
   }).handle(async (req, params) => {
-    const result = await WithZodClientController.handleAllNoHTTP.fn({
+    const result = await WithValidationController.handleAllNoHTTP.fn({
       body: await req.vovk.body(),
       query: req.vovk.query(),
       params,
@@ -592,4 +593,72 @@ export default class WithZodClientController {
     const search = req.vovk.query().search;
     return { hello, search };
   });
+
+  // === compose+procedure handlers ===
+
+  static handleAllCompose = compose(
+    post('all-compose/{foo}/{bar}'),
+    operation({
+      summary: 'Compose version of handleAll',
+      description: 'This is a compose description',
+    }),
+    operation.error(HttpStatus.BAD_REQUEST, 'This is a bad request'),
+    procedure({
+      ...HandleAllInput,
+    }).handle(async ({ vovk }, params) => {
+      const body = await vovk.body();
+      const { search } = vovk.query();
+      const vovkParams = vovk.params();
+      return { body, query: { search }, params, vovkParams };
+    })
+  );
+
+  static handleBodyCompose = compose(
+    post.auto(),
+    procedure({
+      body: z.object({ hello: z.string().max(5) }),
+    }).handle(async (req) => {
+      return req.vovk.body();
+    })
+  );
+
+  static handleQueryCompose = compose(
+    get.auto(),
+    procedure({
+      query: z.object({ search: z.string().max(5) }),
+    }).handle((req) => {
+      return req.vovk.query();
+    })
+  );
+
+  static handleParamsCompose = compose(
+    put('x-compose/{foo}/{bar}/y'),
+    procedure({
+      params: z.object({ foo: z.string().max(5), bar: z.string().max(5) }),
+    }).handle(async (req) => {
+      return req.vovk.params();
+    })
+  );
+
+  static handleOutputCompose = compose(
+    get.auto(),
+    procedure({
+      query: z.object({ helloOutput: z.string() }),
+      output: z.object({ hello: z.string().max(5) }),
+    }).handle(async (req) => {
+      return { hello: req.vovk.query().helloOutput };
+    })
+  );
+
+  static handleStreamCompose = compose(
+    get.auto(),
+    procedure({
+      query: z.object({ values: z.string().array() }),
+      iteration: z.object({ value: z.string().max(5) }),
+    }).handle(async function* (req) {
+      for (const value of req.vovk.query().values) {
+        yield { value };
+      }
+    })
+  );
 }
