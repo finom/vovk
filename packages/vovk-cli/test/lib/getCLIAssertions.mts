@@ -183,30 +183,28 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
 
     config.moduleTemplates = moduleTemplates;
 
-    if (!extras || !('bundle' in extras)) {
-      config.bundle ??= {
-        build: BUNDLE_BUILD_TSDOWN,
-        outputConfig: {
-          imports: {
-            validateOnClient: null,
-          },
-          package: {
-            exports: {
-              '.': {
-                default: './index.js',
-                types: './index.d.ts',
-              },
-            },
-            main: './index.js',
-            type: 'module',
+    return { ...config, ...extras };
+  };
+
+  assertConfig.defaultBundleConfig = {
+    build: BUNDLE_BUILD_TSDOWN,
+    outputConfig: {
+      imports: {
+        validateOnClient: null,
+      },
+      package: {
+        exports: {
+          '.': {
+            default: './index.js',
             types: './index.d.ts',
           },
         },
-      } satisfies VovkConfig['bundle'];
-    }
-
-    return { ...config, ...extras };
-  };
+        main: './index.js',
+        type: 'module',
+        types: './index.d.ts',
+      },
+    },
+  } satisfies VovkConfig['bundle'];
 
   assertConfig.getStrictConfig = () => getConfig({ cwd: projectDir });
 
