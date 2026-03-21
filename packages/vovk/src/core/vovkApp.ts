@@ -275,7 +275,7 @@ class VovkApp {
 
     controllers.forEach((staticMethods, controller) => {
       if (segmentName !== controller._segmentName) return;
-      const prefix = controller._prefix ?? '';
+      const prefix = controller.prefix ?? '';
 
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');

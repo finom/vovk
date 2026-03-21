@@ -231,6 +231,57 @@ for await (const { message } of stream) {
 }
 ```
 
+## Decorator-free alternative: `decorate` and `static prefix`
+
+When decorator syntax is not available or not preferred, use `decorate()` for methods and `static prefix` for the controller prefix:
+
+```typescript
+import { get, post, operation, HttpStatus, procedure, decorate } from 'vovk';
+import { z } from 'zod';
+
+class UserController {
+  static prefix = 'users';
+
+  static handleAll = decorate(
+    post('all/{foo}/{bar}'),
+    operation({
+      summary: 'Decorate version of handleAll',
+      description: 'This is a decorate description',
+    }),
+    operation.error(HttpStatus.BAD_REQUEST, 'This is a bad request'),
+    procedure({
+      body: z.object({ hello: z.string() }),
+      query: z.object({ search: z.string() }),
+      params: z.object({ foo: z.string(), bar: z.string() }),
+    })
+  ).handle(async ({ vovk }, params) => {
+    const body = await vovk.body();
+    const { search } = vovk.query();
+    const vovkParams = vovk.params();
+    return { body, query: { search }, params, vovkParams };
+  });
+
+  // Simple handler without procedure
+  static getMethod = decorate(get()).handle(async () => {
+    return { method: 'get' };
+  });
+
+  // With body validation
+  static handleBody = decorate(
+    post.auto(),
+    procedure({
+      body: z.object({ hello: z.string() }),
+    })
+  ).handle(async (req) => {
+    return req.vovk.body();
+  });
+}
+
+export default UserController;
+```
+
+`decorate()` takes decorator functions (HTTP method, operation, custom decorators) and optionally a `procedure()` as the last argument, then returns `{ handle }`. The controller prefix is set via `static prefix` property — equivalent to using the `@prefix()` decorator.
+
 ## Custom decorators (middleware)
 
 Vovk.ts has no built-in middleware — use `createDecorator` instead:
@@ -603,7 +654,7 @@ import { UserRPC } from '@/client';
 ## Conventions and patterns
 
 - All controller methods must be **static**
-- Use `@prefix()` on the class, HTTP method decorator + `procedure()` on methods
+- Use `@prefix()` on the class, HTTP method decorator + `procedure()` on methods. Alternatively, use `decorate()` + `static prefix` without decorator syntax
 - Path params use `{id}` syntax (not `:id`) in current API
 - The `handle` function returned by `procedure()` receives `(req, params)` — params are the second argument
 - `vovk-client` re-exports from `node_modules/.vovk-client` (auto-generated, do not edit)

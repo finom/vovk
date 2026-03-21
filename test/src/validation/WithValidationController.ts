@@ -11,7 +11,6 @@ import {
   type VovkOutput,
   procedure,
   JSONLinesResponder,
-  compose,
 } from 'vovk';
 import { z } from 'zod';
 
@@ -593,72 +592,4 @@ export default class WithValidationController {
     const search = req.vovk.query().search;
     return { hello, search };
   });
-
-  // === compose+procedure handlers ===
-
-  static handleAllCompose = compose(
-    post('all-compose/{foo}/{bar}'),
-    operation({
-      summary: 'Compose version of handleAll',
-      description: 'This is a compose description',
-    }),
-    operation.error(HttpStatus.BAD_REQUEST, 'This is a bad request'),
-    procedure({
-      ...HandleAllInput,
-    }).handle(async ({ vovk }, params) => {
-      const body = await vovk.body();
-      const { search } = vovk.query();
-      const vovkParams = vovk.params();
-      return { body, query: { search }, params, vovkParams };
-    })
-  );
-
-  static handleBodyCompose = compose(
-    post.auto(),
-    procedure({
-      body: z.object({ hello: z.string().max(5) }),
-    }).handle(async (req) => {
-      return req.vovk.body();
-    })
-  );
-
-  static handleQueryCompose = compose(
-    get.auto(),
-    procedure({
-      query: z.object({ search: z.string().max(5) }),
-    }).handle((req) => {
-      return req.vovk.query();
-    })
-  );
-
-  static handleParamsCompose = compose(
-    put('x-compose/{foo}/{bar}/y'),
-    procedure({
-      params: z.object({ foo: z.string().max(5), bar: z.string().max(5) }),
-    }).handle(async (req) => {
-      return req.vovk.params();
-    })
-  );
-
-  static handleOutputCompose = compose(
-    get.auto(),
-    procedure({
-      query: z.object({ helloOutput: z.string() }),
-      output: z.object({ hello: z.string().max(5) }),
-    }).handle(async (req) => {
-      return { hello: req.vovk.query().helloOutput };
-    })
-  );
-
-  static handleStreamCompose = compose(
-    get.auto(),
-    procedure({
-      query: z.object({ values: z.string().array() }),
-      iteration: z.object({ value: z.string().max(5) }),
-    }).handle(async function* (req) {
-      for (const value of req.vovk.query().values) {
-        yield { value };
-      }
-    })
-  );
 }

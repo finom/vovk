@@ -4,7 +4,8 @@ import CommonController from '../../../../../client/CommonController.ts';
 import StreamingController from '../../../../../client/StreamingController.ts';
 import StreamingGeneratorController from '../../../../../client/StreamingGeneratorController.ts';
 import CustomSchemaController from '../../../../../client/CustomSchemaController.ts';
-import WithValidationController from '../../../../../client/WithValidationController.ts';
+import WithValidationController from '../../../../../validation/WithValidationController.ts';
+import WithValidationDecorateController from '../../../../../validation/WithValidationDecorateController.ts';
 import OpenApiController from '../../../../../client/OpenApiController.ts';
 
 const controllers = {
@@ -13,6 +14,7 @@ const controllers = {
   StreamingGeneratorControllerRPC: StreamingGeneratorController,
   CustomSchemaControllerRPC: CustomSchemaController,
   WithValidationRPC: WithValidationController,
+  WithValidationDecorateRPC: WithValidationDecorateController,
   OpenApiControllerRPC: OpenApiController,
 };
 

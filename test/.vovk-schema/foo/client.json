@@ -1894,8 +1894,15 @@
           },
           "path": "handle-string-content-type-text-plain",
           "httpMethod": "POST"
-        },
-        "handleAllCompose": {
+        }
+      }
+    },
+    "WithValidationDecorateRPC": {
+      "rpcModuleName": "WithValidationDecorateRPC",
+      "originalControllerName": "WithValidationDecorateController",
+      "prefix": "with-validation-decorate",
+      "handlers": {
+        "handleAll": {
           "validation": {
             "body": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2036,13 +2043,13 @@
                 }
               }
             },
-            "summary": "Compose version of handleAll",
-            "description": "This is a compose description"
+            "summary": "Decorate version of handleAll",
+            "description": "This is a decorate description"
           },
-          "path": "all-compose/{foo}/{bar}",
+          "path": "all/{foo}/{bar}",
           "httpMethod": "POST"
         },
-        "handleBodyCompose": {
+        "handleBody": {
           "validation": {
             "body": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2058,10 +2065,10 @@
               ]
             }
           },
-          "path": "handle-body-compose",
+          "path": "handle-body",
           "httpMethod": "POST"
         },
-        "handleQueryCompose": {
+        "handleQuery": {
           "validation": {
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2077,10 +2084,10 @@
               ]
             }
           },
-          "path": "handle-query-compose",
+          "path": "handle-query",
           "httpMethod": "GET"
         },
-        "handleParamsCompose": {
+        "handleParams": {
           "validation": {
             "params": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2101,10 +2108,10 @@
               ]
             }
           },
-          "path": "x-compose/{foo}/{bar}/y",
+          "path": "x/{foo}/{bar}/y",
           "httpMethod": "PUT"
         },
-        "handleOutputCompose": {
+        "handleOutput": {
           "validation": {
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2132,10 +2139,10 @@
               ]
             }
           },
-          "path": "handle-output-compose",
+          "path": "handle-output",
           "httpMethod": "GET"
         },
-        "handleStreamCompose": {
+        "handleStream": {
           "validation": {
             "query": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2166,7 +2173,7 @@
               ]
             }
           },
-          "path": "handle-stream-compose",
+          "path": "handle-stream",
           "httpMethod": "GET"
         }
       }
