@@ -9,3 +9,5 @@ tmp_*
 .next
 .vscode
 .mypy_cache
+.venv
+venv
