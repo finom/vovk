@@ -30,6 +30,7 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   vovkDevAndKill: (vovkArguments?: string, options?: { cwd: string }) => RunScriptReturn;
   assertConfig: ((testConfigPaths: string[], testConfig: VovkConfig | null) => Promise<void>) & {
     makeConfig: (validationLibrary: string | null, extras?: Partial<VovkConfig>) => VovkConfig;
+    defaultBundleConfig: VovkConfig['bundle'];
     getStrictConfig: () => ReturnType<typeof getConfig>;
   };
   assertScripts: (scripts: Record<string, string | undefined>) => Promise<void>;

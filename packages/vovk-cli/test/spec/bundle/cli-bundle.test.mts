@@ -22,7 +22,7 @@ await describe('TypeScript bundle', async () => {
     cache?: boolean;
   } = {}) => {
     await createVovkApp({
-      vovkInitFlags: '--yes',
+      vovkInitFlags: '--yes --bundle',
       cacheKey: 'bundle-or-generate-test',
       cache,
       runInCacheDir: async ({ cwd }) => {

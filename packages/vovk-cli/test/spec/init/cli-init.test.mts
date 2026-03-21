@@ -145,7 +145,7 @@ await describe('CLI init', async () => {
     });
   }
 
-  await it.only('Works with --yes and does not change other scripts', async () => {
+  await it('Works with --yes and does not change other scripts', async () => {
     await createNextApp();
 
     const packageJSON = JSON.parse(await fs.readFile(path.join(cwd, dir, 'package.json'), 'utf-8')) as PackageJson;

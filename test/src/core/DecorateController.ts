@@ -1,16 +1,5 @@
 import type { NextRequest } from 'next/server.js';
-import {
-  get,
-  post,
-  put,
-  del,
-  patch,
-  head,
-  options,
-  decorate,
-  createDecorator,
-  type VovkRequest,
-} from 'vovk';
+import { get, post, put, del, patch, head, options, decorate, createDecorator, type VovkRequest } from 'vovk';
 
 const customDecorator = createDecorator((req: NextRequest & { hello: string }, next, hello: string) => {
   req.hello = hello;
