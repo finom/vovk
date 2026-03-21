@@ -6,8 +6,8 @@ import type { getLogger } from '../utils/getLogger.mjs';
 import { getNPMPackageMetadata, type NpmPackageMetadata } from '../utils/getNPMPackageMetadata.mjs';
 import type { InitOptions } from '../types.mjs';
 
-/** Root of the monorepo packages directory (…/packages) resolved from the compiled CLI location. */
-const packagesRoot = path.resolve(import.meta.dirname, '../..');
+/** Root of the monorepo packages directory (…/packages) resolved from the compiled CLI location (dist/init/). */
+const packagesRoot = path.resolve(import.meta.dirname, '../../..');
 
 /** Vovk package names that have a matching local directory under packages/. */
 const localPackageDirs: Record<string, string> = {
