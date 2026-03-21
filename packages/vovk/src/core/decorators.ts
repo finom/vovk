@@ -139,7 +139,7 @@ export const prefix = (givenPath = '') => {
 
   return (givenTarget: KnownAny, _context?: KnownAny) => {
     const controller = givenTarget as VovkController;
-    controller._prefix = path;
+    controller.prefix = path;
 
     return givenTarget;
   };

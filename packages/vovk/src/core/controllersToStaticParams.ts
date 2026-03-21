@@ -16,7 +16,7 @@ export function controllersToStaticParams(c: Record<string, StaticClass>, slug =
     { [slug]: ['_schema_'] },
     ...Object.values(controllers).flatMap((controller) => {
       const handlers = controller._handlers;
-      const splitPrefix = controller._prefix?.split('/') ?? [];
+      const splitPrefix = controller.prefix?.split('/') ?? [];
 
       return Object.entries(handlers ?? {}).flatMap(([name, handler]) => {
         const staticParams = controller._handlersMetadata?.[name]?.staticParams;

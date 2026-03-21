@@ -1,7 +1,7 @@
 import { ok } from 'node:assert';
 import supertest from 'supertest';
 import type { z } from 'zod/v4';
-import type { ConstrainingModel } from './client/WithValidationController.ts';
+import type { ConstrainingModel } from './validation/WithValidationController.ts';
 
 export const apiUrl = `http://localhost:${process.env.PORT}/api`;
 

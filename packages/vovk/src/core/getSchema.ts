@@ -17,7 +17,7 @@ export async function getControllerSchema(
   return {
     rpcModuleName,
     originalControllerName: controller.name,
-    prefix: controller._prefix ?? '',
+    prefix: controller.prefix ?? '',
     handlers,
   };
 }

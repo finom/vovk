@@ -6,7 +6,7 @@ export { multitenant } from './core/multitenant.js';
 export { JSONLinesResponder } from './core/JSONLinesResponder.js';
 export { toDownloadResponse } from './core/toDownloadResponse.js';
 export { get, post, put, patch, del, head, options, prefix, cloneControllerMetadata } from './core/decorators.js';
-export { compose } from './core/compose.js';
+export { decorate } from './core/decorate.js';
 
 // client
 export { progressive } from './client/progressive.js';
