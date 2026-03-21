@@ -1,10 +1,11 @@
 import { vovkApp } from './vovkApp.js';
 import { trimPath } from '../utils/trimPath.js';
 import { getSchema } from './getSchema.js';
+import type { ComposeMetadata } from './compose.js';
 import type { HttpMethod } from '../types/enums.js';
 import type { VovkController } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
-import type { StaticClass } from '../types/utils.js';
+import type { KnownAny, StaticClass } from '../types/utils.js';
 
 export const initSegment = (options: {
   segmentName?: string;
@@ -17,12 +18,46 @@ export const initSegment = (options: {
 }) => {
   const segmentName = trimPath(options.segmentName ?? '');
   options.segmentName = segmentName;
-  for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}) as [string, VovkController][]) {
+  const controllerEntries = Object.entries(options.controllers ?? {}) as [string, VovkController][];
+
+  // Phase 1: Apply compose metadata for all controllers
+  for (const [rpcModuleName, controller] of controllerEntries) {
     controller._segmentName = segmentName;
     controller._rpcModuleName = rpcModuleName;
     controller._onError = options?.onError;
     controller._onSuccess = options?.onSuccess;
     controller._onBefore = options?.onBefore;
+
+    // Apply compose() metadata: call decorator appliers for each composed handler
+    for (const key of Object.getOwnPropertyNames(controller)) {
+      const method = controller[key] as KnownAny;
+      if (typeof method === 'function' && method._composeMetadata) {
+        const metadata = method._composeMetadata as ComposeMetadata;
+        if (metadata.decoratorAppliers) {
+          // Apply in reverse order to match decorator semantics (bottom-up)
+          for (let i = metadata.decoratorAppliers.length - 1; i >= 0; i--) {
+            // Call decorator function with (controller, propertyKey) simulating experimental decorator context
+            metadata.decoratorAppliers[i](controller, key);
+          }
+        }
+      }
+    }
+  }
+
+  // Phase 2: Re-clone metadata for controllers that extend another registered controller.
+  // This is needed because cloneControllerMetadata() may run before compose metadata is applied
+  // (e.g., when using class-level compose with a parent that uses method-level compose).
+  const controllerSet = new Set(controllerEntries.map(([, c]) => c));
+  for (const [, controller] of controllerEntries) {
+    const parent = Object.getPrototypeOf(controller) as VovkController;
+    if (parent && controllerSet.has(parent) && parent._handlers) {
+      controller._handlers = { ...parent._handlers, ...controller._handlers };
+      controller._handlersMetadata = { ...parent._handlersMetadata, ...controller._handlersMetadata };
+      Object.values(vovkApp.routes).forEach((methods) => {
+        const parentMethods = methods.get(parent) ?? {};
+        methods.set(controller, { ...parentMethods, ...methods.get(controller) });
+      });
+    }
   }
 
   async function GET_DEV(req: Request, data: { params: Promise<Record<string, string[]>> }) {

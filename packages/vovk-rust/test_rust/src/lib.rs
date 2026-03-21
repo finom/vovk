@@ -1,4 +1,4 @@
-mod test_zod;
+mod test_validation;
 mod test_common;
 
 // Helper function to create objects with specific validation issues

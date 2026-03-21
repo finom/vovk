@@ -11,6 +11,8 @@ import NextResponseController from '../../../core/NextResponseController.ts';
 import HeadersController from '../../../core/HeadersController.ts';
 import RedirectController from '../../../core/RedirectController.ts';
 import AutoDecoratorsController from '../../../core/AutoDecoratorsController.ts';
+import ComposeController from '../../../core/ComposeController.ts';
+import ComposeClassController, { ComposeClonedController } from '../../../core/ComposeClassController.ts';
 import StaticApiController from '../../../core/StaticApiController.ts';
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
@@ -28,6 +30,9 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
     HeadersController,
     RedirectController,
     AutoDecoratorsController,
+    ComposeController,
+    ComposeClassController,
+    ComposeClonedController,
     StaticApiController,
   },
   onError: (err, req) => {
