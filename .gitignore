@@ -10,3 +10,5 @@ tmp_*
 .vscode
 .mypy_cache
 config.bat
+.venv
+venv
