@@ -208,7 +208,7 @@ export class Init {
         updateTsConfig: updateTsConfig ?? true,
         updateScripts: updateScripts ?? 'implicit',
         validationLibrary: validationLibrary?.toLocaleLowerCase() === 'none' ? null : (validationLibrary ?? 'zod'),
-        bundle: bundle ?? true,
+        bundle: bundle ?? false,
         dryRun: dryRun ?? false,
         channel: channel ?? 'latest',
         lang: lang ?? [],
@@ -281,7 +281,7 @@ export class Init {
 
     bundle ??= await confirm({
       message: 'Do you want to set up "tsdown" to bundle TypeScript client (experimental)?',
-      default: true,
+      default: false,
     });
 
     updateScripts ??= !pkgJson
